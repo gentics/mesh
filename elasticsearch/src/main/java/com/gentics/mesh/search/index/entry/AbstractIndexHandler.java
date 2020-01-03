@@ -35,6 +35,7 @@ import com.gentics.mesh.search.index.Transformer;
 import com.gentics.mesh.search.index.metric.SyncMeters;
 import com.gentics.mesh.search.index.metric.SyncMetersFactory;
 import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
+import com.gentics.mesh.util.RxUtil;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
 
@@ -233,7 +234,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 					.map(uuid -> helper.deleteDocumentRequest(indexName, uuid, complianceMode, meters.getDeleteMeter()::synced));
 
 				return Flowable.merge(toInsert, toUpdate, toDelete);
-			}).flatMapPublisher(x -> x);
+			}).flatMapPublisher(RxUtil.identity());
 	}
 
 	protected T getElement(String elementUuid) {

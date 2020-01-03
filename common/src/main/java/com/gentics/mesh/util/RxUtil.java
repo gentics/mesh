@@ -90,7 +90,7 @@ public final class RxUtil {
 	public static <T1, T2, R> Single<R> flatZip(
 		SingleSource<? extends T1> source1, SingleSource<? extends T2> source2,
 		BiFunction<? super T1, ? super T2, SingleSource<? extends R>> zipper) {
-		return Single.zip(source1, source2, zipper).flatMap(x -> x);
+		return Single.zip(source1, source2, zipper).flatMap(identity());
 	}
 
 	public static <T> Maybe<T> executeBlocking(Vertx vertx, Supplier<T> supplier) {

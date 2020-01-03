@@ -30,6 +30,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.util.RxUtil;
 
 import io.reactivex.Completable;
 import io.reactivex.CompletableObserver;
@@ -174,7 +175,7 @@ public class NodeEndpointETagReferenceTest extends AbstractMeshTest {
 					.andThen(getEtag(nodeToCheck))
 					.doOnSuccess(newEtag -> assertNotEquals(assertionName, oldETag, newEtag))
 					.toCompletable());
-		}).flatMapCompletable(x -> x);
+		}).flatMapCompletable(RxUtil.identity());
 	}
 
 	private Single<NodeResponse> updateNode(NodeResponse node) {

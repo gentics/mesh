@@ -49,6 +49,7 @@ import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 import com.gentics.mesh.search.index.metric.SyncMetersFactory;
 import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
+import com.gentics.mesh.util.RxUtil;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
 
@@ -293,7 +294,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 					.map(uuid -> helper.deleteDocumentRequest(indexName, uuid, complianceMode, meters.getDeleteMeter()::synced));
 
 				return Flowable.merge(toInsert, toUpdate, toDelete);
-			}).flatMapPublisher(x -> x);
+			}).flatMapPublisher(RxUtil.identity());
 	}
 
 	@Override
@@ -334,7 +335,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			}
 
 			// Now merge all store actions and refresh the affected indices
-			return Observable.fromIterable(obs).map(x -> x.toObservable()).flatMap(x -> x).distinct().ignoreElements();
+			return Observable.fromIterable(obs).map(Single::toObservable).flatMap(x -> x).distinct().ignoreElements();
 		});
 	}
 

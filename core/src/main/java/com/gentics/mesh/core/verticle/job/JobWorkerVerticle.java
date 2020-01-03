@@ -8,6 +8,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.util.RxUtil;
 import com.gentics.mesh.verticle.AbstractJobVerticle;
 
 import dagger.Lazy;
@@ -57,7 +58,7 @@ public class JobWorkerVerticle extends AbstractJobVerticle {
 		return db.singleTx(() -> {
 			JobRoot jobRoot = boot.get().jobRoot();
 			return jobRoot.process();
-		}).flatMapCompletable(x -> x);
+		}).flatMapCompletable(RxUtil.identity());
 	}
 
 }

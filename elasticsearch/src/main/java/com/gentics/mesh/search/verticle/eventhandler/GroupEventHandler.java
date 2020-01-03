@@ -22,6 +22,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.entity.MeshEntities;
+import com.gentics.mesh.util.RxUtil;
 
 import io.reactivex.Flowable;
 
@@ -57,7 +58,7 @@ public class GroupEventHandler implements EventHandler {
 						toStream(groupOptional).map(entities::createRequest),
 						toStream(groupOptional).flatMap(group -> group.getUsers().stream()).map(entities::createRequest)
 					).collect(Util.toFlowable());
-				}).flatMapPublisher(x -> x);
+				}).flatMapPublisher(RxUtil.identity());
 			} else if (event == GROUP_DELETED) {
 				// TODO Update users that were part of that group.
 				// At the moment we cannot look up users that were in the group if the group is already deleted.
