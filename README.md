@@ -97,12 +97,11 @@ for an explanation of the basic concepts of Gentics Mesh.
       * [Consulting](#consulting)
       * [Maintenance](#maintenance)
       * [Support](#support)
-   * [Contributing](#contributing)
    * [Getting started developing with Gentics Mesh](#getting-started-developing-with-gentics-mesh)
       * [Authentication](#authentication)
       * [Using the REST API](#using-the-rest-api)
       * [Using the GraphQL API](#using-the-graphql-api)
-      * [IDE Setup - Eclipse](#ide-setup---eclipse)
+   * [Contributing to Gentics Mesh](#contributing-to-gentics-mesh)
    * [Copyright &amp; License](#copyright--license)
 
 # Introduction
@@ -283,11 +282,6 @@ focusing on all the typical questions and needs arising when working with
 Headless CMS solutions.
 
 
-# Contributing
-
-Please read our [Contributing Gudelines](https://getmesh.io/docs/contributing/)
-if you intend to contribute to the project.
-
 # Getting started developing with Gentics Mesh
 
 ## Authentication
@@ -345,22 +339,15 @@ query webroot($path: String) {
 }
 ```
 
-## IDE Setup - Eclipse
+# Contributing to Gentics Mesh
 
-Make sure that you use at least Eclipse Neon.
+Please read our [Contributing Guidelines](https://getmesh.io/docs/contributing/) if you intend to contribute to the project. The guidelines will tell you the
+legal stuff, give you instructions on how to set up your IDE in order to build Gentics Mesh, and will tell you necessary knowledge to understand the codebase.
 
-Install the following maven m2e workshop plugins:
+Gentics Mesh is currently split into two repositories:
 
-  * m2e-apt-plugin
-
-Note: Make sure that your Eclipse Maven APT settings are set to "Automatically configure JDT APT".
-If you don't find this option, you most likely need to install the M2E APT Plugin for eclipse.
-
-Import all maven modules in your IDE.
-
-Please note that this project is using Google Dagger for dependency
-injection. Adding new dependencies or beans may require a fresh build (via
-Project->Clean) of the mesh-core/mesh-api modules.
+* https://github.com/gentics/mesh contains the backend code
+* https://github.com/gentics/mesh-ui contains the frontend code
 
 
 # Copyright & License
