@@ -19,7 +19,7 @@ These tasks have been labelled to indicate that the implementation is fairly eas
 The contribution format is described in the https://github.com/gentics/mesh/blob/master/.github/CONTRIBUTING.md[CONTRIBUTING.md]
 
 === Legal stuff
-In order for any contributions to be accepted you MUST sign the https://www.clahub.com/agreements/gentics/mesh[Gentics Mesh's Contributor License Agreement].
+In order for any contributions to be accepted you *must* sign our https://cla-assistant.io/gentics/mesh[Contributor License Agreement].
 
 The purpose of this agreement is to protect users of this codebase by ensuring that all code is free to use under the stipulations of the Apache2 license.
 
