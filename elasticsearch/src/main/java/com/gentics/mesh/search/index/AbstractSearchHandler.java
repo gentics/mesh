@@ -389,7 +389,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		// Prepare the request
 		RequestBuilder<JsonObject> requestBuilder = client.multiSearch(queryOption, queryJson);
 		Single<Page<? extends T>> result = requestBuilder.async()
-			.flatMap(response -> {
+			.map(response -> {
 				JsonArray responses = response.getJsonArray("responses");
 				JsonObject firstResponse = responses.getJsonObject(0);
 
@@ -399,27 +399,27 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 					throw mapError(errorInfo);
 				}
 
-				return db.singleTx(() -> {
-					List<T> elementList = new ArrayList<>();
-					JsonObject hitsInfo = firstResponse.getJsonObject("hits");
-					JsonArray hits = hitsInfo.getJsonArray("hits");
-					for (int i = 0; i < hits.size(); i++) {
-						JsonObject hit = hits.getJsonObject(i);
-						String id = hit.getString("_id");
-						int pos = id.indexOf("-");
-						String uuid = pos > 0 ? id.substring(0, pos) : id;
+				return firstResponse;
+			}).flatMap(firstResponse -> db.singleTx(() -> {
+				List<T> elementList = new ArrayList<>();
+				JsonObject hitsInfo = firstResponse.getJsonObject("hits");
+				JsonArray hits = hitsInfo.getJsonArray("hits");
+				for (int i = 0; i < hits.size(); i++) {
+					JsonObject hit = hits.getJsonObject(i);
+					String id = hit.getString("_id");
+					int pos = id.indexOf("-");
+					String uuid = pos > 0 ? id.substring(0, pos) : id;
 
-						// Locate the node
-						T element = indexHandler.elementLoader().apply(uuid);
-						if (element != null) {
-							elementList.add(element);
-						}
+					// Locate the node
+					T element = indexHandler.elementLoader().apply(uuid);
+					if (element != null) {
+						elementList.add(element);
 					}
+				}
 
-					PagingMetaInfo info = extractMetaInfo(hitsInfo, pagingInfo);
-					return new PageImpl<>(elementList, info.getTotalCount(), pagingInfo.getPage(), info.getPageCount(), pagingInfo.getPerPage());
-				});
-			});
+				PagingMetaInfo info = extractMetaInfo(hitsInfo, pagingInfo);
+				return new PageImpl<>(elementList, info.getTotalCount(), pagingInfo.getPage(), info.getPageCount(), pagingInfo.getPerPage());
+			}));
 
 		// TODO make this configurable
 		return result.timeout(30, TimeUnit.SECONDS)
