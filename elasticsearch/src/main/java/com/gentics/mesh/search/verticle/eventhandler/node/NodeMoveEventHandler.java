@@ -45,7 +45,7 @@ public class NodeMoveEventHandler implements EventHandler {
 			.flatMap(project -> findElementByUuidStream(project.getBranchRoot(), model.getBranchUuid())
 			.flatMap(branch -> entities.generateNodeRequests(model.getUuid(), project, branch)))
 			.collect(toFlowable()))
-			.runInAsyncTx()
+			.runInAsyncTxImmediately()
 			.flatMapPublisher(RxUtil.identity());
 	}
 }

@@ -45,6 +45,8 @@ public class NodeTagEventHandler implements EventHandler {
 		return helper.getDb().transactional(tx -> findElementByUuidStream(helper.getBoot().projectRoot(), model.getProject().getUuid())
 			.flatMap(project -> findElementByUuidStream(project.getBranchRoot(), model.getBranch().getUuid())
 			.flatMap(branch -> entities.generateNodeRequests(model.getNode().getUuid(), project, branch)))
-		.collect(toFlowable())).runInAsyncTx().flatMapPublisher(RxUtil.identity());
+			.collect(toFlowable()))
+			.runInAsyncTxImmediately()
+			.flatMapPublisher(RxUtil.identity());
 	}
 }

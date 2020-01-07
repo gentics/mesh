@@ -51,25 +51,23 @@ public class TagEventHandler implements EventHandler {
 
 	@Override
 	public Flowable<SearchRequest> handle(MessageEvent messageEvent) {
-		return helper.getDb().<Flowable<SearchRequest>>singleTx(() -> {
+		return helper.getDb().<Flowable<SearchRequest>>singleTxImmediate(() -> {
 			MeshEvent event = messageEvent.event;
 			MeshProjectElementEventModel model = requireType(MeshProjectElementEventModel.class, messageEvent.message);
 			String projectUuid = model.getProject().getUuid();
 
 			if (event == TAG_CREATED || event == TAG_UPDATED) {
-				return helper.getDb().tx(() -> {
-					// We also need to update the tag family
-					Optional<Tag> tag = entities.tag.getElement(model);
-					Optional<TagFamily> tagFamily = tag.map(Tag::getTagFamily);
+				// We also need to update the tag family
+				Optional<Tag> tag = entities.tag.getElement(model);
+				Optional<TagFamily> tagFamily = tag.map(Tag::getTagFamily);
 
-					return concat(
-						toStream(tag).map(t -> entities.createRequest(t, projectUuid)),
-						toStream(tagFamily).map(tf -> entities.createRequest(tf, projectUuid)),
-						event == TAG_UPDATED
-							? toStream(tag).flatMap(t -> taggedNodes(model, t))
-							: Stream.empty()
-					).collect(Util.toFlowable());
-				});
+				return concat(
+					toStream(tag).map(t -> entities.createRequest(t, projectUuid)),
+					toStream(tagFamily).map(tf -> entities.createRequest(tf, projectUuid)),
+					event == TAG_UPDATED
+						? toStream(tag).flatMap(t -> taggedNodes(model, t))
+						: Stream.empty()
+				).collect(Util.toFlowable());
 			} else if (event == TAG_DELETED) {
 				// The tag was deleted via a project deletion. The project handler takes care of deleting the tag index.
 				if (EventCauseHelper.isProjectDeleteCause(model)) {

@@ -92,7 +92,7 @@ public class ProjectUpdateEventHandler implements EventHandler {
 				))
 			)));})
 			.collect(toFlowable()))
-			.runInAsyncTx()
+			.runInAsyncTxImmediately()
 			.flatMapPublisher(RxUtil.identity());
 	}
 
@@ -110,7 +110,8 @@ public class ProjectUpdateEventHandler implements EventHandler {
 				)
 			))
 			.collect(toFlowable()))
-			.runInAsyncTx().flatMapPublisher(RxUtil.identity());
+			.runInAsyncTxImmediately()
+			.flatMapPublisher(RxUtil.identity());
 	}
 
 	private Stream<CreateDocumentRequest> createTagRequests(TagFamily family, Project project) {

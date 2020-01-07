@@ -46,26 +46,24 @@ public class GroupEventHandler implements EventHandler {
 
 	@Override
 	public Flowable<SearchRequest> handle(MessageEvent messageEvent) {
-		return Flowable.defer(() -> {
-			MeshEvent event = messageEvent.event;
-			MeshElementEventModel model = requireType(MeshElementEventModel.class, messageEvent.message);
-			if (event == GROUP_CREATED || event == GROUP_UPDATED) {
-				return helper.getDb().singleTxImmediate(() -> {
-					// We also need to update all users of the group
-					Optional<Group> groupOptional = entities.group.getElement(model);
+		MeshEvent event = messageEvent.event;
+		MeshElementEventModel model = requireType(MeshElementEventModel.class, messageEvent.message);
+		if (event == GROUP_CREATED || event == GROUP_UPDATED) {
+			return helper.getDb().singleTxImmediate(() -> {
+				// We also need to update all users of the group
+				Optional<Group> groupOptional = entities.group.getElement(model);
 
-					return Stream.concat(
-						toStream(groupOptional).map(entities::createRequest),
-						toStream(groupOptional).flatMap(group -> group.getUsers().stream()).map(entities::createRequest)
-					).collect(Util.toFlowable());
-				}).flatMapPublisher(RxUtil.identity());
-			} else if (event == GROUP_DELETED) {
-				// TODO Update users that were part of that group.
-				// At the moment we cannot look up users that were in the group if the group is already deleted.
-				return Flowable.just(helper.deleteDocumentRequest(Group.composeIndexName(), model.getUuid(), complianceMode));
-			} else {
-				throw new RuntimeException("Unexpected event " + event.address);
-			}
-		});
+				return Stream.concat(
+					toStream(groupOptional).map(entities::createRequest),
+					toStream(groupOptional).flatMap(group -> group.getUsers().stream()).map(entities::createRequest)
+				).collect(Util.toFlowable());
+			}).flatMapPublisher(RxUtil.identity());
+		} else if (event == GROUP_DELETED) {
+			// TODO Update users that were part of that group.
+			// At the moment we cannot look up users that were in the group if the group is already deleted.
+			return Flowable.just(helper.deleteDocumentRequest(Group.composeIndexName(), model.getUuid(), complianceMode));
+		} else {
+			throw new RuntimeException("Unexpected event " + event.address);
+		}
 	}
 }

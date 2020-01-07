@@ -45,30 +45,28 @@ public class SchemaMigrationEventHandler implements EventHandler {
 	}
 
 	@Override
-	public Flowable<SearchRequest> handle(MessageEvent messageEvent) {
-		return Flowable.defer(() -> {
-			MeshEvent event = messageEvent.event;
-			if (event == SCHEMA_BRANCH_ASSIGN) {
-				BranchSchemaAssignEventModel model = requireType(BranchSchemaAssignEventModel.class, messageEvent.message);
-				return migrationStart(model);
-			} else if (event == SCHEMA_BRANCH_UNASSIGN) {
-				BranchSchemaAssignEventModel model = requireType(BranchSchemaAssignEventModel.class, messageEvent.message);
-				return migrationEnd(
-					model.getProject().getUuid(),
-					model.getBranch().getUuid(),
-					model.getSchema().getVersionUuid()
-				);
-			} else if (event == SCHEMA_MIGRATION_FINISHED) {
-				SchemaMigrationMeshEventModel model = requireType(SchemaMigrationMeshEventModel.class, messageEvent.message);
-				return migrationEnd(
-					model.getProject().getUuid(),
-					model.getBranch().getUuid(),
-					model.getFromVersion().getVersionUuid()
-				);
-			} else {
-				throw new RuntimeException("Unexpected event " + event.address);
-			}
-		});
+	public Flowable<? extends SearchRequest> handle(MessageEvent messageEvent) {
+		MeshEvent event = messageEvent.event;
+		if (event == SCHEMA_BRANCH_ASSIGN) {
+			BranchSchemaAssignEventModel model = requireType(BranchSchemaAssignEventModel.class, messageEvent.message);
+			return migrationStart(model);
+		} else if (event == SCHEMA_BRANCH_UNASSIGN) {
+			BranchSchemaAssignEventModel model = requireType(BranchSchemaAssignEventModel.class, messageEvent.message);
+			return migrationEnd(
+				model.getProject().getUuid(),
+				model.getBranch().getUuid(),
+				model.getSchema().getVersionUuid()
+			);
+		} else if (event == SCHEMA_MIGRATION_FINISHED) {
+			SchemaMigrationMeshEventModel model = requireType(SchemaMigrationMeshEventModel.class, messageEvent.message);
+			return migrationEnd(
+				model.getProject().getUuid(),
+				model.getBranch().getUuid(),
+				model.getFromVersion().getVersionUuid()
+			);
+		} else {
+			throw new RuntimeException("Unexpected event " + event.address);
+		}
 	}
 
 	private Flowable<DropIndexRequest> migrationEnd(String projectUuid, String branchUuid, String schemaVersionUuid) {

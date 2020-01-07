@@ -61,35 +61,33 @@ public class NodeContentEventHandler implements EventHandler {
 	}
 
 	@Override
-	public Flowable<SearchRequest> handle(MessageEvent messageEvent) {
-		return Flowable.defer(() -> {
-			MeshEvent event = messageEvent.event;
-			NodeMeshEventModel message = requireType(NodeMeshEventModel.class, messageEvent.message);
+	public Flowable<? extends SearchRequest> handle(MessageEvent messageEvent) {
+		MeshEvent event = messageEvent.event;
+		NodeMeshEventModel message = requireType(NodeMeshEventModel.class, messageEvent.message);
 
-			switch (event) {
-				case NODE_CONTENT_CREATED:
-				case NODE_UPDATED:
-				case NODE_PUBLISHED:
-					EventCauseInfo cause = message.getCause();
-					if (cause != null && cause.getAction() == SCHEMA_MIGRATION) {
-						return migrationUpdate(message);
-					} else {
-						return upsertNodes(message).toFlowable();
-					}
-				case NODE_CONTENT_DELETED:
-				case NODE_UNPUBLISHED:
-					if (EventCauseHelper.isProjectDeleteCause(message)) {
-						return Flowable.empty();
-					} else {
-						return getSchemaVersionUuid(message)
-							.map(uuid -> deleteNodes(message, uuid))
-							.toFlowable();
-					}
-				default:
-					throw new RuntimeException("Unexpected event " + event.address);
+		switch (event) {
+			case NODE_CONTENT_CREATED:
+			case NODE_UPDATED:
+			case NODE_PUBLISHED:
+				EventCauseInfo cause = message.getCause();
+				if (cause != null && cause.getAction() == SCHEMA_MIGRATION) {
+					return migrationUpdate(message);
+				} else {
+					return upsertNodes(message).toFlowable();
+				}
+			case NODE_CONTENT_DELETED:
+			case NODE_UNPUBLISHED:
+				if (EventCauseHelper.isProjectDeleteCause(message)) {
+					return Flowable.empty();
+				} else {
+					return getSchemaVersionUuid(message)
+						.map(uuid -> deleteNodes(message, uuid))
+						.toFlowable();
+				}
+			default:
+				throw new RuntimeException("Unexpected event " + event.address);
 
-			}
-		});
+		}
 	}
 
 	private Flowable<SearchRequest> migrationUpdate(NodeMeshEventModel message) {

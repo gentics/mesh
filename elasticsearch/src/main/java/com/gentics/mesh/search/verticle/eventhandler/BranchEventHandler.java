@@ -36,22 +36,20 @@ public class BranchEventHandler implements EventHandler {
 
 	@Override
 	public Flowable<SearchRequest> handle(MessageEvent messageEvent) {
-		return Flowable.defer(() -> {
-			MeshProjectElementEventModel model = requireType(MeshProjectElementEventModel.class, messageEvent.message);
-			if (messageEvent.event == BRANCH_DELETED) {
-				//NodeGraphFieldContainer.composeIndexName(model.getProject().getUuid(), model.getUuid(), "*", DRAFT);
-				//NodeGraphFieldContainer.composeIndexName(model.getProject().getUuid(), model.getUuid(), "*", PUBLISH);
-				//TODO Implement the drop of the node indices. We need to drop all indices of the branch.
-				return Flowable.empty();
-			} else {
-				return helper.getDb().transactional(tx -> {
-					Project project = helper.getBoot().projectRoot().findByUuid(model.getProject().getUuid());
-					Branch branch = project.getBranchRoot().findByUuid(model.getUuid());
-					return nodeIndexHandler.getIndices(project, branch).runInExistingTx(tx);
-				}).runInAsyncTxImmediately()
-				.flatMapPublisher(Util::toRequests);
-			}
-		});
+		MeshProjectElementEventModel model = requireType(MeshProjectElementEventModel.class, messageEvent.message);
+		if (messageEvent.event == BRANCH_DELETED) {
+			//NodeGraphFieldContainer.composeIndexName(model.getProject().getUuid(), model.getUuid(), "*", DRAFT);
+			//NodeGraphFieldContainer.composeIndexName(model.getProject().getUuid(), model.getUuid(), "*", PUBLISH);
+			//TODO Implement the drop of the node indices. We need to drop all indices of the branch.
+			return Flowable.empty();
+		} else {
+			return helper.getDb().transactional(tx -> {
+				Project project = helper.getBoot().projectRoot().findByUuid(model.getProject().getUuid());
+				Branch branch = project.getBranchRoot().findByUuid(model.getUuid());
+				return nodeIndexHandler.getIndices(project, branch).runInExistingTx(tx);
+			}).runInAsyncTxImmediately()
+			.flatMapPublisher(Util::toRequests);
+		}
 	}
 
 	@Override

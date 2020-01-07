@@ -55,7 +55,7 @@ public class JobWorkerVerticle extends AbstractJobVerticle {
 
 	@Override
 	public Completable executeJob(Message<Object> message) {
-		return db.singleTx(() -> {
+		return db.singleTxImmediate(() -> {
 			JobRoot jobRoot = boot.get().jobRoot();
 			return jobRoot.process();
 		}).flatMapCompletable(RxUtil.identity());

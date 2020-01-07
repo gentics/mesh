@@ -37,7 +37,7 @@ public class GroupUserAssignmentHandler implements EventHandler {
 	@Override
 	public Flowable<? extends SearchRequest> handle(MessageEvent messageEvent) {
 		GroupUserAssignModel model = requireType(GroupUserAssignModel.class, messageEvent.message);
-		return helper.getDb().singleTx(() -> {
+		return helper.getDb().singleTxImmediate(() -> {
 			User user = helper.getBoot().userRoot().findByUuid(model.getUser().getUuid());
 			return entities.createRequest(user);
 		}).toFlowable();

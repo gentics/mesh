@@ -95,8 +95,10 @@ public class PermissionChangedEventHandler implements EventHandler {
 	}
 
 	private Flowable<UpdateDocumentRequest> simplePermissionChange(PermissionChangedEventModelImpl model) {
-		return toFlowable(meshEntities.of(model.getType()))
-			.flatMap(meshEntity -> toFlowable(meshHelper.getDb().singleTx(() -> meshEntity.getPermissionPartial(model))))
+		return meshEntities.of(model.getType())
+			.map(meshEntity -> meshHelper.getDb().singleTxImmediate(() -> meshEntity.getPermissionPartial(model))
+				.to(Util::toFlowable))
+			.orElseGet(Flowable::empty)
 			.map(doc -> meshHelper.updateDocumentRequest(
 				getIndex(model),
 				model.getUuid(),
