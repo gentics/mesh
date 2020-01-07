@@ -14,6 +14,7 @@ import com.gentics.mesh.core.data.search.bulk.UpdateBulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.search.EntityMetrics;
+import com.gentics.mesh.graphdb.spi.Transactional;
 
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
@@ -91,14 +92,14 @@ public interface IndexHandler<T extends MeshCoreVertex<?, T>> {
 	 * @param indices
 	 * @return
 	 */
-	Set<String> filterUnknownIndices(Set<String> indices);
+	Transactional<Set<String>> filterUnknownIndices(Set<String> indices);
 
 	/**
 	 * Load a map which contains the applicable indices. The key of the map is the index name.
 	 * 
 	 * @return Map with index information
 	 */
-	Map<String, IndexInfo> getIndices();
+	Transactional<Map<String, IndexInfo>> getIndices();
 
 	/**
 	 * Get the names of all selected indices. The action context will be examined to determine the project scope and the branch scope. If possible even the

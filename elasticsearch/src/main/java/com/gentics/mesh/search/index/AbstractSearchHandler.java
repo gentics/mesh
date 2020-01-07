@@ -150,7 +150,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			return;
 		}
 
-		waitUtil.awaitSync(ac).andThen(db.singleTx(() -> {
+		waitUtil.awaitSync(ac).andThen(executeBlocking(vertx, () -> {
 			ElasticsearchClient<JsonObject> client = searchProvider.getClient();
 			String searchQuery = ac.getBodyAsString();
 			if (log.isDebugEnabled()) {
@@ -171,7 +171,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			log.debug("Using options {" + queryOption.encodePrettily() + "}");
 
 			return client.multiSearch(queryOption, request);
-		})).flatMap(RequestBuilder::async)
+		})).toSingle().flatMap(RequestBuilder::async)
 		.subscribe(response -> {
 			// JsonObject firstResponse = response.getJsonArray("responses").getJsonObject(0);
 			// Directly relay the response to the requester without converting it.
@@ -245,21 +245,21 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			return client.multiSearch(queryOption, request);
 		}).toSingle())
 		.flatMap(RequestBuilder::async)
-		.flatMapObservable(response -> {
+		.flatMap(response -> {
 			JsonArray responses = response.getJsonArray("responses");
 			JsonObject firstResponse = responses.getJsonObject(0);
 
 			// Process the nested error
 			JsonObject errorInfo = firstResponse.getJsonObject("error");
 			if (errorInfo != null) {
-				return Observable.error(mapError(errorInfo));
+				return Single.error(mapError(errorInfo));
 			}
 
 			JsonObject hitsInfo = firstResponse.getJsonObject("hits");
 			JsonArray hits = hitsInfo.getJsonArray("hits");
 
-			List<Tuple<T, String>> list = new ArrayList<>();
-			db.tx(() -> {
+			return db.singleTx(() -> {
+				List<Tuple<T, String>> list = new ArrayList<>();
 				for (int i = 0; i < hits.size(); i++) {
 					JsonObject hit = hits.getJsonObject(i);
 					String id = hit.getString("_id");
@@ -289,23 +289,20 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 						list.add(Tuple.tuple(element, language));
 					}
 				}
+				// Set meta information to the rest response
+				listResponse.setMetainfo(extractMetaInfo(hitsInfo, pagingInfo));
+				return list;
 			});
-
-			// Set meta information to the rest response
-			listResponse.setMetainfo(extractMetaInfo(hitsInfo, pagingInfo));
-
-			return Observable.fromIterable(list);
-		}).onErrorResumeNext(error -> {
+		}).flatMapObservable(Observable::fromIterable).onErrorResumeNext(error -> {
 			return Observable.error(mapToMeshError(error));
 		}).flatMapSingle(element -> {
 			// TODO add resume next to omit the item if it can't be transformed for some reason.
 			// This would be better than to just fail the whole request
 			// TODO maybe add extra permission filtering? This would not be very costly for smaller pages and ensure perm consistency?
 			// TODO it would be good to batch the transformation of the elements to save the overhead of creating transactions and use the L1 cache.
-			return db.tx(() -> Single.just(element.v1().transformToRestSync(ac, 0, element.v2())));
-		}).collect(() -> listResponse.getData(), (x, y) -> {
-			x.add(y);
-		}).subscribe(list -> {
+			return db.singleTx(() -> element.v1().transformToRestSync(ac, 0, element.v2()));
+		}).collect(listResponse::getData, List::add)
+		.subscribe(list -> {
 			ac.send(listResponse.toJson(), OK);
 		}, error -> {
 			log.error("Error while processing search response items", error);

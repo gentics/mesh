@@ -29,7 +29,6 @@ import com.tinkerpop.blueprints.Vertex;
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
 import io.reactivex.Single;
-import io.reactivex.functions.BiFunction;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.vertx.core.AsyncResult;
@@ -472,6 +471,10 @@ public interface Database extends TxFactory {
 	 */
 	void reload(Element element);
 
+	default <T> Transactional<T> transactional(Supplier<T> txFunction) {
+		return transactional(tx -> txFunction.get());
+	}
+
 	default <T> Transactional<T> transactional(Function<Tx, T> txFunction) {
 		return new Transactional<T>() {
 			@Override
@@ -487,17 +490,6 @@ public interface Database extends TxFactory {
 			@Override
 			public T runInNewTx() {
 				return tx(this::runInExistingTx);
-			}
-
-			// @Override
-			// public <R> Transactional<R> map(Function<T, R> mapper) {
-			// // TODO run map outside Tx (needs MappingTransactional)
-			// return transactional(tx -> mapper.apply(txFunction.apply(tx)));
-			// }
-
-			@Override
-			public <R> Transactional<R> mapInTx(BiFunction<Tx, T, R> mapper) {
-				return transactional(tx -> mapper.apply(tx, txFunction.apply(tx)));
 			}
 
 			@Override

@@ -54,7 +54,7 @@ public class PluginRouter {
 				});
 			}
 			rc.next();
-		});
+		}, false);
 
 		parentRouter.mountSubRouter(PLUGINS_MOUNTPOINT, router);
 	}

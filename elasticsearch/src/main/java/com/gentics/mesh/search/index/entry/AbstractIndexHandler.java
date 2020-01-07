@@ -29,6 +29,7 @@ import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.Transactional;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.MappingProvider;
 import com.gentics.mesh.search.index.Transformer;
@@ -198,7 +199,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	protected Flowable<SearchRequest> diffAndSync(String indexName, String projectUuid) {
 		return Single.zip(
 			loadVersionsFromIndex(indexName),
-			Single.fromCallable(this::loadVersionsFromGraph),
+			loadVersionsFromGraph().runInAsyncTx(),
 			(sinkVersions, sourceVersions) -> {
 				log.info("Handling index sync on handler {" + getClass().getName() + "}");
 
@@ -219,16 +220,15 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 				meters.getUpdateMeter().addPending((needUpdateInEs.size()));
 				meters.getDeleteMeter().addPending((needRemovalInES.size()));
 
-				Function<Action, Function<String, CreateDocumentRequest>> toCreateRequest = action -> uuid -> {
-					JsonObject doc = db.tx(() -> getTransformer().toDocument(getElement(uuid)));
-					return helper.createDocumentRequest(indexName, uuid, doc, complianceMode, action);
-				};
+				Function<Action, Function<String, Single<CreateDocumentRequest>>> toCreateRequest = action -> uuid ->
+					db.singleTx(() -> getTransformer().toDocument(getElement(uuid)))
+					.map(doc -> helper.createDocumentRequest(indexName, uuid, doc, complianceMode, action));
 
 				Flowable<SearchRequest> toInsert = Flowable.fromIterable(needInsertionInES)
-					.map(toCreateRequest.apply(meters.getInsertMeter()::synced));
+					.flatMapSingle(toCreateRequest.apply(meters.getInsertMeter()::synced));
 
 				Flowable<SearchRequest> toUpdate = Flowable.fromIterable(needUpdateInEs)
-					.map(toCreateRequest.apply(meters.getUpdateMeter()::synced));
+					.flatMapSingle(toCreateRequest.apply(meters.getUpdateMeter()::synced));
 
 				Flowable<SearchRequest> toDelete = Flowable.fromIterable(needRemovalInES)
 					.map(uuid -> helper.deleteDocumentRequest(indexName, uuid, complianceMode, meters.getDeleteMeter()::synced));
@@ -241,8 +241,8 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		return elementLoader().apply(elementUuid);
 	}
 
-	private Map<String, String> loadVersionsFromGraph() {
-		return db.tx(() -> loadAllElements()
+	private Transactional<Map<String, String>> loadVersionsFromGraph() {
+		return db.transactional(() -> loadAllElements()
 			.collect(Collectors.toMap(
 				MeshElement::getUuid,
 				this::generateVersion)));
@@ -323,28 +323,30 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	@Override
 	public Completable createIndex(CreateIndexEntry entry) {
 		String indexName = entry.getIndexName();
-		Map<String, IndexInfo> indexInfo = getIndices();
-		IndexInfo info = indexInfo.get(indexName);
-		// Only create indices which we know of
-		if (info != null) {
-			// Create the index - Note that dedicated index settings are only configurable for nodes, micronodes (via schema, microschema)
-			return searchProvider.createIndex(info);
-		} else {
-			if (log.isDebugEnabled()) {
-				log.debug("Only found indices:");
-				for (String idx : indexInfo.keySet()) {
-					log.debug("Index name {" + idx + "}");
+		return getIndices().runInAsyncTx().flatMapCompletable(indexInfo -> {
+			IndexInfo info = indexInfo.get(indexName);
+			// Only create indices which we know of
+			if (info != null) {
+				// Create the index - Note that dedicated index settings are only configurable for nodes, micronodes (via schema, microschema)
+				return searchProvider.createIndex(info);
+			} else {
+				if (log.isDebugEnabled()) {
+					log.debug("Only found indices:");
+					for (String idx : indexInfo.keySet()) {
+						log.debug("Index name {" + idx + "}");
+					}
 				}
+				log.warn("Entry references an unknown index: {}", indexName);
+				return Completable.complete();
 			}
-			log.warn("Entry references an unknown index: {}", indexName);
-			return Completable.complete();
-		}
+		});
 	}
 
 	@Override
 	public Completable init() {
 		// Create the indices
-		return Observable.defer(() -> Observable.fromIterable(getIndices().values()))
+		return getIndices().runInAsyncTx()
+			.flatMapObservable(indices -> Observable.fromIterable(indices.values()))
 			.flatMap(info -> searchProvider.createIndex(info).toObservable()
 				.doOnSubscribe(ignore -> {
 					if (log.isDebugEnabled()) {

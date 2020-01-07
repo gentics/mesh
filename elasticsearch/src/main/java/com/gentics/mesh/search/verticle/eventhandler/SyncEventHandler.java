@@ -124,10 +124,13 @@ public class SyncEventHandler implements EventHandler {
 		Single<Set<String>> allIndices = provider.listIndices();
 		Flowable<IndexHandler<?>> obs = Flowable.fromIterable(handlers);
 
-		return allIndices.flatMapPublisher(indices -> obs.flatMap(handler -> {
-			Set<String> unknownIndices = handler.filterUnknownIndices(indices);
-			return Flowable.fromIterable(unknownIndices)
-				.map(DropIndexRequest::new);
-		}));
+		return allIndices
+			.flatMapPublisher(indices ->
+				obs.flatMap(handler ->
+					handler.filterUnknownIndices(indices)
+						.runInAsyncTx()
+						.toFlowable()))
+			.flatMap(Flowable::fromIterable)
+			.map(DropIndexRequest::new);
 	}
 }

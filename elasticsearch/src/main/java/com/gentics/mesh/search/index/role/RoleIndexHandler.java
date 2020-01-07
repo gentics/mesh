@@ -17,6 +17,7 @@ import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.Transactional;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.MappingProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
@@ -74,10 +75,10 @@ public class RoleIndexHandler extends AbstractIndexHandler<Role> {
 	}
 
 	@Override
-	public Map<String, IndexInfo> getIndices() {
+	public Transactional<Map<String, IndexInfo>> getIndices() {
 		String indexName = Role.composeIndexName();
 		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping(), "role");
-		return Collections.singletonMap(indexName, info);
+		return Transactional.of(Collections.singletonMap(indexName, info));
 	}
 
 	@Override
@@ -86,8 +87,8 @@ public class RoleIndexHandler extends AbstractIndexHandler<Role> {
 	}
 
 	@Override
-	public Set<String> filterUnknownIndices(Set<String> indices) {
-		return filterIndicesByType(indices, Role.composeIndexName());
+	public Transactional<Set<String>> filterUnknownIndices(Set<String> indices) {
+		return Transactional.of(filterIndicesByType(indices, Role.composeIndexName()));
 	}
 
 	@Override

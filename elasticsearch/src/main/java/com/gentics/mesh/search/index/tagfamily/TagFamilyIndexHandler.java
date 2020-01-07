@@ -23,6 +23,7 @@ import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.Transactional;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 import com.gentics.mesh.search.index.metric.SyncMetersFactory;
@@ -90,8 +91,8 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 	}
 
 	@Override
-	public Map<String, IndexInfo> getIndices() {
-		return db.tx(() -> {
+	public Transactional<Map<String, IndexInfo>> getIndices() {
+		return db.transactional(() -> {
 			ProjectRoot root = boot.meshRoot().getProjectRoot();
 			Map<String, IndexInfo> indexInfo = new HashMap<>();
 			for (Project project : root.findAll()) {
@@ -105,19 +106,18 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 
 	@Override
 	public Flowable<SearchRequest> syncIndices() {
-		return Flowable.defer(() -> db.tx(() -> {
-			return boot.meshRoot().getProjectRoot().findAll().stream()
-				.map(project -> {
-					String uuid = project.getUuid();
-					String indexName = TagFamily.composeIndexName(uuid);
-					return diffAndSync(indexName, uuid);
-				}).collect(Collectors.collectingAndThen(Collectors.toList(), Flowable::merge));
-		}));
+		return db.singleTx(() -> boot.meshRoot().getProjectRoot().findAll().stream()
+			.map(project -> {
+				String uuid = project.getUuid();
+				String indexName = TagFamily.composeIndexName(uuid);
+				return diffAndSync(indexName, uuid);
+			}).collect(Collectors.toList()))
+			.flatMapPublisher(Flowable::merge);
 	}
 
 	@Override
-	public Set<String> filterUnknownIndices(Set<String> indices) {
-		return db.tx(() -> {
+	public Transactional<Set<String>> filterUnknownIndices(Set<String> indices) {
+		return db.transactional(() -> {
 			Set<String> activeIndices = new HashSet<>();
 			for (Project project : boot.meshRoot().getProjectRoot().findAll()) {
 				activeIndices.add(TagFamily.composeIndexName(project.getUuid()));
@@ -133,12 +133,12 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 
 	@Override
 	public Set<String> getSelectedIndices(InternalActionContext ac) {
-		return db.tx(() -> {
+		return db.tx(tx -> {
 			Project project = ac.getProject();
 			if (project != null) {
 				return Collections.singleton(TagFamily.composeIndexName(project.getUuid()));
 			} else {
-				return getIndices().keySet();
+				return getIndices().runInExistingTx(tx).keySet();
 			}
 		});
 	}

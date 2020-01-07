@@ -334,6 +334,10 @@ public class OrientDBDatabase extends AbstractDatabase {
 		 * OrientDB uses the MVCC pattern which requires a retry of the code that manipulates the graph in cases where for example an
 		 * {@link OConcurrentModificationException} is thrown.
 		 */
+		String threadName = Thread.currentThread().getName();
+		if (!threadName.startsWith("vert.x-worker-thread") && !threadName.equals("main")) {
+			throw new RuntimeException("Transactions must be run in a worker thread. Actual thread name: {" + threadName + "}");
+		}
 		T handlerResult = null;
 		boolean handlerFinished = false;
 		int maxRetry = options.getStorageOptions().getTxRetryLimit();

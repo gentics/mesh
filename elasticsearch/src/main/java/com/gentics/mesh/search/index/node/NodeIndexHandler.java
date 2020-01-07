@@ -3,6 +3,7 @@ package com.gentics.mesh.search.index.node;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.util.RxUtil.executeBlocking;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.util.ArrayList;
@@ -62,6 +63,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.reactivex.core.Vertx;
 
 /**
  * Handler for the node specific search index.
@@ -83,6 +85,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	@Inject
 	public NodeContainerMappingProvider mappingProvider;
+
+	@Inject
+	public Vertx vertx;
 
 	@Inject
 	public NodeIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options,
@@ -126,8 +131,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	@Override
-	public Map<String, IndexInfo> getIndices() {
-		return db.tx(tx -> {
+	public Transactional<Map<String, IndexInfo>> getIndices() {
+		return db.transactional(tx -> {
 			Map<String, IndexInfo> indexInfo = new HashMap<>();
 
 			// Iterate over all projects and construct the index names
@@ -176,9 +181,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	@Override
-	public Set<String> filterUnknownIndices(Set<String> indices) {
-		Set<String> activeIndices = new HashSet<>();
-		db.tx(() -> {
+	public Transactional<Set<String>> filterUnknownIndices(Set<String> indices) {
+		return db.transactional(tx -> {
+			Set<String> activeIndices = new HashSet<>();
 			for (Project currentProject : boot.meshRoot().getProjectRoot().findAll()) {
 				for (Branch branch : currentProject.getBranchRoot().findAll()) {
 					for (SchemaContainerVersion version : branch.findActiveSchemaVersions()) {
@@ -194,37 +199,38 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 					}
 				}
 			}
-		});
+			return activeIndices;
+		}).map(activeIndices -> {
+			if (log.isDebugEnabled()) {
+				log.debug(
+					"All indices:\n" +
+						String.join("\n", indices) + "\n" +
+						"Active indices: \n" +
+						String.join("\n", activeIndices));
+			}
+			return indices.stream()
+				// Only handle indices of the handler's type
+				.filter(i -> i.startsWith(getType()))
+				// Filter out indices which are active
+				.filter(i -> !activeIndices.contains(i))
+				.collect(Collectors.toSet());
 
-		if (log.isDebugEnabled()) {
-			log.debug(
-				"All indices:\n" +
-					String.join("\n", indices) + "\n" +
-					"Active indices: \n" +
-					String.join("\n", activeIndices));
-		}
-		return indices.stream()
-			// Only handle indices of the handler's type
-			.filter(i -> i.startsWith(getType()))
-			// Filter out indices which are active
-			.filter(i -> !activeIndices.contains(i))
-			.collect(Collectors.toSet());
+		});
 	}
 
 	@Override
 	public Flowable<SearchRequest> syncIndices() {
-		return Flowable.defer(() -> db.tx(() -> {
-			return boot.meshRoot().getProjectRoot().findAll().stream()
-				.flatMap(project -> project.getBranchRoot().findAll().stream()
-					.flatMap(branch -> branch.findActiveSchemaVersions().stream()
-						.flatMap(version -> Stream.of(DRAFT, PUBLISHED)
-							.map(type -> diffAndSync(project, branch, version, type)))))
-				.collect(Collectors.collectingAndThen(Collectors.toList(), Flowable::merge));
-		}));
+		return db.singleTx(() -> boot.meshRoot().getProjectRoot().findAll().stream()
+			.flatMap(project -> project.getBranchRoot().findAll().stream()
+				.flatMap(branch -> branch.findActiveSchemaVersions().stream()
+					.flatMap(version -> Stream.of(DRAFT, PUBLISHED)
+						.map(type -> diffAndSync(project, branch, version, type)))))
+			.collect(Collectors.toList()))
+			.flatMapPublisher(Flowable::merge);
 	}
 
-	private Map<String, NodeGraphFieldContainer> loadVersionsFromGraph(Branch branch, SchemaContainerVersion version, ContainerType type) {
-		return db.tx(() -> {
+	private Transactional<Map<String, NodeGraphFieldContainer>> loadVersionsFromGraph(Branch branch, SchemaContainerVersion version, ContainerType type) {
+		return db.transactional(() -> {
 			String branchUuid = branch.getUuid();
 			return version.getFieldContainers(branchUuid)
 				.filter(c -> c.getSchemaContainerVersion().equals(version))
@@ -254,8 +260,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 		return Single.zip(
 			loadVersionsFromIndex(indexName),
-			Single.fromCallable(() -> loadVersionsFromGraph(branch, version, type)),
-			(sinkVersions, sourceNodes) -> {
+			loadVersionsFromGraph(branch, version, type).runInAsyncTx(),
+			(sinkVersions, sourceNodes) -> executeBlocking(vertx, () -> {
 				log.info("Handling index sync on handler {" + getClass().getName() + "}");
 				String branchUuid = branch.getUuid();
 
@@ -279,22 +285,23 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				meters.getDeleteMeter().addPending(needRemovalInES.size());
 				meters.getUpdateMeter().addPending(needUpdateInEs.size());
 
-				io.reactivex.functions.Function<Action, io.reactivex.functions.Function<String, CreateDocumentRequest>> toCreateRequest = action -> uuid -> {
-					JsonObject doc = db.tx(() -> getTransformer().toDocument(sourceNodes.get(uuid), branchUuid, type));
-					return helper.createDocumentRequest(indexName, uuid, doc, complianceMode, action);
-				};
+				io.reactivex.functions.Function<Action, io.reactivex.functions.Function<String, Single<CreateDocumentRequest>>> toCreateRequest = action -> uuid ->
+					db.singleTx(() -> getTransformer().toDocument(sourceNodes.get(uuid), branchUuid, type))
+					.map(doc -> helper.createDocumentRequest(indexName, uuid, doc, complianceMode, action));
 
 				Flowable<SearchRequest> toInsert = Flowable.fromIterable(needInsertionInES)
-					.map(toCreateRequest.apply(meters.getInsertMeter()::synced));
+					.flatMapSingle(toCreateRequest.apply(meters.getInsertMeter()::synced));
 
 				Flowable<SearchRequest> toUpdate = Flowable.fromIterable(needUpdateInEs)
-					.map(toCreateRequest.apply(meters.getUpdateMeter()::synced));
+					.flatMapSingle(toCreateRequest.apply(meters.getUpdateMeter()::synced));
 
 				Flowable<SearchRequest> toDelete = Flowable.fromIterable(needRemovalInES)
 					.map(uuid -> helper.deleteDocumentRequest(indexName, uuid, complianceMode, meters.getDeleteMeter()::synced));
 
 				return Flowable.merge(toInsert, toUpdate, toDelete);
-			}).flatMapPublisher(RxUtil.identity());
+			}).toSingle())
+			.flatMap(RxUtil.identity())
+			.flatMapPublisher(RxUtil.identity());
 	}
 
 	@Override

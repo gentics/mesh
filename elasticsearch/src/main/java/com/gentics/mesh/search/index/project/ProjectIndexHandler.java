@@ -18,6 +18,7 @@ import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.Transactional;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 import com.gentics.mesh.search.index.metric.SyncMetersFactory;
@@ -79,11 +80,11 @@ public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
 	}
 
 	@Override
-	public Set<String> filterUnknownIndices(Set<String> indices) {
-		return indices.stream()
+	public Transactional<Set<String>> filterUnknownIndices(Set<String> indices) {
+		return Transactional.of(indices.stream()
 			.filter(i -> i.startsWith(getType()))
 			.filter(i -> !i.equals(Project.composeIndexName()))
-			.collect(Collectors.toSet());
+			.collect(Collectors.toSet()));
 	}
 
 	@Override
@@ -102,10 +103,10 @@ public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
 	}
 
 	@Override
-	public Map<String, IndexInfo> getIndices() {
+	public Transactional<Map<String, IndexInfo>> getIndices() {
 		String indexName = Project.composeIndexName();
 		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping(), "project");
-		return Collections.singletonMap(indexName, info);
+		return Transactional.of(Collections.singletonMap(indexName, info));
 	}
 
 }

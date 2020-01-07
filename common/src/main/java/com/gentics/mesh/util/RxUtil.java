@@ -1,7 +1,7 @@
 package com.gentics.mesh.util;
 
+import java.util.concurrent.Callable;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import io.reactivex.Completable;
 import io.reactivex.CompletableSource;
@@ -93,10 +93,10 @@ public final class RxUtil {
 		return Single.zip(source1, source2, zipper).flatMap(identity());
 	}
 
-	public static <T> Maybe<T> executeBlocking(Vertx vertx, Supplier<T> supplier) {
+	public static <T> Maybe<T> executeBlocking(Vertx vertx, Callable<T> supplier) {
 		return vertx.rxExecuteBlocking(promise -> {
 			try {
-				promise.complete(supplier.get());
+				promise.complete(supplier.call());
 			} catch (Throwable e) {
 				promise.fail(e);
 			}
