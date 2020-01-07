@@ -7,7 +7,6 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.job.JobStatus.FAILED;
 import static com.gentics.mesh.core.rest.job.JobStatus.STARTING;
-import static com.gentics.mesh.util.RxUtil.executeBlocking;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import com.gentics.madl.index.IndexHandler;
@@ -29,7 +28,7 @@ import com.gentics.mesh.core.rest.event.node.MicroschemaMigrationCause;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.core.rest.job.JobWarningList;
-import com.gentics.mesh.util.RxUtil;
+import com.gentics.mesh.graphdb.spi.Transactional;
 
 import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
@@ -65,10 +64,10 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 		return model;
 	}
 
-	private MicronodeMigrationContext prepareContext() {
+	private Transactional<MicronodeMigrationContext> prepareContext() {
 		MigrationStatusHandler status = new MigrationStatusHandlerImpl(this, vertx(), JobType.microschema);
-		try {
-			return db().tx(() -> {
+		return db().transactional(() -> {
+			try {
 				MicronodeMigrationContextImpl context = new MicronodeMigrationContextImpl();
 				context.setStatus(status);
 
@@ -110,21 +109,19 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 
 				context.getStatus().commit();
 				return context;
-			});
-		} catch (Exception e) {
-			db().tx(() -> {
+
+			} catch (Exception e) {
 				status.error(e, "Error while preparing micronode migration.");
-			});
-			throw e;
-		}
+				throw e;
+			}
+		});
 
 	}
 
 	protected Completable processTask() {
-		return executeBlocking(rxVertx(), () -> {
-			MicronodeMigrationContext context = prepareContext();
-			MicronodeMigrationHandler handler = mesh().micronodeMigrationHandler();
-			return handler.migrateMicronodes(context)
+		MicronodeMigrationHandler handler = mesh().micronodeMigrationHandler();
+		return prepareContext().runInAsyncTx()
+			.flatMapCompletable(context -> handler.migrateMicronodes(context)
 				.andThen(db().completableTx(tx -> {
 					JobWarningList warnings = new JobWarningList();
 					setWarnings(warnings);
@@ -133,8 +130,8 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 				})).onErrorResumeNext(err -> db().completableTx(tx -> {
 					context.getStatus().error(err, "Error in micronode migration.");
 					createBatch().add(createEvent(BRANCH_MIGRATION_FINISHED, FAILED)).dispatch();
-				}).andThen(Completable.error(err)));
-		}).flatMapCompletable(RxUtil.identity());
+				}).andThen(Completable.error(err)))
+			);
 	}
 
 	private void finializeMigration(MicronodeMigrationContext context) {

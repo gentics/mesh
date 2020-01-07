@@ -27,9 +27,9 @@ import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.core.rest.job.JobWarningList;
 import com.gentics.mesh.core.rest.job.warning.ConflictWarning;
+import com.gentics.mesh.graphdb.spi.Transactional;
 
 import io.reactivex.Completable;
-import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -61,9 +61,9 @@ public class NodeMigrationJobImpl extends JobImpl {
 		return model;
 	}
 
-	private Single<NodeMigrationActionContextImpl> prepareContext() {
+	private Transactional<NodeMigrationActionContextImpl> prepareContext() {
 		MigrationStatusHandlerImpl status = new MigrationStatusHandlerImpl(this, vertx(), JobType.schema);
-		return db().singleTx(() -> {
+		return db().transactional(() -> {
 			try {
 				NodeMigrationActionContextImpl context = new NodeMigrationActionContextImpl();
 				context.setStatus(status);
@@ -118,9 +118,7 @@ public class NodeMigrationJobImpl extends JobImpl {
 				context.getStatus().commit();
 				return context;
 			} catch (Exception e) {
-				db().tx(() -> {
-					status.error(e, "Error while preparing node migration.");
-				});
+				status.error(e, "Error while preparing node migration.");
 				throw e;
 			}
 		});
@@ -129,7 +127,7 @@ public class NodeMigrationJobImpl extends JobImpl {
 	protected Completable processTask() {
 		NodeMigrationHandler handler = mesh().nodeMigrationHandler();
 
-		return prepareContext()
+		return prepareContext().runInAsyncTx()
 			.flatMapCompletable(context -> handler.migrateNodes(context)
 			.andThen(db().completableTx(tx -> {
 				JobWarningList warnings = new JobWarningList();

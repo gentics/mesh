@@ -22,6 +22,7 @@ import com.gentics.mesh.core.rest.event.migration.BranchMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.BranchMigrationCause;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.job.JobType;
+import com.gentics.mesh.graphdb.spi.Transactional;
 
 import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
@@ -50,73 +51,63 @@ public class BranchMigrationJobImpl extends JobImpl {
 		return model;
 	}
 
-	private BranchMigrationContext prepareContext() {
+	private Transactional<BranchMigrationContext> prepareContext() {
 		MigrationStatusHandlerImpl status = new MigrationStatusHandlerImpl(this, vertx(), JobType.branch);
-		try {
-			return db().tx(() -> {
-				BranchMigrationContextImpl context = new BranchMigrationContextImpl();
-				context.setStatus(status);
+			return db().transactional(() -> {
+				try {
+					BranchMigrationContextImpl context = new BranchMigrationContextImpl();
+					context.setStatus(status);
 
-				createBatch().add(createEvent(BRANCH_MIGRATION_START, STARTING)).dispatch();
+					createBatch().add(createEvent(BRANCH_MIGRATION_START, STARTING)).dispatch();
 
-				Branch newBranch = getBranch();
-				if (newBranch == null) {
-					throw error(BAD_REQUEST, "Branch for job {" + getUuid() + "} cannot be found.");
+					Branch newBranch = getBranch();
+					if (newBranch == null) {
+						throw error(BAD_REQUEST, "Branch for job {" + getUuid() + "} cannot be found.");
+					}
+					if (newBranch.isMigrated()) {
+						throw error(BAD_REQUEST, "Branch {" + newBranch.getName() + "} is already migrated");
+					}
+					context.setNewBranch(newBranch);
+
+					Branch oldBranch = newBranch.getPreviousBranch();
+					if (oldBranch == null) {
+						throw error(BAD_REQUEST, "Branch {" + newBranch.getName() + "} does not have previous branch");
+					}
+					if (!oldBranch.isMigrated()) {
+						throw error(BAD_REQUEST, "Cannot migrate nodes to branch {" + newBranch.getName() + "}, because previous branch {"
+							+ oldBranch.getName() + "} is not fully migrated yet.");
+					}
+					context.setOldBranch(oldBranch);
+
+					BranchMigrationCause cause = new BranchMigrationCause();
+					cause.setProject(newBranch.getProject().transformToReference());
+					cause.setOrigin(options().getNodeName());
+					cause.setUuid(getUuid());
+					context.setCause(cause);
+
+					context.getStatus().commit();
+					return context;
+				} catch (Exception e) {
+					status.error(e, "Error while preparing branch migration.");
+					throw e;
 				}
-				if (newBranch.isMigrated()) {
-					throw error(BAD_REQUEST, "Branch {" + newBranch.getName() + "} is already migrated");
-				}
-				context.setNewBranch(newBranch);
-
-				Branch oldBranch = newBranch.getPreviousBranch();
-				if (oldBranch == null) {
-					throw error(BAD_REQUEST, "Branch {" + newBranch.getName() + "} does not have previous branch");
-				}
-				if (!oldBranch.isMigrated()) {
-					throw error(BAD_REQUEST, "Cannot migrate nodes to branch {" + newBranch.getName() + "}, because previous branch {"
-						+ oldBranch.getName() + "} is not fully migrated yet.");
-				}
-				context.setOldBranch(oldBranch);
-
-				BranchMigrationCause cause = new BranchMigrationCause();
-				cause.setProject(newBranch.getProject().transformToReference());
-				cause.setOrigin(options().getNodeName());
-				cause.setUuid(getUuid());
-				context.setCause(cause);
-
-				context.getStatus().commit();
-				return context;
 			});
-		} catch (Exception e) {
-			db().tx(() -> {
-				status.error(e, "Error while preparing branch migration.");
-			});
-			throw e;
-		}
 	}
 
 	@Override
 	protected Completable processTask() {
 		BranchMigrationHandler handler = mesh().branchMigrationHandler();
 
-		return Completable.defer(() -> {
-			BranchMigrationContext context = prepareContext();
-
-			return handler.migrateBranch(context)
-				.doOnComplete(() -> {
-					db().tx(() -> {
-						finalizeMigration(context);
-						context.getStatus().done();
-					});
-				}).doOnError(err -> {
-					db().tx(() -> {
-						context.getStatus().error(err, "Error in branch migration.");
-						createBatch().add(createEvent(BRANCH_MIGRATION_FINISHED, FAILED)).dispatch();
-					});
-				});
-
-		});
-
+		return prepareContext().runInAsyncTx()
+			.flatMapCompletable(context -> handler.migrateBranch(context)
+				.andThen(db().completableTx(tx -> {
+					finalizeMigration(context);
+					context.getStatus().done();
+				})).onErrorResumeNext(err -> db().completableTx(tx -> {
+					context.getStatus().error(err, "Error in branch migration.");
+					createBatch().add(createEvent(BRANCH_MIGRATION_FINISHED, FAILED)).dispatch();
+				}).andThen(Completable.error(err)))
+			);
 	}
 
 	private void finalizeMigration(BranchMigrationContext context) {
