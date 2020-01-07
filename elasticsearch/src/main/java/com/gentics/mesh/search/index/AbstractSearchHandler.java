@@ -295,7 +295,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			});
 		}).flatMapObservable(Observable::fromIterable).onErrorResumeNext(error -> {
 			return Observable.error(mapToMeshError(error));
-		}).flatMapSingle(element -> {
+		}).concatMapSingle(element -> {
 			// TODO add resume next to omit the item if it can't be transformed for some reason.
 			// This would be better than to just fail the whole request
 			// TODO maybe add extra permission filtering? This would not be very costly for smaller pages and ensure perm consistency?
@@ -389,7 +389,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		// Prepare the request
 		RequestBuilder<JsonObject> requestBuilder = client.multiSearch(queryOption, queryJson);
 		Single<Page<? extends T>> result = requestBuilder.async()
-			.map(response -> {
+			.flatMap(response -> {
 				JsonArray responses = response.getJsonArray("responses");
 				JsonObject firstResponse = responses.getJsonObject(0);
 
@@ -399,7 +399,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 					throw mapError(errorInfo);
 				}
 
-				return db.tx(() -> {
+				return db.singleTx(() -> {
 					List<T> elementList = new ArrayList<>();
 					JsonObject hitsInfo = firstResponse.getJsonObject("hits");
 					JsonArray hits = hitsInfo.getJsonArray("hits");
