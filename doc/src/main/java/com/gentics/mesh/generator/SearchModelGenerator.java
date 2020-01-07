@@ -26,6 +26,7 @@ import org.mockito.Mockito;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
@@ -40,6 +41,7 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.dagger.DaggerMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.MonitoringConfig;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
@@ -113,7 +115,11 @@ public class SearchModelGenerator extends AbstractGenerator {
 		System.out.println("Writing files to  {" + outputFolder.getAbsolutePath() + "}");
 		// outputDir.mkdirs();
 
-		meshDagger = DaggerMeshComponent.builder().configuration(new MeshOptions()).searchProviderType(TRACKING).build();
+		meshDagger = DaggerMeshComponent.builder().configuration(new MeshOptions()
+			.setMonitoringOptions(new MonitoringConfig()
+				.setEnabled(false)))
+			.searchProviderType(TRACKING).build();
+		((BootstrapInitializerImpl) meshDagger.boot()).initVertx(meshDagger.options(), false);
 		provider = (TrackingSearchProvider) meshDagger.searchProvider();
 
 		try {
