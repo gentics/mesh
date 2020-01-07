@@ -223,19 +223,19 @@ will find everything you need to know, and much more.
 
 # Features
 
-* GraphQL API
-* content events via websocket
-* user, role and permission management
-* document-level permissions
-* versioned content
-* a webroot API for easy integration with modern routing frameworks
-* a search API powered by Elasticsearch
-* an image manipulation API
-* a tagging API
-* clustering support
-* monitoring support
+* [GraphQL API](https://getmesh.io/docs/graphql/)
+* [content events via websocket](https://getmesh.io/docs/events/)
+* [user, role and permission management](https://getmesh.io/docs/features/#_permissions)
+* [document-level permissions](https://getmesh.io/docs/features/#_permissions)
+* [versioned content](https://getmesh.io/docs/features/#versioning)
+* [a webroot API for easy integration with modern routing frameworks](https://getmesh.io/docs/features/#webroot)
+* [a search API powered by Elasticsearch](https://getmesh.io/docs/elasticsearch/)
+* [an image manipulation API](https://getmesh.io/docs/features/#imagemanipulation)
+* [a tagging API](https://getmesh.io/docs/building-blocks/#_tag)
+* [clustering support](https://getmesh.io/docs/clustering/)
+* [monitoring support](https://getmesh.io/docs/monitoring/)
 * an embedded graph database at its core
-* support for Docker
+* support for [Docker](https://getmesh.io/docs/deployment/#_docker)
 
 # Documentation
 
@@ -354,3 +354,5 @@ Gentics Mesh is currently split into two repositories:
 
 Copyright 2014-2020 APA-IT Informations Technologie GmbH. Licensed under the
 Apache License, Version 2.0.
+
+Gentics is a registered trade mark of APA-IT Informations Technologie GmbH.
