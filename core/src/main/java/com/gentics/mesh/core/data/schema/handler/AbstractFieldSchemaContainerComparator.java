@@ -92,6 +92,7 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 					change.setProperty(SchemaChangeModel.ALLOW_KEY, ((StringFieldSchema)fieldInB).getAllowedValues());
 				}
 				change.setProperty(SchemaChangeModel.REQUIRED_KEY, fieldInB.isRequired());
+				change.setProperty(SchemaChangeModel.ELASTICSEARCH_KEY, fieldInB.getElasticsearch());
 
 				if (i - 1 >= 0) {
 					FieldSchema fieldBefore = containerB.getFields().get(i - 1);
