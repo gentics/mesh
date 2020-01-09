@@ -4,7 +4,7 @@
   </a>
 </h1>
 
-<h3 align="center">Gentics Mesh is your friendly, enterprise-grade, open-source headless CMS.</h3>
+<h3 align="center">Gentics Mesh is your friendly, enterprise-grade, open-source headless CMS</h3>
 
 <p align="center">
 To be honest, it’s more than that: it’s your application development platform
