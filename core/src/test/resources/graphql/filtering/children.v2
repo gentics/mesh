@@ -23,7 +23,7 @@
 		children(filter: {
 			schema: {is: folder}
 		}) {
-			# [$.data.rootFolders.children.elements.length()=5]
+			# [$.data.rootFolders.children.elements.length()=4]
 			elements {
 				uuid
 				schema {

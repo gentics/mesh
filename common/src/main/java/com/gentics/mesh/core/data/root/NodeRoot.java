@@ -1,9 +1,13 @@
 package com.gentics.mesh.core.data.root;
 
+import java.util.stream.Stream;
+
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.rest.common.ContainerType;
 
 /**
  * Aggregation node for nodes.
@@ -26,6 +30,8 @@ public interface NodeRoot extends RootVertex<Node> {
 	default Node create(User user, SchemaContainerVersion container, Project project) {
 		return create(user, container, project, null);
 	}
+
+	Stream<? extends Node> findAllStream(InternalActionContext ac, ContainerType type);
 
 	/**
 	 * Create a new node.

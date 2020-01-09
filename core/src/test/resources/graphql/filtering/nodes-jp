@@ -7,7 +7,7 @@
       }
     }
   }, lang: "jp") {
-    # [$.data.nodes.elements.length()=9]
+    # [$.data.nodes.elements.length()=0]
     elements {
       uuid
       ... on folder {

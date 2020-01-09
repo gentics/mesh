@@ -1,6 +1,6 @@
 {
 	nodes {
-		# [$.data.nodes.totalCount=20]
+		# [$.data.nodes.totalCount=19]
 		totalCount
 
 		# [$.data.nodes.currentPage=1]
@@ -12,7 +12,7 @@
 		# [$.data.nodes.perPage=<is-null>]
 		perPage
 
-		# [$.data.nodes.size=20]
+		# [$.data.nodes.size=19]
 		size
 
 		# [$.data.nodes.hasPreviousPage=false]

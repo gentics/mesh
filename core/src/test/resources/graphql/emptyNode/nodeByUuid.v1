@@ -2,11 +2,11 @@
   node(uuid: "7bb57e200e724b42a86e6817a407e4a2") {
     # [$.data.node.language=<is-null>]
     language
-    ... on folder {
-        # [$.data.node.fields=<is-null>]
-        fields {
-            name
-        }
+    # [$.data.node.fields=<is-null>]
+    fields {
+      ... on folder {
+        name
+      }
     }
   }
 }

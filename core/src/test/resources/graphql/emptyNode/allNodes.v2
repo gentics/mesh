@@ -1,21 +1,15 @@
 {
-	nodes(filter: {
-    schema: {is: folder}
-    fields: {
-      folder: {
-        name: { regex: "^2" }
-      }
-    }
-  }, lang: "jp") {
+  nodes(filter: { uuid: { equals: "7bb57e200e724b42a86e6817a407e4a2"}}) {
     # [$.data.nodes.elements.length()=0]
     elements {
       uuid
+      language
       ... on folder {
         fields {
           name
         }
       }
     }
-	}
+  }
 }
 # [$.errors=<is-undefined>]

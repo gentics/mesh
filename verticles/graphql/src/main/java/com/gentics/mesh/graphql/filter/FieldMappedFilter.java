@@ -24,11 +24,11 @@ public class FieldMappedFilter<T, Q> extends MappedFilter<GraphFieldContainer, T
 
 	@Override
 	public Predicate<GraphFieldContainer> createPredicate(Q query) {
-		// Leave the node in the end result if there is no content.
-		Predicate<GraphFieldContainer> isNull = Objects::isNull;
+		// Remove the node in the end result if there is no content.
+		Predicate<GraphFieldContainer> nonNull = Objects::nonNull;
 		// Return always true if the node is not of the provided schema.
 		Predicate<GraphFieldContainer> schemaCheck = node -> !node.getSchemaContainerVersion().getName().equals(schemaName);
 		Predicate<GraphFieldContainer> predicate = super.createPredicate(query);
-		return isNull.or(schemaCheck).or(predicate);
+		return nonNull.and(schemaCheck.or(predicate));
 	}
 }

@@ -20,6 +20,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import com.gentics.graphqlfilter.filter.StartFilter;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -57,9 +58,12 @@ public abstract class AbstractTypeProvider {
 	public static final String LINK_TYPE_NAME = "LinkType";
 
 	private final MeshOptions options;
-	public static final Versioned<Predicate<NodeContent>> nodeContentFilter = Versioned.<Predicate<NodeContent>>
-		since(1, content -> content.getContainer().isPresent())
-		.since(3, content -> true)
+	public static final Versioned<Function<InternalActionContext, Predicate<NodeContent>>> nodeContentFilter = Versioned
+		.<Function<InternalActionContext, Predicate<NodeContent>>>since(1, ac -> content -> content.getContainer().isPresent())
+		// Since version 3 this should behave like NodeRootImpl#findAllStream
+		.since(3, ac -> content -> ac.getVersioningParameters().getVersion().equals("published")
+			? content.getNode().hasPublishedContent(ac.getBranch().getUuid())
+			: true)
 		.build();
 
 	public AbstractTypeProvider(MeshOptions options) {
@@ -335,9 +339,6 @@ public abstract class AbstractTypeProvider {
 	 *            Provider of the root element (will only be used when no query was specified)
 	 * @param pageTypeName
 	 *            Name of the page type
-	 * @param indexHandler
-	 *            Handler which will be used to invoke the query
-	 * @param filterArgument
 	 * @return
 	 */
 	protected <T extends MeshCoreVertex<? extends RestModel, T>> GraphQLFieldDefinition newPagingSearchField(String name, String description,
@@ -500,7 +501,7 @@ public abstract class AbstractTypeProvider {
 			// Now lets try to load the containers for those found nodes - apply the language fallback
 			.map(node -> new NodeContent(node, node.findVersion(gc, languageTags), languageTags))
 			// Filter nodes without a container
-			.filter(nodeContentFilter.forVersion(gc));
+			.filter(nodeContentFilter.forVersion(gc).apply(gc));
 
 		return applyNodeFilter(env, contents);
 	}

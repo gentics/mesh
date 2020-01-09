@@ -182,7 +182,11 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			Arrays.asList("node/breadcrumb-root", true, "draft"),
 			Arrays.asList("node/versionslist", true, "draft"),
 			Arrays.asList("permissions", true, "draft"),
-			Arrays.asList("user-node-reference", true, "draft")
+			Arrays.asList("user-node-reference", true, "draft"),
+			Arrays.asList("emptyNode/allNodes", true, "draft"),
+			Arrays.asList("emptyNode/nodeByUuid", true, "draft"),
+			Arrays.asList("emptyNode/nodesByUuid", true, "draft"),
+			Arrays.asList("emptyNode/nodesFromSchema", true, "draft")
 		)
 		.flatMap(testCase -> IntStream.rangeClosed(1, CURRENT_API_VERSION).mapToObj(version -> {
 			// Make sure all testData entries have five parts.
@@ -465,6 +469,9 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		NodeResponse newsNode = call(() -> client.findNodeByUuid(PROJECT_NAME, NEWS_UUID));
 		call(() -> client.updateUser(user.getUuid(), new UserUpdateRequest().setNodeReference(newsNode)));
 
+		// For emptyNode/ tests:
+		createNonDefaultLanguageNode();
+
 		// Now execute the query and assert it
 		GraphQLResponse response = call(
 			() -> client.graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName, apiVersion), new VersioningParametersImpl().setVersion(version)));
@@ -474,6 +481,15 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		} else {
 			assertion.accept(jsonResponse);
 		}
+	}
+
+	private void createNonDefaultLanguageNode() {
+		NodeCreateRequest request = new NodeCreateRequest()
+			.setLanguage("de")
+			.setParentNodeUuid(tx(() -> project().getBaseNode().getUuid()))
+			.setSchemaName("folder");
+		request.getFields().putString("slug", "deTestNode");
+		client().createNode("7bb57e200e724b42a86e6817a407e4a2", PROJECT_NAME, request).blockingGet();
 	}
 
 	/**

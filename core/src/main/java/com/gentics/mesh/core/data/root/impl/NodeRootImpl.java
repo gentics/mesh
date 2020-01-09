@@ -132,7 +132,8 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		));
 	}
 
-	private Stream<? extends Node> findAllStream(InternalActionContext ac, ContainerType type) {
+	@Override
+	public Stream<? extends Node> findAllStream(InternalActionContext ac, ContainerType type) {
 		MeshAuthUser user = ac.getUser();
 		FramedTransactionalGraph graph = Tx.get().getGraph();
 

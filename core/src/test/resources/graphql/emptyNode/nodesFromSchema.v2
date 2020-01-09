@@ -1,8 +1,7 @@
 {
   schema(name: "folder") {
     nodes(filter: { uuid: { equals: "7bb57e200e724b42a86e6817a407e4a2"}}) {
-      # [$.data.schema.nodes.elements[0].language=<is-null>]
-      # [$.data.schema.nodes.elements[0].fields=<is-null>]
+      # [$.data.schema.nodes.elements.length()=0]
       elements {
         uuid
         language

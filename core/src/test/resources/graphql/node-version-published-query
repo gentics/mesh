@@ -3,7 +3,7 @@
 		# [$.data.node.uuid=<is-uuid>]
 		uuid
 		children(lang: ["en","de"]) {
-			# [$.data.node.children.elements.length()=5]
+			# [$.data.node.children.elements.length()=3]
 			elements {
 				# [$.data.node.children.elements[0].uuid=<is-uuid>]
 				# [$.data.node.children.elements[1].uuid=<is-uuid>]

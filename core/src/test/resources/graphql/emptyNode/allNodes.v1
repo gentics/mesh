@@ -1,13 +1,11 @@
 {
   nodes(filter: { uuid: { equals: "7bb57e200e724b42a86e6817a407e4a2"}}) {
-    # [$.data.nodes.elements.length()=1]
+    # [$.data.nodes.elements.length()=0]
     elements {
       uuid
-      # [$.data.nodes.elements[0].language=<is-null>]
       language
-      # [$.data.nodes.elements[0].fields=<is-null>]
-      ... on folder {
-        fields {
+      fields {
+        ... on folder {
           name
         }
       }

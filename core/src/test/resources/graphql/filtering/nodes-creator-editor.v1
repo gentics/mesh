@@ -19,7 +19,7 @@
       username: { equals: "joe1" }
     }
   }) {
-  # [$.data.creatorNodes.totalCount=20]
+  # [$.data.creatorNodes.totalCount=19]
     totalCount
     elements {
       uuid

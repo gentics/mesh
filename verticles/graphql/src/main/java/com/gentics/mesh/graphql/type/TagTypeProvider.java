@@ -77,7 +77,7 @@ public class TagTypeProvider extends AbstractTypeProvider {
 						// Now lets try to load the containers for those found nodes - apply the language fallback
 						.map(node -> new NodeContent(node, node.findVersion(gc, languageTags), languageTags))
 						// Filter nodes without a container
-						.filter(nodeContentFilter.forVersion(gc));
+						.filter(nodeContentFilter.forVersion(gc).apply(gc));
 
 					return applyNodeFilter(env, contents);
 

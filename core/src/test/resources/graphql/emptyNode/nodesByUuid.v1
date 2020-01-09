@@ -3,10 +3,10 @@
     elements {
       # [$.data.nodes.elements[0].language=<is-null>]
       language
-      ... on folder {
         # [$.data.nodes.elements[0].fields=<is-null>]
-        fields {
-          name
+      fields {
+        ... on folder {
+            name
         }
       }
     }

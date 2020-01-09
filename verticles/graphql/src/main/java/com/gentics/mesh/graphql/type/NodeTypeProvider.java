@@ -301,7 +301,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 				Stream<NodeContent> nodes = content.getNode().getChildrenStream(gc)
 					.map(item -> new NodeContent(item, item.findVersion(gc, languageTags), languageTags))
-					.filter(nodeContentFilter.forVersion(gc));
+					.filter(nodeContentFilter.forVersion(gc).apply(gc));
 
 				return applyNodeFilter(env, nodes);
 			}, NODE_PAGE_TYPE_NAME)
