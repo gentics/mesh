@@ -37,10 +37,10 @@ public class KeycloakPluginTest {
 
 	@BeforeClass
 	public static void configurePlugin() {
-		KeycloakPluginConfig config = new KeycloakPluginConfig();
-		config.setRealmName("master-test");
-		config.setUrl("http://" + keycloak.getContainerIpAddress() + ":" + keycloak.getFirstMappedPort());
-		KeycloakTestPlugin.config = config;
+		KeycloakTestPlugin.config = new KeycloakPluginConfig()
+			.setRealmName("master-test")
+			.setUrl("http://" + keycloak.getContainerIpAddress() + ":" + keycloak.getFirstMappedPort())
+			.setLoadPublicKeys(true);
 	}
 
 	@Rule

@@ -27,6 +27,7 @@
 		<module>comment-plugin</module>
 		<module>search-plugin</module>
 		<module>formgenerator-plugin</module>
+		<module>keycloak-plugin</module>
 	</modules>
 
 	<dependencyManagement>
