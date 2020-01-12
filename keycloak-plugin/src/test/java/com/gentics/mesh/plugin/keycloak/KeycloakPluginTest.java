@@ -32,7 +32,7 @@ import okhttp3.Response;
 public class KeycloakPluginTest {
 
 	@ClassRule
-	public static final KeycloakContainer keycloak = new KeycloakContainer("/keycloak/realm.json")
+	public static final KeycloakContainer keycloak = new KeycloakContainer("/keycloak/realm.json", "8.0.1")
 		.waitingFor(Wait.forHttp("/auth/realms/master-test"));
 
 	@BeforeClass
