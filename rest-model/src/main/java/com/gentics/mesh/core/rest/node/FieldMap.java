@@ -55,8 +55,9 @@ public interface FieldMap extends RestModel {
 	 * @param string
 	 * @return
 	 */
-	default Field putString(String fieldKey, String string) {
-		return put(fieldKey, new StringFieldImpl().setString(string));
+	default FieldMap putString(String fieldKey, String string) {
+		put(fieldKey, new StringFieldImpl().setString(string));
+		return this;
 	}
 
 	/**

@@ -380,7 +380,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 			return;
 		}
 		throw error(FORBIDDEN, "error_missing_perm", node.getUuid(),
-			"published".equals(requestedVersion)
+			published
 				? READ_PUBLISHED_PERM.getRestPerm().getName()
 				: READ_PERM.getRestPerm().getName());
 	}

@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_PUBLISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNPUBLISHED;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
+import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
@@ -599,7 +600,37 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		assertPublishStatus("Sub node should still be offline.", contentUuid, false);
 	}
 
-	private void assertPublishStatus(String message, String nodeUuid, boolean expectPublished) {
+    /**
+     * https://github.com/gentics/mesh/issues/71
+     */
+    @Test
+    public void testReadPublishPermissions() {
+        String uuid = tx(() -> {
+            Node node = folder("2015");
+            role().revokePermissions(node, READ_PERM);
+            return node.getUuid();
+        });
+
+        NodeUpdateRequest updateRequest = new NodeUpdateRequest()
+            .setLanguage("en")
+            .setVersion("1.0");
+        updateRequest.getFields()
+            .putString("name", "2020")
+            .putString("slug", "2020");
+
+        call(() -> client().updateNode(PROJECT_NAME, uuid, updateRequest));
+
+        // Node is now version 1.1
+        call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setVersion("draft")), FORBIDDEN, "error_missing_perm", uuid, READ.getName());
+        call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setVersion("1.1")), FORBIDDEN, "error_missing_perm", uuid, READ.getName());
+        call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setVersion("published")));
+        call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setVersion("1.0")));
+
+        call(() -> client().webroot(PROJECT_NAME, "/News/2015", new VersioningParametersImpl().setVersion("published")));
+        call(() -> client().webroot(PROJECT_NAME, "/News/2020"), FORBIDDEN, "error_missing_perm", uuid, READ.getName());
+    }
+
+    private void assertPublishStatus(String message, String nodeUuid, boolean expectPublished) {
 		PublishStatusResponse initialStatus = call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid));
 		for (Entry<String, PublishStatusModel> entry : initialStatus.getAvailableLanguages().entrySet()) {
 			if (expectPublished != entry.getValue().isPublished()) {

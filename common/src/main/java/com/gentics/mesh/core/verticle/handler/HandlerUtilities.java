@@ -25,6 +25,7 @@ import com.gentics.madl.tx.TxAction0;
 import com.gentics.madl.tx.TxAction1;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.ETaggable;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -199,21 +200,14 @@ public class HandlerUtilities {
 			RootVertex<T> root = handler.handle();
 			T element = root.loadObjectByUuid(ac, uuid, perm);
 
-			// Handle etag
-			if (ac.getGenericParameters().getETag()) {
-				String etag = element.getETag(ac);
-				ac.setEtag(etag, true);
-				if (ac.matches(etag, true)) {
-					throw new NotModifiedException();
-				}
-			}
-			return element.transformToRestSync(ac, 0);
+            handleEtag(ac, element);
+            return element.transformToRestSync(ac, 0);
 		}, model -> ac.send(model, OK));
 	}
 
-	/**
+    /**
 	 * Read a list of elements of the given root vertex and respond with a list response.
-	 * 
+	 *
 	 * @param ac
 	 * @param handler
 	 *            Handler which provides the root vertex which should be used when loading the element
@@ -226,18 +220,29 @@ public class HandlerUtilities {
 			PagingParameters pagingInfo = ac.getPagingParameters();
 			TransformablePage<? extends T> page = root.findAll(ac, pagingInfo);
 
-			// Handle etag
-			if (ac.getGenericParameters().getETag()) {
-				String etag = page.getETag(ac);
-				ac.setEtag(etag, true);
-				if (ac.matches(etag, true)) {
-					throw new NotModifiedException();
-				}
-			}
-			return page.transformToRest(ac, 0);
+            handleEtag(ac, page);
+            return page.transformToRest(ac, 0);
 
 		}, m -> ac.send(m, OK));
 	}
+
+    /**
+     * Checks if the etag in the request matches the etag of an element.
+     * If it matches, a {@link NotModifiedException} is thrown.
+     * Else, the etag of the element is set in the response headers.
+     *
+     * @param ac
+     * @param element
+     */
+    public void handleEtag(InternalActionContext ac, ETaggable element) {
+        if (ac.getGenericParameters().getETag()) {
+            String etag = element.getETag(ac);
+            ac.setEtag(etag, true);
+            if (ac.matches(etag, true)) {
+                throw new NotModifiedException();
+            }
+        }
+    }
 
 	public <RM> void syncTx(InternalActionContext ac, TxAction<RM> handler, Consumer<RM> action) {
 		try {

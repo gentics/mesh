@@ -212,9 +212,20 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 	public void handleRead(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		GraphPermission requiredPermission = "published".equals(ac.getVersioningParameters().getVersion()) ? READ_PUBLISHED_PERM : READ_PERM;
-		utils.readElement(ac, uuid, () -> getRootVertex(ac), requiredPermission);
-	}
+        try {
+            NodeResponse nodeResponse = db.tx(() -> {
+                Node node = getRootVertex(ac).loadObjectByUuidNoPerm(uuid, true);
+
+                ac.getUser().failOnNoReadPermission(ac, node.findVersion(ac, ac.getNodeParameters().getLanguageList(options)));
+
+                utils.handleEtag(ac, node);
+                return node.transformToRestSync(ac, 0);
+            });
+            ac.send(nodeResponse, OK);
+        } catch (Throwable e) {
+            ac.fail(e);
+        }
+    }
 
 	/**
 	 * Handle the read node tags request.

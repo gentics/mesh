@@ -339,7 +339,17 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 */
 	boolean hasPermissionForId(Object elementId, GraphPermission permission);
 
-	/**
+    /**
+	 * Check the read permission on the given container and fail if the needed permission to read the container is not set. This method will not fail if the
+	 * user has READ permission or READ_PUBLISH permission on a published node.
+	 *  @param container
+	 * 
+	 */
+	default void failOnNoReadPermission(InternalActionContext ac, NodeGraphFieldContainer container) {
+        failOnNoReadPermission(container, ac.getBranch().getUuid(), ac.getVersioningParameters().getVersion());
+    }
+
+    /**
 	 * Check the read permission on the given container and fail if the needed permission to read the container is not set. This method will not fail if the
 	 * user has READ permission or READ_PUBLISH permission on a published node.
 	 *

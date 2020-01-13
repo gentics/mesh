@@ -13,7 +13,7 @@ import io.reactivex.Single;
  *            RestModel response class
  */
 @SuppressWarnings("unused")
-public interface TransformableElement<T extends RestModel> extends MeshElement {
+public interface TransformableElement<T extends RestModel> extends MeshElement, ETaggable {
 
 	/**
 	 * Return the API path to the element.
@@ -50,13 +50,5 @@ public interface TransformableElement<T extends RestModel> extends MeshElement {
 	 * @return
 	 */
 	T transformToRestSync(InternalActionContext ac, int level, String... languageTags);
-
-	/**
-	 * Return the etag for the element.
-	 * 
-	 * @param ac
-	 * @return Generated etag
-	 */
-	String getETag(InternalActionContext ac);
 
 }
