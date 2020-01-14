@@ -35,6 +35,7 @@ public class MeshOptions implements Option {
 	public static final String MESH_START_IN_READ_ONLY_ENV = "MESH_START_IN_READ_ONLY";
 	public static final String MESH_INITIAL_ADMIN_PASSWORD_ENV = "MESH_INITIAL_ADMIN_PASSWORD";
 	public static final String MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET_ENV = "MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET";
+    public static final String MESH_MAX_PURGE_BATCH_SIZE = "MESH_MAX_PURGE_BATCH_SIZE";
 
 	// TODO remove this setting. There should not be a default max depth. This is no longer needed once we remove the expand all parameter
 	private int defaultMaxDepth = DEFAULT_MAX_DEPTH;
@@ -126,6 +127,11 @@ public class MeshOptions implements Option {
 	@JsonPropertyDescription("If true, Gentics Mesh will be started in read only mode.")
 	@EnvironmentVariable(name = MESH_START_IN_READ_ONLY_ENV, description = "Override the read only mode flag.")
 	private boolean startInReadOnly = false;
+
+    @JsonProperty(required = false)
+    @JsonPropertyDescription("The maximum amount of node versions that are purged before the database transaction is committed.")
+    @EnvironmentVariable(name = MESH_MAX_PURGE_BATCH_SIZE, description = "Override the maximum purge batch size.")
+    private int versionPurgeMaxBatchSize = 10;
 
 	/* EXTRA Command Line Arguments */
 	@JsonIgnore
@@ -414,6 +420,15 @@ public class MeshOptions implements Option {
 		return this;
 	}
 
+    public int getVersionPurgeMaxBatchSize() {
+        return versionPurgeMaxBatchSize;
+    }
+
+    public MeshOptions setVersionPurgeMaxBatchSize(int versionPurgeMaxBatchSize) {
+        this.versionPurgeMaxBatchSize = versionPurgeMaxBatchSize;
+        return this;
+    }
+
 	public void validate() {
 		if (getClusterOptions() != null) {
 			getClusterOptions().validate(this);
@@ -440,6 +455,9 @@ public class MeshOptions implements Option {
 			getContentOptions().validate(this);
 		}
 		Objects.requireNonNull(getNodeName(), "The node name must be specified.");
+		if (getVersionPurgeMaxBatchSize() <= 0) {
+		    throw new IllegalArgumentException("versionPurgeMaxBatchSize must be positive.");
+        }
 		// TODO check for other invalid characters in node name
 	}
 
