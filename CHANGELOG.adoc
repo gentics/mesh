@@ -29,6 +29,8 @@ include::content/docs/variables.adoc-include[]
 
 icon:check[] Core: Fixed a bug in the link renderer that caused the language parameter to be ignored if the branch parameter was passed.
 
+icon:check[] Core: The maximum transaction batch size when purging versions is now link:{{< relref "administration-guide.asciidoc" >}}#_general_settings[configurable]. Lowering the value from its default (10) will cause the version purge to take more time, but use less memory.
+
 [[v1.3.2]]
 == 1.3.2 (12.12.2019)
 
