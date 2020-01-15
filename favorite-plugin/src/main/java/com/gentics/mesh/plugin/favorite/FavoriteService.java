@@ -41,7 +41,11 @@ public class FavoriteService {
 
 	private final FavoritePluginConfig configuration;
 
-	private final SchemaService schemaService;
+	public static final String PLUGIN_SCHEMA_NAME = "favorite_folder";
+
+	public static final String SECTION_SCHEMA_NAME = "favorite_section";
+
+	public static final String FAVORITE_SCHEMA_NAME = "favorite";
 
 	private final String FAVORITE_FIELD = "favorites";
 	public static final String FAVORITE_PLUGIN_NAME = "favorite_plugin";
@@ -58,11 +62,10 @@ public class FavoriteService {
 	}
 
 	@Inject
-	public FavoriteService(@AdminClient MeshRestClient adminClient, @UserClient @Nullable MeshRestClient userClient, FavoritePluginConfig configuration, SchemaService schemaService) {
+	public FavoriteService(@AdminClient MeshRestClient adminClient, @UserClient @Nullable MeshRestClient userClient, FavoritePluginConfig configuration) {
 		this.adminClient = adminClient;
 		this.userClient = userClient;
 		this.configuration = configuration;
-		this.schemaService = schemaService;
 	}
 
 	/**
@@ -169,15 +172,16 @@ public class FavoriteService {
 	 * @return single node response
 	 */
 	protected Single<NodeResponse> createSection(String projectName, String type) {
-		NodeCreateRequest create = new NodeCreateRequest();
-		create.setSchemaName(SchemaService.SECTION_SCHEMA_NAME);
-		create.setLanguage("en");
-		create.setParentNodeUuid(schemaService.getRootNodeUuid(projectName));
-		create.getFields().put("type", new StringFieldImpl().setString(type));
-		return adminClient.createNode(projectName, create).toSingle();
+		return adminClient.findProjectByName(projectName).toSingle().flatMap(it -> {
+			NodeCreateRequest create = new NodeCreateRequest();
+			create.setSchemaName(SECTION_SCHEMA_NAME);
+			create.setLanguage("en");
+			create.setParentNodeUuid(it.getRootNode().getUuid());
+			create.getFields().put("type", new StringFieldImpl().setString(type));
+			return adminClient.createNode(projectName, create).toSingle();
+		});
+
 	}
-
-
 	/**
 	 * Get the favorites for this type and the current user
 	 *
@@ -204,7 +208,7 @@ public class FavoriteService {
 	protected Single<NodeResponse> createUserFavorites(String projectName, String type, JsonArray value) {
 		return Single.zip(getSection(projectName, type), getUser(), (section, user) -> {
 			NodeCreateRequest create = new NodeCreateRequest();
-			create.setSchemaName(SchemaService.FAVORITE_SCHEMA_NAME);
+			create.setSchemaName(FAVORITE_SCHEMA_NAME);
 			create.setLanguage("en");
 			create.setParentNodeUuid(section.getUuid());
 			StringFieldListImpl list = new StringFieldListImpl();

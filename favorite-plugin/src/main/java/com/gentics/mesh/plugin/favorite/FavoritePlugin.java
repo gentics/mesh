@@ -15,7 +15,6 @@ import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshRestClientMessageException;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Completable;
-import io.reactivex.Observable;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -24,7 +23,9 @@ import io.vertx.ext.web.RoutingContext;
 import org.pf4j.PluginWrapper;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
@@ -75,9 +76,8 @@ public class FavoritePlugin extends AbstractPlugin implements RestPlugin {
 	private Completable initializeMeshProjects(List<String> projectName) {
 		return meshPluginService.prepareProjects(
 				projectName,
-				meshPluginService.ensureSchemas(
-						SchemaService.PLUGIN_SCHEMA_NAME, SchemaService.FAVORITE_SCHEMA_NAME, SchemaService.SECTION_SCHEMA_NAME),
-				meshPluginService.ensureFolders(SchemaService.PLUGIN_SCHEMA_NAME, "/favorite_plugin"));
+				meshPluginService.ensureSchemas(FavoriteService.PLUGIN_SCHEMA_NAME, FavoriteService.FAVORITE_SCHEMA_NAME, FavoriteService.SECTION_SCHEMA_NAME),
+				meshPluginService.ensureFolders(FavoriteService.PLUGIN_SCHEMA_NAME, "/favorite_plugin"));
 	}
 
 	private Handler<RoutingContext> fromComponent(Function<FavoritePluginComponent, AbstractFavoriteHandler> handler) {
@@ -93,7 +93,6 @@ public class FavoritePlugin extends AbstractPlugin implements RestPlugin {
 					.configuration(configuration)
 					.adminClient(adminClient())
 					.userClient(userClient)
-					.rootNodeUuids(rootNodeUuids)
 					.build();
 
 			try {
