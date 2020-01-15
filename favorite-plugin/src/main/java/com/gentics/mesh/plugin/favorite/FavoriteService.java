@@ -172,11 +172,11 @@ public class FavoriteService {
 	 * @return single node response
 	 */
 	protected Single<NodeResponse> createSection(String projectName, String type) {
-		return adminClient.findProjectByName(projectName).toSingle().flatMap(it -> {
+		return adminClient.webroot(projectName, "/" + FAVORITE_PLUGIN_NAME).toSingle().flatMap(it -> {
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setSchemaName(SECTION_SCHEMA_NAME);
 			create.setLanguage("en");
-			create.setParentNodeUuid(it.getRootNode().getUuid());
+			create.setParentNodeUuid(it.getNodeUuid());
 			create.getFields().put("type", new StringFieldImpl().setString(type));
 			return adminClient.createNode(projectName, create).toSingle();
 		});

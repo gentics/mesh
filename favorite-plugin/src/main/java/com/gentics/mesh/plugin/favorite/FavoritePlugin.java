@@ -77,7 +77,7 @@ public class FavoritePlugin extends AbstractPlugin implements RestPlugin {
 		return meshPluginService.prepareProjects(
 				projectName,
 				meshPluginService.ensureSchemas(FavoriteService.PLUGIN_SCHEMA_NAME, FavoriteService.FAVORITE_SCHEMA_NAME, FavoriteService.SECTION_SCHEMA_NAME),
-				meshPluginService.ensureFolders(FavoriteService.PLUGIN_SCHEMA_NAME, "/favorite_plugin"));
+				meshPluginService.ensureFolders(FavoriteService.PLUGIN_SCHEMA_NAME, "/" + FavoriteService.FAVORITE_PLUGIN_NAME));
 	}
 
 	private Handler<RoutingContext> fromComponent(Function<FavoritePluginComponent, AbstractFavoriteHandler> handler) {
