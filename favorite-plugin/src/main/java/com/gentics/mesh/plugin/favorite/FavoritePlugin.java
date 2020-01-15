@@ -4,6 +4,7 @@ import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.plugin.AbstractPlugin;
 import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.RestPlugin;
+import com.gentics.mesh.plugin.common.service.MeshPluginService;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.favorite.config.FavoritePluginConfig;
 import com.gentics.mesh.plugin.favorite.dagger.DaggerFavoritePluginComponent;
@@ -14,6 +15,7 @@ import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshRestClientMessageException;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Completable;
+import io.reactivex.Observable;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -21,8 +23,8 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import org.pf4j.PluginWrapper;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.io.IOException;
+import java.util.*;
 import java.util.function.Function;
 
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
@@ -35,11 +37,12 @@ public class FavoritePlugin extends AbstractPlugin implements RestPlugin {
 	private static final Logger log = LoggerFactory.getLogger(FavoritePlugin.class);
 
 	private FavoritePluginConfig configuration;
-
+	private MeshPluginService meshPluginService;
 	private Map<String, String> rootNodeUuids = new HashMap<>();
 
 	public FavoritePlugin(PluginWrapper wrapper, PluginEnvironment env) {
 		super(wrapper, env);
+
 	}
 
 	@Override
@@ -54,35 +57,47 @@ public class FavoritePlugin extends AbstractPlugin implements RestPlugin {
 	}
 
 	public Completable initialize() {
+
 		try {
 			configuration = readConfig(FavoritePluginConfig.class);
-
-			// initialize schemas, etc.
-			return component(null).schemaInitializer().initialize();
-		} catch (Exception e) {
-			return Completable.error(e);
+		} catch (IOException e) {
+			log.error("Could not read configuration file: {}", e.getMessage());
 		}
+		if (configuration == null) {
+			configuration = new FavoritePluginConfig();
+		}
+		meshPluginService = new MeshPluginService(getRxVertx(), adminClient());
+		return initializeMeshProjects(configuration.getProjects());
+
+
 
 	}
-
-	private FavoritePluginComponent component(MeshRestClient userClient) {
-		return DaggerFavoritePluginComponent.builder()
-				.configuration(configuration)
-				.adminClient(adminClient())
-				.userClient(userClient)
-				.rootNodeUuids(rootNodeUuids)
-				.vertx(vertx())
-				.build();
+	private Completable initializeMeshProjects(List<String> projectName) {
+		return meshPluginService.prepareProjects(
+				projectName,
+				meshPluginService.ensureSchemas(
+						SchemaService.PLUGIN_SCHEMA_NAME, SchemaService.FAVORITE_SCHEMA_NAME, SchemaService.SECTION_SCHEMA_NAME),
+				meshPluginService.ensureFolders(SchemaService.PLUGIN_SCHEMA_NAME, "/favorite_plugin"));
 	}
 
 	private Handler<RoutingContext> fromComponent(Function<FavoritePluginComponent, AbstractFavoriteHandler> handler) {
 		return context -> {
 			PluginContext meshContext = wrap(context);
 			MeshRestClient userClient = meshContext.client();
-
+			FavoritePluginComponent component = DaggerFavoritePluginComponent.builder()
+					.configuration(configuration)
+					.adminClient(adminClient())
+					.meshPluginService(meshPluginService)
+					.pluginContext(meshContext)
+					.rxVertx(getRxVertx())
+					.configuration(configuration)
+					.adminClient(adminClient())
+					.userClient(userClient)
+					.rootNodeUuids(rootNodeUuids)
+					.build();
 
 			try {
-				handler.apply(component(userClient)).handle(meshContext)
+				handler.apply(component).handle(meshContext)
 						.subscribe(() -> {}, t -> handleError(context, t));
 
 			} catch (Throwable e){
@@ -90,6 +105,10 @@ public class FavoritePlugin extends AbstractPlugin implements RestPlugin {
 
 			}
 		};
+	}
+	@Override
+	public Completable shutdown() {
+		return meshPluginService.unregisterEvents();
 	}
 
 	private void handleError(RoutingContext context, Throwable t) {

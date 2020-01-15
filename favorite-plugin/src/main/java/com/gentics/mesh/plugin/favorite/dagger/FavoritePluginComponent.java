@@ -5,6 +5,8 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.plugin.PluginContext;
+import com.gentics.mesh.plugin.common.service.MeshPluginService;
 import com.gentics.mesh.plugin.favorite.SchemaInitializer;
 import com.gentics.mesh.plugin.favorite.client.AdminClient;
 import com.gentics.mesh.plugin.favorite.client.UserClient;
@@ -17,7 +19,8 @@ import com.gentics.mesh.rest.client.MeshRestClient;
 
 import dagger.BindsInstance;
 import dagger.Component;
-import io.vertx.core.Vertx;
+import io.vertx.reactivex.core.Vertx;
+
 
 @Singleton
 @Component(modules = { FavoritePluginModule.class })
@@ -41,15 +44,23 @@ public interface FavoritePluginComponent {
 		Builder adminClient(@AdminClient MeshRestClient client);
 
 		@BindsInstance
+		Builder meshPluginService(MeshPluginService meshPluginService);
+
+		@BindsInstance
 		@Nullable
 		Builder userClient(@UserClient @Nullable MeshRestClient client);
+
+		@BindsInstance
+		Builder pluginContext(PluginContext pluginContext);
 
 		@BindsInstance
 		Builder rootNodeUuids(@RootNodeUuids Map<String, String> rootNodeUuids);
 
 		@BindsInstance
-		Builder vertx(Vertx vertx);
+		Builder rxVertx(Vertx rxVertx);
 
 		FavoritePluginComponent build();
+
+
 	}
 }
