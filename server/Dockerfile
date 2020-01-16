@@ -17,13 +17,13 @@ WORKDIR /mesh
 ADD ./target/mesh-server*jar /mesh/mesh.jar
 
 USER root
-RUN mkdir /graphdb   && chown mesh: /graphdb    -R && \
-    mkdir /uploads   && chown mesh: /uploads    -R && \
-    mkdir /backups   && chown mesh: /backups    -R && \
-    mkdir /plugins   && chown mesh: /plugins    -R && \
-    mkdir /keystore  && chown mesh: /keystore   -R && \
-    mkdir /config    && chown mesh: /config     -R && ln -s /config /mesh/config && \
-    mkdir /mesh/data && chown mesh: /mesh/data  -R
+RUN mkdir /graphdb   && chown mesh:root /graphdb  -R && chmod 770 /graphdb \
+    mkdir /uploads   && chown mesh:root /uploads  -R && chmod 770 /uploads \
+    mkdir /backups   && chown mesh:root /backups  -R && chmod 770 /backups \
+    mkdir /plugins   && chown mesh:root /plugins  -R && chmod 770 /plugins \
+    mkdir /keystore  && chown mesh:root /keystore -R && chmod 770 /keystore \
+    mkdir /config    && chown mesh:root /config   -R && chmod 770 /config && ln -s /config /mesh/config && \
+    mkdir /mesh/data && chown mesh:root /mesh     -R && chmod 770 /mesh -R
 
 ADD https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-oss-$ESVERSION.tar.gz /es.tar.gz
 
@@ -34,7 +34,8 @@ RUN apk --update --no-cache add tar \
     && rm /es.tar.gz \
     && ln -s /elasticsearch /mesh/elasticsearch \
     && mkdir -p /elasticsearch/data \
-    && chown mesh: /elasticsearch -R
+    && chown mesh:root /elasticsearch -R
+    && chmod 770 /elasticsearch
 
 USER mesh
 WORKDIR /mesh
