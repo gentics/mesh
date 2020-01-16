@@ -35,7 +35,7 @@
 			<dependency>
 				<groupId>com.gentics.mesh</groupId>
 				<artifactId>mesh-bom</artifactId>
-				<version>${mesh.version}</version>
+				<version>1.3.1</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
