@@ -34,11 +34,11 @@
 			<groupId>com.jayway.jsonpath</groupId>
 			<artifactId>json-path</artifactId>
 		</dependency>
-        <dependency>
-            <groupId>com.gentics.mesh.plugin.commercial</groupId>
-            <artifactId>mesh-commercial-plugins-common</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+		<dependency>
+			<groupId>com.gentics.mesh.plugin.commercial</groupId>
+			<artifactId>mesh-commercial-plugins-common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
 		<!-- Test dependencies -->
 		<dependency>
@@ -56,7 +56,7 @@
 			<artifactId>mesh-core</artifactId>
 			<scope>test</scope>
 		</dependency>
-    </dependencies>
+	</dependencies>
 
 	<build>
 		<plugins>
