@@ -67,7 +67,7 @@ public class FavoritePlugin extends AbstractPlugin implements RestPlugin {
 		if (configuration == null) {
 			configuration = new FavoritePluginConfig();
 		}
-		meshPluginService = new MeshPluginService(getRxVertx(), adminClient());
+		meshPluginService = new MeshPluginService(getRxVertx(), adminClient(), getStorageDir());
 		return initializeMeshProjects(configuration.getProjects());
 
 
