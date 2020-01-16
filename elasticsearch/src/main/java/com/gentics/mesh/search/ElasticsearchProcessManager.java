@@ -206,7 +206,8 @@ public final class ElasticsearchProcessManager {
 	private File prepareESDirectory() throws IOException, ZipException {
 		File outputDir = new File(".");
 		File esDir = new File(outputDir, OUTPUT_FOLDER_NAME);
-		if (!esDir.exists()) {
+		File esBin = new File(esDir, "bin");
+		if (!esBin.exists()) {
 			unzip("/" + RESOURCE_NAME + ".zip", outputDir.getAbsolutePath());
 		}
 		if (!esDir.exists()) {
