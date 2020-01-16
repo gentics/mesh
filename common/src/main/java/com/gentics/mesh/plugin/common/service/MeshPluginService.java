@@ -1,15 +1,5 @@
 package com.gentics.mesh.plugin.common.service;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Function;
-
-import org.apache.commons.lang3.StringUtils;
-
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -27,7 +17,6 @@ import com.gentics.mesh.plugin.common.model.SchemaCreateOrUpdateResponse;
 import com.gentics.mesh.plugin.common.util.MiscUtil;
 import com.gentics.mesh.plugin.common.util.RxUtil;
 import com.gentics.mesh.rest.client.MeshRestClient;
-
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
@@ -37,8 +26,21 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
+import io.vertx.reactivex.core.buffer.Buffer;
 import io.vertx.reactivex.core.eventbus.Message;
 import io.vertx.reactivex.core.eventbus.MessageConsumer;
+import org.apache.commons.lang3.StringUtils;
+
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
 
 /**
  * This utility service provides methods commonly used by Mesh plugins,
@@ -74,6 +76,7 @@ public class MeshPluginService {
 	private final Vertx vertx;
 	private final MeshRestClient adminClient;
 	private final String schemaBaseDir;
+	private final String storageDirPath;
 	private final Set<MessageConsumer<?>> registeredConsumers = new HashSet<>();
 
 	/**
@@ -83,14 +86,15 @@ public class MeshPluginService {
 	 * @param vertx The Vert.x instance to use
 	 * @param adminClient The admin client to use
 	 */
-	public MeshPluginService(Vertx vertx, MeshRestClient adminClient) {
-		this(vertx, adminClient, "/schemas/");
+	public MeshPluginService(Vertx vertx, MeshRestClient adminClient, File storageDir) {
+		this(vertx, adminClient, storageDir, "/schemas/");
 	}
 
-	public MeshPluginService(Vertx vertx, MeshRestClient adminClient, String schemaBaseDir) {
+	public MeshPluginService(Vertx vertx, MeshRestClient adminClient, File storageDir, String schemaBaseDir) {
 		this.vertx = vertx;
 		this.adminClient = adminClient;
 		this.schemaBaseDir = schemaBaseDir;
+		this.storageDirPath = storageDir.getPath();
 	}
 
 	/**
@@ -257,6 +261,22 @@ public class MeshPluginService {
 			.doOnError(e -> log.error("Could not find folder schema \"{}\"", folderSchemaName))
 			.flatMap(folderSchema -> ensureFoldersRec(project, folderSchema, path))
 			.ignoreElement();
+	}
+
+	/**
+	 * Load a file from the given path in the storage directory.
+	 *
+	 * <p>
+	 *     Note that the {@link #storageDirPath} is relative to the current working directory.
+	 * </p>
+	 *
+	 * @param path The path (starting from the storage directory) to load the file from
+	 * @return A single with an <code>InputStream</code> containing the loaded data
+	 */
+	public Single<InputStream> loadFromStorage(String path) {
+		return vertx.fileSystem().rxReadFile(storageDirPath + path)
+			.map(Buffer::getBytes)
+			.map(ByteArrayInputStream::new);
 	}
 
 	/**

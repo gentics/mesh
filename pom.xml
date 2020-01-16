@@ -47,8 +47,6 @@
 		</dependencies>
 	</dependencyManagement>
 
-
-
 	<build>
 		<plugins>
 			<plugin>
@@ -98,6 +96,14 @@
 				<enabled>true</enabled>
 			</releases>
 		</repository>
+		<repository>
+			<id>gtx-commercial</id>
+			<name>Gentics Commercial Maven Repository</name>
+			<url>https://maven.gentics.com/maven2-commercial</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+		</repository>
 	</repositories>
 
 	<distributionManagement>
@@ -112,5 +118,4 @@
 			<url>https://repo.apa-it.at/artifactory/gtx-maven-snapshots</url>
 		</snapshotRepository>
 	</distributionManagement>
-
 </project>

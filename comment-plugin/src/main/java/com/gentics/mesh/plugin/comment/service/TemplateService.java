@@ -2,6 +2,7 @@ package com.gentics.mesh.plugin.comment.service;
 
 import com.gentics.mesh.plugin.comment.config.Configuration;
 import com.gentics.mesh.plugin.comment.util.RxUtil;
+import com.gentics.mesh.plugin.common.dagger.StorageDir;
 import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.io.FileTemplateLoader;
 import io.reactivex.Completable;
@@ -27,7 +28,7 @@ public class TemplateService {
 	private String cachedJs; // TODO Consider saving JS to a file instead of keeping it in RAM
 
 	@Inject
-	public TemplateService(Configuration configuration, File storageDir, Vertx vertx) {
+	public TemplateService(Configuration configuration, @StorageDir File storageDir, Vertx vertx) {
 		this.storageDir = storageDir;
 		this.vertx = vertx;
 		this.configuration = configuration;

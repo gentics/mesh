@@ -6,6 +6,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.plugin.comment.config.Configuration;
 import com.gentics.mesh.plugin.comment.service.TemplateService;
+import com.gentics.mesh.plugin.common.dagger.StorageDir;
 import com.gentics.mesh.plugin.common.service.MeshPluginService;
 import com.gentics.mesh.rest.client.MeshRestClient;
 
@@ -29,7 +30,7 @@ public interface InitializationComponent {
 		Builder adminClient(@AdminClient MeshRestClient client);
 
 		@BindsInstance
-		Builder storageDir(File file);
+		Builder storageDir(@StorageDir File file);
 
 		@BindsInstance
 		Builder vertx(Vertx vertx);
