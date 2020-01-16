@@ -16,6 +16,7 @@
 	<properties>
 		<plugin.license>Commercial</plugin.license>
 		<plugin.author>Gentics</plugin.author>
+		<!--  Don't forget to also update dependencyManagement section! -->
 		<mesh.version>1.3.1</mesh.version>
 	</properties>
 
