@@ -397,4 +397,9 @@
 | boolean
 | If true, Gentics Mesh will be started in read only mode.
 
+| versionPurgeMaxBatchSize
+| false
+| int
+| The maximum amount of node versions that are purged before the database transaction is committed.
+
 |======

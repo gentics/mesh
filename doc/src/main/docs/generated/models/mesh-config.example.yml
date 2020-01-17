@@ -11,6 +11,7 @@ pluginDirectory: "plugins"
 pluginTimeout: 15
 nodeName: null
 startInReadOnly: false
+versionPurgeMaxBatchSize: 10
 httpServer:
   port: 8080
   host: "0.0.0.0"
