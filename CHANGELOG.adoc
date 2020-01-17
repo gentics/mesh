@@ -31,8 +31,7 @@ icon:check[] Core: Fixed a bug in the link renderer that caused the language par
 
 icon:plus[] Docker: The Gentics Mesh server docker container has been updated:
 
-  * Additional group permissions will be set to the application folders to allow root 
-  group to access and write into those.
+  * Additional group permissions will be set to the application folders to allow root group to access and write into those.
   * It is now possible to run the container with any uid. The user for the specified UID will automatically be created. This change enhances OpenShift support for the docker containers.
   * The pre-extracted embedded Elasticsearch folder has been removed from the server image to reduce the docker image size. The embedded ES will automatically be extracted to the `/mesh/elasticsearch` folder when embedded mode is enabled.
   * The JRE version in the docker image has been updated from version `11.0.3_7` to `11.0.5_10`.
