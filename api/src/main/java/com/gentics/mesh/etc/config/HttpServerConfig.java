@@ -1,11 +1,16 @@
 package com.gentics.mesh.etc.config;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.doc.GenerateDocumentation;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 import com.gentics.mesh.etc.config.env.Option;
+
+import io.vertx.core.http.ClientAuth;
 
 /**
  * Mesh Http Server configuration POJO.
@@ -23,15 +28,21 @@ public class HttpServerConfig implements Option {
 
 	public static final int DEFAULT_HTTP_PORT = 8080;
 
+	public static final int DEFAULT_HTTPS_PORT = 8443;
+
 	public static final String DEFAULT_CERT_PATH = "config/cert.pem";
 	public static final String DEFAULT_KEY_PATH = "config/key.pem";
+	public static final ClientAuth DEFAULT_CLIENT_AUTH_MODE = ClientAuth.REQUEST;
 
 	public static final String MESH_HTTP_PORT_ENV = "MESH_HTTP_PORT";
+	public static final String MESH_HTTPS_PORT_ENV = "MESH_HTTPS_PORT";
+
 	public static final String MESH_HTTP_HOST_ENV = "MESH_HTTP_HOST";
 	public static final String MESH_HTTP_CORS_ORIGIN_PATTERN_ENV = "MESH_HTTP_CORS_ORIGIN_PATTERN";
 	public static final String MESH_HTTP_CORS_ENABLE_ENV = "MESH_HTTP_CORS_ENABLE";
 
 	public static final String MESH_HTTP_SSL_ENABLE_ENV = "MESH_HTTP_SSL_ENABLE";
+	public static final String MESH_HTTP_HTTP_ENABLE_ENV = "MESH_HTTP_HTTP_ENABLE";
 	public static final String MESH_HTTP_SSL_CERT_PATH_ENV = "MESH_HTTP_SSL_CERT_PATH";
 	public static final String MESH_HTTP_SSL_KEY_PATH_ENV = "MESH_HTTP_SSL_KEY_PATH";
 	public static final String MESH_HTTP_CORS_ALLOW_CREDENTIALS_ENV = "MESH_HTTP_CORS_ALLOW_CREDENTIALS";
@@ -42,6 +53,11 @@ public class HttpServerConfig implements Option {
 	@JsonPropertyDescription("Configure the Gentics Mesh HTTP server port. Default is: " + DEFAULT_HTTP_PORT)
 	@EnvironmentVariable(name = MESH_HTTP_PORT_ENV, description = "Override the configured server http port.")
 	private int port = DEFAULT_HTTP_PORT;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Configure the Gentics Mesh HTTPS server port. Default is: " + DEFAULT_HTTPS_PORT)
+	@EnvironmentVariable(name = MESH_HTTPS_PORT_ENV, description = "Override the configured server https port.")
+	private int sslPort = DEFAULT_HTTPS_PORT;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Configure the Gentics Mesh HTTP server host to bind to. Default is: " + DEFAULT_HTTP_HOST)
@@ -64,9 +80,14 @@ public class HttpServerConfig implements Option {
 	private Boolean enableCors = false;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Flag which indicates whether SSL support be enabled.")
-	@EnvironmentVariable(name = MESH_HTTP_SSL_ENABLE_ENV, description = "Override the configured SSL enable flag.")
-	private Boolean ssl = false;
+	@JsonPropertyDescription("Flag which indicates whether http server should be enabled. Default: true")
+	@EnvironmentVariable(name = MESH_HTTP_HTTP_ENABLE_ENV, description = "Override the configured http server flag.")
+	private boolean http = true;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Flag which indicates whether SSL server should be enabled. Default: false")
+	@EnvironmentVariable(name = MESH_HTTP_SSL_ENABLE_ENV, description = "Override the configured https server flag.")
+	private boolean ssl = false;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Flag which indicates whether SSL support be enabled.")
@@ -77,6 +98,13 @@ public class HttpServerConfig implements Option {
 	@JsonPropertyDescription("Path to the SSL private key. Default: " + DEFAULT_KEY_PATH)
 	@EnvironmentVariable(name = MESH_HTTP_SSL_KEY_PATH_ENV, description = "Override the configured SSL enable flag.")
 	private String keyPath = DEFAULT_KEY_PATH;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Configure the client certificate handling mode. Options: none, request, required. Default: none")
+	@EnvironmentVariable(name = MESH_HTTP_SSL_KEY_PATH_ENV, description = "Override the configured client certificate handling mode.")
+	private ClientAuth clientAuthMode = DEFAULT_CLIENT_AUTH_MODE;
+
+	private List<String> trustedCertPaths = new ArrayList<>();
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Amount of rest API verticles to be deployed. Default is 2 * CPU Cores")
@@ -101,6 +129,15 @@ public class HttpServerConfig implements Option {
 
 	public HttpServerConfig setPort(int port) {
 		this.port = port;
+		return this;
+	}
+
+	public int getSslPort() {
+		return sslPort;
+	}
+
+	public HttpServerConfig setSslPort(int sslPort) {
+		this.sslPort = sslPort;
 		return this;
 	}
 
@@ -136,12 +173,21 @@ public class HttpServerConfig implements Option {
 		return this;
 	}
 
-	public Boolean getSsl() {
+	public boolean isSsl() {
 		return ssl;
 	}
 
-	public HttpServerConfig setSsl(Boolean ssl) {
+	public HttpServerConfig setSsl(boolean ssl) {
 		this.ssl = ssl;
+		return this;
+	}
+
+	public boolean isHttp() {
+		return http;
+	}
+
+	public HttpServerConfig setHttp(boolean http) {
+		this.http = http;
 		return this;
 	}
 
@@ -169,6 +215,24 @@ public class HttpServerConfig implements Option {
 
 	public HttpServerConfig setVerticleAmount(int verticleAmount) {
 		this.verticleAmount = verticleAmount;
+		return this;
+	}
+
+	public ClientAuth getClientAuthMode() {
+		return clientAuthMode;
+	}
+
+	public HttpServerConfig setClientAuthMode(ClientAuth clientAuthMode) {
+		this.clientAuthMode = clientAuthMode;
+		return this;
+	}
+
+	public List<String> getTrustedCertPaths() {
+		return trustedCertPaths;
+	}
+
+	public HttpServerConfig setTrustedCertPaths(List<String> trustedCertPaths) {
+		this.trustedCertPaths = trustedCertPaths;
 		return this;
 	}
 
