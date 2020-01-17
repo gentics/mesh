@@ -158,6 +158,7 @@ The `INFO` lines will be logged to the file and to stdout.
 </configuration>
 ----
 
+NOTE: The link:http://logback.qos.ch/manual/appenders.html#TimeBasedRollingPolicy[TimeBasedRollingPolicy] will control the rotation of logfiles based on the defined `fileNamePattern`.
 
 == OrientDB
 
