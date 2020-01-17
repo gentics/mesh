@@ -13,6 +13,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.DateUtils;
 import com.google.common.collect.Lists;
@@ -30,15 +31,14 @@ public class ProjectVersionPurgeHandler {
 
 	private final Provider<BulkActionContext> bulkProvider;
 
+	private final MeshOptions meshOptions;
+
 	@Inject
-	public ProjectVersionPurgeHandler(Database db, Provider<BulkActionContext> bulkProvider) {
+	public ProjectVersionPurgeHandler(Database db, Provider<BulkActionContext> bulkProvider, MeshOptions meshOptions) {
 		this.db = db;
 		this.bulkProvider = bulkProvider;
-	}
-
-	public long getBatchSize() {
-		return 10L;
-	}
+        this.meshOptions = meshOptions;
+    }
 
 	/**
 	 * Purge the versions of all nodes in the project.
@@ -105,7 +105,7 @@ public class ProjectVersionPurgeHandler {
 				lastRemaining.setNextVersion(version);
 				txCounter++;
 			}
-			if (txCounter % getBatchSize() == 0 && txCounter != 0) {
+			if (txCounter % meshOptions.getVersionPurgeMaxBatchSize() == 0 && txCounter != 0) {
 				log.info("Committing batch - Elements handled {" + txCounter + "}");
 				tx.getGraph().commit();
 			}
