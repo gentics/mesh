@@ -22,12 +22,13 @@ import com.gentics.mesh.etc.config.MonitoringConfig;
 import com.gentics.mesh.etc.config.VertxOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.etc.config.search.MappingMode;
+import com.kstruct.gethostname4j.Hostname;
 
 public class OptionsLoaderTest {
-	
+
 	@Rule
 	public final EnvironmentVariables environmentVariables = new EnvironmentVariables();
-	
+
 	@Test
 	public void testOptionsLoader() {
 		File confFile = new File(CONFIG_FOLDERNAME + "/" + MESH_CONF_FILENAME);
@@ -73,6 +74,16 @@ public class OptionsLoaderTest {
 		assertEquals("0.0.0.0", options.getMonitoringOptions().getHost());
 		assertTrue(options.getContentOptions().isAutoPurge());
 		assertEquals(MappingMode.STRICT, options.getSearchOptions().getMappingMode());
+	}
+
+	@Test
+	public void testNodeNameWithHostnameVar() {
+		environmentVariables.set(MeshOptions.MESH_NODE_NAME_ENV, "$HOSTNAME");
+		MeshOptions options = OptionsLoader.createOrloadOptions();
+		String nodeName = options.getNodeName();
+		System.out.println(nodeName);
+		assertNotNull(nodeName);
+		assertEquals(Hostname.getHostname(), nodeName);
 	}
 
 	@Test

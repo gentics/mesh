@@ -105,6 +105,11 @@
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-auth-jwt</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.kstruct</groupId>
+			<artifactId>gethostname4j</artifactId>
+			<version>0.0.3</version>
+		</dependency>
 
 		<!-- Bcrypt -->
 		<dependency>

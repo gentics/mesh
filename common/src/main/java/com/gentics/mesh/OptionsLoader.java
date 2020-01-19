@@ -23,6 +23,7 @@ import com.gentics.mesh.cli.MeshCLI;
 import com.gentics.mesh.cli.MeshNameProvider;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.util.UUIDUtil;
+import com.kstruct.gethostname4j.Hostname;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -53,9 +54,17 @@ public final class OptionsLoader {
 		MeshOptions options = loadMeshOptions(defaultOption);
 		applyNonYamlProperties(defaultOption, options);
 		applyEnvironmentVariables(options);
+		applyReplacements(options);
 		applyCommandLineArgs(options, args);
 		options.validate();
 		return options;
+	}
+
+	private static void applyReplacements(MeshOptions options) {
+		String nodeName = options.getNodeName();
+		if ("$HOSTNAME".equals(nodeName)) {
+			options.setNodeName(Hostname.getHostname());
+		}
 	}
 
 	private static void applyNonYamlProperties(MeshOptions defaultOption, MeshOptions options) {
