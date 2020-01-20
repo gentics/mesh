@@ -6,6 +6,24 @@ This repository contains the sources for multiple Gentics Mesh Commercial plugin
 
 https://ci.gentics.com/view/Mesh-Plugins/job/mesh-commercial-plugins/
 
+## Releasing
+
+### Building with Jenkins
+* https://ci.gentics.com/view/Mesh-Plugins/job/mesh-commercial-plugins/job/dev/build
+* Click `Build with Parameters` on the left
+* Check all checkboxes. Leave `meshVersion` empty.
+* Wait until the build and release is done. If any tests fail, fix them and retry.
+
+### Moving the artifacts from staging to release
+* When the build is done, go to https://repo.apa-it.at/artifactory/webapp/#/artifacts/browse/tree/General
+* Make sure you are logged in (top right, sign in with apa-sso using your apagtx... user)
+* Right-click on `gtx-maven-releases-staging-mesh-plugins` in the tree view
+* Choose `Move Content`
+* Select `gtx-maven-releases-commerical` as the target repository
+* Click `Move`
+
+After that you should be able to download the released plugins (see below)
+
 ## Documentation
 
 TBD
