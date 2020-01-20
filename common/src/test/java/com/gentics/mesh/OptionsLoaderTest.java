@@ -81,7 +81,6 @@ public class OptionsLoaderTest {
 		environmentVariables.set(MeshOptions.MESH_NODE_NAME_ENV, "$HOSTNAME");
 		MeshOptions options = OptionsLoader.createOrloadOptions();
 		String nodeName = options.getNodeName();
-		System.out.println(nodeName);
 		assertNotNull(nodeName);
 		assertEquals(Hostname.getHostname(), nodeName);
 	}
