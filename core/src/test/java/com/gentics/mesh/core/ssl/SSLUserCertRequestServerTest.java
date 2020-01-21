@@ -10,14 +10,14 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MeshTestSetting(testSize = FULL, startServer = true, ssl = CLIENT_CERT_REQUEST)
-public class SSLUserCertServerTest extends AbstractMeshTest {
+public class SSLUserCertRequestServerTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadByUUID() throws Exception {
 		String uuid = userUuid();
 		call(() -> sslClient().findUserByUuid(uuid));
 
-		SSLTestClient.call(httpsPort());
+		SSLTestClient.call(httpsPort(), true);
 	}
 
 }

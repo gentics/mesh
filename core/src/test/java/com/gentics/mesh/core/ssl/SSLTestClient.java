@@ -36,8 +36,8 @@ public class SSLTestClient {
 	public static final String CA_CERT = "src/test/resources/client-ssl/server.pem";
 	public static final String FMT_TEST_URL = "https://localhost:%s/api/v1";
 
-	public static void call(int port) throws IOException {
-		OkHttpClient client = initializeHttpClient();
+	public static void call(int port, boolean sendClientAuth) throws IOException {
+		OkHttpClient client = initializeHttpClient(sendClientAuth);
 		Request request = new Request.Builder().url(String.format(FMT_TEST_URL, port)).build();
 
 		System.out.println("Performing request: " + request);
@@ -47,11 +47,11 @@ public class SSLTestClient {
 		System.out.println("Received response: " + response);
 	}
 
-	private static OkHttpClient initializeHttpClient() {
+	private static OkHttpClient initializeHttpClient(boolean sendClientAuth) {
 		KeyManager[] keyManagers = null;
 		TrustManager[] trustManagers = null;
 
-		if ("true".equals(System.getProperty("sendClientAuth"))) {
+		if (sendClientAuth) {
 			try {
 				if ("pem".equals(System.getProperty("keyStoreType"))) {
 					System.out.println("Loading private key from " + CLIENT_KEY_PEM);

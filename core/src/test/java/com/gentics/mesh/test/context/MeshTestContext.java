@@ -328,10 +328,13 @@ public class MeshTestContext extends TestWatcher {
 			if (ssl != SSLTestMode.OFF) {
 				config.setSsl(true);
 				config.setPort(httpsPort);
-				MeshRestClient httpsClient = MeshRestClient.create(config.build(), okHttp);
-				httpsClient.setLogin(getData().user().getUsername(), getData().getUserInfo().getPassword());
-				httpsClient.login().blockingGet();
-				clients.put("https_v" + CURRENT_API_VERSION, httpsClient);
+				// Don't generate a client when cert is set to required
+				if (ssl != SSLTestMode.CLIENT_CERT_REQUIRED) {
+					MeshRestClient httpsClient = MeshRestClient.create(config.build(), okHttp);
+					httpsClient.setLogin(getData().user().getUsername(), getData().getUserInfo().getPassword());
+					httpsClient.login().blockingGet();
+					clients.put("https_v" + CURRENT_API_VERSION, httpsClient);
+				}
 			}
 
 			IntStream.range(1, CURRENT_API_VERSION).forEach(version -> {
