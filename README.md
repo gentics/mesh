@@ -39,7 +39,7 @@ Or via `mvn`:
 ```bash
 mvn dependency:get -Dartifact=com.gentics.mesh.plugin.commercial:mesh-keycloak-plugin:1.3.5 \
  -DremoteRepositories=gtx-commercial::default::https://maven.gentics.com/maven2-commercial \
- -Ddest=plugins -Dtransitive=false
+ -Ddest=keycloak-plugin.jar -Dtransitive=false
 ```
 
 Download of these plugins is restricted and requires an account on https://repo.apa-it.at. Customer accounts must be requested by Gentics Operations or via Mail to support@gentics.com.
