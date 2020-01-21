@@ -4,7 +4,10 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -44,6 +47,7 @@ import com.gentics.mesh.search.RawSearchEndpointImpl;
 import com.gentics.mesh.search.SearchEndpointImpl;
 
 import io.reactivex.Completable;
+import io.reactivex.Single;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -63,7 +67,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 
 	protected HttpServer httpsServer;
 
-	protected io.vertx.reactivex.core.http.HttpServer httpServer;
+	protected HttpServer httpServer;
 
 	@Inject
 	public Provider<RouterStorage> routerStorage;
@@ -162,19 +166,19 @@ public class RestAPIVerticle extends AbstractVerticle {
 	@Override
 	public void start(Promise<Void> promise) throws Exception {
 		JsonArray initialProjects = config().getJsonArray("initialProjects");
-
 		HttpServerConfig meshServerOptions = meshOptions.getHttpServerOptions();
+
 		if (meshServerOptions.isHttp()) {
 			HttpServerOptions httpOptions = new HttpServerOptions();
 			if (log.isDebugEnabled()) {
-				log.debug("Setting ssl server options..");
+				log.debug("Setting http server options..");
 			}
 			applyCommonSettings(httpOptions);
 			httpOptions.setPort(meshServerOptions.getPort());
 			httpOptions.setSsl(false);
 
 			log.info("Starting http server in verticle {" + getClass().getName() + "} on port {" + httpOptions.getPort() + "}");
-			httpsServer = rxVertx.createHttpServer(httpOptions);
+			httpServer = rxVertx.createHttpServer(httpOptions);
 		}
 
 		if (meshServerOptions.isSsl()) {
@@ -213,11 +217,9 @@ public class RestAPIVerticle extends AbstractVerticle {
 			pemTrustOptions.addCertPath(meshServerOptions.getCertPath());
 			httpsOptions.setPemTrustOptions(pemTrustOptions);
 
-			log.info("Starting http server in verticle {" + getClass().getName() + "} on port {" + httpsOptions.getPort() + "}");
+			log.info("Starting https server in verticle {" + getClass().getName() + "} on port {" + httpsOptions.getPort() + "}");
 			httpsServer = rxVertx.createHttpServer(httpsOptions);
 		}
-
-		// TODO listen to ssl and http server
 
 		RouterStorage storage = routerStorage.get();
 		Router rootRouter = storage.root().getRouter();
@@ -230,21 +232,19 @@ public class RestAPIVerticle extends AbstractVerticle {
 		}
 
 		io.vertx.reactivex.ext.web.Router rxRootRouter = io.vertx.reactivex.ext.web.Router.newInstance(rootRouter);
-		httpServer.requestHandler(rxRootRouter);
-		httpServer.listen(rh -> {
-			if (rh.failed()) {
-				promise.fail(rh.cause());
-			} else {
-				if (log.isInfoEnabled()) {
-					log.info("Started http server.. Port: " + config().getInteger("port"));
-				}
-				try {
-					promise.complete();
-				} catch (Exception e) {
-					e.printStackTrace();
-					promise.fail(e);
-				}
-			}
+		// Now listen to requests from all created servers
+		List<Single<HttpServer>> serverListens = Arrays.asList(httpServer, httpsServer).stream()
+			.filter(Objects::nonNull)
+			.map(s -> {
+				return s.requestHandler(rxRootRouter);
+			})
+			.map(s -> s.rxListen())
+			.collect(Collectors.toList());
+
+		Single.merge(serverListens).ignoreElements().subscribe(() -> {
+			promise.complete();
+		}, err -> {
+			promise.fail(err);
 		});
 
 	}
@@ -264,10 +264,13 @@ public class RestAPIVerticle extends AbstractVerticle {
 
 	@Override
 	public void stop(Promise<Void> promise) throws Exception {
+		List<Completable> serverClose = Arrays.asList(httpServer, httpsServer).stream()
+			.filter(Objects::nonNull)
+			.map(HttpServer::rxClose)
+			.collect(Collectors.toList());
 
-		// TODO check null
-		Completable.mergeArray(httpServer.rxClose(), httpsServer.rxClose()).subscribe(promise::complete, promise::fail);
-
+		Completable.merge(serverClose)
+			.subscribe(promise::complete, promise::fail);
 	}
 
 	/**

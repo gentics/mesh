@@ -44,7 +44,7 @@ public abstract class AbstractOAuthTest extends AbstractMeshTest {
 		Request request = new Request.Builder()
 			.header("Accept", "application/json")
 			.header("Authorization", "Bearer " + token)
-			.url("http://localhost:" + testContext.getPort() + path)
+			.url("http://localhost:" + testContext.getHttpPort() + path)
 			.build();
 
 		Response response = httpClient().newCall(request).execute();
@@ -54,7 +54,7 @@ public abstract class AbstractOAuthTest extends AbstractMeshTest {
 	protected String get(String path) throws IOException {
 		Request request = new Request.Builder()
 			.header("Accept", "application/json")
-			.url("http://localhost:" + testContext.getPort() + path)
+			.url("http://localhost:" + testContext.getHttpPort() + path)
 			.build();
 
 		Response response = httpClient().newCall(request).execute();

@@ -1,5 +1,6 @@
 package com.gentics.mesh.test.context;
 
+import com.gentics.mesh.test.SSLTestMode;
 import com.gentics.mesh.test.TestSize;
 
 import java.lang.annotation.Retention;
@@ -62,11 +63,11 @@ public @interface MeshTestSetting {
 	boolean clusterMode() default false;
 
 	/**
-	 * Flag which indicates whether SSL should be used.
+	 * SSL test mode.
 	 * 
 	 * @return
 	 */
-	boolean ssl() default false;
+	SSLTestMode ssl() default SSLTestMode.OFF;
 
 	/**
 	 * Flag which indicates whether the monitoring feature should be enabled.

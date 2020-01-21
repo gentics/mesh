@@ -127,7 +127,11 @@ public interface BaseHelper {
 	}
 
 	default MeshRestClient client() {
-		return getTestContext().getClient();
+		return getTestContext().getHttpClient();
+	}
+
+	default MeshRestClient sslClient() {
+		return getTestContext().getHttpsClient();
 	}
 
 	default MeshRestClient client(String version) {
