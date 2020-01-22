@@ -306,20 +306,20 @@ public class MeshTestContext extends TestWatcher {
 
 		// Setup the rest client
 		try (Tx tx = db().tx()) {
-			MeshRestClientConfig.Builder config = new MeshRestClientConfig.Builder()
+			MeshRestClientConfig.Builder httpConfigBuilder = new MeshRestClientConfig.Builder()
 				.setHost("localhost")
 				.setPort(httpPort)
 				.setBasePath(CURRENT_API_BASE_PATH)
 				.setSsl(false);
 
-			MeshRestClient httpClient = MeshRestClient.create(config.build(), okHttp);
+			MeshRestClient httpClient = MeshRestClient.create(httpConfigBuilder.build(), okHttp);
 			httpClient.setLogin(getData().user().getUsername(), getData().getUserInfo().getPassword());
 			httpClient.login().blockingGet();
 			clients.put("http_v" + CURRENT_API_VERSION, httpClient);
 
 			// Setup SSL client if needed
 			SSLTestMode ssl = settings.ssl();
-			MeshRestClientConfig.Builder sslConfigBuilder = new MeshRestClientConfig.Builder()
+			MeshRestClientConfig.Builder httpsConfigBuilder = new MeshRestClientConfig.Builder()
 				.setHost("localhost")
 				.setPort(httpsPort)
 				.setBasePath(CURRENT_API_BASE_PATH)
@@ -333,14 +333,14 @@ public class MeshTestContext extends TestWatcher {
 
 			case CLIENT_CERT_REQUEST:
 			case CLIENT_CERT_REQUIRED:
-				sslConfigBuilder.setTrustedCA("src/test/resources/client-ssl/server.pem");
-				sslConfigBuilder.setClientCert("src/test/resources/client-ssl/alice.pem");
-				sslConfigBuilder.setClientKey("src/test/resources/client-ssl/alice.key");
-				httpsConfig = sslConfigBuilder.build();
+				httpsConfigBuilder.setTrustedCA("src/test/resources/client-ssl/server.pem");
+				httpsConfigBuilder.setClientCert("src/test/resources/client-ssl/alice.pem");
+				httpsConfigBuilder.setClientKey("src/test/resources/client-ssl/alice.key");
+				httpsConfig = httpsConfigBuilder.build();
 				break;
 
 			case NORMAL:
-				httpsConfig = sslConfigBuilder.build();
+				httpsConfig = httpsConfigBuilder.build();
 				break;
 			}
 
@@ -352,9 +352,9 @@ public class MeshTestContext extends TestWatcher {
 			}
 
 			IntStream.range(1, CURRENT_API_VERSION).forEach(version -> {
-				MeshRestClient oldClient = MeshRestClient.create(config.setBasePath("/api/v" + version).build());
+				MeshRestClient oldClient = MeshRestClient.create(httpConfigBuilder.setBasePath("/api/v" + version).build());
 				oldClient.setAuthenticationProvider(httpClient.getAuthentication());
-				clients.put("v" + version, oldClient);
+				clients.put("http_v" + version, oldClient);
 			});
 		}
 		log.info("Using monitoring port: " + monitoringPort);
@@ -699,15 +699,15 @@ public class MeshTestContext extends TestWatcher {
 	}
 
 	public MeshRestClient getHttpClient() {
-		return getClient("http_v" + CURRENT_API_VERSION);
+		return clients.get("http_v" + CURRENT_API_VERSION);
 	}
 
 	public MeshRestClient getHttpsClient() {
-		return getClient("https_v" + CURRENT_API_VERSION);
+		return clients.get("https_v" + CURRENT_API_VERSION);
 	}
 
-	public MeshRestClient getClient(String version) {
-		return clients.get(version);
+	public MeshRestClient getHttpClient(String version) {
+		return clients.get("http_" + version);
 	}
 
 	public static KeycloakContainer getKeycloak() {

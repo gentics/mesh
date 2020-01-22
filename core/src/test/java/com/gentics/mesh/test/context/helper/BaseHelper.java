@@ -135,7 +135,7 @@ public interface BaseHelper {
 	}
 
 	default MeshRestClient client(String version) {
-		return getTestContext().getClient(version);
+		return getTestContext().getHttpClient(version);
 	}
 
 	default TrackingSearchProvider trackingSearchProvider() {
