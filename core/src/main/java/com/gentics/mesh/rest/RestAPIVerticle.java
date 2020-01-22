@@ -1,8 +1,5 @@
 package com.gentics.mesh.rest;
 
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -65,9 +62,9 @@ public class RestAPIVerticle extends AbstractVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractInternalEndpoint.class);
 
-	protected HttpServer httpsServer;
+	private HttpServer httpsServer;
 
-	protected HttpServer httpServer;
+	private HttpServer httpServer;
 
 	@Inject
 	public Provider<RouterStorage> routerStorage;
@@ -190,18 +187,6 @@ public class RestAPIVerticle extends AbstractVerticle {
 			httpsOptions.setPort(meshServerOptions.getSslPort());
 			httpsOptions.setSsl(true);
 			PemKeyCertOptions keyOptions = new PemKeyCertOptions();
-			if (isEmpty(meshServerOptions.getCertPath()) || isEmpty(meshServerOptions.getKeyPath())) {
-				promise.fail("SSL is enabled but either the server key or the cert path was not specified.");
-				return;
-			}
-			if (!Paths.get(meshServerOptions.getKeyPath()).toFile().exists()) {
-				promise.fail("Could not find SSL key within path {" + meshServerOptions.getKeyPath() + "}");
-				return;
-			}
-			if (!Paths.get(meshServerOptions.getCertPath()).toFile().exists()) {
-				promise.fail("Could not find SSL cert within path {" + meshServerOptions.getCertPath() + "}");
-				return;
-			}
 
 			httpsOptions.setClientAuth(meshServerOptions.getClientAuthMode());
 
@@ -319,14 +304,6 @@ public class RestAPIVerticle extends AbstractVerticle {
 			endpoint.init(vertx, storage);
 			endpoint.registerEndPoints();
 		}
-	}
-
-	public HttpServer getHttpServer() {
-		return httpServer;
-	}
-
-	public HttpServer getHttpsServer() {
-		return httpsServer;
 	}
 
 }

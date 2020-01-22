@@ -128,6 +128,7 @@ public final class OkHttpClientUtil {
 		try (PEMParser pemParser = new PEMParser(targetReader)) {
 			log.debug("Read client key PEM file");
 			PrivateKey privateKey = new JcaPEMKeyConverter().getPrivateKey((PrivateKeyInfo) pemParser.readObject());
+			// Load the keystore with no loading params
 			keyStore.load(null);
 			keyStore.setCertificateEntry(principal + "Cert", clientCert);
 			keyStore.setKeyEntry(principal + "Key", privateKey, randomKeyStorePass, new Certificate[] { clientCert });
@@ -145,6 +146,7 @@ public final class OkHttpClientUtil {
 		CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
 		X509Certificate caCert = (X509Certificate) certificateFactory.generateCertificate(new ByteArrayInputStream(caCertData));
 
+		// Load the keystore with no loading params
 		keyStore.load(null);
 		keyStore.setCertificateEntry(caCert.getSubjectX500Principal().getName(), caCert);
 		trustManagerFactory.init(keyStore);

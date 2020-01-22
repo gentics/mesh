@@ -3,8 +3,8 @@ package com.gentics.mesh.etc.config.env;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import io.vertx.core.json.JsonObject;
@@ -49,7 +49,7 @@ public class OptionUtils {
 			return (T) enumValue;
 		} else if(clazz.equals(List.class)) {
 			if (value == null || value.trim().length() == 0) {
-				return (T) new ArrayList<String>();
+				return (T) Collections.emptyList();
 			}
 			List<String> list = Arrays.asList(value.split(","));
 			return (T) list;
@@ -98,5 +98,9 @@ public class OptionUtils {
 		} catch (IllegalArgumentException | IllegalAccessException ex) {
 			throw new RuntimeException("Could not set environment variable for {" + name + "} with value {" + value + "}", ex);
 		}
+	}
+
+	public static boolean isEmpty(String text) {
+		return text == null || text.length() == 0;
 	}
 }

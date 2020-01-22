@@ -19,29 +19,14 @@ public class MeshRestOkHttpClientImpl extends MeshRestHttpClientImpl {
 
 	private final OkHttpClient client;
 	private final MeshRestClientConfig config;
-	private static OkHttpClient defaultClient;
 
 	public MeshRestOkHttpClientImpl(MeshRestClientConfig config) {
-		this(config, defaultClient(config));
+		this(config, OkHttpClientUtil.createClient(config));
 	}
 
 	public MeshRestOkHttpClientImpl(MeshRestClientConfig config, OkHttpClient client) {
 		this.client = client;
 		this.config = config;
-	}
-
-	/**
-	 * Return the default OkHttpClient
-	 * 
-	 * @param MeshRestClientConfig
-	 *            config
-	 * @return
-	 */
-	private static OkHttpClient defaultClient(MeshRestClientConfig config) {
-		if (defaultClient == null) {
-			defaultClient = OkHttpClientUtil.createClient(config);
-		}
-		return defaultClient;
 	}
 
 	@Override

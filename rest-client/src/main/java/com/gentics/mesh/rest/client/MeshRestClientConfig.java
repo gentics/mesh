@@ -220,6 +220,17 @@ public class MeshRestClientConfig {
 		}
 
 		/**
+		 * Set the client key in PEM format.
+		 * 
+		 * @param data
+		 * @return
+		 */
+		public Builder setClientKey(byte[] data) {
+			this.clientKey = data;
+			return this;
+		}
+
+		/**
 		 * Set the filesystem path to the client SSL cert which is formatted in PEM format.
 		 * 
 		 * @param path
@@ -246,6 +257,17 @@ public class MeshRestClientConfig {
 		}
 
 		/**
+		 * Set the client cert in PEM format.
+		 * 
+		 * @param data
+		 * @return
+		 */
+		public Builder setClientCert(byte[] data) {
+			this.clientCert = data;
+			return this;
+		}
+
+		/**
 		 * Set the filesystem path to the CA file which is formatted in PEM format.
 		 * 
 		 * @param path
@@ -268,6 +290,17 @@ public class MeshRestClientConfig {
 			} catch (Exception e) {
 				throw new RuntimeException("Error while reading key stream", e);
 			}
+			return this;
+		}
+
+		/**
+		 * Set the CA in PEM format.
+		 * 
+		 * @param data
+		 * @return
+		 */
+		public Builder setTrustedCA(byte[] data) {
+			this.trustedCA = data;
 			return this;
 		}
 

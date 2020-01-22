@@ -1,5 +1,8 @@
 package com.gentics.mesh.etc.config;
 
+import static com.gentics.mesh.etc.config.env.OptionUtils.isEmpty;
+
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -242,5 +245,14 @@ public class HttpServerConfig implements Option {
 	}
 
 	public void validate(MeshOptions meshOptions) {
+		if (isEmpty(getCertPath()) || isEmpty(getKeyPath())) {
+			throw new IllegalStateException("SSL is enabled but either the server key or the cert path was not specified.");
+		}
+		if (!Paths.get(getKeyPath()).toFile().exists()) {
+			throw new IllegalStateException("Could not find SSL key within path {" + getKeyPath() + "}");
+		}
+		if (!Paths.get(getCertPath()).toFile().exists()) {
+			throw new IllegalStateException("Could not find SSL cert within path {" + getCertPath() + "}");
+		}
 	}
 }
