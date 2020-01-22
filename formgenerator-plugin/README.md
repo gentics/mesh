@@ -6,6 +6,10 @@
 * Create a file `plugins/fg/config.yml`. See the configuration section for more details
 * Create handlebars templates in your `plugins/fg/templates` folder
 
+# API
+
+A specification of the API can be found in the file `api.yaml`. You can paste the contents of that file to https://editor.swagger.io/ to get a nice overview.
+
 # Configuration
 ## Fields
 | Key | Type | Description | Default value |

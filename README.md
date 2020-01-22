@@ -8,6 +8,10 @@ https://ci.gentics.com/view/Mesh-Plugins/job/mesh-commercial-plugins/
 
 ## Releasing
 
+All commercial plugins are always released at once. Also, all released commercial plugins have the same version.
+
+The current version can be found with `git describe --abbrev=0`
+
 ### Building with Jenkins
 * https://ci.gentics.com/view/Mesh-Plugins/job/mesh-commercial-plugins/job/dev/build
 * Click `Build with Parameters` on the left
