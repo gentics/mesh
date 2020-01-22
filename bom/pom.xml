@@ -113,6 +113,13 @@
 				<artifactId>okhttp</artifactId>
 				<version>3.12.1</version>
 			</dependency>
+			
+			<!-- SSL -->
+			<dependency>
+				<groupId>org.bouncycastle</groupId>
+				<artifactId>bcmail-jdk15on</artifactId>
+				<version>1.62</version>
+			</dependency>
 
 			<!-- S3 Support -->
 			<dependency>

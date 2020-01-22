@@ -25,6 +25,12 @@ include::content/docs/variables.adoc-include[]
 
 * The Mesh Server will require Java 11 with the release of 2.0.0. The runtime support for Java 8 will be dropped. The Mesh Java REST client will still be usable with Java 8.
 
+[[pending]]
+
+icon:plus[] Security: User client certificate handling has been added to the Mesh Server.
+
+icon:plus[] Java Rest Client: The client configuration has been enhanced. It is now possible to specify a client certificate and key to be used by the REST client.
+
 [[v.1.3.3]]
 == 1.3.3 (17.01.2020)
 

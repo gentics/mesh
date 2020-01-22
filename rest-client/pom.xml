@@ -43,6 +43,12 @@
 			<artifactId>okhttp</artifactId>
 		</dependency>
 
+		<!-- SSL -->
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcmail-jdk15on</artifactId>
+		</dependency>
+
 		<!-- Test dependencies -->
 		<dependency>
 			<groupId>org.mockito</groupId>

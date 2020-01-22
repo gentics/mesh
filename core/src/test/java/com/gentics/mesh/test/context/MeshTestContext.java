@@ -22,9 +22,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
-import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
@@ -212,12 +210,7 @@ public class MeshTestContext extends TestWatcher {
 			builder.writeTimeout(Duration.ofMinutes(timeout));
 			builder.readTimeout(Duration.ofMinutes(timeout));
 			builder.sslSocketFactory(sslSocketFactory, (X509TrustManager) trustAllCerts[0]);
-			builder.hostnameVerifier(new HostnameVerifier() {
-				@Override
-				public boolean verify(String hostname, SSLSession session) {
-					return true;
-				}
-			});
+			builder.hostnameVerifier((hostName, sslSession) -> true);
 			return builder.build();
 		} catch (Exception e) {
 			throw new RuntimeException(e);
@@ -313,7 +306,6 @@ public class MeshTestContext extends TestWatcher {
 
 		// Setup the rest client
 		try (Tx tx = db().tx()) {
-			SSLTestMode ssl = settings.ssl();
 			MeshRestClientConfig.Builder config = new MeshRestClientConfig.Builder()
 				.setHost("localhost")
 				.setPort(httpPort)
@@ -325,16 +317,38 @@ public class MeshTestContext extends TestWatcher {
 			httpClient.login().blockingGet();
 			clients.put("http_v" + CURRENT_API_VERSION, httpClient);
 
-			if (ssl != SSLTestMode.OFF) {
-				config.setSsl(true);
-				config.setPort(httpsPort);
-				// Don't generate a client when cert is set to required
-				if (ssl != SSLTestMode.CLIENT_CERT_REQUIRED) {
-					MeshRestClient httpsClient = MeshRestClient.create(config.build(), okHttp);
-					httpsClient.setLogin(getData().user().getUsername(), getData().getUserInfo().getPassword());
-					httpsClient.login().blockingGet();
-					clients.put("https_v" + CURRENT_API_VERSION, httpsClient);
-				}
+			// Setup SSL client if needed
+			SSLTestMode ssl = settings.ssl();
+			MeshRestClientConfig.Builder sslConfigBuilder = new MeshRestClientConfig.Builder()
+				.setHost("localhost")
+				.setPort(httpsPort)
+				.setBasePath(CURRENT_API_BASE_PATH)
+				.setHostnameVerification(false)
+				.setSsl(true);
+
+			MeshRestClientConfig httpsConfig = null;
+			switch (ssl) {
+			case OFF:
+				break;
+
+			case CLIENT_CERT_REQUEST:
+			case CLIENT_CERT_REQUIRED:
+				sslConfigBuilder.setTrustedCA("src/test/resources/client-ssl/server.pem");
+				sslConfigBuilder.setClientCert("src/test/resources/client-ssl/alice.pem");
+				sslConfigBuilder.setClientKey("src/test/resources/client-ssl/alice.key");
+				httpsConfig = sslConfigBuilder.build();
+				break;
+
+			case NORMAL:
+				httpsConfig = sslConfigBuilder.build();
+				break;
+			}
+
+			if (httpsConfig != null) {
+				MeshRestClient httpsClient = MeshRestClient.create(httpsConfig);
+				httpsClient.setLogin(getData().user().getUsername(), getData().getUserInfo().getPassword());
+				httpsClient.login().blockingGet();
+				clients.put("https_v" + CURRENT_API_VERSION, httpsClient);
 			}
 
 			IntStream.range(1, CURRENT_API_VERSION).forEach(version -> {

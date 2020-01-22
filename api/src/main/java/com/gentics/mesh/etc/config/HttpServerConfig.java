@@ -32,7 +32,7 @@ public class HttpServerConfig implements Option {
 
 	public static final String DEFAULT_CERT_PATH = "config/cert.pem";
 	public static final String DEFAULT_KEY_PATH = "config/key.pem";
-	public static final ClientAuth DEFAULT_CLIENT_AUTH_MODE = ClientAuth.REQUEST;
+	public static final ClientAuth DEFAULT_CLIENT_AUTH_MODE = ClientAuth.NONE;
 
 	public static final String MESH_HTTP_PORT_ENV = "MESH_HTTP_PORT";
 	public static final String MESH_HTTPS_PORT_ENV = "MESH_HTTPS_PORT";

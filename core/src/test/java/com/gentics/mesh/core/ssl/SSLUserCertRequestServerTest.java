@@ -17,7 +17,13 @@ public class SSLUserCertRequestServerTest extends AbstractMeshTest {
 		String uuid = userUuid();
 		call(() -> sslClient().findUserByUuid(uuid));
 
-		SSLTestClient.call(httpsPort(), true);
+		SSLTestClient.call(httpsPort(), true, false);
+
+		// The request should also work when not sending a client cert since the server was configured with ClientAuth.REQUEST
+		SSLTestClient.call(httpsPort(), false, false);
+
+		// It should also work when trusting any server cert
+		SSLTestClient.call(httpsPort(), false, true);
 	}
 
 }

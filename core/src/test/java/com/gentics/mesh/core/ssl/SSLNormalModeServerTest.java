@@ -10,7 +10,7 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MeshTestSetting(testSize = FULL, startServer = true, ssl = NORMAL)
-public class SSLServerTest extends AbstractMeshTest {
+public class SSLNormalModeServerTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadByUUID() throws Exception {
