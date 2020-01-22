@@ -3,6 +3,9 @@ package com.gentics.mesh.etc.config.env;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -44,6 +47,12 @@ public class OptionUtils {
 		} else if (clazz.isEnum()) {
 			Object enumValue = Enum.valueOf((Class<Enum>)clazz, value);
 			return (T) enumValue;
+		} else if(clazz.equals(List.class)) {
+			if (value == null || value.trim().length() == 0) {
+				return (T) new ArrayList<String>();
+			}
+			List<String> list = Arrays.asList(value.split(","));
+			return (T) list;
 		} else {
 			throw new RuntimeException("Could no convert environment variable for type " + clazz.getName());
 		}

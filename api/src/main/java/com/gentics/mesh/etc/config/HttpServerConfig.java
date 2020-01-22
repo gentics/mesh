@@ -45,6 +45,8 @@ public class HttpServerConfig implements Option {
 	public static final String MESH_HTTP_HTTP_ENABLE_ENV = "MESH_HTTP_HTTP_ENABLE";
 	public static final String MESH_HTTP_SSL_CERT_PATH_ENV = "MESH_HTTP_SSL_CERT_PATH";
 	public static final String MESH_HTTP_SSL_KEY_PATH_ENV = "MESH_HTTP_SSL_KEY_PATH";
+	public static final String MESH_HTTP_SSL_CLIENT_AUTH_MODE_ENV = "MESH_HTTP_SSL_CLIENT_AUTH_MODE";
+	public static final String MESH_HTTP_SSL_TRUSTED_CERTS_ENV = "MESH_HTTP_SSL_TRUSTED_CERTS";
 	public static final String MESH_HTTP_CORS_ALLOW_CREDENTIALS_ENV = "MESH_HTTP_CORS_ALLOW_CREDENTIALS";
 
 	public static final int DEFAULT_VERTICLE_AMOUNT = 2 * Runtime.getRuntime().availableProcessors();
@@ -85,7 +87,7 @@ public class HttpServerConfig implements Option {
 	private boolean http = true;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Flag which indicates whether SSL server should be enabled. Default: false")
+	@JsonPropertyDescription("Flag which indicates whether https server should be enabled. Default: false")
 	@EnvironmentVariable(name = MESH_HTTP_SSL_ENABLE_ENV, description = "Override the configured https server flag.")
 	private boolean ssl = false;
 
@@ -101,9 +103,12 @@ public class HttpServerConfig implements Option {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Configure the client certificate handling mode. Options: none, request, required. Default: none")
-	@EnvironmentVariable(name = MESH_HTTP_SSL_KEY_PATH_ENV, description = "Override the configured client certificate handling mode.")
+	@EnvironmentVariable(name = MESH_HTTP_SSL_CLIENT_AUTH_MODE_ENV, description = "Override the configured client certificate handling mode.")
 	private ClientAuth clientAuthMode = DEFAULT_CLIENT_AUTH_MODE;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Configure the trusted SSL certificates.")
+	@EnvironmentVariable(name = MESH_HTTP_SSL_TRUSTED_CERTS_ENV, description = "Override the configured trusted SSL certificates.")
 	private List<String> trustedCertPaths = new ArrayList<>();
 
 	@JsonProperty(required = false)
