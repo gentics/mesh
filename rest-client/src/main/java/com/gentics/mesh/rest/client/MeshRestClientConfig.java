@@ -286,7 +286,7 @@ public class MeshRestClientConfig {
 		 * @param ins
 		 * @return
 		 */
-		public Builder setTrustedCA(InputStream ins) {
+		public Builder addTrustedCA(InputStream ins) {
 			try {
 				this.trustedCAs.add(IOUtils.toByteArray(ins));
 			} catch (Exception e) {
@@ -301,7 +301,7 @@ public class MeshRestClientConfig {
 		 * @param data
 		 * @return
 		 */
-		public Builder setTrustedCA(byte[] data) {
+		public Builder addTrustedCA(byte[] data) {
 			this.trustedCAs.add(data);
 			return this;
 		}

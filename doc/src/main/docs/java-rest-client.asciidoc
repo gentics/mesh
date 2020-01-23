@@ -1,0 +1,83 @@
+---
+title: Java REST Client
+---
+
+include::content/docs/variables.adoc-include[]
+
+== Java Rest Client
+
+The REST client can be used to interact with all link:/docs/api[Gentics Mesh API Endpoints].
+
+Usage:
+
+[source,java]
+----
+MeshRestClient client = MeshRestClient.create("localhost", 8080, false);
+client.setLogin("username", "password");
+client.login().toCompletable().blockingAwait();
+
+NodeListResponse nodes = client.findNodes("demo", new NodeParametersImpl().setLanguages("en")).blockingGet();
+for (NodeResponse nodeResponse : nodes.getData()) {
+	System.out.println(nodeResponse.getUuid());
+	System.out.println(nodeResponse.getFields().getStringField("name").getString());
+}
+----
+
+=== SSL handling
+
+Usage:
+[source,java]
+----
+// Set config settings
+Builder builder = MeshRestClientConfig.newConfig();
+builder.addTrustedCA("certs/server.pem");
+builder.setClientCert("certs/alice.pem");
+builder.setClientKey("certs/alice.key");
+builder.setHost("demo.getmesh.io");
+builder.setPort(443);
+builder.setSsl(true);
+builder.setHostnameVerification(false);
+builder.setBasePath("/api/v2");
+
+// Create the client
+MeshRestClient client = MeshRestClient.create(builder.build());
+UserResponse meInfo = client.me().blockingGet();
+System.out.println(meInfo.toJson());
+----
+
+Methods to set the client key which will be used during SSL handshake:
+
+  * `MeshRestClientConfig.Builder#setClientKey(String path)`
+  * `MeshRestClientConfig.Builder#setClientKey(InputStream ins)` 
+  * `MeshRestClientConfig.Builder#setClientKey(byte[] data)` 
+
+Methods to set the client certificate which will be used during SSL handshake:
+
+  * `MeshRestClientConfig.Builder#setClientCert(String path)`
+  * `MeshRestClientConfig.Builder#setClientCert(InputStream ins)`
+  * `MeshRestClientConfig.Builder#setClientCert(byte[] data)`
+
+Methods to add one or more trusted CAs for the client:
+
+  * `MeshRestClientConfig.Builder#addTrustedCA(String path)`
+  * `MeshRestClientConfig.Builder#addTrustedCA(InputStream ins)`
+  * `MeshRestClientConfig.Builder#addTrustedCA(byte[] data)`
+
+Method to set the hostname verification checks:
+
+  * `MeshRestClientConfig.Builder#setHostnameVerification(boolean flag)`
+
+== Monitoring Client
+
+The monitoring client can be used to interact with the link:{{< relref "monitoring.asciidoc" >}}#_endpoints[Monitoring Endpoints].
+
+Usage:
+
+[source,java]
+----
+MonitoringRestClient client = MonitoringRestClient.create("localhost", 8081);
+
+client.status().toSingle().subscribe(status -> {
+	System.out.println(status.getStatus());
+}, System.err::println);
+----

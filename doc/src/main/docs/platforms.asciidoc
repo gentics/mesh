@@ -55,35 +55,4 @@ You can add the following maven dependency and repository to your project to get
 
 ==== REST Client
 
-The REST client can be used to interact with all link:/docs/api[Gentics Mesh API Endpoints].
-
-Usage:
-
-[source,java]
-----
-MeshRestClient client = MeshRestClient.create("localhost", 8080, false);
-client.setLogin("username", "password");
-client.login().toCompletable().blockingAwait();
-
-NodeListResponse nodes = client.findNodes("demo", new NodeParametersImpl().setLanguages("en")).blockingGet();
-for (NodeResponse nodeResponse : nodes.getData()) {
-	System.out.println(nodeResponse.getUuid());
-	System.out.println(nodeResponse.getFields().getStringField("name").getString());
-}
-----
-
-
-==== Monitoring Client
-
-The monitoring client can be used to interact with the link:{{< relref "monitoring.asciidoc" >}}#_endpoints[Monitoring Endpoints].
-
-Usage:
-
-[source,java]
-----
-MonitoringRestClient client = MonitoringRestClient.create("localhost", 8081);
-
-client.status().toSingle().subscribe(status -> {
-	System.out.println(status.getStatus());
-}, System.err::println);
-----
+See link:{{< relref "java-rest-client.asciidoc" >}}[Java Rest Client]

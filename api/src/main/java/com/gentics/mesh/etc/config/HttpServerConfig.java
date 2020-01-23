@@ -45,7 +45,7 @@ public class HttpServerConfig implements Option {
 	public static final String MESH_HTTP_CORS_ENABLE_ENV = "MESH_HTTP_CORS_ENABLE";
 
 	public static final String MESH_HTTP_SSL_ENABLE_ENV = "MESH_HTTP_SSL_ENABLE";
-	public static final String MESH_HTTP_HTTP_ENABLE_ENV = "MESH_HTTP_HTTP_ENABLE";
+	public static final String MESH_HTTP_HTTP_ENABLE_ENV = "MESH_HTTP_ENABLE";
 	public static final String MESH_HTTP_SSL_CERT_PATH_ENV = "MESH_HTTP_SSL_CERT_PATH";
 	public static final String MESH_HTTP_SSL_KEY_PATH_ENV = "MESH_HTTP_SSL_KEY_PATH";
 	public static final String MESH_HTTP_SSL_CLIENT_AUTH_MODE_ENV = "MESH_HTTP_SSL_CLIENT_AUTH_MODE";
@@ -245,13 +245,13 @@ public class HttpServerConfig implements Option {
 	}
 
 	public void validate(MeshOptions meshOptions) {
-		if (isEmpty(getCertPath()) || isEmpty(getKeyPath())) {
+		if (ssl && (isEmpty(getCertPath()) || isEmpty(getKeyPath()))) {
 			throw new IllegalStateException("SSL is enabled but either the server key or the cert path was not specified.");
 		}
-		if (!Paths.get(getKeyPath()).toFile().exists()) {
+		if (ssl && !Paths.get(getKeyPath()).toFile().exists()) {
 			throw new IllegalStateException("Could not find SSL key within path {" + getKeyPath() + "}");
 		}
-		if (!Paths.get(getCertPath()).toFile().exists()) {
+		if (ssl && !Paths.get(getCertPath()).toFile().exists()) {
 			throw new IllegalStateException("Could not find SSL cert within path {" + getCertPath() + "}");
 		}
 	}
