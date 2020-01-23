@@ -27,23 +27,23 @@ import io.vertx.ext.web.RoutingContext;
  */
 public interface InternalEndpoint {
 
-	NodeExamples nodeExamples = new NodeExamples();
-	TagExamples tagExamples = new TagExamples();
-	TagFamilyExamples tagFamilyExamples = new TagFamilyExamples();
-	GroupExamples groupExamples = new GroupExamples();
-	RoleExamples roleExamples = new RoleExamples();
-	MiscExamples miscExamples = new MiscExamples();
-	VersioningExamples versioningExamples = new VersioningExamples();
-	SchemaExamples schemaExamples = new SchemaExamples();
-	ProjectExamples projectExamples = new ProjectExamples();
-	UserExamples userExamples = new UserExamples();
-	MicroschemaExamples microschemaExamples = new MicroschemaExamples();
-	GraphQLExamples graphqlExamples = new GraphQLExamples();
-	AdminExamples adminExamples = new AdminExamples();
-	JobExamples jobExamples = new JobExamples();
-	BranchExamples branchExamples = new BranchExamples();
-	UtilityExamples utilityExamples = new UtilityExamples();
-	LocalConfigExamples localConfig = new LocalConfigExamples();
+	static NodeExamples nodeExamples = new NodeExamples();
+	static TagExamples tagExamples = new TagExamples();
+	static TagFamilyExamples tagFamilyExamples = new TagFamilyExamples();
+	static GroupExamples groupExamples = new GroupExamples();
+	static RoleExamples roleExamples = new RoleExamples();
+	static MiscExamples miscExamples = new MiscExamples();
+	static VersioningExamples versioningExamples = new VersioningExamples();
+	static SchemaExamples schemaExamples = new SchemaExamples();
+	static ProjectExamples projectExamples = new ProjectExamples();
+	static UserExamples userExamples = new UserExamples();
+	static MicroschemaExamples microschemaExamples = new MicroschemaExamples();
+	static GraphQLExamples graphqlExamples = new GraphQLExamples();
+	static AdminExamples adminExamples = new AdminExamples();
+	static JobExamples jobExamples = new JobExamples();
+	static BranchExamples branchExamples = new BranchExamples();
+	static UtilityExamples utilityExamples = new UtilityExamples();
+	static LocalConfigExamples localConfig = new LocalConfigExamples();
 
 	/**
 	 * Create a new endpoint. Internally a new route will be wrapped.
