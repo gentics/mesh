@@ -333,7 +333,7 @@ public class MeshTestContext extends TestWatcher {
 
 			case CLIENT_CERT_REQUEST:
 			case CLIENT_CERT_REQUIRED:
-				httpsConfigBuilder.setTrustedCA("src/test/resources/client-ssl/server.pem");
+				httpsConfigBuilder.addTrustedCA("src/test/resources/client-ssl/server.pem");
 				httpsConfigBuilder.setClientCert("src/test/resources/client-ssl/alice.pem");
 				httpsConfigBuilder.setClientKey("src/test/resources/client-ssl/alice.key");
 				httpsConfig = httpsConfigBuilder.build();

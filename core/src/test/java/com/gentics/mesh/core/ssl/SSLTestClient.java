@@ -50,7 +50,7 @@ public class SSLTestClient {
 			builder.setClientCert(CERT_PATH + clientCertName.name().toLowerCase() + ".pem");
 		}
 		if (!trustAll) {
-			builder.setTrustedCA(CERT_PATH + "server.pem");
+			builder.addTrustedCA(CERT_PATH + "server.pem");
 		}
 		return OkHttpClientUtil.createClient(builder.build());
 

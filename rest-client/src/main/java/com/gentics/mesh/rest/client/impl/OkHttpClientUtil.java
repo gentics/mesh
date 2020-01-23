@@ -80,7 +80,7 @@ public final class OkHttpClientUtil {
 			}
 		}
 
-		if (config.getTrustedCA() != null) {
+		if (config.getTrustedCAs() != null && !config.getTrustedCAs().isEmpty()) {
 			try {
 				trustManagers = getTrustManagers(config);
 			} catch (CertificateException | IOException | KeyStoreException | NoSuchAlgorithmException e) {
@@ -140,17 +140,18 @@ public final class OkHttpClientUtil {
 
 	private static TrustManager[] getTrustManagers(MeshRestClientConfig config)
 		throws NoSuchAlgorithmException, KeyStoreException, IOException, CertificateException {
-		byte[] caCertData = config.getTrustedCA();
 		TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
 		KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
 		CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
-		X509Certificate caCert = (X509Certificate) certificateFactory.generateCertificate(new ByteArrayInputStream(caCertData));
 
 		// Load the keystore with no loading params
 		keyStore.load(null);
-		keyStore.setCertificateEntry(caCert.getSubjectX500Principal().getName(), caCert);
-		trustManagerFactory.init(keyStore);
+		for (byte[] caCertData : config.getTrustedCAs()) {
+			X509Certificate caCert = (X509Certificate) certificateFactory.generateCertificate(new ByteArrayInputStream(caCertData));
+			keyStore.setCertificateEntry(caCert.getSubjectX500Principal().getName(), caCert);
+		}
 
+		trustManagerFactory.init(keyStore);
 		return trustManagerFactory.getTrustManagers();
 	}
 

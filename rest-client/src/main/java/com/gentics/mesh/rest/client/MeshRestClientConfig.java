@@ -4,7 +4,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.time.Duration;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 
@@ -15,7 +17,7 @@ public class MeshRestClientConfig {
 	private final boolean ssl;
 	private final Duration websocketReconnectInterval;
 	private final Duration websocketPingInterval;
-	private final byte[] trustedCA;
+	private final Set<byte[]> trustedCAs;
 	private final byte[] clientCert;
 	private final byte[] clientKey;
 	private final boolean hostnameVerification;
@@ -28,7 +30,7 @@ public class MeshRestClientConfig {
 		this.websocketPingInterval = builder.websocketPingInterval;
 		this.hostnameVerification = builder.hostnameVerification;
 		this.basePath = builder.basePath;
-		this.trustedCA = builder.trustedCA;
+		this.trustedCAs = builder.trustedCAs;
 		this.clientCert = builder.clientCert;
 		this.clientKey = builder.clientKey;
 	}
@@ -75,8 +77,8 @@ public class MeshRestClientConfig {
 		return clientKey;
 	}
 
-	public byte[] getTrustedCA() {
-		return trustedCA;
+	public Set<byte[]> getTrustedCAs() {
+		return trustedCAs;
 	}
 
 	public static Builder newConfig() {
@@ -91,7 +93,7 @@ public class MeshRestClientConfig {
 		private Duration websocketReconnectInterval = Duration.ofSeconds(5);
 		private Duration websocketPingInterval = Duration.ofSeconds(2);
 		public boolean hostnameVerification = false;
-		private byte[] trustedCA;
+		private Set<byte[]> trustedCAs = new HashSet<>();
 		private byte[] clientCert;
 		private byte[] clientKey;
 
@@ -268,25 +270,25 @@ public class MeshRestClientConfig {
 		}
 
 		/**
-		 * Set the filesystem path to the CA file which is formatted in PEM format.
+		 * Add CA cert from the filesystem path to the CAs that will be trusted by the client.
 		 * 
 		 * @param path
 		 * @return
 		 */
-		public Builder setTrustedCA(String path) {
-			this.trustedCA = readFile(path);
+		public Builder addTrustedCA(String path) {
+			this.trustedCAs.add(readFile(path));
 			return this;
 		}
 
 		/**
-		 * Set the InputStream from which the CA in PEM format will be read.
+		 * Add CA cert from the stream to the CAs that will be trusted by the client.
 		 * 
 		 * @param ins
 		 * @return
 		 */
 		public Builder setTrustedCA(InputStream ins) {
 			try {
-				this.trustedCA = IOUtils.toByteArray(ins);
+				this.trustedCAs.add(IOUtils.toByteArray(ins));
 			} catch (Exception e) {
 				throw new RuntimeException("Error while reading key stream", e);
 			}
@@ -294,13 +296,13 @@ public class MeshRestClientConfig {
 		}
 
 		/**
-		 * Set the CA in PEM format.
+		 * Add CA cert in PEM format to the CAs that will be trusted by the client.
 		 * 
 		 * @param data
 		 * @return
 		 */
 		public Builder setTrustedCA(byte[] data) {
-			this.trustedCA = data;
+			this.trustedCAs.add(data);
 			return this;
 		}
 
