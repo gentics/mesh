@@ -156,6 +156,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/FormDataPage'
     post:
+      parameters:
+        - $ref: '#/components/parameters/publish'
       summary: Create form data
       tags: 
        - Form Data
@@ -175,6 +177,8 @@ paths:
       - $ref: '#/components/parameters/project'
       - $ref: '#/components/parameters/formUuid'
     post:
+      parameters:
+        - $ref: '#/components/parameters/publish'
       summary: Create form data
       tags: 
        - Form Data
@@ -211,6 +215,8 @@ paths:
               schema:
                 type: string
     post:
+      parameters:
+        - $ref: '#/components/parameters/publish'
       summary: Update form data
       tags: 
        - Form Data
@@ -238,6 +244,8 @@ paths:
       - $ref: '#/components/parameters/formUuid'
       - $ref: '#/components/parameters/formDataUuid'
     post:
+      parameters:
+        - $ref: '#/components/parameters/publish'
       summary: Update form data
       tags: 
        - Form Data
@@ -348,6 +356,13 @@ components:
             type: object
             
   parameters:
+    publish:
+      in: query
+      name: publish
+      description: If false, the saved form data will not be published
+      schema:
+        type: boolean
+        default: true
     project:
       in: path
       required: true
