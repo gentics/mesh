@@ -10,6 +10,7 @@ import javax.net.ssl.SSLHandshakeException;
 
 import org.junit.Test;
 
+import com.gentics.mesh.core.ssl.SSLTestClient.CLIENT_CERT;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
@@ -22,11 +23,19 @@ public class SSLUserCertRequireServerTest extends AbstractMeshTest {
 		call(() -> sslClient().findUserByUuid(uuid));
 		call(() -> client().findUserByUuid(uuid));
 
-		SSLTestClient.call(httpsPort(), true, false);
+		SSLTestClient.call(httpsPort(), false, CLIENT_CERT.ALICE);
 
 		try {
-			SSLTestClient.call(httpsPort(), false, false);
+			SSLTestClient.call(httpsPort(), false, null);
 			fail("The request should fail since no valid client was passed along.");
+		} catch (SSLHandshakeException e) {
+			assertEquals("Received fatal alert: bad_certificate", e.getMessage());
+		}
+
+		// Bob's cert does not match the server key and is not accepted
+		try {
+			SSLTestClient.call(httpsPort(), false, CLIENT_CERT.BOB);
+			fail("The request should fail since bob's cert is invalid.");
 		} catch (SSLHandshakeException e) {
 			assertEquals("Received fatal alert: bad_certificate", e.getMessage());
 		}

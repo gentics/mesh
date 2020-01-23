@@ -198,8 +198,6 @@ public class RestAPIVerticle extends AbstractVerticle {
 			for (String path : meshServerOptions.getTrustedCertPaths()) {
 				pemTrustOptions.addCertPath(path);
 			}
-			// Finally also add the server cert
-			pemTrustOptions.addCertPath(meshServerOptions.getCertPath());
 			httpsOptions.setPemTrustOptions(pemTrustOptions);
 
 			log.info("Starting https server in verticle {" + getClass().getName() + "} on port {" + httpsOptions.getPort() + "}");
