@@ -16,15 +16,13 @@ public class RequirementsCheck {
 		String storageDir = options.getDirectory();
 
 		// Check for directIO support
-		if (storageDir != null && System.getProperty("storage.wal.allowDirectIO") == null) {
-			if (Platform.isLinux()) {
-				log.info("Checking for directIO support");
-				if (FilesystemUtil.supportsDirectIO(Paths.get(storageDir))) {
-					log.info("DirectIO support verified");
-				} else {
-					log.info("DirectIO not supported.");
-					System.setProperty("storage.wal.allowDirectIO", "false");
-				}
+		if (storageDir != null && System.getProperty("storage.wal.allowDirectIO") == null && Platform.isLinux()) {
+			log.info("Checking for directIO support");
+			if (FilesystemUtil.supportsDirectIO(Paths.get(storageDir))) {
+				log.info("DirectIO support verified");
+			} else {
+				log.info("DirectIO not supported.");
+				System.setProperty("storage.wal.allowDirectIO", "false");
 			}
 		}
 	}
