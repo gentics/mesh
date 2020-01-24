@@ -56,6 +56,7 @@ import io.reactivex.Observable;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import okhttp3.Cookie;
+import okhttp3.HttpUrl;
 import okhttp3.MultipartBody;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -999,5 +1000,45 @@ public class GenericFormGeneratorPluginIntegrationTest extends AbstractFormGener
 		assertThat(renderResponse.isSuccessful()).as(String.format("Response success %d (%s)", renderResponse.code(), renderResponse.message())).isTrue();
 
 		assertThat(renderResponse.body().string()).as("Rendered form").isEqualTo(fromFile("custom.html"));
+	}
+
+	@Test
+	public void testPostDataWithoutPublish() throws Exception {
+		Response createResponse = createForm("inputfield.json");
+		NodeResponse createdNode = JsonUtil.readValue(createResponse.body().string(), NodeResponse.class);
+
+		RequestBody requestBody = new MultipartBody.Builder()
+			.setType(MultipartBody.FORM)
+			.addFormDataPart("input1", "someValue")
+			.build();
+
+		Request postRequest = new Request.Builder()
+			.url(HttpUrl.get(projectUrl("/forms/" + createdNode.getUuid() + "/data"))
+				.newBuilder()
+				.addQueryParameter("publish", "false").build())
+			.header("Referer", "ref")
+			.post(requestBody)
+			.build();
+		client().newCall(postRequest).execute();
+
+		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, createdNode.getUuid()));
+		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
+		NodeResponse dataNode = dataNodes.getData().get(0);
+		assertThat(dataNode.getFields().getStringField("input1").getString()).as("Data Node Field").isEqualTo("someValue");
+		assertThat(dataNode.getVersion()).as("Data Node Version").isEqualTo("0.1");
+
+		// Empty update to publish
+		postRequest = new Request.Builder()
+			.url(HttpUrl.get(projectUrl("/forms/" + createdNode.getUuid() + "/data/" + dataNode.getUuid())))
+			.header("Referer", "ref")
+			.post(requestBody)
+			.build();
+		client().newCall(postRequest).execute();
+		dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, createdNode.getUuid()));
+		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
+		dataNode = dataNodes.getData().get(0);
+		assertThat(dataNode.getFields().getStringField("input1").getString()).as("Data Node Field").isEqualTo("someValue");
+		assertThat(dataNode.getVersion()).as("Data Node Version").isEqualTo("1.0");
+
 	}
 }

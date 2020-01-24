@@ -9,7 +9,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -28,7 +27,6 @@ import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.parameter.client.DeleteParametersImpl;
 import com.gentics.mesh.parameter.client.VersioningParametersImpl;
@@ -36,6 +34,7 @@ import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.formgenerator.FormGeneratorError;
 import com.gentics.mesh.plugin.formgenerator.FormGeneratorPlugin;
 import com.gentics.mesh.plugin.formgenerator.config.FormGeneratorConfig;
+import com.gentics.mesh.plugin.formgenerator.context.FormDataSaveContext;
 import com.gentics.mesh.plugin.formgenerator.dagger.AdminClient;
 import com.gentics.mesh.plugin.formgenerator.export.Exporter;
 import com.gentics.mesh.plugin.formgenerator.model.Form;
@@ -106,56 +105,36 @@ public class FormDataService {
 	/**
 	 * Save data posted by a user for the form
 	 *
-	 * @param projectName
-	 *            project name
-	 * @param uuid
-	 *            form uuid
-	 * @param postedData
-	 *            posted data
-	 * @param fileUploads
-	 *            set of fileuploads
-	 * @param referer
-	 *            refererer
-	 * @param meshContext
-	 *            context
-	 * @param handleCookies
-	 *            true if cookies should be handled
+	 * @param ctx
+	 *            Request context
 	 * @return single of the post data response
 	 */
-	public Single<PostDataResponse> create(String projectName, String uuid, MultiMap postedData, Set<FileUpload> fileUploads, String referer,
-		PluginContext meshContext, boolean handleCookies) {
-		return formService.load(projectName, uuid)
-			.flatMap(formNode -> formService.toForm(formNode)
-			.flatMap(form -> savePostedData(projectName, formNode, null, form, postedData, fileUploads, referer, meshContext, handleCookies)));
+	public Single<PostDataResponse> create(FormDataSaveContext ctx) {
+		return formService.load(ctx.getProjectName(), ctx.getFormUuid())
+			.doOnSuccess(ctx::setFormNode)
+			.flatMap(formService::toForm)
+			.doOnSuccess(ctx::setForm)
+			.flatMap(form -> savePostedData(ctx));
 	}
 
 	/**
 	 * Update already posted data
 	 * 
-	 * @param projectName
-	 *            project name
-	 * @param formUuid
-	 *            form uuid
-	 * @param formDataUuid
-	 *            form data uuid
-	 * @param postedData
-	 *            posted data
-	 * @param fileUploads
-	 *            fileuploads
-	 * @param referer
-	 *            referer
-	 * @param meshContext
-	 *            context
-	 * @param handleCookies
-	 *            true if cookies should be handled
+	 * @param ctx
+	 *            Request context
 	 * @return single of the post data response
 	 */
-	public Single<PostDataResponse> update(String projectName, String formUuid, String formDataUuid, MultiMap postedData, Set<FileUpload> fileUploads,
-		String referer,
-		PluginContext meshContext, boolean handleCookies) {
-		return Single.zip(formService.load(projectName, formUuid), load(projectName, formUuid, formDataUuid), (formNode, formDataNode) ->
-			formService.toForm(formNode)
-			.flatMap(form -> savePostedData(projectName, formNode, formDataNode, form, postedData, fileUploads, referer, meshContext, handleCookies)))
+	public Single<PostDataResponse> update(FormDataSaveContext ctx) {
+		return Single.zip(
+			formService.load(ctx.getProjectName(), ctx.getFormUuid()),
+			load(ctx.getProjectName(), ctx.getFormUuid(), ctx.getFormDataUuid()),
+			(formNode, formDataNode) -> formService.toForm(formNode)
+			.flatMap(form -> {
+				ctx.setFormNode(formNode);
+				ctx.setFormDataNode(formDataNode);
+				ctx.setForm(form);
+				return savePostedData(ctx);
+			}))
 			.flatMap(x -> x);
 	}
 
@@ -247,8 +226,6 @@ public class FormDataService {
 	 *            the UUID of the data node
 	 * @param binaryFieldName
 	 *            the name of the binary field in the form data node
-	 * @param rc
-	 *            the RoutingContext
 	 */
 	public Single<MeshResponse<MeshBinaryResponse>> loadBinary(String projectName, String formUuid, String formDataUuid, String binaryFieldName) {
 		return load(projectName, formUuid, formDataUuid).flatMap(formDataNode -> {
@@ -331,77 +308,32 @@ public class FormDataService {
 	/**
 	 * Validate and save the data to mesh. publish form, if completed. Redirect to success url or referer
 	 * 
-	 * @param projectName
-	 *            project name
-	 * @param formNode
-	 *            form node
-	 * @param formDataNode
-	 *            form data node
-	 * @param form
-	 *            form
-	 * @param postedData
-	 *            posted data
-	 * @param fileUploads
-	 *            set of file uploads
-	 * @param referer
-	 *            referer
-	 * @param meshContext
-	 *            mesh context
-	 * @param handleCookies
-	 *            true if cookies shall be handled, false if not
+	 * @param ctx
 	 * @return single redirect URL
 	 */
-	private Single<PostDataResponse> savePostedData(String projectName, NodeResponse formNode, NodeResponse formDataNode, Form form,
-		MultiMap postedData,
-		Set<FileUpload> fileUploads, String referer, PluginContext meshContext, boolean handleCookies) {
-		Map<String, ValidationError> errors = form.validate(postedData, fileUploads, formDataNode);
-		String cookiePath = getPath(referer);
-
-		return saveFormData(projectName, formNode, formDataNode, form, postedData, errors)
-			.flatMap(savedFormDataNode -> saveFileUploads(projectName, savedFormDataNode, fileUploads))
+	private Single<PostDataResponse> savePostedData(FormDataSaveContext ctx) {
+		Map<String, ValidationError> errors = ctx.getForm().validate(ctx.getPostedData(), ctx.getFileUploads(), ctx.getFormDataNode());
+		return saveFormData(ctx.getProjectName(), ctx.getFormNode(), ctx.getFormDataNode(), ctx.getForm(), ctx.getPostedData(), errors)
+			.flatMap(savedFormDataNode -> saveFileUploads(ctx.getProjectName(), savedFormDataNode, ctx.getFileUploads()))
 			.flatMap(savedFileUploads -> {
-				if (errors.isEmpty() && form.isCompleted(savedFileUploads)) {
-					return publishFormData(projectName, savedFileUploads).flatMap(publishStatus -> {
-						// send mails to admin and user
-						mailService.sendMails(projectName, form, savedFileUploads, meshContext);
-
-						// remove the data cookie
-						if (handleCookies) {
-							meshContext.removeCookie(COOKIE_NAME);
-							Cookie cookie = Cookie.cookie(COOKIE_NAME, "");
-							cookie.setPath(cookiePath);
-							cookie.setHttpOnly(true);
-							cookie.setMaxAge(0);
-							meshContext.addCookie(cookie);
-						}
-
-						PostDataResponse response = new PostDataResponse();
-						response.setDataUuid(savedFileUploads.getUuid());
-						response.setErrors(errors);
-						response.setFinished(true);
-						if (form.getSuccessurl() != null) {
-							response.setRedirectUrl(form.getSuccessurl());
-						} else {
-							response.setRedirectUrl("");
-						}
-
-						return Single.just(response);
-					});
+				if (ctx.isPublish() && errors.isEmpty() && ctx.getForm().isCompleted(savedFileUploads)) {
+					return publishFormData(ctx, savedFileUploads, errors);
 				} else {
 					// set the data cookie
-					if (handleCookies) {
+					if (ctx.handleCookies()) {
 						Cookie cookie = Cookie.cookie(COOKIE_NAME, savedFileUploads.getUuid());
-						cookie.setPath(cookiePath);
+						cookie.setPath(getPath(ctx.getReferer()));
 						cookie.setHttpOnly(true);
-						meshContext.addCookie(cookie);
+						ctx.getContext().addCookie(cookie);
 					}
 
 					PostDataResponse response = new PostDataResponse();
 					response.setDataUuid(savedFileUploads.getUuid());
 					response.setErrors(errors);
+					// TODO Set this to false?
 					response.setFinished(true);
-					if (referer != null) {
-						response.setRedirectUrl(referer);
+					if (ctx.getReferer() != null) {
+						response.setRedirectUrl(ctx.getReferer());
 					} else {
 						response.setRedirectUrl("");
 					}
@@ -501,16 +433,46 @@ public class FormDataService {
 	}
 
 	/**
-	 * Publish the form data
+	 * Publish the form data.
+	 * This will also send mails to the configured users, remove the data cookie and create a response.
 	 *
-	 * @param projectName
-	 *            project name
-	 * @param formData
-	 *            form data node
+	 * @param ctx
+	 *            Request context
+	 * @param savedFileUploads
+	 *            saved file uploads from {@link #saveFileUploads(String, NodeResponse, Set)}
+	 * @param errors
 	 * @return single
 	 */
-	private Single<PublishStatusResponse> publishFormData(String projectName, NodeResponse formData) {
-		return adminClient.publishNode(projectName, formData.getUuid()).toSingle();
+	private Single<PostDataResponse> publishFormData(FormDataSaveContext ctx, NodeResponse savedFileUploads, Map<String, ValidationError> errors) {
+		return adminClient.publishNode(ctx.getProjectName(), savedFileUploads.getUuid()).toSingle().map(publishStatus -> {
+			PluginContext meshContext = ctx.getContext();
+			Form form = ctx.getForm();
+
+			// send mails to admin and user
+			mailService.sendMails(ctx.getProjectName(), ctx.getForm(), savedFileUploads, meshContext);
+
+			// remove the data cookie
+			if (ctx.handleCookies()) {
+				meshContext.removeCookie(COOKIE_NAME);
+				Cookie cookie = Cookie.cookie(COOKIE_NAME, "");
+				cookie.setPath(getPath(ctx.getReferer()));
+				cookie.setHttpOnly(true);
+				cookie.setMaxAge(0);
+				meshContext.addCookie(cookie);
+			}
+
+			PostDataResponse response = new PostDataResponse();
+			response.setDataUuid(savedFileUploads.getUuid());
+			response.setErrors(errors);
+			response.setFinished(true);
+			if (form.getSuccessurl() != null) {
+				response.setRedirectUrl(form.getSuccessurl());
+			} else {
+				response.setRedirectUrl("");
+			}
+
+			return response;
+		});
 	}
 
 	/**
