@@ -1,12 +1,23 @@
 package com.gentics.mesh.plugin.formgenerator.service;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.formgenerator.config.FormGeneratorConfig;
 import com.gentics.mesh.plugin.formgenerator.config.MailOptions;
-import com.gentics.mesh.plugin.formgenerator.dagger.AdminClient;
 import com.gentics.mesh.plugin.formgenerator.dagger.BaseUrls;
 import com.gentics.mesh.plugin.formgenerator.model.FileElement;
 import com.gentics.mesh.plugin.formgenerator.model.Form;
@@ -14,11 +25,11 @@ import com.gentics.mesh.plugin.formgenerator.model.FormElement;
 import com.gentics.mesh.plugin.formgenerator.model.UsermailElement;
 import com.gentics.mesh.plugin.formgenerator.util.RxUtil;
 import com.gentics.mesh.rest.client.MeshRestClient;
+
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.functions.Consumer;
 import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -28,15 +39,6 @@ import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.MailMessage;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.reactivex.ext.web.templ.handlebars.HandlebarsTemplateEngine;
-import org.apache.commons.lang3.StringUtils;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Singleton
 public class MailService {

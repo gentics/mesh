@@ -31,11 +31,11 @@ import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.parameter.client.DeleteParametersImpl;
 import com.gentics.mesh.parameter.client.VersioningParametersImpl;
 import com.gentics.mesh.plugin.PluginContext;
+import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.formgenerator.FormGeneratorError;
 import com.gentics.mesh.plugin.formgenerator.FormGeneratorPlugin;
 import com.gentics.mesh.plugin.formgenerator.config.FormGeneratorConfig;
 import com.gentics.mesh.plugin.formgenerator.context.FormDataSaveContext;
-import com.gentics.mesh.plugin.formgenerator.dagger.AdminClient;
 import com.gentics.mesh.plugin.formgenerator.export.Exporter;
 import com.gentics.mesh.plugin.formgenerator.model.Form;
 import com.gentics.mesh.plugin.formgenerator.model.FormElement;
@@ -91,7 +91,7 @@ public class FormDataService {
 
 	@Inject
 	public FormDataService(@AdminClient MeshRestClient adminClient, Vertx vertx, FormGeneratorConfig configuration, ObjectMapper objectMapper,
-		FormService formService, PagingService pagingService, MailService mailService, HandlebarsTemplateEngine templateEngine) {
+						   FormService formService, PagingService pagingService, MailService mailService, HandlebarsTemplateEngine templateEngine) {
 		this.adminClient = adminClient;
 		this.vertx = vertx;
 		this.configuration = configuration;

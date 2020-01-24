@@ -1,5 +1,18 @@
 package com.gentics.mesh.plugin.common.service;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
+
+import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -17,6 +30,8 @@ import com.gentics.mesh.plugin.common.model.SchemaCreateOrUpdateResponse;
 import com.gentics.mesh.plugin.common.util.MiscUtil;
 import com.gentics.mesh.plugin.common.util.RxUtil;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.google.common.collect.Sets;
+
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
@@ -29,18 +44,6 @@ import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.buffer.Buffer;
 import io.vertx.reactivex.core.eventbus.Message;
 import io.vertx.reactivex.core.eventbus.MessageConsumer;
-import org.apache.commons.lang3.StringUtils;
-
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Function;
 
 /**
  * This utility service provides methods commonly used by Mesh plugins,
@@ -69,7 +72,12 @@ import java.util.function.Function;
  */
 public class MeshPluginService {
 
-	private static final String NO_MIGRATION_MSG = "Migration was not invoked. No changes were detected.";
+	// TODO This should be fixed in Mesh. The i18n key of the error message should always be sent as well.
+	private static final Set<String> NO_MIGRATION_MSG = Sets.newHashSet(
+		"schema_update_no_difference_detected",
+		"Migration was not invoked. No changes were detected.",
+		"Migration wurde nicht gestartet. Es wurden keine Änderungen erkannt."
+	);
 
 	private static final Logger log = LoggerFactory.getLogger(MeshPluginService.class);
 
@@ -252,15 +260,29 @@ public class MeshPluginService {
 	 * 		project
 	 */
 	public Function<String, Completable> ensureFolders(String folderSchemaName, String path) {
+		return project -> ensureFolders(project, folderSchemaName, path, false).ignoreElement();
+	}
+
+	/**
+	 * Makes sure that there is a node with the provided path.
+	 *
+	 * @param project The project name
+	 * @param folderSchemaName The name of the folder schema to use for
+	 * 		creating missing folders
+	 * @param path The path to check
+	 * @param publish If true, the created folders are also published
+	 * @return A <code>Single</code> with the node response for the last folder
+	 * 		in the path
+	 */
+	public Single<NodeResponse> ensureFolders(String project, String folderSchemaName, String path, boolean publish) {
 		// TODO create and assign minimal folder schema if needed.
-		return project -> adminClient.findSchemas().toSingle()
+		return adminClient.findSchemas().toSingle()
 			.doOnSubscribe(ignored -> log.info("Checking {} \"{}\" for \"{}\"", folderSchemaName, path, project))
 			.flatMapObservable(r -> Observable.fromIterable(r.getData()))
 			.filter(s -> s.getName().equals(folderSchemaName))
 			.singleOrError()
 			.doOnError(e -> log.error("Could not find folder schema \"{}\"", folderSchemaName))
-			.flatMap(folderSchema -> ensureFoldersRec(project, folderSchema, path))
-			.ignoreElement();
+			.flatMap(folderSchema -> ensureFoldersRec(project, folderSchema, path, publish));
 	}
 
 	/**
@@ -341,7 +363,7 @@ public class MeshPluginService {
 						actions.length == 1 ? "" : "s");
 				}
 			})
-			.flatMapCompletable(action -> action.apply(project), false, 1)
+			.concatMapCompletable(action -> action.apply(project), 1)
 			.doOnError(e -> log.error("Project initialization failed: {}", e.getMessage()));
 	}
 
@@ -410,17 +432,23 @@ public class MeshPluginService {
 	 * @param project The project to check
 	 * @param folderSchema The schema to use for creating missing folders
 	 * @param path The path to check
+	 * @param publish If true, the created folders are also published
 	 * @return A <code>Single</code> with the node response for the last folder
 	 * 		in the path
 	 */
-	private Single<NodeResponse> ensureFoldersRec(String project, SchemaResponse folderSchema, String path) {
+	private Single<NodeResponse> ensureFoldersRec(String project, SchemaResponse folderSchema, String path, boolean publish) {
 		return RxUtil.webrootMaybe(adminClient, project, path)
 			.to(RxUtil.defaultSingle(() -> {
 				String[] split = splitLastSegment(path);
 
-				return ensureFoldersRec(project, folderSchema, split[0])
-					.flatMap(parent -> createFolder(project, folderSchema, parent.getUuid(), split[1]));
-			}));
+				return ensureFoldersRec(project, folderSchema, split[0], publish)
+					.flatMap(parent -> createFolder(project, folderSchema, parent.getUuid(), split[1]))
+					.flatMap(node -> publish
+						? adminClient.publishNode(project, node.getUuid()).toCompletable()
+							.andThen(Single.just(node))
+						: Single.just(node)
+					);
+		}));
 	}
 
 	/**
@@ -454,7 +482,7 @@ public class MeshPluginService {
 		return adminClient.updateSchema(schema.getUuid(), request).toSingle()
 			.map(response -> {
 				String msg = response.getMessage();
-				boolean updated = !NO_MIGRATION_MSG.equals(msg);
+				boolean updated = !NO_MIGRATION_MSG.contains(msg);
 
 				if (log.isInfoEnabled()) {
 					if (updated) {

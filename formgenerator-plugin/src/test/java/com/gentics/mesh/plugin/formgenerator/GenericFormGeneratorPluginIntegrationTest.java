@@ -3,6 +3,7 @@ package com.gentics.mesh.plugin.formgenerator;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -42,6 +43,7 @@ import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.plugin.PluginConfigUtil;
+import com.gentics.mesh.plugin.common.service.MeshPluginService;
 import com.gentics.mesh.plugin.formgenerator.config.FormGeneratorConfig;
 import com.gentics.mesh.plugin.formgenerator.handler.LoadFilesZipHandler;
 import com.gentics.mesh.plugin.formgenerator.service.FormDataService;
@@ -765,10 +767,12 @@ public class GenericFormGeneratorPluginIntegrationTest extends AbstractFormGener
 
 		// run the initialization
 		Map<String, String> rootNodeUuids = new HashMap<>();
+		rootNodeUuids.put(PROJECT_NAME, TestUtil.findRootNode(server.client(), PROJECT_NAME).blockingGet().getUuid());
 		SchemaService schemaService = new SchemaService(server.client(), rootNodeUuids);
 		FormGeneratorConfig pluginConfig = PluginConfigUtil.getYAMLMapper().readValue(FormGeneratorPlugin.class.getResourceAsStream("config.yml"), FormGeneratorConfig.class);
-		SchemaInitializer schemaInitializer = new SchemaInitializer(server.client(), pluginConfig, schemaService, new HashMap<>());
-		await(schemaInitializer.initialize(), 1, TimeUnit.MINUTES);
+		MeshPluginService meshPluginService = new MeshPluginService(server.getMesh().getRxVertx(), server.client(), new File("."));
+		SchemaInitializer schemaInitializer = new SchemaInitializer(server.client(), pluginConfig, meshPluginService, schemaService, new HashMap<>());
+		await(schemaInitializer.moveFormsAndTemplates(PROJECT_NAME), 1, TimeUnit.MINUTES);
 
 		int countAfterMigration = JsonPath.read(call(() -> server.client().graphqlQuery(PROJECT_NAME, graphQl)).toJson(), "$.data.rootNode.children.totalCount");
 		assertThat(countAfterMigration).as("Form Nodes in root after migration").isEqualTo(0);

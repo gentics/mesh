@@ -1,5 +1,19 @@
 package com.gentics.mesh.plugin.formgenerator.service;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.Set;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import org.apache.commons.io.IOUtils;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -14,15 +28,17 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.parameter.client.DeleteParametersImpl;
+import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.formgenerator.FormGeneratorError;
 import com.gentics.mesh.plugin.formgenerator.FormGeneratorPlugin;
+import com.gentics.mesh.plugin.formgenerator.SchemaInitializer;
 import com.gentics.mesh.plugin.formgenerator.config.FormGeneratorConfig;
-import com.gentics.mesh.plugin.formgenerator.dagger.AdminClient;
 import com.gentics.mesh.plugin.formgenerator.model.Form;
 import com.gentics.mesh.plugin.formgenerator.model.ValidationError;
 import com.gentics.mesh.portal.i18n.I18nHelper;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.impl.EmptyResponse;
+
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonArray;
@@ -32,18 +48,6 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.reactivex.core.buffer.Buffer;
 import io.vertx.reactivex.ext.web.templ.handlebars.HandlebarsTemplateEngine;
-import org.apache.commons.io.IOUtils;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.Set;
 
 
 @Singleton
@@ -64,7 +68,7 @@ public class FormService {
 
 	@Inject
 	public FormService(@AdminClient MeshRestClient adminClient, ObjectMapper objectMapper, SchemaService schemaService, PagingService pagingService,
-			HandlebarsTemplateEngine templateEngine, FormGeneratorConfig configuration) {
+					   HandlebarsTemplateEngine templateEngine, FormGeneratorConfig configuration) {
 		this.adminClient = adminClient;
 		this.objectMapper = objectMapper;
 		this.schemaService = schemaService;
@@ -88,7 +92,7 @@ public class FormService {
 		}
 
 		NodeCreateRequest request = new NodeCreateRequest()
-				.setSchemaName(SchemaService.SCHEMA_NAME)
+				.setSchemaName(SchemaInitializer.SCHEMA_NAME)
 				.setParentNodeUuid(schemaService.getRootNodeUuid(projectName))
 				.setLanguage("en");
 

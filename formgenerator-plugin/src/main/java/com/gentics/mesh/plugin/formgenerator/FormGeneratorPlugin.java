@@ -5,8 +5,8 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 import org.pf4j.PluginWrapper;
@@ -36,9 +36,9 @@ public class FormGeneratorPlugin extends AbstractPlugin implements RestPlugin {
 
 	private FormGeneratorConfig configuration;
 
-	private Map<String, String> rootNodeUuids = new HashMap<>();
+	private Map<String, String> rootNodeUuids = new ConcurrentHashMap<>();
 
-	private Map<String, String> baseUrls = new HashMap<>();
+	private Map<String, String> baseUrls = new ConcurrentHashMap<>();
 
 	public FormGeneratorPlugin(PluginWrapper wrapper, PluginEnvironment env) {
 		super(wrapper, env);

@@ -12,34 +12,34 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import com.gentics.mesh.json.JsonUtil;
-import com.icegreen.greenmail.configuration.GreenMailConfiguration;
-import com.icegreen.greenmail.junit.GreenMailRule;
-import com.icegreen.greenmail.util.ServerSetup;
-import com.icegreen.greenmail.util.ServerSetupTest;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Rule;
 
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.client.DeleteParametersImpl;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.plugin.formgenerator.service.SchemaService;
 import com.gentics.mesh.test.local.MeshLocalServer;
+import com.icegreen.greenmail.junit.GreenMailRule;
+import com.icegreen.greenmail.util.ServerSetupTest;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.logging.SLF4JLogDelegateFactory;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import org.junit.Rule;
 
 /**
  * Integration tests for the FormGeneratorPlugin
@@ -49,6 +49,11 @@ public abstract class AbstractFormGeneratorPluginIntegrationTest {
 	protected final static String PROJECT_HOSTNAME = "testhost";
 
 	protected final static String API_KEY = "Foo4Lais7Mae3vahngaichae6aifoh9aefeeSoh9phooc0pee3";
+
+	static {
+		// Use slf4j instead of JUL
+		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
+	}
 
 	@ClassRule
 	public static final MeshLocalServer server = new MeshLocalServer().withInMemoryMode().waitForStartup();

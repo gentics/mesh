@@ -8,10 +8,14 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.gentics.mesh.plugin.common.dagger.AdminClient;
+import com.gentics.mesh.plugin.common.dagger.StorageDir;
+import com.gentics.mesh.plugin.common.service.MeshPluginService;
 import com.gentics.mesh.plugin.formgenerator.config.FormGeneratorConfig;
 import com.gentics.mesh.plugin.formgenerator.helper.FormHelper;
 import com.gentics.mesh.plugin.formgenerator.model.FormElement;
 import com.gentics.mesh.plugin.formgenerator.model.FormElementDeserializer;
+import com.gentics.mesh.rest.client.MeshRestClient;
 import com.github.jknack.handlebars.io.FileTemplateLoader;
 
 import dagger.Module;
@@ -57,5 +61,11 @@ public class FormGeneratorPluginModule {
 	@Provides
 	public io.vertx.reactivex.core.Vertx vertx(Vertx vertx) {
 		return new io.vertx.reactivex.core.Vertx(vertx);
+	}
+
+	@Singleton
+	@Provides
+	public MeshPluginService meshPluginService(io.vertx.reactivex.core.Vertx vertx, @AdminClient MeshRestClient adminClient, @StorageDir File storageDir) {
+		return new MeshPluginService(vertx, adminClient, storageDir);
 	}
 }

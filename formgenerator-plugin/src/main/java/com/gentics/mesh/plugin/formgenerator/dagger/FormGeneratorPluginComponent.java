@@ -5,6 +5,8 @@ import java.util.Map;
 
 import javax.inject.Singleton;
 
+import com.gentics.mesh.plugin.common.dagger.AdminClient;
+import com.gentics.mesh.plugin.common.dagger.StorageDir;
 import com.gentics.mesh.plugin.formgenerator.SchemaInitializer;
 import com.gentics.mesh.plugin.formgenerator.config.FormGeneratorConfig;
 import com.gentics.mesh.plugin.formgenerator.handler.CreateFormHandler;
@@ -99,7 +101,7 @@ public interface FormGeneratorPluginComponent {
 		Builder rootNodeUuids(@RootNodeUuids Map<String, String> rootNodeUuids);
 
 		@BindsInstance
-		Builder baseUrls(@BaseUrls  Map<String, String> baseUrls);
+		Builder baseUrls(@BaseUrls Map<String, String> baseUrls);
 
 		@BindsInstance
 		Builder vertx(Vertx vertx);

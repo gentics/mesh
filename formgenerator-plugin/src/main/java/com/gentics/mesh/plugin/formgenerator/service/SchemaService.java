@@ -8,8 +8,8 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
+import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.formgenerator.FormGeneratorError;
-import com.gentics.mesh.plugin.formgenerator.dagger.AdminClient;
 import com.gentics.mesh.plugin.formgenerator.dagger.RootNodeUuids;
 import com.gentics.mesh.rest.client.MeshRestClient;
 

@@ -20,6 +20,8 @@ icon:plus[] Updated Mesh dependency to 0.40.2
 
 icon:plus[] It is now possible to save form data without publishing it. On creating or updating form data, set the query parameter `?publish=false`. To publish saved form data, send an update request without the parameter (can be empty if no changes need to be made).
 
+icon:plus[] It is now possible to start the plugin without the configured projects. In that case, the plugin will be initialized when the configured project is created.
+
 icon:check[] Replaced some blocking code with asynchronous code.
 
 [[v4.1.1]]

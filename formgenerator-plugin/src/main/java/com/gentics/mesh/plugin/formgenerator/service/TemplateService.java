@@ -11,8 +11,9 @@ import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.formgenerator.FormGeneratorPlugin;
-import com.gentics.mesh.plugin.formgenerator.dagger.AdminClient;
+import com.gentics.mesh.plugin.formgenerator.SchemaInitializer;
 import com.gentics.mesh.rest.client.MeshRestClient;
 
 import io.reactivex.Completable;
@@ -67,7 +68,7 @@ public class TemplateService {
 	 */
 	public Single<JsonObject> create(String projectName, JsonObject templateData) {
 		NodeCreateRequest request = new NodeCreateRequest()
-			.setSchemaName(SchemaService.TEMPLATE_SCHEMA_NAME)
+			.setSchemaName(SchemaInitializer.TEMPLATE_SCHEMA_NAME)
 			.setParentNodeUuid(schemaService.getRootNodeUuid(projectName))
 			.setLanguage("en");
 
@@ -101,7 +102,7 @@ public class TemplateService {
 	 */
 	public Completable delete(String projectName, String uuid) {
 		return adminClient.findNodeByUuid(projectName, uuid).toSingle().flatMapCompletable(foundNode -> {
-			if (SchemaService.TEMPLATE_SCHEMA_NAME.equals(foundNode.getSchema().getName())) {
+			if (SchemaInitializer.TEMPLATE_SCHEMA_NAME.equals(foundNode.getSchema().getName())) {
 				return adminClient.deleteNode(projectName, uuid).toCompletable();
 			} else {
 				return Completable.complete();
