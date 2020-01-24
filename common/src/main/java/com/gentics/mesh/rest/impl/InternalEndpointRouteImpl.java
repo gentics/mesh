@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -51,6 +52,8 @@ import io.vertx.ext.web.RoutingContext;
 public class InternalEndpointRouteImpl implements InternalEndpointRoute {
 
 	private static final Logger log = LoggerFactory.getLogger(InternalEndpointRoute.class);
+
+	private static final Map<Class<?>, String> SCHEMA_CACHE = new ConcurrentHashMap<>();
 
 	private static final Set<HttpMethod> mutatingMethods = ImmutableSet.of(POST, PUT, DELETE);
 
@@ -318,7 +321,7 @@ public class InternalEndpointRouteImpl implements InternalEndpointRoute {
 		if (model instanceof RestModel) {
 			String json = ((RestModel) model).toJson();
 			mimeType.setExample(json);
-			mimeType.setSchema(JsonUtil.getJsonSchema(model.getClass()));
+			mimeType.setSchema(getSchema(model.getClass()));
 			map.put("application/json", mimeType);
 		} else {
 			mimeType.setExample(model.toString());
@@ -328,6 +331,10 @@ public class InternalEndpointRouteImpl implements InternalEndpointRoute {
 		exampleResponses.put(status.code(), response);
 		exampleResponseClasses.put(status.code(), model.getClass());
 		return this;
+	}
+
+	private String getSchema(Class<? extends Object> clazz) {
+		return SCHEMA_CACHE.computeIfAbsent(clazz, JsonUtil::getJsonSchema);
 	}
 
 	@Override
@@ -361,7 +368,7 @@ public class InternalEndpointRouteImpl implements InternalEndpointRoute {
 		MimeType mimeType = new MimeType();
 		String json = model.toJson();
 		mimeType.setExample(json);
-		mimeType.setSchema(JsonUtil.getJsonSchema(model.getClass()));
+		mimeType.setSchema(getSchema(model.getClass()));
 		bodyMap.put("application/json", mimeType);
 		this.exampleRequestMap = bodyMap;
 		this.exampleRequestClass = model.getClass();
