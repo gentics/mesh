@@ -71,6 +71,10 @@ Method to set the hostname verification checks:
 
   * `MeshRestClientConfig.Builder#setHostnameVerification(boolean flag)`
 
+icon:plus[] Storage: Gentics Mesh will now automatically detect storage filesystem capabilities and enable or disable DirectIO features accordingly.
+
+icon:check[] Core: Improved REST API startup performance. Fixes link:https://github.com/gentics/mesh/issues/996[#996]
+
 [[v1.3.3]]
 == 1.3.3 (17.01.2020)
 
@@ -84,10 +88,6 @@ icon:plus[] Docker: The Gentics Mesh server docker container has been updated:
   * It is now possible to run the container with any uid. The user for the specified UID will automatically be created. This change enhances OpenShift support for the docker containers.
   * The pre-extracted embedded Elasticsearch folder has been removed from the server image to reduce the docker image size. The embedded ES will automatically be extracted to the `/mesh/elasticsearch` folder when embedded mode is enabled.
   * The JRE version in the docker image has been updated from version `11.0.3_7` to `11.0.5_10`.
-
-[[pending]]
-
-icon:check[] Core: Improved REST API startup performance. Fixes link:https://github.com/gentics/mesh/issues/996[#996]
 
 [[v1.3.2]]
 == 1.3.2 (12.12.2019)

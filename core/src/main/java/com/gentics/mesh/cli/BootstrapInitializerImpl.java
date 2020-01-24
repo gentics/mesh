@@ -95,6 +95,7 @@ import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
 import com.gentics.mesh.util.MavenVersionNumber;
+import com.gentics.mesh.util.RequirementsCheck;
 import com.hazelcast.core.HazelcastInstance;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
@@ -261,7 +262,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		options = prepareMeshOptions(options);
 
 		addDebugInfoLogAppender(options);
-
+		RequirementsCheck.init(storageOptions);
 		try {
 			db.init(mesh.getOptions(), MeshVersion.getBuildInfo().getVersion(), "com.gentics.mesh.core.data");
 		} catch (Exception e) {
