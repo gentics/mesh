@@ -18,7 +18,7 @@
 		<mesh.admin-ui2.version>1.1.0</mesh.admin-ui2.version>
 
 		<dagger.version>2.24</dagger.version>
-		<surefire.forkcount>2</surefire.forkcount>
+		<surefire.forkcount>1</surefire.forkcount>
 		<surefire.jvm.postfix></surefire.jvm.postfix>
 		<skip.unit.tests>false</skip.unit.tests>
 		<skip.cluster.tests>false</skip.cluster.tests>

@@ -21,8 +21,8 @@ properties([
 ])
 
 final def gitCommitTag         = '[Jenkins | ' + env.JOB_BASE_NAME + ']';
-final def splits = 40;
-final def runs = 40;
+final def splits = 20;
+final def runs = 20;
 
 stage("Setup Build Environment") {
 	node("mesh-root-worker") {
