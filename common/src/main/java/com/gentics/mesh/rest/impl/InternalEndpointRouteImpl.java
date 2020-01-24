@@ -10,7 +10,6 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -18,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -53,7 +53,7 @@ public class InternalEndpointRouteImpl implements InternalEndpointRoute {
 
 	private static final Logger log = LoggerFactory.getLogger(InternalEndpointRoute.class);
 
-	private static final Map<Class<?>, String> SCHEMA_CACHE = Collections.synchronizedMap(new HashMap<>());
+	private static final Map<Class<?>, String> SCHEMA_CACHE = new ConcurrentHashMap<>();
 
 	private static final Set<HttpMethod> mutatingMethods = ImmutableSet.of(POST, PUT, DELETE);
 
@@ -334,9 +334,7 @@ public class InternalEndpointRouteImpl implements InternalEndpointRoute {
 	}
 
 	private String getSchema(Class<? extends Object> clazz) {
-		return SCHEMA_CACHE.computeIfAbsent(clazz, c -> {
-			return JsonUtil.getJsonSchema(c);
-		});
+		return SCHEMA_CACHE.computeIfAbsent(clazz, JsonUtil::getJsonSchema);
 	}
 
 	@Override
