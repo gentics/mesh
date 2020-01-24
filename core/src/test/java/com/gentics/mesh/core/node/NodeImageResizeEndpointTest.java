@@ -143,6 +143,24 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
+	public void testTransformWithOnlyFocalPoint() throws IOException {
+		Node node = folder("news");
+		String nodeUuid = tx(() -> node.getUuid());
+		String version = uploadImage(node, "en", "image").getVersion();
+		MeshCoreAssertion.assertThat(testContext).hasUploads(1, 1).hasTempFiles(0).hasTempUploads(0);
+
+		// 2. Transform the image
+		ImageManipulationParameters params = new ImageManipulationParametersImpl().setFocalPoint(0.3f, 0.4f);
+		call(() -> client().transformNodeBinaryField(PROJECT_NAME, nodeUuid, "en", version, "image", params));
+		MeshCoreAssertion.assertThat(testContext).hasUploads(2, 2).hasTempFiles(0).hasTempUploads(0);
+
+		NodeResponse response3 = call(() -> client().findNodeByUuid(projectName(), nodeUuid));
+
+		assertEquals("Focalpoint X did not match.", 0.3f, response3.getFields().getBinaryField("image").getFocalPoint().getX(), 0);
+		assertEquals("Focalpoint Y did not match.", 0.4f, response3.getFields().getBinaryField("image").getFocalPoint().getY(), 0);
+	}
+
+	@Test
 	public void testTransformImageCrop() throws Exception {
 		Node node = folder("news");
 		String uuid = tx(() -> node.getUuid());
