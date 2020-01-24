@@ -34,6 +34,7 @@ public class MeshOptions implements Option {
 	public static final String MESH_LOCK_PATH_ENV = "MESH_LOCK_PATH";
 	public static final String MESH_START_IN_READ_ONLY_ENV = "MESH_START_IN_READ_ONLY";
 	public static final String MESH_INITIAL_ADMIN_PASSWORD_ENV = "MESH_INITIAL_ADMIN_PASSWORD";
+	public static final String MESH_INITIAL_ADMIN_PASSWORD_HASH_ENV = "MESH_INITIAL_ADMIN_PASSWORD_HASH";
 	public static final String MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET_ENV = "MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET";
     public static final String MESH_MAX_PURGE_BATCH_SIZE = "MESH_MAX_PURGE_BATCH_SIZE";
 
@@ -145,6 +146,10 @@ public class MeshOptions implements Option {
 	@JsonIgnore
 	@EnvironmentVariable(name = MESH_INITIAL_ADMIN_PASSWORD_ENV, description = "Password which will be used during initial admin user creation.")
 	private String initialAdminPassword = PasswordUtil.humanPassword();
+
+	@JsonIgnore
+	@EnvironmentVariable(name = MESH_INITIAL_ADMIN_PASSWORD_HASH_ENV, description = "BCrypt password hash which can be used during initial admin user creation. A present env value will take precedence over the plain text password.")
+	private String initialAdminPasswordHash = null;
 
 	@JsonIgnore
 	@EnvironmentVariable(name = MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET_ENV, description = "Control whether a forced password reset should be triggered when creating the initial admin user. Default: true")
@@ -392,6 +397,17 @@ public class MeshOptions implements Option {
 	}
 
 	@JsonIgnore
+	public String getInitialAdminPasswordHash() {
+		return initialAdminPasswordHash;
+	}
+
+	@JsonIgnore
+	public MeshOptions setInitialAdminPasswordHash(String initialAdminPasswordHash) {
+		this.initialAdminPasswordHash = initialAdminPasswordHash;
+		return this;
+	}
+
+	@JsonIgnore
 	public boolean isForceInitialAdminPasswordReset() {
 		return forceInitialAdminPasswordReset;
 	}
@@ -420,14 +436,14 @@ public class MeshOptions implements Option {
 		return this;
 	}
 
-    public int getVersionPurgeMaxBatchSize() {
-        return versionPurgeMaxBatchSize;
-    }
+	public int getVersionPurgeMaxBatchSize() {
+		return versionPurgeMaxBatchSize;
+	}
 
-    public MeshOptions setVersionPurgeMaxBatchSize(int versionPurgeMaxBatchSize) {
-        this.versionPurgeMaxBatchSize = versionPurgeMaxBatchSize;
-        return this;
-    }
+	public MeshOptions setVersionPurgeMaxBatchSize(int versionPurgeMaxBatchSize) {
+		this.versionPurgeMaxBatchSize = versionPurgeMaxBatchSize;
+		return this;
+	}
 
 	public void validate() {
 		if (getClusterOptions() != null) {

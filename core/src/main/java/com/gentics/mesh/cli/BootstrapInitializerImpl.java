@@ -859,26 +859,10 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				adminUser.setEditor(adminUser);
 				adminUser.setLastEditedTimestamp();
 
-				String pw = config.getInitialAdminPassword();
-				if (pw != null) {
-					StringBuffer sb = new StringBuffer();
-					String hash = passwordEncoder.encode(pw);
-					sb.append("-----------------------\n");
-					sb.append("- Admin Login\n");
-					sb.append("-----------------------\n");
-					sb.append("- Username: admin\n");
-					sb.append("- Password: " + pw +"\n");
-					sb.append("-----------------------\n");
-					// TODO figure out a way to avoid the encode call during test execution. This will otherwise slow down tests big time.
-					adminUser.setPasswordHash(hash);
-					if (config.isForceInitialAdminPasswordReset()) {
-						sb.append("- Password reset forced on initial login.\n");
-						adminUser.setForcedPasswordChange(true);
-						sb.append("-----------------------\n");
-					}
-					initialPasswordInfo = sb.toString();
+				if (config.getInitialAdminPasswordHash() != null) {
+					setupAdminLogin(adminUser, null, config.getInitialAdminPasswordHash(), config.isForceInitialAdminPasswordReset());
 				} else {
-					log.warn("No initial password specified. Creating admin user without password!");
+					setupAdminLogin(adminUser, config.getInitialAdminPassword(), null, config.isForceInitialAdminPasswordReset());
 				}
 				log.debug("Created admin user {" + adminUser.getUuid() + "}");
 			}
@@ -989,6 +973,38 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			tx.success();
 		}
 
+	}
+
+	private void setupAdminLogin(User adminUser, String initialAdminPassword, String initialAdminPasswordHash,
+		boolean forceInitialAdminPasswordReset) {
+		String hash = initialAdminPasswordHash;
+
+		// Generate the hash from the initial admin pw
+		if (hash == null && initialAdminPassword != null) {
+			hash = passwordEncoder.encode(initialAdminPassword);
+		}
+		if (hash != null) {
+			StringBuffer sb = new StringBuffer();
+			sb.append("-----------------------\n");
+			sb.append("- Admin Login\n");
+			sb.append("-----------------------\n");
+			sb.append("- Username: admin\n");
+			if (initialAdminPassword != null) {
+				sb.append("- Password: " + initialAdminPassword + "\n");
+			} else {
+				sb.append("- Password: ******* (Password hashed) \n");
+			}
+			sb.append("-----------------------\n");
+			adminUser.setPasswordHash(hash);
+			if (forceInitialAdminPasswordReset) {
+				sb.append("- Password reset forced on initial login.\n");
+				adminUser.setForcedPasswordChange(true);
+				sb.append("-----------------------\n");
+			}
+			initialPasswordInfo = sb.toString();
+		} else {
+			log.warn("No initial password specified. Creating admin user without password!");
+		}
 	}
 
 	@Override

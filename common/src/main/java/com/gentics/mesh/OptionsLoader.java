@@ -61,6 +61,7 @@ public final class OptionsLoader {
 	private static void applyNonYamlProperties(MeshOptions defaultOption, MeshOptions options) {
 		if (defaultOption != null) {
 			options.setInitialAdminPassword(defaultOption.getInitialAdminPassword());
+			options.setInitialAdminPasswordHash(defaultOption.getInitialAdminPasswordHash());
 			options.setForceInitialAdminPasswordReset(defaultOption.isForceInitialAdminPasswordReset());
 		}
 	}
