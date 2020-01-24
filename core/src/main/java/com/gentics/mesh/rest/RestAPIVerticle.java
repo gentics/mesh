@@ -198,7 +198,12 @@ public class RestAPIVerticle extends AbstractVerticle {
 			for (String path : meshServerOptions.getTrustedCertPaths()) {
 				pemTrustOptions.addCertPath(path);
 			}
-			httpsOptions.setPemTrustOptions(pemTrustOptions);
+			// Only set the trust options when those have been specified.
+			// Internally Vert.x will only create a trust manager when options have been specified
+			// Otherwise the default JVM trust manager will be used.
+			if (!pemTrustOptions.getCertPaths().isEmpty()) {
+				httpsOptions.setPemTrustOptions(pemTrustOptions);
+			}
 
 			log.info("Starting https server in verticle {" + getClass().getName() + "} on port {" + httpsOptions.getPort() + "}");
 			httpsServer = rxVertx.createHttpServer(httpsOptions);
