@@ -13,7 +13,7 @@ import okhttp3.Response;
 
 public class SSLTestClient {
 
-	public enum CLIENT_CERT {
+	public enum ClientCert {
 		BOB,
 		ALICE;
 	}
@@ -32,7 +32,7 @@ public class SSLTestClient {
 	 * @param clientCertName
 	 * @throws IOException
 	 */
-	public static void call(int httpsPort, boolean trustAll, CLIENT_CERT clientCertName) throws IOException {
+	public static void call(int httpsPort, boolean trustAll, ClientCert clientCertName) throws IOException {
 		OkHttpClient client = client(clientCertName, trustAll);
 		Request request = new Request.Builder().url(String.format(FMT_TEST_URL, httpsPort)).build();
 
@@ -41,7 +41,7 @@ public class SSLTestClient {
 		log.info("Received response: " + response);
 	}
 
-	public static OkHttpClient client(CLIENT_CERT clientCertName, boolean trustAll) {
+	public static OkHttpClient client(ClientCert clientCertName, boolean trustAll) {
 		com.gentics.mesh.rest.client.MeshRestClientConfig.Builder builder = new MeshRestClientConfig.Builder();
 
 		builder.setHost("localhost");
