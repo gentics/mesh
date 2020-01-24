@@ -14,7 +14,9 @@ public class RequirementsCheck {
 
 	public static void init(GraphStorageOptions options) {
 		String storageDir = options.getDirectory();
-		if (storageDir != null) {
+
+		// Check for directIO support
+		if (storageDir != null && System.getProperty("storage.wal.allowDirectIO") == null) {
 			if (Platform.isLinux()) {
 				log.info("Checking for directIO support");
 				if (FilesystemUtil.supportsDirectIO(Paths.get(storageDir))) {
