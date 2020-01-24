@@ -18,13 +18,13 @@ ADD ./target/mesh-demo*jar /mesh/meshdemo.jar
 ADD ./target/dump/data/binaryFiles /uploads
 ADD ./target/dump/data/graphdb /graphdb
 RUN adduser -D -u 1000 -G root -h /mesh mesh && \
-    mkdir /graphdb   && chown 1000:0 /graphdb  -R && chmod 770 /graphdb  && \
-    mkdir /uploads   && chown 1000:0 /uploads  -R && chmod 770 /uploads  && \
-    mkdir /backups   && chown 1000:0 /backups  -R && chmod 770 /backups  && \
-    mkdir /plugins   && chown 1000:0 /plugins  -R && chmod 770 /plugins  && \
-    mkdir /keystore  && chown 1000:0 /keystore -R && chmod 770 /keystore && \
-    mkdir /config    && chown 1000:0 /config   -R && chmod 770 /config && ln -s /config /mesh/config && \
-    mkdir /mesh/data && \
+    mkdir -p /graphdb   && chown 1000:0 /graphdb  -R && chmod 770 /graphdb  && \
+    mkdir -p /uploads   && chown 1000:0 /uploads  -R && chmod 770 /uploads  && \
+    mkdir -p /backups   && chown 1000:0 /backups  -R && chmod 770 /backups  && \
+    mkdir -p /plugins   && chown 1000:0 /plugins  -R && chmod 770 /plugins  && \
+    mkdir -p /keystore  && chown 1000:0 /keystore -R && chmod 770 /keystore && \
+    mkdir -p /config    && chown 1000:0 /config   -R && chmod 770 /config && ln -s /config /mesh/config && \
+    mkdir -p /mesh/data && \
     mkdir -p /mesh/elasticsearch/data && \
     chown 1000:0 /mesh -R && \
     chmod 770 /mesh -R
