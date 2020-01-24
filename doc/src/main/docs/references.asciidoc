@@ -83,9 +83,7 @@ https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg?width=400
 
 TIP: The https://insomnia.rest/[Insomnia] REST client can be used to build and invoke requests from your browser to Gentics Mesh.
 
-== HTTP details
-
-//=== Security/SSL
+== HTTP
 
 === Encoding
 
@@ -145,6 +143,54 @@ Gentics Mesh will compare the provided ETag with the current state of the conten
 ETag Handling can be disabled for each request via the `?etag=false` query parameter. This will increase performance when ETag headers are not needed.
 
 //=== Error Codes
+
+== HTTPs
+
+Server side SSL support can be enabled via the `server.ssl` flag or the `MESH_HTTP_SSL_ENABLE` environment variable. SSL support is disabled by default.
+
+NOTE: In most cases a reverse proxy like link:https://containo.us/traefik/[Traefik] which handles HTTPs is a more viable solution compared to handle HTTPs by Gentics Mesh Server. 
+
+=== Ports
+
+The HTTPs server port can be configured via `server.sslPort` or environment variable `MESH_HTTPS_PORT`. The default is port **8443**.
+
+The HTTP server port uses the `server.port` setting with default **8080**.
+
+TIP: You can also turn off the HTTP server via the `server.http` setting.
+
+=== Certificates
+
+A server certificate and server key in PEM format has to be provided.
+The `server.certPath` and `server.keyPath` settings can be used to set the path to the generated files.
+
+For testing purposes you may want to create a self signed certificate like this:
+
+[source,bash]
+----
+openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 90 -nodes
+----
+
+=== Client Certificate
+
+Gentics Mesh also support client certificate handling. The server can be configured to reject, request or require client certificates.
+
+Client certificates are a good option to ensure that the SSL connection between client and server is trusted by both parties.
+
+NOTE: Please note that client certificates will currently not provide a way to handle authentication. The send request still needs to provide an API Key to be authenticated and mapped to a user.
+
+NOTE: All certs / keys must be in PEM format.
+
+==== Client Authentication Modes
+
+The `server.clientAuthMode` (Env: `MESH_HTTP_SSL_CLIENT_AUTH_MODE`) setting can be used to control the client authenticaton mode.
+
+The Gentics Mesh HTTPs server supports three client authentication modes:
+
+* `none` - Reject client certificates during SSL handshake (**default**)
+* `request` - Request client certificate. A client certificate will be used when provided. The request will also work when omitting the client cert.
+* `require` - Requiring a client certificate. The ssl handshake will fail when no client certificate was provided.
+
+The `server.trustedCertPaths` (Env: `MESH_HTTP_SSL_TRUSTED_CERTS`) setting can be used to set a list of certificates which will be trusted by the server.
 
 == API Tools
 

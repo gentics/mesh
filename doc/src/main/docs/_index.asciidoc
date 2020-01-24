@@ -361,10 +361,10 @@ ul.doc-toc h2 {
                                 </ul>
                             </li>
                             <li>
-                                <a href="references#_http_details">HTTP Details</a>
+                                <a href="references#_http">HTTP Details</a>
                                 <ul>
                                     <li>
-                                        <a href="references#_http_details">Security/SSL</a>
+                                        <a href="references#_https">Security/SSL</a>
                                     </li>
                                     <li>
                                         <a href="references#_encoding">Encoding</a>

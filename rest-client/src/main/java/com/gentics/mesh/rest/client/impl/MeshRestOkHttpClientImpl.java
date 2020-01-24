@@ -1,7 +1,6 @@
 package com.gentics.mesh.rest.client.impl;
 
 import java.io.InputStream;
-import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,7 +10,6 @@ import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshRestClientConfig;
 import com.gentics.mesh.rest.client.MeshWebsocket;
 
-import okhttp3.Dispatcher;
 import okhttp3.OkHttpClient;
 
 /**
@@ -21,37 +19,14 @@ public class MeshRestOkHttpClientImpl extends MeshRestHttpClientImpl {
 
 	private final OkHttpClient client;
 	private final MeshRestClientConfig config;
-	private static OkHttpClient defaultClient;
 
 	public MeshRestOkHttpClientImpl(MeshRestClientConfig config) {
-		this(config, defaultClient());
+		this(config, OkHttpClientUtil.createClient(config));
 	}
 
 	public MeshRestOkHttpClientImpl(MeshRestClientConfig config, OkHttpClient client) {
 		this.client = client;
 		this.config = config;
-	}
-
-	/**
-	 * We need a long timeout per default since some requests take a long time. For all tests a 1 minute timeout works fine.
-	 * 
-	 * @return
-	 */
-	private static OkHttpClient defaultClient() {
-		if (defaultClient == null) {
-			Dispatcher dispatcher = new Dispatcher();
-			dispatcher.setMaxRequestsPerHost(64);
-
-			defaultClient = new OkHttpClient.Builder()
-				.callTimeout(Duration.ofMinutes(1))
-				.connectTimeout(Duration.ofMinutes(1))
-				.writeTimeout(Duration.ofMinutes(1))
-				.readTimeout(Duration.ofMinutes(1))
-				.dispatcher(dispatcher)
-				.build();
-
-		}
-		return defaultClient;
 	}
 
 	@Override

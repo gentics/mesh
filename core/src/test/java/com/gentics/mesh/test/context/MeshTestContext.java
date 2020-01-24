@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.security.cert.CertificateException;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,9 +22,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
-import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
@@ -60,6 +59,7 @@ import com.gentics.mesh.rest.monitoring.MonitoringClientConfig;
 import com.gentics.mesh.rest.monitoring.MonitoringRestClient;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.verticle.ElasticsearchProcessVerticle;
+import com.gentics.mesh.test.SSLTestMode;
 import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.test.docker.ElasticsearchContainer;
 import com.gentics.mesh.test.docker.KeycloakContainer;
@@ -69,6 +69,7 @@ import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.MessageConsumer;
+import io.vertx.core.http.ClientAuth;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -104,7 +105,8 @@ public class MeshTestContext extends TestWatcher {
 	private TrackingSearchProvider trackingSearchProvider;
 	private Vertx vertx;
 
-	protected int port;
+	protected int httpPort;
+	protected int httpsPort;
 	protected int monitoringPort;
 
 	// Maps api version to client
@@ -142,7 +144,7 @@ public class MeshTestContext extends TestWatcher {
 			DatabaseHelper.init(meshDagger.database());
 		}
 		initFolders(mesh.getOptions());
-		boolean setAdminPassword =  settings.optionChanger() != MeshOptionChanger.INITIAL_ADMIN_PASSWORD; 
+		boolean setAdminPassword = settings.optionChanger() != MeshOptionChanger.INITIAL_ADMIN_PASSWORD;
 		setupData(mesh.getOptions(), setAdminPassword);
 		listenToSearchIdleEvent();
 		switch (settings.elasticsearch()) {
@@ -159,7 +161,8 @@ public class MeshTestContext extends TestWatcher {
 	}
 
 	public void setupOnce(MeshTestSetting settings) throws Exception {
-		port = TestUtils.getRandomPort();
+		httpPort = TestUtils.getRandomPort();
+		httpsPort = TestUtils.getRandomPort();
 		monitoringPort = TestUtils.getRandomPort();
 		removeConfigDirectory();
 		MeshOptions options = init(settings);
@@ -207,12 +210,7 @@ public class MeshTestContext extends TestWatcher {
 			builder.writeTimeout(Duration.ofMinutes(timeout));
 			builder.readTimeout(Duration.ofMinutes(timeout));
 			builder.sslSocketFactory(sslSocketFactory, (X509TrustManager) trustAllCerts[0]);
-			builder.hostnameVerifier(new HostnameVerifier() {
-				@Override
-				public boolean verify(String hostname, SSLSession session) {
-					return true;
-				}
-			});
+			builder.hostnameVerifier((hostName, sslSession) -> true);
 			return builder.build();
 		} catch (Exception e) {
 			throw new RuntimeException(e);
@@ -303,26 +301,60 @@ public class MeshTestContext extends TestWatcher {
 	private void setupRestEndpoints(MeshTestSetting settings) throws Exception {
 		mesh.getOptions().getUploadOptions().setByteLimit(Long.MAX_VALUE);
 
-		log.info("Using port:  " + port);
+		log.info("Using port:  " + httpPort);
 		meshDagger.routerStorageRegistry().addProject(TestDataProvider.PROJECT_NAME);
 
 		// Setup the rest client
 		try (Tx tx = db().tx()) {
-			boolean ssl = settings.ssl();
-			MeshRestClientConfig.Builder config = new MeshRestClientConfig.Builder()
+			MeshRestClientConfig.Builder httpConfigBuilder = new MeshRestClientConfig.Builder()
 				.setHost("localhost")
-				.setPort(port)
+				.setPort(httpPort)
 				.setBasePath(CURRENT_API_BASE_PATH)
-				.setSsl(ssl);
+				.setSsl(false);
 
-			MeshRestClient defaultClient = MeshRestClient.create(config.build(), okHttp);
-			defaultClient.setLogin(getData().user().getUsername(), getData().getUserInfo().getPassword());
-			defaultClient.login().blockingGet();
-			clients.put("v" + CURRENT_API_VERSION, defaultClient);
+			MeshRestClient httpClient = MeshRestClient.create(httpConfigBuilder.build(), okHttp);
+			httpClient.setLogin(getData().user().getUsername(), getData().getUserInfo().getPassword());
+			httpClient.login().blockingGet();
+			clients.put("http_v" + CURRENT_API_VERSION, httpClient);
+
+			// Setup SSL client if needed
+			SSLTestMode ssl = settings.ssl();
+			MeshRestClientConfig.Builder httpsConfigBuilder = new MeshRestClientConfig.Builder()
+				.setHost("localhost")
+				.setPort(httpsPort)
+				.setBasePath(CURRENT_API_BASE_PATH)
+				.setHostnameVerification(false)
+				.setSsl(true);
+
+			MeshRestClientConfig httpsConfig = null;
+			switch (ssl) {
+			case OFF:
+				break;
+
+			case CLIENT_CERT_REQUEST:
+			case CLIENT_CERT_REQUIRED:
+				httpsConfigBuilder.addTrustedCA("src/test/resources/client-ssl/server.pem");
+				httpsConfigBuilder.setClientCert("src/test/resources/client-ssl/alice.pem");
+				httpsConfigBuilder.setClientKey("src/test/resources/client-ssl/alice.key");
+				httpsConfig = httpsConfigBuilder.build();
+				break;
+
+			case NORMAL:
+				httpsConfig = httpsConfigBuilder.build();
+				break;
+			}
+
+			if (httpsConfig != null) {
+				MeshRestClient httpsClient = MeshRestClient.create(httpsConfig);
+				httpsClient.setLogin(getData().user().getUsername(), getData().getUserInfo().getPassword());
+				httpsClient.login().blockingGet();
+				clients.put("https_v" + CURRENT_API_VERSION, httpsClient);
+			}
+
 			IntStream.range(1, CURRENT_API_VERSION).forEach(version -> {
-				MeshRestClient oldClient = MeshRestClient.create(config.setBasePath("/api/v" + version).build());
-				oldClient.setAuthenticationProvider(defaultClient.getAuthentication());
-				clients.put("v" + version, oldClient);
+				MeshRestClient oldClient = MeshRestClient.create(httpConfigBuilder.setBasePath("/api/v" + version).build());
+				oldClient.setAuthenticationProvider(httpClient.getAuthentication());
+				clients.put("http_v" + version, oldClient);
 			});
 		}
 		log.info("Using monitoring port: " + monitoringPort);
@@ -342,8 +374,12 @@ public class MeshTestContext extends TestWatcher {
 		return meshDagger.database();
 	}
 
-	public int getPort() {
-		return port;
+	public int getHttpPort() {
+		return httpPort;
+	}
+
+	public int getHttpsPort() {
+		return httpsPort;
 	}
 
 	public Vertx getVertx() {
@@ -352,8 +388,9 @@ public class MeshTestContext extends TestWatcher {
 
 	/**
 	 * Setup the test data.
-	 * @param meshOptions 
-	 * @param setAdminPassword 
+	 * 
+	 * @param meshOptions
+	 * @param setAdminPassword
 	 *
 	 * @throws Exception
 	 */
@@ -461,11 +498,36 @@ public class MeshTestContext extends TestWatcher {
 		initFolders(meshOptions);
 
 		HttpServerConfig httpOptions = meshOptions.getHttpServerOptions();
-		httpOptions.setPort(port);
-		if (settings.ssl()) {
+		httpOptions.setPort(httpPort);
+		switch (settings.ssl()) {
+		case OFF:
+			httpOptions.setSsl(false);
+			break;
+
+		case NORMAL:
 			httpOptions.setSsl(true);
+			httpOptions.setSslPort(httpsPort);
 			httpOptions.setCertPath("src/test/resources/ssl/cert.pem");
 			httpOptions.setKeyPath("src/test/resources/ssl/key.pem");
+			break;
+
+		case CLIENT_CERT_REQUEST:
+			httpOptions.setClientAuthMode(ClientAuth.REQUEST);
+			httpOptions.setSsl(true);
+			httpOptions.setSslPort(httpsPort);
+			httpOptions.setCertPath("src/test/resources/client-ssl/server.pem");
+			httpOptions.setKeyPath("src/test/resources/client-ssl/server.key");
+			httpOptions.setTrustedCertPaths(Arrays.asList("src/test/resources/client-ssl/server.pem"));
+			break;
+
+		case CLIENT_CERT_REQUIRED:
+			httpOptions.setClientAuthMode(ClientAuth.REQUIRED);
+			httpOptions.setSsl(true);
+			httpOptions.setSslPort(httpsPort);
+			httpOptions.setCertPath("src/test/resources/client-ssl/server.pem");
+			httpOptions.setKeyPath("src/test/resources/client-ssl/server.key");
+			httpOptions.setTrustedCertPaths(Arrays.asList("src/test/resources/client-ssl/server.pem"));
+			break;
 		}
 
 		MonitoringConfig monitoringOptions = meshOptions.getMonitoringOptions();
@@ -636,12 +698,16 @@ public class MeshTestContext extends TestWatcher {
 		return monitoringClient;
 	}
 
-	public MeshRestClient getClient() {
-		return getClient("v" + CURRENT_API_VERSION);
+	public MeshRestClient getHttpClient() {
+		return clients.get("http_v" + CURRENT_API_VERSION);
 	}
 
-	public MeshRestClient getClient(String version) {
-		return clients.get(version);
+	public MeshRestClient getHttpsClient() {
+		return clients.get("https_v" + CURRENT_API_VERSION);
+	}
+
+	public MeshRestClient getHttpClient(String version) {
+		return clients.get("http_" + version);
 	}
 
 	public static KeycloakContainer getKeycloak() {

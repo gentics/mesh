@@ -9,6 +9,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.util.List;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -24,10 +25,10 @@ import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.etc.config.search.MappingMode;
 
 public class OptionsLoaderTest {
-	
+
 	@Rule
 	public final EnvironmentVariables environmentVariables = new EnvironmentVariables();
-	
+
 	@Test
 	public void testOptionsLoader() {
 		File confFile = new File(CONFIG_FOLDERNAME + "/" + MESH_CONF_FILENAME);
@@ -80,6 +81,24 @@ public class OptionsLoaderTest {
 		environmentVariables.set(ElasticSearchOptions.MESH_ELASTICSEARCH_URL_ENV, "null");
 		MeshOptions options = OptionsLoader.createOrloadOptions();
 		assertNull(options.getSearchOptions().getUrl());
+	}
+
+	@Test
+	public void testTrustedCertListEnv() {
+		environmentVariables.set(HttpServerConfig.MESH_HTTP_SSL_TRUSTED_CERTS_ENV, "abc,efg");
+		MeshOptions options = OptionsLoader.createOrloadOptions();
+		List<String> list = options.getHttpServerOptions().getTrustedCertPaths();
+		assertEquals("The path list should contain two entries", 2, list.size());
+		assertEquals("abc", list.get(0));
+		assertEquals("efg", list.get(1));
+	}
+
+	@Test
+	public void testEmptyTrustedCertListEnv() {
+		environmentVariables.set(HttpServerConfig.MESH_HTTP_SSL_TRUSTED_CERTS_ENV, "");
+		MeshOptions options = OptionsLoader.createOrloadOptions();
+		List<String> list = options.getHttpServerOptions().getTrustedCertPaths();
+		assertEquals("The path list should contain two entries", 0, list.size());
 	}
 
 	@Test

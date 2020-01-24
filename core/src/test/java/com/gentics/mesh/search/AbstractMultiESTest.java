@@ -8,6 +8,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.runners.Parameterized.Parameters;
 
+import com.gentics.mesh.test.SSLTestMode;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.ElasticsearchTestMode;
 import com.gentics.mesh.test.context.MeshOptionChanger;
@@ -142,7 +143,7 @@ public abstract class AbstractMultiESTest implements TestHttpMethods, TestGraphH
 		}
 
 		@Override
-		public boolean ssl() {
+		public SSLTestMode ssl() {
 			return delegate.ssl();
 		}
 

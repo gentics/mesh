@@ -10,6 +10,7 @@ ENV HOME=/mesh
 ENV JAVA_TOOL_OPTIONS="-Xms512m -Xmx512m -XX:MaxDirectMemorySize=256m -Dstorage.diskCache.bufferSize=256"
 
 EXPOSE 8080
+EXPOSE 8443
 EXPOSE 8081
 
 USER root
@@ -24,8 +25,7 @@ RUN adduser -D -u 1000 -G root -h /mesh mesh && \
     mkdir /mesh/data && \
     mkdir -p /mesh/elasticsearch/data && \
     chown 1000:0 /mesh -R && \
-    chmod 770 /mesh -R && \
-    chmod 770 /etc/passwd
+    chmod 770 /mesh -R
 
 USER mesh
 WORKDIR /mesh
@@ -38,4 +38,3 @@ VOLUME /keystore
 VOLUME /config
 
 CMD [ "java", "-Djna.tmpdir=/tmp/.jna", "-Duser.dir=/mesh", "-jar" , "mesh.jar"]
-

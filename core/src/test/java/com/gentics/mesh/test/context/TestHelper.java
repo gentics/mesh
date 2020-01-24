@@ -165,7 +165,15 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	 * @return
 	 */
 	default int port() {
-		return getTestContext().getPort();
+		return httpPort();
+	}
+
+	default int httpPort() {
+		return getTestContext().getHttpPort();
+	}
+
+	default int httpsPort() {
+		return getTestContext().getHttpsPort();
 	}
 
 	default Node folder(String key) {
