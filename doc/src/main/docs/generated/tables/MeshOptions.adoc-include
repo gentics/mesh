@@ -27,6 +27,11 @@
 | int
 | Configure the Gentics Mesh HTTP server port. Default is: 8080
 
+| httpServerOptions.sslPort
+| false
+| int
+| Configure the Gentics Mesh HTTPS server port. Default is: 8443
+
 | httpServerOptions.host
 | false
 | string
@@ -47,10 +52,15 @@
 | boolean
 | Flag which indicates whether CORS handling should be enabled.
 
+| httpServerOptions.http
+| false
+| boolean
+| Flag which indicates whether http server should be enabled. Default: true
+
 | httpServerOptions.ssl
 | false
 | boolean
-| Flag which indicates whether SSL support be enabled.
+| Flag which indicates whether https server should be enabled. Default: false
 
 | httpServerOptions.certPath
 | false
@@ -61,6 +71,16 @@
 | false
 | string
 | Path to the SSL private key. Default: config/key.pem
+
+| httpServerOptions.clientAuthMode
+| false
+| clientauth
+| Configure the client certificate handling mode. Options: none, request, required. Default: none
+
+| httpServerOptions.trustedCertPaths
+| false
+| list
+| Configure the trusted SSL certificates.
 
 | httpServerOptions.verticleAmount
 | false

@@ -12,7 +12,7 @@
 | Override the graph database server flag.
 
 | *MESH_HTTP_SSL_ENABLE*
-| Override the configured SSL enable flag.
+| Override the configured https server flag.
 
 | *MESH_GRAPH_TX_RETRY_LIMIT*
 | Override the transaction retry limit. Default: 10
@@ -113,8 +113,14 @@
 | *MESH_ELASTICSEARCH_CERT_PATH*
 | Override the configured trusted server certificate.
 
+| *MESH_HTTP_SSL_CLIENT_AUTH_MODE*
+| Override the configured client certificate handling mode.
+
 | *MESH_ELASTICSEARCH_PASSWORD*
 | Override the configured Elasticsearch connection password.
+
+| *MESH_HTTP_ENABLE*
+| Override the configured http server flag.
 
 | *MESH_BINARY_UPLOAD_LIMIT*
 | Override the configured binary byte upload limit.
@@ -145,6 +151,9 @@
 
 | *MESH_ELASTICSEARCH_URL*
 | Override the configured elasticsearch server url. The value can be set to null in order to disable the Elasticsearch support.
+
+| *MESH_HTTP_SSL_TRUSTED_CERTS*
+| Override the configured trusted SSL certificates.
 
 | *MESH_ELASTICSEARCH_INCLUDE_BINARY_FIELDS*
 | Override the search include binary fields flag.
@@ -205,6 +214,9 @@
 
 | *MESH_ELASTICSEARCH_TIMEOUT*
 | Override the configured elasticsearch server timeout.
+
+| *MESH_HTTPS_PORT*
+| Override the configured server https port.
 
 | *MESH_IMAGE_MAX_WIDTH*
 | Override the max width for image resize operations.
