@@ -6,10 +6,16 @@ import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshRestClientMessageException;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.reactivex.Flowable;
+import io.reactivex.FlowableTransformer;
 import io.reactivex.Maybe;
 import io.reactivex.Single;
 import io.reactivex.functions.Function;
 
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.Base64.Encoder;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 /**
@@ -73,5 +79,47 @@ public class RxUtil {
 				return false;
 			})
 			.map(MeshWebrootResponse::getNodeResponse);
+	}
+
+	/**
+	 * Encodes the byte chunks of the upstream {@link Flowable} with Base64.
+	 *
+	 * <p>
+	 *     <strong>Important:</strong> This transformer has an internal state,
+	 *     and <em>must not</em> be reused.
+	 * </p>
+	 *
+	 * @return A {@code FlowableTransformer} with the upstream data encoded in Base64.
+	 */
+	public static FlowableTransformer<byte[], byte[]> base64() {
+		Encoder encoder = Base64.getEncoder();
+		AtomicReference<byte[]> buf = new AtomicReference<>(new byte[0]);
+
+		return upstream -> upstream.flatMap(
+			chunk -> {
+				byte[] rest = buf.get();
+				int restLen = rest.length;
+				int total = restLen + chunk.length;
+				int overflow = total % 3;
+				int toEncodeLen = total - overflow;
+
+				if (toEncodeLen == 0) {
+					rest = Arrays.copyOf(rest, total);
+					System.arraycopy(chunk, 0, rest, restLen, chunk.length);
+					buf.set(rest);
+
+					return Flowable.empty();
+				}
+
+				byte[] toEncode = new byte[toEncodeLen];
+
+				System.arraycopy(rest,0, toEncode, 0, restLen);
+				System.arraycopy(chunk, 0, toEncode, restLen, toEncodeLen - restLen);
+
+				buf.set(Arrays.copyOfRange(chunk, toEncodeLen - restLen, chunk.length));
+
+				return Flowable.just(encoder.encode(toEncode));
+			})
+			.concatWith(Single.fromCallable(() -> encoder.encode(buf.get())));
 	}
 }
