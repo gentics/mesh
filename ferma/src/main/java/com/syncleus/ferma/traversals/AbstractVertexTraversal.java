@@ -24,24 +24,18 @@
 package com.syncleus.ferma.traversals;
 
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 
 import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.TVertex;
 import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.pipes.FermaGremlinPipeline;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Predicate;
 import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.pipes.Pipe;
-import com.tinkerpop.pipes.transform.TransformPipe.Order;
 
 /**
  * Vertex specific traversal. This class is abstract and as such is never instantiated directly.
@@ -78,39 +72,6 @@ abstract class AbstractVertexTraversal<C, S, M> extends AbstractTraversal<Vertex
 	@Override
 	public VertexTraversal<?, ?, M> filter(final TraversalFunction<VertexFrame, Boolean> filterFunction) {
 		return (VertexTraversal<?, ?, M>) super.filter(filterFunction);
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> dedup(final TraversalFunction<VertexFrame, ?> dedupFunction) {
-		return (VertexTraversal) super.dedup(dedupFunction);
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> and(final TraversalFunction<VertexFrame, Traversal<?, ?, ?, ?>>... traversals) {
-		final Collection<Pipe> extractedPipes = Collections2.transform(Arrays.asList(traversals), new Function<TraversalFunction, Pipe>() {
-
-			@Override
-			public Pipe apply(final TraversalFunction input) {
-				return ((AbstractTraversal) input.compute(new TVertex())).getPipeline();
-			}
-		});
-		getPipeline().and(extractedPipes.toArray(new Pipe[extractedPipes.size()]));
-		return this;
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> order() {
-		return (VertexTraversal<?, ?, M>) super.order();
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> order(final Order order) {
-		return (VertexTraversal<?, ?, M>) super.order(order);
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> order(final Comparator<? super VertexFrame> compareFunction) {
-		return (VertexTraversal<?, ?, M>) super.order(compareFunction);
 	}
 
 	@Override
@@ -240,21 +201,6 @@ abstract class AbstractVertexTraversal<C, S, M> extends AbstractTraversal<Vertex
 	@Override
 	public void removeAll() {
 		getPipeline().removeAll();
-	}
-
-	@Override
-	public <N> SplitTraversal<? extends Traversal<N, ?, ?, M>> copySplit(
-		final TraversalFunction<VertexFrame, ? extends Traversal<N, ?, ?, ?>>... traversals) {
-		final Collection<Pipe> extractedPipes = Collections2.transform(Arrays.asList(traversals),
-			new Function<TraversalFunction, Pipe>() {
-
-				@Override
-				public Pipe apply(final TraversalFunction input) {
-					return ((AbstractTraversal) input.compute(new TVertex())).getPipeline();
-				}
-			});
-		getPipeline().copySplit(extractedPipes.toArray(new Pipe[extractedPipes.size()]));
-		return castToSplit();
 	}
 
 }
