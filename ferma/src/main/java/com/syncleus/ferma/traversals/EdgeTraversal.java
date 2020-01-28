@@ -207,9 +207,6 @@ public interface EdgeTraversal<C, S, M> extends Traversal<EdgeFrame, C, S, M> {
 	Traversal<String, ?, ?, M> label();
 
 	@Override
-	EdgeTraversal<?, ?, M> dedup(TraversalFunction<EdgeFrame, ?> dedupFunction);
-
-	@Override
 	EdgeTraversal<?, ?, M> filter(TraversalFunction<EdgeFrame, Boolean> filterFunction);
 
 	/**

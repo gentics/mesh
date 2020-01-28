@@ -23,7 +23,6 @@
  */
 package com.syncleus.ferma.traversals;
 
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Spliterator;
@@ -40,7 +39,6 @@ import com.tinkerpop.blueprints.KeyIndexableGraph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.tg.TinkerGraph;
 import com.tinkerpop.gremlin.Tokens;
-import com.tinkerpop.pipes.transform.TransformPipe;
 
 /**
  * Specialized global vertex traversal that bypasses gremlin pipeline for simple key value lookups. As soon as a more complex traversal is detected then it
@@ -269,11 +267,6 @@ public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> 
 	}
 
 	@Override
-	public VertexTraversal<?, ?, M> dedup(final TraversalFunction<VertexFrame, ?> dedupFunction) {
-		return this.simpleDelegate().dedup(dedupFunction);
-	}
-
-	@Override
 	public VertexTraversal<?, ?, M> filter(final TraversalFunction<VertexFrame, Boolean> filterFunction) {
 		return this.simpleDelegate().filter(filterFunction);
 	}
@@ -289,26 +282,6 @@ public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> 
 	}
 
 	@Override
-	public VertexTraversal<?, ?, M> order() {
-		return this.simpleDelegate().order();
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> order(final Comparator<? super VertexFrame> compareFunction) {
-		return this.simpleDelegate().order(compareFunction);
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> order(final TransformPipe.Order order) {
-		return this.simpleDelegate().order(order);
-	}
-
-	@Override
-	public VertexTraversal<?, ?, M> and(final TraversalFunction<VertexFrame, Traversal<?, ?, ?, ?>>... traversals) {
-		return this.simpleDelegate().and(traversals);
-	}
-
-	@Override
 	public VertexTraversal<C, S, ? extends VertexTraversal<C, S, M>> mark() {
 		return this.simpleDelegate().mark();
 	}
@@ -316,12 +289,6 @@ public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> 
 	@Override
 	public void removeAll() {
 		this.simpleDelegate().removeAll();
-	}
-
-	@Override
-	public <N> SplitTraversal<? extends Traversal<N, ?, ?, M>> copySplit(
-		final TraversalFunction<VertexFrame, ? extends Traversal<N, ?, ?, ?>>... traversals) {
-		return this.simpleDelegate().copySplit(traversals);
 	}
 
 	@Override
@@ -342,11 +309,6 @@ public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> 
 	@Override
 	public M back() {
 		return this.simpleDelegate().back();
-	}
-
-	@Override
-	public <N> Traversal<? extends N, ?, ?, M> transform(final TraversalFunction<VertexFrame, N> function) {
-		return this.simpleDelegate().transform(function);
 	}
 
 	@Override

@@ -1,5 +1,3 @@
-# PR Title
-
 ## Abstract
 
 ## Checklist

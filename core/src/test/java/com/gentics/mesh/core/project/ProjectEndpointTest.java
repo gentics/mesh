@@ -70,6 +70,8 @@ import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
+import com.gentics.mesh.core.rest.role.RolePermissionRequest;
+import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
@@ -800,5 +802,13 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		checkConsistency();
 
 		call(() -> client().deleteProject(uuid));
+	}
+
+	@Test
+	public void createProjectAfterDeletedRole() {
+		RoleResponse role = createRole("test");
+		client().updateRolePermissions(role.getUuid(), "/projects", RolePermissionRequest.withPermissions(CREATE)).blockingAwait();
+		deleteRole(role.getUuid());
+		createProject("testProject");
 	}
 }

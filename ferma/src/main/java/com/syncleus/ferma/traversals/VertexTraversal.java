@@ -23,13 +23,11 @@
  */
 package com.syncleus.ferma.traversals;
 
-import java.util.Comparator;
 import java.util.List;
 
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.VertexFrame;
 import com.tinkerpop.gremlin.Tokens;
-import com.tinkerpop.pipes.transform.TransformPipe;
 
 /**
  * Vertex specific traversal.
@@ -238,9 +236,6 @@ public interface VertexTraversal<C, S, M> extends Traversal<VertexFrame, C, S, M
 	VertexTraversal<List<EdgeFrame>, EdgeFrame, M> linkIn(String label, VertexFrame other);
 
 	@Override
-	VertexTraversal<?, ?, M> dedup(TraversalFunction<VertexFrame, ?> dedupFunction);
-
-	@Override
 	VertexTraversal<?, ?, M> filter(TraversalFunction<VertexFrame, Boolean> filterFunction);
 
 	/**
@@ -256,40 +251,11 @@ public interface VertexTraversal<C, S, M> extends Traversal<VertexFrame, C, S, M
 	VertexTraversal<?, ?, M> retain(Iterable<?> collection);
 
 	@Override
-	VertexTraversal<?, ?, M> order();
-
-	@Override
-	VertexTraversal<?, ?, M> order(Comparator<? super VertexFrame> compareFunction);
-
-	@Override
-	VertexTraversal<?, ?, M> order(TransformPipe.Order order);
-
-	/**
-	 * If the internal pipes all yield objects, then the object is not filtered. The provided pipes are provided the object as their starts.
-	 *
-	 * @param traversals
-	 *            the internal pipes of the AndFilterPipe
-	 * @return the extended Pipeline
-	 */
-	VertexTraversal<?, ?, M> and(TraversalFunction<VertexFrame, Traversal<?, ?, ?, ?>>... traversals);
-
-	@Override
 	VertexTraversal<C, S, ? extends VertexTraversal<C, S, M>> mark();
 
 	/**
 	 * Remove every element at the end of this Pipeline.
 	 */
 	void removeAll();
-
-	/**
-	 * The incoming objects are copied to the provided pipes. This "split-pipe" is used in conjunction with some type of "merge-pipe."
-	 *
-	 * @param <N>
-	 *            The type of the objects through the traversal.
-	 * @param traversals
-	 *            the internal pipes of the CopySplitPipe
-	 * @return the extended Pipeline
-	 */
-	<N> SplitTraversal<? extends Traversal<N, ?, ?, M>> copySplit(TraversalFunction<VertexFrame, ? extends Traversal<N, ?, ?, ?>>... traversals);
 
 }
