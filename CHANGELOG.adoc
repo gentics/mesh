@@ -29,6 +29,10 @@ include::content/docs/variables.adoc-include[]
 
 icon:check[] Core: Fixed a bug that caused an internal server error if a project was attempted to be created after any role with permissions to create projects was deleted.
 
+icon:plus[] Core: The core Vert.x library was updated to version `3.8.5`.
+
+icon:check[] OrientDB: The included OrientDB version has been updated to version `3.0.27`
+
 [[v1.4.0]]
 == 1.4.0 (24.01.2020)
 

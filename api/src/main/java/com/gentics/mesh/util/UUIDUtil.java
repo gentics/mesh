@@ -18,7 +18,7 @@ public final class UUIDUtil {
 	 * Convert a shortened uuid into a uuid which includes dashes
 	 * 
 	 * @param uuid
-	 * @return
+	 * @return UUID which contains dashes
 	 */
 	public static String toFullUuid(String uuid) {
 		return uuid.replaceAll("(\\w{8})(\\w{4})(\\w{4})(\\w{4})(\\w{12})", "$1-$2-$3-$4-$5");
@@ -28,7 +28,7 @@ public final class UUIDUtil {
 	 * Convert a uuid with dashes to a uuid without dashes.
 	 * 
 	 * @param uuid
-	 * @return
+	 * @return UUID without dashes
 	 */
 	public static String toShortUuid(String uuid) {
 		return uuid.replaceAll("-", "");
@@ -37,7 +37,7 @@ public final class UUIDUtil {
 	/**
 	 * Create a random UUID string which does not include dashes.
 	 * 
-	 * @return
+	 * @return Random generated uuid without dashes
 	 */
 	public static String randomUUID() {
 		final UUID uuid = UUID.randomUUID();
@@ -51,7 +51,7 @@ public final class UUIDUtil {
 	 * 
 	 * @param val
 	 * @param digits
-	 * @return
+	 * @return Hex String
 	 */
 	private static String digits(long val, int digits) {
 		long hi = 1L << (digits * 4);
@@ -61,8 +61,8 @@ public final class UUIDUtil {
 	/**
 	 * Check whether the given text is a uuid.
 	 * 
-	 * @param text
-	 * @return
+	 * @param text String to be checked
+	 * @return true if the text represents a uuid
 	 */
 	public static boolean isUUID(String text) {
 		if (text == null || text.length() != 32) {

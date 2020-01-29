@@ -92,7 +92,7 @@ public class VersionNumber implements Comparable<VersionNumber> {
 	/**
 	 * Return the full version string.
 	 * 
-	 * @return
+	 * @return Full versions string
 	 */
 	public String getFullVersion() {
 		return fullVersion;

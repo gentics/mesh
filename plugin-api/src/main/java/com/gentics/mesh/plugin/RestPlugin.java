@@ -49,6 +49,8 @@ public interface RestPlugin extends MeshPlugin {
 
 	/**
 	 * Return the API name for the REST plugin. By default the plugin id will be used for the API name.
+	 * 
+	 * @return name for the api
 	 */
 	default String restApiName() {
 		return id();
