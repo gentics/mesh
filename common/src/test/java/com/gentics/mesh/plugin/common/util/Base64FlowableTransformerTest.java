@@ -9,7 +9,6 @@ import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -64,7 +63,7 @@ public class Base64FlowableTransformerTest {
 	@Test
 	public void testChunkedInput() {
 		IntStream.rangeClosed(2, 5).forEach(i ->
-			test(splitBytes(input.getBytes(StandardCharsets.UTF_8), i)));
+			test(MiscUtil.splitBytes(input.getBytes(StandardCharsets.UTF_8), i)));
 	}
 
 	private void test(Iterable<byte[]> inputBytes) {
@@ -86,10 +85,4 @@ public class Base64FlowableTransformerTest {
 			.isEqualTo(expected);
 	}
 
-	private List<byte[]> splitBytes(byte[] input, int maxSize) {
-		return IntStream.range(0, (int) Math.ceil((double) input.length / maxSize))
-			.map(i -> i * maxSize)
-			.mapToObj(i -> Arrays.copyOfRange(input, i, i + Math.min(maxSize, input.length - i)))
-			.collect(Collectors.toList());
-	}
 }

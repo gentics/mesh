@@ -11,10 +11,12 @@ import io.reactivex.FlowableTransformer;
 import io.reactivex.Maybe;
 import io.reactivex.Single;
 import io.reactivex.functions.Function;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Base64.Encoder;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
@@ -111,15 +113,56 @@ public class RxUtil {
 					return Flowable.empty();
 				}
 
-				byte[] toEncode = new byte[toEncodeLen];
+				byte[] toEncode = Arrays.copyOf(rest, toEncodeLen);
 
-				System.arraycopy(rest,0, toEncode, 0, restLen);
 				System.arraycopy(chunk, 0, toEncode, restLen, toEncodeLen - restLen);
-
 				buf.set(Arrays.copyOfRange(chunk, toEncodeLen - restLen, chunk.length));
 
 				return Flowable.just(encoder.encode(toEncode));
 			})
 			.concatWith(Single.fromCallable(() -> encoder.encode(buf.get())));
+	}
+
+
+	/**
+	 * Makes sure that all but the last byte array the Flowable emits have a maximum size of {@code chunkSize}.
+	 *
+	 * <p>
+	 *     The {@code chunkSize} must be greater than zero, or an {@code IllegalArgumentException} will be thrown.
+	 * </p>
+	 *
+	 * @param chunkSize The desired chunk size (must be greater than zero)
+	 * @return A {@link FlowableTransformer} that will resize the byte arrays accordingly
+	 * @throws IllegalArgumentException When {@code chunkSize} is zero or less
+	 */
+	public static FlowableTransformer<byte[], byte[]> split(int chunkSize) {
+		if (chunkSize <= 0) {
+			throw new IllegalArgumentException("chunkSize must be greater than zero");
+		}
+
+		AtomicReference<byte[]> buf = new AtomicReference<>(new byte[0]);
+
+		return upstream -> upstream
+			.filter(chunk -> chunk.length > 0)
+			.flatMap(chunk -> {
+				byte[] availableBytes = ArrayUtils.addAll(buf.get(), chunk);
+				List<byte[]> resizedChunks = MiscUtil.splitBytes(availableBytes, chunkSize);
+				byte[] lastChunk = resizedChunks.remove(resizedChunks.size() - 1);
+				Flowable<byte[]> ret = Flowable.fromIterable(resizedChunks);
+
+				if (lastChunk.length < chunkSize) {
+					buf.set(lastChunk);
+				} else {
+					ret = ret.concatWith(Single.just(lastChunk));
+					buf.set(new byte[0]);
+				}
+
+				return ret;
+			})
+			.concatWith(Flowable.defer(() -> {
+				byte[] rest = buf.get();
+
+				return rest.length == 0 ? Flowable.empty() : Flowable.just(rest);
+			}));
 	}
 }
