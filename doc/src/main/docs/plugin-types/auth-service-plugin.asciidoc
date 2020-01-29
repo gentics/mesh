@@ -10,12 +10,41 @@ Authentication Service Plugin API can be used to create plugins which can extend
 
 Those plugins are intended to work in conjunction with the link:{{< relref "authentication.asciidoc" >}}#_oauth2[OAuth2] interation. When the OAuth2 integration with the Keycloak Identity Provider is enabled Gentics Mesh will automatically sync users provided by Keycloak with the users that are stored in Gentics Mesh.
 
-
-Once a JWT has been obtained by keycloak it can be used for Gentics Mesh requests. The token is validated and the user is sycned. 
+Once a JWT has been obtained by keycloak it can be used for Gentics Mesh requests. The token is validated and the user is synced. 
 
 Often it is however also desired to sync permission specific information from identity provider. This is where most of the Authentication Service Plugin API comes into play. The API can be used to create plugins which map the information from the JWT to Gentics Mesh roles and groups.
 
 This way any public claim information from the JWT can be used to dynamically update the user, create roles and groups.
+
+== Flow
+
+A typical request which needs authentication passes through various handlers which try to autenticate. The `MeshAuthChain` is currently responsible for passing the requests along these handlers.
+
+=== JWT handler
+
+This handler tries to authenticate the request by validating the JWT against the Gentics Mesh keystore certificate. The identified user will be added to the request when this succeeds. In this case no other authentication handler in the chain is called.
+
+NOTE: Failed authentications at this stage will yield a `Could not authenticate token.` warning. This warning will be removed in future versions of Gentics Mesh. The next handler in the chain will be used if the JWT handler was unable to authenticate the user.
+
+=== OAuth handler
+
+This handler will utilize the configured or provided public keys to validate the request.
+The `AuthServicePlugin` API will be called when the request JWT could be validated with the provided public keys.
+
+First the `acceptToken` method gets called to check if any of the plugins rejects the request.
+
+Next the mapping process will be invoked. The token information will be inspected to check whether a mapping call is needed.
+
+The `extractUsername` method gets called to identify and load the user.
+Once the user has been loaded
+
+NOTE: The `jti` or  `iat` of the JWT will be used to decide whether a fresh mapping call must be invoked. The JWT will only be passed to the mapping code if it has not yet been handled.
+
+Finally the `mapToken` method will be called for every `AuthServicePlugin`.
+
+=== Anonymous Auth Handler
+
+This handler will only be utilized when no authentication information have been added to the request and when the anonymous authentication has been enabled. The handler will automatically assign the anonymous user to the request and accept it.
 
 == Setup
 
