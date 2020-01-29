@@ -84,6 +84,15 @@ public class OptionsLoaderTest {
 	}
 
 	@Test
+	public void testTrustedCertListOneItemEnv() {
+		environmentVariables.set(HttpServerConfig.MESH_HTTP_SSL_TRUSTED_CERTS_ENV, "abc");
+		MeshOptions options = OptionsLoader.createOrloadOptions();
+		List<String> list = options.getHttpServerOptions().getTrustedCertPaths();
+		assertEquals("The path list should contain oneentries", 1, list.size());
+		assertEquals("abc", list.get(0));
+	}
+
+	@Test
 	public void testTrustedCertListEnv() {
 		environmentVariables.set(HttpServerConfig.MESH_HTTP_SSL_TRUSTED_CERTS_ENV, "abc,efg");
 		MeshOptions options = OptionsLoader.createOrloadOptions();
