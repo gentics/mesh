@@ -8,6 +8,8 @@ import static com.gentics.mesh.test.TestDataProvider.NEWS_UUID;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static java.util.Objects.hash;
 
+import java.io.File;
+import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -182,7 +184,8 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			Arrays.asList("node/breadcrumb-root", true, "draft"),
 			Arrays.asList("node/versionslist", true, "draft"),
 			Arrays.asList("permissions", true, "draft"),
-			Arrays.asList("user-node-reference", true, "draft")
+			Arrays.asList("user-node-reference", true, "draft"),
+			Arrays.asList("node/segment", true, "draft")
 		)
 		.flatMap(testCase -> IntStream.rangeClosed(1, CURRENT_API_VERSION).mapToObj(version -> {
 			// Make sure all testData entries have five parts.
@@ -465,6 +468,8 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		NodeResponse newsNode = call(() -> client.findNodeByUuid(PROJECT_NAME, NEWS_UUID));
 		call(() -> client.updateUser(user.getUuid(), new UserUpdateRequest().setNodeReference(newsNode)));
 
+		addBinary(baseNodeUuid, "flower", "/pictures/blume.jpg");
+
 		// Now execute the query and assert it
 		GraphQLResponse response = call(
 			() -> client.graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName, apiVersion), new VersioningParametersImpl().setVersion(version)));
@@ -487,6 +492,26 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			node.setProperty("schema", uuid);
 		}
 		schemaContainer.setUuid(uuid);
+	}
+
+	/**
+	 * Creates a binary node.
+	 * @param parentUuid	Uuid of the parent node
+	 * @param name			Value of the name field
+	 * @param binaryPath	Path to the binary resource
+	 */
+	private void addBinary(String parentUuid, String name, String binaryPath) throws URISyntaxException {
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setLanguage("en");
+		request.setSchemaName("binary_content");
+		request.setParentNodeUuid(parentUuid);
+		request.setFields(FieldMap.of("name", StringField.of(name)));
+		NodeResponse node = client().createNode(PROJECT_NAME, request).blockingGet();
+
+		long fileSize = new File(getClass().getResource(binaryPath).toURI()).length();
+		client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", "0.1", "binary",
+			getClass().getResourceAsStream(binaryPath), fileSize, "blume.jpg", "image/jpeg")
+			.blockingAwait();
 	}
 
 	private long dateToMilis(String date) throws ParseException {

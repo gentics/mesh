@@ -1,0 +1,22 @@
+{
+    deNews: node(path: "/Neuigkeiten") {
+        # [$.data.deNews.segment=Neuigkeiten]
+        segment
+    }
+    de2015: node(path: "/Neuigkeiten/2015") {
+        # [$.data.de2015.segment=2015]
+        segment
+    }
+    enNews: node(path: "/News") {
+        # [$.data.enNews.segment=News]
+        segment
+    }
+    en2015: node(path: "/News/2015") {
+        # [$.data.en2015.segment=2015]
+        segment
+    }
+    binary: node(path: "/blume.jpg") {
+        # [$.data.binary.segment=blume.jpg]
+        segment
+    }
+}

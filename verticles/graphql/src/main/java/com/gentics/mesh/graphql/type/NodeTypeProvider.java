@@ -487,6 +487,19 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					return null;
 				}
 				return container.getDisplayFieldValue();
+			}).build(),
+
+			// .segment
+			newFieldDefinition().name("segment")
+				.description("The segment of the content. This is the value of the segment field which is used in the path to this content.")
+				.type(GraphQLString).dataFetcher(env -> {
+				NodeContent content = env.getSource();
+				NodeGraphFieldContainer container = content.getContainer();
+				if (container == null) {
+					return null;
+				}
+
+				return container.getSegmentFieldValue();
 			}).build()
 		);
 
