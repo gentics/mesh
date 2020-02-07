@@ -27,9 +27,11 @@ include::content/docs/variables.adoc-include[]
 
 [[Unreleased]]
 
-icon:check[] Core: Fixed a bug that caused an internal server error if a project was attempted to be created after any role with permissions to create projects was deleted.
-
 icon:plus[] Core: The core Vert.x library was updated to version `3.8.5`.
+
+icon:plus[] GraphQL: Added the `segment` field to the node type. This is the value of the segment field which is used in the path to the node.
+
+icon:check[] Core: Fixed a bug that caused an internal server error if a project was attempted to be created after any role with permissions to create projects was deleted.
 
 icon:check[] OrientDB: The included OrientDB version has been updated to version `3.0.27`
 
