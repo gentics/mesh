@@ -7,7 +7,7 @@
 | ```httpServer.http```                      | Boolean | true            | Enable or disable HTTP server.
 | ```httpServer.ssl```                       | Boolean | false           | Enable or disable HTTPS server.
 | ```httpServer.corsAllowedOriginPattern```  | RegEx   | -               | Regex which will validate the origin CORS header.
-| ```httpServer.scorsAllowCredentials```     | Boolean | false           | Enable CORS credential support.
+| ```httpServer.corsAllowCredentials```      | Boolean | false           | Enable CORS credential support.
 | ```httpServer.enableCors```                | Boolean | false           | Enable CORS support.
 | ```httpServer.certPath```                  | Path    | config/cert.pem | SSL certificate path.
 | ```httpServer.keyPath```                   | Path    | config/key.pem  | SSL key path.
