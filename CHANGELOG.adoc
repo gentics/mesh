@@ -30,7 +30,7 @@ include::content/docs/variables.adoc-include[]
 
 icon:plus[] Core: The core Vert.x library was updated to version `3.8.5`.
 
-icon:check[] OrientDB: The included OrientDB version has been updated to version `3.0.27`
+icon:check[] OrientDB: The included OrientDB version has been updated to version `3.0.28`
 
 [[v1.4.0]]
 == 1.4.0 (24.01.2020)
