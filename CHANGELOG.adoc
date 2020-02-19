@@ -25,12 +25,14 @@ include::content/docs/variables.adoc-include[]
 
 * The Mesh Server will require Java 11 with the release of 2.0.0. The runtime support for Java 8 will be dropped. The Mesh Java REST client will still be usable with Java 8.
 
-[[v1.4.0]]
-== 1.4.0 (TBD)
+[[v1.4.1]]
+== 1.4.1 (TBD)
 
 icon:plus[] Core: The core Vert.x library was updated to version `3.8.5`.
 
 icon:check[] OrientDB: The included OrientDB version has been updated to version `3.0.28`
+
+icon:check[] Core: The handler for webroot updates is now running in a worker thread. This will prevent "Thread blocked" messages in the log.
 
 [[v1.4.0]]
 == 1.4.0 (24.01.2020)
