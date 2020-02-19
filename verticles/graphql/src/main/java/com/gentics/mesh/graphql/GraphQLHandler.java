@@ -1,33 +1,34 @@
 package com.gentics.mesh.graphql;
 
-import com.gentics.madl.tx.Tx;
-import com.gentics.mesh.core.rest.MeshEvent;
-import com.gentics.mesh.core.rest.error.AbstractUnavailableException;
-import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.event.MeshEventSender;
-import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.graphql.context.GraphQLContext;
-import com.gentics.mesh.graphql.type.QueryTypeProvider;
-import com.gentics.mesh.parameter.SearchParameters;
-import com.gentics.mesh.util.SearchWaitUtil;
-import graphql.*;
-import graphql.language.SourceLocation;
-import io.reactivex.Completable;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.reactivex.core.Vertx;
+import static graphql.GraphQL.newGraphQL;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static graphql.GraphQL.newGraphQL;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import com.gentics.madl.tx.Tx;
+import com.gentics.mesh.core.rest.error.AbstractUnavailableException;
+import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphql.context.GraphQLContext;
+import com.gentics.mesh.graphql.type.QueryTypeProvider;
+import com.gentics.mesh.util.SearchWaitUtil;
+
+import graphql.ExceptionWhileDataFetching;
+import graphql.ExecutionInput;
+import graphql.ExecutionResult;
+import graphql.GraphQL;
+import graphql.GraphQLError;
+import graphql.language.SourceLocation;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.reactivex.core.Vertx;
 
 @Singleton
 public class GraphQLHandler {
@@ -95,7 +96,9 @@ public class GraphQLHandler {
 			} catch (Exception e) {
 				promise.fail(e);
 			}
-		})).subscribe();
+		}))
+		.doOnError(gc::fail)
+		.subscribe();
 	}
 
 	/**
