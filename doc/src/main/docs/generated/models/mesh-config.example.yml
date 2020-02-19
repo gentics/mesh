@@ -14,13 +14,17 @@ startInReadOnly: false
 versionPurgeMaxBatchSize: 10
 httpServer:
   port: 8080
+  sslPort: 8443
   host: "0.0.0.0"
   corsAllowedOriginPattern: ""
   corsAllowCredentials: false
   enableCors: false
+  http: true
   ssl: false
   certPath: "config/cert.pem"
   keyPath: "config/key.pem"
+  clientAuthMode: "NONE"
+  trustedCertPaths: []
   verticleAmount: 16
 monitoring:
   enabled: true

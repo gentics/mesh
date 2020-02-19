@@ -12,6 +12,11 @@
 | string
 | Flag which indicates whether SSL support be enabled.
 
+| clientAuthMode
+| false
+| string
+| Configure the client certificate handling mode. Options: none, request, required. Default: none
+
 | corsAllowCredentials
 | false
 | boolean
@@ -32,6 +37,11 @@
 | string
 | Configure the Gentics Mesh HTTP server host to bind to. Default is: 0.0.0.0
 
+| http
+| false
+| boolean
+| Flag which indicates whether http server should be enabled. Default: true
+
 | keyPath
 | false
 | string
@@ -45,7 +55,17 @@
 | ssl
 | false
 | boolean
-| Flag which indicates whether SSL support be enabled.
+| Flag which indicates whether https server should be enabled. Default: false
+
+| sslPort
+| false
+| integer
+| Configure the Gentics Mesh HTTPS server port. Default is: 8443
+
+| trustedCertPaths
+| false
+| array
+| Configure the trusted SSL certificates.
 
 | verticleAmount
 | false
