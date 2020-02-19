@@ -74,7 +74,7 @@ public class WebRootEndpoint extends AbstractProjectEndpoint {
 		endpoint.exampleResponse(CONFLICT, miscExamples.createMessageResponse(), "A conflict has been detected.");
 
 		endpoint.description("Update or create a node for the given path.");
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			handler.handleUpdateCreatePath(rc, POST);
 		});
 	}
