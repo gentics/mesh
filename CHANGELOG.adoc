@@ -29,6 +29,8 @@ include::content/docs/variables.adoc-include[]
 
 icon:check[] UI: The Gentics Mesh UI has been updated to version link:https://github.com/gentics/mesh-ui/blob/1.1.1/CHANGELOG.md#111---2020-02-19[1.1.1]
 
+icon:check[] Core: The storage filesystem compatibility check has been made more reliable.
+
 [[v1.4.1]]
 == 1.4.1 (19.01.2020)
 

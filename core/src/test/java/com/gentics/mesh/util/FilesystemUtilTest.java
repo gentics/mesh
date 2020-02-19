@@ -11,7 +11,7 @@ public class FilesystemUtilTest {
 
 	@Test
 	public void testDirectIOCheck() {
-		assertFalse(FilesystemUtil.supportsDirectIO(Paths.get("/tank1/test/.check_fs_support")));
-		assertTrue(FilesystemUtil.supportsDirectIO(Paths.get("target/.check_fs_support")));
+		assertFalse(FilesystemUtil.supportsDirectIO(Paths.get("/tank1/test")));
+		assertTrue(FilesystemUtil.supportsDirectIO(Paths.get("target/test")));
 	}
 }
