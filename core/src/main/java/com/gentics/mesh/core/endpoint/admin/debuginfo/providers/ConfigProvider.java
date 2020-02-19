@@ -30,7 +30,7 @@ public class ConfigProvider implements DebugInfoProvider {
 			"config/mesh.yml",
 			"config/hazelcast.xml",
 			"config/logback.xml",
-			"config/default-distributed-db-config.xml",
+			"config/default-distributed-db-config.json",
 			"config/orientdb-server-config.xml"
 		).flatMap(debugInfoUtil::readDebugInfoEntryOrEmpty);
 	}
