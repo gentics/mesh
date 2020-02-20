@@ -31,6 +31,10 @@ icon:check[] UI: The Gentics Mesh UI has been updated to version link:https://gi
 
 icon:check[] Core: The storage filesystem compatibility check has been made more reliable.
 
+icon:plus[] Core: The hazelcast version was updated from `3.10.4` to `3.10.6`
+
+icon:plus[] Core: The hazelcast kubernetes plugin version was updated from `1.2.2` to `1.5.3`
+
 [[v1.4.1]]
 == 1.4.1 (19.01.2020)
 
