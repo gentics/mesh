@@ -48,10 +48,10 @@ import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
-import com.gentics.mesh.distributed.containers.MeshDockerServer;
 import com.gentics.mesh.parameter.client.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.test.docker.MeshContainer;
 import com.gentics.mesh.test.util.TestUtils;
 
 import io.vertx.core.logging.Logger;
@@ -67,18 +67,20 @@ public class BasicClusterTest extends AbstractClusterTest {
 
 	// public static MeshLocalServer serverA = new MeshLocalServer("localNodeA", true, true);
 
-	public static MeshDockerServer serverA = new MeshDockerServer(vertx)
+	public static MeshContainer serverA = new MeshContainer()
 		.withClusterName("dockerCluster" + clusterPostFix)
 		.withNodeName("nodeA")
 		.withDataPathPostfix(randomToken())
 		.withInitCluster()
 		.waitForStartup()
+		.withFilesystem()
 		.withClearFolders();
 
-	public static MeshDockerServer serverB = new MeshDockerServer(vertx)
+	public static MeshContainer serverB = new MeshContainer()
 		.withClusterName("dockerCluster" + clusterPostFix)
 		.withNodeName("nodeB")
 		.withDataPathPostfix(randomToken())
+		.withFilesystem()
 		.withClearFolders();
 
 	public static MeshRestClient clientA;
@@ -97,10 +99,8 @@ public class BasicClusterTest extends AbstractClusterTest {
 
 	@Before
 	public void setupLogin() {
-		clientA.setLogin("admin", "admin");
-		clientA.login().blockingGet();
-		clientB.setLogin("admin", "admin");
-		clientB.login().blockingGet();
+		serverA.login();
+		serverB.login();
 	}
 
 	@Test

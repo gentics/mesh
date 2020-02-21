@@ -13,7 +13,8 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.distributed.containers.MeshDockerServer;
+import com.gentics.mesh.test.docker.MeshContainer;
+import com.gentics.mesh.test.docker.MeshContainer;
 
 /**
  * A test which will randomly add, remove, utilize and stop nodes in a mesh cluster.
@@ -32,9 +33,9 @@ public class ChaosClusterTest extends AbstractClusterTest {
 
 	private static final int SERVER_LIMIT = 8;
 
-	private static final List<MeshDockerServer> runningServers = new ArrayList<>(SERVER_LIMIT);
+	private static final List<MeshContainer> runningServers = new ArrayList<>(SERVER_LIMIT);
 
-	private static final List<MeshDockerServer> stoppedServers = new ArrayList<>(SERVER_LIMIT);
+	private static final List<MeshContainer> stoppedServers = new ArrayList<>(SERVER_LIMIT);
 
 	private static final List<String> userUuids = new ArrayList<>();
 
@@ -73,14 +74,14 @@ public class ChaosClusterTest extends AbstractClusterTest {
 		System.err.println("-----------------------------------");
 		System.err.println("- ID, Nodename, Running, IP");
 		System.err.println("-----------------------------------");
-		for (MeshDockerServer server : runningServers) {
+		for (MeshContainer server : runningServers) {
 			System.err.println(
 				"- " + server.getContainerId() + "\t" + server.getNodeName() + "\t" + server.getContainerIpAddress());
 		}
 
 		System.err.println("Stopped servers:");
 		System.err.println("-----------------------------------");
-		for (MeshDockerServer server : stoppedServers) {
+		for (MeshContainer server : stoppedServers) {
 			System.err.println(
 				"- " + server.getContainerId() + "\t" + server.getNodeName() + "\t" + server.getContainerIpAddress());
 		}
@@ -89,7 +90,7 @@ public class ChaosClusterTest extends AbstractClusterTest {
 
 	private void startInitialServer() throws InterruptedException {
 		@SuppressWarnings("resource")
-		MeshDockerServer server = new MeshDockerServer(vertx)
+		MeshContainer server = new MeshContainer()
 			.withInitCluster()
 			.withClusterName(CLUSTERNAME + clusterPostFix)
 			.withNodeName("master")
@@ -141,13 +142,13 @@ public class ChaosClusterTest extends AbstractClusterTest {
 	}
 
 	private void startServer() throws InterruptedException {
-		MeshDockerServer s = stoppedServers.get(random.nextInt(stoppedServers.size()));
+		MeshContainer s = stoppedServers.get(random.nextInt(stoppedServers.size()));
 		System.err.println("Starting server: " + s.getNodeName());
 		String name = s.getNodeName();
 		String dataPrefix = s.getDataPathPostfix();
 		stoppedServers.remove(s);
 
-		MeshDockerServer server = addSlave(CLUSTERNAME + clusterPostFix, name, dataPrefix, false);
+		MeshContainer server = addSlave(CLUSTERNAME + clusterPostFix, name, dataPrefix, false);
 		server.awaitStartup(STARTUP_TIMEOUT);
 		server.login();
 		runningServers.add(server);
@@ -156,7 +157,7 @@ public class ChaosClusterTest extends AbstractClusterTest {
 	private void addServer() throws InterruptedException {
 		String name = randomName();
 		System.err.println("Adding server: " + name);
-		MeshDockerServer server = addSlave(CLUSTERNAME + clusterPostFix, name, name, false);
+		MeshContainer server = addSlave(CLUSTERNAME + clusterPostFix, name, name, false);
 		server.awaitStartup(STARTUP_TIMEOUT);
 		server.login();
 		runningServers.add(server);
@@ -165,7 +166,7 @@ public class ChaosClusterTest extends AbstractClusterTest {
 	
 
 	private void stopServer() {
-		MeshDockerServer s = randomServer();
+		MeshContainer s = randomServer();
 		System.err.println("Stopping server: " + s.getNodeName());
 		s.close();
 		runningServers.remove(s);
@@ -174,7 +175,7 @@ public class ChaosClusterTest extends AbstractClusterTest {
 
 	private void utilizeServer() {
 		System.err.println("Utilize server...");
-		MeshDockerServer s = runningServers.get(random.nextInt(runningServers.size()));
+		MeshContainer s = runningServers.get(random.nextInt(runningServers.size()));
 		UserCreateRequest request = new UserCreateRequest();
 		request.setPassword("somepass");
 		request.setUsername(randomName());
@@ -197,19 +198,19 @@ public class ChaosClusterTest extends AbstractClusterTest {
 	}
 
 	private void removeServer() {
-		MeshDockerServer s = randomServer();
+		MeshContainer s = randomServer();
 		System.err.println("Removing server: " + s.getNodeName());
 		s.stop();
 		runningServers.remove(s);
 	}
 
-	public MeshDockerServer randomServer() {
+	public MeshContainer randomServer() {
 		int n = random.nextInt(runningServers.size());
 		return runningServers.get(n);
 	}
 
 	private void assertCluster() {
-		for (MeshDockerServer server : runningServers) {
+		for (MeshContainer server : runningServers) {
 			// Verify that all created users can be found on the server
 			for (String uuid : userUuids) {
 				try {

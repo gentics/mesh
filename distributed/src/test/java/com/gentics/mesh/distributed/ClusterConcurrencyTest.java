@@ -25,8 +25,8 @@ import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
-import com.gentics.mesh.distributed.containers.MeshDockerServer;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.test.docker.MeshContainer;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;
@@ -41,33 +41,36 @@ public class ClusterConcurrencyTest extends AbstractClusterTest {
 
 	private static String clusterPostFix = randomUUID();
 
-	public static MeshDockerServer serverA = new MeshDockerServer(vertx)
+	public static MeshContainer serverA = new MeshContainer()
 		.withClusterName("dockerCluster" + clusterPostFix)
 		.withNodeName("nodeA")
 		.withDataPathPostfix(randomToken())
 		.withInitCluster()
 		.waitForStartup()
+		.withFilesystem()
 		.withClearFolders();
 
-	public static MeshDockerServer serverB = new MeshDockerServer(vertx)
+	public static MeshContainer serverB = new MeshContainer()
 		.withClusterName("dockerCluster" + clusterPostFix)
 		.withNodeName("nodeB")
 		.withDataPathPostfix(randomToken())
+		.withFilesystem()
 		.withClearFolders();
 
-	public static MeshDockerServer serverC = new MeshDockerServer(vertx)
+	public static MeshContainer serverC = new MeshContainer()
 		.withClusterName("dockerCluster" + clusterPostFix)
 		.withNodeName("nodeC")
 		.withDataPathPostfix(randomToken())
+		.withFilesystem()
 		.withClearFolders();
 	
-//	public static MeshDockerServer serverD = new MeshDockerServer(vertx)
+//	public static MeshContainer serverD = new MeshContainer(vertx)
 //		.withClusterName("dockerCluster" + clusterPostFix)
 //		.withNodeName("nodeD")
 //		.withDataPathPostfix(randomToken())
 //		.withClearFolders();
 	
-//	public static MeshDockerServer serverE = new MeshDockerServer(vertx)
+//	public static MeshContainer serverE = new MeshContainer(vertx)
 //		.withClusterName("dockerCluster" + clusterPostFix)
 //		.withNodeName("nodeE")
 //		.withDataPathPostfix(randomToken())

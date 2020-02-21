@@ -15,7 +15,6 @@ import org.testcontainers.containers.output.Slf4jLogConsumer;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
-import com.gentics.mesh.plugin.MeshPlugin;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.test.MeshTestServer;
 
@@ -25,7 +24,9 @@ import io.vertx.core.Vertx;
  * Test container for a mesh instance which uses local class files. The image for the container will automatically be rebuild during each startup.
  * 
  * @param <SELF>
+ * @deprecated Use {@link MeshClusterServer} instead
  */
+@Deprecated 
 public class MeshDockerServer extends GenericContainer<MeshDockerServer> implements MeshTestServer {
 
 	private static final Logger log = LoggerFactory.getLogger(MeshDockerServer.class);
@@ -236,7 +237,7 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> impleme
 	}
 
 	/**
-	 * Run the mesh server with file system persistation enabled.
+	 * Run the mesh server with file system persisting enabled.
 	 * 
 	 * @return
 	 */
