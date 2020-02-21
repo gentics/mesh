@@ -76,7 +76,7 @@ public abstract class AbstractClusterTest {
 	 * @return
 	 */
 	protected MeshContainer addSlave(String clusterName, String nodeName, String dataPathPostfix, boolean clearFolders, int writeQuorum) {
-		MeshContainer server = new MeshContainer()
+		MeshContainer server = new MeshContainer(MeshContainer.LOCAL_PROVIDER)
 			.withDataPathPostfix(dataPathPostfix)
 			.withClusterName(clusterName)
 			.withNodeName(nodeName)

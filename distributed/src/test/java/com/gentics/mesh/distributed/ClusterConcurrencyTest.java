@@ -41,7 +41,7 @@ public class ClusterConcurrencyTest extends AbstractClusterTest {
 
 	private static String clusterPostFix = randomUUID();
 
-	public static MeshContainer serverA = new MeshContainer()
+	public static MeshContainer serverA = new MeshContainer(MeshContainer.LOCAL_PROVIDER)
 		.withClusterName("dockerCluster" + clusterPostFix)
 		.withNodeName("nodeA")
 		.withDataPathPostfix(randomToken())
@@ -50,14 +50,14 @@ public class ClusterConcurrencyTest extends AbstractClusterTest {
 		.withFilesystem()
 		.withClearFolders();
 
-	public static MeshContainer serverB = new MeshContainer()
+	public static MeshContainer serverB = new MeshContainer(MeshContainer.LOCAL_PROVIDER)
 		.withClusterName("dockerCluster" + clusterPostFix)
 		.withNodeName("nodeB")
 		.withDataPathPostfix(randomToken())
 		.withFilesystem()
 		.withClearFolders();
 
-	public static MeshContainer serverC = new MeshContainer()
+	public static MeshContainer serverC = new MeshContainer(MeshContainer.LOCAL_PROVIDER)
 		.withClusterName("dockerCluster" + clusterPostFix)
 		.withNodeName("nodeC")
 		.withDataPathPostfix(randomToken())

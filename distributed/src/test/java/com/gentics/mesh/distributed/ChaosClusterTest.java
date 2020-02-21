@@ -90,7 +90,7 @@ public class ChaosClusterTest extends AbstractClusterTest {
 
 	private void startInitialServer() throws InterruptedException {
 		@SuppressWarnings("resource")
-		MeshContainer server = new MeshContainer()
+		MeshContainer server = new MeshContainer(MeshContainer.LOCAL_PROVIDER)
 			.withInitCluster()
 			.withClusterName(CLUSTERNAME + clusterPostFix)
 			.withNodeName("master")

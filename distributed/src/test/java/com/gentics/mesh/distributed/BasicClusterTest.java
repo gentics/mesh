@@ -67,7 +67,7 @@ public class BasicClusterTest extends AbstractClusterTest {
 
 	// public static MeshLocalServer serverA = new MeshLocalServer("localNodeA", true, true);
 
-	public static MeshContainer serverA = new MeshContainer()
+	public static MeshContainer serverA = new MeshContainer(MeshContainer.LOCAL_PROVIDER)
 		.withClusterName("dockerCluster" + clusterPostFix)
 		.withNodeName("nodeA")
 		.withDataPathPostfix(randomToken())
@@ -76,7 +76,7 @@ public class BasicClusterTest extends AbstractClusterTest {
 		.withFilesystem()
 		.withClearFolders();
 
-	public static MeshContainer serverB = new MeshContainer()
+	public static MeshContainer serverB = new MeshContainer(MeshContainer.LOCAL_PROVIDER)
 		.withClusterName("dockerCluster" + clusterPostFix)
 		.withNodeName("nodeB")
 		.withDataPathPostfix(randomToken())

@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
@@ -52,11 +53,14 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 
 	private static final Logger log = LoggerFactory.getLogger(MeshContainer.class);
 
+	public static final Supplier<ImageFromDockerfile> LOCAL_PROVIDER = () -> {
+		return prepareDockerImage(true);
+	};
+
 	private Slf4jLogConsumer logConsumer = new Slf4jLogConsumer(log);
 
 	private MeshRestClient client;
 
-	private static ImageFromDockerfile image = prepareDockerImage(true);
 
 	/**
 	 * Action which will be invoked once the mesh instance is ready.
@@ -96,8 +100,8 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 
 	private boolean useFilesystem = false;
 
-	public MeshContainer() {
-		setImage(image);
+	public MeshContainer(Supplier<ImageFromDockerfile> imageProvider) {
+		setImage(imageProvider.get());
 		setWaitStrategy(new NoWaitStrategy());
 	}
 
