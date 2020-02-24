@@ -1,4 +1,4 @@
-package com.gentics.mesh.distributed.containers;
+package com.gentics.mesh.test.util;
 
 import java.io.IOException;
 import java.io.InputStream;

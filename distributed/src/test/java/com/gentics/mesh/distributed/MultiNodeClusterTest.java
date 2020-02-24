@@ -11,9 +11,7 @@ import org.junit.rules.RuleChain;
 
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
-import com.gentics.mesh.distributed.containers.MeshDockerServer;
-
-import io.vertx.core.Vertx;
+import com.gentics.mesh.test.docker.MeshContainer;
 
 /**
  * Test how a cluster behaves with more than two nodes.
@@ -24,33 +22,36 @@ public class MultiNodeClusterTest extends AbstractClusterTest {
 
 	private static String clusterPostFix = randomUUID();
 
-	private static Vertx vertx = Vertx.vertx();
 	// public static MeshLocalServer serverA = new MeshLocalServer("localNodeA", true, true);
 
-	public static MeshDockerServer serverA = new MeshDockerServer(vertx)
+	public static MeshContainer serverA = new MeshContainer(MeshContainer.LOCAL_PROVIDER)
 		.withClusterName("dockerCluster" + clusterPostFix)
 		.withNodeName("nodeA")
 		.withDataPathPostfix(randomToken())
 		.withInitCluster()
 		.waitForStartup()
+		.withFilesystem()
 		.withClearFolders();
 
-	public static MeshDockerServer serverB = new MeshDockerServer(vertx)
+	public static MeshContainer serverB = new MeshContainer(MeshContainer.LOCAL_PROVIDER)
 		.withClusterName("dockerCluster" + clusterPostFix)
 		.withNodeName("nodeB")
 		.withDataPathPostfix(randomToken())
+		.withFilesystem()
 		.withClearFolders();
 
-	public static MeshDockerServer serverC = new MeshDockerServer(vertx)
+	public static MeshContainer serverC = new MeshContainer(MeshContainer.LOCAL_PROVIDER)
 		.withClusterName("dockerCluster" + clusterPostFix)
 		.withNodeName("nodeC")
 		.withDataPathPostfix(randomToken())
+		.withFilesystem()
 		.withClearFolders();
 
-	public static MeshDockerServer serverD = new MeshDockerServer(vertx)
+	public static MeshContainer serverD = new MeshContainer(MeshContainer.LOCAL_PROVIDER)
 		.withClusterName("dockerCluster" + clusterPostFix)
 		.withNodeName("nodeD")
 		.withDataPathPostfix(randomToken())
+		.withFilesystem()
 		.withClearFolders();
 
 	@ClassRule

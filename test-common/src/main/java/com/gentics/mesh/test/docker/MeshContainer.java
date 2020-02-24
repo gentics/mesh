@@ -1,4 +1,4 @@
-package com.gentics.mesh.distributed.containers;
+package com.gentics.mesh.test.docker;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertTrue;
@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
@@ -31,39 +32,51 @@ import org.testcontainers.utility.TestEnvironment;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.etc.config.ClusterOptions;
+import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.rest.client.MeshRestClient;
-import com.gentics.mesh.test.docker.NoWaitStrategy;
-import com.gentics.mesh.test.docker.StartupLatchingConsumer;
+import com.gentics.mesh.test.util.UnixUtils;
 import com.gentics.mesh.util.UUIDUtil;
 import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 
-import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 
 /**
  * Test container for a mesh instance which uses local class files. The image for the container will automatically be rebuild during each startup.
+ * 
+ * @param <SELF>
  */
-public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
+public class MeshContainer extends GenericContainer<MeshContainer> {
 
 	private static final Charset UTF8 = Charset.forName("UTF-8");
 
-	private static final Logger log = LoggerFactory.getLogger(MeshDockerServer.class);
+	private static final Logger log = LoggerFactory.getLogger(MeshContainer.class);
+
+	private static ImageFromDockerfile cachedImage = null;
+
+	/**
+	 * Local provider for docker image. The provider will utilize the class and jar files from a local Gentics Mesh checkout. This way a development version of
+	 * Gentics Mesh can be used in a container test setup.
+	 */
+	public static final Supplier<ImageFromDockerfile> LOCAL_PROVIDER = () -> {
+		if (cachedImage == null) {
+			cachedImage = prepareDockerImage(true);
+		}
+		return cachedImage;
+	};
 
 	private Slf4jLogConsumer logConsumer = new Slf4jLogConsumer(log);
 
 	private MeshRestClient client;
 
-	private Vertx vertx;
-
-	private static ImageFromDockerfile image = prepareDockerImage(true);
 
 	/**
 	 * Action which will be invoked once the mesh instance is ready.
 	 */
 	private Runnable startupAction = () -> {
 		client = MeshRestClient.create(getContainerIpAddress(), getMappedPort(8080), false);
+		login();
 	};
 
 	private StartupLatchingConsumer startupConsumer = new StartupLatchingConsumer(startupAction);
@@ -80,7 +93,7 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 
 	private boolean initCluster = false;
 
-	private boolean waitForStartup;
+	private boolean waitForStartup = false;
 
 	private boolean clearDataFolders = false;
 
@@ -94,15 +107,15 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 
 	private boolean startEmbeddedES = false;
 
-	/**
-	 * Create a new docker server
-	 * 
-	 * @param vertx
-	 *            Vert.x instances used to create the rest client
-	 */
-	public MeshDockerServer(Vertx vertx) {
-		super(image);
-		this.vertx = vertx;
+	private boolean useFilesystem = false;
+
+	public MeshContainer(Supplier<ImageFromDockerfile> imageProvider) {
+		setImage(imageProvider.get());
+		setWaitStrategy(new NoWaitStrategy());
+	}
+
+	public MeshContainer(String imageName) {
+		this.setDockerImageName(imageName);
 		setWaitStrategy(new NoWaitStrategy());
 	}
 
@@ -140,8 +153,12 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 			addEnv(MeshOptions.MESH_CLUSTER_INIT_ENV, "true");
 		}
 		List<Integer> exposedPorts = new ArrayList<>();
-		addEnv(MeshOptions.MESH_NODE_NAME_ENV, nodeName);
-		addEnv(ClusterOptions.MESH_CLUSTER_NAME_ENV, clusterName);
+		if (nodeName != null) {
+			addEnv(MeshOptions.MESH_NODE_NAME_ENV, nodeName);
+		}
+		if (clusterName != null) {
+			addEnv(ClusterOptions.MESH_CLUSTER_NAME_ENV, clusterName);
+		}
 		addEnv(ClusterOptions.MESH_CLUSTER_VERTX_PORT_ENV, "8123");
 		if (startEmbeddedES) {
 			exposedPorts.add(9200);
@@ -150,6 +167,13 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 			// Don't run the embedded ES
 			addEnv(ElasticSearchOptions.MESH_ELASTICSEARCH_START_EMBEDDED_ENV, "false");
 			addEnv(ElasticSearchOptions.MESH_ELASTICSEARCH_URL_ENV, "null");
+		}
+
+		addEnv(MeshOptions.MESH_INITIAL_ADMIN_PASSWORD_ENV, "admin");
+		addEnv(MeshOptions.MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET_ENV, "false");
+
+		if (!useFilesystem) {
+			addEnv(GraphStorageOptions.MESH_GRAPH_DB_DIRECTORY_ENV, "null");
 		}
 
 		String javaOpts = null;
@@ -189,7 +213,12 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 
 	@Override
 	public void start() {
-		super.start();
+		try {
+			super.start();
+		} catch (Throwable t) {
+			t.printStackTrace();
+			throw t;
+		}
 		if (waitForStartup) {
 			try {
 				awaitStartup(500);
@@ -274,7 +303,7 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 			dockerImage.withFileFromString("sudoers", "root ALL=(ALL) ALL\n%mesh ALL=(ALL) NOPASSWD: ALL\n");
 
 			// Add docker file which contains the build instructions
-			String dockerFile = IOUtils.toString(MeshDockerServer.class.getResourceAsStream("/Dockerfile.local"));
+			String dockerFile = IOUtils.toString(MeshContainer.class.getResourceAsStream("/Dockerfile.local"));
 
 			// We need to keep the uid of the docker container env and the local test execution env in sync to be able to access the data of the mounted volume.
 			int uid = UnixUtils.getUid();
@@ -303,7 +332,7 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 	private static JsonObject generateDistributedConfig(int writeQuorum) {
 		JsonObject json;
 		try {
-			json = new JsonObject(IOUtils.toString(MeshDockerServer.class.getResourceAsStream("/config/default-distributed-db-config.json")));
+			json = new JsonObject(IOUtils.toString(MeshContainer.class.getResourceAsStream("/config/default-distributed-db-config.json")));
 			if (writeQuorum == -1) {
 				json.put("writeQuorum", "majority");
 			} else {
@@ -339,7 +368,7 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 	 * @throws InterruptedException
 	 * @return Fluent API
 	 */
-	public MeshDockerServer awaitStartup(int timeoutInSeconds) throws InterruptedException {
+	public MeshContainer awaitStartup(int timeoutInSeconds) throws InterruptedException {
 		startupConsumer.await(timeoutInSeconds, SECONDS);
 		return this;
 	}
@@ -348,7 +377,7 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 		return client;
 	}
 
-	public MeshDockerServer dropTraffic() throws UnsupportedOperationException, IOException, InterruptedException {
+	public MeshContainer dropTraffic() throws UnsupportedOperationException, IOException, InterruptedException {
 		execRootInContainer("apk", "--update", "add", "iptables");
 		Thread.sleep(1000);
 		execRootInContainer("iptables", "-P", "INPUT", "DROP");
@@ -357,7 +386,7 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 		return this;
 	}
 
-	public MeshDockerServer resumeTraffic() throws UnsupportedOperationException, IOException, InterruptedException {
+	public MeshContainer resumeTraffic() throws UnsupportedOperationException, IOException, InterruptedException {
 		execRootInContainer("iptables", "-F");
 		return this;
 	}
@@ -398,7 +427,7 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 		return result;
 	}
 
-	public MeshDockerServer login() {
+	public MeshContainer login() {
 		client().setLogin("admin", "admin");
 		client().login().blockingGet();
 		return this;
@@ -411,7 +440,7 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 	 *            JNLP debug port. No debugging is enabled when set to null.
 	 * @return Fluent API
 	 */
-	public MeshDockerServer withDebug(int debugPort) {
+	public MeshContainer withDebug(int debugPort) {
 		this.debugPort = debugPort;
 		return this;
 	}
@@ -421,7 +450,7 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 	 * 
 	 * @return
 	 */
-	public MeshDockerServer waitForStartup() {
+	public MeshContainer waitForStartup() {
 		waitForStartup = true;
 		return this;
 	}
@@ -433,7 +462,7 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 	 *            Additional JVM options }
 	 * @return
 	 */
-	public MeshDockerServer withExtraOpts(String opts) {
+	public MeshContainer withExtraOpts(String opts) {
 		extraOpts = opts;
 		return this;
 	}
@@ -444,7 +473,7 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 	 * @param name
 	 * @return
 	 */
-	public MeshDockerServer withNodeName(String name) {
+	public MeshContainer withNodeName(String name) {
 		this.nodeName = name;
 		return this;
 	}
@@ -455,7 +484,7 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 	 * @param name
 	 * @return
 	 */
-	public MeshDockerServer withClusterName(String name) {
+	public MeshContainer withClusterName(String name) {
 		this.clusterName = name;
 		return this;
 	}
@@ -465,7 +494,7 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 	 * 
 	 * @return
 	 */
-	public MeshDockerServer withES() {
+	public MeshContainer withES() {
 		this.startEmbeddedES = true;
 		return this;
 	}
@@ -475,7 +504,7 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 	 * 
 	 * @return
 	 */
-	public MeshDockerServer withInitCluster() {
+	public MeshContainer withInitCluster() {
 		this.initCluster = true;
 		return this;
 	}
@@ -485,8 +514,18 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 	 * 
 	 * @return
 	 */
-	public MeshDockerServer withClearFolders() {
+	public MeshContainer withClearFolders() {
 		this.clearDataFolders = true;
+		return this;
+	}
+
+	/**
+	 * Run the mesh server with file system persisting enabled.
+	 * 
+	 * @return
+	 */
+	public MeshContainer withFilesystem() {
+		this.useFilesystem = true;
 		return this;
 	}
 
@@ -496,7 +535,7 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 	 * @param postfix
 	 * @return
 	 */
-	public MeshDockerServer withDataPathPostfix(String postfix) {
+	public MeshContainer withDataPathPostfix(String postfix) {
 		this.dataPathPostfix = postfix;
 		return this;
 	}
@@ -523,7 +562,7 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 		}
 	}
 
-	public MeshDockerServer withWriteQuorum(int writeQuorum) {
+	public MeshContainer withWriteQuorum(int writeQuorum) {
 		this.writeQuorum = writeQuorum;
 		return this;
 	}

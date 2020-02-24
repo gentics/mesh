@@ -1,10 +1,12 @@
-package com.gentics.mesh.distributed.containers;
+package com.gentics.mesh.test.util;
 
 import static org.junit.Assert.assertNotEquals;
 
 import java.io.IOException;
 
 import org.junit.Test;
+
+import com.gentics.mesh.test.util.UnixUtils;
 
 public class UnixUtilsTest {
 

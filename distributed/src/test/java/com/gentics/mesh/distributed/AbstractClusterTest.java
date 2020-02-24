@@ -8,8 +8,8 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
-import com.gentics.mesh.distributed.containers.MeshDockerServer;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.test.docker.MeshContainer;
 
 import io.vertx.core.Vertx;
 
@@ -56,7 +56,7 @@ public abstract class AbstractClusterTest {
 		return "random" + System.currentTimeMillis();
 	}
 
-	public MeshDockerServer addSlave(String string, String name, String name2, boolean b) {
+	public MeshContainer addSlave(String string, String name, String name2, boolean b) {
 		return addSlave(string, name, name2, b, -1);
 	}
 
@@ -75,11 +75,12 @@ public abstract class AbstractClusterTest {
 	 *            Write quorum to be used for the configuration.
 	 * @return
 	 */
-	protected MeshDockerServer addSlave(String clusterName, String nodeName, String dataPathPostfix, boolean clearFolders, int writeQuorum) {
-		MeshDockerServer server = new MeshDockerServer(vertx)
+	protected MeshContainer addSlave(String clusterName, String nodeName, String dataPathPostfix, boolean clearFolders, int writeQuorum) {
+		MeshContainer server = new MeshContainer(MeshContainer.LOCAL_PROVIDER)
 			.withDataPathPostfix(dataPathPostfix)
 			.withClusterName(clusterName)
 			.withNodeName(nodeName)
+			.withFilesystem()
 			.withWriteQuorum(writeQuorum)
 			.waitForStartup();
 		if (clearFolders) {

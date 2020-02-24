@@ -12,7 +12,7 @@ import org.junit.Test;
 import org.junit.rules.RuleChain;
 
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
-import com.gentics.mesh.distributed.containers.MeshDockerServer;
+import com.gentics.mesh.test.docker.MeshContainer;
 
 /**
  * Assert that a node will not be able to join the cluster if the mesh versions and the database revision are not matching.
@@ -23,20 +23,22 @@ public class NodeRejectionClusterTest extends AbstractClusterTest {
 
 	private static String clusterPostFix = randomUUID();
 
-	public static MeshDockerServer serverA = new MeshDockerServer(vertx)
+	public static MeshContainer serverA = new MeshContainer(MeshContainer.LOCAL_PROVIDER)
 		.withClusterName("dockerCluster" + clusterPostFix)
 		.withNodeName("nodeA")
 		.withDataPathPostfix(randomToken())
 		.withInitCluster()
 		.withClearFolders()
 		.waitForStartup()
+		.withFilesystem()
 		.withExtraOpts("-Dmesh.internal.version=0.10.0 -Dmesh.internal.dbrev=EFG");
 
-	public static MeshDockerServer serverB = new MeshDockerServer(vertx)
+	public static MeshContainer serverB = new MeshContainer(MeshContainer.LOCAL_PROVIDER)
 		.withClusterName("dockerCluster" + clusterPostFix)
 		.withNodeName("nodeB")
 		.withDataPathPostfix(randomToken())
 		.withClearFolders()
+		.withFilesystem()
 		.withExtraOpts("-Dmesh.internal.version=0.10.1 -Dmesh.internal.dbrev=ABC");
 
 	@ClassRule
