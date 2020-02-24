@@ -24,7 +24,7 @@ import io.vertx.core.Vertx;
  * Test container for a mesh instance which uses local class files. The image for the container will automatically be rebuild during each startup.
  * 
  * @param <SELF>
- * @deprecated Use {@link MeshClusterServer} instead
+ * @deprecated Use {@link MeshContainer} instead
  */
 @Deprecated 
 public class MeshDockerServer extends GenericContainer<MeshDockerServer> implements MeshTestServer {

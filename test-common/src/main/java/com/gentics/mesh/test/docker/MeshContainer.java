@@ -53,6 +53,10 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 
 	private static final Logger log = LoggerFactory.getLogger(MeshContainer.class);
 
+	/**
+	 * Local provider for docker image. The provider will utilize the class and jar files from a local Gentics Mesh checkout.
+	 * This way a development version of Gentics Mesh can be used in a container test setup.
+	 */
 	public static final Supplier<ImageFromDockerfile> LOCAL_PROVIDER = () -> {
 		return prepareDockerImage(true);
 	};
@@ -524,7 +528,7 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 	 * Set the data path postfix.
 	 * 
 	 * @param postfix
-	 * @retuMeshClusterServer
+	 * @return
 	 */
 	public MeshContainer withDataPathPostfix(String postfix) {
 		this.dataPathPostfix = postfix;
