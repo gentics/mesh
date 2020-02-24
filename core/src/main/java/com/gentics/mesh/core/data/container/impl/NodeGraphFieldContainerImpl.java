@@ -66,7 +66,6 @@ import com.gentics.mesh.core.data.node.field.list.impl.MicronodeGraphFieldListIm
 import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -636,7 +635,9 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	@Override
 	public List<? extends MicronodeGraphField> getMicronodeFields(MicroschemaContainerVersion version) {
 		String microschemaVersionUuid = version.getUuid();
-		return outE(HAS_FIELD, MicronodeGraphFieldImpl.class)
+		return new TraversalResult<>(outE(HAS_FIELD)
+			.has(MicronodeGraphFieldImpl.class)
+			.frameExplicit(MicronodeGraphFieldImpl.class))
 			.stream()
 			.filter(edge -> edge.getMicronode().property(MICROSCHEMA_VERSION_KEY_PROPERTY).equals(microschemaVersionUuid))
 			.collect(Collectors.toList());
@@ -645,7 +646,11 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	@Override
 	public TraversalResult<? extends MicronodeGraphFieldList> getMicronodeListFields(MicroschemaContainerVersion version) {
 		String microschemaVersionUuid = version.getUuid();
-		return new TraversalResult<>(out(HAS_LIST, MicronodeGraphFieldListImpl.class).stream()
+		TraversalResult<? extends MicronodeGraphFieldList> lists = new TraversalResult<>(out(HAS_LIST)
+			.has(MicronodeGraphFieldListImpl.class)
+			.frameExplicit(MicronodeGraphFieldListImpl.class));
+		return new TraversalResult<>(lists
+			.stream()
 			.filter(list -> list.getValues().stream()
 			.anyMatch(micronode -> micronode.property(MICROSCHEMA_VERSION_KEY_PROPERTY).equals(microschemaVersionUuid)))
 		);
