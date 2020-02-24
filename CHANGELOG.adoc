@@ -27,19 +27,19 @@ include::content/docs/variables.adoc-include[]
 
 [[Unreleased]]
 
-icon:check[] UI: The Gentics Mesh UI has been updated to version link:https://github.com/gentics/mesh-ui/blob/1.1.1/CHANGELOG.md#111---2020-02-19[1.1.1]
-
 icon:check[] Core: Fixed a bug that caused an internal server error if a project was attempted to be created after any role with permissions to create projects was deleted.
-
-icon:plus[] Core: The core Vert.x library was updated to version `3.8.5`.
-
-icon:check[] OrientDB: The included OrientDB version has been updated to version `3.0.28`
-
-icon:check[] Core: The storage filesystem compatibility check has been made more reliable.
 
 icon:plus[] Test: An enhanced test container class has been added. The `MeshContainer` class replaces the `MeshDockerServer` which was deprecated.
 
+[[v1.4.2]]
+== 1.4.2 (24.02.2020)
+
+icon:check[] UI: The Gentics Mesh UI has been updated to version link:https://github.com/gentics/mesh-ui/blob/1.1.1/CHANGELOG.md#111---2020-02-19[1.1.1]
+
+icon:check[] Core: The storage filesystem compatibility check has been made more reliable.
+
 icon:check[] Core: Fixed a bug that caused errors during microschema migrations in certain situations.
+
 
 [[v1.4.1]]
 == 1.4.1 (19.01.2020)
