@@ -1,9 +1,9 @@
 package com.gentics.madl;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.reflections.Reflections;
 
@@ -14,7 +14,7 @@ import com.gentics.madl.annotations.GraphElement;
  */
 public class ElementTypeClassCache {
 
-	private final Map<String, Class> classStringCache = new HashMap<>();
+	private final Map<String, Class> classStringCache = new ConcurrentHashMap<>();
 	private String[] basePaths;
 
 	public ElementTypeClassCache(String... packagePaths) {

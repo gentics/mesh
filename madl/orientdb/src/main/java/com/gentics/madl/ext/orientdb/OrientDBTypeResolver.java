@@ -17,10 +17,10 @@ import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedElement;
 
 public class OrientDBTypeResolver implements TypeResolver {
 
-	private final ElementTypeClassCache elementTypCache;
+	private final ElementTypeClassCache elementTypeCache;
 
 	public OrientDBTypeResolver(String... packagePaths) {
-		this.elementTypCache = new ElementTypeClassCache(packagePaths);
+		this.elementTypeCache = new ElementTypeClassCache(packagePaths);
 	}
 
 	@Override
@@ -42,7 +42,7 @@ public class OrientDBTypeResolver implements TypeResolver {
 	}
 
 	private <T> Class<? extends T> resolve(String type, Class<T> kind) {
-		final Class<T> nodeKind = (Class<T>) this.elementTypCache.forName(type);
+		final Class<T> nodeKind = (Class<T>) this.elementTypeCache.forName(type);
 		if (kind.isAssignableFrom(nodeKind) || kind.equals(VertexFrame.class) || kind.equals(EdgeFrame.class)
 			|| kind.equals(AbstractVertexFrame.class) || kind.equals(AbstractEdgeFrame.class) || kind.equals(Object.class)) {
 			return nodeKind;
@@ -56,12 +56,12 @@ public class OrientDBTypeResolver implements TypeResolver {
 		if (element instanceof OrientVertex) {
 			OrientVertex orientVertex = (OrientVertex) element;
 			String name = orientVertex.getType().getName();
-			return this.elementTypCache.forName(name);
+			return this.elementTypeCache.forName(name);
 		}
 		if (element instanceof OrientEdge) {
 			OrientEdge orientEdge = (OrientEdge) element;
 			String name = orientEdge.getType().getName();
-			return this.elementTypCache.forName(name);
+			return this.elementTypeCache.forName(name);
 		}
 		return null;
 	}
