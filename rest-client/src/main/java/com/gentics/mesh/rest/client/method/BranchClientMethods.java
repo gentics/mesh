@@ -72,6 +72,15 @@ public interface BranchClientMethods {
 	MeshRequest<BranchResponse> updateBranch(String projectName, String branchUuid, BranchUpdateRequest request);
 
 	/**
+	 * Delete the branch.
+	 *
+	 * @param projectName
+	 * @param branchUuid
+	 * @return
+	 */
+	MeshRequest<EmptyResponse> deleteBranch(String projectName, String branchUuid);
+
+	/**
 	 * Get schema versions assigned to a branch.
 	 *
 	 * @param projectName

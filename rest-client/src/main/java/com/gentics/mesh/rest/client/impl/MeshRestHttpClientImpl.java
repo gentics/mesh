@@ -1262,6 +1262,13 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
+	public MeshRequest<EmptyResponse> deleteBranch(String projectName, String branchUuid) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(branchUuid, "branchUuid must not be null");
+
+		return prepareRequest(DELETE, "/" + encodeSegment(projectName) + "/branches/" + branchUuid, EmptyResponse.class);
+	}
+	@Override
 	public MeshRequest<MeshServerInfoModel> getApiInfo() {
 		return prepareRequest(GET, "/", MeshServerInfoModel.class);
 	}

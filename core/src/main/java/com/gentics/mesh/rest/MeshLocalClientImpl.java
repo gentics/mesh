@@ -1345,6 +1345,11 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
+	public MeshRequest<EmptyResponse> deleteBranch(String projectName, String branchUuid) {
+		return null;
+	}
+
+	@Override
 	public MeshRequest<BranchInfoSchemaList> getBranchSchemaVersions(String projectName, String branchUuid) {
 		// TODO Auto-generated method stub
 		return null;
