@@ -70,7 +70,6 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 
 	private MeshRestClient client;
 
-
 	/**
 	 * Action which will be invoked once the mesh instance is ready.
 	 */
@@ -158,6 +157,7 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 		}
 		if (clusterName != null) {
 			addEnv(ClusterOptions.MESH_CLUSTER_NAME_ENV, clusterName);
+			addEnv(ClusterOptions.MESH_CLUSTER_ENABLED_ENV, "true");
 		}
 		addEnv(ClusterOptions.MESH_CLUSTER_VERTX_PORT_ENV, "8123");
 		if (startEmbeddedES) {
@@ -237,6 +237,11 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 
 	public void killContainer() {
 		dockerClient.killContainerCmd(containerId).withSignal("SIGTERM").exec();
+		super.stop();
+	}
+
+	public void killHardContainer() {
+		dockerClient.killContainerCmd(containerId).withSignal("SIGKILL").exec();
 		super.stop();
 	}
 
