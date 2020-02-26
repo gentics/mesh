@@ -121,21 +121,32 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 	@Override
 	protected void configure() {
 		String basePath = "/opt/jenkins-slave/" + clusterName + "-" + nodeName;
-		String dataPath = basePath + "/data-" + dataPathPostfix;
 		String confPath = basePath + "/config";
-		// Ensure that the folder is created upfront. This is important to keep the uid and gids correct.
-		// Otherwise the folder would be created by docker using root.
+		if (useFilesystem) {
+			String dataGraphDBPath = basePath + "/data-graphdb" + dataPathPostfix;
+			String dataUploadsPath = basePath + "/data-uploads" + dataPathPostfix;
 
-		if (clearDataFolders) {
-			try {
-				prepareFolder(dataPath);
-			} catch (Exception e) {
-				fail("Could not setup bind folder {" + dataPath + "}");
+			// Ensure that the folder is created upfront. This is important to keep the uid and gids correct.
+			// Otherwise the folder would be created by docker using root.
+
+			if (clearDataFolders) {
+				try {
+					prepareFolder(dataGraphDBPath);
+				} catch (Exception e) {
+					fail("Could not setup bind folder {" + dataGraphDBPath + "}");
+				}
+				try {
+					prepareFolder(dataUploadsPath);
+				} catch (Exception e) {
+					fail("Could not setup bind folder {" + dataUploadsPath + "}");
+				}
 			}
+			new File(dataGraphDBPath).mkdirs();
+			new File(dataUploadsPath).mkdirs();
+			addFileSystemBind(dataGraphDBPath, "/graphdb", BindMode.READ_WRITE);
+			addFileSystemBind(dataUploadsPath, "/uploads", BindMode.READ_WRITE);
+			// withCreateContainerCmdModifier(it -> it.withVolumes(new Volume("/data")));
 		}
-		new File(dataPath).mkdirs();
-		addFileSystemBind(dataPath, "/data", BindMode.READ_WRITE);
-		// withCreateContainerCmdModifier(it -> it.withVolumes(new Volume("/data")));
 
 		try {
 			new File(confPath).mkdirs();
