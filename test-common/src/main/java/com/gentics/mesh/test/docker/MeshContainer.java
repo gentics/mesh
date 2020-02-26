@@ -382,21 +382,52 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 		return client;
 	}
 
-	public MeshContainer dropTraffic() throws UnsupportedOperationException, IOException, InterruptedException {
+	/**
+	 * Drop traffic to all or a specific set of containers.
+	 * 
+	 * @param containers
+	 * @return
+	 * @throws Exception
+	 */
+	public MeshContainer dropTraffic(MeshContainer... containers) throws Exception {
 		execRootInContainer("apk", "--update", "add", "iptables");
 		Thread.sleep(1000);
-		execRootInContainer("iptables", "-P", "INPUT", "DROP");
-		execRootInContainer("iptables", "-P", "OUTPUT", "DROP");
-		execRootInContainer("iptables", "-P", "FORWARD", "DROP");
+		if (containers.length == 0) {
+			execRootInContainer("iptables", "-P", "INPUT", "DROP");
+			execRootInContainer("iptables", "-P", "OUTPUT", "DROP");
+			execRootInContainer("iptables", "-P", "FORWARD", "DROP");
+		} else {
+			for (MeshContainer container : containers) {
+				execRootInContainer("iptables", "-I", "INPUT", "1", "-d", container.getInternalContainerIpAddress(), "-j", "DROP");
+				execRootInContainer("iptables", "-I", "OUTPUT", "1", "-d", container.getInternalContainerIpAddress(), "-j", "DROP");
+				execRootInContainer("iptables", "-I", "FORWARD", "1", "-d", container.getInternalContainerIpAddress(), "-j", "DROP");
+			}
+		}
 		return this;
 	}
 
-	public MeshContainer resumeTraffic() throws UnsupportedOperationException, IOException, InterruptedException {
-		execRootInContainer("iptables", "-F");
+	/**
+	 * Resume traffic to all or a specific set of containers.
+	 * 
+	 * @param containers
+	 * @return
+	 * @throws Exception
+	 */
+	public MeshContainer resumeTraffic(MeshContainer... containers) throws Exception {
+		execRootInContainer("apk", "--update", "add", "iptables");
+		if (containers.length == 0) {
+			execRootInContainer("iptables", "-F");
+		} else {
+			for (MeshContainer container : containers) {
+				execRootInContainer("iptables", "-I", "INPUT", "1", "-d", container.getInternalContainerIpAddress(), "-j", "ACCEPT");
+				execRootInContainer("iptables", "-I", "OUTPUT", "1", "-d", container.getInternalContainerIpAddress(), "-j", "ACCEPT");
+				execRootInContainer("iptables", "-I", "FORWARD", "1", "-d", container.getInternalContainerIpAddress(), "-j", "ACCEPT");
+			}
+		}
 		return this;
 	}
 
-	public ExecResult execRootInContainer(String... command) throws UnsupportedOperationException, IOException, InterruptedException {
+	public ExecResult execRootInContainer(String... command) throws Exception {
 		Charset outputCharset = UTF8;
 
 		if (!TestEnvironment.dockerExecutionDriverSupportsExec()) {
@@ -413,7 +444,7 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 		logger().debug("Running \"exec\" command: " + String.join(" ", command));
 		final ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(this.containerId).withAttachStdout(true).withAttachStderr(true)
 			.withUser("root")
-			// .withPrivileged(true)
+			.withPrivileged(true)
 			.withCmd(command).exec();
 
 		final ToStringConsumer stdoutConsumer = new ToStringConsumer();
@@ -565,6 +596,10 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 		} else {
 			return super.getContainerIpAddress();
 		}
+	}
+
+	public String getInternalContainerIpAddress() {
+		return getContainerInfo().getNetworkSettings().getIpAddress();
 	}
 
 	public MeshContainer withWriteQuorum(int writeQuorum) {
