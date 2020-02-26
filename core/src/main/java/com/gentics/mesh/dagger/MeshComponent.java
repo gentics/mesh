@@ -1,5 +1,7 @@
 package com.gentics.mesh.dagger;
 
+import java.util.function.Supplier;
+
 import javax.annotation.Nullable;
 import javax.inject.Provider;
 import javax.inject.Singleton;
@@ -168,6 +170,9 @@ public interface MeshComponent {
 	interface Builder {
 		@BindsInstance
 		Builder configuration(MeshOptions options);
+
+		@BindsInstance
+		Builder vertx(@Nullable Supplier<Vertx> vertxSupplier);
 
 		@BindsInstance
 		Builder searchProviderType(@Nullable SearchProviderType type);

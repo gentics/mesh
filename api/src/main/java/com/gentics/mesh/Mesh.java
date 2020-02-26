@@ -21,12 +21,25 @@ public interface Mesh {
 	 * Returns the initialized instance.
 	 * 
 	 * @param options
+	 *            Mesh Optionss
+	 * @param vertx
+	 *            Vert.x instance to be used for the Mesh instance
+	 * @return Fluent API
+	 */
+	static Mesh create(MeshOptions options, Vertx vertx) {
+		options.validate();
+		return factory.create(options, vertx);
+	}
+
+	/**
+	 * Returns the initialized instance.
+	 * 
+	 * @param options
 	 * 
 	 * @return Fluent API
 	 */
 	static Mesh create(MeshOptions options) {
-		options.validate();
-		return factory.create(options);
+		return create(options, null);
 	}
 
 	/**
@@ -62,8 +75,8 @@ public interface Mesh {
 	MeshOptions getOptions();
 
 	/**
-	 * Start Gentics Mesh. This will effectively block until {@link #shutdown()} is called from another thread. This method will initialise the dagger context and
-	 * deploy mandatory verticles and extensions.
+	 * Start Gentics Mesh. This will effectively block until {@link #shutdown()} is called from another thread. This method will initialise the dagger context
+	 * and deploy mandatory verticles and extensions.
 	 * 
 	 * @throws Exception
 	 * @return Fluent API

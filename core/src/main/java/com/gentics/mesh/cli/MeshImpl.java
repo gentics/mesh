@@ -23,6 +23,7 @@ import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.crypto.KeyStoreHelper;
 import com.gentics.mesh.dagger.DaggerMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
+import com.gentics.mesh.dagger.MeshComponent.Builder;
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.util.VersionUtil;
@@ -59,6 +60,8 @@ public class MeshImpl implements Mesh {
 
 	boolean shutdown = false;
 
+	private Vertx vertx;
+
 	static {
 		// Use slf4j instead of jul
 		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
@@ -66,6 +69,11 @@ public class MeshImpl implements Mesh {
 	}
 
 	public MeshImpl(MeshOptions options) {
+		this(options, null);
+	}
+
+	public MeshImpl(MeshOptions options, Vertx vertx) {
+		this.vertx = vertx;
 		long current = instanceCounter.incrementAndGet();
 		if (current >= 2) {
 			if (options.getClusterOptions().isEnabled()) {
@@ -135,7 +143,12 @@ public class MeshImpl implements Mesh {
 		}
 		// Create dagger context and invoke bootstrap init in order to startup mesh
 		try {
-			meshInternal = DaggerMeshComponent.builder().configuration(options).build();
+			Builder builder = DaggerMeshComponent.builder();
+			builder.configuration(options);
+			if (vertx != null) {
+				builder.vertx(() -> vertx);
+			}
+			meshInternal = builder.build();
 			setMeshInternal(meshInternal);
 			meshInternal.boot().init(this, forceIndexSync, options, verticleLoader);
 			if (options.isUpdateCheckEnabled()) {

@@ -23,8 +23,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -171,6 +173,13 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Inject
 	public BCryptPasswordEncoder passwordEncoder;
+
+	/**
+	 * Optional vert.x supplier which will be used to provide the Vert.x instance when set.
+	 */
+	@Inject
+	@Nullable
+	public Supplier<Vertx> vertxSupplier;
 
 	private MeshRoot meshRoot;
 
@@ -473,35 +482,40 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	public void initVertx(MeshOptions options, boolean isClustered) {
-		VertxOptions vertxOptions = new VertxOptions();
-		vertxOptions.getEventBusOptions().setClustered(options.getClusterOptions().isEnabled());
-		vertxOptions.setWorkerPoolSize(options.getVertxOptions().getWorkerPoolSize());
-		vertxOptions.setEventLoopPoolSize(options.getVertxOptions().getEventPoolSize());
-
-		MonitoringConfig monitoringOptions = options.getMonitoringOptions();
-		if (monitoringOptions != null && monitoringOptions.isEnabled()) {
-			log.info("Enabling Vert.x metrics");
-			vertxOptions.setMetricsOptions(metricsOptions);
-		}
-		boolean logActivity = LoggerFactory.getLogger(EventBus.class).isDebugEnabled();
-		vertxOptions.getEventBusOptions().setLogActivity(logActivity);
-		vertxOptions.setPreferNativeTransport(true);
-		System.setProperty("vertx.cacheDirBase", options.getTempDirectory());
-		Vertx vertx = null;
-		if (vertxOptions.getEventBusOptions().isClustered()) {
-			log.info("Creating clustered Vert.x instance");
-			vertx = createClusteredVertx(options, vertxOptions, (HazelcastInstance) db.clusterManager().getHazelcast());
+		if (vertxSupplier != null) {
+			this.vertx = vertxSupplier.get();
 		} else {
-			log.info("Creating non-clustered Vert.x instance");
-			vertx = Vertx.vertx(vertxOptions);
-		}
-		if (vertx.isNativeTransportEnabled()) {
-			log.info("Running with native transports enabled");
-		} else {
-			log.warn("Current environment does not support native transports");
-		}
 
-		this.vertx = vertx;
+			VertxOptions vertxOptions = new VertxOptions();
+			vertxOptions.getEventBusOptions().setClustered(options.getClusterOptions().isEnabled());
+			vertxOptions.setWorkerPoolSize(options.getVertxOptions().getWorkerPoolSize());
+			vertxOptions.setEventLoopPoolSize(options.getVertxOptions().getEventPoolSize());
+
+			MonitoringConfig monitoringOptions = options.getMonitoringOptions();
+			if (monitoringOptions != null && monitoringOptions.isEnabled()) {
+				log.info("Enabling Vert.x metrics");
+				vertxOptions.setMetricsOptions(metricsOptions);
+			}
+			boolean logActivity = LoggerFactory.getLogger(EventBus.class).isDebugEnabled();
+			vertxOptions.getEventBusOptions().setLogActivity(logActivity);
+			vertxOptions.setPreferNativeTransport(true);
+			System.setProperty("vertx.cacheDirBase", options.getTempDirectory());
+			Vertx vertx = null;
+			if (vertxOptions.getEventBusOptions().isClustered()) {
+				log.info("Creating clustered Vert.x instance");
+				vertx = createClusteredVertx(options, vertxOptions, (HazelcastInstance) db.clusterManager().getHazelcast());
+			} else {
+				log.info("Creating non-clustered Vert.x instance");
+				vertx = Vertx.vertx(vertxOptions);
+			}
+			if (vertx.isNativeTransportEnabled()) {
+				log.info("Running with native transports enabled");
+			} else {
+				log.warn("Current environment does not support native transports");
+			}
+
+			this.vertx = vertx;
+		}
 	}
 
 	/**
@@ -867,7 +881,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 					sb.append("- Admin Login\n");
 					sb.append("-----------------------\n");
 					sb.append("- Username: admin\n");
-					sb.append("- Password: " + pw +"\n");
+					sb.append("- Password: " + pw + "\n");
 					sb.append("-----------------------\n");
 					// TODO figure out a way to avoid the encode call during test execution. This will otherwise slow down tests big time.
 					adminUser.setPasswordHash(hash);
