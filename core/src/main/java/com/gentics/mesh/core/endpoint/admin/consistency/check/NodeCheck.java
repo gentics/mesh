@@ -4,20 +4,27 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIE
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROOT_NODE;
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.HIGH;
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.MEDIUM;
+import static com.gentics.mesh.util.StreamUtil.toStream;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.impl.BranchImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.endpoint.admin.consistency.AbstractConsistencyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
+import com.gentics.mesh.core.rest.admin.consistency.InconsistencyInfo;
+import com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity;
+import com.gentics.mesh.core.rest.admin.consistency.RepairAction;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.graphdb.spi.Database;
 
@@ -26,6 +33,10 @@ import com.gentics.mesh.graphdb.spi.Database;
  */
 public class NodeCheck extends AbstractConsistencyCheck {
 
+	// TODO NodeCheck should be created for each consistency run
+	private Set<String> branchUuids;
+	private boolean attemptRepair;
+
 	@Override
 	public String getName() {
 		return "nodes";
@@ -33,6 +44,11 @@ public class NodeCheck extends AbstractConsistencyCheck {
 
 	@Override
 	public ConsistencyCheckResult invoke(Database db, Tx tx, boolean attemptRepair) {
+		Stream<BranchImpl> branchStream = toStream(db.getVerticesForType(BranchImpl.class));
+		branchUuids = branchStream
+			.map(MeshVertexImpl::getUuid)
+			.collect(Collectors.toSet());
+		this.attemptRepair = attemptRepair;
 		return processForType(db, NodeImpl.class, (node, result) -> {
 			checkNode(node, result);
 		}, attemptRepair, tx);
@@ -78,6 +94,8 @@ public class NodeCheck extends AbstractConsistencyCheck {
 			checkGraphFieldContainerUniqueness(node, type, result);
 		}
 
+		checkContentsForValidBranch(node, result);
+
 		// if the node is not the project root, it must have a parent node for every branch in which it has an initial graph field container
 		if (!isBaseNode) {
 			checkParentNodes(node, result);
@@ -88,7 +106,7 @@ public class NodeCheck extends AbstractConsistencyCheck {
 	 * Check that the node has not more than one GFC of the type for each branch
 	 * @param node node
 	 * @param type GFC type
-	 * @param response check response
+	 * @param result check response
 	 */
 	private void checkGraphFieldContainerUniqueness(Node node, ContainerType type, ConsistencyCheckResult result) {
 		String uuid = node.getUuid();
@@ -127,6 +145,29 @@ public class NodeCheck extends AbstractConsistencyCheck {
 				result.addInconsistency(String.format(
 						"The node references parent node %s in branch %s, but the parent node does not have any DRAFT graphfieldcontainer in the branch",
 						branchParent.getUuid(), branchUuid), node.getUuid(), HIGH);
+			}
+		}
+	}
+
+	/**
+	 * Check that each initial, draft and published version is in an existing branch.
+	 * @param node
+	 * @return
+	 */
+	private void checkContentsForValidBranch(Node node, ConsistencyCheckResult result) {
+		for (GraphFieldContainerEdgeImpl edge : node.outE(HAS_FIELD_CONTAINER, GraphFieldContainerEdgeImpl.class)) {
+			String branchUuid = edge.getBranchUuid();
+			if (!branchUuids.contains(branchUuid)) {
+				InconsistencyInfo info = new InconsistencyInfo();
+				info.setDescription(String.format("The node has a content of type {%s} in the non-existing branch with uuid {%s}", edge.getType().getHumanCode(), edge.getBranchUuid()))
+					.setElementUuid(node.getUuid())
+					.setSeverity(InconsistencySeverity.LOW);
+				if (attemptRepair) {
+					edge.remove();
+					info.setRepaired(true)
+						.setRepairAction(RepairAction.RECOVER);
+				}
+				result.addInconsistency(info);
 			}
 		}
 	}
