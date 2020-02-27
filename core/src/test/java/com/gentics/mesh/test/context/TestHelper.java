@@ -497,6 +497,14 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		call(() -> client().deleteProject(uuid));
 	}
 
+	default void deleteBranch(BranchResponse branch) {
+		deleteBranch(branch.getUuid());
+	}
+
+	default void deleteBranch(String uuid) {
+		call(() -> client().deleteBranch(PROJECT_NAME, uuid));
+	}
+
 	default public SchemaResponse createSchema(String schemaName) {
 		SchemaCreateRequest schema = FieldUtil.createSchemaCreateRequest();
 		schema.setName(schemaName);

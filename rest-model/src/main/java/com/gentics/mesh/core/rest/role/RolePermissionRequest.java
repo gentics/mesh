@@ -68,4 +68,19 @@ public class RolePermissionRequest implements RestModel {
 		permissionsInfo.setOthers(false);
 		return rolePermissionRequest;
 	}
+
+	/**
+	 * Creates a {@link RolePermissionRequest} that is non-recursive and revokes the given permissions.
+	 * All other permissions will not be changed.
+	 * @param permissions
+	 * @return
+	 */
+	public static RolePermissionRequest revokePermissions(Permission... permissions) {
+		RolePermissionRequest rolePermissionRequest = new RolePermissionRequest();
+		PermissionInfo permissionsInfo = rolePermissionRequest.getPermissions();
+		for (Permission permission : permissions) {
+			permissionsInfo.set(permission, false);
+		}
+		return rolePermissionRequest;
+	}
 }
