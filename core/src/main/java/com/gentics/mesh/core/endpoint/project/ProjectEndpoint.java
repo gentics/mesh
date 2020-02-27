@@ -133,7 +133,7 @@ public class ProjectEndpoint extends AbstractInternalEndpoint {
 		endpoint.path("/:projectUuid");
 		endpoint.addUriParameter("projectUuid", "Uuid of the project.", PROJECT_DEMO_UUID);
 		endpoint.method(DELETE);
-		endpoint.description("Delete the project and all attached nodes, tagfamiles and branches.");
+		endpoint.description("Delete the project and all attached nodes, tagfamilies and branches.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(NO_CONTENT, "Project was deleted.");
 		endpoint.events(PROJECT_DELETED);

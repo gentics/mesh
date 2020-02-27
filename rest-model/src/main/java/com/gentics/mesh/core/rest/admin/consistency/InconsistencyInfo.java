@@ -26,7 +26,7 @@ public class InconsistencyInfo implements RestModel {
 	private boolean repaired = false;
 
 	@JsonProperty(required = true)
-	@JsonPropertyDescription("Repair action which will attept to fix the inconsistency. The action will only be invoked when using invoking the rapair endpoint.")
+	@JsonPropertyDescription("Repair action which will attempt to fix the inconsistency. The action will only be invoked when using invoking the repair endpoint.")
 	private RepairAction repairAction = RepairAction.NONE;
 
 	/**
