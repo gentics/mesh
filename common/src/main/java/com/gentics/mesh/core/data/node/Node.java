@@ -17,6 +17,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -126,6 +127,12 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @return
 	 */
 	boolean hasTag(Tag tag, Branch branch);
+
+	/**
+	 * Returns all {@link GraphFieldContainerEdge}s of this node.
+	 * @return
+	 */
+	Stream<? extends GraphFieldContainerEdge> getGraphFieldContainerEdges();
 
 	/**
 	 * Return the draft field container for the given language in the latest branch.

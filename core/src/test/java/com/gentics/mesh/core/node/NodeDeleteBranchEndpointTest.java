@@ -28,7 +28,7 @@ public class NodeDeleteBranchEndpointTest extends AbstractMeshTest {
 		publishNode(parent);
 		publishNode(otherParent);
 
-		waitForJob(() -> createBranchRest(newBranch));
+		createBranchRest(newBranch);
 
 		NodeResponse child = createNode(parent);
 		publishNode(child);

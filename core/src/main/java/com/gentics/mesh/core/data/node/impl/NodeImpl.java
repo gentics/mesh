@@ -378,6 +378,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
+	public Stream<? extends GraphFieldContainerEdge> getGraphFieldContainerEdges() {
+		return outE(HAS_FIELD_CONTAINER, GraphFieldContainerEdgeImpl.class).stream();
+	}
+
+	@Override
 	public NodeGraphFieldContainer getLatestDraftFieldContainer(String languageTag) {
 		return getGraphFieldContainer(languageTag, getProject().getLatestBranch(), DRAFT, NodeGraphFieldContainerImpl.class);
 	}

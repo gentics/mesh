@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UPDATED;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.branch.BranchMicroschemaEdge;
@@ -68,14 +69,14 @@ public interface Branch
 
 	/**
 	 * Get whether the branch is active.
-	 * 
+	 *
 	 * @return true for active branch
 	 */
 	boolean isActive();
 
 	/**
 	 * Set whether the branch is active.
-	 * 
+	 *
 	 * @param active
 	 *            true for active
 	 * @return Fluent API
@@ -84,14 +85,14 @@ public interface Branch
 
 	/**
 	 * Get whether all nodes of the previous branch have been migrated.
-	 * 
+	 *
 	 * @return true if all nodes have been migrated
 	 */
 	boolean isMigrated();
 
 	/**
 	 * Set whether all nodes have been migrated.
-	 * 
+	 *
 	 * @param migrated
 	 *            true if all nodes have been migrated
 	 * @return Fluent API
@@ -100,14 +101,14 @@ public interface Branch
 
 	/**
 	 * Return the configured hostname of the branch.
-	 * 
+	 *
 	 * @return
 	 */
 	String getHostname();
 
 	/**
 	 * Set the hostname of the branch.
-	 * 
+	 *
 	 * @param hostname
 	 * @return Fluent API
 	 */
@@ -115,14 +116,14 @@ public interface Branch
 
 	/**
 	 * Return the ssl flag of the branch.
-	 * 
+	 *
 	 * @return
 	 */
 	Boolean getSsl();
 
 	/**
 	 * Set the ssl flag of the branch.
-	 * 
+	 *
 	 * @param ssl
 	 * @return Fluent API
 	 */
@@ -130,14 +131,14 @@ public interface Branch
 
 	/**
 	 * Return the webroot path prefix.
-	 * 
+	 *
 	 * @return
 	 */
 	String getPathPrefix();
 
 	/**
 	 * Set the path prefix.
-	 * 
+	 *
 	 * @param pathPrefix
 	 * @return Fluent API
 	 */
@@ -145,28 +146,28 @@ public interface Branch
 
 	/**
 	 * Get whether the branch is the latest branch
-	 * 
+	 *
 	 * @return
 	 */
 	boolean isLatest();
 
 	/**
 	 * Make the branch the latest branch of the project
-	 * 
+	 *
 	 * @return
 	 */
 	Branch setLatest();
 
 	/**
 	 * Get the next Branch.
-	 * 
+	 *
 	 * @return next Branch
 	 */
 	Branch getNextBranch();
 
 	/**
 	 * Set the next Branch.
-	 * 
+	 *
 	 * @param branch
 	 *            next Branch
 	 * @return Fluent API
@@ -175,21 +176,21 @@ public interface Branch
 
 	/**
 	 * Get the previous Branch.
-	 * 
+	 *
 	 * @return previous Branch
 	 */
 	Branch getPreviousBranch();
 
 	/**
 	 * Get the root vertex.
-	 * 
+	 *
 	 * @return branch root to which the branch belongs
 	 */
 	BranchRoot getRoot();
 
 	/**
 	 * Assign the given schema version to the branch and queue a job which will trigger the migration.
-	 * 
+	 *
 	 * @param user
 	 * @param schemaContainerVersion
 	 * @param batch
@@ -199,7 +200,7 @@ public interface Branch
 
 	/**
 	 * Unassign all schema versions of the given schema from this branch.
-	 * 
+	 *
 	 * @param schemaContainer
 	 * @return Fluent API
 	 */
@@ -225,16 +226,16 @@ public interface Branch
 
 	/**
 	 * Get an traversal result of all schema container versions.
-	 * 
+	 *
 	 * @return
 	 */
 	TraversalResult<? extends SchemaContainerVersion> findAllSchemaVersions();
 
 	/**
 	 * Assign the given microschema version to the branch and queue a job which executes the migration.
-	 * 
+	 *
 	 * @param user
-	 * 
+	 *
 	 * @param microschemaContainerVersion
 	 * @param batch
 	 * @return Job which has been created if the version has not yet been assigned. Otherwise null will be returned.
@@ -243,7 +244,7 @@ public interface Branch
 
 	/**
 	 * Unassigns all versions of the given microschema from this branch.
-	 * 
+	 *
 	 * @param microschemaContainer
 	 * @return Fluent API
 	 */
@@ -269,14 +270,14 @@ public interface Branch
 
 	/**
 	 * Get an iterable of all microschema container versions.
-	 * 
+	 *
 	 * @return Iterable
 	 */
 	TraversalResult<? extends MicroschemaContainerVersion> findAllMicroschemaVersions();
 
 	/**
 	 * Get an iterable of all latest microschema container versions.
-	 * 
+	 *
 	 * @return Iterable
 	 */
 	TraversalResult<? extends BranchMicroschemaEdge> findAllLatestMicroschemaVersionEdges();
@@ -284,7 +285,7 @@ public interface Branch
 	/**
 	 * Get an iterable over all active schema container versions. An active version is one which still contains {@link NodeGraphFieldContainer}'s or one which
 	 * is queued and will soon contain containers due to an executed node migration.
-	 * 
+	 *
 	 * @return Iterable
 	 */
 	TraversalResult<? extends SchemaContainerVersion> findActiveSchemaVersions();
@@ -299,14 +300,14 @@ public interface Branch
 
 	/**
 	 * Get an iterable of all latest schema container versions.
-	 * 
+	 *
 	 * @return Iterable
 	 */
 	Iterable<? extends BranchSchemaEdge> findAllLatestSchemaVersionEdges();
 
 	/**
 	 * Assign the branch to a specific project.
-	 * 
+	 *
 	 * @param project
 	 * @return Fluent API
 	 */
@@ -314,21 +315,21 @@ public interface Branch
 
 	/**
 	 * Return all schema versions which are linked to the branch.
-	 * 
+	 *
 	 * @return
 	 */
 	TraversalResult<? extends BranchSchemaEdge> findAllSchemaVersionEdges();
 
 	/**
 	 * Return all microschema versions which are linked to the branch.
-	 * 
+	 *
 	 * @return
 	 */
 	TraversalResult<? extends BranchMicroschemaEdge> findAllMicroschemaVersionEdges();
 
 	/**
 	 * Find the branch schema edge for the given version.
-	 * 
+	 *
 	 * @param schemaContainerVersion
 	 * @return Found edge between branch and version
 	 */
@@ -336,7 +337,7 @@ public interface Branch
 
 	/**
 	 * Find the branch microschema edge for the given version.
-	 * 
+	 *
 	 * @param microschemaContainerVersion
 	 * @return Found edge between branch and version
 	 */
@@ -344,7 +345,7 @@ public interface Branch
 
 	/**
 	 * Find the latest schema version which is assigned to the branch which matches the provided schema container
-	 * 
+	 *
 	 * @param schemaContainer
 	 * @return Found version or null if no version could be found.
 	 */
@@ -352,7 +353,7 @@ public interface Branch
 
 	/**
 	 * Find the latest microschema version which is assigned to the branch which matches the provided microschema container
-	 * 
+	 *
 	 * @param schemaContainer
 	 * @return Found version or null if no version could be found.
 	 */
@@ -360,14 +361,14 @@ public interface Branch
 
 	/**
 	 * Add the given tag to the list of tags for this branch.
-	 * 
+	 *
 	 * @param tag
 	 */
 	void addTag(Tag tag);
 
 	/**
 	 * Remove the given tag from the list of tags for this branch.
-	 * 
+	 *
 	 * @param tag
 	 */
 	void removeTag(Tag tag);
@@ -386,7 +387,7 @@ public interface Branch
 
 	/**
 	 * Return a page of all visible tags that are assigned to the branch.
-	 * 
+	 *
 	 * @param user
 	 * @param params
 	 * @return Page which contains the result
@@ -446,4 +447,10 @@ public interface Branch
 	 */
 	BranchMicroschemaAssignModel onMicroschemaAssignEvent(MicroschemaContainerVersion microschemaContainerVersion, Assignment assigned, JobStatus status);
 
+	/**
+	 * Deletes the branch
+	 * @param bac
+	 * @param checkLatest If true, an error is thrown if the branch is the latest.
+	 */
+	void delete(BulkActionContext bac, boolean checkLatest);
 }

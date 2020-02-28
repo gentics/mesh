@@ -44,7 +44,7 @@ public class NodeCheck extends AbstractConsistencyCheck {
 
 	@Override
 	public ConsistencyCheckResult invoke(Database db, Tx tx, boolean attemptRepair) {
-		Stream<BranchImpl> branchStream = toStream(db.getVerticesForType(BranchImpl.class));
+		Stream<? extends BranchImpl> branchStream = toStream(db.getVerticesForType(BranchImpl.class));
 		branchUuids = branchStream
 			.map(MeshVertexImpl::getUuid)
 			.collect(Collectors.toSet());

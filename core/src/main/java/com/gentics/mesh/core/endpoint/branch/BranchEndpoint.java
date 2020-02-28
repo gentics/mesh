@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.endpoint.branch;
 
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_TAGGED;
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UNTAGGED;
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UPDATED;
@@ -64,6 +65,8 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		addMicroschemaInfoHandler();
 		addReadHandler();
 		addUpdateHandler();
+		addDeleteHandler();
+
 		addNodeMigrationHandler();
 		addMicronodeMigrationHandler();
 		addTagsHandler();
@@ -242,6 +245,21 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().params().get("branchUuid");
 			crudHandler.handleUpdate(ac, uuid);
+		});
+	}
+
+	private void addDeleteHandler() {
+		InternalEndpointRoute endpoint = createRoute();
+		endpoint.path("/:branchUuid");
+		endpoint.addUriParameter("branchUuid", "Uuid of the branch.", BRANCH_UUID);
+		endpoint.method(DELETE);
+		endpoint.description("Delete the branch and all attached node contents.");
+		endpoint.exampleResponse(NO_CONTENT, "Branch was deleted.");
+		endpoint.events(BRANCH_DELETED);
+		endpoint.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String uuid = ac.getParameter("branchUuid");
+			crudHandler.handleDelete(ac, uuid);
 		});
 	}
 

@@ -140,7 +140,9 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		BranchCreateRequest request = new BranchCreateRequest();
 		request.setName(name);
 		request.setLatest(latest);
-		return client().createBranch(PROJECT_NAME, request).blockingGet();
+		BranchResponse[] branchResponse = new BranchResponse[1];
+		waitForJob(() -> branchResponse[0] = client().createBranch(PROJECT_NAME, request).blockingGet());
+		return branchResponse[0];
 	}
 
 	default String roleUuid() {
@@ -407,6 +409,10 @@ public interface TestHelper extends EventHelper, ClientHelper {
 
 	default void publishNode(NodeResponse node) {
 		client().publishNode(PROJECT_NAME, node.getUuid()).blockingAwait();
+	}
+
+	default void publishNode(NodeResponse node, BranchResponse branch) {
+		publishNodeInBranch(node, branch.getUuid());
 	}
 
 	default void publishNodeInBranch(NodeResponse node, String branch) {

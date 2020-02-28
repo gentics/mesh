@@ -16,6 +16,7 @@ import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_LATEST_BRANCH_UPDATED
 import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_BRANCH_ASSIGN;
 import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_BRANCH_UNASSIGN;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
+import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.job.JobStatus.QUEUED;
 import static com.gentics.mesh.event.Assignment.ASSIGNED;
@@ -31,6 +32,7 @@ import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
@@ -43,6 +45,7 @@ import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.job.Job;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.root.BranchRoot;
@@ -58,6 +61,7 @@ import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.event.branch.BranchMeshEventModel;
 import com.gentics.mesh.core.rest.event.branch.BranchMicroschemaAssignModel;
@@ -76,8 +80,10 @@ import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.util.VersionUtil;
+import com.syncleus.ferma.ElementFrame;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 
@@ -585,10 +591,57 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 			BranchMicroschemaEdgeImpl.class, null);
 	}
 
+
 	@Override
-	public void delete(BulkActionContext bac) {
+	public void delete(BulkActionContext context) {
+		delete(context, true);
+	}
+
+	/**
+	 * To delete all contents in the branch this algorithm is used:
+	 * <ol>
+	 *    <li>Get all nodes of the project of this branch</li>
+	 *    <li>For each node, find the draft contents of this branch</li>
+	 *    <li>Delete all versions from the found content backwards until an initial content of any branch is found</li>
+	 *    <li>If that initial content is not a content in any other branch and has no previous version, delete it</li>
+	 *    <li>If the node has no contents left, delete it</li>
+	 *    <li>If not, remove all remaining node->content edges that reference this branch</li>
+	 * </ol>
+	 */
+	@Override
+	public void delete(BulkActionContext bac, boolean checkLatest) {
+		String uuid = this.getUuid();
+		if (checkLatest && isLatest()) {
+			throw error(HttpResponseStatus.BAD_REQUEST, "branch_error_delete_latest", uuid);
+		}
+
+		for (Node node : getProject().findNodes()) {
+			for (NodeGraphFieldContainer draftContainer : node.getGraphFieldContainers(this, ContainerType.DRAFT)) {
+				NodeGraphFieldContainer currentVersion = draftContainer;
+				while (!currentVersion.isInitial()) {
+					NodeGraphFieldContainer toDelete = currentVersion;
+					currentVersion = currentVersion.getPreviousVersion();
+					toDelete.delete(bac, false);
+				}
+
+				boolean hasOtherBranches = currentVersion.getBranchTypes().stream()
+					.anyMatch(branchType -> !branchType.v1().equals(uuid));
+				if (!hasOtherBranches) {
+					currentVersion.delete(bac, false);
+				}
+			}
+			if (node.getGraphFieldContainerCount() == 0) {
+				node.delete(bac, false, false);
+			} else {
+				node.getGraphFieldContainerEdges()
+					.filter(edge -> edge.getBranchUuid().equals(uuid))
+					.forEach(ElementFrame::remove);
+			}
+		}
+
 		bac.add(onDeleted());
 		getVertex().remove();
+		bac.process();
 	}
 
 	@Override

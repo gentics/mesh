@@ -1,5 +1,25 @@
 package com.gentics.mesh.core.endpoint.branch;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.event.Assignment.ASSIGNED;
+import static com.gentics.mesh.event.Assignment.UNASSIGNED;
+import static com.gentics.mesh.rest.Messages.message;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
+import javax.inject.Inject;
+
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
@@ -30,30 +50,9 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.PentaFunction;
 import com.gentics.mesh.util.StreamUtil;
 
-import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.apache.commons.lang.NotImplementedException;
-
-import javax.inject.Inject;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.event.Assignment.ASSIGNED;
-import static com.gentics.mesh.event.Assignment.UNASSIGNED;
-import static com.gentics.mesh.rest.Messages.message;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 /**
  * CRUD Handler for Branches
@@ -77,7 +76,8 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 
 	@Override
 	public void handleDelete(InternalActionContext ac, String uuid) {
-		throw new NotImplementedException("Branch can't be deleted");
+		validateParameter(uuid, "uuid");
+		utils.deleteElement(ac, () -> getRootVertex(ac), uuid);
 	}
 
 	/**
