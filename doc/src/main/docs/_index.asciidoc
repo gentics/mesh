@@ -108,9 +108,8 @@ ul.doc-toc h2 {
                                 <a href="administration-guide#conf">Configuration & Settings</a>
                             </li>
                             <li>
-                                <a href="administration-guide/#_environment_variables">Environment Variables</a>
+                                <a href="administration-guide/#env">Environment Variables</a>
                             </li>
-                            
                             <li>
                                 <a href="administration-guide#_backup_recovery">Backup &amp; Recovery</a>
                             </li>                            
