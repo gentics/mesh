@@ -151,4 +151,11 @@ public class BranchResponse extends AbstractGenericRestResponse {
 		this.pathPrefix = pathPrefix;
 		return this;
 	}
+
+	@JsonIgnore
+	public BranchReference toReference() {
+		return new BranchReference()
+			.setName(getName())
+			.setUuid(getUuid());
+	}
 }

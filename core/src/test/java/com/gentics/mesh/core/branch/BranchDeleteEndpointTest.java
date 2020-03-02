@@ -7,6 +7,7 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -17,7 +18,6 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.ClientHandler;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.util.UUIDUtil;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 
@@ -25,11 +25,15 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 public class BranchDeleteEndpointTest extends AbstractMeshTest {
 
 	private BranchResponse initialBranch;
+	private int branchCount;
+	private int contentCount;
 
 	@Before
 	public void setUp() throws Exception {
 		grantAdminRole();
 		initialBranch = client().findBranches(PROJECT_NAME).blockingGet().getData().get(0);
+		branchCount = 0;
+		contentCount = 0;
 	}
 
 	/**
@@ -147,6 +151,18 @@ public class BranchDeleteEndpointTest extends AbstractMeshTest {
 		);
 	}
 
+	private BranchResponse addBranch() {
+		return createBranchRest("testBranch" + branchCount++, false);
+	}
+
+	private BranchResponse addBranch(BranchResponse previousBranch) {
+		BranchCreateRequest branchCreateRequest = new BranchCreateRequest()
+			.setName("testBranch" + branchCount++)
+			.setLatest(false)
+			.setBaseBranch(previousBranch.toReference());
+		return createBranchRest("testBranch" + branchCount++, false);
+	}
+
 	private NodeResponse addNode(NodeResponse parentNode, BranchResponse branch) {
 		return addNode(parentNode.getUuid(), branch);
 	}
@@ -183,7 +199,7 @@ public class BranchDeleteEndpointTest extends AbstractMeshTest {
 			.setLanguage(language)
 			.setVersion("draft")
 			.setFields(FieldMap.of(
-				"name", StringField.of(UUIDUtil.randomUUID())
+				"name", StringField.of("name" + contentCount++)
 			));
 
 		return client().updateNode(
@@ -203,7 +219,7 @@ public class BranchDeleteEndpointTest extends AbstractMeshTest {
 			.setLanguage(contentBranchParams.getLanguage())
 			.setParentNodeUuid(contentBranchParams.getParentNodeUuid())
 			.setFields(FieldMap.of(
-				"name", StringField.of(UUIDUtil.randomUUID())
+				"name", StringField.of("name" + contentCount++)
 			));
 
 		if (contentBranchParams.getParentNodeUuid() == null) {
