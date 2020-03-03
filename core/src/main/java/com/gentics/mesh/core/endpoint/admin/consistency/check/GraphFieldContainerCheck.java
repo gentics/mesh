@@ -1,21 +1,16 @@
 package com.gentics.mesh.core.endpoint.admin.consistency.check;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.HIGH;
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.MEDIUM;
-import static com.gentics.mesh.core.rest.admin.consistency.RepairAction.DELETE;
 
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
-import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.endpoint.admin.consistency.AbstractConsistencyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
-import com.gentics.mesh.core.endpoint.admin.consistency.repair.NodeDeletionGraphFieldContainerFix;
 import com.gentics.mesh.core.rest.admin.consistency.InconsistencyInfo;
 import com.gentics.mesh.core.rest.admin.consistency.RepairAction;
-import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.VersionNumber;
 
@@ -48,34 +43,8 @@ public class GraphFieldContainerCheck extends AbstractConsistencyCheck {
 			result.addInconsistency("The GraphFieldContainer has no version number", uuid, HIGH);
 		}
 
-		// GFC must either have a previous GFC, or must be the initial GFC for a Node
 		NodeGraphFieldContainer previous = container.getPreviousVersion();
-		if (previous == null) {
-			Iterable<GraphFieldContainerEdgeImpl> initialEdges = container.inE(HAS_FIELD_CONTAINER)
-				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.INITIAL.getCode()).frameExplicit(GraphFieldContainerEdgeImpl.class);
-			if (!initialEdges.iterator().hasNext()) {
-
-				boolean repaired = false;
-				if (attemptRepair) {
-					// printVersions(container);
-					try {
-						repaired = new NodeDeletionGraphFieldContainerFix().repair(container);
-					} catch (Exception e) {
-						log.error("Error while repairing inconsistency", e);
-						throw e;
-					}
-				}
-
-				result.addInconsistency(
-					String.format("GraphFieldContainer {" + version + "} does not have previous GraphFieldContainer and is not INITIAL for a Node"),
-					uuid,
-					MEDIUM,
-					repaired,
-					DELETE);
-				return;
-
-			}
-		} else {
+		if (previous != null) {
 			VersionNumber previousVersion = previous.getVersion();
 			if (previousVersion != null && version != null) {
 				boolean notSameDraft = !version.equals(previousVersion.nextDraft());

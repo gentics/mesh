@@ -626,7 +626,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 				boolean hasOtherBranches = currentVersion.getBranchTypes().stream()
 					.anyMatch(branchType -> !branchType.v1().equals(uuid));
-				if (!hasOtherBranches) {
+				if (!hasOtherBranches && currentVersion.getPreviousVersion() == null) {
 					currentVersion.delete(bac, false);
 				}
 			}

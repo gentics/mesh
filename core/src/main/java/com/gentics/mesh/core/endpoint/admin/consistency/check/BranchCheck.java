@@ -3,7 +3,6 @@ package com.gentics.mesh.core.endpoint.admin.consistency.check;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH_ROOT;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_INITIAL_BRANCH;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LATEST_BRANCH;
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.HIGH;
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.MEDIUM;
@@ -43,8 +42,8 @@ public class BranchCheck extends AbstractConsistencyCheck {
 	}
 
 	private void checkBranchRoot(BranchRoot releaseRoot, ConsistencyCheckResult result) {
+		// Initial branch could be missing if it was deleted
 		checkIn(releaseRoot, HAS_BRANCH_ROOT, ProjectImpl.class, result, HIGH);
-		checkOut(releaseRoot, HAS_INITIAL_BRANCH, BranchImpl.class, result, HIGH);
 		checkOut(releaseRoot, HAS_LATEST_BRANCH, BranchImpl.class, result, HIGH);
 	}
 

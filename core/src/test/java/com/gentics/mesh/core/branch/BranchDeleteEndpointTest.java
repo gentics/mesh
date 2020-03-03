@@ -101,7 +101,6 @@ public class BranchDeleteEndpointTest extends AbstractMeshTest {
 		NodeResponse node = addNode(initialBranch);
 		addContent(node, initialBranch);
 		addContent(node, initialBranch);
-		publishNode(node, initialBranch);
 
 		BranchResponse branch = createBranchRest("testBranch", false);
 
@@ -115,6 +114,28 @@ public class BranchDeleteEndpointTest extends AbstractMeshTest {
 		call(findNode(node, initialBranch));
 		call(findNode(node, branch), HttpResponseStatus.BAD_REQUEST, "branch_error_not_found", branch.getUuid());
 	}
+
+	@Test
+	public void testBranchBetweenPublishedVersions() {
+		NodeResponse node = addNode(initialBranch);
+		addContent(node, initialBranch);
+		addContent(node, initialBranch);
+		publishNode(node, initialBranch);
+
+		BranchResponse branch = createBranchRest("testBranch", false);
+
+		call(findNode(node, initialBranch));
+		call(findNode(node, branch));
+
+		addContent(node, initialBranch);
+		addContent(node, initialBranch);
+		publishNode(node, initialBranch);
+
+		deleteBranch(branch);
+		call(findNode(node, initialBranch));
+		call(findNode(node, branch), HttpResponseStatus.BAD_REQUEST, "branch_error_not_found", branch.getUuid());
+	}
+
 
 	@Test
 	public void testBranchBetweenVersionsWithAdditionalContent() {
@@ -138,6 +159,30 @@ public class BranchDeleteEndpointTest extends AbstractMeshTest {
 		call(findNode(node, branch), HttpResponseStatus.BAD_REQUEST, "branch_error_not_found", branch.getUuid());
 	}
 
+	@Test
+	public void testBranchBetweenPublishedVersionsWithAdditionalContent() {
+		NodeResponse node = addNode(initialBranch);
+		addContent(node, initialBranch);
+		addContent(node, initialBranch);
+		publishNode(node, initialBranch);
+
+		BranchResponse branch = createBranchRest("testBranch", false);
+
+		call(findNode(node, initialBranch));
+		call(findNode(node, branch));
+
+		addContent(node, initialBranch);
+		addContent(node, initialBranch);
+		publishNode(node, initialBranch);
+		addContent(node, branch);
+		addContent(node, branch);
+		publishNode(node, branch);
+
+		deleteBranch(branch);
+		call(findNode(node, initialBranch));
+		call(findNode(node, branch), HttpResponseStatus.BAD_REQUEST, "branch_error_not_found", branch.getUuid());
+	}
+
 	/**
 	 * Tries to delete the latest branch.
 	 */
@@ -149,6 +194,37 @@ public class BranchDeleteEndpointTest extends AbstractMeshTest {
 			HttpResponseStatus.BAD_REQUEST,
 			"branch_error_delete_latest", branchUuid
 		);
+	}
+
+	@Test
+	public void testDeleteInitialBranch() {
+		NodeResponse node = addNode(initialBranch);
+		addContent(node, initialBranch);
+		publishNode(node, initialBranch);
+
+		BranchResponse testBranch = createBranchRest("testBranch", true);
+
+		deleteBranch(initialBranch);
+
+		call(findNode(node, initialBranch), HttpResponseStatus.BAD_REQUEST, "branch_error_not_found", initialBranch.getUuid());
+		call(findNode(node, testBranch));
+	}
+
+	@Test
+	public void testDeleteInitialBranchWithAdditionalContent() {
+		NodeResponse node = addNode(initialBranch);
+		addContent(node, initialBranch);
+		publishNode(node, initialBranch);
+
+		BranchResponse testBranch = createBranchRest("testBranch", true);
+
+		addContent(node, initialBranch);
+		publishNode(node, initialBranch);
+
+		deleteBranch(initialBranch);
+
+		call(findNode(node, initialBranch), HttpResponseStatus.BAD_REQUEST, "branch_error_not_found", initialBranch.getUuid());
+		call(findNode(node, testBranch));
 	}
 
 	private BranchResponse addBranch() {
