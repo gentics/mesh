@@ -69,13 +69,6 @@ Multi node clustering setup:
 
 * https://github.com/gentics/mesh-compose/tree/clustering
 
-
-=== Environment Variables
-
-Settings within the `mesh.yml` file can be override via these environment variables.
-
-include::content/docs/examples/tables/mesh-env.adoc-include[]
-
 == Run with JAR File
 
 Good news: there is no dedicated installation procedure for Gentics Mesh!
@@ -99,8 +92,6 @@ Various command line arguments can be used to override or supplement previously 
 ----
 include::content/docs/examples/models/mesh-cli-help.txt[]
 ----
-
-
 
 [[installdir]]
 == Installation Directory
@@ -167,6 +158,13 @@ NOTE: This change may require a logout and login.
 
 The Gentics Mesh user interface has been designed mobile-first and does not impose any specific requirements other than enabled JavaScript. It can be used with any "modern" browser, i.e. IE11+ and latest versions of Chrome, Firefox, and Safari.
 
+[[env]]
+== Environment Variables
+
+Settings within the `mesh.yml` file can be override via these environment variables.
+
+include::content/docs/examples/tables/mesh-env.adoc-include[]
+
 [[conf]]
 == Configuration & Settings
 
@@ -184,12 +182,19 @@ include::content/docs/examples/models/mesh-config.example.yml[]
 
 include::content/docs/snippets/config/general.inc[]
 
-Example for custom languages file:
+==== Custom Language
+
+By default Gentics Mesh already contains all link:https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes[ISO 639-1] (two letter) language codes. By using the `languagesFilePath` setting it is possible to provide a custom languages file which can include additional language definitions.
 
 [source,json]
 ----
 include::content/docs/examples/example-languages.json[]
 ----
+
+NOTE: Please note that the `contentLanguages` property in the `mesh-ui2-config.js` file also needs to be updated in order to show the language in the UI.
+
+TIP: The link:https://github.com/gentics/mesh-compose/tree/extra-language[mesh-compose] project contains a full example configuration which shows how to add a custom language.
+
 
 === HTTPS/SSL
 
@@ -229,6 +234,17 @@ include::content/docs/snippets/config/upload.inc[]
 === Security Options
 
 include::content/docs/snippets/config/security.inc[]
+
+==== Public Keys
+
+A file with additional public keys can be specified via the `publicKeysPath` property. The public keys from this file will be used to validate JWT's which were not issued by Gentics Mesh. This is especially useful when using Gentics Mesh with external OIDC / OAuth2 providers.
+
+The keys have to be specified in the link:https://tools.ietf.org/html/rfc7517[JWK format].
+
+[source,json]
+----
+include::content/docs/examples/example-public-keys.json[]
+----
 
 === Monitoring Options
 
