@@ -16,6 +16,7 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ResultInfo;
@@ -27,11 +28,13 @@ public class TagCrudHandler extends AbstractHandler {
 
 	private final HandlerUtilities utils;
 	private final MeshOptions options;
+	private final Database db;
 
 	@Inject
-	public TagCrudHandler(MeshOptions options, HandlerUtilities utils) {
+	public TagCrudHandler(MeshOptions options, HandlerUtilities utils, Database db) {
 		this.options = options;
 		this.utils = utils;
+		this.db = db;
 	}
 
 	public TagFamily getTagFamily(InternalActionContext ac, String tagFamilyUuid) {
@@ -90,20 +93,22 @@ public class TagCrudHandler extends AbstractHandler {
 	public void handleCreate(InternalActionContext ac, String tagFamilyUuid) {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 
-		utils.syncTx(ac, tx -> {
-			ResultInfo info = utils.eventAction(batch -> {
-				Tag tag = getTagFamily(ac, tagFamilyUuid).create(ac, batch);
-				TagResponse model = tag.transformToRestSync(ac, 0);
-				String path = tag.getAPIPath(ac);
-				ResultInfo resultInfo = new ResultInfo(model);
-				resultInfo.setProperty("path", path);
-				return resultInfo;
+		try {
+			Tag tag = utils.eventAction(batch -> {
+				return getTagFamily(ac, tagFamilyUuid).create(ac, batch);
 			});
 
-			String path = info.getProperty("path");
-			ac.setLocation(path);
-			return info.getModel();
-		}, model -> ac.send(model, CREATED));
+			ResultInfo info = db.tx(tx -> {
+				TagResponse model = tag.transformToRestSync(ac, 0);
+				String path = tag.getAPIPath(ac);
+				return new ResultInfo(model, path);
+			});
+
+			ac.setLocation(info.getProperty("path"));
+			ac.send(info.getModel(), CREATED);
+		} catch (Throwable t) {
+			ac.fail(t);
+		}
 
 	}
 

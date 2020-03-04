@@ -101,8 +101,8 @@ public class HandlerUtilities {
 		String uuid) {
 		lock();
 		try {
-			RootVertex<T> root = supplier.get();
 			T element = database.tx(tx -> {
+				RootVertex<T> root = supplier.get();
 				return root.loadObjectByUuid(ac, uuid, DELETE_PERM);
 			});
 
@@ -112,7 +112,7 @@ public class HandlerUtilities {
 				bac.setRootCause(element.getTypeInfo().getType(), elementUuid, DELETE);
 				element.delete(bac);
 			});
-			log.info("Deleted element {" + elementUuid + "} for type {" + root.getClass().getSimpleName() + "}");
+			log.info("Deleted element {" + elementUuid + "} for type {" + element.getClass().getName() + "}");
 			ac.send(NO_CONTENT);
 		} catch (Throwable t) {
 			ac.fail(t);
