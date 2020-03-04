@@ -24,6 +24,11 @@ public class ResultInfo {
 		this.model = model;
 	}
 
+	public ResultInfo(RestModel model, String path) {
+		this.model = model;
+		this.properties.put("path", path);
+	}
+
 	/**
 	 * Return the stored rest model for the result.
 	 * 

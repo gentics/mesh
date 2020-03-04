@@ -67,7 +67,8 @@ public class HandlerUtilities {
 	private final Provider<BulkActionContext> bulkProvider;
 
 	@Inject
-	public HandlerUtilities(Database database, MeshOptions meshOptions, MetricsService metrics, Provider<EventQueueBatch> queueProvider, Provider<BulkActionContext> bulkProvider) {
+	public HandlerUtilities(Database database, MeshOptions meshOptions, MetricsService metrics, Provider<EventQueueBatch> queueProvider,
+		Provider<BulkActionContext> bulkProvider) {
 		GraphStorageOptions storageOptions = meshOptions.getStorageOptions();
 		this.database = database;
 		this.metrics = metrics;
@@ -145,9 +146,9 @@ public class HandlerUtilities {
 		TxAction1<RootVertex<T>> handler) {
 		lock();
 		AtomicBoolean created = new AtomicBoolean(false);
-		syncTx(ac, tx -> {
-			try {
-				RootVertex<T> root = handler.handle();
+		try {
+			RootVertex<T> root = handler.handle();
+			T e = database.tx(tx -> {
 
 				// 1. Load the element from the root element using the given uuid (if not null)
 				T element = null;
@@ -157,31 +158,41 @@ public class HandlerUtilities {
 					}
 					element = root.loadObjectByUuid(ac, uuid, UPDATE_PERM, false);
 				}
+				return element;
+			});
 
-				// Check whether we need to update a found element or whether we need to create a new one.
-				if (element != null) {
-					final T updateElement = element;
-					eventAction(batch -> {
-						return updateElement.update(ac, batch);
-					});
-					return updateElement.transformToRestSync(ac, 0);
-				} else {
-					T createdElement = eventAction(batch -> {
-						created.set(true);
-						return root.create(ac, batch, uuid);
-					});
-					RM model = createdElement.transformToRestSync(ac, 0);
+			ResultInfo info = null;
+			// Check whether we need to update a found element or whether we need to create a new one.
+			if (e != null) {
+				final T updateElement = e;
+				eventAction(batch -> {
+					return updateElement.update(ac, batch);
+				});
+				info = database.tx(tx -> {
+					RM model = updateElement.transformToRestSync(ac, 0);
+					return new ResultInfo(model);
+				});
+			} else {
+				T createdElement = eventAction(batch -> {
+					T createdE = root.create(ac, batch, uuid);
+					created.set(true);
+					return createdE;
+				});
+				info = database.tx(tx -> {
 					String path = createdElement.getAPIPath(ac);
-					ResultInfo info = new ResultInfo(model);
-					info.setProperty("path", path);
+					RM model = createdElement.transformToRestSync(ac, 0);
 					createdElement.onCreated();
-					ac.setLocation(path);
-					return model;
-				}
-			} finally {
-				unlock();
+					return new ResultInfo(model, path);
+				});
+				ac.setLocation(info.getProperty("path"));
 			}
-		}, model -> ac.send(model, created.get() ? CREATED : OK));
+			ac.send(info.getModel(), created.get() ? CREATED : OK);
+		} catch (Throwable t) {
+			ac.fail(t);
+		} finally {
+			unlock();
+		}
+
 	}
 
 	/**
@@ -345,7 +356,6 @@ public class HandlerUtilities {
 		tuple.v2().dispatch();
 		return tuple.v1();
 	}
-
 
 	/**
 	 * Locks writes. Use this to prevent concurrent write transactions.

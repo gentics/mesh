@@ -341,6 +341,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		}).total(1);
 
 		GroupResponse restGroup = call(() -> client().updateGroup(groupUuid, request));
+		assertThat(restGroup).matches(request);
 
 		awaitEvents();
 		waitForSearchIdleEvent();
@@ -350,7 +351,6 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		assertThat(trackingSearchProvider()).hasEvents(2, 0, 0, 0, 0);
 
 		try (Tx tx = tx()) {
-			assertThat(restGroup).matches(request);
 			Group reloadedGroup = boot().groupRoot().findByUuid(groupUuid);
 			assertEquals("The group should have been updated", name, reloadedGroup.getName());
 		}
