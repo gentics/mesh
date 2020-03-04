@@ -295,12 +295,12 @@ public class HandlerUtilities {
 	 * @param function
 	 */
 	public void bulkableAction(Consumer<BulkActionContext> function) {
-		BulkActionContext b = database.tx(tx -> {
+		database.tx(tx -> {
 			BulkActionContext bac = bulkProvider.get();
 			function.accept(bac);
+			bac.process(true);
 			return bac;
 		});
-		b.process(true);
 	}
 
 	/**

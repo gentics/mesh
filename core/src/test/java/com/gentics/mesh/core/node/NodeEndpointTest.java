@@ -206,8 +206,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 				request.setParentNodeUuid(uuid);
 
 				call(() -> client().createNode(PROJECT_NAME, request));
-				//long duration = currentTimeMillis() - start;
-				//out.println("Duration:" + i + " " + (duration / i));
+				// long duration = currentTimeMillis() - start;
+				// out.println("Duration:" + i + " " + (duration / i));
 			}
 		}
 	}
@@ -1600,7 +1600,6 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertThat(node).hasUuid(uuid);
 	}
 
-
 	@Test
 	@Override
 	public void testPermissionResponse() {
@@ -1991,16 +1990,22 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testCreateInBranchSameUUIDWithoutParent() throws Exception {
+		BranchMigrationContextImpl context = new BranchMigrationContextImpl();
+		Branch initialBranch;
+		Branch newBranch;
 		try (Tx tx = tx()) {
 			// create a new branch
 			Project project = project();
-			Branch initialBranch = project.getInitialBranch();
-			Branch newBranch = createBranch("newbranch");
-			BranchMigrationContextImpl context = new BranchMigrationContextImpl();
-			context.setNewBranch(newBranch);
-			context.setOldBranch(initialBranch);
-			meshDagger().branchMigrationHandler().migrateBranch(context).blockingAwait();
+			initialBranch = project.getInitialBranch();
+			newBranch = createBranch("newbranch");
+			tx.success();
+		}
 
+		context.setNewBranch(newBranch);
+		context.setOldBranch(initialBranch);
+		meshDagger().branchMigrationHandler().migrateBranch(context).blockingAwait();
+
+		try (Tx tx = tx()) {
 			// create node in one branch
 			Node node = content("concorde");
 			NodeCreateRequest parentRequest = new NodeCreateRequest();

@@ -43,7 +43,8 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 
 	protected final Provider<EventQueueBatch> batchProvider;
 
-	public AbstractMigrationHandler(Database db, BinaryUploadHandler binaryFieldHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider) {
+	public AbstractMigrationHandler(Database db, BinaryUploadHandler binaryFieldHandler, MetricsService metrics,
+		Provider<EventQueueBatch> batchProvider) {
 		this.db = db;
 		this.binaryFieldHandler = binaryFieldHandler;
 		this.metrics = metrics;
@@ -64,9 +65,9 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 		while (change != null) {
 			// if either the type changes or the field is removed, the field is
 			// "touched"
-//			if (change instanceof UpdateFieldChangeImpl) {
-//				touchedFields.add(((UpdateFieldChangeImpl) change).getFieldName());
-//			} else
+			// if (change instanceof UpdateFieldChangeImpl) {
+			// touchedFields.add(((UpdateFieldChangeImpl) change).getFieldName());
+			// } else
 			if (change instanceof FieldTypeChangeImpl) {
 				touchedFields.add(((FieldTypeChangeImpl) change).getFieldName());
 			} else if (change instanceof RemoveFieldChange) {
@@ -91,7 +92,7 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 	 * @throws Exception
 	 */
 	protected void migrate(NodeMigrationActionContextImpl ac, GraphFieldContainer newContainer, FieldContainer newContent,
-		   	GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion,
+		GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion,
 		GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> newVersion, Set<String> touchedFields) throws Exception {
 
 		// Remove all touched fields (if necessary, they will be readded later)
@@ -123,9 +124,7 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 				// Each container migration has its own search queue batch which is then combined with other batch entries.
 				// This prevents adding partial entries from failed migrations.
 				EventQueueBatch containerBatch = batchProvider.get();
-				db.tx(() -> {
-					migrator.accept(containerBatch, container, errorsDetected);
-				});
+				migrator.accept(containerBatch, container, errorsDetected);
 				sqb.addAll(containerBatch);
 				status.incCompleted();
 				if (count % 50 == 0) {

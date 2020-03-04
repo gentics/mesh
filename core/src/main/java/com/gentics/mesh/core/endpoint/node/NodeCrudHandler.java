@@ -35,6 +35,7 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -355,17 +356,22 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		validateParameter(uuid, "uuid");
 
 		utils.lock();
-		utils.syncTx(ac, tx -> {
-			try {
-				Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
-				utils.bulkableAction(bac -> {
-					node.publish(ac, bac);
-				});
+		try {
+			Node node = db.tx(tx -> {
+				return getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
+			});
+			utils.bulkableAction(bac -> {
+				node.publish(ac, bac);
+			});
+			PublishStatusResponse model = db.tx(tx -> {
 				return node.transformToPublishStatus(ac);
-			} finally {
-				utils.unlock();
-			}
-		}, model -> ac.send(model, OK));
+			});
+			ac.send(model, OK);
+		} catch (Throwable t) {
+			ac.fail(t);
+		} finally {
+			utils.unlock();
+		}
 	}
 
 	/**

@@ -349,6 +349,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public <T> T tx(TxAction<T> txHandler) {
+		if (Tx.get() != null) {
+			throw new RuntimeException("Error! - Tx in Tx! No no no!");
+		}
 
 		Future<T> future = txService.submit(() -> {
 
@@ -418,8 +421,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 		});
 
 		try {
-			//TODO configure time limit
-			return future.get(15, TimeUnit.SECONDS);
+			// TODO configure time limit
+			return future.get(11115, TimeUnit.SECONDS);
 		} catch (TimeoutException e) {
 			log.error("Tx delay reached. Interrupting operation", e);
 			throw new RuntimeException(e);
