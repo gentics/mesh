@@ -10,6 +10,12 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -105,6 +111,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private final Lazy<BootstrapInitializer> boot;
 
+	private ExecutorService txService;
+
 	@Inject
 	public OrientDBDatabase(Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, MetricsService metrics, OrientDBTypeHandler typeHandler,
 		OrientDBIndexHandler indexHandler,
@@ -119,6 +127,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		this.typeHandler = typeHandler;
 		this.indexHandler = indexHandler;
 		this.clusterManager = clusterManager;
+		this.txService = Executors.newFixedThreadPool(8);
 	}
 
 	@Override
@@ -340,69 +349,87 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public <T> T tx(TxAction<T> txHandler) {
-		/**
-		 * OrientDB uses the MVCC pattern which requires a retry of the code that manipulates the graph in cases where for example an
-		 * {@link OConcurrentModificationException} is thrown.
-		 */
-		T handlerResult = null;
-		boolean handlerFinished = false;
-		int maxRetry = options.getStorageOptions().getTxRetryLimit();
-		for (int retry = 0; retry < maxRetry; retry++) {
-			Timer.Sample sample = Timer.start();
-			try (Tx tx = tx()) {
-				handlerResult = txHandler.handle(tx);
-				handlerFinished = true;
-				tx.success();
-			} catch (OSchemaException e) {
-				log.error("OrientDB schema exception detected.");
-				// TODO maybe we should invoke a metadata getschema reload?
-				// factory.getTx().getRawGraph().getMetadata().getSchema().reload();
-				// Database.getThreadLocalGraph().getMetadata().getSchema().reload();
-			} catch (ONeedRetryException | FastNoSuchElementException e) {
-				if (log.isTraceEnabled()) {
-					log.trace("Error while handling transaction. Retrying " + retry, e);
+
+		Future<T> future = txService.submit(() -> {
+
+			/**
+			 * OrientDB uses the MVCC pattern which requires a retry of the code that manipulates the graph in cases where for example an
+			 * {@link OConcurrentModificationException} is thrown.
+			 */
+			T handlerResult = null;
+			boolean handlerFinished = false;
+			int maxRetry = options.getStorageOptions().getTxRetryLimit();
+			for (int retry = 0; retry < maxRetry; retry++) {
+				Timer.Sample sample = Timer.start();
+				try (Tx tx = tx()) {
+					handlerResult = txHandler.handle(tx);
+					handlerFinished = true;
+					tx.success();
+				} catch (OSchemaException e) {
+					log.error("OrientDB schema exception detected.");
+					// TODO maybe we should invoke a metadata getschema reload?
+					// factory.getTx().getRawGraph().getMetadata().getSchema().reload();
+					// Database.getThreadLocalGraph().getMetadata().getSchema().reload();
+				} catch (ONeedRetryException | FastNoSuchElementException e) {
+					if (log.isTraceEnabled()) {
+						log.trace("Error while handling transaction. Retrying " + retry, e);
+					}
+					int delay = options.getStorageOptions().getTxRetryDelay();
+					if (retry > 0 && delay > 0) {
+						try {
+							Thread.sleep(delay);
+						} catch (InterruptedException e1) {
+							e1.printStackTrace();
+						}
+					}
+					// Reset previous result
+					handlerFinished = false;
+					handlerResult = null;
+				} catch (ORecordDuplicatedException e) {
+					log.error(e);
+					throw error(INTERNAL_SERVER_ERROR, "error_internal");
+				} catch (GenericRestException e) {
+					// Don't log. Just throw it along so that others can handle it
+					throw e;
+				} catch (RuntimeException e) {
+					if (log.isDebugEnabled()) {
+						log.debug("Error handling transaction", e);
+					}
+					throw e;
+				} catch (Exception e) {
+					if (log.isDebugEnabled()) {
+						log.debug("Error handling transaction", e);
+					}
+					throw new RuntimeException("Transaction error", e);
+				} finally {
+					sample.stop(txTimer);
 				}
-				int delay = options.getStorageOptions().getTxRetryDelay();
-				if (retry > 0 && delay > 0) {
-					try {
-						Thread.sleep(delay);
-					} catch (InterruptedException e1) {
-						e1.printStackTrace();
+				if (!handlerFinished && log.isDebugEnabled()) {
+					log.debug("Retrying .. {" + retry + "}");
+					if (metrics.isEnabled()) {
+						txRetryCounter.increment();
 					}
 				}
-				// Reset previous result
-				handlerFinished = false;
-				handlerResult = null;
-			} catch (ORecordDuplicatedException e) {
-				log.error(e);
-				throw error(INTERNAL_SERVER_ERROR, "error_internal");
-			} catch (GenericRestException e) {
-				// Don't log. Just throw it along so that others can handle it
-				throw e;
-			} catch (RuntimeException e) {
-				if (log.isDebugEnabled()) {
-					log.debug("Error handling transaction", e);
-				}
-				throw e;
-			} catch (Exception e) {
-				if (log.isDebugEnabled()) {
-					log.debug("Error handling transaction", e);
-				}
-				throw new RuntimeException("Transaction error", e);
-			} finally {
-				sample.stop(txTimer);
-			}
-			if (!handlerFinished && log.isDebugEnabled()) {
-				log.debug("Retrying .. {" + retry + "}");
-				if (metrics.isEnabled()) {
-					txRetryCounter.increment();
+				if (handlerFinished) {
+					return handlerResult;
 				}
 			}
-			if (handlerFinished) {
-				return handlerResult;
-			}
+			throw new RuntimeException("Retry limit {" + maxRetry + "} for trx exceeded");
+		});
+
+		try {
+			//TODO configure time limit
+			return future.get(15, TimeUnit.SECONDS);
+		} catch (TimeoutException e) {
+			log.error("Tx delay reached. Interrupting operation", e);
+			throw new RuntimeException(e);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		} catch (ExecutionException e) {
+			throw new RuntimeException(e);
+		} finally {
+			future.cancel(true); // may or may not desire this
 		}
-		throw new RuntimeException("Retry limit {" + maxRetry + "} for trx exceeded");
 	}
 
 	@Override

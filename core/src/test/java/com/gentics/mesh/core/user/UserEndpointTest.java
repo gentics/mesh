@@ -536,6 +536,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		}).total(1);
 
 		UserResponse restUser = call(() -> client().updateUser(uuid, updateRequest));
+		assertEquals("Epic Stark", restUser.getLastname());
 
 		awaitEvents();
 		waitForSearchIdleEvent();
@@ -1388,7 +1389,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertNotNull("User should have been created.", user);
 			assertEquals(CREATED.code(), response.getStatusCode());
 			String location = response.getHeader(LOCATION.toString()).orElse(null);
-			assertEquals("Location header value did not match", "http://localhost:" + port() + CURRENT_API_BASE_PATH + "/users/" + user.getUuid(), location);
+			assertEquals("Location header value did not match", "http://localhost:" + port() + CURRENT_API_BASE_PATH + "/users/" + user.getUuid(),
+				location);
 		}
 	}
 
@@ -1408,7 +1410,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertNotNull("User should have been created.", user);
 			assertEquals(CREATED.code(), response.getStatusCode());
 			String location = response.getHeader(LOCATION.toString()).orElse(null);
-			assertEquals("Location header value did not match", "http://jotschi.de:" + port() + CURRENT_API_BASE_PATH + "/users/" + user.getUuid(), location);
+			assertEquals("Location header value did not match", "http://jotschi.de:" + port() + CURRENT_API_BASE_PATH + "/users/" + user.getUuid(),
+				location);
 		}
 	}
 
