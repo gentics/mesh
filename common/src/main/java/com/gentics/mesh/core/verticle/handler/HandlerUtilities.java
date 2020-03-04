@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -81,27 +82,27 @@ public class HandlerUtilities {
 	 * Create an object using the given aggregation node and respond with a transformed object.
 	 * 
 	 * @param ac
-	 * @param handler
+	 * @param supplier
 	 */
-	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createElement(InternalActionContext ac, TxAction1<RootVertex<T>> handler) {
-		createOrUpdateElement(ac, null, handler);
+	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createElement(InternalActionContext ac, Supplier<RootVertex<T>> supplier) {
+		createOrUpdateElement(ac, null, supplier);
 	}
 
 	/**
 	 * Delete the specified element.
 	 * 
 	 * @param ac
-	 * @param handler
+	 * @param supplier
 	 *            Handler which provides the root vertex which will be used to load the element
 	 * @param uuid
 	 *            Uuid of the element which should be deleted
 	 */
-	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void deleteElement(InternalActionContext ac, TxAction1<RootVertex<T>> handler,
+	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void deleteElement(InternalActionContext ac, Supplier<RootVertex<T>> supplier,
 		String uuid) {
 		lock();
 		syncTx(ac, () -> {
 			try {
-				RootVertex<T> root = handler.handle();
+				RootVertex<T> root = supplier.get();
 				T element = root.loadObjectByUuid(ac, uuid, DELETE_PERM);
 
 				// Load the name and uuid of the element. We need this info after deletion.
@@ -124,13 +125,13 @@ public class HandlerUtilities {
 	 * @param ac
 	 * @param uuid
 	 *            Uuid of the element which should be updated
-	 * @param handler
+	 * @param supplier
 	 *            Handler which provides the root vertex which should be used when loading the element
 	 * 
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void updateElement(InternalActionContext ac, String uuid,
-		TxAction1<RootVertex<T>> handler) {
-		createOrUpdateElement(ac, uuid, handler);
+		Supplier<RootVertex<T>> supplier) {
+		createOrUpdateElement(ac, uuid, supplier);
 	}
 
 	/**
@@ -139,16 +140,16 @@ public class HandlerUtilities {
 	 * @param ac
 	 * @param uuid
 	 *            Uuid of the element to create or update. If null, an element will be created with random Uuid
-	 * @param handler
-	 *            Handler which provides the root vertex which should be used when loading the element
+	 * @param supplier
+	 *            Supplier which provides the root vertex which should be used when loading the element
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createOrUpdateElement(InternalActionContext ac, String uuid,
-		TxAction1<RootVertex<T>> handler) {
+		Supplier<RootVertex<T>> supplier) {
 		lock();
 		AtomicBoolean created = new AtomicBoolean(false);
 		try {
-			RootVertex<T> root = handler.handle();
 			T e = database.tx(tx -> {
+				RootVertex<T> root = supplier.get();
 
 				// 1. Load the element from the root element using the given uuid (if not null)
 				T element = null;
@@ -174,6 +175,7 @@ public class HandlerUtilities {
 				});
 			} else {
 				T createdElement = eventAction(batch -> {
+					RootVertex<T> root = supplier.get();
 					T createdE = root.create(ac, batch, uuid);
 					created.set(true);
 					return createdE;
