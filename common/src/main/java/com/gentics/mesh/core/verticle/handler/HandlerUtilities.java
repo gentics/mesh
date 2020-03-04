@@ -100,22 +100,25 @@ public class HandlerUtilities {
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void deleteElement(InternalActionContext ac, Supplier<RootVertex<T>> supplier,
 		String uuid) {
 		lock();
-		syncTx(ac, () -> {
-			try {
-				RootVertex<T> root = supplier.get();
-				T element = root.loadObjectByUuid(ac, uuid, DELETE_PERM);
+		try {
+			RootVertex<T> root = supplier.get();
+			T element = database.tx(tx -> {
+				return root.loadObjectByUuid(ac, uuid, DELETE_PERM);
+			});
 
-				// Load the name and uuid of the element. We need this info after deletion.
-				String elementUuid = element.getUuid();
-				bulkableAction(bac -> {
-					bac.setRootCause(element.getTypeInfo().getType(), elementUuid, DELETE);
-					element.delete(bac);
-				});
-				log.info("Deleted element {" + elementUuid + "} for type {" + root.getClass().getSimpleName() + "}");
-			} finally {
-				unlock();
-			}
-		}, () -> ac.send(NO_CONTENT));
+			// Load the uuid of the element. We need this info after deletion.
+			String elementUuid = element.getUuid();
+			bulkableAction(bac -> {
+				bac.setRootCause(element.getTypeInfo().getType(), elementUuid, DELETE);
+				element.delete(bac);
+			});
+			log.info("Deleted element {" + elementUuid + "} for type {" + root.getClass().getSimpleName() + "}");
+			ac.send(NO_CONTENT);
+		} catch (Throwable t) {
+			ac.fail(t);
+		} finally {
+			unlock();
+		}
 
 	}
 
@@ -280,6 +283,7 @@ public class HandlerUtilities {
 	 * @param handler
 	 * @param action
 	 */
+	@Deprecated
 	public <RM extends RestModel> void syncTx(InternalActionContext ac, TxAction0 handler, Runnable action) {
 		try {
 			database.tx(handler);
