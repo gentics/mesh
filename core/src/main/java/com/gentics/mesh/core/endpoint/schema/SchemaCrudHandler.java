@@ -74,11 +74,10 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 		validateParameter(uuid, "uuid");
 
 		/**
-		 * The following code delegates the call to the handleUpdate method is very hacky at best.
-		 * It would be better to move the whole update code into the SchemaContainerImpl#update
-		 * method and use the regular handlerUtilities. (similar to all other calls)
-		 * The current code however does not return a SchemaResponse for update requests.
-		 * Instead a message will be returned. Changing this behaviour would cause a breaking change. (Changed response model).
+		 * The following code delegates the call to the handleUpdate method is very hacky at best. It would be better to move the whole update code into the
+		 * SchemaContainerImpl#update method and use the regular handlerUtilities. (similar to all other calls) The current code however does not return a
+		 * SchemaResponse for update requests. Instead a message will be returned. Changing this behaviour would cause a breaking change. (Changed response
+		 * model).
 		 */
 		boolean delegateToCreate = db.tx(() -> {
 			RootVertex<SchemaContainer> root = getRootVertex(ac);
@@ -226,26 +225,46 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 	public void handleAddSchemaToProject(InternalActionContext ac, String schemaUuid) {
 		validateParameter(schemaUuid, "schemaUuid");
 
-		utils.syncTx(ac, tx -> {
-			Project project = ac.getProject();
-			String projectUuid = project.getUuid();
-			if (!ac.getUser().hasPermission(project, GraphPermission.UPDATE_PERM)) {
-				throw error(FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
-			}
-			SchemaContainer schema = getRootVertex(ac).loadObjectByUuid(ac, schemaUuid, READ_PERM);
-			SchemaContainerRoot root = project.getSchemaContainerRoot();
-			if (root.contains(schema)) {
-				// Schema has already been assigned. No need to create indices
-				return schema.transformToRestSync(ac, 0);
-			}
+		class SchemaAddInfo {
+			SchemaContainer container;
+			SchemaContainerRoot root;
+			boolean hasBeenAssigned = false;
 
-			// Assign the schema to the project
-			utils.eventAction(batch -> {
-				root.addSchemaContainer(ac.getUser(), schema, batch);
+			public SchemaAddInfo(SchemaContainer container, SchemaContainerRoot root, boolean hasBeenAssigned) {
+				this.container = container;
+				this.root = root;
+				this.hasBeenAssigned = hasBeenAssigned;
+			}
+		}
+
+		try {
+			SchemaAddInfo info = db.tx(tx -> {
+				Project project = ac.getProject();
+				String projectUuid = project.getUuid();
+				if (!ac.getUser().hasPermission(project, GraphPermission.UPDATE_PERM)) {
+					throw error(FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
+				}
+				SchemaContainer schema = getRootVertex(ac).loadObjectByUuid(ac, schemaUuid, READ_PERM);
+				SchemaContainerRoot root = project.getSchemaContainerRoot();
+				boolean hasBeenAssigned = root.contains(schema);
+				return new SchemaAddInfo(schema, root, hasBeenAssigned);
 			});
-			return schema.transformToRestSync(ac, 0);
-		}, model -> ac.send(model, OK));
 
+			if (!info.hasBeenAssigned) {
+				// Assign the schema to the project since it has not been yet assigned
+				utils.eventAction(batch -> {
+					info.root.addSchemaContainer(ac.getUser(), info.container, batch);
+				});
+			}
+
+			SchemaResponse model = db.tx(tx -> {
+				return info.container.transformToRestSync(ac, 0);
+			});
+			ac.send(model, OK);
+
+		} catch (Throwable t) {
+			ac.fail(t);
+		}
 	}
 
 	/**
