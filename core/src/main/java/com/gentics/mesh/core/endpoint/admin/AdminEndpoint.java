@@ -51,8 +51,10 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 
 	private LocalConfigHandler localConfigHandler;
 
+	private AbortTransactionHandler abortTransactionHandler;
+
 	@Inject
-	public AdminEndpoint(MeshAuthChain chain, AdminHandler adminHandler, JobHandler jobHandler, ConsistencyCheckHandler consistencyHandler, PluginHandler pluginHandler, DebugInfoHandler debugInfoHandler, LocalConfigHandler localConfigHandler) {
+	public AdminEndpoint(MeshAuthChain chain, AdminHandler adminHandler, JobHandler jobHandler, ConsistencyCheckHandler consistencyHandler, PluginHandler pluginHandler, DebugInfoHandler debugInfoHandler, LocalConfigHandler localConfigHandler, AbortTransactionHandler abortTransactionHandler) {
 		super("admin", chain);
 		this.adminHandler = adminHandler;
 		this.jobHandler = jobHandler;
@@ -60,6 +62,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		this.pluginHandler = pluginHandler;
 		this.debugInfoHandler = debugInfoHandler;
 		this.localConfigHandler = localConfigHandler;
+		this.abortTransactionHandler = abortTransactionHandler;
 	}
 
 	public AdminEndpoint() {
@@ -92,6 +95,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		addPluginHandler();
 		addDebugInfoHandler();
 		addRuntimeConfigHandler();
+		addAbortTransactionHandler();
 	}
 
 	private void addSecurityLogger() {
@@ -367,5 +371,14 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		postRoute.description("Sets the currently active local configuration of this instance.");
 		postRoute.exampleResponse(OK, localConfig.createExample(), "The currently active local configuration");
 		postRoute.handler(rc -> localConfigHandler.handleSetActiveConfig(wrap(rc)));
+	}
+
+	private void addAbortTransactionHandler() {
+		InternalEndpointRoute postRoute = createRoute();
+		postRoute.path("/abortTx");
+		postRoute.method(POST);
+		postRoute.setMutating(false);
+		postRoute.description("Interrupts all currently running transactions");
+		postRoute.handler(rc -> abortTransactionHandler.abortTransactions(wrap(rc)));
 	}
 }
