@@ -21,12 +21,14 @@ public class ClusterServerConfig implements RestModel {
 		return name;
 	}
 
-	public void setName(String name) {
+	public ClusterServerConfig setName(String name) {
 		this.name = name;
+		return this;
 	}
 
-	public void setRole(ServerRole restRole) {
+	public ClusterServerConfig setRole(ServerRole restRole) {
 		this.role = restRole;
+		return this;
 	}
 
 	public ServerRole getRole() {
