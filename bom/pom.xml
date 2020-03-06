@@ -347,6 +347,11 @@
 			</dependency>
 			<dependency>
 				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-distributed-coordinator</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
 				<artifactId>mesh-server</artifactId>
 				<version>${project.version}</version>
 			</dependency>

@@ -49,6 +49,10 @@
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-distributed-coordinator</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-elasticsearch</artifactId>
 			<exclusions>
 				<exclusion>
