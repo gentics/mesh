@@ -28,6 +28,8 @@ include::content/docs/variables.adoc-include[]
 [[v1.4.3]]
 == 1.4.3 (TBD)
 
+icon:plus[] Clustering: The coordinator request processor plane feature has been added. The processor plan can be enabled to efficiently process REST requests in a multi-master and master-replica cluster setup.
+
 icon:plus[] REST: The `/admin/shutdown` endpoint has been added. This allows users with admin privileges to shutdown the mesh process.
 
 icon:check[] OrientDB: The included OrientDB version has been updated to version `3.0.29`.

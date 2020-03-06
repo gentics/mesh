@@ -5,6 +5,7 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.doc.GenerateDocumentation;
+import com.gentics.mesh.etc.config.cluster.CoordinatorMode;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 import com.gentics.mesh.etc.config.env.Option;
 
@@ -18,10 +19,13 @@ public class ClusterOptions implements Option {
 	public static final boolean DISABLED = false;
 
 	public static final boolean DEFAULT_CLUSTER_MODE = DISABLED;
+	public static final int DEFAULT_VERTX_PORT = 4848;
 	public static final String MESH_CLUSTER_NETWORK_HOST_ENV = "MESH_CLUSTER_NETWORK_HOST";
 	public static final String MESH_CLUSTER_ENABLED_ENV = "MESH_CLUSTER_ENABLED";
 	public static final String MESH_CLUSTER_NAME_ENV = "MESH_CLUSTER_NAME";
 	public static final String MESH_CLUSTER_VERTX_PORT_ENV = "MESH_CLUSTER_VERTX_PORT";
+	public static final String MESH_CLUSTER_COORDINATOR_MODE_ENV = "MESH_CLUSTER_COORDINATOR_MODE";
+	public static final String MESH_CLUSTER_COORDINATOR_REGEX_ENV = "MESH_CLUSTER_COORDINATOR_REGEX";
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("IP or host which is used to announce and reach the instance in the cluster. Gentics Mesh will try to determine the IP automatically but you may use this setting to override this automatic IP handling.")
@@ -43,9 +47,19 @@ public class ClusterOptions implements Option {
 	private String clusterName;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Port used by Vert.x for the eventbus server. A random free port will be selected if set to 0.")
+	@JsonPropertyDescription("Port used by Vert.x for the eventbus server. Default: " + DEFAULT_VERTX_PORT)
 	@EnvironmentVariable(name = MESH_CLUSTER_VERTX_PORT_ENV, description = "Override the vert.x eventbus server port.")
-	private Integer vertxPort = 0;
+	private Integer vertxPort = DEFAULT_VERTX_PORT;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("The coordinator mode will add an additional request controller plane which will internally process requests in-between multi-master nodes. Default: OFF")
+	@EnvironmentVariable(name = MESH_CLUSTER_COORDINATOR_MODE_ENV, description = "Override the cluster coordinator mode.")
+	private CoordinatorMode coordinatorMode = CoordinatorMode.OFF;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("The coordinator regex can be used to control which nodes in the cluster are eligible to be elected in a coordinator master election. When left empty all database master nodes are eligible.")
+	@EnvironmentVariable(name = MESH_CLUSTER_COORDINATOR_REGEX_ENV, description = "Override the cluster coordinator regex.")
+	private String coordinatorRegex;
 
 	public boolean isEnabled() {
 		return enabled;
