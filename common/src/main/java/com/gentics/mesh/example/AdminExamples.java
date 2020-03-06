@@ -6,6 +6,8 @@ import static com.gentics.mesh.example.ExampleUuids.UUID_1;
 import java.util.stream.Stream;
 
 import com.gentics.mesh.MeshStatus;
+import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
+import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterInstanceInfo;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
@@ -82,6 +84,16 @@ public class AdminExamples {
 		response.getInconsistencies().add(new InconsistencyInfo().setSeverity(InconsistencySeverity.LOW).setElementUuid(UUID_1).setDescription(
 			"A dangling field container has been found.").setRepairAction(RepairAction.DELETE).setRepaired(repaired));
 		return response;
+	}
+
+	public ClusterConfigResponse createClusterConfigResponse() {
+		ClusterConfigResponse response = new ClusterConfigResponse();
+		return response;
+	}
+
+	public ClusterConfigRequest createClusterConfigRequest() {
+		ClusterConfigRequest request = new ClusterConfigRequest();
+		return request;
 	}
 
 }

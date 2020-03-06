@@ -435,4 +435,8 @@ public class OrientDBClusterManager implements ClusterManager {
 	// server.getDistributedManager().removeServer(iNode, true);
 	// }
 
+	public OHazelcastPlugin getHazelcastPlugin() {
+		return hazelcastPlugin;
+	}
+
 }
