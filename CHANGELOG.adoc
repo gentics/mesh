@@ -31,6 +31,8 @@ icon:plus[] REST: The `/admin/shutdown` endpoint has been added. This allows use
 
 icon:check[] OrientDB: The included OrientDB version has been updated to version `3.0.29`.
 
+icon:plus[] REST: It is now possible to read and update the cluster configuration in runtime via the `/api/v2/admin/cluster/config` endpoint.
+
 [[v1.4.2]]
 == 1.4.2 (24.02.2020)
 

@@ -34,6 +34,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
+import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
@@ -75,7 +76,8 @@ public class AdminHandler extends AbstractHandler {
 	private final RouterStorageRegistry routerStorageRegistry;
 
 	@Inject
-	public AdminHandler(Vertx vertx, Database db, RouterStorage routerStorage, BootstrapInitializer boot, SearchProvider searchProvider, HandlerUtilities utils,
+	public AdminHandler(Vertx vertx, Database db, RouterStorage routerStorage, BootstrapInitializer boot, SearchProvider searchProvider,
+		HandlerUtilities utils,
 		MeshOptions options, RouterStorageRegistry routerStorageRegistry) {
 		this.vertx = vertx;
 		this.db = db;
@@ -257,7 +259,7 @@ public class AdminHandler extends AbstractHandler {
 			if (options.getClusterOptions() != null && options.getClusterOptions().isEnabled()) {
 				return db.clusterManager().getClusterStatus();
 			} else {
-				throw error(BAD_REQUEST, "error_cluster_status_only_aviable_in_cluster_mode");
+				throw error(BAD_REQUEST, "error_cluster_status_only_available_in_cluster_mode");
 			}
 		}, model -> ac.send(model, OK));
 	}
@@ -277,6 +279,28 @@ public class AdminHandler extends AbstractHandler {
 		info.setVertxVersion(VersionCommand.getVersion());
 		info.setDatabaseRevision(db.getDatabaseRevision());
 		return info;
+	}
+
+	public void handleLoadClusterConfig(InternalActionContext ac) {
+		utils.syncTx(ac, tx -> {
+			User user = ac.getUser();
+			if (user != null && !user.hasAdminRole()) {
+				throw error(FORBIDDEN, "error_admin_permission_required");
+			}
+			return db.loadClusterConfig();
+		}, model -> ac.send(model, OK));
+	}
+
+	public void handleUpdateClusterConfig(InternalActionContext ac) {
+		utils.syncTx(ac, tx -> {
+			User user = ac.getUser();
+			if (user != null && !user.hasAdminRole()) {
+				throw error(FORBIDDEN, "error_admin_permission_required");
+			}
+			ClusterConfigRequest request = ac.fromJson(ClusterConfigRequest.class);
+			db.updateClusterConfig(request);
+			return db.loadClusterConfig();
+		}, model -> ac.send(model, OK));
 	}
 
 }

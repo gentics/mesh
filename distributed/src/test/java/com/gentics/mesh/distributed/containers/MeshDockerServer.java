@@ -152,6 +152,9 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 			addEnv(ElasticSearchOptions.MESH_ELASTICSEARCH_URL_ENV, "null");
 		}
 
+		addEnv(MeshOptions.MESH_INITIAL_ADMIN_PASSWORD_ENV, "admin");
+		addEnv(MeshOptions.MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET_ENV, "false");
+
 		String javaOpts = null;
 		if (debugPort != null) {
 			javaOpts = "-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=n ";

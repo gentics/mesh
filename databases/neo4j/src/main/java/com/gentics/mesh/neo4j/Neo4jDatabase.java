@@ -14,6 +14,8 @@ import com.gentics.madl.tx.Tx;
 import com.gentics.madl.tx.TxAction;
 import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
+import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.cluster.ClusterManager;
 import com.gentics.mesh.graphdb.model.MeshElement;
@@ -44,7 +46,8 @@ public class Neo4jDatabase extends AbstractDatabase {
 	private TypeResolver resolver;
 
 	@Inject
-	public Neo4jDatabase(Lazy<Vertx> vertx, MetricsService metrics, Neo4jTypeHandler typeHandler, Neo4jIndexHandler indexHandler, Neo4jClusterManager clusterManager) {
+	public Neo4jDatabase(Lazy<Vertx> vertx, MetricsService metrics, Neo4jTypeHandler typeHandler, Neo4jIndexHandler indexHandler,
+		Neo4jClusterManager clusterManager) {
 		super(vertx);
 		this.metrics = metrics;
 		this.typeHandler = typeHandler;
@@ -217,6 +220,16 @@ public class Neo4jDatabase extends AbstractDatabase {
 		} catch (Exception e) {
 			throw new RuntimeException("Transaction error", e);
 		}
+	}
+
+	@Override
+	public ClusterConfigResponse loadClusterConfig() {
+		return null;
+	}
+
+	@Override
+	public void updateClusterConfig(ClusterConfigRequest request) {
+
 	}
 
 }

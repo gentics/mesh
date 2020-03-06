@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.metric.SimpleMetric.TX_RETRY;
 import static com.gentics.mesh.metric.SimpleMetric.TX_TIME;
 import static com.gentics.mesh.util.StreamUtil.toStream;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.io.IOException;
@@ -21,6 +22,10 @@ import com.gentics.madl.tx.TxAction0;
 import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
+import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
+import com.gentics.mesh.core.rest.admin.cluster.ClusterServerConfig;
+import com.gentics.mesh.core.rest.admin.cluster.ServerRole;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -29,6 +34,7 @@ import com.gentics.mesh.graphdb.index.OrientDBIndexHandler;
 import com.gentics.mesh.graphdb.index.OrientDBTypeHandler;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
+import com.gentics.mesh.graphdb.spi.GraphStorage;
 import com.gentics.mesh.graphdb.tx.OrientStorage;
 import com.gentics.mesh.graphdb.tx.impl.OrientLocalStorageImpl;
 import com.gentics.mesh.graphdb.tx.impl.OrientServerStorageImpl;
@@ -44,6 +50,10 @@ import com.orientechnologies.orient.core.config.OGlobalConfiguration;
 import com.orientechnologies.orient.core.exception.OSchemaException;
 import com.orientechnologies.orient.core.intent.OIntentMassiveInsert;
 import com.orientechnologies.orient.core.storage.ORecordDuplicatedException;
+import com.orientechnologies.orient.server.distributed.ODistributedConfiguration;
+import com.orientechnologies.orient.server.distributed.ODistributedConfiguration.ROLES;
+import com.orientechnologies.orient.server.distributed.OModifiableDistributedConfiguration;
+import com.orientechnologies.orient.server.hazelcast.OHazelcastPlugin;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
@@ -456,6 +466,86 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	public List<String> getChangeUuidList() {
 		return ChangesList.getList(options).stream().map(c -> c.getUuid()).collect(Collectors.toList());
+	}
+
+	@Override
+	public ClusterConfigResponse loadClusterConfig() {
+		if (clusterManager() != null) {
+			OHazelcastPlugin plugin = clusterManager().getHazelcastPlugin();
+			ODistributedConfiguration storageCfg = plugin.getDatabaseConfiguration(GraphStorage.DB_NAME);
+
+			ClusterConfigResponse response = new ClusterConfigResponse();
+			for (String server : storageCfg.getAllConfiguredServers()) {
+				ClusterServerConfig serverConfig = new ClusterServerConfig();
+				serverConfig.setName(server);
+
+				ROLES role = storageCfg.getServerRole(server);
+				ServerRole restRole = ServerRole.valueOf(role.name());
+				serverConfig.setRole(restRole);
+
+				response.getServers().add(serverConfig);
+			}
+
+			Object writeQuorum = storageCfg.getDocument().getProperty("writeQuorum");
+			if (writeQuorum instanceof String) {
+				response.setWriteQuorum((String) writeQuorum);
+			} else if (writeQuorum instanceof Integer) {
+				response.setWriteQuorum(String.valueOf((Integer) writeQuorum));
+			}
+
+			Integer readQuorum = storageCfg.getDocument().getProperty("readQuorum");
+			response.setReadQuorum(readQuorum);
+
+			for (String name : storageCfg.getDocument().getPropertyNames()) {
+				System.out.println(name + "=" + storageCfg.getDocument().getProperty(name));
+			}
+
+			return response;
+		} else {
+			throw error(BAD_REQUEST, "error_cluster_status_only_available_in_cluster_mode");
+		}
+	}
+
+	@Override
+	public void updateClusterConfig(ClusterConfigRequest request) {
+		if (clusterManager() != null) {
+			OHazelcastPlugin plugin = clusterManager().getHazelcastPlugin();
+			ODistributedConfiguration storageCfg = plugin.getDatabaseConfiguration(GraphStorage.DB_NAME);
+			final OModifiableDistributedConfiguration newCfg = storageCfg.modify();
+
+			for (ClusterServerConfig server : request.getServers()) {
+				// Check whether role changed
+				ServerRole newRole = server.getRole();
+				ROLES newORole = ROLES.valueOf(newRole.name());
+				ROLES oldRole = newCfg.getServerRole(server.getName());
+				if (oldRole != newORole) {
+					log.debug("Updating server role {" + server.getName() + "} from {" + oldRole + "} to {" + newRole + "}");
+					newCfg.setServerRole(server.getName(), newORole);
+				}
+			}
+			String newWriteQuorum = request.getWriteQuorum();
+			if (newWriteQuorum != null) {
+				if (newWriteQuorum.equalsIgnoreCase("all") || newWriteQuorum.equalsIgnoreCase("majority")) {
+					newCfg.getDocument().setProperty("writeQuorum", newWriteQuorum);
+				} else {
+					try {
+						int newWriteQuorumInt = Integer.parseInt(newWriteQuorum);
+						newCfg.getDocument().setProperty("writeQuorum", newWriteQuorumInt);
+					} catch (Exception e) {
+						throw new RuntimeException("Unsupported write quorum value {" + newWriteQuorum + "}");
+					}
+				}
+			}
+
+			Integer newReadQuorum = request.getReadQuorum();
+			if (newReadQuorum != null) {
+				newCfg.getDocument().setProperty("readQuorum", newReadQuorum);
+			}
+
+			plugin.updateCachedDatabaseConfiguration(GraphStorage.DB_NAME, newCfg, true);
+		} else {
+			throw error(BAD_REQUEST, "error_cluster_status_only_available_in_cluster_mode");
+		}
 	}
 
 }

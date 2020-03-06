@@ -6,8 +6,12 @@ import static com.gentics.mesh.example.ExampleUuids.UUID_1;
 import java.util.stream.Stream;
 
 import com.gentics.mesh.MeshStatus;
+import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
+import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterInstanceInfo;
+import com.gentics.mesh.core.rest.admin.cluster.ClusterServerConfig;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
+import com.gentics.mesh.core.rest.admin.cluster.ServerRole;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.consistency.InconsistencyInfo;
 import com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity;
@@ -82,6 +86,26 @@ public class AdminExamples {
 		response.getInconsistencies().add(new InconsistencyInfo().setSeverity(InconsistencySeverity.LOW).setElementUuid(UUID_1).setDescription(
 			"A dangling field container has been found.").setRepairAction(RepairAction.DELETE).setRepaired(repaired));
 		return response;
+	}
+
+	public ClusterConfigResponse createClusterConfigResponse() {
+		ClusterConfigResponse response = new ClusterConfigResponse();
+		response.setWriteQuorum("majority");
+		response.setReadQuorum(1);
+		response.getServers().add(new ClusterServerConfig().setName("master-1").setRole(ServerRole.MASTER));
+		response.getServers().add(new ClusterServerConfig().setName("replica-1").setRole(ServerRole.REPLICA));
+		response.getServers().add(new ClusterServerConfig().setName("replica-2").setRole(ServerRole.REPLICA));
+		return response;
+	}
+
+	public ClusterConfigRequest createClusterConfigRequest() {
+		ClusterConfigRequest request = new ClusterConfigRequest();
+		request.setWriteQuorum("1");
+		request.setReadQuorum(1);
+		request.getServers().add(new ClusterServerConfig().setName("master-1").setRole(ServerRole.MASTER));
+		request.getServers().add(new ClusterServerConfig().setName("replica-1").setRole(ServerRole.REPLICA));
+		request.getServers().add(new ClusterServerConfig().setName("replica-2").setRole(ServerRole.REPLICA));
+		return request;
 	}
 
 }

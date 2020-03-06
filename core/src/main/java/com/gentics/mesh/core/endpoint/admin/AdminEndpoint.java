@@ -94,6 +94,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		addBackupHandler();
 		addRestoreHandler();
 		addClusterStatusHandler();
+		addClusterConfigHandler();
 		addConsistencyCheckHandler();
 		addImportHandler();
 		addExportHandler();
@@ -178,6 +179,29 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		endpoint.exampleResponse(OK, adminExamples.createClusterStatusResponse(), "Cluster status.");
 		endpoint.handler(rc -> {
 			adminHandler.handleClusterStatus(wrap(rc));
+		});
+	}
+	
+	private void addClusterConfigHandler() {
+		InternalEndpointRoute endpoint = createRoute();
+		endpoint.path("/cluster/config");
+		endpoint.method(GET);
+		endpoint.description("Loads the cluster configuration.");
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleResponse(OK, adminExamples.createClusterConfigResponse(), "Currently active cluster configuration.");
+		endpoint.handler(rc -> {
+			adminHandler.handleLoadClusterConfig(wrap(rc));
+		});
+
+		InternalEndpointRoute updateEndpoint = createRoute();
+		updateEndpoint.path("/cluster/config");
+		updateEndpoint.method(POST);
+		updateEndpoint.description("Update the cluster configuration.");
+		updateEndpoint.produces(APPLICATION_JSON);
+		updateEndpoint.exampleRequest(adminExamples.createClusterConfigRequest());
+		updateEndpoint.exampleResponse(OK, adminExamples.createClusterConfigResponse(), "Updated cluster configuration.");
+		updateEndpoint.handler(rc -> {
+			adminHandler.handleUpdateClusterConfig(wrap(rc));
 		});
 	}
 
