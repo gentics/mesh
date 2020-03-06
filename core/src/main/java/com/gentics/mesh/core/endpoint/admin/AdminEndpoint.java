@@ -15,9 +15,11 @@ import static com.gentics.mesh.core.rest.MeshEvent.PLUGIN_UNDEPLOYED;
 import static com.gentics.mesh.core.rest.MeshEvent.PLUGIN_UNDEPLOYING;
 import static com.gentics.mesh.core.rest.MeshEvent.REPAIR_FINISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.REPAIR_START;
+import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.example.ExampleUuids.JOB_UUID;
 import static com.gentics.mesh.example.ExampleUuids.PLUGIN_1_ID;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
@@ -31,8 +33,11 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoHandler;
 import com.gentics.mesh.core.endpoint.admin.plugin.PluginHandler;
+import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
+
+import io.vertx.ext.web.RoutingContext;
 
 /**
  * The admin verticle provides core administration rest endpoints.
@@ -51,8 +56,12 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 
 	private LocalConfigHandler localConfigHandler;
 
+	private ShutdownHandler shutdownHandler;
+
+	private HandlerUtilities handlerUtilities;
+
 	@Inject
-	public AdminEndpoint(MeshAuthChain chain, AdminHandler adminHandler, JobHandler jobHandler, ConsistencyCheckHandler consistencyHandler, PluginHandler pluginHandler, DebugInfoHandler debugInfoHandler, LocalConfigHandler localConfigHandler) {
+	public AdminEndpoint(MeshAuthChain chain, AdminHandler adminHandler, JobHandler jobHandler, ConsistencyCheckHandler consistencyHandler, PluginHandler pluginHandler, DebugInfoHandler debugInfoHandler, LocalConfigHandler localConfigHandler, ShutdownHandler shutdownHandler, HandlerUtilities handlerUtilities) {
 		super("admin", chain);
 		this.adminHandler = adminHandler;
 		this.jobHandler = jobHandler;
@@ -60,6 +69,8 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		this.pluginHandler = pluginHandler;
 		this.debugInfoHandler = debugInfoHandler;
 		this.localConfigHandler = localConfigHandler;
+		this.shutdownHandler = shutdownHandler;
+		this.handlerUtilities = handlerUtilities;
 	}
 
 	public AdminEndpoint() {
@@ -92,6 +103,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		addPluginHandler();
 		addDebugInfoHandler();
 		addRuntimeConfigHandler();
+		addShutdownHandler();
 	}
 
 	private void addSecurityLogger() {
@@ -368,4 +380,17 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		postRoute.exampleResponse(OK, localConfig.createExample(), "The currently active local configuration");
 		postRoute.handler(rc -> localConfigHandler.handleSetActiveConfig(wrap(rc)));
 	}
+
+	private void addShutdownHandler() {
+		InternalEndpointRoute postRoute = createRoute();
+		postRoute.path("/shutdown");
+		postRoute.method(POST);
+		postRoute.produces(APPLICATION_JSON);
+		postRoute.description("Initiates shutdown of this instance.");
+		postRoute.exampleResponse(OK, miscExamples.createMessageResponse(), "Shutdown initiated.");
+		postRoute
+			.blockingHandler(handlerUtilities::requiresAdminRole)
+			.handler(rc -> shutdownHandler.shutdown(wrap(rc)));
+	}
+
 }

@@ -27,6 +27,8 @@ include::content/docs/variables.adoc-include[]
 
 [[TBD]]
 
+icon:plus[] REST: The `/admin/shutdown` endpoint has been added. This allows users with admin privileges to shutdown the mesh process.
+
 icon:check[] OrientDB: The included OrientDB version has been updated to version `3.0.29`.
 
 [[v1.4.2]]
