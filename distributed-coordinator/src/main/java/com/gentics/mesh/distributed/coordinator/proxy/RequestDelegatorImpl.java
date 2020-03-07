@@ -3,13 +3,10 @@ package com.gentics.mesh.distributed.coordinator.proxy;
 import javax.inject.Inject;
 
 import com.gentics.mesh.distributed.RequestDelegator;
-import com.gentics.mesh.distributed.coordinator.MasterElector;
+import com.gentics.mesh.distributed.coordinator.Coordinator;
 import com.gentics.mesh.distributed.coordinator.MasterServer;
-import com.gentics.mesh.etc.config.ClusterOptions;
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.cluster.CoordinatorMode;
 
-import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
@@ -28,15 +25,13 @@ public class RequestDelegatorImpl implements RequestDelegator {
 
 	public static final String MESH_DIRECT_HEADER = "X-Mesh-Direct";
 
-	private final MasterElector elector;
+	private final Coordinator coordinator;
 	private final HttpClient httpClient;
-	private final ClusterOptions options;
 
 	@Inject
-	public RequestDelegatorImpl(MasterElector elector, Vertx vertx, MeshOptions options) {
-		this.elector = elector;
+	public RequestDelegatorImpl(Coordinator coordinator, Vertx vertx) {
+		this.coordinator = coordinator;
 		this.httpClient = vertx.createHttpClient();
-		this.options = options.getClusterOptions();
 	}
 
 	@Override
@@ -44,8 +39,24 @@ public class RequestDelegatorImpl implements RequestDelegator {
 		HttpServerRequest request = rc.request();
 		HttpServerResponse response = rc.response();
 		String requestURI = request.uri();
+		String path = request.path();
 		HttpMethod method = request.method();
-		CoordinatorMode mode = options.getCoordinatorMode();
+		CoordinatorMode mode = coordinator.getCoordinatorMode();
+		if (mode == CoordinatorMode.DISABLED) {
+			if (log.isDebugEnabled()) {
+				log.debug("Skipping delegation since coordination is disabled.");
+			}
+			rc.next();
+			return;
+		}
+
+		if (isWhitelisted(method, path)) {
+			if (log.isDebugEnabled()) {
+				log.debug("URI {" + requestURI + "} with method {" + method.name() + "} is whitelisted. Skipping delegation");
+			}
+			rc.next();
+			return;
+		}
 
 		String headerValue = request.getHeader(MESH_DIRECT_HEADER);
 		if (headerValue != null && headerValue.equalsIgnoreCase("true")) {
@@ -62,13 +73,12 @@ public class RequestDelegatorImpl implements RequestDelegator {
 			case PUT:
 				break;
 			case POST:
-				if (requestURI.contains("/graphql")) {
-					break;
-				} else if (requestURI.contains("/search")) {
-					break;
-				} else {
+				// Lets check whether the request is actually a read request. In this case we don't need to delegate it.
+				if (isReadRequest(method, path)) {
 					rc.next();
 					return;
+				} else {
+					break;
 				}
 			default:
 				rc.next();
@@ -76,7 +86,7 @@ public class RequestDelegatorImpl implements RequestDelegator {
 			}
 		}
 
-		MasterServer master = elector.getMasterMember();
+		MasterServer master = coordinator.getMasterMember();
 		if (master == null) {
 			log.info("Skipping delegator since no master was elected.");
 			rc.next();
@@ -138,6 +148,42 @@ public class RequestDelegatorImpl implements RequestDelegator {
 		} else {
 			forwardRequest.end(body);
 		}
+	}
+
+	/**
+	 * Check whether the request is a read request.
+	 * 
+	 * @param method
+	 * @param path
+	 * @return
+	 */
+	private static boolean isReadRequest(HttpMethod method, String path) {
+		if (path.contains("/auth/login") && method == HttpMethod.POST) {
+			return true;
+		}
+		if (path.contains("/graphql") && method == HttpMethod.POST) {
+			return true;
+		}
+		if (path.contains("/search") && method == HttpMethod.POST) {
+			return true;
+		}
+		if (path.contains("/rawSearch") && method == HttpMethod.POST) {
+			return true;
+		}
+		return false;
+	}
+
+	private static boolean isWhitelisted(HttpMethod method, String path) {
+		if (path.equals("/api/v1")) {
+			return true;
+		}
+		if (path.equals("/api/v2")) {
+			return true;
+		}
+		if (path.equals("/api/v1/cluster/status")) {
+			return true;
+		}
+		return false;
 	}
 
 }

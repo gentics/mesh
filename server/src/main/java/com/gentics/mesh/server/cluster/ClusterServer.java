@@ -7,6 +7,7 @@ import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.cluster.CoordinatorMode;
 import com.gentics.mesh.router.EndpointRegistry;
+import com.gentics.mesh.verticle.admin.AdminGUI2Endpoint;
 import com.gentics.mesh.verticle.admin.AdminGUIEndpoint;
 
 import io.vertx.core.json.JsonObject;
@@ -48,7 +49,7 @@ public class ClusterServer {
 			MeshComponent meshInternal = mesh.internal();
 			EndpointRegistry registry = meshInternal.endpointRegistry();
 			registry.register(AdminGUIEndpoint.class);
-
+			registry.register(AdminGUI2Endpoint.class);
 		});
 		mesh.run();
 
