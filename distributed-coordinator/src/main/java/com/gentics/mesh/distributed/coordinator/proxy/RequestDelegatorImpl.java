@@ -62,7 +62,9 @@ public class RequestDelegatorImpl implements RequestDelegator {
 
 		String headerValue = request.getHeader(MESH_DIRECT_HEADER);
 		if (headerValue != null && headerValue.equalsIgnoreCase("true")) {
-			log.info("Skipping delegator due to direct header");
+			if (log.isDebugEnabled()) {
+				log.debug("Skipping delegator due to direct header");
+			}
 			rc.next();
 			return;
 		}
@@ -90,20 +92,27 @@ public class RequestDelegatorImpl implements RequestDelegator {
 
 		MasterServer master = coordinator.getMasterMember();
 		if (master == null) {
-			log.info("Skipping delegator since no master was elected.");
+			if (log.isDebugEnabled()) {
+				log.debug("Skipping delegator since no master was elected.");
+			}
 			rc.next();
 			return;
 		}
 		// We don't need to delegate the request if we are the master
 		if (master.isSelf()) {
-			log.info("Skipping delegator since we are the master");
+			if (log.isDebugEnabled()) {
+				log.debug("Skipping delegator since we are the master");
+			}
 			rc.next();
 			return;
 		}
 		String host = master.getHost();
 		int port = master.getPort();
 
-		log.info("Forwarding request to master {" + master.toString() + "}");
+		if (log.isDebugEnabled()) {
+			log.debug("Forwarding request to master {" + master.toString() + "}");
+		}
+
 		@SuppressWarnings("deprecation")
 		HttpClientRequest forwardRequest = httpClient.request(method, port, host, requestURI, forwardResponse -> {
 
