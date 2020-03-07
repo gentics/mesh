@@ -48,7 +48,7 @@ public class MonitoringServerEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testClusterStatus() {
-		call(() -> monClient().clusterStatus(), BAD_REQUEST, "error_cluster_status_only_aviable_in_cluster_mode");
+		call(() -> monClient().clusterStatus(), BAD_REQUEST, "error_cluster_status_only_available_in_cluster_mode");
 	}
 
 	@Test
