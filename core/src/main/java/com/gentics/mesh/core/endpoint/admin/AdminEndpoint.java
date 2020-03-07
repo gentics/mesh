@@ -15,11 +15,9 @@ import static com.gentics.mesh.core.rest.MeshEvent.PLUGIN_UNDEPLOYED;
 import static com.gentics.mesh.core.rest.MeshEvent.PLUGIN_UNDEPLOYING;
 import static com.gentics.mesh.core.rest.MeshEvent.REPAIR_FINISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.REPAIR_START;
-import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.example.ExampleUuids.JOB_UUID;
 import static com.gentics.mesh.example.ExampleUuids.PLUGIN_1_ID;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
@@ -36,8 +34,6 @@ import com.gentics.mesh.core.endpoint.admin.plugin.PluginHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
-
-import io.vertx.ext.web.RoutingContext;
 
 /**
  * The admin verticle provides core administration rest endpoints.
