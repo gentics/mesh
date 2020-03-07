@@ -2,10 +2,10 @@ package com.gentics.mesh.distributed.coordinator.proxy;
 
 import javax.inject.Inject;
 
+import com.gentics.mesh.distributed.RequestDelegator;
 import com.gentics.mesh.distributed.coordinator.MasterElector;
 import com.gentics.mesh.distributed.coordinator.MasterServer;
 
-import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
@@ -17,9 +17,9 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.streams.Pump;
 import io.vertx.ext.web.RoutingContext;
 
-public class RequestDelegator implements Handler<RoutingContext> {
+public class RequestDelegatorImpl implements RequestDelegator {
 
-	private static final Logger log = LoggerFactory.getLogger(RequestDelegator.class);
+	private static final Logger log = LoggerFactory.getLogger(RequestDelegatorImpl.class);
 
 	public static final String MESH_DIRECT_HEADER = "X-Mesh-Direct";
 
@@ -27,7 +27,7 @@ public class RequestDelegator implements Handler<RoutingContext> {
 	private HttpClient httpClient;
 
 	@Inject
-	public RequestDelegator(MasterElector elector, Vertx vertx) {
+	public RequestDelegatorImpl(MasterElector elector, Vertx vertx) {
 		this.elector = elector;
 		this.httpClient = vertx.createHttpClient();
 	}

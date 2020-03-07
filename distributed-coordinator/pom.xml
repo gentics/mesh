@@ -30,7 +30,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-api</artifactId>
+			<artifactId>mesh-common</artifactId>
 		</dependency>
 
 		<dependency>

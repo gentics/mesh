@@ -40,11 +40,6 @@
 			<artifactId>mesh-plugin-api</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-distributed-coordinator</artifactId>
-		</dependency>
-
-		<dependency>
 			<groupId>com.google.dagger</groupId>
 			<artifactId>dagger</artifactId>
 		</dependency>

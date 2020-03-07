@@ -1,11 +1,18 @@
 package com.gentics.mesh.distributed.coordinator;
 
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
+import com.gentics.mesh.core.rest.admin.cluster.ClusterServerConfig;
+import com.gentics.mesh.core.rest.admin.cluster.ServerRole;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.hazelcast.core.Cluster;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ILock;
@@ -30,13 +37,18 @@ public class MasterElector {
 
 	private final static String MESH_HTTP_PORT_ATTR = "mesh_http_port";
 
-	private Lazy<HazelcastInstance> hazelcast;
-	private ILock masterLock;
+	private final static String MESH_NODE_NAME_ATTR = "mesh_node_name";
 
+	private final MeshOptions options;
+
+	private final Database database;
+
+	private final Lazy<HazelcastInstance> hazelcast;
+
+	protected ILock masterLock;
 	protected Member masterMember;
 	protected String localUuid;
-
-	private MeshOptions options;
+	protected Pattern coordinatorRegex;
 
 	/**
 	 * Flag that is set, when the instance is merging (back) into the cluster
@@ -44,21 +56,32 @@ public class MasterElector {
 	private static boolean merging = false;
 
 	@Inject
-	public MasterElector(Lazy<HazelcastInstance> hazelcast, MeshOptions options) {
+	public MasterElector(Lazy<HazelcastInstance> hazelcast, MeshOptions options, Database database) {
 		this.hazelcast = hazelcast;
 		this.options = options;
+		this.database = database;
+
+		// Setup regex for master election
+		String regexStr = options.getClusterOptions().getCoordinatorRegex();
+		if (regexStr != null) {
+			try {
+				coordinatorRegex = Pattern.compile(regexStr);
+			} catch (PatternSyntaxException e) {
+				throw new RuntimeException("Could not compile coordinator regex from string {" + regexStr + "}", e);
+			}
+		}
 	}
 
 	public void start() {
 		HazelcastInstance hz = hazelcast.get();
 		masterLock = hz.getLock(MASTER);
-		masterMember = electMaster();
-		addMessageListeners();
-
 		Member localMember = hz.getCluster().getLocalMember();
 		localUuid = localMember.getUuid();
 		int port = options.getHttpServerOptions().getPort();
 		localMember.setIntAttribute(MESH_HTTP_PORT_ATTR, port);
+		localMember.setStringAttribute(MESH_NODE_NAME_ATTR, options.getNodeName());
+		masterMember = electMaster();
+		addMessageListeners();
 	}
 
 	public void stop() {
@@ -108,9 +131,28 @@ public class MasterElector {
 	 * @return
 	 */
 	private boolean isElectible(Member member) {
-		// addr = member.getAddress();
-		String name = member.getStringAttribute("name");
-		System.out.println(name);
+		String name = member.getStringAttribute(MESH_NODE_NAME_ATTR);
+
+		// Check whether name of the node matches the coordinator regex.
+		if (coordinatorRegex != null) {
+			Matcher m = coordinatorRegex.matcher(name);
+			if (!m.find()) {
+				log.info("Node {" + name + "} was not accepted by provided regex.");
+				return false;
+			}
+		}
+
+		ClusterConfigResponse config = database.loadClusterConfig();
+		Optional<ClusterServerConfig> databaseServer = config.getServers().stream().filter(s -> s.getName().equals(name)).findFirst();
+		if (databaseServer.isPresent()) {
+			// Replicas are not eligible for master election
+			ServerRole role = databaseServer.get().getRole();
+			if (role == ServerRole.REPLICA) {
+				log.info("Node {" + name + "} is a replica and thus not eligable for election.");
+				return false;
+			}
+		}
+		// TODO test connection?
 		return true;
 	}
 
@@ -154,10 +196,6 @@ public class MasterElector {
 				break;
 			}
 		});
-
-		// ITopic<Void> requestMasterTopic = hazelcast.getTopic(REQUEST_MASTER_TOPIC);
-		// requestMasterTopic.addMessageListener(REQUEST_MASTER_LISTENER);
-
 	}
 
 	/**
