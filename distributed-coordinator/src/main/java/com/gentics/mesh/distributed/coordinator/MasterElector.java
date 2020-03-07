@@ -80,8 +80,9 @@ public class MasterElector {
 		int port = options.getHttpServerOptions().getPort();
 		localMember.setIntAttribute(MESH_HTTP_PORT_ATTR, port);
 		localMember.setStringAttribute(MESH_NODE_NAME_ATTR, options.getNodeName());
-		masterMember = electMaster();
 		addMessageListeners();
+		electMaster();
+		findCurrentMaster();
 	}
 
 	public void stop() {
@@ -94,7 +95,7 @@ public class MasterElector {
 	 * 
 	 * @return Elected member
 	 */
-	private Member electMaster() {
+	private void electMaster() {
 		Cluster cluster = hazelcast.get().getCluster();
 
 		log.info("Locking for master election");
@@ -115,9 +116,6 @@ public class MasterElector {
 				log.info("Detected multiple masters in the cluster, giving up the master flag");
 				giveUpMasterFlag();
 			}
-			return cluster.getMembers().stream()
-				.filter(m -> isMaster(m))
-				.findFirst().get();
 		} finally {
 			masterLock.unlock();
 			log.info("Unlocked after master election");
@@ -161,23 +159,29 @@ public class MasterElector {
 	 */
 	private void addMessageListeners() {
 		// Add membership listener for selecting a new master, if a node leaves the cluster
-		hazelcast.get().getCluster().addMembershipListener(new MembershipListener() {
+		Cluster cluster = hazelcast.get().getCluster();
+		cluster.addMembershipListener(new MembershipListener() {
 
 			@Override
 			public void memberRemoved(MembershipEvent membershipEvent) {
 				log.info(String.format("Removed %s", membershipEvent.getMember().getUuid()));
 				if (isMaster(membershipEvent.getMember())) {
-					masterMember = electMaster();
+					electMaster();
 				}
+				findCurrentMaster();
 			}
 
 			@Override
 			public void memberAttributeChanged(MemberAttributeEvent memberAttributeEvent) {
+				if (memberAttributeEvent.getKey().equals(MASTER)) {
+					findCurrentMaster();
+				}
 			}
 
 			@Override
 			public void memberAdded(MembershipEvent membershipEvent) {
 				log.info(String.format("Added %s", membershipEvent.getMember().getUuid()));
+				findCurrentMaster();
 			}
 		});
 
@@ -190,12 +194,23 @@ public class MasterElector {
 			case MERGED:
 				// when the instance merged into a cluster, we need to elect a new master (to avoid multimaster situations)
 				merging = false;
-				masterMember = electMaster();
+				electMaster();
 				break;
 			default:
 				break;
 			}
 		});
+	}
+
+	protected void findCurrentMaster() {
+		Cluster cluster = hazelcast.get().getCluster();
+		Optional<Member> master = cluster.getMembers().stream()
+			.filter(m -> isMaster(m))
+			.findFirst();
+		if (master.isPresent()) {
+			masterMember = master.get();
+			log.info("Updated master member {" + masterMember.getStringAttribute(MESH_NODE_NAME_ATTR) + "}");
+		}
 	}
 
 	/**
@@ -240,7 +255,11 @@ public class MasterElector {
 		if (!isMasterLocal) {
 			host = masterMember.getAddress().getHost();
 		}
-		return new MasterServer(host, port, isMasterLocal);
+		MasterServer server = new MasterServer(host, port, isMasterLocal);
+		if (log.isDebugEnabled()) {
+			log.debug("Our master member:" + server);
+		}
+		return server;
 	}
 
 }

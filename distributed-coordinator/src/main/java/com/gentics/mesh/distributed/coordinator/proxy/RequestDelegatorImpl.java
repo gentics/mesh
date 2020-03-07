@@ -36,7 +36,6 @@ public class RequestDelegatorImpl implements RequestDelegator {
 	public void handle(RoutingContext rc) {
 		HttpServerRequest request = rc.request();
 		HttpServerResponse response = rc.response();
-		// client.request(method, requestURI);
 		String requestURI = request.uri();
 
 		if (request.getHeader(MESH_DIRECT_HEADER) != null) {

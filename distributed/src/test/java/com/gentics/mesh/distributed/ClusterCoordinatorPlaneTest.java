@@ -14,6 +14,8 @@ import com.gentics.mesh.distributed.containers.MeshDockerServer;
 
 public class ClusterCoordinatorPlaneTest extends AbstractClusterTest {
 
+	private static String coordinatorRegex = "nodeA";
+
 	private static String clusterPostFix = randomUUID();
 
 	public static MeshDockerServer serverA = new MeshDockerServer(vertx)
@@ -22,7 +24,7 @@ public class ClusterCoordinatorPlaneTest extends AbstractClusterTest {
 		.withDataPathPostfix(randomToken())
 		.withInitCluster()
 		.withCoordinatorPlane()
-		.withCoordinatorRegex("nodeA")
+		.withCoordinatorRegex(coordinatorRegex)
 		.waitForStartup()
 		.withClearFolders();
 
@@ -30,7 +32,7 @@ public class ClusterCoordinatorPlaneTest extends AbstractClusterTest {
 		.withClusterName("dockerCluster" + clusterPostFix)
 		.withNodeName("nodeB")
 		.withCoordinatorPlane()
-		.withCoordinatorRegex("nodeA")
+		.withCoordinatorRegex(coordinatorRegex)
 		.withDataPathPostfix(randomToken())
 		.withClearFolders();
 
