@@ -2,7 +2,7 @@ package com.gentics.mesh.distributed.coordinator.proxy;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.distributed.coordinator.Coordinator;
+import com.gentics.mesh.distributed.coordinator.MasterElector;
 import com.gentics.mesh.distributed.coordinator.MasterServer;
 
 import io.vertx.core.Handler;
@@ -23,14 +23,12 @@ public class RequestDelegator implements Handler<RoutingContext> {
 
 	public static final String MESH_DIRECT_HEADER = "X-Mesh-Direct";
 
-	private Coordinator coordinator;
-	private Vertx vertx;
+	private MasterElector elector;
 	private HttpClient httpClient;
 
 	@Inject
-	public RequestDelegator(Coordinator coordinator, Vertx vertx) {
-		this.coordinator = coordinator;
-		this.vertx = vertx;
+	public RequestDelegator(MasterElector elector, Vertx vertx) {
+		this.elector = elector;
 		this.httpClient = vertx.createHttpClient();
 	}
 
@@ -46,7 +44,7 @@ public class RequestDelegator implements Handler<RoutingContext> {
 			rc.next();
 			return;
 		}
-		MasterServer master = coordinator.getElectedMaster();
+		MasterServer master = elector.getMasterMember();
 		if (master == null) {
 			log.info("Skipping delegator since no master was elected.");
 			rc.next();

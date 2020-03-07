@@ -1,8 +1,11 @@
 package com.gentics.mesh.distributed.coordinator;
 
+import java.util.Optional;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.hazelcast.core.Cluster;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ILock;
@@ -25,42 +28,60 @@ public class MasterElector {
 	 */
 	private final static String MASTER = "master";
 
+	private final static String MESH_HTTP_PORT_ATTR = "mesh_http_port";
+
 	private Lazy<HazelcastInstance> hazelcast;
 	private ILock masterLock;
+
+	protected Member masterMember;
+	protected String localUuid;
+
+	private MeshOptions options;
 
 	/**
 	 * Flag that is set, when the instance is merging (back) into the cluster
 	 */
 	private static boolean merging = false;
 
-	// https://git.gentics.com/psc/contentnode/blob/dev/contentnode-lib%2Fsrc%2Fmain%2Fjava%2Fcom%2Fgentics%2Fcontentnode%2Fcluster%2FClusterSupport.java#L391
-
 	@Inject
-	public MasterElector(Lazy<HazelcastInstance> hazelcast) {
+	public MasterElector(Lazy<HazelcastInstance> hazelcast, MeshOptions options) {
 		this.hazelcast = hazelcast;
+		this.options = options;
 	}
 
 	public void start() {
-		masterLock = hazelcast.get().getLock(MASTER);
-
-		electMaster();
+		HazelcastInstance hz = hazelcast.get();
+		masterLock = hz.getLock(MASTER);
+		masterMember = electMaster();
 		addMessageListeners();
+
+		Member localMember = hz.getCluster().getLocalMember();
+		localUuid = localMember.getUuid();
+		int port = options.getHttpServerOptions().getPort();
+		localMember.setIntAttribute(MESH_HTTP_PORT_ATTR, port);
 	}
 
 	public void stop() {
 
 	}
 
-	private void electMaster() {
+	/**
+	 * Each instance in the cluster will call the elect master method when the structure of the cluster changes. The master election runs in a locked manner and
+	 * is terminated as soon as one node in the cluster got elected.
+	 * 
+	 * @return Elected member
+	 */
+	private Member electMaster() {
 		Cluster cluster = hazelcast.get().getCluster();
 
 		log.info("Locking for master election");
 		masterLock.lock();
 		try {
 			log.info("Locked for master election");
-			boolean hasMaster = cluster.getMembers().stream()
+			Optional<Member> foundMaster = cluster.getMembers().stream()
 				.filter(m -> isMaster(m))
-				.findFirst().isPresent();
+				.findFirst();
+			boolean hasMaster = foundMaster.isPresent();
 			boolean isElectible = isElectible(cluster.getLocalMember());
 			if (!hasMaster && isElectible) {
 				cluster.getLocalMember().setBooleanAttribute(MASTER, true);
@@ -71,6 +92,9 @@ public class MasterElector {
 				log.info("Detected multiple masters in the cluster, giving up the master flag");
 				giveUpMasterFlag();
 			}
+			return cluster.getMembers().stream()
+				.filter(m -> isMaster(m))
+				.findFirst().get();
 		} finally {
 			masterLock.unlock();
 			log.info("Unlocked after master election");
@@ -101,7 +125,7 @@ public class MasterElector {
 			public void memberRemoved(MembershipEvent membershipEvent) {
 				log.info(String.format("Removed %s", membershipEvent.getMember().getUuid()));
 				if (isMaster(membershipEvent.getMember())) {
-					electMaster();
+					masterMember = electMaster();
 				}
 			}
 
@@ -124,7 +148,7 @@ public class MasterElector {
 			case MERGED:
 				// when the instance merged into a cluster, we need to elect a new master (to avoid multimaster situations)
 				merging = false;
-				electMaster();
+				masterMember = electMaster();
 				break;
 			default:
 				break;
@@ -162,6 +186,23 @@ public class MasterElector {
 	 */
 	private static boolean isMaster(Member member) {
 		return member.getBooleanAttribute(MASTER) == Boolean.TRUE;
+	}
+
+	public boolean isLocal(Member member) {
+		return localUuid.equals(member.getUuid());
+	}
+
+	public MasterServer getMasterMember() {
+		if (masterMember == null) {
+			return null;
+		}
+		int port = masterMember.getIntAttribute(MESH_HTTP_PORT_ATTR);
+		boolean isMasterLocal = isLocal(masterMember);
+		String host = "localhost";
+		if (!isMasterLocal) {
+			host = masterMember.getAddress().getHost();
+		}
+		return new MasterServer(host, port, isMasterLocal);
 	}
 
 }
