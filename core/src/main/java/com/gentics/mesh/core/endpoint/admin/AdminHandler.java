@@ -35,11 +35,12 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
+import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfig;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorMasterResponse;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.distributed.coordinator.MasterElector;
+import com.gentics.mesh.distributed.coordinator.Coordinator;
 import com.gentics.mesh.distributed.coordinator.MasterServer;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -78,12 +79,12 @@ public class AdminHandler extends AbstractHandler {
 
 	private final RouterStorageRegistry routerStorageRegistry;
 
-	private final MasterElector elector;
+	private final Coordinator coordinator;
 
 	@Inject
 	public AdminHandler(Vertx vertx, Database db, RouterStorage routerStorage, BootstrapInitializer boot, SearchProvider searchProvider,
 		HandlerUtilities utils,
-		MeshOptions options, RouterStorageRegistry routerStorageRegistry, MasterElector elector) {
+		MeshOptions options, RouterStorageRegistry routerStorageRegistry, Coordinator coordinator) {
 		this.vertx = vertx;
 		this.db = db;
 		this.routerStorage = routerStorage;
@@ -92,7 +93,7 @@ public class AdminHandler extends AbstractHandler {
 		this.utils = utils;
 		this.options = options;
 		this.routerStorageRegistry = routerStorageRegistry;
-		this.elector = elector;
+		this.coordinator = coordinator;
 	}
 
 	public void handleMeshStatus(InternalActionContext ac) {
@@ -315,7 +316,7 @@ public class AdminHandler extends AbstractHandler {
 			if (user != null && !user.hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
-			MasterServer master = elector.getMasterMember();
+			MasterServer master = coordinator.getMasterMember();
 			if (master == null) {
 				return message(ac, "error_cluster_coordination_master_not_found");
 			}
@@ -329,8 +330,8 @@ public class AdminHandler extends AbstractHandler {
 			if (user != null && !user.hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
-			elector.electMaster();
-			MasterServer master = elector.getMasterMember();
+			coordinator.electMaster();
+			MasterServer master = coordinator.getMasterMember();
 			if (master == null) {
 				return message(ac, "error_cluster_coordination_master_not_found");
 			}
@@ -343,5 +344,27 @@ public class AdminHandler extends AbstractHandler {
 		String host = server.getHost();
 		int port = server.getPort();
 		return new CoordinatorMasterResponse(name, port, host);
+	}
+
+	public void handleLoadCoordinationConfig(InternalActionContext ac) {
+		utils.syncTx(ac, tx -> {
+			User user = ac.getUser();
+			if (user != null && !user.hasAdminRole()) {
+				throw error(FORBIDDEN, "error_admin_permission_required");
+			}
+			return coordinator.loadConfig();
+		}, model -> ac.send(model, OK));
+	}
+
+	public void handleUpdateCoordinationConfig(InternalActionContext ac) {
+		utils.syncTx(ac, tx -> {
+			User user = ac.getUser();
+			if (user != null && !user.hasAdminRole()) {
+				throw error(FORBIDDEN, "error_admin_permission_required");
+			}
+			CoordinatorConfig request = ac.fromJson(CoordinatorConfig.class);
+			coordinator.updateConfig(request);
+			return coordinator.loadConfig();
+		}, model -> ac.send(model, OK));
 	}
 }

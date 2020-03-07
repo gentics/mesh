@@ -180,7 +180,10 @@ public class RequestDelegatorImpl implements RequestDelegator {
 		if (path.equals("/api/v2")) {
 			return true;
 		}
-		if (path.equals("/api/v1/cluster/status")) {
+		if (path.startsWith("/api/v1/admin")) {
+			return true;
+		}
+		if (path.startsWith("/api/v2/admin")) {
 			return true;
 		}
 		return false;
