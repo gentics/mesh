@@ -27,7 +27,7 @@ public class ClusterServer {
 		options.setInitialAdminPassword("admin");
 		options.setForceInitialAdminPasswordReset(false);
 
-		options.getClusterOptions().setCoordinatorMode(CoordinatorMode.FULL);
+		options.getClusterOptions().setCoordinatorMode(CoordinatorMode.MODE_A);
 		options.getClusterOptions().setCoordinatorRegex("gentics-mesh-[0-9]");
 		options.getStorageOptions().setStartServer(true);
 		options.getClusterOptions().setClusterName("test");

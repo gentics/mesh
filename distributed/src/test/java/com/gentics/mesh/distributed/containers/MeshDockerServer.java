@@ -161,7 +161,7 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 		addEnv(MeshOptions.MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET_ENV, "false");
 
 		if (coordinatorPlane) {
-			addEnv(ClusterOptions.MESH_CLUSTER_COORDINATOR_MODE_ENV, CoordinatorMode.FULL.name());
+			addEnv(ClusterOptions.MESH_CLUSTER_COORDINATOR_MODE_ENV, CoordinatorMode.MODE_B.name());
 		}
 
 		if (coordinatorPlaneRegex != null) {

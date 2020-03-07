@@ -52,9 +52,9 @@ public class ClusterOptions implements Option {
 	private Integer vertxPort = DEFAULT_VERTX_PORT;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("The coordinator mode will add an additional request controller plane which will internally process requests in-between multi-master nodes. Default: OFF")
+	@JsonPropertyDescription("The coordinator mode will add an additional request controller plane which will internally process requests in-between cluster nodes. Default: DISABLED")
 	@EnvironmentVariable(name = MESH_CLUSTER_COORDINATOR_MODE_ENV, description = "Override the cluster coordinator mode.")
-	private CoordinatorMode coordinatorMode = CoordinatorMode.OFF;
+	private CoordinatorMode coordinatorMode = CoordinatorMode.DISABLED;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("The coordinator regex can be used to control which nodes in the cluster are eligible to be elected in a coordinator master election. When left empty all database master nodes are eligible.")

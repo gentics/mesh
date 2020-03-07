@@ -5,10 +5,15 @@ public enum CoordinatorMode {
 	/**
 	 * Disable delegation.
 	 */
-	OFF,
+	DISABLED,
+
+	/**
+	 * Delegate modifying requests to the elected master instance.
+	 */
+	MODE_A,
 
 	/**
 	 * Delegate all requests to the elected master instance.
 	 */
-	FULL;
+	MODE_B;
 }

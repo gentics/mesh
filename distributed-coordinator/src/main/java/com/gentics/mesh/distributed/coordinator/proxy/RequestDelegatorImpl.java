@@ -5,11 +5,16 @@ import javax.inject.Inject;
 import com.gentics.mesh.distributed.RequestDelegator;
 import com.gentics.mesh.distributed.coordinator.MasterElector;
 import com.gentics.mesh.distributed.coordinator.MasterServer;
+import com.gentics.mesh.etc.config.ClusterOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.cluster.CoordinatorMode;
 
+import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.logging.Logger;
@@ -23,13 +28,15 @@ public class RequestDelegatorImpl implements RequestDelegator {
 
 	public static final String MESH_DIRECT_HEADER = "X-Mesh-Direct";
 
-	private MasterElector elector;
-	private HttpClient httpClient;
+	private final MasterElector elector;
+	private final HttpClient httpClient;
+	private final ClusterOptions options;
 
 	@Inject
-	public RequestDelegatorImpl(MasterElector elector, Vertx vertx) {
+	public RequestDelegatorImpl(MasterElector elector, Vertx vertx, MeshOptions options) {
 		this.elector = elector;
 		this.httpClient = vertx.createHttpClient();
+		this.options = options.getClusterOptions();
 	}
 
 	@Override
@@ -37,12 +44,38 @@ public class RequestDelegatorImpl implements RequestDelegator {
 		HttpServerRequest request = rc.request();
 		HttpServerResponse response = rc.response();
 		String requestURI = request.uri();
+		HttpMethod method = request.method();
+		CoordinatorMode mode = options.getCoordinatorMode();
 
-		if (request.getHeader(MESH_DIRECT_HEADER) != null) {
+		String headerValue = request.getHeader(MESH_DIRECT_HEADER);
+		if (headerValue != null && headerValue.equalsIgnoreCase("true")) {
 			log.info("Skipping delegator due to direct header");
 			rc.next();
 			return;
 		}
+
+		// In Mode A we only delegate mutating requests to the master
+		if (mode == CoordinatorMode.MODE_A) {
+			switch (method) {
+			case DELETE:
+			case PATCH:
+			case PUT:
+				break;
+			case POST:
+				if (requestURI.contains("/graphql")) {
+					break;
+				} else if (requestURI.contains("/search")) {
+					break;
+				} else {
+					rc.next();
+					return;
+				}
+			default:
+				rc.next();
+				return;
+			}
+		}
+
 		MasterServer master = elector.getMasterMember();
 		if (master == null) {
 			log.info("Skipping delegator since no master was elected.");
@@ -60,7 +93,7 @@ public class RequestDelegatorImpl implements RequestDelegator {
 
 		log.info("Forwarding request to master {" + master.toString() + "}");
 		@SuppressWarnings("deprecation")
-		HttpClientRequest forwardRequest = httpClient.request(request.method(), port, host, requestURI, forwardResponse -> {
+		HttpClientRequest forwardRequest = httpClient.request(method, port, host, requestURI, forwardResponse -> {
 
 			response.setChunked(true);
 			response.setStatusCode(forwardResponse.statusCode());
