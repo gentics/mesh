@@ -12,6 +12,7 @@ import com.gentics.mesh.core.rest.admin.cluster.ClusterInstanceInfo;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterServerConfig;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.core.rest.admin.cluster.ServerRole;
+import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorMasterResponse;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.consistency.InconsistencyInfo;
 import com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity;
@@ -42,8 +43,8 @@ public class AdminExamples {
 				.setName("node2")
 				.setStatus("ONLINE")
 				.setStartDate("2019-11-04T13:54:59.131Z")
-				.setRole("REPLICA")
-		).forEach(result.getInstances()::add);
+				.setRole("REPLICA"))
+			.forEach(result.getInstances()::add);
 		return result;
 	}
 
@@ -106,6 +107,14 @@ public class AdminExamples {
 		request.getServers().add(new ClusterServerConfig().setName("replica-1").setRole(ServerRole.REPLICA));
 		request.getServers().add(new ClusterServerConfig().setName("replica-2").setRole(ServerRole.REPLICA));
 		return request;
+	}
+
+	public CoordinatorMasterResponse createCoordinatorResponse() {
+		CoordinatorMasterResponse response = new CoordinatorMasterResponse();
+		response.setName("gentics-mesh-1");
+		response.setPort(8080);
+		response.setHost("172.10.1.10");
+		return response;
 	}
 
 }

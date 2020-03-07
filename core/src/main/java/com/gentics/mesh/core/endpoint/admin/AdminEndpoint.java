@@ -101,6 +101,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		addDebugInfoHandler();
 		addRuntimeConfigHandler();
 		addShutdownHandler();
+		addCoordinatorHandler();
 	}
 
 	private void addSecurityLogger() {
@@ -411,6 +412,24 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		postRoute
 			.blockingHandler(rc -> handlerUtilities.requiresAdminRole(rc))
 			.handler(rc -> shutdownHandler.shutdown(wrap(rc)));
+	}
+
+	private void addCoordinatorHandler() {
+		InternalEndpointRoute loadMaster = createRoute();
+		loadMaster.path("/coordinator/master");
+		loadMaster.method(GET);
+		loadMaster.produces(APPLICATION_JSON);
+		loadMaster.description("Returns information on the elected coordinator master.");
+		loadMaster.exampleResponse(OK, adminExamples.createCoordinatorResponse(), "Currently elected master.");
+		loadMaster.handler(rc -> adminHandler.handleLoadCoordinationMaster(wrap(rc)));
+
+		InternalEndpointRoute electMaster = createRoute();
+		electMaster.path("/coordinator/elect");
+		electMaster.method(GET);
+		electMaster.produces(APPLICATION_JSON);
+		electMaster.description("Elect a new master and return information on the elected master.");
+		electMaster.exampleResponse(OK, adminExamples.createCoordinatorResponse(), "The currently elected master.");
+		electMaster.handler(rc -> adminHandler.handleElectCoordinationMaster(wrap(rc)));
 	}
 
 }

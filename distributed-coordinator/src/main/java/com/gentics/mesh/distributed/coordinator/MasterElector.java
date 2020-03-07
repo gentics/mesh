@@ -95,7 +95,7 @@ public class MasterElector {
 	 * 
 	 * @return Elected member
 	 */
-	private void electMaster() {
+	public void electMaster() {
 		Cluster cluster = hazelcast.get().getCluster();
 
 		log.info("Locking for master election");
@@ -249,13 +249,14 @@ public class MasterElector {
 		if (masterMember == null) {
 			return null;
 		}
+		String name = masterMember.getStringAttribute(MESH_NODE_NAME_ATTR);
 		int port = masterMember.getIntAttribute(MESH_HTTP_PORT_ATTR);
 		boolean isMasterLocal = isLocal(masterMember);
 		String host = "localhost";
 		if (!isMasterLocal) {
 			host = masterMember.getAddress().getHost();
 		}
-		MasterServer server = new MasterServer(host, port, isMasterLocal);
+		MasterServer server = new MasterServer(name, host, port, isMasterLocal);
 		if (log.isDebugEnabled()) {
 			log.debug("Our master member:" + server);
 		}

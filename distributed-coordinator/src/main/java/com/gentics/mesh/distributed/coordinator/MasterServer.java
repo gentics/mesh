@@ -5,13 +5,16 @@ package com.gentics.mesh.distributed.coordinator;
  */
 public class MasterServer {
 
+	private String name;
 	private String host;
 	private int port;
 	private boolean self;
 
 	/**
 	 * Create a master server object.
-	 * 
+	 *
+	 * @param name
+	 *            Name of the node
 	 * @param host
 	 *            Hostname of the server which can be used to reach the REST API
 	 * @param port
@@ -19,10 +22,19 @@ public class MasterServer {
 	 * @param self
 	 *            Flag which indicates whether we are the master
 	 */
-	public MasterServer(String host, int port, boolean self) {
+	public MasterServer(String name, String host, int port, boolean self) {
+		this.name = name;
 		this.host = host;
 		this.port = port;
 		this.self = self;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public String getHost() {
