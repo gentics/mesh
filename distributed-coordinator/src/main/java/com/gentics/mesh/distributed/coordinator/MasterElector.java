@@ -11,6 +11,7 @@ import com.hazelcast.core.MemberAttributeEvent;
 import com.hazelcast.core.MembershipEvent;
 import com.hazelcast.core.MembershipListener;
 
+import dagger.Lazy;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -24,7 +25,7 @@ public class MasterElector {
 	 */
 	private final static String MASTER = "master";
 
-	private HazelcastInstance hazelcast;
+	private Lazy<HazelcastInstance> hazelcast;
 	private ILock masterLock;
 
 	/**
@@ -35,12 +36,12 @@ public class MasterElector {
 	// https://git.gentics.com/psc/contentnode/blob/dev/contentnode-lib%2Fsrc%2Fmain%2Fjava%2Fcom%2Fgentics%2Fcontentnode%2Fcluster%2FClusterSupport.java#L391
 
 	@Inject
-	public MasterElector(HazelcastInstance hazelcast) {
+	public MasterElector(Lazy<HazelcastInstance> hazelcast) {
 		this.hazelcast = hazelcast;
 	}
 
 	public void start() {
-		masterLock = hazelcast.getLock(MASTER);
+		masterLock = hazelcast.get().getLock(MASTER);
 
 		electMaster();
 		addMessageListeners();
@@ -51,7 +52,7 @@ public class MasterElector {
 	}
 
 	private void electMaster() {
-		Cluster cluster = hazelcast.getCluster();
+		Cluster cluster = hazelcast.get().getCluster();
 
 		log.info("Locking for master election");
 		masterLock.lock();
@@ -94,7 +95,7 @@ public class MasterElector {
 	 */
 	private void addMessageListeners() {
 		// Add membership listener for selecting a new master, if a node leaves the cluster
-		hazelcast.getCluster().addMembershipListener(new MembershipListener() {
+		hazelcast.get().getCluster().addMembershipListener(new MembershipListener() {
 
 			@Override
 			public void memberRemoved(MembershipEvent membershipEvent) {
@@ -114,7 +115,7 @@ public class MasterElector {
 			}
 		});
 
-		hazelcast.getLifecycleService().addLifecycleListener(event -> {
+		hazelcast.get().getLifecycleService().addLifecycleListener(event -> {
 			log.info(String.format("Lifecycle state changed to %s", event.getState()));
 			switch (event.getState()) {
 			case MERGING:
@@ -139,7 +140,7 @@ public class MasterElector {
 	 * Give up the master flag
 	 */
 	private void giveUpMasterFlag() {
-		Member localMember = hazelcast.getCluster().getLocalMember();
+		Member localMember = hazelcast.get().getCluster().getLocalMember();
 		if (isMaster(localMember)) {
 			localMember.setBooleanAttribute(MASTER, false);
 		}
@@ -149,7 +150,7 @@ public class MasterElector {
 		if (merging) {
 			return false;
 		}
-		return isMaster(hazelcast.getCluster().getLocalMember());
+		return isMaster(hazelcast.get().getCluster().getLocalMember());
 	}
 
 	/**

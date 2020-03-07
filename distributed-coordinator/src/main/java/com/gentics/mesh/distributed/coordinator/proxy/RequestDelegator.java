@@ -21,6 +21,8 @@ public class RequestDelegator implements Handler<RoutingContext> {
 
 	private static final Logger log = LoggerFactory.getLogger(RequestDelegator.class);
 
+	public static final String MESH_DIRECT_HEADER = "X-Mesh-Direct";
+
 	private Coordinator coordinator;
 	private Vertx vertx;
 	private HttpClient httpClient;
@@ -39,10 +41,27 @@ public class RequestDelegator implements Handler<RoutingContext> {
 		// client.request(method, requestURI);
 		String requestURI = request.uri();
 
+		if (request.getHeader(MESH_DIRECT_HEADER) != null) {
+			log.info("Skipping delegator due to direct header");
+			rc.next();
+			return;
+		}
 		MasterServer master = coordinator.getElectedMaster();
+		if (master == null) {
+			log.info("Skipping delegator since no master was elected.");
+			rc.next();
+			return;
+		}
+		// We don't need to delegate the request if we are the master
+		if (master.isSelf()) {
+			log.info("Skipping delegator since we are the master");
+			rc.next();
+			return;
+		}
 		String host = master.getHost();
 		int port = master.getPort();
 
+		log.info("Forwarding request to master {" + master.toString() + "}");
 		@SuppressWarnings("deprecation")
 		HttpClientRequest forwardRequest = httpClient.request(request.method(), port, host, requestURI, forwardResponse -> {
 
@@ -55,6 +74,8 @@ public class RequestDelegator implements Handler<RoutingContext> {
 				.start();
 			forwardResponse.endHandler(v -> response.end());
 		});
+
+		forwardRequest.putHeader(MESH_DIRECT_HEADER, "true");
 
 		if (request.isEnded()) {
 			log.warn("Request to be proxied is already read");

@@ -16,7 +16,7 @@ import io.vertx.core.json.JsonObject;
 /**
  * Main runner that is used to deploy a preconfigured set of verticles.
  */
-public class ServerRunner2 {
+public class ServerRunner3 {
 
 	static {
 		System.setProperty("vertx.httpServiceFactory.cacheDir", "data" + File.separator + "tmp");
@@ -40,11 +40,11 @@ public class ServerRunner2 {
 		options.getStorageOptions().setStartServer(true);
 		options.getClusterOptions().setClusterName("test");
 		options.getClusterOptions().setEnabled(true);
-		options.setNodeName("node2");
-		options.getStorageOptions().setDirectory("data2/graphdb");
-		options.getClusterOptions().setVertxPort(6152);
-		options.getHttpServerOptions().setPort(8082);
-		options.getMonitoringOptions().setPort(8882);
+		options.setNodeName("node3");
+		options.getStorageOptions().setDirectory("data3/graphdb");
+		options.getClusterOptions().setVertxPort(6153);
+		options.getHttpServerOptions().setPort(8083);
+		options.getMonitoringOptions().setPort(8883);
 		options.getSearchOptions().setUrl(null);
 		options.getSearchOptions().setStartEmbedded(false);
 		options.getDebugInfoOptions().setLogEnabled(false);

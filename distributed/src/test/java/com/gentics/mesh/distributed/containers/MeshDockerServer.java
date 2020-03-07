@@ -32,6 +32,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.cluster.CoordinatorMode;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.test.docker.NoWaitStrategy;
@@ -94,6 +95,10 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 
 	private boolean startEmbeddedES = false;
 
+	private boolean coordinatorPlane = false;
+
+	private String coordinatorPlaneRegex;
+
 	/**
 	 * Create a new docker server
 	 * 
@@ -154,6 +159,14 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 
 		addEnv(MeshOptions.MESH_INITIAL_ADMIN_PASSWORD_ENV, "admin");
 		addEnv(MeshOptions.MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET_ENV, "false");
+
+		if (coordinatorPlane) {
+			addEnv(ClusterOptions.MESH_CLUSTER_COORDINATOR_MODE_ENV, CoordinatorMode.FULL.name());
+		}
+
+		if (coordinatorPlaneRegex != null) {
+			addEnv(ClusterOptions.MESH_CLUSTER_COORDINATOR_REGEX_ENV, coordinatorPlaneRegex);
+		}
 
 		String javaOpts = null;
 		if (debugPort != null) {
@@ -480,6 +493,16 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 	 */
 	public MeshDockerServer withInitCluster() {
 		this.initCluster = true;
+		return this;
+	}
+
+	public MeshDockerServer withCoordinatorPlane() {
+		this.coordinatorPlane = true;
+		return this;
+	}
+
+	public MeshDockerServer withCoordinatorRegex(String regex) {
+		this.coordinatorPlaneRegex = regex;
 		return this;
 	}
 

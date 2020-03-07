@@ -11,12 +11,18 @@ public class Coordinator {
 
 	private static final Logger log = LoggerFactory.getLogger(Coordinator.class);
 
+	private final MasterElector elector;
+
 	@Inject
-	public Coordinator() {
+	public Coordinator(MasterElector elector) {
+		this.elector = elector;
 	}
 
 	public MasterServer getElectedMaster() {
-		return null;
+		String host = "localhost";
+		int port = 8081;
+		MasterServer server = new MasterServer(host, port, !elector.isMaster());
+		return server;
 	}
 
 }

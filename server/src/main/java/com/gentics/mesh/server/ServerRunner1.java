@@ -7,6 +7,7 @@ import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.context.impl.LoggingConfigurator;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.cluster.CoordinatorMode;
 import com.gentics.mesh.router.EndpointRegistry;
 import com.gentics.mesh.verticle.admin.AdminGUIEndpoint;
 
@@ -33,16 +34,21 @@ public class ServerRunner1 {
 		// options.getHttpServerOptions().setCorsAllowedOriginPattern("http://localhost:5000");
 		options.setInitCluster(true);
 		options.getAuthenticationOptions().setKeystorePassword("finger");
-		options.getStorageOptions().setStartServer(true);
-		options.getClusterOptions().setVertxPort(6152);
-		options.getClusterOptions().setClusterName("test");
-		options.setNodeName("node1");
-		options.getClusterOptions().setEnabled(true);
-		options.getHttpServerOptions().setPort(8080);
-		options.getMonitoringOptions().setPort(8081);
+		options.setInitialAdminPassword("admin");
+		options.setForceInitialAdminPasswordReset(false);
 
-		//options.getSearchOptions().setUrl(null);
-		//options.getSearchOptions().setStartEmbedded(false);
+		options.getClusterOptions().setCoordinatorMode(CoordinatorMode.FULL);
+		options.getStorageOptions().setStartServer(true);
+		options.getClusterOptions().setClusterName("test");
+		options.getClusterOptions().setEnabled(true);
+		options.setNodeName("node1");
+		options.getStorageOptions().setDirectory("data1/graphdb");
+		options.getClusterOptions().setVertxPort(6151);
+		options.getHttpServerOptions().setPort(8081);
+		options.getMonitoringOptions().setPort(8881);
+		options.getSearchOptions().setUrl(null);
+		options.getSearchOptions().setStartEmbedded(false);
+		options.getDebugInfoOptions().setLogEnabled(false);
 
 		Mesh mesh = Mesh.create(options);
 		mesh.setCustomLoader((vertx) -> {
