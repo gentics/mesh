@@ -413,7 +413,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		postRoute.description("Initiates shutdown of this instance.");
 		postRoute.exampleResponse(OK, miscExamples.createMessageResponse(), "Shutdown initiated.");
 		postRoute
-			.blockingHandler(handlerUtilities::requiresAdminRole)
+			.blockingHandler(rc -> handlerUtilities.requiresAdminRole(rc))
 			.handler(rc -> shutdownHandler.shutdown(wrap(rc)));
 	}
 
