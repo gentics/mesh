@@ -97,6 +97,24 @@ public class ClusterOptions implements Option {
 		return this;
 	}
 
+	public CoordinatorMode getCoordinatorMode() {
+		return coordinatorMode;
+	}
+
+	public ClusterOptions setCoordinatorMode(CoordinatorMode coordinatorMode) {
+		this.coordinatorMode = coordinatorMode;
+		return this;
+	}
+
+	public String getCoordinatorRegex() {
+		return coordinatorRegex;
+	}
+
+	public ClusterOptions setCoordinatorRegex(String coordinatorRegex) {
+		this.coordinatorRegex = coordinatorRegex;
+		return this;
+	}
+
 	/**
 	 * Validate the options.
 	 * 

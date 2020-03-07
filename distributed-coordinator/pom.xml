@@ -29,8 +29,17 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-distributed</artifactId>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.hazelcast</groupId>
+			<artifactId>hazelcast</artifactId>
+		</dependency>
+		<!-- Dagger -->
+		<dependency>
+			<groupId>com.google.dagger</groupId>
+			<artifactId>dagger</artifactId>
 		</dependency>
 	</dependencies>
 
