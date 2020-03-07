@@ -7,10 +7,12 @@ import com.gentics.mesh.distributed.coordinator.Coordinator;
 import com.gentics.mesh.distributed.coordinator.MasterServer;
 import com.gentics.mesh.etc.config.cluster.CoordinatorMode;
 
+import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
@@ -107,15 +109,17 @@ public class RequestDelegatorImpl implements RequestDelegator {
 
 			response.setChunked(true);
 			response.setStatusCode(forwardResponse.statusCode());
-			// forwardHeaders(response, forwardResponse);
-			// printHeaders("Forward response headers", response.headers());
+			forwardHeaders(response, forwardResponse);
+			printHeaders("Forward response headers", response.headers());
 			Pump.pump(forwardResponse, response)
 				.setWriteQueueMaxSize(8192)
 				.start();
 			forwardResponse.endHandler(v -> response.end());
 		});
 
+		forwardHeaders(request, forwardRequest);
 		forwardRequest.putHeader(MESH_DIRECT_HEADER, "true");
+		forwardRequest.setChunked(true);
 
 		if (request.isEnded()) {
 			log.warn("Request to be proxied is already read");
@@ -130,6 +134,21 @@ public class RequestDelegatorImpl implements RequestDelegator {
 				.start();
 		}
 
+	}
+
+	/**
+	 * Log the given messages with loglevel <code>TRACE</code>.
+	 *
+	 * @param label
+	 *            A message that will be logged before the headers
+	 * @param headers
+	 *            The HTTP headers to log
+	 */
+	private void printHeaders(String label, MultiMap headers) {
+		if (log.isTraceEnabled()) {
+			log.trace(label + " ({})", headers.size());
+			headers.forEach(header -> log.trace("  {}: {}", header.getKey(), header.getValue()));
+		}
 	}
 
 	/**
@@ -148,6 +167,35 @@ public class RequestDelegatorImpl implements RequestDelegator {
 		} else {
 			forwardRequest.end(body);
 		}
+	}
+
+	/**
+	 * Forward HTTP headers from the proxied Mesh response.
+	 *
+	 * <p>
+	 *
+	 * </p>
+	 *
+	 * @param response
+	 *            The response for the current request to the portal
+	 * @param forwardResponse
+	 *            The response to be proxied
+	 */
+	private void forwardHeaders(HttpServerResponse response, HttpClientResponse forwardResponse) {
+		MultiMap headers = forwardResponse.headers();
+
+		for (String headerName : headers.names()) {
+			response.putHeader(headerName, headers.getAll(headerName));
+		}
+	}
+
+	private void forwardHeaders(HttpServerRequest request, HttpClientRequest forwardRequest) {
+		MultiMap headers = request.headers();
+
+		for (String headerName : headers.names()) {
+			forwardRequest.putHeader(headerName, headers.getAll(headerName));
+		}
+
 	}
 
 	/**
