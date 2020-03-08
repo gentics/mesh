@@ -25,6 +25,9 @@ import dagger.Lazy;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Class which manages the election of the coordination master instance.
+ */
 @Singleton
 public class MasterElector {
 
@@ -34,6 +37,8 @@ public class MasterElector {
 	 * Key of the master lock and the master attribute
 	 */
 	private final static String MASTER = "master";
+
+	private final static String REELECT = "reelect";
 
 	private final static String MESH_HTTP_PORT_ATTR = "mesh_http_port";
 
@@ -75,7 +80,7 @@ public class MasterElector {
 	public void start() {
 		HazelcastInstance hz = hazelcast.get();
 		masterLock = hz.getLock(MASTER);
-		Member localMember = hz.getCluster().getLocalMember();
+		Member localMember = localMember();
 		localUuid = localMember.getUuid();
 		int port = options.getHttpServerOptions().getPort();
 		localMember.setIntAttribute(MESH_HTTP_PORT_ATTR, port);
@@ -89,13 +94,24 @@ public class MasterElector {
 
 	}
 
+	public boolean isMaster() {
+		if (merging) {
+			return false;
+		}
+		return isMaster(localMember());
+	}
+
+	public void invokeElection() {
+		localMember().setBooleanAttribute(REELECT, true);
+	}
+
 	/**
 	 * Each instance in the cluster will call the elect master method when the structure of the cluster changes. The master election runs in a locked manner and
 	 * is terminated as soon as one node in the cluster got elected.
 	 * 
 	 * @return Elected member
 	 */
-	public void electMaster() {
+	private void electMaster() {
 		Cluster cluster = hazelcast.get().getCluster();
 
 		log.info("Locking for master election");
@@ -106,9 +122,9 @@ public class MasterElector {
 				.filter(m -> isMaster(m))
 				.findFirst();
 			boolean hasMaster = foundMaster.isPresent();
-			boolean isElectible = isElectible(cluster.getLocalMember());
+			boolean isElectible = isElectible(localMember());
 			if (!hasMaster && isElectible) {
-				cluster.getLocalMember().setBooleanAttribute(MASTER, true);
+				localMember().setBooleanAttribute(MASTER, true);
 				log.info("Cluster node was elected as new master");
 			} else if (cluster.getMembers().stream()
 				.filter(m -> isMaster(m))
@@ -176,6 +192,12 @@ public class MasterElector {
 				if (memberAttributeEvent.getKey().equals(MASTER)) {
 					findCurrentMaster();
 				}
+				if (memberAttributeEvent.getKey().equals(REELECT)) {
+					localMember().removeAttribute(REELECT);
+					giveUpMasterFlag();
+					electMaster();
+					findCurrentMaster();
+				}
 			}
 
 			@Override
@@ -210,6 +232,8 @@ public class MasterElector {
 		if (master.isPresent()) {
 			masterMember = master.get();
 			log.info("Updated master member {" + masterMember.getStringAttribute(MESH_NODE_NAME_ATTR) + "}");
+		} else {
+			log.warn("Could not find master member in cluster.");
 		}
 	}
 
@@ -217,17 +241,10 @@ public class MasterElector {
 	 * Give up the master flag
 	 */
 	private void giveUpMasterFlag() {
-		Member localMember = hazelcast.get().getCluster().getLocalMember();
+		Member localMember = localMember();
 		if (isMaster(localMember)) {
 			localMember.setBooleanAttribute(MASTER, false);
 		}
-	}
-
-	public boolean isMaster() {
-		if (merging) {
-			return false;
-		}
-		return isMaster(hazelcast.get().getCluster().getLocalMember());
 	}
 
 	/**
@@ -245,6 +262,10 @@ public class MasterElector {
 		return localUuid.equals(member.getUuid());
 	}
 
+	public Member localMember() {
+		return hazelcast.get().getCluster().getLocalMember();
+	}
+
 	public MasterServer getMasterMember() {
 		if (masterMember == null) {
 			return null;
@@ -258,7 +279,7 @@ public class MasterElector {
 		}
 		MasterServer server = new MasterServer(name, host, port, isMasterLocal);
 		if (log.isDebugEnabled()) {
-			log.debug("Our master member:" + server);
+			log.debug("Our master member: " + server);
 		}
 		return server;
 	}

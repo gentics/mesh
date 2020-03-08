@@ -33,7 +33,7 @@ public class Coordinator {
 	}
 
 	public void electMaster() {
-		elector.electMaster();
+		elector.invokeElection();
 	}
 
 	public CoordinatorConfig loadConfig() {
