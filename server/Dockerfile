@@ -14,7 +14,6 @@ EXPOSE 8443
 EXPOSE 8081
 
 USER root
-ADD ./target/mesh-server*jar /mesh/mesh.jar
 RUN adduser -D -u 1000 -G root -h /mesh mesh && \
     mkdir /graphdb   && chown 1000:0 /graphdb  -R && chmod 770 /graphdb  && \
     mkdir /uploads   && chown 1000:0 /uploads  -R && chmod 770 /uploads  && \
@@ -26,6 +25,7 @@ RUN adduser -D -u 1000 -G root -h /mesh mesh && \
     mkdir -p /mesh/elasticsearch/data && \
     chown 1000:0 /mesh -R && \
     chmod 770 /mesh -R
+ADD --chown=1000:0 ./target/mesh-server*jar /mesh/mesh.jar
 
 USER mesh
 WORKDIR /mesh
