@@ -324,18 +324,18 @@ public class AdminHandler extends AbstractHandler {
 		}, model -> ac.send(model, OK));
 	}
 
-	public void handleElectCoordinationMaster(InternalActionContext ac) {
+	public void handleSetCoordinationMaster(InternalActionContext ac) {
 		utils.syncTx(ac, tx -> {
 			User user = ac.getUser();
 			if (user != null && !user.hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
-			coordinator.electMaster();
-			MasterServer master = coordinator.getMasterMember();
-			if (master == null) {
-				return message(ac, "error_cluster_coordination_master_not_found");
+			if (coordinator.isElectable()) {
+				coordinator.setMaster();
+				return message(ac, "cluster_coordination_master_set");
+			} else {
+				throw error(BAD_REQUEST, "cluster_coordination_master_set_error_not_electable", options.getNodeName());
 			}
-			return toResponse(master);
 		}, model -> ac.send(model, OK));
 	}
 

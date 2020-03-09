@@ -35,19 +35,33 @@ public class Coordinator {
 		return this;
 	}
 
-	public void electMaster() {
-		elector.invokeElection();
+	public void setMaster() {
+		elector.setMaster();
 	}
 
 	public CoordinatorConfig loadConfig() {
 		return new CoordinatorConfig().setMode(mode);
 	}
 
+	/**
+	 * Update the coordinator configuration.
+	 * 
+	 * @param config
+	 */
 	public void updateConfig(CoordinatorConfig config) {
 		CoordinatorMode newMode = config.getMode();
 		if (newMode != null) {
 			this.mode = newMode;
 		}
+	}
+
+	/**
+	 * Check whether the node that is managed by this coordinator is eligible for master election.
+	 * 
+	 * @return
+	 */
+	public boolean isElectable() {
+		return elector.isElectable();
 	}
 
 }

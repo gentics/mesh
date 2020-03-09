@@ -16,10 +16,14 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.hazelcast.core.Cluster;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ILock;
+import com.hazelcast.core.ITopic;
 import com.hazelcast.core.Member;
 import com.hazelcast.core.MemberAttributeEvent;
 import com.hazelcast.core.MembershipEvent;
 import com.hazelcast.core.MembershipListener;
+import com.hazelcast.core.Message;
+import com.hazelcast.core.MessageListener;
+import com.hazelcast.util.function.Consumer;
 
 import dagger.Lazy;
 import io.vertx.core.logging.Logger;
@@ -38,7 +42,10 @@ public class MasterElector {
 	 */
 	private final static String MASTER = "master";
 
-	private final static String REELECT = "reelect";
+	/**
+	 * Name of the Topic for requesting the master status
+	 */
+	private final static String REQUEST_MASTER_TOPIC = "request.master";
 
 	private final static String MESH_HTTP_PORT_ATTR = "mesh_http_port";
 
@@ -97,8 +104,19 @@ public class MasterElector {
 		return isMaster(localMember());
 	}
 
-	public void invokeElection() {
-		localMember().setBooleanAttribute(REELECT, true);
+	/**
+	 * Make this instance the master (if it not already is the master)
+	 */
+	public void setMaster() {
+		if (isMaster()) {
+			return;
+		}
+
+		HazelcastInstance instance = hazelcast.get();
+		if (instance != null) {
+			ITopic<Void> requestMasterTopic = instance.getTopic(REQUEST_MASTER_TOPIC);
+			requestMasterTopic.publish(null);
+		}
 	}
 
 	/**
@@ -118,7 +136,7 @@ public class MasterElector {
 				.filter(m -> isMaster(m))
 				.findFirst();
 			boolean hasMaster = foundMaster.isPresent();
-			boolean isElectible = isElectible(localMember());
+			boolean isElectible = isElectable(localMember());
 			if (!hasMaster && isElectible) {
 				localMember().setBooleanAttribute(MASTER, true);
 				log.info("Cluster node was elected as new master");
@@ -140,7 +158,7 @@ public class MasterElector {
 	 * @param m
 	 * @return
 	 */
-	private boolean isElectible(Member member) {
+	private boolean isElectable(Member member) {
 		String name = member.getStringAttribute(MESH_NODE_NAME_ATTR);
 
 		// Check whether name of the node matches the coordinator regex.
@@ -188,12 +206,6 @@ public class MasterElector {
 				if (memberAttributeEvent.getKey().equals(MASTER)) {
 					findCurrentMaster();
 				}
-				if (memberAttributeEvent.getKey().equals(REELECT)) {
-					localMember().removeAttribute(REELECT);
-					giveUpMasterFlag();
-					electMaster();
-					findCurrentMaster();
-				}
 			}
 
 			@Override
@@ -218,6 +230,23 @@ public class MasterElector {
 				break;
 			}
 		});
+
+		/**
+		 * Request master message listener
+		 */
+		MessageListener<Void> REQUEST_MASTER_LISTENER = msg -> {
+			executeIfNotFromLocal(msg, m -> {
+				giveUpMasterFlag();
+			});
+			executeIfFromLocal(msg, m -> {
+				Member localMember = localMember();
+				localMember.setBooleanAttribute(MASTER, true);
+			});
+		};
+
+		ITopic<Void> requestMasterTopic = hazelcast.get().getTopic(REQUEST_MASTER_TOPIC);
+		requestMasterTopic.addMessageListener(REQUEST_MASTER_LISTENER);
+
 	}
 
 	protected void findCurrentMaster() {
@@ -279,6 +308,45 @@ public class MasterElector {
 			log.debug("Our master member: " + server);
 		}
 		return server;
+	}
+
+	/**
+	 * Let the handler accept the object from the given message, if the message was not published from the local node
+	 * 
+	 * @param msg
+	 *            message
+	 * @param handler
+	 *            handler
+	 */
+	private <T> void executeIfNotFromLocal(Message<T> msg, Consumer<T> handler) {
+		Member publishingMember = msg.getPublishingMember();
+		if (publishingMember != null && !publishingMember.localMember()) {
+			handler.accept(msg.getMessageObject());
+		}
+	}
+
+	/**
+	 * Let the handler accept the object from the given message, if the message was published from the local node
+	 * 
+	 * @param msg
+	 *            message
+	 * @param handler
+	 *            handler
+	 */
+	private <T> void executeIfFromLocal(Message<T> msg, Consumer<T> handler) {
+		Member publishingMember = msg.getPublishingMember();
+		if (publishingMember != null && publishingMember.localMember()) {
+			handler.accept(msg.getMessageObject());
+		}
+	}
+
+	/**
+	 * Check whether the local member is electable.
+	 * 
+	 * @return
+	 */
+	public boolean isElectable() {
+		return isElectable(localMember());
 	}
 
 }
