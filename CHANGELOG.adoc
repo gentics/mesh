@@ -30,13 +30,15 @@ include::content/docs/variables.adoc-include[]
 
 icon:check[] Clustering: The default value for the `vertxPort` setting has been changed to `4848`.
 
-icon:plus[] Clustering: The coordinator request processor plane feature has been added. The processor plan can be enabled to efficiently process REST requests in a multi-master and master-replica cluster setup.
+icon:plus[] Clustering: The coordinator layer feature has been added. The layer can be enabled to efficiently process REST requests in a multi-master and master-replica cluster setup.
+
+More information can be found in the link:{{< relref "clustering.asciidoc" >}}#_coordination[Cluster coordination section].
 
 icon:plus[] REST: The `/admin/shutdown` endpoint has been added. This allows users with admin privileges to shutdown the mesh process.
 
-icon:check[] OrientDB: The included OrientDB version has been updated to version `3.0.29`.
-
 icon:plus[] REST: It is now possible to read and update the cluster configuration in runtime via the `/api/v2/admin/cluster/config` endpoint.
+
+icon:check[] Docker: An issue with the docker building process has been fixed which caused an unnecessary layer to be added to the docker image.
 
 [[v1.4.2]]
 == 1.4.2 (24.02.2020)

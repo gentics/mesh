@@ -1,5 +1,10 @@
 package com.gentics.mesh.distributed.coordinator.proxy;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javax.inject.Inject;
 
 import com.gentics.mesh.distributed.RequestDelegator;
@@ -29,6 +34,8 @@ public class RequestDelegatorImpl implements RequestDelegator {
 
 	private final Coordinator coordinator;
 	private final HttpClient httpClient;
+	private static final Set<Pattern> readOnlyPathPatternSet = createReadOnlyPatternSet();
+	private static final Set<Pattern> whiteListPathPatternSet = createWhitelistPatternSet();
 
 	@Inject
 	public RequestDelegatorImpl(Coordinator coordinator, Vertx vertx) {
@@ -52,7 +59,7 @@ public class RequestDelegatorImpl implements RequestDelegator {
 			return;
 		}
 
-		if (isWhitelisted(method, path)) {
+		if (isWhitelisted(path)) {
 			if (log.isDebugEnabled()) {
 				log.debug("URI {" + requestURI + "} with method {" + method.name() + "} is whitelisted. Skipping delegation");
 			}
@@ -69,22 +76,9 @@ public class RequestDelegatorImpl implements RequestDelegator {
 			return;
 		}
 
-		// In Mode A we only delegate mutating requests to the master
-		if (mode == CoordinatorMode.MODE_A) {
-			switch (method) {
-			case DELETE:
-			case PATCH:
-			case PUT:
-				break;
-			case POST:
-				// Lets check whether the request is actually a read request. In this case we don't need to delegate it.
-				if (isReadRequest(method, path)) {
-					rc.next();
-					return;
-				} else {
-					break;
-				}
-			default:
+		// In CUD mode we only delegate mutating requests to the master
+		if (mode == CoordinatorMode.CUD) {
+			if (isReadRequest(method, path)) {
 				rc.next();
 				return;
 			}
@@ -115,7 +109,6 @@ public class RequestDelegatorImpl implements RequestDelegator {
 
 		@SuppressWarnings("deprecation")
 		HttpClientRequest forwardRequest = httpClient.request(method, port, host, requestURI, forwardResponse -> {
-
 			response.setChunked(true);
 			response.setStatusCode(forwardResponse.statusCode());
 			forwardHeaders(response, forwardResponse);
@@ -169,8 +162,6 @@ public class RequestDelegatorImpl implements RequestDelegator {
 	 *            The optional body for the request (may by <code>null</code>)
 	 */
 	private void proxyEndHandler(HttpClientRequest forwardRequest, Buffer body) {
-		// printHeaders("Forward request headers", forwardRequest.headers());
-
 		if (body == null) {
 			forwardRequest.end();
 		} else {
@@ -214,36 +205,60 @@ public class RequestDelegatorImpl implements RequestDelegator {
 	 * @param path
 	 * @return
 	 */
-	private static boolean isReadRequest(HttpMethod method, String path) {
-		if (path.contains("/auth/login") && method == HttpMethod.POST) {
+	private boolean isReadRequest(HttpMethod method, String path) {
+		switch (method) {
+		case CONNECT:
+		case OPTIONS:
+		case GET:
 			return true;
+		case DELETE:
+		case PATCH:
+		case PUT:
+			return false;
+		case POST:
+			// Lets check whether the request is actually a read request.
+			// In this case we don't need to delegate it.
+			return isReadOnly(path);
+		default:
+			log.debug("Unhandled methd {" + method + "} in path {" + path + "}");
+			return false;
 		}
-		if (path.contains("/graphql") && method == HttpMethod.POST) {
-			return true;
-		}
-		if (path.contains("/search") && method == HttpMethod.POST) {
-			return true;
-		}
-		if (path.contains("/rawSearch") && method == HttpMethod.POST) {
-			return true;
+	}
+
+	public static boolean isWhitelisted(String path) {
+		for (Pattern pattern : whiteListPathPatternSet) {
+			Matcher m = pattern.matcher(path);
+			if (m.matches()) {
+				return true;
+			}
 		}
 		return false;
 	}
 
-	private static boolean isWhitelisted(HttpMethod method, String path) {
-		if (path.equals("/api/v1")) {
-			return true;
-		}
-		if (path.equals("/api/v2")) {
-			return true;
-		}
-		if (path.startsWith("/api/v1/admin")) {
-			return true;
-		}
-		if (path.startsWith("/api/v2/admin")) {
-			return true;
+	public static boolean isReadOnly(String path) {
+		for (Pattern pattern : readOnlyPathPatternSet) {
+			Matcher m = pattern.matcher(path);
+			if (m.matches()) {
+				return true;
+			}
 		}
 		return false;
+	}
+
+	private static Set<Pattern> createWhitelistPatternSet() {
+		Set<Pattern> patterns = new HashSet<>();
+		patterns.add(Pattern.compile("/api/v[0-9]*/?"));
+		patterns.add(Pattern.compile("/api/v[0-9]*/admin.*"));
+		return patterns;
+	}
+
+	private static Set<Pattern> createReadOnlyPatternSet() {
+		Set<Pattern> patterns = new HashSet<>();
+		patterns.add(Pattern.compile("/api/v.*/auth/login"));
+		patterns.add(Pattern.compile("/api/v.*/graphql/?"));
+		patterns.add(Pattern.compile("/api/v.*/search/?"));
+		patterns.add(Pattern.compile("/api/v.*/rawSearch/?"));
+		return patterns;
 	}
 
 }

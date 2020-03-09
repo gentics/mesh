@@ -8,12 +8,12 @@ public enum CoordinatorMode {
 	DISABLED,
 
 	/**
-	 * Delegate modifying requests to the elected master instance.
+	 * Delegate modifying (Create, Update, Delete) requests to the elected master instance.
 	 */
-	MODE_A,
+	CUD,
 
 	/**
 	 * Delegate all requests to the elected master instance.
 	 */
-	MODE_B;
+	ALL;
 }

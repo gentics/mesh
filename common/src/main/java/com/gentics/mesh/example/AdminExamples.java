@@ -123,7 +123,7 @@ public class AdminExamples {
 
 	public CoordinatorConfig createCoordinatorConfig() {
 		CoordinatorConfig config = new CoordinatorConfig();
-		config.setMode(CoordinatorMode.MODE_A);
+		config.setMode(CoordinatorMode.CUD);
 		return config;
 	}
 
