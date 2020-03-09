@@ -22,6 +22,8 @@ import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.impl.BinariesImpl;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.data.service.WebRootServiceImpl;
+import com.gentics.mesh.distributed.RequestDelegator;
+import com.gentics.mesh.distributed.coordinator.proxy.RequestDelegatorImpl;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.event.impl.EventQueueBatchImpl;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
@@ -101,4 +103,7 @@ public abstract class BindModule {
 
 	@Binds
 	abstract PersistenceClassMap bindPersistenceClassMap(PersistenceClassMapImpl e);
+
+	@Binds
+	abstract RequestDelegator bindRequestDelegator(RequestDelegatorImpl e);
 }

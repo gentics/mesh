@@ -3,7 +3,9 @@ package com.gentics.mesh.router;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.cluster.CoordinatorMode;
 import com.gentics.mesh.handler.VersionHandler;
 
 import io.vertx.core.Vertx;
@@ -51,6 +53,12 @@ public class APIRouter {
 	}
 
 	private void initHandlers(RouterStorage storage) {
+		// Add the coordinator delegator handler
+		ClusterOptions clusterOptions = options.getClusterOptions();
+		if (clusterOptions.isEnabled() && clusterOptions.getCoordinatorMode() != CoordinatorMode.DISABLED) {
+			router.route().handler(root.getStorage().getDelegator());
+		}
+
 		if (options.getHttpServerOptions().isCorsEnabled()) {
 			router.route().handler(storage.corsHandler);
 		}

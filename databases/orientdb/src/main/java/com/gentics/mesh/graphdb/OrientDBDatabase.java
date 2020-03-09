@@ -495,11 +495,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 			Integer readQuorum = storageCfg.getDocument().getProperty("readQuorum");
 			response.setReadQuorum(readQuorum);
-
-			for (String name : storageCfg.getDocument().getPropertyNames()) {
-				System.out.println(name + "=" + storageCfg.getDocument().getProperty(name));
-			}
-
 			return response;
 		} else {
 			throw error(BAD_REQUEST, "error_cluster_status_only_available_in_cluster_mode");

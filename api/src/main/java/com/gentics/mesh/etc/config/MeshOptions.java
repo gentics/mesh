@@ -456,8 +456,8 @@ public class MeshOptions implements Option {
 		}
 		Objects.requireNonNull(getNodeName(), "The node name must be specified.");
 		if (getVersionPurgeMaxBatchSize() <= 0) {
-		    throw new IllegalArgumentException("versionPurgeMaxBatchSize must be positive.");
-        }
+			throw new IllegalArgumentException("versionPurgeMaxBatchSize must be positive.");
+		}
 		// TODO check for other invalid characters in node name
 	}
 

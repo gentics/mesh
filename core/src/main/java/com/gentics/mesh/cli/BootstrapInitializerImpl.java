@@ -77,6 +77,7 @@ import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.distributed.DistributedEventManager;
+import com.gentics.mesh.distributed.coordinator.MasterElector;
 import com.gentics.mesh.etc.LanguageEntry;
 import com.gentics.mesh.etc.LanguageSet;
 import com.gentics.mesh.etc.MeshCustomLoader;
@@ -171,6 +172,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Inject
 	public BCryptPasswordEncoder passwordEncoder;
+
+	@Inject
+	public MasterElector coordinatorMasterElector;
 
 	private MeshRoot meshRoot;
 
@@ -326,6 +330,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				}
 				Thread.sleep(1000);
 			}
+			coordinatorMasterElector.start();
 		} else {
 			initVertx(options, isClustered);
 			searchProvider.init();
@@ -867,7 +872,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 					sb.append("- Admin Login\n");
 					sb.append("-----------------------\n");
 					sb.append("- Username: admin\n");
-					sb.append("- Password: " + pw +"\n");
+					sb.append("- Password: " + pw + "\n");
 					sb.append("-----------------------\n");
 					// TODO figure out a way to avoid the encode call during test execution. This will otherwise slow down tests big time.
 					adminUser.setPasswordHash(hash);
