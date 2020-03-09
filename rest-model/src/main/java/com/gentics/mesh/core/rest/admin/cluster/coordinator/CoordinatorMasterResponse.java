@@ -10,7 +10,7 @@ import com.gentics.mesh.core.rest.common.RestModel;
 public class CoordinatorMasterResponse implements RestModel {
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Cluste node name of the coordination master.")
+	@JsonPropertyDescription("Cluster node name of the coordination master.")
 	private String name;
 
 	@JsonProperty(required = false)

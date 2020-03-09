@@ -11,7 +11,7 @@ import com.gentics.mesh.etc.config.cluster.CoordinatorMode;
 public class CoordinatorConfig implements RestModel {
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Coordinator mode which can be DISABLED to disable coordination, CUD to handle read only requests or ALL to handle all requests.")
+	@JsonPropertyDescription("Coordinator mode which can be set to DISABLED to disable coordination, to CUD to handle only modifying requests or to ALL to handle all requests.")
 	private CoordinatorMode mode;
 
 	public CoordinatorConfig() {

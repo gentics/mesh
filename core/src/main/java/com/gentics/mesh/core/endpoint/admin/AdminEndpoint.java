@@ -430,8 +430,8 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		electMaster.path("/coordinator/master");
 		electMaster.method(POST);
 		electMaster.produces(APPLICATION_JSON);
-		electMaster.description("Set the coordination to this instance.");
-		electMaster.exampleResponse(OK, adminExamples.createCoordinatorResponse(), "The currently elected master.");
+		electMaster.description("Make this instance the coordination master.");
+		electMaster.exampleResponse(OK, miscExamples.createMessageResponse(), "Election status message.");
 		electMaster.handler(rc -> adminHandler.handleSetCoordinationMaster(wrap(rc)));
 
 		InternalEndpointRoute loadConfig = createRoute();

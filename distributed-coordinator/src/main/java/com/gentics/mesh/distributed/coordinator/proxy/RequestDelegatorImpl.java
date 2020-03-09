@@ -233,17 +233,22 @@ public class RequestDelegatorImpl implements RequestDelegator {
 
 	private static Set<Pattern> createWhitelistPatternSet() {
 		Set<Pattern> patterns = new HashSet<>();
-		patterns.add(Pattern.compile("/api/v[0-9]*/?"));
-		patterns.add(Pattern.compile("/api/v[0-9]*/admin.*"));
+		patterns.add(Pattern.compile("/api/v[0-9]+/?"));
+		patterns.add(Pattern.compile("/api/v[0-9]+/admin/.*"));
 		return patterns;
 	}
 
 	private static Set<Pattern> createReadOnlyPatternSet() {
 		Set<Pattern> patterns = new HashSet<>();
-		patterns.add(Pattern.compile("/api/v.*/auth/login"));
-		patterns.add(Pattern.compile("/api/v.*/graphql/?"));
-		patterns.add(Pattern.compile("/api/v.*/search/?"));
-		patterns.add(Pattern.compile("/api/v.*/rawSearch/?"));
+		patterns.add(Pattern.compile("/api/v[0-9]+/auth/login/?"));
+		patterns.add(Pattern.compile("/api/v[0-9]+/.*/graphql/?"));
+		patterns.add(Pattern.compile("/api/v[0-9]+/search/?"));
+		patterns.add(Pattern.compile("/api/v[0-9]+/rawSearch/?"));
+		patterns.add(Pattern.compile("/api/v[0-9]+/.*/search/?"));
+		patterns.add(Pattern.compile("/api/v[0-9]+/.*/rawSearch/?"));
+		patterns.add(Pattern.compile("/api/v[0-9]+/utilities/linkResolver/?"));
+		patterns.add(Pattern.compile("/api/v[0-9]+/utilities/validateSchema/?"));
+		patterns.add(Pattern.compile("/api/v[0-9]+/utilities/validateMicroschema/?"));
 		return patterns;
 	}
 
