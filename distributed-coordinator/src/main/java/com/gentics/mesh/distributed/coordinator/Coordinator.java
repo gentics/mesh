@@ -7,6 +7,9 @@ import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.cluster.CoordinatorMode;
 
+/**
+ * The coordinator manages the elector and keeps track of the currently configured coordination mode.
+ */
 @Singleton
 public class Coordinator {
 

@@ -158,6 +158,11 @@ public class RouterStorage {
 		return rootRouter;
 	}
 
+	/**
+	 * Return the injected request delegator handler.
+	 * 
+	 * @return
+	 */
 	public RequestDelegator getDelegator() {
 		return delegator;
 	}

@@ -125,8 +125,6 @@ public class RequestDelegatorImpl implements RequestDelegator {
 
 		if (request.isEnded()) {
 			log.warn("Request to be proxied is already read");
-			log.warn("This suggests that the proxy handler does not use the BEFORE_BODY_HANDLER route order");
-
 			proxyEndHandler(forwardRequest, rc.getBody());
 		} else {
 			request.exceptionHandler(e -> log.error("Could not forward request to Mesh: {}", e, e.getMessage()))
@@ -169,18 +167,6 @@ public class RequestDelegatorImpl implements RequestDelegator {
 		}
 	}
 
-	/**
-	 * Forward HTTP headers from the proxied Mesh response.
-	 *
-	 * <p>
-	 *
-	 * </p>
-	 *
-	 * @param response
-	 *            The response for the current request to the portal
-	 * @param forwardResponse
-	 *            The response to be proxied
-	 */
 	private void forwardHeaders(HttpServerResponse response, HttpClientResponse forwardResponse) {
 		MultiMap headers = forwardResponse.headers();
 

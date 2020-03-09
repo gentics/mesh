@@ -428,7 +428,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 
 		InternalEndpointRoute electMaster = createRoute();
 		electMaster.path("/coordinator/elect");
-		electMaster.method(GET);
+		electMaster.method(POST);
 		electMaster.produces(APPLICATION_JSON);
 		electMaster.description("Elect a new master and return information on the elected master.");
 		electMaster.exampleResponse(OK, adminExamples.createCoordinatorResponse(), "The currently elected master.");
@@ -446,7 +446,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		updateConfig.path("/coordinator/config");
 		updateConfig.method(POST);
 		updateConfig.produces(APPLICATION_JSON);
-		updateConfig.description("Update the coordinator configuration.");
+		updateConfig.description("Update the coordinator configuration of this instance. Note that the update config will not be persisted.");
 		updateConfig.exampleResponse(OK, adminExamples.createCoordinatorConfig(), "The currently active config on this instance.");
 		updateConfig.exampleRequest(adminExamples.createCoordinatorConfigRequest());
 		updateConfig.handler(rc -> adminHandler.handleUpdateCoordinationConfig(wrap(rc)));

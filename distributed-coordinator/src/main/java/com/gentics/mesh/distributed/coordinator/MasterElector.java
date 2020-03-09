@@ -58,7 +58,7 @@ public class MasterElector {
 	/**
 	 * Flag that is set, when the instance is merging (back) into the cluster
 	 */
-	private static boolean merging = false;
+	private boolean merging = false;
 
 	@Inject
 	public MasterElector(Lazy<HazelcastInstance> hazelcast, MeshOptions options, Database database) {
@@ -88,10 +88,6 @@ public class MasterElector {
 		addMessageListeners();
 		electMaster();
 		findCurrentMaster();
-	}
-
-	public void stop() {
-
 	}
 
 	public boolean isMaster() {
@@ -150,7 +146,7 @@ public class MasterElector {
 		// Check whether name of the node matches the coordinator regex.
 		if (coordinatorRegex != null) {
 			Matcher m = coordinatorRegex.matcher(name);
-			if (!m.find()) {
+			if (!m.matches()) {
 				log.info("Node {" + name + "} was not accepted by provided regex.");
 				return false;
 			}
@@ -162,7 +158,7 @@ public class MasterElector {
 			// Replicas are not eligible for master election
 			ServerRole role = databaseServer.get().getRole();
 			if (role == ServerRole.REPLICA) {
-				log.info("Node {" + name + "} is a replica and thus not eligable for election.");
+				log.info("Node {" + name + "} is a replica and thus not eligible for election.");
 				return false;
 			}
 		}
@@ -234,6 +230,7 @@ public class MasterElector {
 			log.info("Updated master member {" + masterMember.getStringAttribute(MESH_NODE_NAME_ATTR) + "}");
 		} else {
 			log.warn("Could not find master member in cluster.");
+			masterMember = null;
 		}
 	}
 
