@@ -28,7 +28,8 @@ import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.core.rest.event.node.SchemaMigrationCause;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
-import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.core.verticle.handler.WriteLock;
+import com.gentics.mesh.core.verticle.handler.WriteLockImpl;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.metric.MetricsService;
@@ -49,13 +50,13 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	private static final Logger log = LoggerFactory.getLogger(NodeMigrationHandler.class);
 
 	private final AtomicLong migrationGauge;
-	private final HandlerUtilities handlerUtilities;
+	private final WriteLockImpl writeLock;
 
 	@Inject
-	public NodeMigrationHandler(Database db, BinaryUploadHandler nodeFieldAPIHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider, HandlerUtilities handlerUtilities) {
+	public NodeMigrationHandler(Database db, BinaryUploadHandler nodeFieldAPIHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider, WriteLockImpl writeLock) {
 		super(db, nodeFieldAPIHandler, metrics, batchProvider);
 		migrationGauge = metrics.longGauge(NODE_MIGRATION_PENDING);
-		this.handlerUtilities = handlerUtilities;
+		this.writeLock = writeLock;
 	}
 
 	/**
@@ -114,11 +115,8 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 			}
 
 		List<Exception> errorsDetected = migrateLoop(containers, cause, status, (batch, container, errors) -> {
-			handlerUtilities.lock();
-			try {
+			try (WriteLock lock = writeLock.lock()) {
 				migrateContainer(context, batch, container, fromVersion, newSchema, errors, touchedFields);
-			} finally {
-				handlerUtilities.unlock();
 			}
 			if (metrics.isEnabled()) {
 				migrationGauge.decrementAndGet();

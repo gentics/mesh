@@ -70,6 +70,7 @@ public class UserEndpoint extends AbstractInternalEndpoint {
 		endpoint.description(
 			"Return API token which can be used to authenticate the user. Store the key somewhere save since you won't be able to retrieve it later on. This invalidates all tokens previously issued for this user.");
 		endpoint.method(POST);
+		endpoint.setMutating(true);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, userExamples.getAPIKeyResponse(), "The User API token response.");
 		endpoint.blockingHandler(rc -> {
@@ -85,6 +86,7 @@ public class UserEndpoint extends AbstractInternalEndpoint {
 		deleteEndpoint.addUriParameter("userUuid", "Uuid of the user.", USER_EDITOR_UUID);
 		deleteEndpoint.description("Invalidate the issued API token.");
 		deleteEndpoint.method(DELETE);
+		deleteEndpoint.setMutating(true);
 		deleteEndpoint.produces(APPLICATION_JSON);
 		deleteEndpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Message confirming the invalidation of the API token.");
 		deleteEndpoint.blockingHandler(rc -> {
@@ -119,6 +121,7 @@ public class UserEndpoint extends AbstractInternalEndpoint {
 		endpoint.addUriParameter("userUuid", "Uuid of the user.", USER_EDITOR_UUID);
 		endpoint.description("Return a one time token which can be used by any user to update a user (e.g.: Reset the password)");
 		endpoint.method(POST);
+		endpoint.setMutating(true);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, userExamples.getTokenResponse(), "User token response.");
 		endpoint.handler(rc -> {
@@ -171,6 +174,7 @@ public class UserEndpoint extends AbstractInternalEndpoint {
 		endpoint.path("/:userUuid");
 		endpoint.addUriParameter("userUuid", "Uuid of the user.", USER_EDITOR_UUID);
 		endpoint.method(DELETE);
+		endpoint.setMutating(true);
 		endpoint.description(
 			"Deactivate the user with the given uuid. Please note that users can't be deleted since they are needed to construct creator/editor information.");
 		endpoint.produces(APPLICATION_JSON);
@@ -197,6 +201,7 @@ public class UserEndpoint extends AbstractInternalEndpoint {
 		endpoint.addUriParameter("userUuid", "Uuid of the user.", USER_EDITOR_UUID);
 		endpoint.description("Update the user with the given uuid. The user is created if no user with the specified uuid could be found.");
 		endpoint.method(POST);
+		endpoint.setMutating(true);
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.addQueryParameters(UserParametersImpl.class);
@@ -215,6 +220,7 @@ public class UserEndpoint extends AbstractInternalEndpoint {
 		endpoint.path("/");
 		endpoint.description("Create a new user.");
 		endpoint.method(POST);
+		endpoint.setMutating(true);
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(userExamples.getUserCreateRequest("newuser"));

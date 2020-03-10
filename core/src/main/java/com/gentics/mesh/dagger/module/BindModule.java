@@ -22,6 +22,8 @@ import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.impl.BinariesImpl;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.data.service.WebRootServiceImpl;
+import com.gentics.mesh.core.verticle.handler.WriteLock;
+import com.gentics.mesh.core.verticle.handler.WriteLockImpl;
 import com.gentics.mesh.distributed.RequestDelegator;
 import com.gentics.mesh.distributed.coordinator.proxy.RequestDelegatorImpl;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -106,4 +108,7 @@ public abstract class BindModule {
 
 	@Binds
 	abstract RequestDelegator bindRequestDelegator(RequestDelegatorImpl e);
+
+	@Binds
+	abstract WriteLock bindWriteLock(WriteLockImpl e);
 }

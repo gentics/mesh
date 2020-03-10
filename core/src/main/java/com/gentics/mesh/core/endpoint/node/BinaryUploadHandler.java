@@ -38,6 +38,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -83,6 +84,8 @@ public class BinaryUploadHandler extends AbstractHandler {
 
 	private final Binaries binaries;
 
+	private final WriteLock writeLock;
+
 	@Inject
 	public BinaryUploadHandler(ImageManipulator imageManipulator,
 		Database db,
@@ -90,7 +93,10 @@ public class BinaryUploadHandler extends AbstractHandler {
 		BinaryFieldResponseHandler binaryFieldResponseHandler,
 		BinaryStorage binaryStorage,
 		BinaryProcessorRegistry binaryProcessorRegistry,
-		HandlerUtilities utils, Vertx rxVertx, MeshOptions options, Binaries binaries) {
+		HandlerUtilities utils, Vertx rxVertx, 
+		MeshOptions options, 
+		Binaries binaries,
+		WriteLock writeLock) {
 		this.db = db;
 		this.boot = boot;
 
@@ -100,6 +106,7 @@ public class BinaryUploadHandler extends AbstractHandler {
 		this.fs = rxVertx.fileSystem();
 		this.options = options;
 		this.binaries = binaries;
+		this.writeLock = writeLock;
 	}
 
 	private void validateFileUpload(FileUpload ul, String fieldName) {
@@ -138,78 +145,80 @@ public class BinaryUploadHandler extends AbstractHandler {
 		validateParameter(nodeUuid, "uuid");
 		validateParameter(fieldName, "fieldName");
 
-		String languageTag = attributes.get("language");
-		if (isEmpty(languageTag)) {
-			throw error(BAD_REQUEST, "upload_error_no_language");
-		}
-
-		String nodeVersion = attributes.get("version");
-		if (isEmpty(nodeVersion)) {
-			throw error(BAD_REQUEST, "upload_error_no_version");
-		}
-
-		Set<FileUpload> fileUploads = ac.getFileUploads();
-		if (fileUploads.isEmpty()) {
-			throw error(BAD_REQUEST, "node_error_no_binarydata_found");
-		}
-
-		// Check the file upload limit
-		if (fileUploads.size() > 1) {
-			throw error(BAD_REQUEST, "node_error_more_than_one_binarydata_included");
-		}
-		FileUpload ul = fileUploads.iterator().next();
-		// TODO fail on multiple multipart formdata files
-		validateFileUpload(ul, fieldName);
-
-		UploadContext ctx = new UploadContext();
-		ctx.setUpload(ul);
-
-		// First process the upload data
-		hashUpload(ul).flatMap(hash -> {
-			Single<List<Consumer<BinaryGraphField>>> modifierOp = postProcessUpload(ul, hash).toList();
-			return modifierOp.map(list -> {
-				return Tuple.tuple(hash, list);
-			});
-		}).flatMap(modifierListAndHash -> {
-			String hash = modifierListAndHash.v1();
-			List<Consumer<BinaryGraphField>> modifierList = modifierListAndHash.v2();
-			ctx.setHash(hash);
-
-			// Check whether the binary with the given hashsum was already stored
-			Binary binary = binaries.findByHash(hash).runInNewTx();
-
-			// Create a new binary uuid if the data was not already stored
-			if (binary == null) {
-				ctx.setBinaryUuid(UUIDUtil.randomUUID());
-				ctx.setInvokeStore();
+		try (WriteLock lock = writeLock.lock()) {
+			String languageTag = attributes.get("language");
+			if (isEmpty(languageTag)) {
+				throw error(BAD_REQUEST, "upload_error_no_language");
 			}
 
-			return storeUploadInTemp(ctx, ul, hash)
-				.andThen(Single.defer(() -> storeUploadInGraph(ac, modifierList, ctx, nodeUuid, languageTag, nodeVersion, fieldName)));
-		}).onErrorResumeNext(e -> {
-			if (ctx.isInvokeStore()) {
-				String tmpId = ctx.getTemporaryId();
-				if (log.isDebugEnabled()) {
-					log.debug("Error detected. Purging previously stored upload for tempId {}", tmpId, e);
+			String nodeVersion = attributes.get("version");
+			if (isEmpty(nodeVersion)) {
+				throw error(BAD_REQUEST, "upload_error_no_version");
+			}
+
+			Set<FileUpload> fileUploads = ac.getFileUploads();
+			if (fileUploads.isEmpty()) {
+				throw error(BAD_REQUEST, "node_error_no_binarydata_found");
+			}
+
+			// Check the file upload limit
+			if (fileUploads.size() > 1) {
+				throw error(BAD_REQUEST, "node_error_more_than_one_binarydata_included");
+			}
+			FileUpload ul = fileUploads.iterator().next();
+			// TODO fail on multiple multipart formdata files
+			validateFileUpload(ul, fieldName);
+
+			UploadContext ctx = new UploadContext();
+			ctx.setUpload(ul);
+
+			// First process the upload data
+			hashUpload(ul).flatMap(hash -> {
+				Single<List<Consumer<BinaryGraphField>>> modifierOp = postProcessUpload(ul, hash).toList();
+				return modifierOp.map(list -> {
+					return Tuple.tuple(hash, list);
+				});
+			}).flatMap(modifierListAndHash -> {
+				String hash = modifierListAndHash.v1();
+				List<Consumer<BinaryGraphField>> modifierList = modifierListAndHash.v2();
+				ctx.setHash(hash);
+
+				// Check whether the binary with the given hashsum was already stored
+				Binary binary = binaries.findByHash(hash).runInNewTx();
+
+				// Create a new binary uuid if the data was not already stored
+				if (binary == null) {
+					ctx.setBinaryUuid(UUIDUtil.randomUUID());
+					ctx.setInvokeStore();
 				}
-				return binaryStorage.purgeTemporaryUpload(tmpId).doOnError(e1 -> {
-					log.error("Error while purging temporary upload for tempId {}", tmpId, e1);
-				}).onErrorComplete().andThen(Single.error(e));
-			} else {
-				return Single.error(e);
-			}
-		}).flatMap(n -> {
-			if (ctx.isInvokeStore()) {
-				String binaryUuid = ctx.getBinaryUuid();
-				String tmpId = ctx.getTemporaryId();
-				if (log.isDebugEnabled()) {
-					log.debug("Moving upload with binaryUuid {} and tempId {} into place", binaryUuid, tmpId);
+
+				return storeUploadInTemp(ctx, ul, hash)
+					.andThen(Single.defer(() -> storeUploadInGraph(ac, modifierList, ctx, nodeUuid, languageTag, nodeVersion, fieldName)));
+			}).onErrorResumeNext(e -> {
+				if (ctx.isInvokeStore()) {
+					String tmpId = ctx.getTemporaryId();
+					if (log.isDebugEnabled()) {
+						log.debug("Error detected. Purging previously stored upload for tempId {}", tmpId, e);
+					}
+					return binaryStorage.purgeTemporaryUpload(tmpId).doOnError(e1 -> {
+						log.error("Error while purging temporary upload for tempId {}", tmpId, e1);
+					}).onErrorComplete().andThen(Single.error(e));
+				} else {
+					return Single.error(e);
 				}
-				return binaryStorage.moveInPlace(binaryUuid, tmpId).andThen(Single.just(n));
-			} else {
-				return Single.just(n);
-			}
-		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
+			}).flatMap(n -> {
+				if (ctx.isInvokeStore()) {
+					String binaryUuid = ctx.getBinaryUuid();
+					String tmpId = ctx.getTemporaryId();
+					if (log.isDebugEnabled()) {
+						log.debug("Moving upload with binaryUuid {} and tempId {} into place", binaryUuid, tmpId);
+					}
+					return binaryStorage.moveInPlace(binaryUuid, tmpId).andThen(Single.just(n));
+				} else {
+					return Single.just(n);
+				}
+			}).subscribe(model -> ac.send(model, CREATED), ac::fail);
+		}
 
 	}
 

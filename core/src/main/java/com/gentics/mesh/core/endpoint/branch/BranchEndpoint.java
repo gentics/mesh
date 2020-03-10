@@ -106,6 +106,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:branchUuid/migrateSchemas");
 		endpoint.method(POST);
+		endpoint.setMutating(true);
 		endpoint.addUriParameter("branchUuid", "Uuid of the branch", BRANCH_UUID);
 		endpoint.description("Invoked the node migration for not yet migrated nodes of schemas that are assigned to the branch.");
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "schema_migration_invoked");
@@ -121,6 +122,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:branchUuid/migrateMicroschemas");
 		endpoint.method(POST);
+		endpoint.setMutating(true);
 		endpoint.addUriParameter("branchUuid", "Uuid of the branch", BRANCH_UUID);
 		endpoint.description("Invoked the micronode migration for not yet migrated micronodes of microschemas that are assigned to the branch.");
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "schema_migration_invoked");
@@ -136,6 +138,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/");
 		endpoint.method(POST);
+		endpoint.setMutating(true);
 		endpoint.description("Create a new branch and automatically invoke a node migration.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(versioningExamples.createBranchCreateRequest("Winter 2016"));
@@ -185,6 +188,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		addSchema.path("/:branchUuid/schemas");
 		addSchema.addUriParameter("branchUuid", "Uuid of the branch", BRANCH_UUID);
 		addSchema.method(POST);
+		addSchema.setMutating(true);
 		addSchema.description("Assign a schema version to the branch.");
 		addSchema.consumes(APPLICATION_JSON);
 		addSchema.produces(APPLICATION_JSON);
@@ -201,6 +205,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		addMicroschema.path("/:branchUuid/microschemas");
 		addMicroschema.addUriParameter("branchUuid", "Uuid of the branch", BRANCH_UUID);
 		addMicroschema.method(POST);
+		addMicroschema.setMutating(true);
 		addMicroschema.description("Assign a microschema version to the branch.");
 		addMicroschema.consumes(APPLICATION_JSON);
 		addMicroschema.produces(APPLICATION_JSON);
@@ -218,6 +223,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		setLatest.addUriParameter("branchUuid", "Uuid of the branch", BRANCH_UUID);
 		setLatest.description("Set the branch with the given uuid as 'latest' branch of the project.");
 		setLatest.method(POST);
+		setLatest.setMutating(true);
 		setLatest.produces(APPLICATION_JSON);
 		setLatest.exampleResponse(OK, versioningExamples.createBranchResponse("Winter Collection Branch", true), "Latest branch");
 		setLatest.events(PROJECT_LATEST_BRANCH_UPDATED);
@@ -233,6 +239,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		updateBranch
 			.description("Update the branch with the given uuid. The branch is created if no branch with the specified uuid could be found.");
 		updateBranch.method(POST);
+		updateBranch.setMutating(true);
 		updateBranch.consumes(APPLICATION_JSON);
 		updateBranch.produces(APPLICATION_JSON);
 		updateBranch.exampleRequest(versioningExamples.createBranchUpdateRequest("Winter Collection Branch"));
@@ -263,6 +270,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		bulkUpdate.path("/:branchUuid/tags");
 		bulkUpdate.addUriParameter("branchUuid", "Uuid of the branch.", BRANCH_UUID);
 		bulkUpdate.method(POST);
+		bulkUpdate.setMutating(true);
 		bulkUpdate.produces(APPLICATION_JSON);
 		bulkUpdate.description("Update the list of assigned tags");
 		bulkUpdate.exampleRequest(tagExamples.getTagListUpdateRequest());
@@ -279,6 +287,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		addTag.addUriParameter("branchUuid", "Uuid of the branch", BRANCH_UUID);
 		addTag.addUriParameter("tagUuid", "Uuid of the tag", TAG_BLUE_UUID);
 		addTag.method(POST);
+		addTag.setMutating(true);
 		addTag.produces(APPLICATION_JSON);
 		addTag.exampleResponse(OK, versioningExamples.createBranchResponse("Summer Collection Branch", false), "Updated branch.");
 		addTag.description("Assign the given tag to the branch.");
@@ -295,6 +304,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		removeTag.addUriParameter("branchUuid", "Uuid of the branch", BRANCH_UUID);
 		removeTag.addUriParameter("tagUuid", "Uuid of the tag", TAG_BLUE_UUID);
 		removeTag.method(DELETE);
+		removeTag.setMutating(true);
 		removeTag.produces(APPLICATION_JSON);
 		removeTag.description("Remove the given tag from the branch.");
 		removeTag.exampleResponse(NO_CONTENT, "Removal was successful.");

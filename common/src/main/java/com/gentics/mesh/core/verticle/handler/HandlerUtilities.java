@@ -10,7 +10,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -56,24 +55,24 @@ public class HandlerUtilities {
 
 	private static final Logger log = LoggerFactory.getLogger(HandlerUtilities.class);
 
-	private Semaphore writeLock = new Semaphore(1);
-
 	private final Database database;
 	private final MetricsService metrics;
-	private final boolean syncWrites;
 
 	private final Provider<EventQueueBatch> queueProvider;
 
 	private final Provider<BulkActionContext> bulkProvider;
 
+	private final WriteLock writeLock;
+
 	@Inject
-	public HandlerUtilities(Database database, MeshOptions meshOptions, MetricsService metrics, Provider<EventQueueBatch> queueProvider, Provider<BulkActionContext> bulkProvider) {
+	public HandlerUtilities(Database database, MeshOptions meshOptions, MetricsService metrics, Provider<EventQueueBatch> queueProvider,
+		Provider<BulkActionContext> bulkProvider, WriteLock writeLock) {
 		GraphStorageOptions storageOptions = meshOptions.getStorageOptions();
 		this.database = database;
 		this.metrics = metrics;
-		this.syncWrites = storageOptions.isSynchronizeWrites();
 		this.queueProvider = queueProvider;
 		this.bulkProvider = bulkProvider;
+		this.writeLock = writeLock;
 	}
 
 	/**
@@ -97,9 +96,8 @@ public class HandlerUtilities {
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void deleteElement(InternalActionContext ac, TxAction1<RootVertex<T>> handler,
 		String uuid) {
-		lock();
-		syncTx(ac, () -> {
-			try {
+		try (WriteLock lock = writeLock.lock()) {
+			syncTx(ac, () -> {
 				RootVertex<T> root = handler.handle();
 				T element = root.loadObjectByUuid(ac, uuid, DELETE_PERM);
 
@@ -110,10 +108,8 @@ public class HandlerUtilities {
 					element.delete(bac);
 				});
 				log.info("Deleted element {" + elementUuid + "} for type {" + root.getClass().getSimpleName() + "}");
-			} finally {
-				unlock();
-			}
-		}, () -> ac.send(NO_CONTENT));
+			}, () -> ac.send(NO_CONTENT));
+		}
 
 	}
 
@@ -143,10 +139,9 @@ public class HandlerUtilities {
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createOrUpdateElement(InternalActionContext ac, String uuid,
 		TxAction1<RootVertex<T>> handler) {
-		lock();
-		AtomicBoolean created = new AtomicBoolean(false);
-		syncTx(ac, tx -> {
-			try {
+		try (WriteLock lock = writeLock.lock()) {
+			AtomicBoolean created = new AtomicBoolean(false);
+			syncTx(ac, tx -> {
 				RootVertex<T> root = handler.handle();
 
 				// 1. Load the element from the root element using the given uuid (if not null)
@@ -178,10 +173,8 @@ public class HandlerUtilities {
 					ac.setLocation(path);
 					return model;
 				}
-			} finally {
-				unlock();
-			}
-		}, model -> ac.send(model, created.get() ? CREATED : OK));
+			}, model -> ac.send(model, created.get() ? CREATED : OK));
+		}
 	}
 
 	/**
@@ -345,30 +338,6 @@ public class HandlerUtilities {
 		tuple.v2().dispatch();
 		return tuple.v1();
 	}
-
-
-	/**
-	 * Locks writes. Use this to prevent concurrent write transactions.
-	 */
-	public void lock() {
-		if (syncWrites) {
-			try {
-				writeLock.acquire();
-			} catch (InterruptedException e) {
-				throw new RuntimeException(e);
-			}
-		}
-	}
-
-	/**
-	 * Releases the lock that was acquired in {@link #lock()}.
-	 */
-	public void unlock() {
-		if (syncWrites) {
-			writeLock.release();
-		}
-	}
-
 
 	public void requiresAdminRole(RoutingContext context) {
 		InternalRoutingActionContextImpl rc = new InternalRoutingActionContextImpl(context);
