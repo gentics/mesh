@@ -27,6 +27,7 @@ import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterServerConfig;
 import com.gentics.mesh.core.rest.admin.cluster.ServerRole;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.cluster.OrientDBClusterManager;
@@ -335,6 +336,12 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	@Deprecated
 	public Tx tx() {
+		blockingTopologyLockCheck();
+		return new OrientDBTx(boot.get(), txProvider, resolver);
+	}
+
+	@Override
+	public void blockingTopologyLockCheck() {
 		ClusterOptions clusterOptions = options.getClusterOptions();
 		long lockTimeout = clusterOptions.getTopologyLockTimeout();
 		if (clusterOptions.isEnabled() && clusterManager() != null && lockTimeout != 0) {
@@ -352,7 +359,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 				}
 			}
 		}
-		return new OrientDBTx(boot.get(), txProvider, resolver);
 	}
 
 	@Override

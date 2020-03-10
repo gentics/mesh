@@ -506,4 +506,9 @@ public interface Database extends TxFactory {
 	 * @return
 	 */
 	ClusterConfigResponse loadClusterConfig();
+
+	/**
+	 * Check whether a topology change causes a lock.
+	 */
+	void blockingTopologyLockCheck();
 }

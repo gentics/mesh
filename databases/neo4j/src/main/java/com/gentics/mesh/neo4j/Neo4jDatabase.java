@@ -232,4 +232,9 @@ public class Neo4jDatabase extends AbstractDatabase {
 
 	}
 
+	@Override
+	public void blockingTopologyLockCheck() {
+
+	}
+
 }
