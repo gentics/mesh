@@ -177,6 +177,14 @@ The `cluster.coordinatorMode` setting or `MESH_CLUSTER_COORDINATOR_MODE` environ
 
 * `ALL` - In this mode all requests (CRUD) will be delegated to the elected master.
 
+==== Topology management
+
+The `cluster.coordinatorTopology` setting or `MESH_CLUSTER_COORDINATOR_TOPOLOGY_ENV` environment variable controls whether the coordinator will also manage the current cluster topology. By default no cluster topology management will be done.
+
+* `UNMANAGED` - Don't manage cluster topology.
+
+* `MASTER_REPLICA` - Use the elected master also as database master and make other nodes in the cluster replicas.
+
 === Master Election
 
 The `cluster.coordinatorRegex` setting or `MESH_CLUSTER_COORDINATOR_REGEX` environment variable controls which nodes in the cluster can be elected as master instances.

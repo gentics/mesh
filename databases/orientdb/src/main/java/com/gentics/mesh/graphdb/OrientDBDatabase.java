@@ -502,6 +502,19 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
+	public void setToMaster() {
+		OHazelcastPlugin plugin = clusterManager().getHazelcastPlugin();
+		ODistributedConfiguration storageCfg = plugin.getDatabaseConfiguration(GraphStorage.DB_NAME);
+		final OModifiableDistributedConfiguration newCfg = storageCfg.modify();
+		for (String server : storageCfg.getAllConfiguredServers()) {
+			boolean isSelf = server.equals(options.getNodeName());
+			ROLES newORole = isSelf ? ROLES.MASTER : ROLES.REPLICA;
+			newCfg.setServerRole(server, newORole);
+		}
+		plugin.updateCachedDatabaseConfiguration(GraphStorage.DB_NAME, newCfg, true);
+	}
+
+	@Override
 	public void updateClusterConfig(ClusterConfigRequest request) {
 		if (clusterManager() != null) {
 			OHazelcastPlugin plugin = clusterManager().getHazelcastPlugin();

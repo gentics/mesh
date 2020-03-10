@@ -5,6 +5,7 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.doc.GenerateDocumentation;
+import com.gentics.mesh.etc.config.cluster.CoordiationTopology;
 import com.gentics.mesh.etc.config.cluster.CoordinatorMode;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 import com.gentics.mesh.etc.config.env.Option;
@@ -26,6 +27,7 @@ public class ClusterOptions implements Option {
 	public static final String MESH_CLUSTER_VERTX_PORT_ENV = "MESH_CLUSTER_VERTX_PORT";
 	public static final String MESH_CLUSTER_COORDINATOR_MODE_ENV = "MESH_CLUSTER_COORDINATOR_MODE";
 	public static final String MESH_CLUSTER_COORDINATOR_REGEX_ENV = "MESH_CLUSTER_COORDINATOR_REGEX";
+	public static final String MESH_CLUSTER_COORDINATOR_TOPOLOGY_ENV = "MESH_CLUSTER_COORDINATOR_TOPOLOGY";
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("IP or host which is used to announce and reach the instance in the cluster. Gentics Mesh will try to determine the IP automatically but you may use this setting to override this automatic IP handling.")
@@ -60,6 +62,11 @@ public class ClusterOptions implements Option {
 	@JsonPropertyDescription("The coordinator regex can be used to control which nodes in the cluster are eligible to be elected in a coordinator master election. When left empty all database master nodes are eligible.")
 	@EnvironmentVariable(name = MESH_CLUSTER_COORDINATOR_REGEX_ENV, description = "Override the cluster coordinator regex.")
 	private String coordinatorRegex;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("The coordinator topology setting controls whether the coordinator should manage the cluster topology. By default no cluster topology management will be done.")
+	@EnvironmentVariable(name = MESH_CLUSTER_COORDINATOR_TOPOLOGY_ENV, description = "Override the cluster coordinator topology management mode.")
+	private CoordiationTopology coordinatorTopology = CoordiationTopology.UNMANAGED;
 
 	public boolean isEnabled() {
 		return enabled;
@@ -112,6 +119,15 @@ public class ClusterOptions implements Option {
 
 	public ClusterOptions setCoordinatorRegex(String coordinatorRegex) {
 		this.coordinatorRegex = coordinatorRegex;
+		return this;
+	}
+
+	public CoordiationTopology getCoordinatorTopology() {
+		return coordinatorTopology;
+	}
+
+	public ClusterOptions setCoordinatorTopology(CoordiationTopology coordinatorTopology) {
+		this.coordinatorTopology = coordinatorTopology;
 		return this;
 	}
 
