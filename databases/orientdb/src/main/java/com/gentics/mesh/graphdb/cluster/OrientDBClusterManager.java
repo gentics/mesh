@@ -377,11 +377,11 @@ public class OrientDBClusterManager implements ClusterManager {
 		server.activate();
 		if (isClusteringEnabled) {
 			ODistributedServerManager distributedManager = server.getDistributedManager();
-			topologyEventBridge = new TopologyEventBridge(vertx, boot, this);
-			distributedManager.registerLifecycleListener(topologyEventBridge);
 			if (server.getDistributedManager() instanceof OHazelcastPlugin) {
 				hazelcastPlugin = (OHazelcastPlugin) distributedManager;
 			}
+			topologyEventBridge = new TopologyEventBridge(vertx, boot, this, getHazelcast());
+			distributedManager.registerLifecycleListener(topologyEventBridge);
 		}
 		manager.startup();
 		if (isClusteringEnabled) {
@@ -437,6 +437,10 @@ public class OrientDBClusterManager implements ClusterManager {
 
 	public OHazelcastPlugin getHazelcastPlugin() {
 		return hazelcastPlugin;
+	}
+
+	public boolean isClusterTopologyLocked() {
+		return topologyEventBridge.isClusterTopologyLocked();
 	}
 
 }

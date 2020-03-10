@@ -20,6 +20,8 @@ public class ClusterOptions implements Option {
 
 	public static final boolean DEFAULT_CLUSTER_MODE = DISABLED;
 	public static final int DEFAULT_VERTX_PORT = 4848;
+	public static final long DEFAULT_TOPOLOGY_LOCK_TIMEOUT = 0;
+
 	public static final String MESH_CLUSTER_NETWORK_HOST_ENV = "MESH_CLUSTER_NETWORK_HOST";
 	public static final String MESH_CLUSTER_ENABLED_ENV = "MESH_CLUSTER_ENABLED";
 	public static final String MESH_CLUSTER_NAME_ENV = "MESH_CLUSTER_NAME";
@@ -60,6 +62,12 @@ public class ClusterOptions implements Option {
 	@JsonPropertyDescription("The coordinator regex can be used to control which nodes in the cluster are eligible to be elected in a coordinator master election. When left empty all database master nodes are eligible.")
 	@EnvironmentVariable(name = MESH_CLUSTER_COORDINATOR_REGEX_ENV, description = "Override the cluster coordinator regex.")
 	private String coordinatorRegex;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Define the timeout in ms for the topology lock. The topology lock will lock all transactions whenever the cluster topology changes. Default: "
+		+ DEFAULT_TOPOLOGY_LOCK_TIMEOUT + ". A value of 0 will disable the locking mechanism.")
+	@EnvironmentVariable(name = MESH_CLUSTER_COORDINATOR_REGEX_ENV, description = "Override the cluster topology lock timeout in ms.")
+	private long topologyLockTimeout = DEFAULT_TOPOLOGY_LOCK_TIMEOUT;
 
 	public boolean isEnabled() {
 		return enabled;
@@ -115,6 +123,15 @@ public class ClusterOptions implements Option {
 		return this;
 	}
 
+	public long getTopologyLockTimeout() {
+		return topologyLockTimeout;
+	}
+
+	public ClusterOptions setTopologyLockTimeout(long topologyLockTimeout) {
+		this.topologyLockTimeout = topologyLockTimeout;
+		return this;
+	}
+
 	/**
 	 * Validate the options.
 	 * 
@@ -126,4 +143,5 @@ public class ClusterOptions implements Option {
 			Objects.requireNonNull(meshOptions.getNodeName(), "No nodeName was specified within mesh options.");
 		}
 	}
+
 }

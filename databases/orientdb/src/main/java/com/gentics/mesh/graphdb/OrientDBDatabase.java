@@ -335,6 +335,23 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	@Deprecated
 	public Tx tx() {
+		ClusterOptions clusterOptions = options.getClusterOptions();
+		long lockTimeout = clusterOptions.getTopologyLockTimeout();
+		if (clusterOptions.isEnabled() && clusterManager() != null && lockTimeout != 0) {
+			long start = System.currentTimeMillis();
+			while (clusterManager().isClusterTopologyLocked()) {
+				long dur = System.currentTimeMillis() - start;
+				if (dur > lockTimeout) {
+					log.warn("Tx global lock timeout of {" + lockTimeout + "} reached.");
+					break;
+				}
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 		return new OrientDBTx(boot.get(), txProvider, resolver);
 	}
 

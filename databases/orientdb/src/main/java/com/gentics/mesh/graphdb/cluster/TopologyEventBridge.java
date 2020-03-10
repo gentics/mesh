@@ -5,10 +5,13 @@ import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_JOINED;
 import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_JOINING;
 import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_LEFT;
 
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.hazelcast.core.HazelcastInstance;
 import com.orientechnologies.orient.server.distributed.ODistributedLifecycleListener;
 import com.orientechnologies.orient.server.distributed.ODistributedServerManager.DB_STATUS;
 
@@ -26,18 +29,27 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 
 	private static final Logger log = LoggerFactory.getLogger(TopologyEventBridge.class);
 
+	public static final String DB_STATUS_MAP_KEY = "DB_STATUS_MAP";
+
+	public static final String SERVER_STATUS_MAP_KEY = "SERVER_STATUS_MAP";
+
 	private final Lazy<Vertx> vertx;
 
 	private OrientDBClusterManager manager;
 
 	private final Lazy<BootstrapInitializer> boot;
 
+	private Map<String, DB_STATUS> databaseStatusMap;
+	private Map<String, SERVER_STATUS> serverStatusMap;
+
 	private CountDownLatch nodeJoinLatch = new CountDownLatch(1);
 
-	public TopologyEventBridge(Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, OrientDBClusterManager manager) {
+	public TopologyEventBridge(Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, OrientDBClusterManager manager, HazelcastInstance hz) {
 		this.vertx = vertx;
 		this.boot = boot;
 		this.manager = manager;
+		this.databaseStatusMap = hz.getMap(DB_STATUS_MAP_KEY);
+		this.serverStatusMap = hz.getMap(SERVER_STATUS_MAP_KEY);
 	}
 
 	EventBus getEventBus() {
@@ -46,6 +58,8 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 
 	@Override
 	public boolean onNodeJoining(String nodeName) {
+		serverStatusMap.put(nodeName, SERVER_STATUS.JOINING);
+
 		if (log.isDebugEnabled()) {
 			log.debug("Node {" + nodeName + "} is joining the cluster.");
 		}
@@ -56,37 +70,43 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 	}
 
 	@Override
-	public void onNodeJoined(String iNode) {
+	public void onNodeJoined(String nodeName) {
+		serverStatusMap.put(nodeName, SERVER_STATUS.JOINED);
+
 		if (log.isDebugEnabled()) {
-			log.debug("Node {" + iNode + "} joined the cluster.");
+			log.debug("Node {" + nodeName + "} joined the cluster.");
 		}
 		if (isVertxReady()) {
-			getEventBus().publish(CLUSTER_NODE_JOINED.address, iNode);
+			getEventBus().publish(CLUSTER_NODE_JOINED.address, nodeName);
 		}
 	}
 
 	@Override
-	public void onNodeLeft(String iNode) {
+	public void onNodeLeft(String nodeName) {
+		serverStatusMap.remove(nodeName);
+		databaseStatusMap.remove(nodeName);
+
 		if (log.isDebugEnabled()) {
-			log.debug("Node {" + iNode + "} left the cluster");
+			log.debug("Node {" + nodeName + "} left the cluster");
 		}
 		// db.removeNode(iNode);
 		if (isVertxReady()) {
-			getEventBus().publish(CLUSTER_NODE_LEFT.address, iNode);
+			getEventBus().publish(CLUSTER_NODE_LEFT.address, nodeName);
 		}
 	}
 
 	@Override
-	public void onDatabaseChangeStatus(String iNode, String iDatabaseName, DB_STATUS iNewStatus) {
-		log.info("Node {" + iNode + "} Database {" + iDatabaseName + "} changed status {" + iNewStatus.name() + "}");
+	public void onDatabaseChangeStatus(String nodeName, String iDatabaseName, DB_STATUS iNewStatus) {
+		databaseStatusMap.put(nodeName, iNewStatus);
+		log.info("Node {" + nodeName + "} Database {" + iDatabaseName + "} changed status {" + iNewStatus.name() + "}");
 		if (isVertxReady()) {
 			JsonObject statusInfo = new JsonObject();
-			statusInfo.put("node", iNode);
+			statusInfo.put("node", nodeName);
 			statusInfo.put("database", iDatabaseName);
 			statusInfo.put("status", iNewStatus.name());
 			getEventBus().publish(CLUSTER_DATABASE_CHANGE_STATUS.address, statusInfo);
 		}
-		if ("storage".equals(iDatabaseName) && iNewStatus == DB_STATUS.ONLINE && iNode.equals(manager.getNodeName())) {
+		if ("storage".equals(iDatabaseName) && iNewStatus == DB_STATUS.ONLINE && nodeName.equals(manager.getNodeName())) {
 			nodeJoinLatch.countDown();
 		}
 	}
@@ -108,6 +128,33 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 
 	public boolean isVertxReady() {
 		return boot.get().isVertxReady();
+	}
+
+	public boolean isClusterTopologyLocked() {
+		for (Entry<String, DB_STATUS> entry : databaseStatusMap.entrySet()) {
+			DB_STATUS status = entry.getValue();
+			System.out.println(entry.getKey() + " = " + entry.getValue().name());
+			switch (status) {
+			case BACKUP:
+			case SYNCHRONIZING:
+				log.info("Locking since " + entry.getKey() + " is in status " + entry.getValue());
+				return true;
+			default:
+				continue;
+			}
+		}
+		for (Entry<String, SERVER_STATUS> entry : serverStatusMap.entrySet()) {
+			SERVER_STATUS status = entry.getValue();
+			System.out.println(entry.getKey() + " = " + entry.getValue().name());
+			switch (status) {
+			case JOINING:
+				log.info("Locking since " + entry.getKey() + " is joining.");
+				return true;
+			default:
+				continue;
+			}
+		}
+		return false;
 	}
 
 }
