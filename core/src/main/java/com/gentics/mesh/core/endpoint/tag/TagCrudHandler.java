@@ -93,7 +93,7 @@ public class TagCrudHandler extends AbstractHandler {
 	public void handleCreate(InternalActionContext ac, String tagFamilyUuid) {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 
-		try (WriteLock lock = writeLock.lock()) {
+		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				ResultInfo info = utils.eventAction(batch -> {
 					Tag tag = getTagFamily(ac, tagFamilyUuid).create(ac, batch);

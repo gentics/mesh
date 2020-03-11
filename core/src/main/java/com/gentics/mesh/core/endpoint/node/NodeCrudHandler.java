@@ -75,7 +75,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleDelete(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		try (WriteLock lock = writeLock.lock()) {
+		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, () -> {
 				Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, DELETE_PERM);
 				if (node.getProject().getBaseNode().getUuid().equals(node.getUuid())) {
@@ -102,7 +102,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleDeleteLanguage(InternalActionContext ac, String uuid, String languageTag) {
 		validateParameter(uuid, "uuid");
 
-		try (WriteLock lock = writeLock.lock()) {
+		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, () -> {
 				Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, DELETE_PERM);
 				Language language = boot.meshRoot().getLanguageRoot().findByLanguageTag(languageTag);
@@ -130,7 +130,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		validateParameter(uuid, "uuid");
 		validateParameter(toUuid, "toUuid");
 
-		try (WriteLock lock = writeLock.lock()) {
+		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, () -> {
 				Project project = ac.getProject();
 
@@ -252,7 +252,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		validateParameter(uuid, "uuid");
 		validateParameter(tagUuid, "tagUuid");
 
-		try (WriteLock lock = writeLock.lock()) {
+		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				Project project = ac.getProject();
 				Branch branch = ac.getBranch();
@@ -291,7 +291,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		validateParameter(uuid, "uuid");
 		validateParameter(tagUuid, "tagUuid");
 
-		try (WriteLock lock = writeLock.lock()) {
+		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, () -> {
 				Project project = ac.getProject();
 				Branch branch = ac.getBranch();
@@ -340,7 +340,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handlePublish(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		try (WriteLock lock = writeLock.lock()) {
+		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 				utils.bulkableAction(bac -> {
@@ -362,7 +362,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleTakeOffline(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		try (WriteLock lock = writeLock.lock()) {
+		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, () -> {
 				Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 				utils.bulkableAction(bac -> {
@@ -404,7 +404,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handlePublish(InternalActionContext ac, String uuid, String languageTag) {
 		validateParameter(uuid, "uuid");
 
-		try (WriteLock lock = writeLock.lock()) {
+		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 				utils.bulkableAction(bac -> {
@@ -429,7 +429,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleTakeOffline(InternalActionContext ac, String uuid, String languageTag) {
 		validateParameter(uuid, "uuid");
 
-		try (WriteLock lock = writeLock.lock()) {
+		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, () -> {
 				Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 				utils.bulkableAction(bac -> {
@@ -476,7 +476,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleBulkTagUpdate(InternalActionContext ac, String nodeUuid) {
 		validateParameter(nodeUuid, "nodeUuid");
 
-		try (WriteLock lock = writeLock.lock()) {
+		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, (tx) -> {
 				Project project = ac.getProject();
 				Node node = project.getNodeRoot().loadObjectByUuid(ac, nodeUuid, UPDATE_PERM);

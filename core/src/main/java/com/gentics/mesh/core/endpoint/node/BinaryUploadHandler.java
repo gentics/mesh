@@ -260,7 +260,7 @@ public class BinaryUploadHandler extends AbstractHandler {
 			Branch branch = ac.getBranch();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, nodeUuid, UPDATE_PERM);
 
-			try (WriteLock lock = writeLock.lock()) {
+			try (WriteLock lock = writeLock.lock(ac)) {
 				utils.eventAction(batch -> {
 
 					// We need to check whether someone else has stored the binary in the meanwhile

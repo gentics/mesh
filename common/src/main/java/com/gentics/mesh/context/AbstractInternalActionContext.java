@@ -16,6 +16,8 @@ import io.vertx.core.Handler;
  */
 public abstract class AbstractInternalActionContext extends AbstractActionContext implements InternalActionContext {
 
+	private boolean skipWriteLock = false;
+
 	/**
 	 * Field which will store the body model.
 	 */
@@ -61,5 +63,17 @@ public abstract class AbstractInternalActionContext extends AbstractActionContex
 		}
 		return super.fromJson(classOfT);
 	}
+
+	@Override
+	public boolean isSkipWriteLock() {
+		return skipWriteLock;
+	}
+
+	@Override
+	public InternalActionContext skipWriteLock() {
+		this.skipWriteLock =true;
+		return this;
+	}
+
 
 }

@@ -115,7 +115,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 			}
 
 			List<Exception> errorsDetected = migrateLoop(containers, cause, status, (batch, container, errors) -> {
-				try (WriteLock lock = writeLock.lock()) {
+				try (WriteLock lock = writeLock.lock(context)) {
 					migrateContainer(context, batch, container, fromVersion, newSchema, errors, touchedFields);
 				}
 				if (metrics.isEnabled()) {

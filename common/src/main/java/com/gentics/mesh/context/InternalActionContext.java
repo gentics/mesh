@@ -168,6 +168,7 @@ public interface InternalActionContext extends ActionContext, ParameterProviderC
 
 	/**
 	 * Return the requested API version.
+	 * 
 	 * @return
 	 */
 	default int getApiVersion() {
@@ -176,6 +177,7 @@ public interface InternalActionContext extends ActionContext, ParameterProviderC
 
 	/**
 	 * A logger which also logs additional user information. Should be used for logging security related messages.
+	 * 
 	 * @return
 	 */
 	default LogDelegate getSecurityLogger() {
@@ -185,4 +187,17 @@ public interface InternalActionContext extends ActionContext, ParameterProviderC
 	static Handler<RoutingContext> internalHandler(BiConsumer<RoutingContext, InternalActionContext> handler) {
 		return ctx -> handler.accept(ctx, new InternalRoutingActionContextImpl(ctx));
 	}
+
+	/**
+	 * Check whether the write lock should be skipped.
+	 * 
+	 * @return
+	 */
+	boolean isSkipWriteLock();
+
+	/**
+	 * Set a flag to skip the write lock.
+	 * @return
+	 */
+	InternalActionContext skipWriteLock();
 }

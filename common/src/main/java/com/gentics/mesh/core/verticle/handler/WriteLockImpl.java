@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 
@@ -31,20 +32,24 @@ public class WriteLockImpl implements WriteLock {
 	 * Locks writes. Use this to prevent concurrent write transactions.
 	 */
 	@Override
-	public WriteLock lock() {
-		boolean syncWrites = options.getStorageOptions().isSynchronizeWrites();
-		database.blockingTopologyLockCheck();
-		if (syncWrites) {
-			try {
-				boolean isTimeout = !lock.tryAcquire(60, TimeUnit.SECONDS);
-				if (isTimeout) {
-					throw new RuntimeException("Got timeout while waiting for write lock.");
+	public WriteLock lock(InternalActionContext ac) {
+		if (ac.isSkipWriteLock()) {
+			return this;
+		} else {
+			boolean syncWrites = options.getStorageOptions().isSynchronizeWrites();
+			database.blockingTopologyLockCheck();
+			if (syncWrites) {
+				try {
+					boolean isTimeout = !lock.tryAcquire(60, TimeUnit.SECONDS);
+					if (isTimeout) {
+						throw new RuntimeException("Got timeout while waiting for write lock.");
+					}
+				} catch (InterruptedException e) {
+					throw new RuntimeException(e);
 				}
-			} catch (InterruptedException e) {
-				throw new RuntimeException(e);
 			}
+			return this;
 		}
-		return this;
 	}
 
 }

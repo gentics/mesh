@@ -96,7 +96,7 @@ public class HandlerUtilities {
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void deleteElement(InternalActionContext ac, TxAction1<RootVertex<T>> handler,
 		String uuid) {
-		try (WriteLock lock = writeLock.lock()) {
+		try (WriteLock lock = writeLock.lock(ac)) {
 			syncTx(ac, () -> {
 				RootVertex<T> root = handler.handle();
 				T element = root.loadObjectByUuid(ac, uuid, DELETE_PERM);
@@ -139,7 +139,7 @@ public class HandlerUtilities {
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createOrUpdateElement(InternalActionContext ac, String uuid,
 		TxAction1<RootVertex<T>> handler) {
-		try (WriteLock lock = writeLock.lock()) {
+		try (WriteLock lock = writeLock.lock(ac)) {
 			AtomicBoolean created = new AtomicBoolean(false);
 			syncTx(ac, tx -> {
 				RootVertex<T> root = handler.handle();

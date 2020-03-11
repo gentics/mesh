@@ -103,7 +103,7 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 
 			List<Exception> errorsDetected = migrateLoop(fieldContainersResult, cause, status,
 				(batch, container, errors) -> {
-					try (WriteLock lock = writeLock.lock()) {
+					try (WriteLock lock = writeLock.lock(ac)) {
 						migrateMicronodeContainer(ac, batch, branch, fromVersion, toVersion, container, touchedFields, errors);
 					}
 				});
