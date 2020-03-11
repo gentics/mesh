@@ -173,17 +173,21 @@ By default the coordination layer is disabled and first needs to be enabled in t
 
 The `cluster.coordinatorMode` setting or `MESH_CLUSTER_COORDINATOR_MODE` environment variable can control how the coordinator should behave.
 
+* `DISABLED` - In this mode no coordination of requests will be done.
+
 * `CUD` - In this mode only write requests (Create, Update, Delete) will be delegated to the elected master. All other requests will be directly processed by the instance.
 
 * `ALL` - In this mode all requests (CRUD) will be delegated to the elected master.
 
 ==== Topology management
 
-The `cluster.coordinatorTopology` setting or `MESH_CLUSTER_COORDINATOR_TOPOLOGY_ENV` environment variable controls whether the coordinator will also manage the current cluster topology. By default no cluster topology management will be done.
+The `cluster.coordinatorTopology` setting or `MESH_CLUSTER_COORDINATOR_TOPOLOGY` environment variable controls whether the coordinator will also manage the current cluster topology. By default no cluster topology management will be done.
 
 * `UNMANAGED` - Don't manage cluster topology.
 
 * `MASTER_REPLICA` - Use the elected master also as database master and make other nodes in the cluster replicas.
+
+NOTE: The topology can only be managed when the coordination mode is not disabled. 
 
 === Master Election
 

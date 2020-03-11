@@ -5,7 +5,7 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.doc.GenerateDocumentation;
-import com.gentics.mesh.etc.config.cluster.CoordiationTopology;
+import com.gentics.mesh.etc.config.cluster.CoordinationTopology;
 import com.gentics.mesh.etc.config.cluster.CoordinatorMode;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 import com.gentics.mesh.etc.config.env.Option;
@@ -66,7 +66,7 @@ public class ClusterOptions implements Option {
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("The coordinator topology setting controls whether the coordinator should manage the cluster topology. By default no cluster topology management will be done.")
 	@EnvironmentVariable(name = MESH_CLUSTER_COORDINATOR_TOPOLOGY_ENV, description = "Override the cluster coordinator topology management mode.")
-	private CoordiationTopology coordinatorTopology = CoordiationTopology.UNMANAGED;
+	private CoordinationTopology coordinatorTopology = CoordinationTopology.UNMANAGED;
 
 	public boolean isEnabled() {
 		return enabled;
@@ -122,11 +122,11 @@ public class ClusterOptions implements Option {
 		return this;
 	}
 
-	public CoordiationTopology getCoordinatorTopology() {
+	public CoordinationTopology getCoordinatorTopology() {
 		return coordinatorTopology;
 	}
 
-	public ClusterOptions setCoordinatorTopology(CoordiationTopology coordinatorTopology) {
+	public ClusterOptions setCoordinatorTopology(CoordinationTopology coordinatorTopology) {
 		this.coordinatorTopology = coordinatorTopology;
 		return this;
 	}

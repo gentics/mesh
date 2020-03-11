@@ -1,6 +1,6 @@
 package com.gentics.mesh.etc.config.cluster;
 
-public enum CoordiationTopology {
+public enum CoordinationTopology {
 
 	/**
 	 * Don't manage cluster topology.

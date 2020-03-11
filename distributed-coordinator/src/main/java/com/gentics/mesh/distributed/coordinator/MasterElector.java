@@ -13,7 +13,7 @@ import com.gentics.mesh.core.rest.admin.cluster.ClusterServerConfig;
 import com.gentics.mesh.core.rest.admin.cluster.ServerRole;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.cluster.CoordiationTopology;
+import com.gentics.mesh.etc.config.cluster.CoordinationTopology;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.hazelcast.core.Cluster;
 import com.hazelcast.core.HazelcastInstance;
@@ -142,7 +142,7 @@ public class MasterElector {
 			boolean hasMaster = foundMaster.isPresent();
 			boolean isElectible = isElectable(localMember());
 			if (!hasMaster && isElectible) {
-				if (clusterOptions.getCoordinatorTopology() == CoordiationTopology.MASTER_REPLICA) {
+				if (clusterOptions.getCoordinatorTopology() == CoordinationTopology.MASTER_REPLICA) {
 					database.setToMaster();
 				}
 				localMember().setBooleanAttribute(MASTER, true);
@@ -177,7 +177,7 @@ public class MasterElector {
 			}
 		}
 
-		if (clusterOptions.getCoordinatorTopology() == CoordiationTopology.UNMANAGED) {
+		if (clusterOptions.getCoordinatorTopology() == CoordinationTopology.UNMANAGED) {
 			ClusterConfigResponse config = database.loadClusterConfig();
 			Optional<ClusterServerConfig> databaseServer = config.getServers().stream().filter(s -> s.getName().equals(name)).findFirst();
 			if (databaseServer.isPresent()) {
@@ -249,7 +249,7 @@ public class MasterElector {
 				giveUpMasterFlag();
 			});
 			executeIfFromLocal(msg, m -> {
-				if (clusterOptions.getCoordinatorTopology() == CoordiationTopology.MASTER_REPLICA) {
+				if (clusterOptions.getCoordinatorTopology() == CoordinationTopology.MASTER_REPLICA) {
 					database.setToMaster();
 				}
 				Member localMember = localMember();
