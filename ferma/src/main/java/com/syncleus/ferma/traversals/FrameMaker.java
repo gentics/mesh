@@ -48,8 +48,6 @@ class FrameMaker {
 	}
 
 	<N> N makeFrame(Object o) {
-		if (o instanceof FramingMap)
-			o = ((FramingMap) o).getDelegate();
 		if (o instanceof Pair) {
 			final Pair pair = (Pair) o;
 			o = new Pair(makeFrame(pair.getA()), makeFrame(pair.getB()));
@@ -65,8 +63,6 @@ class FrameMaker {
 	}
 
 	<N> N makeFrameExplicit(Object o) {
-		if (o instanceof FramingMap)
-			o = ((FramingMap) o).getDelegate();
 		if (o instanceof Pair) {
 			final Pair pair = (Pair) o;
 			o = new Pair(makeFrameExplicit(pair.getA()), makeFrameExplicit(pair.getB()));
