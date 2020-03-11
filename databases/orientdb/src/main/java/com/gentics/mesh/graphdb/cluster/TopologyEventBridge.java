@@ -130,6 +130,11 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 		return boot.get().isVertxReady();
 	}
 
+	/**
+	 * Check whether a topology change in the database / cluster setup is requiring a lock.
+	 * 
+	 * @return
+	 */
 	public boolean isClusterTopologyLocked() {
 		for (Entry<String, DB_STATUS> entry : databaseStatusMap.entrySet()) {
 			DB_STATUS status = entry.getValue();

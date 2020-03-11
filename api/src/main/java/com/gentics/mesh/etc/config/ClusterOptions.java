@@ -28,6 +28,7 @@ public class ClusterOptions implements Option {
 	public static final String MESH_CLUSTER_VERTX_PORT_ENV = "MESH_CLUSTER_VERTX_PORT";
 	public static final String MESH_CLUSTER_COORDINATOR_MODE_ENV = "MESH_CLUSTER_COORDINATOR_MODE";
 	public static final String MESH_CLUSTER_COORDINATOR_REGEX_ENV = "MESH_CLUSTER_COORDINATOR_REGEX";
+	public static final String MESH_CLUSTER_COORDINATOR_LOCK_TIMEOUT_ENV = "MESH_CLUSTER_COORDINATOR_LOCK_TIMEOUT";
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("IP or host which is used to announce and reach the instance in the cluster. Gentics Mesh will try to determine the IP automatically but you may use this setting to override this automatic IP handling.")
@@ -66,7 +67,7 @@ public class ClusterOptions implements Option {
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Define the timeout in ms for the topology lock. The topology lock will lock all transactions whenever the cluster topology changes. Default: "
 		+ DEFAULT_TOPOLOGY_LOCK_TIMEOUT + ". A value of 0 will disable the locking mechanism.")
-	@EnvironmentVariable(name = MESH_CLUSTER_COORDINATOR_REGEX_ENV, description = "Override the cluster topology lock timeout in ms.")
+	@EnvironmentVariable(name = MESH_CLUSTER_COORDINATOR_LOCK_TIMEOUT_ENV, description = "Override the cluster topology lock timeout in ms.")
 	private long topologyLockTimeout = DEFAULT_TOPOLOGY_LOCK_TIMEOUT;
 
 	public boolean isEnabled() {

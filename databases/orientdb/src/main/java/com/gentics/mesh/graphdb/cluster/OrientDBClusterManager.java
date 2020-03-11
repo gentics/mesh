@@ -439,6 +439,11 @@ public class OrientDBClusterManager implements ClusterManager {
 		return hazelcastPlugin;
 	}
 
+	/**
+	 * Check whether a topology change in the database / cluster setup is requiring a lock.
+	 * 
+	 * @return
+	 */
 	public boolean isClusterTopologyLocked() {
 		if (topologyEventBridge == null) {
 			return false;

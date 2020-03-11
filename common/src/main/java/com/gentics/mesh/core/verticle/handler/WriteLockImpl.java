@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.verticle.handler;
 
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -13,7 +14,7 @@ public class WriteLockImpl implements WriteLock {
 
 	private final Semaphore lock = new Semaphore(1);
 	private final Database database;
-	private MeshOptions options;
+	private final MeshOptions options;
 
 	@Inject
 	public WriteLockImpl(MeshOptions options, Database database) {
@@ -23,7 +24,7 @@ public class WriteLockImpl implements WriteLock {
 
 	@Override
 	public void close() {
-		unlock();
+		lock.release();
 	}
 
 	/**
@@ -35,19 +36,15 @@ public class WriteLockImpl implements WriteLock {
 		database.blockingTopologyLockCheck();
 		if (syncWrites) {
 			try {
-				lock.acquire();
+				boolean isTimeout = !lock.tryAcquire(60, TimeUnit.SECONDS);
+				if (isTimeout) {
+					throw new RuntimeException("Got timeout while waiting for write lock.");
+				}
 			} catch (InterruptedException e) {
 				throw new RuntimeException(e);
 			}
 		}
 		return this;
-	}
-
-	/**
-	 * Releases the lock that was acquired in {@link #lock()}.
-	 */
-	public void unlock() {
-		lock.release();
 	}
 
 }

@@ -22,7 +22,6 @@ import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
-import com.gentics.mesh.core.verticle.handler.WriteLockImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.ProjectPurgeParameters;
 
@@ -34,7 +33,7 @@ public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResp
 	private BootstrapInitializer boot;
 
 	@Inject
-	public ProjectCrudHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, WriteLockImpl writeLock) {
+	public ProjectCrudHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, WriteLock writeLock) {
 		super(db, utils, writeLock);
 		this.boot = boot;
 	}

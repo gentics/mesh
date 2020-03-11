@@ -29,7 +29,6 @@ import com.gentics.mesh.core.rest.event.node.SchemaMigrationCause;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
-import com.gentics.mesh.core.verticle.handler.WriteLockImpl;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.metric.MetricsService;
@@ -50,10 +49,11 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	private static final Logger log = LoggerFactory.getLogger(NodeMigrationHandler.class);
 
 	private final AtomicLong migrationGauge;
-	private final WriteLockImpl writeLock;
+	private final WriteLock writeLock;
 
 	@Inject
-	public NodeMigrationHandler(Database db, BinaryUploadHandler nodeFieldAPIHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider, WriteLockImpl writeLock) {
+	public NodeMigrationHandler(Database db, BinaryUploadHandler nodeFieldAPIHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider,
+		WriteLock writeLock) {
 		super(db, nodeFieldAPIHandler, metrics, batchProvider);
 		migrationGauge = metrics.longGauge(NODE_MIGRATION_PENDING);
 		this.writeLock = writeLock;
@@ -77,7 +77,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 
 			// Prepare the migration - Collect the migration scripts
 			Set<String> touchedFields = new HashSet<>();
-		SchemaModel newSchema = db.tx(() -> toVersion.getSchema());
+			SchemaModel newSchema = db.tx(() -> toVersion.getSchema());
 
 			try {
 				db.tx(() -> {
@@ -114,14 +114,14 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 				return Completable.complete();
 			}
 
-		List<Exception> errorsDetected = migrateLoop(containers, cause, status, (batch, container, errors) -> {
-			try (WriteLock lock = writeLock.lock()) {
-				migrateContainer(context, batch, container, fromVersion, newSchema, errors, touchedFields);
-			}
-			if (metrics.isEnabled()) {
-				migrationGauge.decrementAndGet();
-			}
-		});
+			List<Exception> errorsDetected = migrateLoop(containers, cause, status, (batch, container, errors) -> {
+				try (WriteLock lock = writeLock.lock()) {
+					migrateContainer(context, batch, container, fromVersion, newSchema, errors, touchedFields);
+				}
+				if (metrics.isEnabled()) {
+					migrationGauge.decrementAndGet();
+				}
+			});
 
 			// TODO prepare errors. They should be easy to understand and to grasp
 			Completable result = Completable.complete();
@@ -152,8 +152,8 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	 * @return
 	 */
 	private void migrateContainer(NodeMigrationActionContextImpl ac, EventQueueBatch batch, NodeGraphFieldContainer container,
-								  GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion, SchemaModel newSchema, List<Exception> errorsDetected,
-								  Set<String> touchedFields) {
+		GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion, SchemaModel newSchema, List<Exception> errorsDetected,
+		Set<String> touchedFields) {
 
 		String containerUuid = container.getUuid();
 		String parentNodeUuid = container.getParentNode().getUuid();
@@ -217,8 +217,9 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	 * @throws Exception
 	 */
 	private void migrateDraftContainer(NodeMigrationActionContextImpl ac, EventQueueBatch sqb, Branch branch, Node node,
-									   NodeGraphFieldContainer container, GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion, SchemaContainerVersion toVersion, Set<String> touchedFields,
-									   SchemaModel newSchema, VersionNumber nextDraftVersion)
+		NodeGraphFieldContainer container, GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion, SchemaContainerVersion toVersion,
+		Set<String> touchedFields,
+		SchemaModel newSchema, VersionNumber nextDraftVersion)
 		throws Exception {
 
 		String branchUuid = branch.getUuid();
@@ -276,7 +277,8 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	 * @throws Exception
 	 */
 	private VersionNumber migratePublishedContainer(NodeMigrationActionContextImpl ac, EventQueueBatch sqb, Branch branch, Node node,
-													NodeGraphFieldContainer container, GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion, SchemaContainerVersion toVersion, Set<String> touchedFields, SchemaModel newSchema) throws Exception {
+		NodeGraphFieldContainer container, GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion, SchemaContainerVersion toVersion,
+		Set<String> touchedFields, SchemaModel newSchema) throws Exception {
 
 		String languageTag = container.getLanguageTag();
 		String branchUuid = branch.getUuid();

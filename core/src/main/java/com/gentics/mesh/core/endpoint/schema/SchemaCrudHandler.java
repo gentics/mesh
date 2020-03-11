@@ -37,7 +37,6 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
-import com.gentics.mesh.core.verticle.handler.WriteLockImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.SchemaUpdateParameters;
@@ -56,7 +55,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 	@Inject
 	public SchemaCrudHandler(Database db, SchemaComparator comparator, Lazy<BootstrapInitializer> boot,
-		HandlerUtilities utils, NodeIndexHandler nodeIndexHandler, WriteLockImpl writeLock) {
+		HandlerUtilities utils, NodeIndexHandler nodeIndexHandler, WriteLock writeLock) {
 		super(db, utils, writeLock);
 		this.comparator = comparator;
 		this.boot = boot;

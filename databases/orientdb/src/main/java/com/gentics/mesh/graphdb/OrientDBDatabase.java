@@ -336,7 +336,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	@Deprecated
 	public Tx tx() {
-		blockingTopologyLockCheck();
 		return new OrientDBTx(boot.get(), txProvider, resolver);
 	}
 
@@ -355,7 +354,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 				try {
 					Thread.sleep(100);
 				} catch (InterruptedException e) {
-					e.printStackTrace();
+					log.error("Interrupting topology lock delay.", e);
+					break;
 				}
 			}
 		}
