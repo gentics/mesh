@@ -11,7 +11,9 @@ import javax.inject.Singleton;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterServerConfig;
 import com.gentics.mesh.core.rest.admin.cluster.ServerRole;
+import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.cluster.CoordinationTopology;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.hazelcast.core.Cluster;
 import com.hazelcast.core.HazelcastInstance;
@@ -52,6 +54,7 @@ public class MasterElector {
 	private final static String MESH_NODE_NAME_ATTR = "mesh_node_name";
 
 	private final MeshOptions options;
+	private final ClusterOptions clusterOptions;
 
 	private final Database database;
 
@@ -71,10 +74,11 @@ public class MasterElector {
 	public MasterElector(Lazy<HazelcastInstance> hazelcast, MeshOptions options, Database database) {
 		this.hazelcast = hazelcast;
 		this.options = options;
+		this.clusterOptions = options.getClusterOptions();
 		this.database = database;
 
 		// Setup regex for master election
-		String regexStr = options.getClusterOptions().getCoordinatorRegex();
+		String regexStr = clusterOptions.getCoordinatorRegex();
 		if (regexStr != null) {
 			try {
 				coordinatorRegex = Pattern.compile(regexStr);
@@ -138,6 +142,9 @@ public class MasterElector {
 			boolean hasMaster = foundMaster.isPresent();
 			boolean isElectible = isElectable(localMember());
 			if (!hasMaster && isElectible) {
+				if (clusterOptions.getCoordinatorTopology() == CoordinationTopology.MASTER_REPLICA) {
+					database.setToMaster();
+				}
 				localMember().setBooleanAttribute(MASTER, true);
 				log.info("Cluster node was elected as new master");
 			} else if (cluster.getMembers().stream()
@@ -170,16 +177,19 @@ public class MasterElector {
 			}
 		}
 
-		ClusterConfigResponse config = database.loadClusterConfig();
-		Optional<ClusterServerConfig> databaseServer = config.getServers().stream().filter(s -> s.getName().equals(name)).findFirst();
-		if (databaseServer.isPresent()) {
-			// Replicas are not eligible for master election
-			ServerRole role = databaseServer.get().getRole();
-			if (role == ServerRole.REPLICA) {
-				log.info("Node {" + name + "} is a replica and thus not eligible for election.");
-				return false;
+		if (clusterOptions.getCoordinatorTopology() == CoordinationTopology.UNMANAGED) {
+			ClusterConfigResponse config = database.loadClusterConfig();
+			Optional<ClusterServerConfig> databaseServer = config.getServers().stream().filter(s -> s.getName().equals(name)).findFirst();
+			if (databaseServer.isPresent()) {
+				// Replicas are not eligible for master election
+				ServerRole role = databaseServer.get().getRole();
+				if (role == ServerRole.REPLICA) {
+					log.info("Node {" + name + "} is a replica and thus not eligible for election.");
+					return false;
+				}
 			}
 		}
+
 		// TODO test connection?
 		return true;
 	}
@@ -239,6 +249,9 @@ public class MasterElector {
 				giveUpMasterFlag();
 			});
 			executeIfFromLocal(msg, m -> {
+				if (clusterOptions.getCoordinatorTopology() == CoordinationTopology.MASTER_REPLICA) {
+					database.setToMaster();
+				}
 				Member localMember = localMember();
 				localMember.setBooleanAttribute(MASTER, true);
 			});

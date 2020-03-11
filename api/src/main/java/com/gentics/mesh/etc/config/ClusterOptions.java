@@ -5,6 +5,7 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.doc.GenerateDocumentation;
+import com.gentics.mesh.etc.config.cluster.CoordinationTopology;
 import com.gentics.mesh.etc.config.cluster.CoordinatorMode;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 import com.gentics.mesh.etc.config.env.Option;
@@ -29,6 +30,7 @@ public class ClusterOptions implements Option {
 	public static final String MESH_CLUSTER_COORDINATOR_MODE_ENV = "MESH_CLUSTER_COORDINATOR_MODE";
 	public static final String MESH_CLUSTER_COORDINATOR_REGEX_ENV = "MESH_CLUSTER_COORDINATOR_REGEX";
 	public static final String MESH_CLUSTER_TOPOLOGY_LOCK_TIMEOUT_ENV = "MESH_CLUSTER_TOPOLOGY_LOCK_TIMEOUT";
+	public static final String MESH_CLUSTER_COORDINATOR_TOPOLOGY_ENV = "MESH_CLUSTER_COORDINATOR_TOPOLOGY";
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("IP or host which is used to announce and reach the instance in the cluster. Gentics Mesh will try to determine the IP automatically but you may use this setting to override this automatic IP handling.")
@@ -69,6 +71,11 @@ public class ClusterOptions implements Option {
 		+ DEFAULT_TOPOLOGY_LOCK_TIMEOUT + ". A value of 0 will disable the locking mechanism.")
 	@EnvironmentVariable(name = MESH_CLUSTER_TOPOLOGY_LOCK_TIMEOUT_ENV, description = "Override the cluster topology lock timeout in ms.")
 	private long topologyLockTimeout = DEFAULT_TOPOLOGY_LOCK_TIMEOUT;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("The coordinator topology setting controls whether the coordinator should manage the cluster topology. By default no cluster topology management will be done.")
+	@EnvironmentVariable(name = MESH_CLUSTER_COORDINATOR_TOPOLOGY_ENV, description = "Override the cluster coordinator topology management mode.")
+	private CoordinationTopology coordinatorTopology = CoordinationTopology.UNMANAGED;
 
 	public boolean isEnabled() {
 		return enabled;
@@ -130,6 +137,15 @@ public class ClusterOptions implements Option {
 
 	public ClusterOptions setTopologyLockTimeout(long topologyLockTimeout) {
 		this.topologyLockTimeout = topologyLockTimeout;
+		return this;
+	}
+
+	public CoordinationTopology getCoordinatorTopology() {
+		return coordinatorTopology;
+	}
+
+	public ClusterOptions setCoordinatorTopology(CoordinationTopology coordinatorTopology) {
+		this.coordinatorTopology = coordinatorTopology;
 		return this;
 	}
 

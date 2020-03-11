@@ -16,6 +16,7 @@ import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
+import com.gentics.mesh.core.rest.admin.cluster.ServerRole;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.cluster.ClusterManager;
 import com.gentics.mesh.graphdb.model.MeshElement;
@@ -232,8 +233,14 @@ public class Neo4jDatabase extends AbstractDatabase {
 
 	}
 
+
 	@Override
 	public void blockingTopologyLockCheck() {
+
+	}
+
+	@Override
+	public void setToMaster() {
 
 	}
 
