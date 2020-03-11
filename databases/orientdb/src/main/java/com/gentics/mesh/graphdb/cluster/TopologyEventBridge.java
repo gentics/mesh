@@ -133,7 +133,9 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 	public boolean isClusterTopologyLocked() {
 		for (Entry<String, DB_STATUS> entry : databaseStatusMap.entrySet()) {
 			DB_STATUS status = entry.getValue();
-			System.out.println(entry.getKey() + " = " + entry.getValue().name());
+			if (log.isDebugEnabled()) {
+				log.debug("Database: " + entry.getKey() + " = " + entry.getValue().name());
+			}
 			switch (status) {
 			case BACKUP:
 			case SYNCHRONIZING:
@@ -145,7 +147,9 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 		}
 		for (Entry<String, SERVER_STATUS> entry : serverStatusMap.entrySet()) {
 			SERVER_STATUS status = entry.getValue();
-			System.out.println(entry.getKey() + " = " + entry.getValue().name());
+			if (log.isDebugEnabled()) {
+				log.debug("Server: " + entry.getKey() + " = " + entry.getValue().name());
+			}
 			switch (status) {
 			case JOINING:
 				log.info("Locking since " + entry.getKey() + " is joining.");

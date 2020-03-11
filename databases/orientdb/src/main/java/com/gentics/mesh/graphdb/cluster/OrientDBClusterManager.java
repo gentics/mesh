@@ -440,7 +440,11 @@ public class OrientDBClusterManager implements ClusterManager {
 	}
 
 	public boolean isClusterTopologyLocked() {
-		return topologyEventBridge.isClusterTopologyLocked();
+		if (topologyEventBridge == null) {
+			return false;
+		} else {
+			return topologyEventBridge.isClusterTopologyLocked();
+		}
 	}
 
 }

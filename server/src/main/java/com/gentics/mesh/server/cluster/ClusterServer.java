@@ -28,13 +28,15 @@ public class ClusterServer {
 		options.setInitialAdminPassword("admin");
 		options.setForceInitialAdminPasswordReset(false);
 
-		options.getClusterOptions().setCoordinatorMode(CoordinatorMode.ALL);
-		options.getClusterOptions().setCoordinatorRegex("gentics-mesh-[0-9]");
+		//options.getClusterOptions().setCoordinatorMode(CoordinatorMode.ALL);
+		//options.getClusterOptions().setCoordinatorRegex("gentics-mesh-[0-9]");
+		options.getStorageOptions().setSynchronizeWrites(true);
 		options.getStorageOptions().setStartServer(true);
 		options.getClusterOptions().setClusterName("test");
 		options.getClusterOptions().setEnabled(true);
 		options.getSearchOptions().setUrl(null);
 		options.getSearchOptions().setStartEmbedded(false);
+		options.getClusterOptions().setTopologyLockTimeout(240_000);
 		options.getDebugInfoOptions().setLogEnabled(false);
 		return options;
 	}
