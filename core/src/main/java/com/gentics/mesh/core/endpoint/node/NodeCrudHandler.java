@@ -37,7 +37,6 @@ import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
-import com.gentics.mesh.core.verticle.handler.WriteLockImpl;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.NodeParameters;
@@ -477,17 +476,19 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleBulkTagUpdate(InternalActionContext ac, String nodeUuid) {
 		validateParameter(nodeUuid, "nodeUuid");
 
-		db.asyncTx(() -> {
-			try (WriteLock lock = writeLock.lock()) {
+		try (WriteLock lock = writeLock.lock()) {
+			utils.syncTx(ac, (tx) -> {
 				Project project = ac.getProject();
 				Node node = project.getNodeRoot().loadObjectByUuid(ac, nodeUuid, UPDATE_PERM);
 				TransformablePage<? extends Tag> page = utils.eventAction(batch -> {
 					return node.updateTags(ac, batch);
 				});
 
-				return page.transformToRest(ac, 0);
-			}
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+				return page.transformToRestSync(ac, 0);
+			}, model -> {
+				ac.send(model, OK);
+			});
+		}
 
 	}
 

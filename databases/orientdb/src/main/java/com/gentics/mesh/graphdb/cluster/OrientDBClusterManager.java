@@ -440,8 +440,7 @@ public class OrientDBClusterManager implements ClusterManager {
 	}
 
 	/**
-	 * Check whether a topology change in the database / cluster setup is requiring a lock.
-	 * 
+	 * @see TopologyEventBridge#isClusterTopologyLocked()
 	 * @return
 	 */
 	public boolean isClusterTopologyLocked() {
