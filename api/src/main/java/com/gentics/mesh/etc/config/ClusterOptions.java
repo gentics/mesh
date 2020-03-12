@@ -22,6 +22,7 @@ public class ClusterOptions implements Option {
 	public static final boolean DEFAULT_CLUSTER_MODE = DISABLED;
 	public static final int DEFAULT_VERTX_PORT = 4848;
 	public static final long DEFAULT_TOPOLOGY_LOCK_TIMEOUT = 0;
+	public static final long DEFAULT_TOPOLOGY_LOCK_DELAY = 10_000; // 10 seconds
 
 	public static final String MESH_CLUSTER_NETWORK_HOST_ENV = "MESH_CLUSTER_NETWORK_HOST";
 	public static final String MESH_CLUSTER_ENABLED_ENV = "MESH_CLUSTER_ENABLED";
@@ -30,6 +31,7 @@ public class ClusterOptions implements Option {
 	public static final String MESH_CLUSTER_COORDINATOR_MODE_ENV = "MESH_CLUSTER_COORDINATOR_MODE";
 	public static final String MESH_CLUSTER_COORDINATOR_REGEX_ENV = "MESH_CLUSTER_COORDINATOR_REGEX";
 	public static final String MESH_CLUSTER_TOPOLOGY_LOCK_TIMEOUT_ENV = "MESH_CLUSTER_TOPOLOGY_LOCK_TIMEOUT";
+	public static final String MESH_CLUSTER_TOPOLOGY_LOCK_DELAY_ENV = "MESH_CLUSTER_TOPOLOGY_LOCK_DELAY";
 	public static final String MESH_CLUSTER_COORDINATOR_TOPOLOGY_ENV = "MESH_CLUSTER_COORDINATOR_TOPOLOGY";
 
 	@JsonProperty(required = false)
@@ -71,6 +73,12 @@ public class ClusterOptions implements Option {
 		+ DEFAULT_TOPOLOGY_LOCK_TIMEOUT + ". A value of 0 will disable the locking mechanism.")
 	@EnvironmentVariable(name = MESH_CLUSTER_TOPOLOGY_LOCK_TIMEOUT_ENV, description = "Override the cluster topology lock timeout in ms.")
 	private long topologyLockTimeout = DEFAULT_TOPOLOGY_LOCK_TIMEOUT;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Define the delay in ms for the topology lock. It will delay the lock after receiving the database online event. Default: "
+		+ DEFAULT_TOPOLOGY_LOCK_DELAY + ". A value of 0 will disable the delay mechanism.")
+	@EnvironmentVariable(name = MESH_CLUSTER_TOPOLOGY_LOCK_DELAY_ENV, description = "Override the cluster topology lock delay in ms.")
+	private long topologyLockDelay = DEFAULT_TOPOLOGY_LOCK_DELAY;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("The coordinator topology setting controls whether the coordinator should manage the cluster topology. By default no cluster topology management will be done.")
@@ -146,6 +154,15 @@ public class ClusterOptions implements Option {
 
 	public ClusterOptions setCoordinatorTopology(CoordinationTopology coordinatorTopology) {
 		this.coordinatorTopology = coordinatorTopology;
+		return this;
+	}
+
+	public long getTopologyLockDelay() {
+		return topologyLockDelay;
+	}
+
+	public ClusterOptions setTopologyLockDelay(long topologyLockDelay) {
+		this.topologyLockDelay = topologyLockDelay;
 		return this;
 	}
 

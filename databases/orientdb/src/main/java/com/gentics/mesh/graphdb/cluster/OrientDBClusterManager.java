@@ -380,7 +380,7 @@ public class OrientDBClusterManager implements ClusterManager {
 			if (server.getDistributedManager() instanceof OHazelcastPlugin) {
 				hazelcastPlugin = (OHazelcastPlugin) distributedManager;
 			}
-			topologyEventBridge = new TopologyEventBridge(vertx, boot, this, getHazelcast());
+			topologyEventBridge = new TopologyEventBridge(options, vertx, boot, this, getHazelcast());
 			distributedManager.registerLifecycleListener(topologyEventBridge);
 		}
 		manager.startup();

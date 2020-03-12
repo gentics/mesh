@@ -11,6 +11,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.etc.config.ClusterOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.hazelcast.core.HazelcastInstance;
 import com.orientechnologies.orient.server.distributed.ODistributedLifecycleListener;
 import com.orientechnologies.orient.server.distributed.ODistributedServerManager.DB_STATUS;
@@ -44,7 +46,11 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 
 	private CountDownLatch nodeJoinLatch = new CountDownLatch(1);
 
-	public TopologyEventBridge(Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, OrientDBClusterManager manager, HazelcastInstance hz) {
+	private ClusterOptions clusterOptions;
+
+	public TopologyEventBridge(MeshOptions options, Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, OrientDBClusterManager manager,
+		HazelcastInstance hz) {
+		this.clusterOptions = options.getClusterOptions();
 		this.vertx = vertx;
 		this.boot = boot;
 		this.manager = manager;
@@ -59,6 +65,10 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 	@Override
 	public boolean onNodeJoining(String nodeName) {
 		serverStatusMap.put(nodeName, SERVER_STATUS.JOINING);
+		// Set the db into sync as well since we want to prevent
+		// the lock from being released in between db status changes
+		// and server online status.
+		databaseStatusMap.put(nodeName, DB_STATUS.SYNCHRONIZING);
 
 		if (log.isDebugEnabled()) {
 			log.debug("Node {" + nodeName + "} is joining the cluster.");
@@ -72,7 +82,6 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 	@Override
 	public void onNodeJoined(String nodeName) {
 		serverStatusMap.put(nodeName, SERVER_STATUS.JOINED);
-
 		if (log.isDebugEnabled()) {
 			log.debug("Node {" + nodeName + "} joined the cluster.");
 		}
@@ -97,6 +106,17 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 
 	@Override
 	public void onDatabaseChangeStatus(String nodeName, String iDatabaseName, DB_STATUS iNewStatus) {
+		if (iNewStatus == DB_STATUS.ONLINE) {
+			// Delay the online status a few seconds
+			long postOnlineDelay = clusterOptions.getTopologyLockDelay();
+			if (postOnlineDelay != 0) {
+				try {
+					Thread.sleep(postOnlineDelay);
+				} catch (InterruptedException e) {
+					log.warn("Topology lock dalay was interrupted", e);
+				}
+			}
+		}
 		databaseStatusMap.put(nodeName, iNewStatus);
 		log.info("Node {" + nodeName + "} Database {" + iDatabaseName + "} changed status {" + iNewStatus.name() + "}");
 		if (isVertxReady()) {
