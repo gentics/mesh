@@ -344,6 +344,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			newFieldDefinition()
 				.name("referencedBy")
 				.description("Loads nodes that reference this node.")
+				.argument(createPagingArgs())
 				.argument(nodeReferenceFilter(context).createFilterArgument())
 				.type(new GraphQLTypeReference(NODE_REFERENCE_PAGE_TYPE_NAME))
 				.dataFetcher(env -> {
