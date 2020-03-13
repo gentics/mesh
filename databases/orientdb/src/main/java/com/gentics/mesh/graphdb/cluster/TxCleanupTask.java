@@ -31,7 +31,7 @@ public class TxCleanupTask implements Handler<Long> {
 
 	private final Counter interruptCounter;
 
-    private GraphStorageOptions storageOptions;
+	private GraphStorageOptions storageOptions;
 
 	@Inject
 	public TxCleanupTask(MeshOptions options, MetricsService service) {
@@ -68,7 +68,7 @@ public class TxCleanupTask implements Handler<Long> {
 			log.debug("Interrupting {} threads", toInterrupt.size());
 		}
 		for (Thread thread : toInterrupt) {
-		    interruptCounter.increment();
+		    	interruptCounter.increment();
 			log.info("Interrupting transaction thread {}", thread.getName());
 			thread.interrupt();
 		}

@@ -18,7 +18,12 @@ public interface ClusterManager {
 	 * 
 	 * @throws Exception
 	 */
-	void startServer() throws Exception;
+	void start() throws Exception;
+
+	/**
+	 * Stop the server and release all used resources.
+	 */
+	void stop();
 
 	/**
 	 * Return the hazelcast instance which was started by the graph database server.
@@ -33,8 +38,6 @@ public interface ClusterManager {
 	 * @return
 	 */
 	ClusterStatusResponse getClusterStatus();
-
-	void stop();
 
 	/**
 	 * Register event handlers which are used to invoke operations on the database server.

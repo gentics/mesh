@@ -296,7 +296,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				db.closeConnectionPool();
 				db.shutdown();
 
-				db.clusterManager().startServer();
+				db.clusterManager().start();
 				vertx.close();
 				vertx = null;
 				initVertx(options, isClustered);
@@ -310,7 +310,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			} else {
 				// We need to wait for other nodes and receive the graphdb
 				mesh.setStatus(MeshStatus.WAITING_FOR_CLUSTER);
-				db.clusterManager().startServer();
+				db.clusterManager().start();
 				initVertx(options, isClustered);
 				db.clusterManager().registerEventHandlers();
 				isInitialSetup = false;
@@ -339,7 +339,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			initLocalData(options, false);
 			if (startOrientServer) {
 				db.closeConnectionPool();
-				db.clusterManager().startServer();
+				db.clusterManager().start();
 				db.setupConnectionPool();
 			}
 		}

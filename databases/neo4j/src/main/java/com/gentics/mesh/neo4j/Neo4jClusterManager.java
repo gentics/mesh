@@ -23,7 +23,7 @@ Neo4jClusterManager implements ClusterManager {
 	}
 
 	@Override
-	public void startServer() throws Exception {
+	public void start() throws Exception {
 		// TODO Auto-generated method stub
 		
 	}

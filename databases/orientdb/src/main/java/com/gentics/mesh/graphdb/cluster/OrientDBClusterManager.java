@@ -89,14 +89,20 @@ public class OrientDBClusterManager implements ClusterManager {
 
 	private final boolean isClusteringEnabled;
 
+	private final TxCleanupTask txCleanUpTask;
+
+	private Thread txCleanupThread;
+
 	@Inject
-	public OrientDBClusterManager(Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, MeshOptions options, Lazy<OrientDBDatabase> db) {
+	public OrientDBClusterManager(Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, MeshOptions options, Lazy<OrientDBDatabase> db,
+		TxCleanupTask txCleanupTask) {
 		this.vertx = vertx;
 		this.boot = boot;
 		this.options = options;
 		this.db = db;
 		this.clusterOptions = options.getClusterOptions();
 		this.isClusteringEnabled = clusterOptions != null && clusterOptions.isEnabled();
+		this.txCleanUpTask = txCleanupTask;
 	}
 
 	/**
@@ -367,7 +373,7 @@ public class OrientDBClusterManager implements ClusterManager {
 	 * @throws Exception
 	 */
 	@Override
-	public void startServer() throws Exception {
+	public void start() throws Exception {
 
 		String orientdbHome = new File("").getAbsolutePath();
 		System.setProperty("ORIENTDB_HOME", orientdbHome);
@@ -393,6 +399,7 @@ public class OrientDBClusterManager implements ClusterManager {
 		hazelcastInstance = MeshOHazelcastPlugin.createHazelcast(hazelcastPluginConfig.parameters);
 
 		if (isClusteringEnabled) {
+			startTxCleanupTask();
 			ILock lock = hazelcastInstance.getLock(WriteLock.WRITE_LOCK_KEY);
 			try {
 				lock.lock();
@@ -409,6 +416,23 @@ public class OrientDBClusterManager implements ClusterManager {
 		} else {
 			activateServer();
 		}
+	}
+
+	private void startTxCleanupTask() {
+		txCleanupThread = new Thread(() -> {
+			// txCleanUpTaskId = vertx.get().setPeriodic(5000, txCleanUpTask);
+			while (!Thread.currentThread().isInterrupted()) {
+				txCleanUpTask.checkTransactions();
+				try {
+					Thread.sleep(5000);
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+					break;
+				}
+			}
+		});
+		txCleanupThread.setName("mesh-tx-cleanup-task");
+		txCleanupThread.run();
 	}
 
 	private void activateServer() throws Exception {
@@ -457,6 +481,10 @@ public class OrientDBClusterManager implements ClusterManager {
 
 	@Override
 	public void stop() {
+		if (txCleanupThread != null) {
+			log.info("Stopping tx cleanup thread");
+			txCleanupThread.interrupt();
+		}
 		if (server != null) {
 			server.shutdown();
 		}
