@@ -432,7 +432,7 @@ public class OrientDBClusterManager implements ClusterManager {
 			}
 		});
 		txCleanupThread.setName("mesh-tx-cleanup-task");
-		txCleanupThread.run();
+		txCleanupThread.start();
 	}
 
 	private void activateServer() throws Exception {
