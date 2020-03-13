@@ -512,6 +512,9 @@ public interface Database extends TxFactory {
 	 */
 	void setToMaster();
 
+	/**
+	 * Block execution if a topology lock was found.
+	 */
 	void blockingTopologyLockCheck();
 
 }

@@ -55,6 +55,7 @@ public class BulkActionContextImpl implements BulkActionContext {
 		if (elementCounter.incrementAndGet() >= DEFAULT_BATCH_SIZE || force) {
 			log.info("Processing transaction batch {" + batchCounter.get() + "}. I counted {" + elementCounter.get() + "} elements.");
 			// Check before commit to ensure we are 100% safe
+			db.blockingTopologyLockCheck();
 			Tx.getActive().getGraph().commit();
 			Completable.merge(asyncActions).subscribe(() -> {
 				log.trace("Async action processed");

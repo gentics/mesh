@@ -13,6 +13,9 @@ import com.orientechnologies.orient.server.hazelcast.OHazelcastDistributedMap;
 import com.orientechnologies.orient.server.hazelcast.OHazelcastMergeStrategy;
 import com.orientechnologies.orient.server.hazelcast.OHazelcastPlugin;
 
+/**
+ * Custom Hazelcast plugin for OrientDB which supports injecting a previously instantiated hazelcast instance.
+ */
 public class MeshOHazelcastPlugin extends OHazelcastPlugin {
 
 	public static HazelcastInstance hazelcast;
@@ -25,7 +28,6 @@ public class MeshOHazelcastPlugin extends OHazelcastPlugin {
 		return hazelcast;
 	}
 
-	// If hazelcastConfig is null, use the file system XML config.
 	public static HazelcastInstance createHazelcast(OServerParameterConfiguration[] iParams) throws FileNotFoundException {
 		if (hazelcast == null) {
 			String hazelcastConfigFile = null;
@@ -42,12 +44,8 @@ public class MeshOHazelcastPlugin extends OHazelcastPlugin {
 
 			hazelcastConfig = new FileSystemXmlConfig(hazelcastConfigFile);
 			hazelcastConfig.setClassLoader(MeshOHazelcastPlugin.class.getClassLoader());
-
 			hazelcastConfig.getMapConfig(CONFIG_REGISTEREDNODES).setBackupCount(6);
 			hazelcastConfig.getMapConfig(OHazelcastDistributedMap.ORIENTDB_MAP).setMergePolicy(OHazelcastMergeStrategy.class.getName());
-//			// Disabled the shudown hook of hazelcast, shutdown is managed by orient hook
-//			hazelcastConfig.setProperty("hazelcast.shutdownhook.enabled", "false");
-
 			hazelcast = Hazelcast.newHazelcastInstance(hazelcastConfig);
 		}
 		return hazelcast;
