@@ -309,10 +309,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				}
 			} else {
 				// We need to wait for other nodes and receive the graphdb
+				mesh.setStatus(MeshStatus.WAITING_FOR_CLUSTER);
 				db.clusterManager().startServer();
 				initVertx(options, isClustered);
-				mesh.setStatus(MeshStatus.WAITING_FOR_CLUSTER);
-				db.clusterManager().joinCluster();
 				db.clusterManager().registerEventHandlers();
 				isInitialSetup = false;
 				db.setupConnectionPool();

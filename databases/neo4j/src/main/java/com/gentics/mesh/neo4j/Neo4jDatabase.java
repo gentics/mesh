@@ -233,15 +233,13 @@ public class Neo4jDatabase extends AbstractDatabase {
 
 	}
 
-
-	@Override
-	public void blockingTopologyLockCheck() {
-
-	}
-
 	@Override
 	public void setToMaster() {
 
 	}
 
+	@Override
+	public void blockingTopologyLockCheck() {
+
+	}
 }

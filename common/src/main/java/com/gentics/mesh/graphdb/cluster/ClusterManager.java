@@ -7,13 +7,6 @@ import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 public interface ClusterManager {
 
 	/**
-	 * Join the cluster and block until the graph database has been received.
-	 * 
-	 * @throws InterruptedException
-	 */
-	void joinCluster() throws InterruptedException;
-
-	/**
 	 * Initialize the configuration files.
 	 * 
 	 * @throws IOException

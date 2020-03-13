@@ -376,14 +376,14 @@ public class OrientDBDatabase extends AbstractDatabase {
 		if (clusterOptions.isEnabled() && clusterManager() != null && lockTimeout != 0) {
 			long start = System.currentTimeMillis();
 			long i = 0;
-            Timer.Sample sample = Timer.start();
+	                Timer.Sample sample = Timer.start();
 			while (clusterManager().isClusterTopologyLocked()) {
 				long dur = System.currentTimeMillis() - start;
 				if (i % 250 == 0) {
 					log.info("Write operation locked due to topology lock. Locked since " + dur + "ms");
 				}
 				if (dur > lockTimeout) {
-				    topologyLockTimeoutCounter.increment();
+					topologyLockTimeoutCounter.increment();
 					log.warn("Tx global lock timeout of {" + lockTimeout + "} reached.");
 					break;
 				}

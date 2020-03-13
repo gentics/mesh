@@ -17,12 +17,6 @@ Neo4jClusterManager implements ClusterManager {
 	}
 
 	@Override
-	public void joinCluster() throws InterruptedException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
 	public void initConfigurationFiles() throws IOException {
 		// TODO Auto-generated method stub
 		

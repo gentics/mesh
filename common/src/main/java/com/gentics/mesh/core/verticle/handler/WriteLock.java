@@ -7,6 +7,8 @@ import com.gentics.mesh.context.InternalActionContext;
  */
 public interface WriteLock extends AutoCloseable {
 
+	public static final String WRITE_LOCK_KEY = "MESH_WRITE_LOCK";
+
 	@Override
 	void close();
 

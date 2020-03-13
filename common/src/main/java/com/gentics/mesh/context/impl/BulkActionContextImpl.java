@@ -10,6 +10,7 @@ import javax.inject.Provider;
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.graphdb.spi.Database;
 
 import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
@@ -31,10 +32,12 @@ public class BulkActionContextImpl implements BulkActionContext {
 
 	private List<Completable> asyncActions = new ArrayList<>();
 	private EventQueueBatch batch;
+	private Database db;
 
 	@Inject
-	public BulkActionContextImpl(Provider<EventQueueBatch> provider) {
+	public BulkActionContextImpl(Provider<EventQueueBatch> provider, Database db) {
 		this.batch = provider.get();
+		this.db = db;
 	}
 
 	@Override
@@ -51,6 +54,7 @@ public class BulkActionContextImpl implements BulkActionContext {
 	public void process(boolean force) {
 		if (elementCounter.incrementAndGet() >= DEFAULT_BATCH_SIZE || force) {
 			log.info("Processing transaction batch {" + batchCounter.get() + "}. I counted {" + elementCounter.get() + "} elements.");
+			// Check before commit to ensure we are 100% safe
 			Tx.getActive().getGraph().commit();
 			Completable.merge(asyncActions).subscribe(() -> {
 				log.trace("Async action processed");

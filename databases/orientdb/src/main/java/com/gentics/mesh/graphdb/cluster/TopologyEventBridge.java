@@ -48,6 +48,8 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 
 	private ClusterOptions clusterOptions;
 
+	private HazelcastInstance hz;
+
 	public TopologyEventBridge(MeshOptions options, Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, OrientDBClusterManager manager,
 		HazelcastInstance hz) {
 		this.clusterOptions = options.getClusterOptions();

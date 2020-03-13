@@ -21,6 +21,7 @@ import com.syncleus.ferma.FramedTransactionalGraph;
 import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
 import com.syncleus.ferma.typeresolvers.TypeResolver;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
+import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 
 import io.micrometer.core.instrument.Timer;
 import io.vertx.core.logging.Logger;
@@ -33,16 +34,33 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	boolean isWrapped = false;
 
 	private final TypeResolver typeResolver;
-    private final Timer commitTimer;
-    private final Database db;
+
+	private final Timer commitTimer;
+	private final Database db;
 	private final BootstrapInitializer boot;
+
+	public OrientDBTx(Database db, BootstrapInitializer boot, OrientGraphFactory factory, TypeResolver typeResolver, Timer commitTimer) {
+		this.db = db;
+		this.typeResolver = typeResolver;
+		this.boot = boot;
+		this.commitTimer = commitTimer;
+		// Check if an active transaction already exists.
+		Tx activeTx = Tx.get();
+		if (activeTx != null) {
+			isWrapped = true;
+			init(activeTx.getGraph());
+		} else {
+			DelegatingFramedOrientGraph transaction = new DelegatingFramedOrientGraph(factory.getTx(), typeResolver);
+			init(transaction);
+		}
+	}
 
 	public OrientDBTx(Database db, BootstrapInitializer boot, OrientStorage provider, TypeResolver typeResolver, Timer commitTimer) {
 		this.db = db;
 		this.boot = boot;
 		this.typeResolver = typeResolver;
-        this.commitTimer = commitTimer;
-        // Check if an active transaction already exists.
+		this.commitTimer = commitTimer;
+		// Check if an active transaction already exists.
 		Tx activeTx = Tx.get();
 		if (activeTx != null) {
 			isWrapped = true;
@@ -61,11 +79,11 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 					db.blockingTopologyLockCheck();
 					Thread t = Thread.currentThread();
 					TxCleanupTask.register(t);
-                    Timer.Sample sample = Timer.start();
+					Timer.Sample sample = Timer.start();
 					try {
 						commit();
 					} finally {
-                        sample.stop(commitTimer);
+						sample.stop(commitTimer);
 						TxCleanupTask.unregister(t);
 					}
 				} catch (Exception e) {
