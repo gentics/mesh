@@ -211,30 +211,42 @@ public class RestAPIVerticle extends AbstractVerticle {
 
 		RouterStorage storage = routerStorage.get();
 		Router rootRouter = storage.root().getRouter();
-		registerEndPoints(storage);
 
-		if (initialProjects != null) {
-			for (Object project : initialProjects) {
-				routerStorageRegistry.addProject((String) project);
+		vertx.executeBlocking(bc -> {
+			try {
+				registerEndPoints(storage);
+				if (initialProjects != null) {
+					for (Object project : initialProjects) {
+						routerStorageRegistry.addProject((String) project);
+					}
+				}
+				bc.complete();
 			}
-		}
+			catch (Exception e) {
+				log.warn("Registering endpoints failed");
+				bc.fail(e);
+			}
+		}, false, (done) -> {
+			if (done.failed()) {
+				promise.fail(done.cause());
+			} else {
+				io.vertx.reactivex.ext.web.Router rxRootRouter = io.vertx.reactivex.ext.web.Router.newInstance(rootRouter);
+				// Now listen to requests from all created servers
+				List<Single<HttpServer>> serverListens = Arrays.asList(httpServer, httpsServer).stream()
+					.filter(Objects::nonNull)
+					.map(s -> {
+						return s.requestHandler(rxRootRouter);
+					})
+					.map(s -> s.rxListen())
+					.collect(Collectors.toList());
 
-		io.vertx.reactivex.ext.web.Router rxRootRouter = io.vertx.reactivex.ext.web.Router.newInstance(rootRouter);
-		// Now listen to requests from all created servers
-		List<Single<HttpServer>> serverListens = Arrays.asList(httpServer, httpsServer).stream()
-			.filter(Objects::nonNull)
-			.map(s -> {
-				return s.requestHandler(rxRootRouter);
-			})
-			.map(s -> s.rxListen())
-			.collect(Collectors.toList());
-
-		Single.merge(serverListens).ignoreElements().subscribe(() -> {
-			promise.complete();
-		}, err -> {
-			promise.fail(err);
+				Single.merge(serverListens).ignoreElements().subscribe(() -> {
+					promise.complete();
+				}, err -> {
+					promise.fail(err);
+				});
+			}
 		});
-
 	}
 
 	private void applyCommonSettings(HttpServerOptions options) {
