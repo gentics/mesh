@@ -209,28 +209,19 @@ public class RestAPIVerticle extends AbstractVerticle {
 			httpsServer = rxVertx.createHttpServer(httpsOptions);
 		}
 
-		RouterStorage storage = routerStorage.get();
-		Router rootRouter = storage.root().getRouter();
 
 		vertx.executeBlocking(bc -> {
 			try {
+				RouterStorage storage = routerStorage.get();
+				Router rootRouter = storage.root().getRouter();
+				io.vertx.reactivex.ext.web.Router rxRootRouter = io.vertx.reactivex.ext.web.Router.newInstance(rootRouter);
+
 				registerEndPoints(storage);
 				if (initialProjects != null) {
 					for (Object project : initialProjects) {
 						routerStorageRegistry.addProject((String) project);
 					}
 				}
-				bc.complete();
-			}
-			catch (Exception e) {
-				log.warn("Registering endpoints failed");
-				bc.fail(e);
-			}
-		}, false, (done) -> {
-			if (done.failed()) {
-				promise.fail(done.cause());
-			} else {
-				io.vertx.reactivex.ext.web.Router rxRootRouter = io.vertx.reactivex.ext.web.Router.newInstance(rootRouter);
 				// Now listen to requests from all created servers
 				List<Single<HttpServer>> serverListens = Arrays.asList(httpServer, httpsServer).stream()
 					.filter(Objects::nonNull)
@@ -241,10 +232,20 @@ public class RestAPIVerticle extends AbstractVerticle {
 					.collect(Collectors.toList());
 
 				Single.merge(serverListens).ignoreElements().subscribe(() -> {
-					promise.complete();
+					bc.complete();
 				}, err -> {
-					promise.fail(err);
+					bc.fail(err);
 				});
+			}
+			catch (Exception e) {
+				log.warn("Registering endpoints failed");
+				bc.fail(e);
+			}
+		}, false, (done) -> {
+			if (done.failed()) {
+				promise.fail(done.cause());
+			} else {
+				promise.complete();
 			}
 		});
 	}
