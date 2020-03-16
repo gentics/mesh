@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 
 import javax.inject.Inject;
@@ -402,9 +403,13 @@ public class OrientDBClusterManager implements ClusterManager {
 			startTxCleanupTask();
 		}
 		if (isClusteringEnabled) {
+			long lockTimeout = clusterOptions.getTopologyLockTimeout();
 			ILock lock = hazelcastInstance.getLock(WriteLock.WRITE_LOCK_KEY);
 			try {
-				lock.lock();
+				boolean isTimeout = !lock.tryLock(lockTimeout, TimeUnit.MILLISECONDS);
+				if (isTimeout) {
+					log.warn("The topology lock for the pending server startup reached the timeout limit.");
+				}
 				if (log.isDebugEnabled()) {
 					log.debug("Locking global write lock due to server startup.");
 				}
