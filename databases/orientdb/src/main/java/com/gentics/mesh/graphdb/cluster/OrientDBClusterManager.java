@@ -403,14 +403,14 @@ public class OrientDBClusterManager implements ClusterManager {
 			ILock lock = hazelcastInstance.getLock(WriteLock.WRITE_LOCK_KEY);
 			try {
 				lock.lock();
-				System.out.println("LOCKING WRITE LOCK!");
-				System.out.println("LOCKING WRITE LOCK!");
-				System.out.println("LOCKING WRITE LOCK!");
+				if (log.isDebugEnabled()) {
+					log.debug("Locking global write lock due to server startup.");
+				}
 				activateServer();
 			} finally {
-				System.out.println("UN-LOCKING WRITE LOCK!");
-				System.out.println("UN-LOCKING WRITE LOCK!");
-				System.out.println("UN-LOCKING WRITE LOCK!");
+				if (log.isDebugEnabled()) {
+					log.debug("Unlocking global write lock after server startup.");
+				}
 				lock.unlock();
 			}
 		} else {
@@ -420,13 +420,12 @@ public class OrientDBClusterManager implements ClusterManager {
 
 	private void startTxCleanupTask() {
 		txCleanupThread = new Thread(() -> {
-			// txCleanUpTaskId = vertx.get().setPeriodic(5000, txCleanUpTask);
 			while (!Thread.currentThread().isInterrupted()) {
 				txCleanUpTask.checkTransactions();
 				try {
 					Thread.sleep(5000);
 				} catch (InterruptedException e1) {
-					e1.printStackTrace();
+					log.info("Cleanup task stopped");
 					break;
 				}
 			}

@@ -60,6 +60,7 @@ public class MeshOHazelcastPlugin extends OHazelcastPlugin {
 			hazelcastConfig.setClassLoader(MeshOHazelcastPlugin.class.getClassLoader());
 			hazelcastConfig.getMapConfig(CONFIG_REGISTEREDNODES).setBackupCount(6);
 			hazelcastConfig.getMapConfig(OHazelcastDistributedMap.ORIENTDB_MAP).setMergePolicy(OHazelcastMergeStrategy.class.getName());
+			hazelcastConfig.setProperty("hazelcast.shutdownhook.enabled", "false");
 			hazelcast = Hazelcast.newHazelcastInstance(hazelcastConfig);
 		}
 		return hazelcast;
