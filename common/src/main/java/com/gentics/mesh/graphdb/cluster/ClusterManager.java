@@ -44,6 +44,9 @@ public interface ClusterManager {
 	 */
 	void registerEventHandlers();
 
+	/**
+	 * Stop the hazelcast instance that has been created by the manager.
+	 */
 	void stopHazelcast();
 
 }

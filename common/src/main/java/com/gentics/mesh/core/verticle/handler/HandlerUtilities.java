@@ -320,10 +320,7 @@ public class HandlerUtilities {
 	 * @return
 	 */
 	public <T> T eventAction(Function<EventQueueBatch, T> function) {
-		return eventAction((tx, batch) -> {
-			T result = function.apply(batch);
-			return result;
-		});
+		return eventAction((tx, batch) -> function.apply(batch));
 	}
 
 	/**

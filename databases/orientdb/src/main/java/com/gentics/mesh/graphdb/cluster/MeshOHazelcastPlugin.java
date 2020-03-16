@@ -20,8 +20,6 @@ import com.orientechnologies.orient.core.Orient;
 import com.orientechnologies.orient.core.db.ODefaultEmbeddedDatabaseInstanceFactory;
 import com.orientechnologies.orient.server.OServer;
 import com.orientechnologies.orient.server.config.OServerParameterConfiguration;
-import com.orientechnologies.orient.server.distributed.ODistributedServerManager.DB_STATUS;
-import com.orientechnologies.orient.server.distributed.ODistributedServerManager.NODE_STATUS;
 import com.orientechnologies.orient.server.hazelcast.OHazelcastDistributedMap;
 import com.orientechnologies.orient.server.hazelcast.OHazelcastMergeStrategy;
 import com.orientechnologies.orient.server.hazelcast.OHazelcastPlugin;
@@ -68,11 +66,10 @@ public class MeshOHazelcastPlugin extends OHazelcastPlugin {
 
 	@Override
 	public void shutdown() {
-		if (!enabled)
+		if (!enabled) {
 			return;
+		}
 		OSignalHandler signalHandler = Orient.instance().getSignalHandler();
-		//if (signalHandler != null)
-			//signalHandler.unregisterListener(signalListener);
 
 		for (OServerNetworkListener nl : serverInstance.getNetworkListeners())
 			nl.unregisterBeforeConnectNetworkEventListener(this);
@@ -102,12 +99,6 @@ public class MeshOHazelcastPlugin extends OHazelcastPlugin {
 			// HZ IS ALREADY DOWN, IGNORE IT
 		}
 
-//		try {
-//			//super.shutdown();
-//		} catch (HazelcastInstanceNotActiveException e) {
-//			// HZ IS ALREADY DOWN, IGNORE IT
-//		}
-
 		if (membershipListenerRegistration != null) {
 			try {
 				hazelcastInstance.getCluster().removeMembershipListener(membershipListenerRegistration);
@@ -115,15 +106,6 @@ public class MeshOHazelcastPlugin extends OHazelcastPlugin {
 				// HZ IS ALREADY DOWN, IGNORE IT
 			}
 		}
-
-		if (hazelcastInstance != null)
-//			try {
-//				hazelcastInstance.shutdown();
-//			} catch (Exception e) {
-//				OLogManager.instance().error(this, "Error on shutting down Hazelcast instance", e);
-//			} finally {
-//				hazelcastInstance = null;
-//			}
 
 		OCallableUtils.executeIgnoringAnyExceptions(new OCallableNoParamNoReturn() {
 			@Override
