@@ -463,13 +463,13 @@ public class OrientDBClusterManager implements ClusterManager {
 		if (isClusteringEnabled) {
 			// The registerLifecycleListener may not have been invoked. We need to redirect the online event manually.
 			postStartupDBEventHandling();
+			if (!options.isInitClusterMode()) {
+				joinCluster();
+				// Add a safety margin
+				Thread.sleep(options.getClusterOptions().getTopologyLockDelay());
+			}
 		}
 
-		if (!options.isInitClusterMode()) {
-			joinCluster();
-			// Add a safety margin
-			Thread.sleep(options.getClusterOptions().getTopologyLockDelay());
-		}
 	}
 
 	/**
