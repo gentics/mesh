@@ -400,6 +400,33 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
+	public void blockingTopologyLockCheck() {
+		ClusterOptions clusterOptions = options.getClusterOptions();
+		long lockTimeout = clusterOptions.getTopologyLockTimeout();
+		if (clusterOptions.isEnabled() && clusterManager() != null && lockTimeout != 0) {
+			long start = System.currentTimeMillis();
+			long i = 0;
+			while (clusterManager().isClusterTopologyLocked()) {
+				long dur = System.currentTimeMillis() - start;
+				if (i % 250 == 0) {
+					log.info("Write operation locked due to topology lock. Locked since " + dur + "ms");
+				}
+				if (dur > lockTimeout) {
+					log.warn("Tx global lock timeout of {" + lockTimeout + "} reached.");
+					break;
+				}
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					log.error("Interrupting topology lock delay.", e);
+					break;
+				}
+				i++;
+			}
+		}
+	}
+
+	@Override
 	public <T> T tx(TxAction<T> txHandler) {
 		/**
 		 * OrientDB uses the MVCC pattern which requires a retry of the code that manipulates the graph in cases where for example an

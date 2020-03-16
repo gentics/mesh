@@ -197,4 +197,5 @@ public class GraphStorageOptions implements Option {
 				"You have not specified a data directory and enabled the graph server. It is not possible to run Gentics Mesh in memory mode and start the graph server.");
 		}
 	}
+
 }

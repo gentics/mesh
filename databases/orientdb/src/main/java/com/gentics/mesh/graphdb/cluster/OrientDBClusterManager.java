@@ -398,8 +398,10 @@ public class OrientDBClusterManager implements ClusterManager {
 		OServerHandlerConfiguration hazelcastPluginConfig = hazelcastPluginConfigOpt.get();
 		hazelcastInstance = MeshOHazelcastPlugin.createHazelcast(hazelcastPluginConfig.parameters);
 
-		if (isClusteringEnabled) {
+		if (storageOptions().getTxCommitTimeout() != 0) {
 			startTxCleanupTask();
+		}
+		if (isClusteringEnabled) {
 			ILock lock = hazelcastInstance.getLock(WriteLock.WRITE_LOCK_KEY);
 			try {
 				lock.lock();
@@ -423,6 +425,7 @@ public class OrientDBClusterManager implements ClusterManager {
 			while (!Thread.currentThread().isInterrupted()) {
 				txCleanUpTask.checkTransactions();
 				try {
+					// Interval is fixed
 					Thread.sleep(5000);
 				} catch (InterruptedException e1) {
 					log.info("Cleanup task stopped");
