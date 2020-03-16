@@ -9,8 +9,7 @@ import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.graphdb.cluster.ClusterManager;
 
 @Singleton
-public class 
-Neo4jClusterManager implements ClusterManager {
+public class Neo4jClusterManager implements ClusterManager {
 
 	@Inject
 	public Neo4jClusterManager() {
@@ -18,38 +17,37 @@ Neo4jClusterManager implements ClusterManager {
 
 	@Override
 	public void initConfigurationFiles() throws IOException {
-		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void start() throws Exception {
-		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public Object getHazelcast() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public ClusterStatusResponse getClusterStatus() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public void stop() {
-		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void registerEventHandlers() {
-		// TODO Auto-generated method stub
-		
+
 	}
-	
+
+	@Override
+	public void stopHazelcast() {
+
+	}
+
 }

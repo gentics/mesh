@@ -481,14 +481,21 @@ public class OrientDBClusterManager implements ClusterManager {
 
 	@Override
 	public void stop() {
+		log.info("Stopping cluster manager");
 		if (txCleanupThread != null) {
 			log.info("Stopping tx cleanup thread");
 			txCleanupThread.interrupt();
 		}
 		if (server != null) {
+			log.info("Stopping OrientDB Server");
 			server.shutdown();
 		}
+	}
+
+	@Override
+	public void stopHazelcast() {
 		if (hazelcastInstance != null) {
+			log.info("Stopping hazelcast");
 			hazelcastInstance.shutdown();
 		}
 	}

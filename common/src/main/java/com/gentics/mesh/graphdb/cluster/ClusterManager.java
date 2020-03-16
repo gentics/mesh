@@ -44,4 +44,6 @@ public interface ClusterManager {
 	 */
 	void registerEventHandlers();
 
+	void stopHazelcast();
+
 }
