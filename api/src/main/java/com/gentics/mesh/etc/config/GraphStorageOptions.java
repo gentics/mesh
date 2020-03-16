@@ -191,11 +191,21 @@ public class GraphStorageOptions implements Option {
 		return this;
 	}
 
+	public long getSynchronizeWritesTimeout() {
+		return synchronizeWritesTimeout;
+	}
+
+	public GraphStorageOptions setSynchronizeWritesTimeout(long synchronizeWritesTimeout) {
+		this.synchronizeWritesTimeout = synchronizeWritesTimeout;
+		return this;
+	}
+
 	public void validate(MeshOptions meshOptions) {
 		if (getStartServer() && getDirectory() == null) {
 			throw new NullPointerException(
 				"You have not specified a data directory and enabled the graph server. It is not possible to run Gentics Mesh in memory mode and start the graph server.");
 		}
 	}
+
 
 }
