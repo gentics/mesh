@@ -431,7 +431,7 @@ public class OrientDBClusterManager implements ClusterManager {
 				txCleanUpTask.checkTransactions();
 				try {
 					// Interval is fixed
-					Thread.sleep(5000);
+					Thread.sleep(500);
 				} catch (InterruptedException e1) {
 					log.info("Cleanup task stopped");
 					break;
