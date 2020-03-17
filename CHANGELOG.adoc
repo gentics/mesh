@@ -30,6 +30,8 @@ include::content/docs/variables.adoc-include[]
 
 icon:plus[] Graph: It is now possible to configure a transaction commit timeout. The `storage.txCommitTimeout` or `MESH_GRAPH_TX_COMMIT_TIMEOUT` environment setting can be used to configure the timeout in milliseconds. By default no timeout will be applied.
 
+icon:plus[] Graph: The `storage.synchronizeWritesTimeout` setting and `MESH_GRAPH_SYNC_WRITES_TIMEOUT` environment setting have been added. It is now possible to configure the write lock timeout using these settings.
+
 icon:plus[] GraphQL: It is now possible to use paging arguments when loading nodes via the `NodeContent#referencedBy` field.
 
 icon:plus[] Clustering: The `cluster.topologyLockTimeout` setting has been added. When set to a value greater than 0 a write lock will be applied to prevent write requests during cluster topology changes.

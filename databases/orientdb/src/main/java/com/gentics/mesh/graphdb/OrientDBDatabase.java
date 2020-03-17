@@ -404,7 +404,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 				// TODO maybe we should invoke a metadata getschema reload?
 				// factory.getTx().getRawGraph().getMetadata().getSchema().reload();
 				// Database.getThreadLocalGraph().getMetadata().getSchema().reload();
-			} catch (ONeedRetryException | FastNoSuchElementException e) {
+			} catch (InterruptedException | ONeedRetryException | FastNoSuchElementException e) {
 				if (log.isTraceEnabled()) {
 					log.trace("Error while handling transaction. Retrying " + retry, e);
 				}
