@@ -40,7 +40,7 @@ public class WriteLockImpl implements WriteLock {
 			database.blockingTopologyLockCheck();
 			if (syncWrites) {
 				try {
-					boolean isTimeout = !lock.tryAcquire(60, TimeUnit.SECONDS);
+					boolean isTimeout = !lock.tryAcquire(options.getStorageOptions().getSynchronizeWritesTimeout(), TimeUnit.MILLISECONDS);
 					if (isTimeout) {
 						throw new RuntimeException("Got timeout while waiting for write lock.");
 					}

@@ -5,7 +5,6 @@ import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.context.impl.LoggingConfigurator;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.cluster.CoordinatorMode;
 import com.gentics.mesh.router.EndpointRegistry;
 import com.gentics.mesh.verticle.admin.AdminGUI2Endpoint;
 import com.gentics.mesh.verticle.admin.AdminGUIEndpoint;
@@ -30,14 +29,17 @@ public class ClusterServer {
 
 		//options.getClusterOptions().setCoordinatorMode(CoordinatorMode.ALL);
 		//options.getClusterOptions().setCoordinatorRegex("gentics-mesh-[0-9]");
-		options.getStorageOptions().setSynchronizeWrites(true);
 		options.getStorageOptions().setStartServer(true);
 		options.getClusterOptions().setClusterName("test");
 		options.getClusterOptions().setEnabled(true);
 		options.getSearchOptions().setUrl(null);
 		options.getSearchOptions().setStartEmbedded(false);
-		options.getClusterOptions().setTopologyLockTimeout(240_000);
 		options.getDebugInfoOptions().setLogEnabled(false);
+
+		// New settings
+		options.getStorageOptions().setSynchronizeWrites(true);
+		options.getClusterOptions().setTopologyLockTimeout(240_000);
+		options.getStorageOptions().setTxCommitTimeout(10_000);
 		return options;
 	}
 

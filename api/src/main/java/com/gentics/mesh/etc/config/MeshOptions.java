@@ -35,7 +35,7 @@ public class MeshOptions implements Option {
 	public static final String MESH_START_IN_READ_ONLY_ENV = "MESH_START_IN_READ_ONLY";
 	public static final String MESH_INITIAL_ADMIN_PASSWORD_ENV = "MESH_INITIAL_ADMIN_PASSWORD";
 	public static final String MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET_ENV = "MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET";
-    public static final String MESH_MAX_PURGE_BATCH_SIZE = "MESH_MAX_PURGE_BATCH_SIZE";
+	public static final String MESH_MAX_PURGE_BATCH_SIZE = "MESH_MAX_PURGE_BATCH_SIZE";
 
 	// TODO remove this setting. There should not be a default max depth. This is no longer needed once we remove the expand all parameter
 	private int defaultMaxDepth = DEFAULT_MAX_DEPTH;
@@ -128,10 +128,10 @@ public class MeshOptions implements Option {
 	@EnvironmentVariable(name = MESH_START_IN_READ_ONLY_ENV, description = "Override the read only mode flag.")
 	private boolean startInReadOnly = false;
 
-    @JsonProperty(required = false)
-    @JsonPropertyDescription("The maximum amount of node versions that are purged before the database transaction is committed.")
-    @EnvironmentVariable(name = MESH_MAX_PURGE_BATCH_SIZE, description = "Override the maximum purge batch size.")
-    private int versionPurgeMaxBatchSize = 10;
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("The maximum amount of node versions that are purged before the database transaction is committed.")
+	@EnvironmentVariable(name = MESH_MAX_PURGE_BATCH_SIZE, description = "Override the maximum purge batch size.")
+	private int versionPurgeMaxBatchSize = 10;
 
 	/* EXTRA Command Line Arguments */
 	@JsonIgnore
@@ -420,14 +420,14 @@ public class MeshOptions implements Option {
 		return this;
 	}
 
-    public int getVersionPurgeMaxBatchSize() {
-        return versionPurgeMaxBatchSize;
-    }
+	public int getVersionPurgeMaxBatchSize() {
+		return versionPurgeMaxBatchSize;
+	}
 
-    public MeshOptions setVersionPurgeMaxBatchSize(int versionPurgeMaxBatchSize) {
-        this.versionPurgeMaxBatchSize = versionPurgeMaxBatchSize;
-        return this;
-    }
+	public MeshOptions setVersionPurgeMaxBatchSize(int versionPurgeMaxBatchSize) {
+		this.versionPurgeMaxBatchSize = versionPurgeMaxBatchSize;
+		return this;
+	}
 
 	public void validate() {
 		if (getClusterOptions() != null) {

@@ -31,6 +31,7 @@ import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.cluster.OrientDBClusterManager;
+import com.gentics.mesh.graphdb.cluster.TxCleanupTask;
 import com.gentics.mesh.graphdb.index.OrientDBIndexHandler;
 import com.gentics.mesh.graphdb.index.OrientDBTypeHandler;
 import com.gentics.mesh.graphdb.model.MeshElement;
@@ -104,12 +105,17 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private OrientDBClusterManager clusterManager;
 
+	private final TxCleanupTask txCleanUpTask;
+
 	private final Lazy<BootstrapInitializer> boot;
+
+	private Thread txCleanupThread;
 
 	@Inject
 	public OrientDBDatabase(Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, MetricsService metrics, OrientDBTypeHandler typeHandler,
 		OrientDBIndexHandler indexHandler,
-		OrientDBClusterManager clusterManager) {
+		OrientDBClusterManager clusterManager,
+		TxCleanupTask txCleanupTask) {
 		super(vertx);
 		this.boot = boot;
 		this.metrics = metrics;
@@ -120,6 +126,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		this.typeHandler = typeHandler;
 		this.indexHandler = indexHandler;
 		this.clusterManager = clusterManager;
+		this.txCleanUpTask = txCleanupTask;
 	}
 
 	@Override
@@ -137,7 +144,14 @@ public class OrientDBDatabase extends AbstractDatabase {
 		if (txProvider != null) {
 			txProvider.close();
 		}
+
 		clusterManager.stop();
+
+		if (txCleanupThread != null) {
+			log.info("Stopping tx cleanup thread");
+			txCleanupThread.interrupt();
+		}
+
 		Tx.setActive(null);
 	}
 
@@ -169,6 +183,10 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 		// resolver = new OrientDBTypeResolver(basePaths);
 		resolver = new MeshTypeResolver(basePaths);
+
+		if (storageOptions.getTxCommitTimeout() != 0) {
+			startTxCleanupTask();
+		}
 	}
 
 	/**
@@ -336,7 +354,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	@Deprecated
 	public Tx tx() {
-		return new OrientDBTx(boot.get(), txProvider, resolver);
+		return new OrientDBTx(this, boot.get(), txProvider, resolver);
 	}
 
 	@Override
@@ -582,6 +600,23 @@ public class OrientDBDatabase extends AbstractDatabase {
 		} else {
 			throw error(BAD_REQUEST, "error_cluster_status_only_available_in_cluster_mode");
 		}
+	}
+
+	private void startTxCleanupTask() {
+		txCleanupThread = new Thread(() -> {
+			while (!Thread.currentThread().isInterrupted()) {
+				txCleanUpTask.checkTransactions();
+				try {
+					// Interval is fixed
+					Thread.sleep(500);
+				} catch (InterruptedException e1) {
+					log.info("Cleanup task stopped");
+					break;
+				}
+			}
+		});
+		txCleanupThread.setName("mesh-tx-cleanup-task");
+		txCleanupThread.start();
 	}
 
 }
