@@ -26,7 +26,7 @@ public interface ClusterManager {
 	void stop();
 
 	/**
-	 * Return the hazelcast instance which was started by the graph database server.
+	 * Return the hazelcast instance which was created by the manager.
 	 * 
 	 * @return
 	 */
