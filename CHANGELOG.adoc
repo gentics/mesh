@@ -26,7 +26,7 @@ include::content/docs/variables.adoc-include[]
 * The Mesh Server will require Java 11 with the release of 2.0.0. The runtime support for Java 8 will be dropped. The Mesh Java REST client will still be usable with Java 8.
 
 [[v1.4.3]]
-== 1.4.3 (TBD)
+== 1.4.3 (17.03.2020)
 
 icon:plus[] Graph: It is now possible to configure a transaction commit timeout. The `storage.txCommitTimeout` or `MESH_GRAPH_TX_COMMIT_TIMEOUT` environment setting can be used to configure the timeout in milliseconds. By default no timeout will be applied.
 
@@ -36,8 +36,6 @@ icon:plus[] GraphQL: It is now possible to use paging arguments when loading nod
 
 icon:plus[] Clustering: The `cluster.topologyLockTimeout` setting has been added. When set to a value greater than 0 a write lock will be applied to prevent write requests during cluster topology changes.
 
-icon:check[] Clustering: The default value for the `vertxPort` setting has been changed to `4848`.
-
 icon:plus[] Clustering: The coordinator layer feature has been added. The layer can be enabled to efficiently process REST requests in a multi-master and master-replica cluster setup.
 
 More information can be found in the link:{{< relref "clustering.asciidoc" >}}#_coordination[Cluster coordination section].
@@ -45,6 +43,8 @@ More information can be found in the link:{{< relref "clustering.asciidoc" >}}#_
 icon:plus[] REST: The `/admin/shutdown` endpoint has been added. This allows users with admin privileges to shutdown the mesh process.
 
 icon:plus[] REST: It is now possible to read and update the cluster configuration in runtime via the `/api/v2/admin/cluster/config` endpoint.
+
+icon:check[] Clustering: The default value for the `vertxPort` setting has been changed to `4848`.
 
 icon:check[] Docker: An issue with the docker building process has been fixed which caused an unnecessary layer to be added to the docker image.
 
