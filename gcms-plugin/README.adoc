@@ -17,7 +17,7 @@ prefix: ""
 issuer: "Gentics CMS"
 ----
 
-.Table Configuration options
+.Configuration options
 |===
 |Name |Description |Default
 |publicKeyPath
