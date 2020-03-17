@@ -68,41 +68,6 @@ public class TxCleanupTask implements Handler<Long> {
 		}
 	}
 
-	public static class ClassMethod {
-		private final String className;
-		private final String methodName;
-
-		public ClassMethod(Class<?> clazz, String methodName) {
-			this(clazz.getName(), methodName);
-		}
-
-		public ClassMethod(String className, String methodName) {
-			this.className = className;
-			this.methodName = methodName;
-		}
-
-		public static ClassMethod of(StackTraceElement element) {
-			return new ClassMethod(element.getClassName(), element.getMethodName());
-		}
-
-		@Override
-		public boolean equals(Object o) {
-			if (this == o) {
-				return true;
-			}
-			if (o == null || getClass() != o.getClass()) {
-				return false;
-			}
-			ClassMethod that = (ClassMethod) o;
-			return Objects.equals(className, that.className) &&
-				Objects.equals(methodName, that.methodName);
-		}
-
-		@Override
-		public int hashCode() {
-			return Objects.hash(className, methodName);
-		}
-	}
 
 	public static void register(Thread thread) {
 		registeredThreads.put(thread, System.currentTimeMillis());
