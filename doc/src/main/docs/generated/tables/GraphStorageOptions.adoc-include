@@ -37,6 +37,16 @@
 | boolean
 | Flag which controls whether writes to the graph database should be synchronized. Default: true
 
+| synchronizeWritesTimeout
+| true
+| integer
+| Set the timeout in milliseconds for the sync write lock. Default: 60000
+
+| txCommitTimeout
+| false
+| integer
+| The transaction commit timeout in milliseconds. A timeout value of zero means that transaction commit operations will never timeout.
+
 | txRetryDelay
 | false
 | integer

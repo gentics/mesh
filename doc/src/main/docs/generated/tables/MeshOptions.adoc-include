@@ -135,7 +135,32 @@
 | clusterOptions.vertxPort
 | false
 | integer
-| Port used by Vert.x for the eventbus server. A random free port will be selected if set to 0.
+| Port used by Vert.x for the eventbus server. Default: 4848
+
+| clusterOptions.coordinatorMode
+| false
+| coordinatormode
+| The coordinator mode will add an additional request controller plane which will internally process requests in-between cluster nodes. Default: DISABLED
+
+| clusterOptions.coordinatorRegex
+| false
+| string
+| The coordinator regex can be used to control which nodes in the cluster are eligible to be elected in a coordinator master election. When left empty all database master nodes are eligible.
+
+| clusterOptions.topologyLockTimeout
+| false
+| long
+| Define the timeout in ms for the topology lock. The topology lock will lock all transactions whenever the cluster topology changes. Default: 0. A value of 0 will disable the locking mechanism.
+
+| clusterOptions.topologyLockDelay
+| false
+| long
+| Define the delay in ms for the topology lock. It will delay the lock after receiving the database online event. Default: 20000. A value of 0 will disable the delay mechanism.
+
+| clusterOptions.coordinatorTopology
+| false
+| coordinationtopology
+| The coordinator topology setting controls whether the coordinator should manage the cluster topology. By default no cluster topology management will be done.
 
 | storageOptions.directory
 | true
@@ -162,6 +187,11 @@
 | boolean
 | Flag which controls whether writes to the graph database should be synchronized. Default: true
 
+| storageOptions.synchronizeWritesTimeout
+| true
+| long
+| Set the timeout in milliseconds for the sync write lock. Default: 60000
+
 | storageOptions.txRetryDelay
 | false
 | int
@@ -171,6 +201,11 @@
 | false
 | int
 | The limit for the tx retires.
+
+| storageOptions.txCommitTimeout
+| false
+| long
+| The transaction commit timeout in milliseconds. A timeout value of zero means that transaction commit operations will never timeout.
 
 | storageOptions.parameters
 | false

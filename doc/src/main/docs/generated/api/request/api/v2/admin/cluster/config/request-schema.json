@@ -1,0 +1,34 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:admin:cluster:ClusterConfigRequest",
+  "properties" : {
+    "servers" : {
+      "type" : "array",
+      "description" : "List of server configurations.",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:admin:cluster:ClusterServerConfig",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "required" : true,
+            "description" : "Name of the server."
+          },
+          "role" : {
+            "type" : "string",
+            "description" : "Role of the server which can be MASTER or REPLICA.",
+            "enum" : [ "MASTER", "REPLICA" ]
+          }
+        }
+      }
+    },
+    "writeQuorum" : {
+      "type" : "string",
+      "description" : "Global write quorum setting. Allowed values are numbers and 'all', 'majority'."
+    },
+    "readQuorum" : {
+      "type" : "integer",
+      "description" : "Global read quorum setting."
+    }
+  }
+}

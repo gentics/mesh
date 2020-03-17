@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "1.4.2"
+version: "1.4.3"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -7722,6 +7722,173 @@ mediaType: application/json
 /admin: 
     displayName: /admin
     description: Collection of administrative endpoints which usually require admin permission
+    /cluster/config: 
+        get: 
+            description: Loads the cluster configuration.
+            responses: 
+                "200": 
+                    description: Currently active cluster configuration.
+                    body: 
+                        application/json: 
+                            schema: |
+                                {
+                                  "type" : "object",
+                                  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:admin:cluster:ClusterConfigResponse",
+                                  "properties" : {
+                                    "servers" : {
+                                      "type" : "array",
+                                      "description" : "List of server configurations.",
+                                      "items" : {
+                                        "type" : "object",
+                                        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:admin:cluster:ClusterServerConfig",
+                                        "properties" : {
+                                          "name" : {
+                                            "type" : "string",
+                                            "required" : true,
+                                            "description" : "Name of the server."
+                                          },
+                                          "role" : {
+                                            "type" : "string",
+                                            "description" : "Role of the server which can be MASTER or REPLICA.",
+                                            "enum" : [ "MASTER", "REPLICA" ]
+                                          }
+                                        }
+                                      }
+                                    },
+                                    "writeQuorum" : {
+                                      "type" : "string",
+                                      "description" : "Global write quorum setting. Allowed values are numbers and 'all', 'majority'."
+                                    },
+                                    "readQuorum" : {
+                                      "type" : "integer",
+                                      "description" : "Global read quorum setting."
+                                    }
+                                  }
+                                }
+                            example: |
+                                {
+                                  "servers" : [ {
+                                    "name" : "master-1",
+                                    "role" : "MASTER"
+                                  }, {
+                                    "name" : "replica-1",
+                                    "role" : "REPLICA"
+                                  }, {
+                                    "name" : "replica-2",
+                                    "role" : "REPLICA"
+                                  } ],
+                                  "writeQuorum" : "majority",
+                                  "readQuorum" : 1
+                                }
+        post: 
+            description: Update the cluster configuration.
+            body: 
+                application/json: 
+                    schema: |
+                        {
+                          "type" : "object",
+                          "id" : "urn:jsonschema:com:gentics:mesh:core:rest:admin:cluster:ClusterConfigRequest",
+                          "properties" : {
+                            "servers" : {
+                              "type" : "array",
+                              "description" : "List of server configurations.",
+                              "items" : {
+                                "type" : "object",
+                                "id" : "urn:jsonschema:com:gentics:mesh:core:rest:admin:cluster:ClusterServerConfig",
+                                "properties" : {
+                                  "name" : {
+                                    "type" : "string",
+                                    "required" : true,
+                                    "description" : "Name of the server."
+                                  },
+                                  "role" : {
+                                    "type" : "string",
+                                    "description" : "Role of the server which can be MASTER or REPLICA.",
+                                    "enum" : [ "MASTER", "REPLICA" ]
+                                  }
+                                }
+                              }
+                            },
+                            "writeQuorum" : {
+                              "type" : "string",
+                              "description" : "Global write quorum setting. Allowed values are numbers and 'all', 'majority'."
+                            },
+                            "readQuorum" : {
+                              "type" : "integer",
+                              "description" : "Global read quorum setting."
+                            }
+                          }
+                        }
+                    example: |
+                        {
+                          "servers" : [ {
+                            "name" : "master-1",
+                            "role" : "MASTER"
+                          }, {
+                            "name" : "replica-1",
+                            "role" : "REPLICA"
+                          }, {
+                            "name" : "replica-2",
+                            "role" : "REPLICA"
+                          } ],
+                          "writeQuorum" : "1",
+                          "readQuorum" : 1
+                        }
+            responses: 
+                "200": 
+                    description: Updated cluster configuration.
+                    body: 
+                        application/json: 
+                            schema: |
+                                {
+                                  "type" : "object",
+                                  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:admin:cluster:ClusterConfigResponse",
+                                  "properties" : {
+                                    "servers" : {
+                                      "type" : "array",
+                                      "description" : "List of server configurations.",
+                                      "items" : {
+                                        "type" : "object",
+                                        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:admin:cluster:ClusterServerConfig",
+                                        "properties" : {
+                                          "name" : {
+                                            "type" : "string",
+                                            "required" : true,
+                                            "description" : "Name of the server."
+                                          },
+                                          "role" : {
+                                            "type" : "string",
+                                            "description" : "Role of the server which can be MASTER or REPLICA.",
+                                            "enum" : [ "MASTER", "REPLICA" ]
+                                          }
+                                        }
+                                      }
+                                    },
+                                    "writeQuorum" : {
+                                      "type" : "string",
+                                      "description" : "Global write quorum setting. Allowed values are numbers and 'all', 'majority'."
+                                    },
+                                    "readQuorum" : {
+                                      "type" : "integer",
+                                      "description" : "Global read quorum setting."
+                                    }
+                                  }
+                                }
+                            example: |
+                                {
+                                  "servers" : [ {
+                                    "name" : "master-1",
+                                    "role" : "MASTER"
+                                  }, {
+                                    "name" : "replica-1",
+                                    "role" : "REPLICA"
+                                  }, {
+                                    "name" : "replica-2",
+                                    "role" : "REPLICA"
+                                  } ],
+                                  "writeQuorum" : "majority",
+                                  "readQuorum" : 1
+                                }
     /cluster/status: 
         get: 
             description: Loads the cluster status information.
@@ -7991,6 +8158,139 @@ mediaType: application/json
                                     "repaired" : true,
                                     "repairAction" : "DELETE"
                                   } ]
+                                }
+    /coordinator/config: 
+        get: 
+            description: Returns the currently active configuration.
+            responses: 
+                "200": 
+                    description: The currently active config on this instance.
+                    body: 
+                        application/json: 
+                            schema: |
+                                {
+                                  "type" : "object",
+                                  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:admin:cluster:coordinator:CoordinatorConfig",
+                                  "properties" : {
+                                    "mode" : {
+                                      "type" : "string",
+                                      "description" : "Coordinator mode which can be set to DISABLED to disable coordination, to CUD to handle only modifying requests or to ALL to handle all requests.",
+                                      "enum" : [ "DISABLED", "CUD", "ALL" ]
+                                    }
+                                  }
+                                }
+                            example: |
+                                {
+                                  "mode" : "CUD"
+                                }
+        post: 
+            description: Update the coordinator configuration of this instance. Note that the update config will not be persisted.
+            body: 
+                application/json: 
+                    schema: |
+                        {
+                          "type" : "object",
+                          "id" : "urn:jsonschema:com:gentics:mesh:core:rest:admin:cluster:coordinator:CoordinatorConfig",
+                          "properties" : {
+                            "mode" : {
+                              "type" : "string",
+                              "description" : "Coordinator mode which can be set to DISABLED to disable coordination, to CUD to handle only modifying requests or to ALL to handle all requests.",
+                              "enum" : [ "DISABLED", "CUD", "ALL" ]
+                            }
+                          }
+                        }
+                    example: |
+                        {
+                          "mode" : "DISABLED"
+                        }
+            responses: 
+                "200": 
+                    description: The currently active config on this instance.
+                    body: 
+                        application/json: 
+                            schema: |
+                                {
+                                  "type" : "object",
+                                  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:admin:cluster:coordinator:CoordinatorConfig",
+                                  "properties" : {
+                                    "mode" : {
+                                      "type" : "string",
+                                      "description" : "Coordinator mode which can be set to DISABLED to disable coordination, to CUD to handle only modifying requests or to ALL to handle all requests.",
+                                      "enum" : [ "DISABLED", "CUD", "ALL" ]
+                                    }
+                                  }
+                                }
+                            example: |
+                                {
+                                  "mode" : "CUD"
+                                }
+    /coordinator/master: 
+        get: 
+            description: Returns information on the elected coordinator master.
+            responses: 
+                "200": 
+                    description: Currently elected master.
+                    body: 
+                        application/json: 
+                            schema: |
+                                {
+                                  "type" : "object",
+                                  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:admin:cluster:coordinator:CoordinatorMasterResponse",
+                                  "properties" : {
+                                    "name" : {
+                                      "type" : "string",
+                                      "description" : "Cluster node name of the coordination master."
+                                    },
+                                    "port" : {
+                                      "type" : "integer",
+                                      "description" : "HTTP port of the coordination master Gentics Mesh API."
+                                    },
+                                    "host" : {
+                                      "type" : "string",
+                                      "description" : "Hostname of the coordination master instance."
+                                    }
+                                  }
+                                }
+                            example: |
+                                {
+                                  "name" : "gentics-mesh-1",
+                                  "port" : 8080,
+                                  "host" : "172.10.1.10"
+                                }
+        post: 
+            description: Make this instance the coordination master.
+            responses: 
+                "200": 
+                    description: Election status message.
+                    body: 
+                        application/json: 
+                            schema: |
+                                {
+                                  "type" : "object",
+                                  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:common:GenericMessageResponse",
+                                  "properties" : {
+                                    "message" : {
+                                      "type" : "string",
+                                      "required" : true,
+                                      "description" : "Enduser friendly translated message. Translation depends on the 'Accept-Language' header value"
+                                    },
+                                    "internalMessage" : {
+                                      "type" : "string",
+                                      "required" : true,
+                                      "description" : "Internal developer friendly message"
+                                    },
+                                    "properties" : {
+                                      "type" : "object",
+                                      "description" : "Map of i18n properties which were used to construct the provided message",
+                                      "additionalProperties" : {
+                                        "type" : "any"
+                                      }
+                                    }
+                                  }
+                                }
+                            example: |
+                                {
+                                  "message" : "I18n message"
                                 }
     /debuginfo: 
         get: 
@@ -8944,6 +9244,42 @@ mediaType: application/json
             responses: 
                 "200": 
                     description: Response message.
+                    body: 
+                        application/json: 
+                            schema: |
+                                {
+                                  "type" : "object",
+                                  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:common:GenericMessageResponse",
+                                  "properties" : {
+                                    "message" : {
+                                      "type" : "string",
+                                      "required" : true,
+                                      "description" : "Enduser friendly translated message. Translation depends on the 'Accept-Language' header value"
+                                    },
+                                    "internalMessage" : {
+                                      "type" : "string",
+                                      "required" : true,
+                                      "description" : "Internal developer friendly message"
+                                    },
+                                    "properties" : {
+                                      "type" : "object",
+                                      "description" : "Map of i18n properties which were used to construct the provided message",
+                                      "additionalProperties" : {
+                                        "type" : "any"
+                                      }
+                                    }
+                                  }
+                                }
+                            example: |
+                                {
+                                  "message" : "I18n message"
+                                }
+    /shutdown: 
+        post: 
+            description: Initiates shutdown of this instance.
+            responses: 
+                "200": 
+                    description: Shutdown initiated.
                     body: 
                         application/json: 
                             schema: |
@@ -13263,7 +13599,7 @@ mediaType: application/json
                                 }
                             example: |
                                 {
-                                  "meshVersion" : "1.4.2",
+                                  "meshVersion" : "1.4.3",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",

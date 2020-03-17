@@ -5,6 +5,9 @@
 | Description 
 
 
+| *MESH_CLUSTER_COORDINATOR_MODE*
+| Override the cluster coordinator mode.
+
 | *MESH_HTTP_CORS_ENABLE*
 | Override the configured CORS enable flag.
 
@@ -40,6 +43,9 @@
 
 | *MESH_HTTP_SSL_CERT_PATH*
 | Override the configured SSL enable flag.
+
+| *MESH_CLUSTER_COORDINATOR_REGEX*
+| Override the cluster coordinator regex.
 
 | *MESH_CONTENT_AUTO_PURGE*
 | Override the content versioning flag
@@ -77,8 +83,14 @@
 | *MESH_HTTP_CORS_ALLOW_CREDENTIALS*
 | Override the configured CORS allowed credentials flag.
 
+| *MESH_CLUSTER_COORDINATOR_TOPOLOGY*
+| Override the cluster coordinator topology management mode.
+
 | *MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET*
 | Control whether a forced password reset should be triggered when creating the initial admin user. Default: true
+
+| *MESH_GRAPH_SYNC_WRITES_TIMEOUT*
+| Override the graph database sync write timeout.
 
 | *MESH_ELASTICSEARCH_STARTUP_TIMEOUT*
 | Override the configured elasticsearch server timeout.
@@ -100,6 +112,9 @@
 
 | *MESH_BINARY_DOCUMENT_PARSER*
 | Override the document parser enabled flag.
+
+| *MESH_CLUSTER_TOPOLOGY_LOCK_DELAY*
+| Override the cluster topology lock delay in ms.
 
 | *MESH_MONITORING_JVM_METRICS_ENABLED*
 | Override the configured JVM metrics enabled flag.
@@ -188,6 +203,9 @@
 | *MESH_ELASTICSEARCH_EVENT_BUFFER_SIZE*
 | Override the configured event buffer size.
 
+| *MESH_CLUSTER_TOPOLOGY_LOCK_TIMEOUT*
+| Override the cluster topology lock timeout in ms.
+
 | *MESH_GRAPH_BACKUP_DIRECTORY*
 | Override the graph database backup directory.
 
@@ -196,6 +214,9 @@
 
 | *MESH_DEFAULT_LANG*
 | Override the configured default language.
+
+| *MESH_GRAPH_TX_COMMIT_TIMEOUT*
+| Override the transaction commit timeout. Default: 0
 
 | *MESH_IMAGE_RESAMPLE_FILTER*
 | Override the sample filter for image resize operations.
