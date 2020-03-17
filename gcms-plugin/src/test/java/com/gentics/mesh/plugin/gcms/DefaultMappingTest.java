@@ -19,7 +19,6 @@ import com.gentics.mesh.rest.client.MeshRestClient;
 public class DefaultMappingTest extends AbstractGCMSPluginTest {
 	@Test
 	public void testDefaultMapping() throws IOException {
-		GCMSTestPlugin.config.setPrefix("").setPrefixUser(null).setPrefixGroup(null).setPrefixRole(null);
 		String token = getToken("testuser", "First", "Last", "testuser@nowhere", Arrays.asList("Group1", "Group2"));
 		MeshRestClient client = server.client();
 		client.setAPIKey(token);

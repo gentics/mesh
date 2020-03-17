@@ -13,7 +13,6 @@
 ----
 ---
 publicKeyPath: "public-key.jwk"
-prefix: ""
 issuer: "Gentics CMS"
 ----
 
@@ -23,18 +22,6 @@ issuer: "Gentics CMS"
 |publicKeyPath
 |Path to the JWK file containing the public key
 |public-key.jwk
-|prefix
-|Prefix for mapped usernames, group names and role names
-|"" _(empty string)_
-|prefixUser
-|Prefix for mapped usernames
-|_use prefix_
-|prefixGroup
-|Prefix for mapped group names
-|_use prefix_
-|prefixRole
-|Prefix for mapped role names
-|_use prefix_
 |issuer
 |Expected value of the _iss_ claim (issuer claim)
 |Gentics CMS

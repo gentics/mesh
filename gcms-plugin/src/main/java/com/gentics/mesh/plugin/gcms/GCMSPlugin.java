@@ -74,18 +74,16 @@ public class GCMSPlugin extends AbstractCommercialPlugin<GCMSPluginConfig> imple
 		log.trace("Map JWT coming from GCMS");
 
 		MappingResult result = new MappingResult().setUser(new UserUpdateRequest()
-				.setUsername(config.prefixUser(token.getString("preferred_username")))
+				.setUsername(token.getString("preferred_username"))
 				.setFirstname(token.getString("given_name"))
 				.setLastname(token.getString("family_name"))
 				.setEmailAddress(token.getString("email")));
 
-		result.setGroups(token.getJsonArray(GROUPS_CLAIM).stream()
-				.map(group -> new GroupResponse().setName(config.prefixGroup(group.toString()))
-						.setRoles(new RoleReference().setName(config.prefixRole(group.toString()))))
-				.collect(Collectors.toList()));
+		result.setGroups(
+				token.getJsonArray(GROUPS_CLAIM).stream().map(group -> new GroupResponse().setName(group.toString())
+						.setRoles(new RoleReference().setName(group.toString()))).collect(Collectors.toList()));
 		result.setRoles(token.getJsonArray(GROUPS_CLAIM).stream()
-				.map(group -> new RoleResponse().setName(config.prefixRole(group.toString())))
-				.collect(Collectors.toList()));
+				.map(group -> new RoleResponse().setName(group.toString())).collect(Collectors.toList()));
 		return result;
 	}
 
