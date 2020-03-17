@@ -38,7 +38,7 @@ icon:plus[] Clustering: The `cluster.topologyLockTimeout` setting has been added
 
 icon:plus[] Clustering: The coordinator layer feature has been added. The layer can be enabled to efficiently process REST requests in a multi-master and master-replica cluster setup.
 
-More information can be found in the link:{{< relref "clustering.asciidoc" >}}#_coordination[Cluster coordination section].
+More information can be found in the link:{{< relref "clustering.asciidoc" >}}#_cluster_coordination[Cluster coordination section].
 
 icon:plus[] REST: The `/admin/shutdown` endpoint has been added. This allows users with admin privileges to shutdown the mesh process.
 
