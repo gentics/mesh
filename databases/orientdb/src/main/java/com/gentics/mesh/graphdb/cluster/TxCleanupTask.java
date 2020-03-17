@@ -56,11 +56,7 @@ public class TxCleanupTask implements Handler<Long> {
 					log.warn("Thread {} exceeds time limit of {} with duration {}.", entry.getKey(), limit, dur);
 				}
 				return exceedsLimit;
-			}).map(entry -> {
-				Thread t = entry.getKey();
-				return Tuple.tuple(t, t.getStackTrace());
-			})
-			.map(Tuple::v1)
+			}).map(Map.Entry::getKey)
 			.collect(Collectors.toList());
 
 		if (log.isDebugEnabled()) {
