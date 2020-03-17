@@ -10,6 +10,8 @@ import com.gentics.madl.tx.AbstractTx;
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.graphdb.cluster.TxCleanupTask;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.tx.OrientStorage;
 import com.gentics.mesh.madl.tp3.mock.Element;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
@@ -29,12 +31,15 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	private static final Logger log = LoggerFactory.getLogger(OrientDBTx.class);
 
 	boolean isWrapped = false;
-	private final TypeResolver typeResolver;
-	private BootstrapInitializer boot;
 
-	public OrientDBTx(BootstrapInitializer boot, OrientGraphFactory factory, TypeResolver typeResolver) {
-		this.typeResolver = typeResolver;
+	private final TypeResolver typeResolver;
+	private final Database db;
+	private final BootstrapInitializer boot;
+
+	public OrientDBTx(Database db, BootstrapInitializer boot, OrientGraphFactory factory, TypeResolver typeResolver) {
+		this.db = db;
 		this.boot = boot;
+		this.typeResolver = typeResolver;
 		// Check if an active transaction already exists.
 		Tx activeTx = Tx.get();
 		if (activeTx != null) {
@@ -46,9 +51,10 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 		}
 	}
 
-	public OrientDBTx(BootstrapInitializer boot, OrientStorage provider, TypeResolver typeResolver) {
-		this.typeResolver = typeResolver;
+	public OrientDBTx(Database db, BootstrapInitializer boot, OrientStorage provider, TypeResolver typeResolver) {
+		this.db = db;
 		this.boot = boot;
+		this.typeResolver = typeResolver;
 		// Check if an active transaction already exists.
 		Tx activeTx = Tx.get();
 		if (activeTx != null) {
@@ -65,7 +71,14 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 		try {
 			if (isSuccess()) {
 				try {
-					commit();
+					db.blockingTopologyLockCheck();
+					Thread t = Thread.currentThread();
+					TxCleanupTask.register(t);
+					try {
+						commit();
+					} finally {
+						TxCleanupTask.unregister(t);
+					}
 				} catch (Exception e) {
 					rollback();
 					throw e;
