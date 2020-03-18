@@ -1,6 +1,7 @@
 package com.gentics.mesh.graphdb;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.metric.SimpleMetric.COMMIT_TIME;
 import static com.gentics.mesh.metric.SimpleMetric.TOPOLOGY_LOCK_TIMEOUT_COUNT;
 import static com.gentics.mesh.metric.SimpleMetric.TOPOLOGY_LOCK_WAITING_TIME;
 import static com.gentics.mesh.metric.SimpleMetric.TX_RETRY;
@@ -115,6 +116,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 
     private Timer topologyLockTimer;
 
+    private Timer commitTimer;
+
     private Counter topologyLockTimeoutCounter;
 
 	@Inject
@@ -130,6 +133,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 			txRetryCounter = metrics.counter(TX_RETRY);
             topologyLockTimer = metrics.timer(TOPOLOGY_LOCK_WAITING_TIME);
             topologyLockTimeoutCounter = metrics.counter(TOPOLOGY_LOCK_TIMEOUT_COUNT);
+            commitTimer = metrics.timer(COMMIT_TIME);
 		}
 		this.typeHandler = typeHandler;
 		this.indexHandler = indexHandler;
@@ -362,7 +366,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	@Deprecated
 	public Tx tx() {
-		return new OrientDBTx(this, boot.get(), txProvider, resolver);
+		return new OrientDBTx(this, boot.get(), txProvider, resolver, commitTimer);
 	}
 
 	@Override

@@ -13,7 +13,11 @@ public enum SimpleMetric implements Metric {
 
 	TX_RETRY("tx_retry", "Amount of transaction retries which happen if a conflict has been encountered."),
 
-	GRAPH_ELEMENT_RELOAD("graph_element_reload", "Meter which tracks the reload operations on used vertices."),
+    TX_INTERRUPT_COUNT("tx_interrupt", "Amount of commit interrupts."),
+
+    COMMIT_TIME("commit_time", "Timer which tracks commit durations."),
+
+    GRAPH_ELEMENT_RELOAD("graph_element_reload", "Meter which tracks the reload operations on used vertices."),
 
 	NODE_MIGRATION_PENDING("node_migration_pending", "Pending contents which need to be processed by the node migration."),
 
