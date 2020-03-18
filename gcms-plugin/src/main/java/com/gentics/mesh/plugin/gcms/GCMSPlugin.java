@@ -84,6 +84,7 @@ public class GCMSPlugin extends AbstractCommercialPlugin<GCMSPluginConfig> imple
 						.setRoles(new RoleReference().setName(group.toString()))).collect(Collectors.toList()));
 		result.setRoles(token.getJsonArray(GROUPS_CLAIM).stream()
 				.map(group -> new RoleResponse().setName(group.toString())).collect(Collectors.toList()));
+		result.setGroupFilter(group -> !token.getJsonArray(GROUPS_CLAIM).contains(group));
 		return result;
 	}
 
