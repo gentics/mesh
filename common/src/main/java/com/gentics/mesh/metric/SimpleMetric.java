@@ -19,11 +19,11 @@ public enum SimpleMetric implements Metric {
 
 	WRITE_LOCK_WAITING_TIME("write_lock_waiting_time", "Tracks the time which is spent waiting on the write lock."),
 
-    WRITE_LOCK_TIMEOUT_COUNT("write_lock_timeout_count", "Amount of timeouts of acquiring the write lock."),
+    WRITE_LOCK_TIMEOUT_COUNT("write_lock_timeout", "Amount of timeouts of acquiring the write lock."),
 
     TOPOLOGY_LOCK_WAITING_TIME("topology_lock_waiting_time", "Tracks the time which is spent waiting on the write lock."),
 
-    TOPOLOGY_LOCK_TIMEOUT_COUNT("topology_lock_timeout_count", "Amount of timeouts of acquiring the write lock.");
+    TOPOLOGY_LOCK_TIMEOUT_COUNT("topology_lock_timeout", "Amount of timeouts of acquiring the write lock.");
 
     private String key;
 

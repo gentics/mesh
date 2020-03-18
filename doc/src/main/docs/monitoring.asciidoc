@@ -126,35 +126,47 @@ More metrics will be added over time.
 | Key
 | Description
 
-| mesh_tx_created
+| `mesh_tx_created`
 | Meter which measures the rate of created transactions over time.
 
-| mesh_notx_created
+| `mesh_notx_created`
 | Meter which measures the rate of created noTx transactions over time.
 
-| mesh_graph_element_reload
+| `mesh_graph_element_reload`
 | Meter which tracks the reload operations on used vertices.
 
-| mesh_tx_time
+| `mesh_tx_time`
 | Timer which tracks transaction durations.
 
-| mesh_tx_retry
+| `mesh_tx_retry`
 | Amount of transaction retries which happen if a conflict has been encountered.
 
-| mesh_node_migration_pending
+| `mesh_node_migration_pending`
 | Pending contents which need to be processed by the node migration.
 
-| mesh_cache_<cache>_hit
+| `mesh_cache_<cache>_hit`
 | Amount of cache hits.
 
-| mesh_cache_<cache>_miss
+| `mesh_cache_<cache>_miss`
 | Amount of cache misses.
 
-| mesh_cache_<cache>_clear_all
+| `mesh_cache_<cache>_clear_all`
 | Amount of invalidations of the whole cache.
 
-| mesh_cache_<cache>_clear_single
+| `mesh_cache_<cache>_clear_single`
 | Amount of invalidations for a single entry in the cache.
+
+| `mesh_write_lock_waiting_time`
+| Tracks the time which is spent waiting on the write lock.
+
+| `mesh_write_lock_timeout`
+| Amount of timeouts of acquiring the write lock.
+
+| `mesh_topology_lock_waiting_time`
+| Tracks the time which is spent waiting on the write lock.
+
+| `mesh_topology_lock_timeout`
+| Amount of timeouts of acquiring the write lock.
 
 |======
 
