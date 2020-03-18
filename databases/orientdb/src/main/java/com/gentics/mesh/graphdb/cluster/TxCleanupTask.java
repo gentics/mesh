@@ -2,7 +2,6 @@ package com.gentics.mesh.graphdb.cluster;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -11,11 +10,14 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.util.Tuple;
+import com.gentics.mesh.metric.MetricsService;
 
+import io.micrometer.core.instrument.Counter;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
+import static com.gentics.mesh.metric.SimpleMetric.TX_INTERRUPT_COUNT;
 
 /**
  * Task which terminates stalled or long running commit operations.
@@ -27,11 +29,14 @@ public class TxCleanupTask implements Handler<Long> {
 
 	private static final Map<Thread, Long> registeredThreads = new ConcurrentHashMap<>();
 
-	private GraphStorageOptions storageOptions;
+	private final Counter interruptCounter;
+
+    private GraphStorageOptions storageOptions;
 
 	@Inject
-	public TxCleanupTask(MeshOptions options) {
+	public TxCleanupTask(MeshOptions options, MetricsService service) {
 		this.storageOptions = options.getStorageOptions();
+		this.interruptCounter = service.counter(TX_INTERRUPT_COUNT);
 	}
 
 	@Override
@@ -63,6 +68,7 @@ public class TxCleanupTask implements Handler<Long> {
 			log.debug("Interrupting {} threads", toInterrupt.size());
 		}
 		for (Thread thread : toInterrupt) {
+		    interruptCounter.increment();
 			log.info("Interrupting transaction thread {}", thread.getName());
 			thread.interrupt();
 		}
