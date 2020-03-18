@@ -21,16 +21,20 @@ public class GraphStorageOptions implements Option {
 	public static final String DEFAULT_EXPORT_DIRECTORY = "data" + File.separator + "export";
 	public static final boolean DEFAULT_START_SERVER = false;
 	public static final boolean DEFAULT_SYNC_WRITES = true;
+	public static final long DEFAULT_SYNC_WRITES_TIMEOUT = 60_000;
 	public static final int DEFAULT_TX_RETRY_DELAY = 10;
 	public static final int DEFAULT_TX_RETRY_LIMIT = 10;
+	public static final long DEFAULT_TX_COMMIT_TIMEOUT = 0;
 
 	public static final String MESH_GRAPH_DB_DIRECTORY_ENV = "MESH_GRAPH_DB_DIRECTORY";
 	public static final String MESH_GRAPH_BACKUP_DIRECTORY_ENV = "MESH_GRAPH_BACKUP_DIRECTORY";
 	public static final String MESH_GRAPH_EXPORT_DIRECTORY_ENV = "MESH_GRAPH_EXPORT_DIRECTORY";
 	public static final String MESH_GRAPH_STARTSERVER_ENV = "MESH_GRAPH_STARTSERVER";
 	public static final String MESH_GRAPH_SYNC_WRITES_ENV = "MESH_GRAPH_SYNC_WRITES";
+	public static final String MESH_GRAPH_SYNC_WRITES_TIMEOUT_ENV = "MESH_GRAPH_SYNC_WRITES_TIMEOUT";
 	public static final String MESH_GRAPH_TX_RETRY_DELAY_ENV = "MESH_GRAPH_TX_RETRY_DELAY";
 	public static final String MESH_GRAPH_TX_RETRY_LIMIT_ENV = "MESH_GRAPH_TX_RETRY_LIMIT";
+	public static final String MESH_GRAPH_TX_COMMIT_TIMEOUT_ENV = "MESH_GRAPH_TX_COMMIT_TIMEOUT";
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Path to the graph database data directory.")
@@ -57,6 +61,11 @@ public class GraphStorageOptions implements Option {
 	@EnvironmentVariable(name = MESH_GRAPH_SYNC_WRITES_ENV, description = "Override the graph database sync writes flag.")
 	private boolean synchronizeWrites = DEFAULT_SYNC_WRITES;
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Set the timeout in milliseconds for the sync write lock. Default: " + DEFAULT_SYNC_WRITES_TIMEOUT)
+	@EnvironmentVariable(name = MESH_GRAPH_SYNC_WRITES_TIMEOUT_ENV, description = "Override the graph database sync write timeout.")
+	private long synchronizeWritesTimeout = DEFAULT_SYNC_WRITES_TIMEOUT;
+
 	@JsonProperty(defaultValue = DEFAULT_TX_RETRY_DELAY + "ms")
 	@JsonPropertyDescription("The delay in milliseconds when a transaction has to be retried.")
 	@EnvironmentVariable(name = MESH_GRAPH_TX_RETRY_DELAY_ENV, description = "Override the transaction retry delay. Default: "
@@ -68,6 +77,12 @@ public class GraphStorageOptions implements Option {
 	@EnvironmentVariable(name = MESH_GRAPH_TX_RETRY_LIMIT_ENV, description = "Override the transaction retry limit. Default: "
 		+ DEFAULT_TX_RETRY_LIMIT)
 	private int txRetryLimit = DEFAULT_TX_RETRY_LIMIT;
+
+	@JsonProperty(defaultValue = DEFAULT_TX_COMMIT_TIMEOUT + " ms")
+	@JsonPropertyDescription("The transaction commit timeout in milliseconds. A timeout value of zero means that transaction commit operations will never timeout.")
+	@EnvironmentVariable(name = MESH_GRAPH_TX_COMMIT_TIMEOUT_ENV, description = "Override the transaction commit timeout. Default: "
+		+ DEFAULT_TX_COMMIT_TIMEOUT)
+	private long txCommitTimeout = DEFAULT_TX_COMMIT_TIMEOUT;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Additional set of graph database parameters.")
@@ -139,6 +154,15 @@ public class GraphStorageOptions implements Option {
 		return this;
 	}
 
+	public long getSynchronizeWritesTimeout() {
+		return synchronizeWritesTimeout;
+	}
+
+	public GraphStorageOptions setSynchronizeWritesTimeout(long synchronizeWritesTimeout) {
+		this.synchronizeWritesTimeout = synchronizeWritesTimeout;
+		return this;
+	}
+
 	public int getTxRetryDelay() {
 		return txRetryDelay;
 	}
@@ -155,6 +179,15 @@ public class GraphStorageOptions implements Option {
 
 	public GraphStorageOptions setTxRetryLimit(int txRetryLimit) {
 		this.txRetryLimit = txRetryLimit;
+		return this;
+	}
+
+	public long getTxCommitTimeout() {
+		return this.txCommitTimeout;
+	}
+
+	public GraphStorageOptions setTxCommitTimeout(long txCommitTimeout) {
+		this.txCommitTimeout = txCommitTimeout;
 		return this;
 	}
 

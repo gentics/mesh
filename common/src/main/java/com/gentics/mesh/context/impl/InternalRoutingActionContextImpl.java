@@ -1,13 +1,25 @@
 package com.gentics.mesh.context.impl;
 
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static io.vertx.core.http.HttpHeaders.CACHE_CONTROL;
+import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
+
+import java.util.Collections;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.context.AbstractInternalActionContext;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.router.ProjectsRouter;
 import com.gentics.mesh.util.ETag;
+
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpHeaders;
@@ -18,16 +30,6 @@ import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.Session;
-
-import java.util.Collections;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-import static io.vertx.core.http.HttpHeaders.CACHE_CONTROL;
-import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
 
 /**
  * Vert.x specific routing context based action context implementation.

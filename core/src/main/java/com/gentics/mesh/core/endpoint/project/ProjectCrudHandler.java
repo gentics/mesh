@@ -21,6 +21,7 @@ import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.ProjectPurgeParameters;
 
@@ -32,8 +33,8 @@ public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResp
 	private BootstrapInitializer boot;
 
 	@Inject
-	public ProjectCrudHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils) {
-		super(db, utils);
+	public ProjectCrudHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, WriteLock writeLock) {
+		super(db, utils, writeLock);
 		this.boot = boot;
 	}
 
@@ -69,25 +70,26 @@ public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResp
 		ProjectPurgeParameters purgeParams = ac.getProjectPurgeParameters();
 		Optional<ZonedDateTime> before = purgeParams.getBeforeDate();
 
-		utils.syncTx(ac, (tx) -> {
-			if (!ac.getUser().hasAdminRole()) {
-				throw error(FORBIDDEN, "error_admin_permission_required");
-			}
-			RootVertex<Project> root = getRootVertex(ac);
-			MeshAuthUser user = ac.getUser();
-			Project project = root.loadObjectByUuid(ac, uuid, DELETE_PERM);
-			db.tx(() -> {
-				if (before.isPresent()) {
-					boot.jobRoot().enqueueVersionPurge(user, project, before.get());
-				} else {
-					boot.jobRoot().enqueueVersionPurge(user, project);
+		try (WriteLock lock = writeLock.lock(ac)) {
+			utils.syncTx(ac, (tx) -> {
+				if (!ac.getUser().hasAdminRole()) {
+					throw error(FORBIDDEN, "error_admin_permission_required");
 				}
-			});
-			MeshEvent.triggerJobWorker(boot.mesh());
+				RootVertex<Project> root = getRootVertex(ac);
+				MeshAuthUser user = ac.getUser();
+				Project project = root.loadObjectByUuid(ac, uuid, DELETE_PERM);
+				db.tx(() -> {
+					if (before.isPresent()) {
+						boot.jobRoot().enqueueVersionPurge(user, project, before.get());
+					} else {
+						boot.jobRoot().enqueueVersionPurge(user, project);
+					}
+				});
+				MeshEvent.triggerJobWorker(boot.mesh());
 
-			return message(ac, "project_version_purge_enqueued");
-		}, message -> ac.send(message, OK));
-
+				return message(ac, "project_version_purge_enqueued");
+			}, message -> ac.send(message, OK));
+		}
 	}
 
 }

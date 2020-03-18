@@ -6,13 +6,13 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 import javax.naming.InvalidNameException;
 
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.distributed.RequestDelegator;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.VersionHandler;
@@ -68,10 +68,14 @@ public class RouterStorage {
 
 	private final RouterStorageRegistry routerStorageRegistry;
 
+	private final RequestDelegator delegator;
+
 	@Inject
 	public RouterStorage(Vertx vertx, MeshOptions options, MeshAuthChain authChain, CorsHandler corsHandler, BodyHandlerImpl bodyHandler,
 		Lazy<BootstrapInitializer> boot,
-		Lazy<Database> db, VersionHandler versionHandler, RouterStorageRegistry routerStorageRegistry) {
+		Lazy<Database> db, VersionHandler versionHandler,
+		RouterStorageRegistry routerStorageRegistry,
+		RequestDelegator delegator) {
 		this.vertx = vertx;
 		this.options = options;
 		this.boot = boot;
@@ -81,6 +85,7 @@ public class RouterStorage {
 		this.authChain = authChain;
 		this.versionHandler = versionHandler;
 		this.routerStorageRegistry = routerStorageRegistry;
+		this.delegator = delegator;
 
 		// Initialize the router chain. The root router will create additional routers which will be mounted.
 		rootRouter = new RootRouter(vertx, this, options);
@@ -151,6 +156,15 @@ public class RouterStorage {
 
 	public RootRouter root() {
 		return rootRouter;
+	}
+
+	/**
+	 * Return the injected request delegator handler.
+	 * 
+	 * @return
+	 */
+	public RequestDelegator getDelegator() {
+		return delegator;
 	}
 
 }

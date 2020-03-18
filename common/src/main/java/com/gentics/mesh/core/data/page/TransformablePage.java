@@ -46,6 +46,17 @@ public interface TransformablePage<T extends TransformableElement<? extends Rest
 		});
 	}
 
+	default ListResponse<RestModel> transformToRestSync(InternalActionContext ac, int level) {
+		List<RestModel> responses = new ArrayList<>();
+		for (T element : getWrappedList()) {
+			responses.add(element.transformToRestSync(ac, level));
+		}
+		ListResponse<RestModel> listResponse = new ListResponse<>();
+		setPaging(listResponse);
+		listResponse.getData().addAll(responses);
+		return listResponse;
+	}
+
 	/**
 	 * Return the eTag of the page. The etag is calculated using the following information:
 	 * <ul>
@@ -68,6 +79,5 @@ public interface TransformablePage<T extends TransformableElement<? extends Rest
 		}
 		return ETag.hash(builder.toString());
 	}
-	
 
 }

@@ -15,6 +15,9 @@ import com.gentics.madl.tx.TxAction1;
 import com.gentics.madl.tx.TxFactory;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
+import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
+import com.gentics.mesh.core.rest.admin.cluster.ServerRole;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.cluster.ClusterManager;
@@ -491,4 +494,28 @@ public interface Database extends TxFactory {
 	List<String> getChangeUuidList();
 
 	Vertx vertx();
+
+	/**
+	 * Update the cluster configuration.
+	 * 
+	 * @param request
+	 */
+	void updateClusterConfig(ClusterConfigRequest request);
+
+	/**
+	 * Load the current cluster configuration.
+	 * @return
+	 */
+	ClusterConfigResponse loadClusterConfig();
+
+	/**
+	 * Check whether a topology change causes a lock.
+	 */
+	void blockingTopologyLockCheck();
+
+	/**
+	 * Set the server role to master.
+	 */
+	void setToMaster();
+
 }

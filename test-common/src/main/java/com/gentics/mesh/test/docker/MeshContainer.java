@@ -34,6 +34,7 @@ import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.cluster.CoordinatorMode;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.test.util.UnixUtils;
@@ -105,6 +106,10 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 	private String dataPathPostfix;
 
 	private boolean startEmbeddedES = false;
+
+	private boolean coordinatorPlane = false;
+
+	private String coordinatorPlaneRegex;
 
 	private boolean useFilesystem = false;
 
@@ -185,6 +190,14 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 
 		if (!useFilesystem) {
 			addEnv(GraphStorageOptions.MESH_GRAPH_DB_DIRECTORY_ENV, "null");
+		}
+
+		if (coordinatorPlane) {
+			addEnv(ClusterOptions.MESH_CLUSTER_COORDINATOR_MODE_ENV, CoordinatorMode.ALL.name());
+		}
+
+		if (coordinatorPlaneRegex != null) {
+			addEnv(ClusterOptions.MESH_CLUSTER_COORDINATOR_REGEX_ENV, coordinatorPlaneRegex);
 		}
 
 		String javaOpts = null;
@@ -553,6 +566,16 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 	 */
 	public MeshContainer withInitCluster() {
 		this.initCluster = true;
+		return this;
+	}
+
+	public MeshContainer withCoordinatorPlane() {
+		this.coordinatorPlane = true;
+		return this;
+	}
+
+	public MeshContainer withCoordinatorRegex(String regex) {
+		this.coordinatorPlaneRegex = regex;
 		return this;
 	}
 

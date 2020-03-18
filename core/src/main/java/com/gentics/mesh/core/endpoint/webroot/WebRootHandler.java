@@ -33,7 +33,6 @@ import com.gentics.mesh.core.endpoint.node.NodeCrudHandler;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -57,28 +56,25 @@ public class WebRootHandler {
 
 	private static final String WEBROOT_LAST_SEGMENT = "WEBROOT_SEGMENT_NAME";
 
-	private WebRootServiceImpl webrootService;
+	private final WebRootServiceImpl webrootService;
 
-	private BinaryFieldResponseHandler binaryFieldResponseHandler;
+	private final BinaryFieldResponseHandler binaryFieldResponseHandler;
 
-	private Database db;
+	private final Database db;
 
-	private NodeCrudHandler nodeCrudHandler;
-
-	private HandlerUtilities utils;
+	private final NodeCrudHandler nodeCrudHandler;
 
 	private final BootstrapInitializer boot;
 
-	private MeshOptions options;
+	private final MeshOptions options;
 
 	@Inject
 	public WebRootHandler(Database database, WebRootServiceImpl webrootService, BinaryFieldResponseHandler binaryFieldResponseHandler,
-		NodeCrudHandler nodeCrudHandler, HandlerUtilities util, BootstrapInitializer boot, MeshOptions options) {
+		NodeCrudHandler nodeCrudHandler, BootstrapInitializer boot, MeshOptions options) {
 		this.db = database;
 		this.webrootService = webrootService;
 		this.binaryFieldResponseHandler = binaryFieldResponseHandler;
 		this.nodeCrudHandler = nodeCrudHandler;
-		this.utils = utils;
 		this.boot = boot;
 		this.options = options;
 	}

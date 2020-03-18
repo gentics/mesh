@@ -1,0 +1,14 @@
+{
+  "servers" : [ {
+    "name" : "master-1",
+    "role" : "MASTER"
+  }, {
+    "name" : "replica-1",
+    "role" : "REPLICA"
+  }, {
+    "name" : "replica-2",
+    "role" : "REPLICA"
+  } ],
+  "writeQuorum" : "majority",
+  "readQuorum" : 1
+}

@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.job.JobStatus.RUNNING;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -28,11 +27,10 @@ import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.core.rest.event.node.MicroschemaMigrationCause;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
-import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.metric.MetricsService;
-import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.VersionNumber;
 
 import io.reactivex.Completable;
@@ -45,12 +43,12 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(MicronodeMigrationHandler.class);
 
-	private final HandlerUtilities handlerUtilities;
+	private final WriteLock writeLock;
 
 	@Inject
-	public MicronodeMigrationHandler(Database db, BinaryUploadHandler binaryFieldHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider, HandlerUtilities handlerUtilities) {
+	public MicronodeMigrationHandler(Database db, BinaryUploadHandler binaryFieldHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider, WriteLock writeLock) {
 		super(db, binaryFieldHandler, metrics, batchProvider);
-		this.handlerUtilities = handlerUtilities;
+		this.writeLock = writeLock;
 	}
 
 	/**
@@ -70,7 +68,6 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 
 			// Collect the migration scripts
 			NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
-			List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts = new ArrayList<>();
 			Set<String> touchedFields = new HashSet<>();
 			try {
 				db.tx(() -> {
@@ -106,11 +103,8 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 
 			List<Exception> errorsDetected = migrateLoop(fieldContainersResult, cause, status,
 				(batch, container, errors) -> {
-					handlerUtilities.lock();
-					try {
+					try (WriteLock lock = writeLock.lock(ac)) {
 						migrateMicronodeContainer(ac, batch, branch, fromVersion, toVersion, container, touchedFields, errors);
-					} finally {
-						handlerUtilities.unlock();
 					}
 				});
 

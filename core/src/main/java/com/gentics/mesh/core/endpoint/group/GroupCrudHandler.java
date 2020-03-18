@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.core.verticle.handler.WriteLockImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 
@@ -37,8 +38,8 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 	private Lazy<BootstrapInitializer> boot;
 
 	@Inject
-	public GroupCrudHandler(Database db, Lazy<BootstrapInitializer> boot, HandlerUtilities utils) {
-		super(db, utils);
+	public GroupCrudHandler(Database db, Lazy<BootstrapInitializer> boot, HandlerUtilities utils, WriteLockImpl writeLock) {
+		super(db, utils, writeLock);
 		this.boot = boot;
 	}
 

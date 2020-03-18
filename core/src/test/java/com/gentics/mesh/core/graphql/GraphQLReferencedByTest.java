@@ -7,6 +7,8 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.util.TestUtils.getResourceAsString;
 import static java.util.Collections.singletonMap;
 import static java.util.Objects.hash;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.util.Map;
@@ -46,7 +48,7 @@ public class GraphQLReferencedByTest extends AbstractMeshTest {
 
 	@Test
 	public void testAllReferences() throws IOException {
-		JsonArray responseData = query();
+		JsonArray responseData = query("basic-query");
 
 		String sourceUuid = sourceNode.getUuid();
 		assertThat(responseData).containsJsonObjectHashesInAnyOrder(
@@ -65,6 +67,12 @@ public class GraphQLReferencedByTest extends AbstractMeshTest {
 	}
 
 	@Test
+	public void testPagedReferences() throws IOException {
+		JsonArray responseData = query("paged-query");
+		assertEquals("The array should only contain two elements.", 2, responseData.size());
+	}
+
+	@Test
 	public void testPermissions() throws IOException {
 		Rug tester = createUserGroupRole("tester");
 
@@ -77,12 +85,12 @@ public class GraphQLReferencedByTest extends AbstractMeshTest {
 		client().setLogin(tester.getUser().getUsername(), "test1234");
 		client().login().blockingGet();
 
-		JsonArray resultData = query();
+		JsonArray resultData = query("basic-query");
 		assertThat(resultData.getList()).isEmpty();
 	}
 
-	private JsonArray query() throws IOException {
-		String queryName = "referencedBy/query";
+	private JsonArray query(String queryCaseName) throws IOException {
+		String queryName = "referencedBy/" + queryCaseName;
 
 		GraphQLResponse response = graphQl(
 			getGraphQLQuery(queryName),

@@ -31,6 +31,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoHandler;
 import com.gentics.mesh.core.endpoint.admin.plugin.PluginHandler;
+import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
@@ -51,8 +52,14 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 
 	private LocalConfigHandler localConfigHandler;
 
+	private ShutdownHandler shutdownHandler;
+
+	private HandlerUtilities handlerUtilities;
+
 	@Inject
-	public AdminEndpoint(MeshAuthChain chain, AdminHandler adminHandler, JobHandler jobHandler, ConsistencyCheckHandler consistencyHandler, PluginHandler pluginHandler, DebugInfoHandler debugInfoHandler, LocalConfigHandler localConfigHandler) {
+	public AdminEndpoint(MeshAuthChain chain, AdminHandler adminHandler, JobHandler jobHandler, ConsistencyCheckHandler consistencyHandler,
+		PluginHandler pluginHandler, DebugInfoHandler debugInfoHandler, LocalConfigHandler localConfigHandler, ShutdownHandler shutdownHandler,
+		HandlerUtilities handlerUtilities) {
 		super("admin", chain);
 		this.adminHandler = adminHandler;
 		this.jobHandler = jobHandler;
@@ -60,6 +67,8 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		this.pluginHandler = pluginHandler;
 		this.debugInfoHandler = debugInfoHandler;
 		this.localConfigHandler = localConfigHandler;
+		this.shutdownHandler = shutdownHandler;
+		this.handlerUtilities = handlerUtilities;
 	}
 
 	public AdminEndpoint() {
@@ -83,6 +92,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		addBackupHandler();
 		addRestoreHandler();
 		addClusterStatusHandler();
+		addClusterConfigHandler();
 		addConsistencyCheckHandler();
 		addImportHandler();
 		addExportHandler();
@@ -92,6 +102,8 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		addPluginHandler();
 		addDebugInfoHandler();
 		addRuntimeConfigHandler();
+		addShutdownHandler();
+		addCoordinatorHandler();
 	}
 
 	private void addSecurityLogger() {
@@ -166,6 +178,29 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		endpoint.exampleResponse(OK, adminExamples.createClusterStatusResponse(), "Cluster status.");
 		endpoint.handler(rc -> {
 			adminHandler.handleClusterStatus(wrap(rc));
+		});
+	}
+
+	private void addClusterConfigHandler() {
+		InternalEndpointRoute endpoint = createRoute();
+		endpoint.path("/cluster/config");
+		endpoint.method(GET);
+		endpoint.description("Loads the cluster configuration.");
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleResponse(OK, adminExamples.createClusterConfigResponse(), "Currently active cluster configuration.");
+		endpoint.handler(rc -> {
+			adminHandler.handleLoadClusterConfig(wrap(rc));
+		});
+
+		InternalEndpointRoute updateEndpoint = createRoute();
+		updateEndpoint.path("/cluster/config");
+		updateEndpoint.method(POST);
+		updateEndpoint.description("Update the cluster configuration.");
+		updateEndpoint.produces(APPLICATION_JSON);
+		updateEndpoint.exampleRequest(adminExamples.createClusterConfigRequest());
+		updateEndpoint.exampleResponse(OK, adminExamples.createClusterConfigResponse(), "Updated cluster configuration.");
+		updateEndpoint.handler(rc -> {
+			adminHandler.handleUpdateClusterConfig(wrap(rc));
 		});
 	}
 
@@ -253,6 +288,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 
 	/**
 	 * Handler that reacts onto status requests.
+	 * 
 	 * @deprecated Use monitoring server status endpoint instead
 	 */
 	@Deprecated
@@ -368,4 +404,52 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		postRoute.exampleResponse(OK, localConfig.createExample(), "The currently active local configuration");
 		postRoute.handler(rc -> localConfigHandler.handleSetActiveConfig(wrap(rc)));
 	}
+
+	private void addShutdownHandler() {
+		InternalEndpointRoute postRoute = createRoute();
+		postRoute.path("/shutdown");
+		postRoute.method(POST);
+		postRoute.produces(APPLICATION_JSON);
+		postRoute.description("Initiates shutdown of this instance.");
+		postRoute.exampleResponse(OK, miscExamples.createMessageResponse(), "Shutdown initiated.");
+		postRoute
+			.blockingHandler(rc -> handlerUtilities.requiresAdminRole(rc))
+			.handler(rc -> shutdownHandler.shutdown(wrap(rc)));
+	}
+
+	private void addCoordinatorHandler() {
+		InternalEndpointRoute loadMaster = createRoute();
+		loadMaster.path("/coordinator/master");
+		loadMaster.method(GET);
+		loadMaster.produces(APPLICATION_JSON);
+		loadMaster.description("Returns information on the elected coordinator master.");
+		loadMaster.exampleResponse(OK, adminExamples.createCoordinatorResponse(), "Currently elected master.");
+		loadMaster.handler(rc -> adminHandler.handleLoadCoordinationMaster(wrap(rc)));
+
+		InternalEndpointRoute electMaster = createRoute();
+		electMaster.path("/coordinator/master");
+		electMaster.method(POST);
+		electMaster.produces(APPLICATION_JSON);
+		electMaster.description("Make this instance the coordination master.");
+		electMaster.exampleResponse(OK, miscExamples.createMessageResponse(), "Election status message.");
+		electMaster.handler(rc -> adminHandler.handleSetCoordinationMaster(wrap(rc)));
+
+		InternalEndpointRoute loadConfig = createRoute();
+		loadConfig.path("/coordinator/config");
+		loadConfig.method(GET);
+		loadConfig.produces(APPLICATION_JSON);
+		loadConfig.description("Returns the currently active configuration.");
+		loadConfig.exampleResponse(OK, adminExamples.createCoordinatorConfig(), "The currently active config on this instance.");
+		loadConfig.handler(rc -> adminHandler.handleLoadCoordinationConfig(wrap(rc)));
+
+		InternalEndpointRoute updateConfig = createRoute();
+		updateConfig.path("/coordinator/config");
+		updateConfig.method(POST);
+		updateConfig.produces(APPLICATION_JSON);
+		updateConfig.description("Update the coordinator configuration of this instance. Note that the update config will not be persisted.");
+		updateConfig.exampleResponse(OK, adminExamples.createCoordinatorConfig(), "The currently active config on this instance.");
+		updateConfig.exampleRequest(adminExamples.createCoordinatorConfigRequest());
+		updateConfig.handler(rc -> adminHandler.handleUpdateCoordinationConfig(wrap(rc)));
+	}
+
 }

@@ -1,0 +1,18 @@
+query ReferencedBy($uuid: String) {
+  node(uuid: $uuid) {
+    referencedBy(perPage: 2, page: 3) {
+      # [$.data.node.referencedBy.perPage=2]
+      perPage
+      # [$.data.node.referencedBy.currentPage=3]
+      currentPage
+      elements {
+        fieldName
+        micronodeFieldName
+        node {
+          uuid
+        }
+      }
+    }
+  }
+}
+# [$.errors=<is-undefined>]

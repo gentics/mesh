@@ -53,7 +53,7 @@ public class OrientDBClusterManager implements ClusterManager {
 
 	private static final String ORIENTDB_PLUGIN_FOLDERNAME = "orientdb-plugins";
 
-	private static final String ORIENTDB_STUDIO_ZIP = "orientdb-studio-3.0.25.zip";
+	private static final String ORIENTDB_STUDIO_ZIP = "orientdb-studio-3.0.29.zip";
 
 	private static final String ORIENTDB_DISTRIBUTED_CONFIG = "default-distributed-db-config.json";
 
@@ -377,11 +377,11 @@ public class OrientDBClusterManager implements ClusterManager {
 		server.activate();
 		if (isClusteringEnabled) {
 			ODistributedServerManager distributedManager = server.getDistributedManager();
-			topologyEventBridge = new TopologyEventBridge(vertx, boot, this);
-			distributedManager.registerLifecycleListener(topologyEventBridge);
 			if (server.getDistributedManager() instanceof OHazelcastPlugin) {
 				hazelcastPlugin = (OHazelcastPlugin) distributedManager;
 			}
+			topologyEventBridge = new TopologyEventBridge(options, vertx, boot, this, getHazelcast());
+			distributedManager.registerLifecycleListener(topologyEventBridge);
 		}
 		manager.startup();
 		if (isClusteringEnabled) {
@@ -434,5 +434,21 @@ public class OrientDBClusterManager implements ClusterManager {
 	// "Removing server {" + iNode + "} from distributed configuration on server {" + getNodeName() + "} in cluster {" + getClusterName() + "}");
 	// server.getDistributedManager().removeServer(iNode, true);
 	// }
+
+	public OHazelcastPlugin getHazelcastPlugin() {
+		return hazelcastPlugin;
+	}
+
+	/**
+	 * @see TopologyEventBridge#isClusterTopologyLocked()
+	 * @return
+	 */
+	public boolean isClusterTopologyLocked() {
+		if (topologyEventBridge == null) {
+			return false;
+		} else {
+			return topologyEventBridge.isClusterTopologyLocked();
+		}
+	}
 
 }

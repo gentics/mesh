@@ -35,15 +35,22 @@ cluster:
   networkHost: null
   enabled: false
   clusterName: null
-  vertxPort: 0
+  vertxPort: 4848
+  coordinatorMode: "DISABLED"
+  coordinatorRegex: null
+  topologyLockTimeout: 0
+  topologyLockDelay: 20000
+  coordinatorTopology: "UNMANAGED"
 storage:
   directory: "data/graphdb"
   backupDirectory: "data/backup"
   exportDirectory: "data/export"
   startServer: false
   synchronizeWrites: true
+  synchronizeWritesTimeout: 60000
   txRetryDelay: 10
   txRetryLimit: 10
+  txCommitTimeout: 0
   parameters: {}
 search:
   url: "http://localhost:9200"

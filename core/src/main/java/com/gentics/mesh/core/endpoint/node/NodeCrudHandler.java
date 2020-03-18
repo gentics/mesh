@@ -36,6 +36,7 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.NodeParameters;
@@ -59,8 +60,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	private static final Logger log = LoggerFactory.getLogger(NodeCrudHandler.class);
 
 	@Inject
-	public NodeCrudHandler(Database db, HandlerUtilities utils, MeshOptions options, BootstrapInitializer boot) {
-		super(db, utils);
+	public NodeCrudHandler(Database db, HandlerUtilities utils, MeshOptions options, BootstrapInitializer boot, WriteLock writeLock) {
+		super(db, utils, writeLock);
 		this.options = options;
 		this.boot = boot;
 	}
@@ -74,9 +75,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleDelete(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		utils.lock();
-		utils.syncTx(ac, () -> {
-			try {
+		try (WriteLock lock = writeLock.lock(ac)) {
+			utils.syncTx(ac, () -> {
 				Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, DELETE_PERM);
 				if (node.getProject().getBaseNode().getUuid().equals(node.getUuid())) {
 					throw error(METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
@@ -85,10 +85,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				utils.bulkableAction(bac -> {
 					node.deleteFromBranch(ac, ac.getBranch(), bac, false);
 				});
-			} finally {
-				utils.unlock();
-			}
-		}, () -> ac.send(NO_CONTENT));
+			}, () -> ac.send(NO_CONTENT));
+		}
 	}
 
 	/**
@@ -104,9 +102,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleDeleteLanguage(InternalActionContext ac, String uuid, String languageTag) {
 		validateParameter(uuid, "uuid");
 
-		utils.lock();
-		utils.syncTx(ac, () -> {
-			try {
+		try (WriteLock lock = writeLock.lock(ac)) {
+			utils.syncTx(ac, () -> {
 				Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, DELETE_PERM);
 				Language language = boot.meshRoot().getLanguageRoot().findByLanguageTag(languageTag);
 				if (language == null) {
@@ -115,10 +112,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				utils.bulkableAction(bac -> {
 					node.deleteLanguageContainer(ac, ac.getBranch(), languageTag, bac, true);
 				});
-			} finally {
-				utils.unlock();
-			}
-		}, () -> ac.send(NO_CONTENT));
+			}, () -> ac.send(NO_CONTENT));
+		}
 	}
 
 	/**
@@ -135,9 +130,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		validateParameter(uuid, "uuid");
 		validateParameter(toUuid, "toUuid");
 
-		utils.lock();
-		utils.syncTx(ac, () -> {
-			try {
+		try (WriteLock lock = writeLock.lock(ac)) {
+			utils.syncTx(ac, () -> {
 				Project project = ac.getProject();
 
 				// TODO Add support for moving nodes across projects.
@@ -153,10 +147,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				utils.eventAction(batch -> {
 					sourceNode.moveTo(ac, targetNode, batch);
 				});
-			} finally {
-				utils.unlock();
-			}
-		}, () -> ac.send(NO_CONTENT));
+			}, () -> ac.send(NO_CONTENT));
+		}
 
 	}
 
@@ -260,9 +252,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		validateParameter(uuid, "uuid");
 		validateParameter(tagUuid, "tagUuid");
 
-		utils.lock();
-		utils.rxSyncTx(ac, tx -> {
-			try {
+		try (WriteLock lock = writeLock.lock(ac)) {
+			utils.syncTx(ac, tx -> {
 				Project project = ac.getProject();
 				Branch branch = ac.getBranch();
 				Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
@@ -280,11 +271,9 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 					});
 				}
 
-				return node.transformToRest(ac, 0);
-			} finally {
-				utils.unlock();
-			}
-		}, model -> ac.send(model, OK));
+				return node.transformToRestSync(ac, 0);
+			}, model -> ac.send(model, OK));
+		}
 
 	}
 
@@ -302,9 +291,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		validateParameter(uuid, "uuid");
 		validateParameter(tagUuid, "tagUuid");
 
-		utils.lock();
-		utils.syncTx(ac, () -> {
-			try {
+		try (WriteLock lock = writeLock.lock(ac)) {
+			utils.syncTx(ac, () -> {
 				Project project = ac.getProject();
 				Branch branch = ac.getBranch();
 				Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
@@ -320,10 +308,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 						log.debug("Node {{}} was not tagged with tag {{}}", node.getUuid(), tag.getUuid());
 					}
 				}
-			} finally {
-				utils.unlock();
-			}
-		}, () -> ac.send(NO_CONTENT));
+			}, () -> ac.send(NO_CONTENT));
+		}
 	}
 
 	/**
@@ -354,18 +340,15 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handlePublish(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		utils.lock();
-		utils.syncTx(ac, tx -> {
-			try {
+		try (WriteLock lock = writeLock.lock(ac)) {
+			utils.syncTx(ac, tx -> {
 				Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 				utils.bulkableAction(bac -> {
 					node.publish(ac, bac);
 				});
 				return node.transformToPublishStatus(ac);
-			} finally {
-				utils.unlock();
-			}
-		}, model -> ac.send(model, OK));
+			}, model -> ac.send(model, OK));
+		}
 	}
 
 	/**
@@ -379,17 +362,14 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleTakeOffline(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		utils.lock();
-		utils.syncTx(ac, () -> {
-			try {
+		try (WriteLock lock = writeLock.lock(ac)) {
+			utils.syncTx(ac, () -> {
 				Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 				utils.bulkableAction(bac -> {
 					node.takeOffline(ac, bac);
 				});
-			} finally {
-				utils.unlock();
-			}
-		}, () -> ac.send(NO_CONTENT));
+			}, () -> ac.send(NO_CONTENT));
+		}
 	}
 
 	/**
@@ -424,18 +404,16 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handlePublish(InternalActionContext ac, String uuid, String languageTag) {
 		validateParameter(uuid, "uuid");
 
-		utils.lock();
-		utils.syncTx(ac, tx -> {
-			try {
+		try (WriteLock lock = writeLock.lock(ac)) {
+			utils.syncTx(ac, tx -> {
 				Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 				utils.bulkableAction(bac -> {
 					node.publish(ac, bac, languageTag);
 				});
 				return node.transformToPublishStatus(ac, languageTag);
-			} finally {
-				utils.unlock();
-			}
-		}, model -> ac.send(model, OK));
+
+			}, model -> ac.send(model, OK));
+		}
 	}
 
 	/**
@@ -451,18 +429,15 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleTakeOffline(InternalActionContext ac, String uuid, String languageTag) {
 		validateParameter(uuid, "uuid");
 
-		utils.lock();
-		utils.syncTx(ac, () -> {
-			try {
+		try (WriteLock lock = writeLock.lock(ac)) {
+			utils.syncTx(ac, () -> {
 				Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 				utils.bulkableAction(bac -> {
 					Branch branch = ac.getBranch(ac.getProject());
 					node.takeOffline(ac, bac, branch, languageTag);
 				});
-			} finally {
-				utils.unlock();
-			}
-		}, () -> ac.send(NO_CONTENT));
+			}, () -> ac.send(NO_CONTENT));
+		}
 	}
 
 	/**
@@ -501,20 +476,19 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleBulkTagUpdate(InternalActionContext ac, String nodeUuid) {
 		validateParameter(nodeUuid, "nodeUuid");
 
-		utils.lock();
-		db.asyncTx(() -> {
-			try {
+		try (WriteLock lock = writeLock.lock(ac)) {
+			utils.syncTx(ac, (tx) -> {
 				Project project = ac.getProject();
 				Node node = project.getNodeRoot().loadObjectByUuid(ac, nodeUuid, UPDATE_PERM);
 				TransformablePage<? extends Tag> page = utils.eventAction(batch -> {
 					return node.updateTags(ac, batch);
 				});
 
-				return page.transformToRest(ac, 0);
-			} finally {
-				utils.unlock();
-			}
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+				return page.transformToRestSync(ac, 0);
+			}, model -> {
+				ac.send(model, OK);
+			});
+		}
 
 	}
 

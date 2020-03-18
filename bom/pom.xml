@@ -10,7 +10,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>1.4.3-SNAPSHOT</version>
+		<version>1.4.4-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -24,7 +24,7 @@
 		<ferma.version>${project.version}</ferma.version>
 		<elasticsearch.client.version>1.1.1</elasticsearch.client.version>
 		<orientdb.version>3.0.28</orientdb.version>
-		<hazelcast.version>3.10.4</hazelcast.version>
+		<hazelcast.version>3.10.6</hazelcast.version>
 		<jackson.version>2.9.9</jackson.version>
 		<jackson-databind.version>2.9.10</jackson-databind.version>
 		<netty.version>4.1.42.Final</netty.version>
@@ -343,6 +343,11 @@
 			<dependency>
 				<groupId>com.gentics.mesh</groupId>
 				<artifactId>mesh-distributed</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-distributed-coordinator</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>

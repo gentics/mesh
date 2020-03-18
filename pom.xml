@@ -6,7 +6,7 @@
 
 	<groupId>com.gentics.mesh</groupId>
 	<artifactId>mesh</artifactId>
-	<version>1.4.3-SNAPSHOT</version>
+	<version>1.4.4-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
 	<name>Gentics Mesh</name>
@@ -100,6 +100,7 @@
 		<module>changelog-system</module>
 		<module>databases</module>
 		<module>services</module>
+		<module>distributed-coordinator</module>
 		<module>core</module>
 		<module>performance-tests</module>
 		<module>verticles</module>

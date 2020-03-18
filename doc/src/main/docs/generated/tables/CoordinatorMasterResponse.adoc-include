@@ -1,0 +1,25 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| host
+| false
+| string
+| Hostname of the coordination master instance.
+
+| name
+| false
+| string
+| Cluster node name of the coordination master.
+
+| port
+| false
+| integer
+| HTTP port of the coordination master Gentics Mesh API.
+
+|======
