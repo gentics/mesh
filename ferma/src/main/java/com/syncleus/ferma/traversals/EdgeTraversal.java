@@ -170,16 +170,6 @@ public interface EdgeTraversal<C, S, M> extends Traversal<EdgeFrame, C, S, M> {
 	 */
 	EdgeTraversal<?, ?, M> retain(EdgeFrame... edges);
 
-	/**
-	 * Add an OrFilterPipe to the end the Pipeline. Will only emit the object if one or more of the provides pipes yields an object. The provided pipes are
-	 * provided the object as their starts.
-	 *
-	 * @param pipes
-	 *            the internal pipes of the OrFilterPipe
-	 * @return the extended Pipeline
-	 */
-	EdgeTraversal<?, ?, M> or(TraversalFunction<EdgeFrame, Traversal<?, ?, ?, ?>>... pipes);
-
 	@Override
 	EdgeTraversal<C, S, ? extends EdgeTraversal<C, S, M>> mark();
 

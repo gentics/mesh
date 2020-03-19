@@ -153,19 +153,6 @@ abstract class AbstractEdgeTraversal<C, S, M> extends AbstractTraversal<EdgeFram
 	}
 
 	@Override
-	public EdgeTraversal<?, ?, M> or(final TraversalFunction<EdgeFrame, Traversal<?, ?, ?, ?>>... pipes) {
-		final Collection<Pipe> extractedPipes = Collections2.transform(Arrays.asList(pipes), new Function<TraversalFunction, Pipe>() {
-
-			@Override
-			public Pipe apply(final TraversalFunction input) {
-				return ((AbstractTraversal) input.compute(new TEdge())).getPipeline();
-			}
-		});
-		getPipeline().or(extractedPipes.toArray(new Pipe[extractedPipes.size()]));
-		return this;
-	}
-
-	@Override
 	public java.util.Iterator<EdgeFrame> iterator() {
 		return Iterators.transform(getPipeline(), new Function() {
 
