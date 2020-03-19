@@ -30,6 +30,8 @@ include::content/docs/variables.adoc-include[]
 
 icon:plus[] Monitoring: Metrics have been added for the synchronized write lock, the topology lock, commit times and interrupts. Take a look at our link:{{< relref "monitoring.asciidoc" >}}#_metrics[documentation] for more information.
 
+icon:check[] OrientDB: The included OrientDB version has been updated to version `3.0.30`
+
 [[v1.4.3]]
 == 1.4.3 (17.03.2020)
 
