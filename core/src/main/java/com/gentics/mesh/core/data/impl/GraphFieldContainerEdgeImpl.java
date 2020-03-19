@@ -8,7 +8,6 @@ import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static com.gentics.mesh.madl.type.EdgeTypeDefinition.edgeType;
 
 import java.util.Iterator;
-import java.util.List;
 
 import com.gentics.madl.annotations.GraphElement;
 import com.gentics.madl.index.IndexHandler;
@@ -28,12 +27,7 @@ import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.madl.field.FieldMap;
 import com.gentics.mesh.madl.traversal.TraversalResult;
-import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.traversals.EdgeTraversal;
-import com.syncleus.ferma.traversals.Traversal;
-import com.syncleus.ferma.traversals.TraversalFunction;
-import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Edge;
 
 /**
@@ -103,26 +97,6 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 		return db.index().createComposedIndexKey(branchUuid, type.getCode(), path);
 	}
 
-	/**
-	 * Extend the given traversal to filter edges that have one of the given language tags set (if languageTags is not null and not empty)
-	 * 
-	 * @param traversal
-	 * @param languageTags
-	 * @return
-	 */
-	public static EdgeTraversal<?, ?, ? extends VertexTraversal<?, ?, ?>> filterLanguages(
-		EdgeTraversal<?, ?, ? extends VertexTraversal<?, ?, ?>> traversal, List<String> languageTags) {
-		if (languageTags != null && languageTags.size() > 0) {
-			LanguageRestrictionFunction[] pipes = new LanguageRestrictionFunction[languageTags.size()];
-			for (int i = 0; i < languageTags.size(); i++) {
-				pipes[i] = new LanguageRestrictionFunction(languageTags.get(0));
-			}
-			return traversal.or(pipes);
-		} else {
-			return traversal;
-		}
-	}
-
 	@Override
 	public String getLanguageTag() {
 		return property(LANGUAGE_TAG_KEY);
@@ -170,22 +144,6 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 	@Override
 	public void setBranchUuid(String uuid) {
 		property(BRANCH_UUID_KEY, uuid);
-	}
-
-	/**
-	 * Traversal function that restricts by given language tag
-	 */
-	protected static class LanguageRestrictionFunction implements TraversalFunction<EdgeFrame, Traversal<?, ?, ?, ?>> {
-		protected String languageTag;
-
-		public LanguageRestrictionFunction(String languageTag) {
-			this.languageTag = languageTag;
-		}
-
-		@Override
-		public Traversal<?, ?, ?, ?> compute(EdgeFrame argument) {
-			return argument.traversal().has(GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY, languageTag);
-		}
 	}
 
 	/**

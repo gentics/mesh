@@ -179,7 +179,8 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 		MeshAuthUser user = ac.getUser();
 		Branch branch = ac.getBranch();
 		String branchUuid = branch.getUuid();
-		TraversalResult<? extends Node> nodes = new TraversalResult<>(inE(HAS_TAG).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branch.getUuid()).outV().frameExplicit(NodeImpl.class));
+		TraversalResult<? extends Node> nodes = new TraversalResult<>(
+			inE(HAS_TAG).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branch.getUuid()).outV().frameExplicit(NodeImpl.class));
 		Stream<? extends Node> s = nodes.stream()
 			.filter(item -> {
 				// Check whether the node has at least a draft in the selected branch - Otherwise the node should be skipped
@@ -226,7 +227,21 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 			traversal = traversal.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
 		}
 
-		traversal = GraphFieldContainerEdgeImpl.filterLanguages(traversal, languageTags);
+		// Extend the given traversal to filter edges that have one of the given language tags set (if languageTags is not null and not empty)
+		if (languageTags != null && languageTags.size() > 0) {
+			traversal = traversal.filter(edge -> {
+				boolean matches = false;
+				for (String languageTag : languageTags) {
+					String lang = edge.getProperty(GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY);
+					if (languageTag.equals(lang)) {
+						matches = true;
+						break;
+					}
+				}
+				return matches;
+			});
+		}
+
 		return traversal.outV().back();
 	}
 
@@ -268,7 +283,8 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 
 	@Override
 	public String getAPIPath(InternalActionContext ac) {
-		return VersionHandler.baseRoute(ac) + "/" + encodeSegment(getProject().getName()) + "/tagFamilies/" + getTagFamily().getUuid() + "/tags/" + getUuid();
+		return VersionHandler.baseRoute(ac) + "/" + encodeSegment(getProject().getName()) + "/tagFamilies/" + getTagFamily().getUuid() + "/tags/"
+			+ getUuid();
 	}
 
 	@Override
