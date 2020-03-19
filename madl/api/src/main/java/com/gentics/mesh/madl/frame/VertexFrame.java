@@ -1,11 +1,13 @@
 package com.gentics.mesh.madl.frame;
 
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import com.gentics.madl.traversal.RawTraversalResult;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.syncleus.ferma.traversals.VertexTraversal;
+import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
 public interface VertexFrame extends ElementFrame, com.syncleus.ferma.VertexFrame {
@@ -38,9 +40,13 @@ public interface VertexFrame extends ElementFrame, com.syncleus.ferma.VertexFram
 
 	<T extends EdgeFrame> TraversalResult<? extends T> outE(String label, Class<T> clazz);
 
+	Stream<Edge> streamOutE(String label);
+
 	<T extends ElementFrame> TraversalResult<? extends T> in(String label, Class<T> clazz);
 
 	<T extends EdgeFrame> TraversalResult<? extends T> inE(String label, Class<T> clazz);
+
+	Stream<Edge> streamInE(String label);
 
 	<T extends RawTraversalResult<?>> T traverse(final Function<GraphTraversal<Vertex, Vertex>, GraphTraversal<?, ?>> traverser);
 

@@ -51,17 +51,6 @@ public class TagEdgeImpl extends MeshEdgeImpl implements TagEdge {
 		return vertex.outE(HAS_TAG).has(BRANCH_UUID_KEY, branch.getUuid()).inV().has(UUID_KEY, tag.getUuid()).hasNext();
 	}
 
-	/**
-	 * Get the traversal for nodes that have been tagged with the given tag in the given branch
-	 * 
-	 * @param tag
-	 * @param branch
-	 * @return Traversal
-	 */
-	public static VertexTraversal<?, ?, ?> getNodeTraversal(Tag tag, Branch branch) {
-		return tag.inE(HAS_TAG).has(BRANCH_UUID_KEY, branch.getUuid()).outV();
-	}
-
 	@Override
 	public String getBranchUuid() {
 		return property(BRANCH_UUID_KEY);

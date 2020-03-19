@@ -1,9 +1,15 @@
 package com.gentics.madl.frame;
 
+import java.util.Iterator;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.function.Function;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import com.gentics.madl.traversal.RawTraversalResult;
+import com.gentics.madl.traversal.RawTraversalResultImpl;
 import com.gentics.madl.tx.BaseTransaction;
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.madl.frame.EdgeFrame;
@@ -12,7 +18,9 @@ import com.gentics.mesh.madl.frame.VertexFrame;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.traversals.SimpleTraversal;
 import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedElement;
@@ -147,9 +155,27 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 	}
 
 	@Override
+	public Stream<Edge> streamOutE(String label) {
+		Iterator<Edge> it = getElement().getEdges(Direction.OUT, label).iterator();
+		Stream<Edge> stream = StreamSupport.stream(
+			Spliterators.spliteratorUnknownSize(it, Spliterator.ORDERED),
+			false);
+		return stream;
+	}
+
+	@Override
 	public <T extends ElementFrame> TraversalResult<? extends T> in(String label, Class<T> clazz) {
 		TraversalResult<? extends T> result = new TraversalResult<>(in(label).frameExplicit(clazz));
 		return result;
+	}
+
+	@Override
+	public Stream<Edge> streamInE(String label) {
+		Iterator<Edge> it = getElement().getEdges(Direction.IN, label).iterator();
+		Stream<Edge> stream = StreamSupport.stream(
+			Spliterators.spliteratorUnknownSize(it, Spliterator.ORDERED),
+			false);
+		return stream;
 	}
 
 	@Override

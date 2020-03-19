@@ -148,6 +148,7 @@ import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.traversals.VertexTraversal;
+import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Vertex;
 
 import io.reactivex.Observable;
@@ -371,10 +372,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
 	public long getGraphFieldContainerCount() {
-		return outE(HAS_FIELD_CONTAINER).or(e -> e.traversal().has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, DRAFT.getCode()), e -> e.traversal()
-			.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, PUBLISHED.getCode())).inV().count();
+		return streamOutE(HAS_FIELD_CONTAINER).filter(edge -> {
+			String type = edge.getProperty(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY);
+			return PUBLISHED.getCode().equals(type) || DRAFT.getCode().equals(type);
+		}).map(edge -> {
+			return edge.getVertex(Direction.IN);
+		}).count();
 	}
 
 	@Override
@@ -526,9 +530,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public TraversalResult<? extends Node> getChildren() {
 		return new TraversalResult<>(graph.frameExplicit(db().getVertices(
 			NodeImpl.class,
-			new String[]{PARENTS_KEY_PROPERTY},
-			new Object[]{getUuid()}
-		), NodeImpl.class));
+			new String[] { PARENTS_KEY_PROPERTY },
+			new Object[] { getUuid() }), NodeImpl.class));
 	}
 
 	@Override
@@ -539,9 +542,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	private Iterator<Vertex> getUnframedChildren(String branchUuid) {
 		return db().getVertices(
 			NodeImpl.class,
-			new String[]{BRANCH_PARENTS_KEY_PROPERTY},
-			new Object[]{branchParentEntry(branchUuid, getUuid()).encode()}
-		);
+			new String[] { BRANCH_PARENTS_KEY_PROPERTY },
+			new Object[] { branchParentEntry(branchUuid, getUuid()).encode() });
 	}
 
 	@Override
@@ -1531,8 +1533,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			Map<Boolean, Set<String>> partitions = branchParents.stream()
 				.collect(Collectors.partitioningBy(
 					parent -> BranchParentEntry.fromString(parent).getBranchUuid().equals(branchUuid),
-					Collectors.toSet()
-				));
+					Collectors.toSet()));
 
 			Set<String> removedParents = partitions.get(true);
 			if (!removedParents.isEmpty()) {
@@ -1542,7 +1543,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 				String removedParent = BranchParentEntry.fromString(removedParents.iterator().next()).getParentUuid();
 				// If the removed parent is not parent of any other branch, remove it from the common parent set.
-				boolean parentStillExists = newParents.stream().anyMatch(parent -> BranchParentEntry.fromString(parent).getParentUuid().equals(removedParent));
+				boolean parentStillExists = newParents.stream()
+					.anyMatch(parent -> BranchParentEntry.fromString(parent).getParentUuid().equals(removedParent));
 				if (!parentStillExists) {
 					Set<String> parents = property(PARENTS_KEY_PROPERTY);
 					parents.remove(removedParent);
@@ -1593,8 +1595,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		NodeParameters nodeParameters = ac.getNodeParameters();
 		VersioningParameters versioningParameters = ac.getVersioningParameters();
 
-		NodeGraphFieldContainer container = findVersion(nodeParameters.getLanguageList(options()), ac.getBranch(getProject()).getUuid(), versioningParameters
-			.getVersion());
+		NodeGraphFieldContainer container = findVersion(nodeParameters.getLanguageList(options()), ac.getBranch(getProject()).getUuid(),
+			versioningParameters
+				.getVersion());
 		if (container == null) {
 			if (log.isDebugEnabled()) {
 				log.debug("Could not find any matching i18n field container for node {" + getUuid() + "}.");
@@ -1996,8 +1999,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		ContainerType type = forVersion(versioiningParameters.getVersion());
 
 		Node parentNode = getParentNode(branch.getUuid());
-		NodeGraphFieldContainer container = findVersion(ac.getNodeParameters().getLanguageList(options()), branch.getUuid(), ac.getVersioningParameters()
-			.getVersion());
+		NodeGraphFieldContainer container = findVersion(ac.getNodeParameters().getLanguageList(options()), branch.getUuid(),
+			ac.getVersioningParameters()
+				.getVersion());
 
 		/**
 		 * branch uuid

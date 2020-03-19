@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import com.gentics.madl.traversal.RawTraversalResult;
 import com.gentics.mesh.context.AbstractInternalActionContext;
@@ -53,6 +54,7 @@ import com.syncleus.ferma.TEdge;
 import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
+import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -472,6 +474,16 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 			@Override
 			public <T extends EdgeFrame> TraversalResult<? extends T> outE(String label, Class<T> clazz) {
+				return null;
+			}
+
+			@Override
+			public Stream<Edge> streamOutE(String label) {
+				return null;
+			}
+
+			@Override
+			public Stream<Edge> streamInE(String label) {
 				return null;
 			}
 

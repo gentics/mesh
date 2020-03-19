@@ -23,8 +23,6 @@
  */
 package com.syncleus.ferma.traversals;
 
-import java.util.List;
-
 import com.syncleus.ferma.EdgeFrame;
 import com.tinkerpop.blueprints.Predicate;
 import com.tinkerpop.gremlin.Tokens;

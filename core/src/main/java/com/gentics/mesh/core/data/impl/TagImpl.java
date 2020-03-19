@@ -73,7 +73,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 
 	@Override
 	public TraversalResult<? extends Node> getNodes(Branch branch) {
-		Iterable<? extends NodeImpl> it = TagEdgeImpl.getNodeTraversal(this, branch).frameExplicit(NodeImpl.class);
+		Iterable<? extends NodeImpl> it = getNodeTraversal(branch).frameExplicit(NodeImpl.class);
 		return new TraversalResult<>(it);
 	}
 
@@ -219,7 +219,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 	 */
 	protected VertexTraversal<?, ?, ?> getTaggedNodesTraversal(Branch branch, List<String> languageTags, ContainerType type) {
 
-		EdgeTraversal<?, ?, ? extends VertexTraversal<?, ?, ?>> traversal = TagEdgeImpl.getNodeTraversal(this, branch).mark().outE(
+		EdgeTraversal<?, ?, ? extends VertexTraversal<?, ?, ?>> traversal = getNodeTraversal(branch).mark().outE(
 			HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branch.getUuid());
 
 		if (type != null) {
@@ -312,6 +312,16 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 		fillPermissionChanged(model, role);
 		model.setTagFamily(getTagFamily().transformToReference());
 		return model;
+	}
+
+	/**
+	 * Get the traversal for nodes that have been tagged with the given tag in the given branch
+	 * 
+	 * @param branch
+	 * @return Traversal
+	 */
+	private VertexTraversal<?, ?, ?> getNodeTraversal(Branch branch) {
+		return inE(HAS_TAG).has(TagEdgeImpl.BRANCH_UUID_KEY, branch.getUuid()).outV();
 	}
 
 }

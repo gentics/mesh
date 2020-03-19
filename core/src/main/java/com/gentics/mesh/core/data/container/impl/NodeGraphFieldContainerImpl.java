@@ -200,7 +200,6 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
 	public void deleteFromBranch(Branch branch, BulkActionContext bac) {
 		String branchUuid = branch.getUuid();
 
@@ -209,11 +208,15 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			bac.batch().add(onDeleted(branchUuid, PUBLISHED));
 		}
 		// Remove the edge between the node and the container that matches the branch
-		inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid).or(e -> e.traversal().has(
-			GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode()),
-			e -> e.traversal().has(
-				GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.PUBLISHED.getCode()))
-			.removeAll();
+		streamInE(HAS_FIELD_CONTAINER).filter(edge -> {
+			String uuid = edge.getProperty(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY);
+			return branchUuid.equals(uuid);
+		}).filter(edge -> {
+			String type = edge.getProperty(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY);
+			return ContainerType.DRAFT.getCode().equals(type) || ContainerType.PUBLISHED.getCode().equals(type);
+		}).forEach(edge -> {
+			edge.remove();
+		});
 	}
 
 	@Override
@@ -638,9 +641,9 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		return new TraversalResult<>(outE(HAS_FIELD)
 			.has(MicronodeGraphFieldImpl.class)
 			.frameExplicit(MicronodeGraphFieldImpl.class))
-			.stream()
-			.filter(edge -> edge.getMicronode().property(MICROSCHEMA_VERSION_KEY_PROPERTY).equals(microschemaVersionUuid))
-			.collect(Collectors.toList());
+				.stream()
+				.filter(edge -> edge.getMicronode().property(MICROSCHEMA_VERSION_KEY_PROPERTY).equals(microschemaVersionUuid))
+				.collect(Collectors.toList());
 	}
 
 	@Override
@@ -652,8 +655,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		return new TraversalResult<>(lists
 			.stream()
 			.filter(list -> list.getValues().stream()
-			.anyMatch(micronode -> micronode.property(MICROSCHEMA_VERSION_KEY_PROPERTY).equals(microschemaVersionUuid)))
-		);
+				.anyMatch(micronode -> micronode.property(MICROSCHEMA_VERSION_KEY_PROPERTY).equals(microschemaVersionUuid))));
 	}
 
 	@Override
