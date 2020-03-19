@@ -64,11 +64,6 @@ abstract class AbstractEdgeTraversal<C, S, M> extends AbstractTraversal<EdgeFram
 	}
 
 	@Override
-	public List<? extends EdgeFrame> toList() {
-		return toListExplicit(EdgeFrame.class);
-	}
-
-	@Override
 	public EdgeTraversal<?, ?, M> has(final String key) {
 		return (EdgeTraversal) super.has(key);
 	}
@@ -138,28 +133,6 @@ abstract class AbstractEdgeTraversal<C, S, M> extends AbstractTraversal<EdgeFram
 	@Override
 	public <T> Iterable<T> frameExplicit(final Class<T> kind) {
 		return Iterables.transform(getPipeline(), new Function() {
-
-			@Override
-			public Object apply(final Object input) {
-				return graph().frameElementExplicit((Element) input, kind);
-			}
-		});
-	}
-
-	@Override
-	public <T> List<? extends T> toList(final Class<T> kind) {
-		return Lists.transform(getPipeline().toList(), new Function() {
-
-			@Override
-			public Object apply(final Object input) {
-				return graph().frameElement((Element) input, kind);
-			}
-		});
-	}
-
-	@Override
-	public <T> List<? extends T> toListExplicit(final Class<T> kind) {
-		return Lists.transform(getPipeline().toList(), new Function() {
 
 			@Override
 			public Object apply(final Object input) {

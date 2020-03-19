@@ -31,7 +31,7 @@ public final class TraversalHelper {
 	 * @param traversal
 	 */
 	public static void debug(EdgeTraversal<?, ?, ?> traversal) {
-		for (MeshEdgeImpl e : traversal.toListExplicit(MeshEdgeImpl.class)) {
+		for (MeshEdgeImpl e : traversal.frameExplicit(MeshEdgeImpl.class)) {
 			System.out.println(e.getElement().getId() + "from " + e.inV().next() + " to " + e.outV().next());
 			System.out.println(e.label() + " type: " + e.getFermaType() + " json: " + e.toJson());
 		}

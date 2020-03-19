@@ -85,16 +85,6 @@ public abstract class AbstractElementFrame implements ElementFrame {
 	}
 
 	@Override
-	public void setTypeResolution(final Class<?> type) {
-		getGraph().getTypeResolver().init(getElement(), type);
-	}
-
-	@Override
-	public void removeTypeResolution() {
-		getGraph().getTypeResolver().deinit(getElement());
-	}
-
-	@Override
 	public void remove() {
 		getElement().remove();
 	}

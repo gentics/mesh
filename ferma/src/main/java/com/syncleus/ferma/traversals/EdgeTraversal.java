@@ -101,27 +101,6 @@ public interface EdgeTraversal<C, S, M> extends Traversal<EdgeFrame, C, S, M> {
 	EdgeTraversal<?, ?, M> has(Class<?> clazz);
 
 	/**
-	 * Check if the element does not have a property with provided key.
-	 *
-	 * @param key
-	 *            the property key to check
-	 * @return the extended Pipeline
-	 */
-	EdgeTraversal<?, ?, M> hasNot(String key);
-
-	/**
-	 * Add an IdFilterPipe, LabelFilterPipe, or PropertyFilterPipe to the end of the Pipeline. If the incoming element has the provided key/value as check with
-	 * .equals(), then filter the element. If the key is id or label, then use respect id or label filtering.
-	 *
-	 * @param key
-	 *            the property key to check
-	 * @param value
-	 *            the objects to filter on (in an OR manner)
-	 * @return the extended Pipeline
-	 */
-	EdgeTraversal<?, ?, M> hasNot(String key, Object value);
-
-	/**
 	 * Add an InVertexPipe to the end of the Pipeline. Emit the head vertex of the incoming edge.
 	 *
 	 * @return the extended Pipeline
@@ -173,31 +152,6 @@ public interface EdgeTraversal<C, S, M> extends Traversal<EdgeFrame, C, S, M> {
 	 * @return An iterator of framed elements.
 	 */
 	<T> Iterable<T> frameExplicit(Class<T> kind);
-
-	/**
-	 * Return a list of all the objects in the pipeline.
-	 * 
-	 * @param <T>
-	 *            The type to frame the element as.
-	 * @param kind
-	 *            The kind of framed elements to return.
-	 * @return a list of all the objects
-	 */
-	<T> List<? extends T> toList(Class<T> kind);
-
-	/**
-	 * Return a list of all the objects in the pipeline.
-	 *
-	 * This will bypass the default type resolution and use the untyped resolver instead. This method is useful for speeding up a look up when type resolution
-	 * isn't required.
-	 *
-	 * @param <T>
-	 *            The type to frame the element as.
-	 * @param kind
-	 *            The kind of framed elements to return.
-	 * @return a list of all the objects
-	 */
-	<T> List<? extends T> toListExplicit(Class<T> kind);
 
 	/**
 	 * Add an LabelPipe to the end of the Pipeline. Emit the label of the incoming edge.

@@ -62,25 +62,5 @@ class FrameMaker {
 		return (N) o;
 	}
 
-	<N> N makeFrameExplicit(Object o) {
-		if (o instanceof Pair) {
-			final Pair pair = (Pair) o;
-			o = new Pair(makeFrameExplicit(pair.getA()), makeFrameExplicit(pair.getB()));
-		}
-		if (kind == null) {
-			if (o instanceof Edge)
-				o = graph.frameElementExplicit((Element) o, TEdge.class);
-			else if (o instanceof Vertex)
-				o = graph.frameElementExplicit((Element) o, TVertex.class);
-		} else if (o instanceof Element)
-			o = graph.frameElementExplicit((Element) o, (Class<ElementFrame>) kind);
-		return (N) o;
-	}
-
-	protected Object removeFrame(final Object object) {
-		if (object instanceof ElementFrame)
-			return ((ElementFrame) object).getElement();
-		return object;
-	}
 
 }

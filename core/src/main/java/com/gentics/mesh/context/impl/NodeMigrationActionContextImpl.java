@@ -591,15 +591,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public void setTypeResolution(Class<?> type) {
-
-			}
-
-			@Override
-			public void removeTypeResolution() {
-			}
-
-			@Override
 			public VertexTraversal<?, ?, ?> v() {
 				return null;
 			}

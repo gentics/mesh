@@ -94,22 +94,6 @@ public interface ElementFrame {
 	Class<?> getTypeResolution();
 
 	/**
-	 * Sets the type resolution and encodes it into the element in the graph.
-	 *
-	 * @param type
-	 *            The new type to resolve this element to.
-	 * @since 2.1.0
-	 */
-	void setTypeResolution(Class<?> type);
-
-	/**
-	 * Removes type resolution from this node and decodes it from the element in the graph.
-	 *
-	 * @since 2.1.0
-	 */
-	void removeTypeResolution();
-
-	/**
 	 * Query over all vertices in the graph.
 	 *
 	 * @return The query.
