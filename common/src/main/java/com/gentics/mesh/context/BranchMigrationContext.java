@@ -42,4 +42,12 @@ public interface BranchMigrationContext {
 	 */
 	void validate();
 
+	void setOldBranch(Branch oldBranch);
+
+	void setStatus(MigrationStatusHandler status);
+
+	void setNewBranch(Branch newBranch);
+
+	void setCause(BranchMigrationCause cause);
+
 }

@@ -22,6 +22,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.endpoint.migration.AbstractMigrationHandler;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
+import com.gentics.mesh.core.migration.branch.BranchMigrationHandler;
 import com.gentics.mesh.core.rest.event.node.BranchMigrationCause;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -34,12 +35,12 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 @Singleton
-public class BranchMigrationHandler extends AbstractMigrationHandler {
+public class BranchMigrationHandlerImpl extends AbstractMigrationHandler implements BranchMigrationHandler {
 
-	private static final Logger log = LoggerFactory.getLogger(BranchMigrationHandler.class);
+	private static final Logger log = LoggerFactory.getLogger(BranchMigrationHandlerImpl.class);
 
 	@Inject
-	public BranchMigrationHandler(Database db, BinaryUploadHandler nodeFieldAPIHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider) {
+	public BranchMigrationHandlerImpl(Database db, BinaryUploadHandler nodeFieldAPIHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider) {
 		super(db, nodeFieldAPIHandler, metrics, batchProvider);
 	}
 

@@ -14,7 +14,7 @@ import com.gentics.mesh.core.rest.event.branch.BranchSchemaAssignEventModel;
 import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.graphdb.spi.Transactional;
-import com.gentics.mesh.search.index.node.NodeIndexHandler;
+import com.gentics.mesh.search.index.node.NodeIndexHandlerImpl;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import io.reactivex.Flowable;
 import io.vertx.core.logging.Logger;
@@ -36,11 +36,11 @@ import static com.gentics.mesh.search.verticle.eventhandler.Util.toRequests;
 public class SchemaMigrationEventHandler implements EventHandler {
 	private static final Logger log = LoggerFactory.getLogger(SchemaMigrationEventHandler.class);
 
-	private final NodeIndexHandler nodeIndexHandler;
+	private final NodeIndexHandlerImpl nodeIndexHandler;
 	private final MeshHelper helper;
 
 	@Inject
-	public SchemaMigrationEventHandler(NodeIndexHandler nodeIndexHandler, MeshHelper helper) {
+	public SchemaMigrationEventHandler(NodeIndexHandlerImpl nodeIndexHandler, MeshHelper helper) {
 		this.nodeIndexHandler = nodeIndexHandler;
 		this.helper = helper;
 	}

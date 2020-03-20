@@ -9,7 +9,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
+import com.gentics.mesh.context.NodeMigrationActionContext;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.EditorTrackingVertex;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -103,7 +103,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 
 		if (fields.has("perms")) {
 			// When this is a node migration, do not set user permissions
-			if (!(ac instanceof NodeMigrationActionContextImpl)) {
+			if (!(ac instanceof NodeMigrationActionContext)) {
 				PermissionInfo permissionInfo = ac.getUser().getPermissionInfo(this);
 				model.setPermissions(permissionInfo);
 			}

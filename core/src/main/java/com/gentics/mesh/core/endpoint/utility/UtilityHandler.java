@@ -21,7 +21,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandler;
-import com.gentics.mesh.search.index.node.NodeIndexHandler;
+import com.gentics.mesh.search.index.node.NodeIndexHandlerImpl;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -41,14 +41,14 @@ public class UtilityHandler extends AbstractHandler {
 
 	private final WebRootLinkReplacer linkReplacer;
 
-	private final NodeIndexHandler nodeIndexHandler;
+	private final NodeIndexHandlerImpl nodeIndexHandler;
 
 	private final MicroschemaContainerIndexHandler microschemaIndexHandler;
 
 	private final HandlerUtilities utils;
 
 	@Inject
-	public UtilityHandler(MeshOptions options, Database db, WebRootLinkReplacer linkReplacer, NodeIndexHandler nodeIndexHandler,
+	public UtilityHandler(MeshOptions options, Database db, WebRootLinkReplacer linkReplacer, NodeIndexHandlerImpl nodeIndexHandler,
 		MicroschemaContainerIndexHandler microschemaIndexHandler, HandlerUtilities utils) {
 		this.options = options;
 		this.db = db;

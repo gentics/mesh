@@ -44,7 +44,7 @@ import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
 import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandler;
-import com.gentics.mesh.search.index.node.NodeIndexHandler;
+import com.gentics.mesh.search.index.node.NodeIndexHandlerImpl;
 import com.gentics.mesh.search.index.project.ProjectIndexHandler;
 import com.gentics.mesh.search.index.role.RoleIndexHandler;
 import com.gentics.mesh.search.index.schema.SchemaContainerIndexHandler;
@@ -142,7 +142,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		Node parentNode = mockNodeBasic("folder", user);
 		Node node = mockNode(parentNode, project, user, language, tagA, tagB);
 
-		NodeIndexHandler nodeIndexHandler = meshDagger.nodeContainerIndexHandler();
+		NodeIndexHandlerImpl nodeIndexHandler = meshDagger.nodeContainerIndexHandler();
 		nodeIndexHandler.storeContainer(node.getLatestDraftFieldContainer(language), UUID_1, ContainerType.PUBLISHED).toCompletable()
 			.blockingAwait();
 		writeStoreEvent("node.search");

@@ -25,6 +25,7 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.endpoint.migration.AbstractMigrationHandler;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
+import com.gentics.mesh.core.migration.micronode.MicronodeMigrationHandler;
 import com.gentics.mesh.core.rest.event.node.MicroschemaMigrationCause;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
@@ -39,14 +40,14 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 @Singleton
-public class MicronodeMigrationHandler extends AbstractMigrationHandler {
+public class MicronodeMigrationHandlerImpl extends AbstractMigrationHandler implements MicronodeMigrationHandler {
 
-	private static final Logger log = LoggerFactory.getLogger(MicronodeMigrationHandler.class);
+	private static final Logger log = LoggerFactory.getLogger(MicronodeMigrationHandlerImpl.class);
 
 	private final WriteLock writeLock;
 
 	@Inject
-	public MicronodeMigrationHandler(Database db, BinaryUploadHandler binaryFieldHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider, WriteLock writeLock) {
+	public MicronodeMigrationHandlerImpl(Database db, BinaryUploadHandler binaryFieldHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider, WriteLock writeLock) {
 		super(db, binaryFieldHandler, metrics, batchProvider);
 		this.writeLock = writeLock;
 	}

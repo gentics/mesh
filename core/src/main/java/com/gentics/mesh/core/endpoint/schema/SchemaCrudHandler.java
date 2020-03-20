@@ -40,7 +40,7 @@ import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.SchemaUpdateParameters;
-import com.gentics.mesh.search.index.node.NodeIndexHandler;
+import com.gentics.mesh.search.index.node.NodeIndexHandlerImpl;
 import com.gentics.mesh.util.UUIDUtil;
 
 import dagger.Lazy;
@@ -51,11 +51,11 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 	private Lazy<BootstrapInitializer> boot;
 
-	private final NodeIndexHandler nodeIndexHandler;
+	private final NodeIndexHandlerImpl nodeIndexHandler;
 
 	@Inject
 	public SchemaCrudHandler(Database db, SchemaComparator comparator, Lazy<BootstrapInitializer> boot,
-		HandlerUtilities utils, NodeIndexHandler nodeIndexHandler, WriteLock writeLock) {
+		HandlerUtilities utils, NodeIndexHandlerImpl nodeIndexHandler, WriteLock writeLock) {
 		super(db, utils, writeLock);
 		this.comparator = comparator;
 		this.boot = boot;

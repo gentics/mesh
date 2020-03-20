@@ -12,9 +12,12 @@ import com.gentics.mesh.cache.ProjectNameCache;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.binary.Binaries;
+import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.generic.UserProperties;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
+import com.gentics.mesh.core.migration.node.NodeMigrationHandler;
+import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandler;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -59,13 +62,13 @@ public interface MeshComponentBase {
 //
 //	NodeIndexHandler nodeContainerIndexHandler();
 //
-//	NodeMigrationHandler nodeMigrationHandler();
+	NodeMigrationHandler nodeMigrationHandler();
 //
 //	BranchMigrationHandler branchMigrationHandler();
 //
 //	MicronodeMigrationHandler micronodeMigrationHandler();
 //
-//	ProjectVersionPurgeHandler projectVersionPurgeHandler();
+	ProjectVersionPurgeHandler projectVersionPurgeHandler();
 //
 //	MeshLocalClientImpl meshLocalClientImpl();
 
@@ -127,7 +130,6 @@ public interface MeshComponentBase {
 
 	UserProperties userProperties();
 
-//	PermissionProperties permissionProperties();
+	PermissionProperties permissionProperties();
 
-	
 }

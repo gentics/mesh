@@ -25,6 +25,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.endpoint.migration.AbstractMigrationHandler;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
+import com.gentics.mesh.core.migration.node.NodeMigrationHandler;
 import com.gentics.mesh.core.rest.event.node.SchemaMigrationCause;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -44,15 +45,15 @@ import io.vertx.core.logging.LoggerFactory;
  * Handler for node migrations after schema updates.
  */
 @Singleton
-public class NodeMigrationHandler extends AbstractMigrationHandler {
+public class NodeMigrationHandlerImpl extends AbstractMigrationHandler implements NodeMigrationHandler {
 
-	private static final Logger log = LoggerFactory.getLogger(NodeMigrationHandler.class);
+	private static final Logger log = LoggerFactory.getLogger(NodeMigrationHandlerImpl.class);
 
 	private final AtomicLong migrationGauge;
 	private final WriteLock writeLock;
 
 	@Inject
-	public NodeMigrationHandler(Database db, BinaryUploadHandler nodeFieldAPIHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider,
+	public NodeMigrationHandlerImpl(Database db, BinaryUploadHandler nodeFieldAPIHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider,
 		WriteLock writeLock) {
 		super(db, nodeFieldAPIHandler, metrics, batchProvider);
 		migrationGauge = metrics.longGauge(NODE_MIGRATION_PENDING);

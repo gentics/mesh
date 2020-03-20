@@ -30,4 +30,14 @@ public interface MicronodeMigrationContext {
 	 */
 	void validate();
 
+	void setBranch(Branch branch);
+
+	void setCause(MicroschemaMigrationCause cause);
+
+	void setToVersion(MicroschemaContainerVersion toVersion);
+
+	void setFromVersion(MicroschemaContainerVersion fromVersion);
+
+	void setStatus(MigrationStatusHandler status);
+
 }

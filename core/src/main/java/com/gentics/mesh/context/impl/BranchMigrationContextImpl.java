@@ -25,6 +25,7 @@ public class BranchMigrationContextImpl implements BranchMigrationContext {
 		return cause;
 	}
 
+	@Override
 	public void setCause(BranchMigrationCause cause) {
 		this.cause = cause;
 	}
@@ -34,6 +35,7 @@ public class BranchMigrationContextImpl implements BranchMigrationContext {
 		return newBranch;
 	}
 
+	@Override
 	public void setNewBranch(Branch newBranch) {
 		this.newBranch = newBranch;
 	}
@@ -43,6 +45,7 @@ public class BranchMigrationContextImpl implements BranchMigrationContext {
 		return status;
 	}
 
+	@Override
 	public void setStatus(MigrationStatusHandler status) {
 		this.status = status;
 	}
@@ -52,6 +55,7 @@ public class BranchMigrationContextImpl implements BranchMigrationContext {
 		return oldBranch;
 	}
 
+	@Override
 	public void setOldBranch(Branch oldBranch) {
 		this.oldBranch = oldBranch;
 	}

@@ -25,6 +25,7 @@ public class MicronodeMigrationContextImpl implements MicronodeMigrationContext 
 		return status;
 	}
 
+	@Override
 	public void setStatus(MigrationStatusHandler status) {
 		this.status = status;
 	}
@@ -34,6 +35,7 @@ public class MicronodeMigrationContextImpl implements MicronodeMigrationContext 
 		return branch;
 	}
 
+	@Override
 	public void setBranch(Branch branch) {
 		this.branch = branch;
 	}
@@ -43,6 +45,7 @@ public class MicronodeMigrationContextImpl implements MicronodeMigrationContext 
 		return fromVersion;
 	}
 
+	@Override
 	public void setFromVersion(MicroschemaContainerVersion fromVersion) {
 		this.fromVersion = fromVersion;
 	}
@@ -52,6 +55,7 @@ public class MicronodeMigrationContextImpl implements MicronodeMigrationContext 
 		return toVersion;
 	}
 
+	@Override
 	public void setToVersion(MicroschemaContainerVersion toVersion) {
 		this.toVersion = toVersion;
 	}
@@ -61,6 +65,7 @@ public class MicronodeMigrationContextImpl implements MicronodeMigrationContext 
 		return cause;
 	}
 
+	@Override
 	public void setCause(MicroschemaMigrationCause cause) {
 		this.cause = cause;
 	}

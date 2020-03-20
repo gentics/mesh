@@ -20,12 +20,12 @@ import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 
 @Singleton
-public class PermissionProperties {
+public class PermissionPropertiesImpl implements PermissionProperties {
 
 	private final BootstrapInitializer boot;
 
 	@Inject
-	public PermissionProperties(BootstrapInitializer boot) {
+	public PermissionPropertiesImpl(BootstrapInitializer boot) {
 		this.boot = boot;
 	}
 

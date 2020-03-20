@@ -147,11 +147,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 		return project;
 	}
 
-	/**
-	 * Set the project
-	 *
-	 * @param project
-	 */
+	@Override
 	public void setProject(Project project) {
 		this.project = project;
 	}
@@ -161,6 +157,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 		return branch;
 	}
 
+	@Override
 	public void setBranch(Branch branch) {
 		this.branch = branch;
 	}
@@ -855,20 +852,12 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 		// Not supported
 	}
 
-	/**
-	 * Add the encountered conflict info to the context.
-	 *
-	 * @param info
-	 */
+	@Override
 	public void addConflictInfo(ConflictWarning info) {
 		conflicts.add(info);
 	}
 
-	/**
-	 * Get the set of encountered conflicts.
-	 *
-	 * @return
-	 */
+	@Override
 	public Set<ConflictWarning> getConflicts() {
 		return conflicts;
 	}
@@ -878,6 +867,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 		return cause;
 	}
 
+	@Override
 	public void setCause(SchemaMigrationCause cause) {
 		this.cause = cause;
 	}
@@ -887,6 +877,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 		return fromContainerVersion;
 	}
 
+	@Override
 	public void setFromVersion(SchemaContainerVersion fromContainerVersion) {
 		this.fromContainerVersion = fromContainerVersion;
 	}
@@ -896,10 +887,12 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 		return toContainerVersion;
 	}
 
+	@Override
 	public void setToVersion(SchemaContainerVersion toContainerVersion) {
 		this.toContainerVersion = toContainerVersion;
 	}
 
+	@Override
 	public void setStatus(MigrationStatusHandler status) {
 		this.status = status;
 	}

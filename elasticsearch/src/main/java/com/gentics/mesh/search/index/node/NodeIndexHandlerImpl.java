@@ -73,9 +73,9 @@ import io.vertx.core.logging.LoggerFactory;
  * project information.
  */
 @Singleton
-public class NodeIndexHandler extends AbstractIndexHandler<Node> {
+public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements NodeIndexHandler {
 
-	private static final Logger log = LoggerFactory.getLogger(NodeIndexHandler.class);
+	private static final Logger log = LoggerFactory.getLogger(NodeIndexHandlerImpl.class);
 
 	@Inject
 	public NodeContainerTransformer transformer;
@@ -84,7 +84,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	public NodeContainerMappingProvider mappingProvider;
 
 	@Inject
-	public NodeIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options,
+	public NodeIndexHandlerImpl(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options,
 		SyncMetersFactory syncMetersFactory) {
 		super(searchProvider, db, boot, helper, options, syncMetersFactory);
 	}
@@ -616,11 +616,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		}
 	}
 
-	/**
-	 * Validate the schema by creating an index template.
-	 * 
-	 * @param schema
-	 */
+
+	@Override
 	public Completable validate(Schema schema) {
 		String indexName = "validationDummy";
 		JsonObject mapping = getMappingProvider().getMapping(schema, null);

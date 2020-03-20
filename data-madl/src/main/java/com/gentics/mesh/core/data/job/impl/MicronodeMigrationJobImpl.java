@@ -1,11 +1,9 @@
 package com.gentics.mesh.core.data.job.impl;
 
-import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_MIGRATION_FINISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_MIGRATION_FINISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_MIGRATION_START;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
-import static com.gentics.mesh.core.rest.job.JobStatus.FAILED;
 import static com.gentics.mesh.core.rest.job.JobStatus.STARTING;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
@@ -21,13 +19,14 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.migration.impl.MigrationStatusHandlerImpl;
-import com.gentics.mesh.core.endpoint.migration.micronode.MicronodeMigrationHandler;
+import com.gentics.mesh.core.migration.micronode.MicronodeMigrationHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.migration.MicroschemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.MicroschemaMigrationCause;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.core.rest.job.JobWarningList;
+
 import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -66,7 +65,7 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 		MigrationStatusHandler status = new MigrationStatusHandlerImpl(this, vertx(), JobType.microschema);
 		try {
 			return db().tx(() -> {
-				MicronodeMigrationContextImpl context = new MicronodeMigrationContextImpl();
+				MicronodeMigrationContext context = new MicronodeMigrationContextImpl();
 				context.setStatus(status);
 
 				createBatch().add(createEvent(MICROSCHEMA_MIGRATION_START, STARTING)).dispatch();

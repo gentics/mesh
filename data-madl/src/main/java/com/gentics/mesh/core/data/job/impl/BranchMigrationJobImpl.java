@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_MIGRATION_FINISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_MIGRATION_START;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
-import static com.gentics.mesh.core.rest.job.JobStatus.FAILED;
 import static com.gentics.mesh.core.rest.job.JobStatus.STARTING;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
@@ -15,8 +14,9 @@ import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.endpoint.migration.branch.BranchMigrationHandler;
+import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.migration.impl.MigrationStatusHandlerImpl;
+import com.gentics.mesh.core.migration.branch.BranchMigrationHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.migration.BranchMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.BranchMigrationCause;
@@ -51,10 +51,10 @@ public class BranchMigrationJobImpl extends JobImpl {
 	}
 
 	private BranchMigrationContext prepareContext() {
-		MigrationStatusHandlerImpl status = new MigrationStatusHandlerImpl(this, vertx(), JobType.branch);
+		MigrationStatusHandler status = new MigrationStatusHandlerImpl(this, vertx(), JobType.branch);
 		try {
 			return db().tx(() -> {
-				BranchMigrationContextImpl context = new BranchMigrationContextImpl();
+				BranchMigrationContext context = new BranchMigrationContextImpl();
 				context.setStatus(status);
 
 				createBatch().add(createEvent(BRANCH_MIGRATION_START, STARTING)).dispatch();

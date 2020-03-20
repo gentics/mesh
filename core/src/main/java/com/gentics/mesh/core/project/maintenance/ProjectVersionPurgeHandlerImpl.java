@@ -23,9 +23,9 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 @Singleton
-public class ProjectVersionPurgeHandler {
+public class ProjectVersionPurgeHandlerImpl implements ProjectVersionPurgeHandler {
 
-	private static final Logger log = LoggerFactory.getLogger(ProjectVersionPurgeHandler.class);
+	private static final Logger log = LoggerFactory.getLogger(ProjectVersionPurgeHandlerImpl.class);
 
 	private final Database db;
 
@@ -34,11 +34,11 @@ public class ProjectVersionPurgeHandler {
 	private final MeshOptions meshOptions;
 
 	@Inject
-	public ProjectVersionPurgeHandler(Database db, Provider<BulkActionContext> bulkProvider, MeshOptions meshOptions) {
+	public ProjectVersionPurgeHandlerImpl(Database db, Provider<BulkActionContext> bulkProvider, MeshOptions meshOptions) {
 		this.db = db;
 		this.bulkProvider = bulkProvider;
-        this.meshOptions = meshOptions;
-    }
+		this.meshOptions = meshOptions;
+	}
 
 	/**
 	 * Purge the versions of all nodes in the project.

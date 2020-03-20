@@ -27,7 +27,7 @@ public class ProjectVersionPurgeHandlerTest extends AbstractMeshTest {
 			call(() -> client().updateNode(projectName(), contentUuid(), request));
 		}
 
-		ProjectVersionPurgeHandler handler = mesh().projectVersionPurgeHandler();
+		ProjectVersionPurgeHandlerImpl handler = mesh().projectVersionPurgeHandler();
 		handler.purgeVersions(project, null).blockingAwait();
 	}
 }

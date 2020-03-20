@@ -55,7 +55,7 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 	private BootstrapInitializer boot;
 
 	@Inject
-	public NodeSearchHandler(SearchProvider searchProvider, Database db, NodeIndexHandler nodeIndexHandler,
+	public NodeSearchHandler(SearchProvider searchProvider, Database db, NodeIndexHandlerImpl nodeIndexHandler,
 		MeshOptions options, BootstrapInitializer boot) {
 		super(db, searchProvider, options, nodeIndexHandler);
 		this.boot = boot;

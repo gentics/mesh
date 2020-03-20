@@ -43,7 +43,7 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
+import com.gentics.mesh.context.NodeMigrationActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -338,8 +338,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		String languageTag = getLanguageTag();
 
 		// Handle node migration conflicts automagically
-		if (ac instanceof NodeMigrationActionContextImpl) {
-			NodeMigrationActionContextImpl nmac = (NodeMigrationActionContextImpl) ac;
+		if (ac instanceof NodeMigrationActionContext) {
+			NodeMigrationActionContext nmac = (NodeMigrationActionContext) ac;
 			ConflictWarning info = null;
 			for (int i = 0; i < MAX_NUMBER; i++) {
 				try {
