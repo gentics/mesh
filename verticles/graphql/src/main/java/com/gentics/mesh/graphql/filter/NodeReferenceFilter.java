@@ -11,7 +11,7 @@ import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.model.NodeReferenceIn;
 
 /**
- * Filters ingoing node references.
+ * Filters incoming node references.
  */
 public class NodeReferenceFilter extends StartMainFilter<NodeReferenceIn> {
 	private final GraphQLContext context;
@@ -22,7 +22,7 @@ public class NodeReferenceFilter extends StartMainFilter<NodeReferenceIn> {
 	}
 
 	private NodeReferenceFilter(GraphQLContext context) {
-		super("NodeReferenceFilter", "Filters by ingoing node references.");
+		super("NodeReferenceFilter", "Filters by incoming node references.");
 		this.context = context;
 	}
 

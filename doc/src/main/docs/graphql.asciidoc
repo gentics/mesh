@@ -40,9 +40,9 @@ Nodes can be linked together in various way. One way is the regular parent-child
 
 include::content/docs/examples/graphql/node-reference-query[]
 
-=== Loading ingoing references
+=== Loading incoming references
 
-You can also go the other way and load ingoing references..
+You can also go the other way and load incoming references..
 
 include::content/docs/examples/graphql/node-referencedBy-query[]
 

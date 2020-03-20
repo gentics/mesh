@@ -15,7 +15,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 
 /**
- * Represents an ingoing node reference. Use the fromContent methods to create a stream of references.
+ * Represents an incoming node reference. Use the fromContent methods to create a stream of references.
  * {@link #getFieldName()} and {@link #getMicronodeFieldName()} are lazy to avoid possibly unnecessary database calls.
  */
 public class NodeReferenceIn {
@@ -30,7 +30,7 @@ public class NodeReferenceIn {
 	}
 
 	/**
-	 * Creates a stream of ingoing node references for the given content.
+	 * Creates a stream of incoming node references for the given content.
 	 * @param context
 	 * @param content
 	 * @return

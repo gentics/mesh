@@ -2,7 +2,7 @@
 <div class="graphql-example" style="height: 46em">
 {
   node(path: "/images/yacht-pelorus.jpg") {
-    # Loads ingoing references
+    # Loads incoming references
     referencedBy {
       elements {
         # You can see the field name that was used to reference the node
