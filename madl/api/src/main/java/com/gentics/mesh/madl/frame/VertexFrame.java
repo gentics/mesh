@@ -40,6 +40,10 @@ public interface VertexFrame extends ElementFrame, com.syncleus.ferma.VertexFram
 
 	<T extends EdgeFrame> TraversalResult<? extends T> outE(String label, Class<T> clazz);
 
+	Stream<Vertex> streamOut(String label);
+
+	Stream<Vertex> streamIn(String label);
+
 	Stream<Edge> streamOutE(String label);
 
 	<T extends ElementFrame> TraversalResult<? extends T> in(String label, Class<T> clazz);

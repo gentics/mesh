@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.lang.NotImplementedException;
 
@@ -238,18 +239,22 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	@Override
 	public void purgeFailed() {
 		log.info("Purging failed jobs..");
-		Iterable<? extends JobImpl> it = out(HAS_JOB).hasNot("error", null).frameExplicit(JobImpl.class);
-		long count = 0;
-		for (Job job : it) {
-			job.delete();
-			count++;
-		}
-		log.info("Purged {" + count + "} failed jobs.");
+		AtomicLong count = new AtomicLong();
+		out(HAS_JOB, JobImpl.class).stream()
+			.filter(job -> {
+				return true;
+			}).forEach(job -> {
+				count.incrementAndGet();
+				job.delete();
+			});
+		log.info("Purged {" + count.get() + "} failed jobs.");
 	}
 
 	@Override
 	public void clear() {
-		out(HAS_JOB).removeAll();
+		streamOut(HAS_JOB).forEach(job -> {
+			job.remove();
+		});
 	}
 
 	@Override

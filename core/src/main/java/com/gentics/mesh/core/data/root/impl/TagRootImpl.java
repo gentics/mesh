@@ -33,7 +33,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(TagRootImpl.class, MeshVertexImpl.class);
-		//TODO why was the branch key omitted? TagEdgeImpl.BRANCH_UUID_KEY
+		// TODO why was the branch key omitted? TagEdgeImpl.BRANCH_UUID_KEY
 		index.createIndex(edgeIndex(HAS_TAG));
 		index.createIndex(edgeIndex(HAS_TAG).withInOut().withOut());
 	}
@@ -62,7 +62,10 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 
 	@Override
 	public Tag findByName(String name) {
-		return out(getRootLabel()).mark().has(TagImpl.TAG_VALUE_KEY, name).back().nextOrDefaultExplicit(TagImpl.class, null);
+		return out(getRootLabel(), TagImpl.class).stream()
+			.filter(tag -> tag.getName().equals(name))
+			.findFirst()
+			.orElseGet(() -> null);
 	}
 
 	@Override

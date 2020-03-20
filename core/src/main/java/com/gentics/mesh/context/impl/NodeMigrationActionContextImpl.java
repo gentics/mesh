@@ -484,6 +484,16 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
+			public Stream<Vertex> streamOut(String label) {
+				return null;
+			}
+
+			@Override
+			public Stream<Vertex> streamIn(String label) {
+				return null;
+			}
+
+			@Override
 			public Stream<Edge> streamInE(String label) {
 				return null;
 			}

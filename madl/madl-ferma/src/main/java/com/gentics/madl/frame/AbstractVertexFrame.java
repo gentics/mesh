@@ -192,11 +192,12 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 
 	@Override
 	public Stream<Edge> streamOutE(String label) {
-		Iterator<Edge> it = getElement().getEdges(Direction.OUT, label).iterator();
-		Stream<Edge> stream = StreamSupport.stream(
-			Spliterators.spliteratorUnknownSize(it, Spliterator.ORDERED),
-			false);
-		return stream;
+		return toStream(getEdges(Direction.OUT, label));
+	}
+	
+	@Override
+	public Stream<Vertex> streamOut(String label) {
+		return toStream(getVertices(Direction.OUT, label));
 	}
 
 	@Override
@@ -208,6 +209,11 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 	@Override
 	public Stream<Edge> streamInE(String label) {
 		return toStream(getEdges(Direction.IN, label));
+	}
+	
+	@Override
+	public Stream<Vertex> streamIn(String label) {
+		return toStream(getVertices(Direction.IN, label));
 	}
 
 	@Override
@@ -239,6 +245,10 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 
 	private Iterator<Edge> getEdges(Direction dir, String label) {
 		return getElement().getEdges(dir, label).iterator();
+	}
+
+	private Iterator<Vertex> getVertices(Direction dir, String label) {
+		return getElement().getVertices(dir, label).iterator();
 	}
 
 	private <T> Stream<T> toStream(Iterator<T> it) {

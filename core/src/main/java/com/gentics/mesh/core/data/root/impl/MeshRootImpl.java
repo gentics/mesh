@@ -97,7 +97,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	public ChangelogRoot getChangelogRoot() {
 		if (changelogRoot == null) {
 			synchronized (MeshRootImpl.class) {
-				ChangelogRoot foundChangelogRoot = out(HAS_CHANGELOG_ROOT).nextOrDefaultExplicit(ChangelogRootImpl.class, null);
+				ChangelogRoot foundChangelogRoot = out(HAS_CHANGELOG_ROOT, ChangelogRootImpl.class).nextOrNull();
 				if (foundChangelogRoot == null) {
 					changelogRoot = getGraph().addFramedVertex(ChangelogRootImpl.class);
 					linkOut(changelogRoot, HAS_CHANGELOG_ROOT);
@@ -116,7 +116,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	public JobRoot getJobRoot() {
 		if (jobRoot == null) {
 			synchronized (MeshRootImpl.class) {
-				JobRoot foundJobRoot = out(HAS_JOB_ROOT).nextOrDefaultExplicit(JobRootImpl.class, null);
+				JobRoot foundJobRoot = out(HAS_JOB_ROOT, JobRootImpl.class).nextOrNull();
 				if (foundJobRoot == null) {
 					jobRoot = getGraph().addFramedVertex(JobRootImpl.class);
 					linkOut(jobRoot, HAS_JOB_ROOT);
@@ -135,7 +135,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	public UserRoot getUserRoot() {
 		if (userRoot == null) {
 			synchronized (MeshRootImpl.class) {
-				UserRoot foundUserRoot = out(HAS_USER_ROOT).has(UserRootImpl.class).nextOrDefaultExplicit(UserRootImpl.class, null);
+				UserRoot foundUserRoot = out(HAS_USER_ROOT, UserRootImpl.class).nextOrNull();
 				if (foundUserRoot == null) {
 					userRoot = getGraph().addFramedVertex(UserRootImpl.class);
 					linkOut(userRoot, HAS_USER_ROOT);
@@ -154,7 +154,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	public RoleRoot getRoleRoot() {
 		if (roleRoot == null) {
 			synchronized (MeshRootImpl.class) {
-				RoleRoot foundRoleRoot = out(HAS_ROLE_ROOT).has(RoleRootImpl.class).nextOrDefaultExplicit(RoleRootImpl.class, null);
+				RoleRoot foundRoleRoot = out(HAS_ROLE_ROOT, RoleRootImpl.class).nextOrNull();
 				if (foundRoleRoot == null) {
 					roleRoot = getGraph().addFramedVertex(RoleRootImpl.class);
 					linkOut(roleRoot, HAS_ROLE_ROOT);
@@ -173,7 +173,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	public GroupRoot getGroupRoot() {
 		if (groupRoot == null) {
 			synchronized (MeshRootImpl.class) {
-				GroupRoot foundGroupRoot = out(HAS_GROUP_ROOT).nextOrDefaultExplicit(GroupRootImpl.class, null);
+				GroupRoot foundGroupRoot = out(HAS_GROUP_ROOT, GroupRootImpl.class).nextOrNull();
 				if (foundGroupRoot == null) {
 					groupRoot = getGraph().addFramedVertex(GroupRootImpl.class);
 					linkOut(groupRoot, HAS_GROUP_ROOT);
@@ -192,7 +192,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	public TagRoot getTagRoot() {
 		if (tagRoot == null) {
 			synchronized (MeshRootImpl.class) {
-				TagRoot foundTagRoot = out(HAS_TAG_ROOT).nextOrDefaultExplicit(TagRootImpl.class, null);
+				TagRoot foundTagRoot = out(HAS_TAG_ROOT, TagRootImpl.class).nextOrNull();
 				if (foundTagRoot == null) {
 					tagRoot = getGraph().addFramedVertex(TagRootImpl.class);
 					linkOut(tagRoot, HAS_TAG_ROOT);
@@ -211,8 +211,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	public SchemaContainerRoot getSchemaContainerRoot() {
 		if (schemaContainerRoot == null) {
 			synchronized (MeshRootImpl.class) {
-				SchemaContainerRoot foundSchemaContainerRoot = out(HAS_SCHEMA_ROOT).has(SchemaContainerRootImpl.class).nextOrDefaultExplicit(
-					SchemaContainerRootImpl.class, null);
+				SchemaContainerRoot foundSchemaContainerRoot = out(HAS_SCHEMA_ROOT, SchemaContainerRootImpl.class).nextOrNull();
 				if (foundSchemaContainerRoot == null) {
 					schemaContainerRoot = getGraph().addFramedVertex(SchemaContainerRootImpl.class);
 					linkOut(schemaContainerRoot, HAS_SCHEMA_ROOT);
@@ -231,7 +230,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	public LanguageRoot getLanguageRoot() {
 		if (languageRoot == null) {
 			synchronized (MeshRootImpl.class) {
-				LanguageRoot foundLanguageRoot = out(HAS_LANGUAGE_ROOT).nextOrDefaultExplicit(LanguageRootImpl.class, null);
+				LanguageRoot foundLanguageRoot = out(HAS_LANGUAGE_ROOT, LanguageRootImpl.class).nextOrNull();
 				if (foundLanguageRoot == null) {
 					languageRoot = getGraph().addFramedVertex(LanguageRootImpl.class);
 					linkOut(languageRoot, HAS_LANGUAGE_ROOT);
@@ -250,7 +249,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	public ProjectRoot getProjectRoot() {
 		if (projectRoot == null) {
 			synchronized (MeshRootImpl.class) {
-				ProjectRoot foundProjectRoot = out(HAS_PROJECT_ROOT).has(ProjectRootImpl.class).nextOrDefaultExplicit(ProjectRootImpl.class, null);
+				ProjectRoot foundProjectRoot = out(HAS_PROJECT_ROOT, ProjectRootImpl.class).nextOrNull();
 				if (foundProjectRoot == null) {
 					projectRoot = getGraph().addFramedVertex(ProjectRootImpl.class);
 					linkOut(projectRoot, HAS_PROJECT_ROOT);
@@ -269,8 +268,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	public TagFamilyRoot getTagFamilyRoot() {
 		if (tagFamilyRoot == null) {
 			synchronized (MeshRootImpl.class) {
-				TagFamilyRoot foundTagFamilyRoot = out(HAS_TAGFAMILY_ROOT).has(TagFamilyRootImpl.class).nextOrDefaultExplicit(TagFamilyRootImpl.class,
-					null);
+				TagFamilyRoot foundTagFamilyRoot = out(HAS_TAGFAMILY_ROOT, TagFamilyRootImpl.class).nextOrNull();
 				if (foundTagFamilyRoot == null) {
 					tagFamilyRoot = getGraph().addFramedVertex(TagFamilyRootImpl.class);
 					linkOut(tagFamilyRoot, HAS_TAGFAMILY_ROOT);
@@ -289,8 +287,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	public MicroschemaContainerRoot getMicroschemaContainerRoot() {
 		if (microschemaContainerRoot == null) {
 			synchronized (MeshRootImpl.class) {
-				MicroschemaContainerRoot foundMicroschemaContainerRoot = out(HAS_MICROSCHEMA_ROOT).has(MicroschemaContainerRootImpl.class)
-					.nextOrDefaultExplicit(MicroschemaContainerRootImpl.class, null);
+				MicroschemaContainerRoot foundMicroschemaContainerRoot = out(HAS_MICROSCHEMA_ROOT, MicroschemaContainerRootImpl.class).nextOrNull();
 				if (foundMicroschemaContainerRoot == null) {
 					microschemaContainerRoot = getGraph().addFramedVertex(MicroschemaContainerRootImpl.class);
 					linkOut(microschemaContainerRoot, HAS_MICROSCHEMA_ROOT);
@@ -322,7 +319,6 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 		languageRoot = null;
 		jobRoot = null;
 		changelogRoot = null;
-		
 	}
 
 	@Override

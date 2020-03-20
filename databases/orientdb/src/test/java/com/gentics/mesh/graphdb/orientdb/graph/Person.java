@@ -8,7 +8,7 @@ import com.gentics.mesh.madl.traversal.TraversalResult;
 public class Person extends AbstractVertexFrame {
 
 	public TraversalResult<? extends Person> getFriends() {
-		return new TraversalResult<>(out("HAS_FRIEND").has(Person.class).frameExplicit(Person.class));
+		return out("HAS_FRIEND", Person.class);
 	}
 
 	public void addFriend(Person person) {
