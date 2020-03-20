@@ -20,7 +20,7 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.graph.GraphAttribute;
-import com.gentics.mesh.dagger.MeshComponent;
+import com.gentics.mesh.dagger.MeshComponentBase;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -136,7 +136,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 		this.uuid = uuid;
 	}
 
-	public MeshComponent mesh() {
+	public MeshComponentBase mesh() {
 		return getGraphAttribute(GraphAttribute.MESH_COMPONENT);
 	}
 

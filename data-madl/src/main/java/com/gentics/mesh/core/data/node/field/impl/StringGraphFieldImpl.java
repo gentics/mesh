@@ -20,7 +20,7 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
-import com.gentics.mesh.dagger.MeshComponent;
+import com.gentics.mesh.dagger.MeshComponentBase;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.LinkType;
 import com.syncleus.ferma.AbstractVertexFrame;
@@ -28,7 +28,7 @@ import com.syncleus.ferma.AbstractVertexFrame;
 public class StringGraphFieldImpl extends AbstractBasicField<StringField> implements StringGraphField {
 
 	public static FieldTransformer<StringField> STRING_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
-		MeshComponent mesh = container.getGraphAttribute(GraphAttribute.MESH_COMPONENT);
+		MeshComponentBase mesh = container.getGraphAttribute(GraphAttribute.MESH_COMPONENT);
 		// TODO validate found fields has same type as schema
 		// StringGraphField graphStringField = new com.gentics.mesh.core.data.node.field.impl.basic.StringGraphFieldImpl(
 		// fieldKey, this);

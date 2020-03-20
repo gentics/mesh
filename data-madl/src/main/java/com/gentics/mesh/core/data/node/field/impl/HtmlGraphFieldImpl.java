@@ -15,7 +15,7 @@ import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.field.HtmlField;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
-import com.gentics.mesh.dagger.MeshComponent;
+import com.gentics.mesh.dagger.MeshComponentBase;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.LinkType;
 import com.syncleus.ferma.AbstractVertexFrame;
@@ -23,7 +23,7 @@ import com.syncleus.ferma.AbstractVertexFrame;
 public class HtmlGraphFieldImpl extends AbstractBasicField<HtmlField> implements HtmlGraphField {
 
 	public static FieldTransformer<HtmlField> HTML_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
-		MeshComponent mesh = container.getGraphAttribute(GraphAttribute.MESH_COMPONENT);
+		MeshComponentBase mesh = container.getGraphAttribute(GraphAttribute.MESH_COMPONENT);
 		HtmlGraphField graphHtmlField = container.getHtml(fieldKey);
 		if (graphHtmlField == null) {
 			return null;

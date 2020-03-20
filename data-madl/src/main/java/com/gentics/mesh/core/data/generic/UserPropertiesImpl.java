@@ -13,26 +13,31 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.User;
 
 @Singleton
-public class UserProperties {
+public class UserPropertiesImpl implements UserProperties {
+
 	private final BootstrapInitializer boot;
 
 	@Inject
-	public UserProperties(BootstrapInitializer boot) {
+	public UserPropertiesImpl(BootstrapInitializer boot) {
 		this.boot = boot;
 	}
 
+	@Override
 	public User getCreator(MeshVertex vertex) {
 		return getUser(vertex, CREATOR_UUID_PROPERTY_KEY);
 	}
 
+	@Override
 	public User getEditor(MeshVertex vertex) {
 		return getUser(vertex, EDITOR_UUID_PROPERTY_KEY);
 	}
 
+	@Override
 	public void setCreator(MeshVertex vertex, User user) {
 		setUser(vertex, user, CREATOR_UUID_PROPERTY_KEY);
 	}
 
+	@Override
 	public void setEditor(MeshVertex vertex, User user) {
 		setUser(vertex, user, EDITOR_UUID_PROPERTY_KEY);
 	}
@@ -51,7 +56,5 @@ public class UserProperties {
 			.map(boot.userRoot()::findByUuid)
 			.orElse(null);
 	}
-
-
 
 }

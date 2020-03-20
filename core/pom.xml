@@ -42,10 +42,6 @@
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-common</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-data-madl</artifactId>
 		</dependency>
 		<dependency>

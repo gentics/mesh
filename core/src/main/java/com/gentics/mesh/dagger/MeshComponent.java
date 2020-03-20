@@ -15,7 +15,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
-import com.gentics.mesh.core.data.generic.UserProperties;
+import com.gentics.mesh.core.data.generic.UserPropertiesImpl;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.endpoint.migration.branch.BranchMigrationHandler;
@@ -66,7 +66,7 @@ import io.vertx.core.Vertx;
  */
 @Singleton
 @Component(modules = { MeshModule.class, SearchProviderModule.class, BindModule.class, DebugInfoProviderModule.class, MicrometerModule.class })
-public interface MeshComponent {
+public interface MeshComponent extends MeshComponentBase {
 
 	BootstrapInitializer boot();
 
@@ -160,7 +160,7 @@ public interface MeshComponent {
 
 	Binaries binaries();
 
-	UserProperties userProperties();
+	UserPropertiesImpl userProperties();
 
 	PermissionProperties permissionProperties();
 
