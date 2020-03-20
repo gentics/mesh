@@ -28,8 +28,10 @@ import com.gentics.mesh.core.data.service.ServerSchemaStorageImpl;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.data.service.WebRootServiceImpl;
 import com.gentics.mesh.core.endpoint.migration.branch.BranchMigrationHandlerImpl;
+import com.gentics.mesh.core.endpoint.migration.micronode.MicronodeMigrationHandlerImpl;
 import com.gentics.mesh.core.endpoint.migration.node.NodeMigrationHandlerImpl;
 import com.gentics.mesh.core.migration.branch.BranchMigrationHandler;
+import com.gentics.mesh.core.migration.micronode.MicronodeMigrationHandler;
 import com.gentics.mesh.core.migration.node.NodeMigrationHandler;
 import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandler;
 import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandlerImpl;
@@ -52,6 +54,8 @@ import com.gentics.mesh.plugin.manager.MeshPluginManagerImpl;
 import com.gentics.mesh.plugin.pf4j.PluginEnvironmentImpl;
 import com.gentics.mesh.search.index.common.DropIndexHandler;
 import com.gentics.mesh.search.index.common.DropIndexHandlerImpl;
+import com.gentics.mesh.search.index.node.NodeIndexHandler;
+import com.gentics.mesh.search.index.node.NodeIndexHandlerImpl;
 import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.storage.LocalBinaryStorage;
 
@@ -139,7 +143,13 @@ public abstract class BindModule {
 	@Binds
 	abstract BranchMigrationHandler bindBranchMigrationHandler(BranchMigrationHandlerImpl e);
 
+	@Binds 
+	abstract MicronodeMigrationHandler bindMicronodeMigrationHandler(MicronodeMigrationHandlerImpl e);
+
 	@Binds
 	abstract ServerSchemaStorage bindServerSchemaStorage(ServerSchemaStorageImpl e);
+
+	@Binds
+	abstract NodeIndexHandler bindNodeIndexHandler(NodeIndexHandlerImpl e);
 
 }
