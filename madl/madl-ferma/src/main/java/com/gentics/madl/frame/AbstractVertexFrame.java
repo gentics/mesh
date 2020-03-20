@@ -9,7 +9,6 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import com.gentics.madl.traversal.RawTraversalResult;
-import com.gentics.madl.traversal.RawTraversalResultImpl;
 import com.gentics.madl.tx.BaseTransaction;
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.madl.frame.EdgeFrame;
@@ -18,7 +17,6 @@ import com.gentics.mesh.madl.frame.VertexFrame;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.traversals.SimpleTraversal;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
@@ -171,11 +169,7 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 
 	@Override
 	public Stream<Edge> streamInE(String label) {
-		Iterator<Edge> it = getElement().getEdges(Direction.IN, label).iterator();
-		Stream<Edge> stream = StreamSupport.stream(
-			Spliterators.spliteratorUnknownSize(it, Spliterator.ORDERED),
-			false);
-		return stream;
+		return toStream(getEdges(Direction.IN, label));
 	}
 
 	@Override
@@ -191,5 +185,16 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 			throw new RuntimeException("No active transaction found.");
 		}
 		return tx.traversal(input -> traverser.apply(input.V(id())));
+	}
+
+	private Iterator<Edge> getEdges(Direction dir, String label) {
+		return getElement().getEdges(dir, label).iterator();
+	}
+
+	private <T> Stream<T> toStream(Iterator<T> it) {
+		Stream<T> stream = StreamSupport.stream(
+			Spliterators.spliteratorUnknownSize(it, Spliterator.ORDERED),
+			false);
+		return stream;
 	}
 }
