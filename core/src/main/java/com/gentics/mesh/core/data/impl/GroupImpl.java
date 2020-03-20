@@ -128,12 +128,16 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 
 	@Override
 	public boolean hasRole(Role role) {
-		return in(HAS_ROLE).retain(role).hasNext();
+		return streamIn(HAS_ROLE).filter(item -> {
+			return item.getId().equals(role.id());
+		}).findAny().isPresent();
 	}
 
 	@Override
 	public boolean hasUser(User user) {
-		return in(HAS_USER).retain(user).hasNext();
+		return streamIn(HAS_USER).filter(item -> {
+			return item.getId().equals(user.id());
+		}).findAny().isPresent();
 	}
 
 	@Override

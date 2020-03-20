@@ -20,7 +20,10 @@ import java.util.Iterator;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.syncleus.ferma.typeresolvers.TypeResolver;
-import com.tinkerpop.blueprints.*;
+import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.blueprints.Vertex;
 
 /**
  * The primary class for framing your blueprints graphs.

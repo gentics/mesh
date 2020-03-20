@@ -73,7 +73,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public TagFamilyRoot getTagFamilyRoot() {
-		return in(HAS_TAG_FAMILY).has(TagFamilyRootImpl.class).nextOrDefaultExplicit(TagFamilyRootImpl.class, null);
+		return in(HAS_TAG_FAMILY, TagFamilyRootImpl.class).nextOrNull();
 	}
 
 	@Override

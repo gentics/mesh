@@ -240,7 +240,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 
 	@Override
 	public SC getSchemaContainer() {
-		return in(HAS_PARENT_CONTAINER).nextOrDefaultExplicit(getContainerClass(), null);
+		return in(HAS_PARENT_CONTAINER, getContainerClass()).nextOrNull();
 	}
 
 	public String toString() {

@@ -211,6 +211,6 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	 */
 	@Override
 	public Project getProject() {
-		return in(HAS_SCHEMA_ROOT).has(ProjectImpl.class).nextOrDefaultExplicit(ProjectImpl.class, null);
+		return in(HAS_SCHEMA_ROOT, ProjectImpl.class).nextOrNull();
 	}
 }

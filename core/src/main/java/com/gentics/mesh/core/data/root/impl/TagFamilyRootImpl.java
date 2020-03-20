@@ -57,8 +57,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 
 	@Override
 	public Project getProject() {
-		Project project = in(HAS_TAGFAMILY_ROOT).has(ProjectImpl.class).nextOrDefaultExplicit(ProjectImpl.class, null);
-		return project;
+		return in(HAS_TAGFAMILY_ROOT, ProjectImpl.class).nextOrNull();
 	}
 
 	@Override
@@ -148,7 +147,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 				if ("tags".contentEquals(nestedRootNode)) {
 					return tagFamily.resolveToElement(stack);
 				} else {
-					//TODO i18n
+					// TODO i18n
 					throw error(NOT_FOUND, "Unknown tagFamily element {" + nestedRootNode + "}");
 				}
 			}
