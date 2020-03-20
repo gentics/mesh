@@ -156,14 +156,14 @@ upload:
 
 A cluster request coordinator can be enabled to add a coordination layer in each Gentics Mesh instance.
 
-This layer will automatically delgate requests to an elected master instance.
+This layer will automatically delegate requests to an elected master instance.
 
 This process is useful when running a multi-master or master-replica setup.
 
 In a multi-master setup the write requests on all instances will be directed to an elected master instance.
 This is useful in order to reduce contention and to avoid synchronization issues.
 
-In an master-replica setup this can be useful to delegate write requests on replica instances to the elected master instance.
+In a master-replica setup this can be useful to delegate write requests on replica instances to the elected master instance.
 
 === Configuration
 
