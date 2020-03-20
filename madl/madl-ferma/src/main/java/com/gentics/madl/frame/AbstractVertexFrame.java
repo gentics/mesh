@@ -225,6 +225,18 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 		return tx.traversal(input -> traverser.apply(input.V(id())));
 	}
 
+	public void linkOut(final VertexFrame vertex, final String... labels) {
+		for (final String label : labels) {
+			getElement().addEdge(label, vertex.getElement());
+		}
+	}
+
+	public void linkIn(final VertexFrame vertex, final String... labels) {
+		for (final String label : labels) {
+			vertex.getElement().addEdge(label, this.getElement());
+		}
+	}
+
 	private Iterator<Edge> getEdges(Direction dir, String label) {
 		return getElement().getEdges(dir, label).iterator();
 	}

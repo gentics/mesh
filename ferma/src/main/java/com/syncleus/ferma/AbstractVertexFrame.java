@@ -105,18 +105,6 @@ public abstract class AbstractVertexFrame extends AbstractElementFrame implement
 		return new SimpleTraversal(getGraph(), this).castToVertices().inE(labels);
 	}
 
-	@Override
-	public void linkOut(final VertexFrame vertex, final String... labels) {
-		for (final String label : labels)
-			traversal().linkOut(label, vertex).iterate();
-	}
-
-	@Override
-	public void linkIn(final VertexFrame vertex, final String... labels) {
-		for (final String label : labels)
-			traversal().linkIn(label, vertex).iterate();
-	}
-
 
 	@Override
 	public VertexTraversal<?, ?, ?> traversal() {

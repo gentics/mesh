@@ -79,4 +79,25 @@ public interface VertexFrame extends ElementFrame, com.syncleus.ferma.VertexFram
 	 *            The labels of the edges.
 	 */
 	void setLinkOut(VertexFrame vertex, String... labels);
+
+	/**
+	 * Create edges from the framed vertex to the supplied vertex with the supplied labels
+	 *
+	 * @param vertex
+	 *            The vertex to link to.
+	 * @param labels
+	 *            The labels for the edges.
+	 */
+	void linkOut(VertexFrame vertex, String... labels);
+
+	/**
+	 * Create edges from the supplied vertex to the framed vertex with the supplied labels
+	 *
+	 * @param vertex
+	 *            The vertex to link from.
+	 * @param labels
+	 *            The labels for the edges.
+	 */
+	void linkIn(VertexFrame vertex, String... labels);
+
 }

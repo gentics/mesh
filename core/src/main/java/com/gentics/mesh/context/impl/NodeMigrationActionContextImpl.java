@@ -345,7 +345,8 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public User addPermissionsOnRole(HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode, GraphPermission... toGrant) {
+			public User addPermissionsOnRole(HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode,
+				GraphPermission... toGrant) {
 				return null;
 			}
 
@@ -510,16 +511,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			@Override
 			public EdgeTraversal<?, ?, ?> inE(String... labels) {
 				return null;
-			}
-
-			@Override
-			public void linkOut(VertexFrame vertex, String... labels) {
-
-			}
-
-			@Override
-			public void linkIn(VertexFrame vertex, String... labels) {
-
 			}
 
 			@Override
@@ -746,19 +737,31 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			@Override
 			public void unlinkOut(com.gentics.mesh.madl.frame.VertexFrame vertex, String... labels) {
 				// TODO Auto-generated method stub
-				
+
 			}
 
 			@Override
 			public void unlinkIn(com.gentics.mesh.madl.frame.VertexFrame vertex, String... labels) {
 				// TODO Auto-generated method stub
-				
+
 			}
 
 			@Override
 			public void setLinkOut(com.gentics.mesh.madl.frame.VertexFrame vertex, String... labels) {
 				// TODO Auto-generated method stub
-				
+
+			}
+
+			@Override
+			public void linkOut(com.gentics.mesh.madl.frame.VertexFrame vertex, String... labels) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void linkIn(com.gentics.mesh.madl.frame.VertexFrame vertex, String... labels) {
+				// TODO Auto-generated method stub
+
 			}
 		};
 		return user;
