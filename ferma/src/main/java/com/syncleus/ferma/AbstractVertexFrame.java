@@ -126,6 +126,7 @@ public abstract class AbstractVertexFrame extends AbstractElementFrame implement
 	}
 
 	@Override
+	@Deprecated
 	public void unlinkIn(final VertexFrame vertex, final String... labels) {
 		if (vertex != null)
 			inE(labels).mark().outV().retain(vertex).back().removeAll();

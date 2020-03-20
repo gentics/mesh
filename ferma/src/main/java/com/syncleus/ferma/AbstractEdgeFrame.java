@@ -26,7 +26,6 @@ package com.syncleus.ferma;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
-import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.SimpleTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Edge;
@@ -54,11 +53,6 @@ public abstract class AbstractEdgeFrame extends AbstractElementFrame implements 
 	@Override
 	public VertexTraversal<?, ?, ?> outV() {
 		return new SimpleTraversal(getGraph(), this).castToEdges().outV();
-	}
-
-	@Override
-	public EdgeTraversal<?, ?, ?> traversal() {
-		return new SimpleTraversal(getGraph(), this).castToEdges();
 	}
 
 	@Override

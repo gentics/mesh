@@ -15,9 +15,8 @@
  */
 package com.syncleus.ferma;
 
-import com.syncleus.ferma.traversals.VertexTraversal;
-import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.google.gson.JsonObject;
+import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Edge;
 
 public interface EdgeFrame extends ElementFrame {
@@ -38,13 +37,6 @@ public interface EdgeFrame extends ElementFrame {
 	 * @return The out vertex of this edge.
 	 */
 	VertexTraversal<?, ?, ?> outV();
-
-	/**
-	 * Shortcut to get Traversal of current element
-	 *
-	 * @return the EdgeTraversal of the current element
-	 */
-	EdgeTraversal<?, ?, ?> traversal();
 
 	JsonObject toJson();
 

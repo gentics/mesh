@@ -5,7 +5,6 @@ import com.gentics.mesh.madl.frame.EdgeFrame;
 import com.gentics.mesh.madl.frame.VertexFrame;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
@@ -65,11 +64,6 @@ public abstract class AbstractEdgeFrame extends com.syncleus.ferma.AbstractEdgeF
 	public <T extends VertexFrame> TraversalResult<? extends T> outV(Class<T> clazz) {
 		TraversalResult<? extends T> result = new TraversalResult<>(outV().frameExplicit(clazz));
 		return result;
-	}
-
-	@Override
-	public EdgeTraversal<?, ?, ?> traversal() {
-		return super.traversal();
 	}
 
 	@Override

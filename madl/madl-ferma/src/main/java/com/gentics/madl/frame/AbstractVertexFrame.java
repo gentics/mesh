@@ -102,6 +102,40 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 		linkIn(vertex, labels);
 	}
 
+	public void unlinkIn(final VertexFrame vertex, final String... labels) {
+		for (String label : labels) {
+			Iterator<Edge> it = getEdges(Direction.IN, label);
+			while (it.hasNext()) {
+				Edge edge = it.next();
+				if (vertex != null) {
+					Vertex outV = edge.getVertex(Direction.OUT);
+					if (outV.getId().equals(vertex.id())) {
+						continue;
+					}
+				} else {
+					edge.remove();
+				}
+			}
+		}
+	}
+
+	public void unlinkOut(final VertexFrame vertex, final String... labels) {
+		for (String label : labels) {
+			Iterator<Edge> it = getEdges(Direction.OUT, label);
+			while (it.hasNext()) {
+				Edge edge = it.next();
+				if (vertex != null) {
+					Vertex outV = edge.getVertex(Direction.IN);
+					if (outV.getId().equals(vertex.id())) {
+						continue;
+					}
+				} else {
+					edge.remove();
+				}
+			}
+		}
+	}
+
 	/**
 	 * Add a unique <b>in-bound</b> link to the given vertex for the given set of labels. Note that this method will effectively ensure that only one
 	 * <b>in-bound</b> link exists between the two vertices for each label.
@@ -131,10 +165,8 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 	@Override
 	public void setSingleLinkOutTo(VertexFrame vertex, String... labels) {
 		// Unlink all edges with the given label
-		// unlinkOut(null, labels);
 		getElement().getEdges(Direction.OUT, labels).forEach(Element::remove);
 		// Create a new edge with the given label
-		// linkOut(vertex, labels);
 		for (String label : labels) {
 			getElement().addEdge(label, vertex.getElement());
 		}
