@@ -101,6 +101,7 @@
 		<module>databases</module>
 		<module>services</module>
 		<module>distributed-coordinator</module>
+		<module>data-madl</module>
 		<module>core</module>
 		<module>performance-tests</module>
 		<module>verticles</module>
