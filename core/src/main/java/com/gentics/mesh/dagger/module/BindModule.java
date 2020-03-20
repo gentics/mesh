@@ -24,12 +24,16 @@ import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.generic.UserProperties;
 import com.gentics.mesh.core.data.generic.UserPropertiesImpl;
+import com.gentics.mesh.core.data.service.ServerSchemaStorageImpl;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.data.service.WebRootServiceImpl;
+import com.gentics.mesh.core.endpoint.migration.branch.BranchMigrationHandlerImpl;
 import com.gentics.mesh.core.endpoint.migration.node.NodeMigrationHandlerImpl;
+import com.gentics.mesh.core.migration.branch.BranchMigrationHandler;
 import com.gentics.mesh.core.migration.node.NodeMigrationHandler;
 import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandler;
 import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandlerImpl;
+import com.gentics.mesh.core.rest.schema.ServerSchemaStorage;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.core.verticle.handler.WriteLockImpl;
 import com.gentics.mesh.distributed.RequestDelegator;
@@ -124,12 +128,18 @@ public abstract class BindModule {
 	abstract UserProperties bindUserProperties(UserPropertiesImpl e);
 
 	@Binds
-	abstract PermissionProperties bindPermissionProperties(PermissionPropertiesImpl e); 
+	abstract PermissionProperties bindPermissionProperties(PermissionPropertiesImpl e);
 
 	@Binds
 	abstract ProjectVersionPurgeHandler bindProjectVersionPurgeHandler(ProjectVersionPurgeHandlerImpl e);
 
 	@Binds
 	abstract NodeMigrationHandler bindNodeMigrationHandler(NodeMigrationHandlerImpl e);
+
+	@Binds
+	abstract BranchMigrationHandler bindBranchMigrationHandler(BranchMigrationHandlerImpl e);
+
+	@Binds
+	abstract ServerSchemaStorage bindServerSchemaStorage(ServerSchemaStorageImpl e);
 
 }

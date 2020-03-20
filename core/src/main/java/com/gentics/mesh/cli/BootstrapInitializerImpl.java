@@ -66,7 +66,7 @@ import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.IndexHandler;
-import com.gentics.mesh.core.data.service.ServerSchemaStorage;
+import com.gentics.mesh.core.data.service.ServerSchemaStorageImpl;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
@@ -129,7 +129,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	private static Logger log = LoggerFactory.getLogger(BootstrapInitializer.class);
 
 	@Inject
-	public ServerSchemaStorage schemaStorage;
+	public ServerSchemaStorageImpl schemaStorage;
 
 	@Inject
 	public Database db;

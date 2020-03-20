@@ -44,12 +44,7 @@ public class BranchMigrationHandlerImpl extends AbstractMigrationHandler impleme
 		super(db, nodeFieldAPIHandler, metrics, batchProvider);
 	}
 
-	/**
-	 * Migrate all nodes from one branch to the other
-	 * 
-	 * @param context
-	 * @return
-	 */
+	@Override
 	public Completable migrateBranch(BranchMigrationContext context) {
 		context.validate();
 		return Completable.defer(() -> {

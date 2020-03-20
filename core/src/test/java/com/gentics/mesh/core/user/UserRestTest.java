@@ -17,7 +17,7 @@ import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.rest.ClientSchemaStorage;
+import com.gentics.mesh.rest.ClientSchemaStorageImpl;
 import com.gentics.mesh.util.UUIDUtil;
 
 public class UserRestTest {
@@ -28,7 +28,7 @@ public class UserRestTest {
 		SchemaModel schema = new SchemaModelImpl();
 		schema.setName("content");
 
-		ClientSchemaStorage clientSchemaStorage = new ClientSchemaStorage();
+		ClientSchemaStorageImpl clientSchemaStorage = new ClientSchemaStorageImpl();
 		clientSchemaStorage.addSchema(schema);
 
 		UserResponse response = new UserResponse();

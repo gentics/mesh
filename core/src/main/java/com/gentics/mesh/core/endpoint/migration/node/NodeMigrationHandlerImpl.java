@@ -16,7 +16,7 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
+import com.gentics.mesh.context.NodeMigrationActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
@@ -60,14 +60,8 @@ public class NodeMigrationHandlerImpl extends AbstractMigrationHandler implement
 		this.writeLock = writeLock;
 	}
 
-	/**
-	 * Migrate all nodes of a branch referencing the given schema container to the latest version of the schema.
-	 *
-	 * @param context
-	 *            Migration context
-	 * @return Completable which is completed once the migration finishes
-	 */
-	public Completable migrateNodes(NodeMigrationActionContextImpl context) {
+	@Override
+	public Completable migrateNodes(NodeMigrationActionContext context) {
 		context.validate();
 		return Completable.defer(() -> {
 			SchemaContainerVersion fromVersion = context.getFromVersion();
@@ -152,7 +146,7 @@ public class NodeMigrationHandlerImpl extends AbstractMigrationHandler implement
 	 * @param touchedFields
 	 * @return
 	 */
-	private void migrateContainer(NodeMigrationActionContextImpl ac, EventQueueBatch batch, NodeGraphFieldContainer container,
+	private void migrateContainer(NodeMigrationActionContext ac, EventQueueBatch batch, NodeGraphFieldContainer container,
 		GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion, SchemaModel newSchema, List<Exception> errorsDetected,
 		Set<String> touchedFields) {
 
@@ -217,7 +211,7 @@ public class NodeMigrationHandlerImpl extends AbstractMigrationHandler implement
 	 *            Suggested new draft version
 	 * @throws Exception
 	 */
-	private void migrateDraftContainer(NodeMigrationActionContextImpl ac, EventQueueBatch sqb, Branch branch, Node node,
+	private void migrateDraftContainer(NodeMigrationActionContext ac, EventQueueBatch sqb, Branch branch, Node node,
 		NodeGraphFieldContainer container, GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion, SchemaContainerVersion toVersion,
 		Set<String> touchedFields,
 		SchemaModel newSchema, VersionNumber nextDraftVersion)
@@ -277,7 +271,7 @@ public class NodeMigrationHandlerImpl extends AbstractMigrationHandler implement
 	 * @return Version of the new published container
 	 * @throws Exception
 	 */
-	private VersionNumber migratePublishedContainer(NodeMigrationActionContextImpl ac, EventQueueBatch sqb, Branch branch, Node node,
+	private VersionNumber migratePublishedContainer(NodeMigrationActionContext ac, EventQueueBatch sqb, Branch branch, Node node,
 		NodeGraphFieldContainer container, GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion, SchemaContainerVersion toVersion,
 		Set<String> touchedFields, SchemaModel newSchema) throws Exception {
 

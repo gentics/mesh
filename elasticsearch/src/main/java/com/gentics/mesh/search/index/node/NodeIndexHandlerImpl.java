@@ -534,14 +534,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 		return searchProvider.deleteDocument(container.getIndexName(projectUuid, branchUuid, type), container.getDocumentId());
 	}
 
-	/**
-	 * Generate an elasticsearch document object from the given container and stores it in the search index.
-	 * 
-	 * @param container
-	 * @param branchUuid
-	 * @param type
-	 * @return Single with affected index name
-	 */
+	@Override
 	public Single<String> storeContainer(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
 		JsonObject doc = transformer.toDocument(container, branchUuid, type);
 		String projectUuid = container.getParentNode().getProject().getUuid();

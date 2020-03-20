@@ -7,14 +7,20 @@ import java.util.Map.Entry;
 import java.util.Optional;
 
 import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
-import com.gentics.mesh.core.rest.schema.SchemaStorage;
+import com.gentics.mesh.core.rest.schema.ServerSchemaStorage;
 
-public class ClientSchemaStorage implements SchemaStorage {
+public class ClientSchemaStorageImpl implements ServerSchemaStorage {
 
 	private Map<String, Map<String, SchemaModel>> schemaMap = new HashMap<>();
 
 	private Map<String, Map<String, MicroschemaModel>> microschemaMap = new HashMap<>();
+
+	@Override
+	public void init() {
+
+	}
 
 	@Override
 	public void addSchema(SchemaModel schema) {
@@ -24,11 +30,11 @@ public class ClientSchemaStorage implements SchemaStorage {
 	@Override
 	public SchemaModel getSchema(String name) {
 		Optional<Entry<String, SchemaModel>> maxVersion = schemaMap.getOrDefault(name, Collections.emptyMap()).entrySet().stream()
-				.max((entry1, entry2) -> {
-					Double v1 = Double.valueOf(entry1.getKey());
-					Double v2 = Double.valueOf(entry2.getKey());
-					return Double.compare(v1, v2);
-				});
+			.max((entry1, entry2) -> {
+				Double v1 = Double.valueOf(entry1.getKey());
+				Double v2 = Double.valueOf(entry2.getKey());
+				return Double.compare(v1, v2);
+			});
 		return maxVersion.isPresent() ? maxVersion.get().getValue() : null;
 	}
 
@@ -52,11 +58,11 @@ public class ClientSchemaStorage implements SchemaStorage {
 	@Override
 	public MicroschemaModel getMicroschema(String name) {
 		Optional<Entry<String, MicroschemaModel>> maxVersion = microschemaMap.getOrDefault(name, Collections.emptyMap()).entrySet().stream()
-				.max((entry1, entry2) -> {
-					Double v1 = Double.valueOf(entry1.getKey());
-					Double v2 = Double.valueOf(entry2.getKey());
-					return Double.compare(v1, v2);
-				});
+			.max((entry1, entry2) -> {
+				Double v1 = Double.valueOf(entry1.getKey());
+				Double v2 = Double.valueOf(entry2.getKey());
+				return Double.compare(v1, v2);
+			});
 		return maxVersion.isPresent() ? maxVersion.get().getValue() : null;
 	}
 
@@ -92,4 +98,5 @@ public class ClientSchemaStorage implements SchemaStorage {
 		schemaMap.clear();
 		microschemaMap.clear();
 	}
+
 }

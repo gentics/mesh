@@ -36,8 +36,8 @@ import com.gentics.mesh.core.rest.node.field.image.Point;
 import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.dagger.MeshComponentBase;
 import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.util.NodeUtil;
 
-import graphql.language.NodeUtil;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 

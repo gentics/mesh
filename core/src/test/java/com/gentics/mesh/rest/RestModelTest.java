@@ -27,7 +27,7 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceInfo;
-import com.gentics.mesh.core.rest.schema.SchemaStorage;
+import com.gentics.mesh.core.rest.schema.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
@@ -88,7 +88,7 @@ public class RestModelTest extends AbstractMeshTest {
 	public void testNodeCreateRequest() throws JsonParseException, JsonMappingException, IOException {
 
 		// schema
-		ClientSchemaStorage schemaStorage = new ClientSchemaStorage();
+		ClientSchemaStorageImpl schemaStorage = new ClientSchemaStorageImpl();
 		schemaStorage.addSchema(getDummySchema());
 
 		NodeCreateRequest request = new NodeCreateRequest();
@@ -147,7 +147,7 @@ public class RestModelTest extends AbstractMeshTest {
 			contentFields.put("content", FieldUtil.createStringField("some content"));
 			content.setFields(contentFields);
 
-			SchemaStorage storage = new ClientSchemaStorage();
+			ServerSchemaStorage storage = new ClientSchemaStorageImpl();
 			storage.addSchema(folderSchema);
 			storage.addSchema(contentSchema);
 

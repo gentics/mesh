@@ -6,7 +6,7 @@ import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
  * A schema storage is a store which hold schemas. Schema storages are used to quickly load a schema in order to deserialize or serialize a node. TODO: add
  * version
  */
-public interface SchemaStorage {
+public interface ServerSchemaStorage {
 	/**
 	 * Remove the schema with the given name in all versions from the storage.
 	 * 
@@ -110,5 +110,23 @@ public interface SchemaStorage {
 	 * Clear the storage and remove all stored schemas and microschemas
 	 */
 	void clear();
+
+	/**
+	 * Remove the given container from the storage.
+	 * 
+	 * @param container
+	 *            Schema or microschema container which is used to identify the elements which should be removed from the storage
+	 */
+	default void remove(FieldSchemaContainer container) {
+		if (container instanceof SchemaModel) {
+			SchemaModel schemaModel = (SchemaModel) container;
+			removeSchema(schemaModel.getName(), schemaModel.getVersion());
+		} else if (container instanceof MicroschemaModel) {
+			MicroschemaModel schemaModel = (MicroschemaModel) container;
+			removeMicroschema(schemaModel.getName(), schemaModel.getVersion());
+		}
+	}
+
+	void init();
 
 }

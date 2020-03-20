@@ -8,8 +8,9 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.rest.event.node.SchemaMigrationCause;
 import com.gentics.mesh.core.rest.job.warning.ConflictWarning;
+import com.gentics.mesh.parameter.ParameterProviderContext;
 
-public interface NodeMigrationActionContext {
+public interface NodeMigrationActionContext extends ParameterProviderContext, InternalActionContext {
 
 	/**
 	 * Return referenced project.

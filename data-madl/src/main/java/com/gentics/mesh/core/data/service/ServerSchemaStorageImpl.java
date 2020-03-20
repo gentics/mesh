@@ -15,9 +15,8 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
-import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
-import com.gentics.mesh.core.rest.schema.SchemaStorage;
+import com.gentics.mesh.core.rest.schema.ServerSchemaStorage;
 
 import dagger.Lazy;
 import io.vertx.core.logging.Logger;
@@ -28,9 +27,9 @@ import io.vertx.core.logging.LoggerFactory;
  * since it is not required to load the schema from the graph everytime it is needed.
  */
 @Singleton
-public class ServerSchemaStorage implements SchemaStorage {
+public class ServerSchemaStorageImpl implements ServerSchemaStorage {
 
-	private static final Logger log = LoggerFactory.getLogger(ServerSchemaStorage.class);
+	private static final Logger log = LoggerFactory.getLogger(ServerSchemaStorageImpl.class);
 
 	private Lazy<BootstrapInitializer> boot;
 
@@ -42,10 +41,11 @@ public class ServerSchemaStorage implements SchemaStorage {
 	private Map<String, Map<String, MicroschemaModel>> microschemas = Collections.synchronizedMap(new HashMap<>());
 
 	@Inject
-	public ServerSchemaStorage(Lazy<BootstrapInitializer> boot) {
+	public ServerSchemaStorageImpl(Lazy<BootstrapInitializer> boot) {
 		this.boot = boot;
 	}
 
+	@Override
 	public void init() {
 		// Iterate over all schemas and load them into the storage
 		for (SchemaContainer container : boot.get().schemaContainerRoot().findAll()) {
@@ -179,19 +179,4 @@ public class ServerSchemaStorage implements SchemaStorage {
 		}
 	}
 
-	/**
-	 * Remove the given container from the storage.
-	 * 
-	 * @param container
-	 *            Schema or microschema container which is used to identify the elements which should be removed from the storage
-	 */
-	public void remove(FieldSchemaContainer container) {
-		if (container instanceof SchemaModel) {
-			SchemaModel schemaModel = (SchemaModel) container;
-			removeSchema(schemaModel.getName(), schemaModel.getVersion());
-		} else if (container instanceof MicroschemaModel) {
-			MicroschemaModel schemaModel = (MicroschemaModel) container;
-			removeMicroschema(schemaModel.getName(), schemaModel.getVersion());
-		}
-	}
 }

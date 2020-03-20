@@ -14,17 +14,17 @@ import com.gentics.mesh.cache.ProjectNameCache;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.binary.Binaries;
-import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
+import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.generic.UserProperties;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
-import com.gentics.mesh.core.data.service.ServerSchemaStorage;
-import com.gentics.mesh.core.endpoint.migration.branch.BranchMigrationHandlerImpl;
-import com.gentics.mesh.core.endpoint.migration.micronode.MicronodeMigrationHandlerImpl;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
+import com.gentics.mesh.core.migration.branch.BranchMigrationHandler;
+import com.gentics.mesh.core.migration.micronode.MicronodeMigrationHandler;
 import com.gentics.mesh.core.migration.node.NodeMigrationHandler;
-import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandlerImpl;
+import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandler;
+import com.gentics.mesh.core.rest.schema.ServerSchemaStorage;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
 import com.gentics.mesh.dagger.module.BindModule;
 import com.gentics.mesh.dagger.module.DebugInfoProviderModule;
@@ -47,7 +47,7 @@ import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
 import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandler;
-import com.gentics.mesh.search.index.node.NodeIndexHandlerImpl;
+import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.search.index.project.ProjectIndexHandler;
 import com.gentics.mesh.search.index.role.RoleIndexHandler;
 import com.gentics.mesh.search.index.schema.SchemaContainerIndexHandler;
@@ -92,15 +92,15 @@ public interface MeshComponent extends MeshComponentBase {
 
 	ServerSchemaStorage serverSchemaStorage();
 
-	NodeIndexHandlerImpl nodeContainerIndexHandler();
+	NodeIndexHandler nodeContainerIndexHandler();
 
 	NodeMigrationHandler nodeMigrationHandler();
 
-	BranchMigrationHandlerImpl branchMigrationHandler();
+	BranchMigrationHandler branchMigrationHandler();
 
-	MicronodeMigrationHandlerImpl micronodeMigrationHandler();
+	MicronodeMigrationHandler micronodeMigrationHandler();
 
-	ProjectVersionPurgeHandlerImpl projectVersionPurgeHandler();
+	ProjectVersionPurgeHandler projectVersionPurgeHandler();
 
 	MeshLocalClientImpl meshLocalClientImpl();
 
@@ -162,7 +162,7 @@ public interface MeshComponent extends MeshComponentBase {
 
 	UserProperties userProperties();
 
-	PermissionPropertiesImpl permissionProperties();
+	PermissionProperties permissionProperties();
 
 	@Component.Builder
 	interface Builder {

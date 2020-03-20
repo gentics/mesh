@@ -16,8 +16,11 @@ import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.generic.UserProperties;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
+import com.gentics.mesh.core.migration.branch.BranchMigrationHandler;
+import com.gentics.mesh.core.migration.micronode.MicronodeMigrationHandler;
 import com.gentics.mesh.core.migration.node.NodeMigrationHandler;
 import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandler;
+import com.gentics.mesh.core.rest.schema.ServerSchemaStorage;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -29,6 +32,7 @@ import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.router.RouterStorageRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
+import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.storage.BinaryStorage;
 
 import io.vertx.core.Vertx;
@@ -58,16 +62,16 @@ public interface MeshComponentBase {
 
 //	JobWorkerVerticle jobWorkerVerticle();
 //
-//	ServerSchemaStorage serverSchemaStorage();
-//
-//	NodeIndexHandler nodeContainerIndexHandler();
-//
+	ServerSchemaStorage serverSchemaStorage();
+
+	NodeIndexHandler nodeContainerIndexHandler();
+
 	NodeMigrationHandler nodeMigrationHandler();
-//
-//	BranchMigrationHandler branchMigrationHandler();
-//
-//	MicronodeMigrationHandler micronodeMigrationHandler();
-//
+
+	BranchMigrationHandler branchMigrationHandler();
+
+	MicronodeMigrationHandler micronodeMigrationHandler();
+
 	ProjectVersionPurgeHandler projectVersionPurgeHandler();
 //
 //	MeshLocalClientImpl meshLocalClientImpl();

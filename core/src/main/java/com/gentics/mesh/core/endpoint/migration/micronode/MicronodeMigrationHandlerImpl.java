@@ -52,12 +52,7 @@ public class MicronodeMigrationHandlerImpl extends AbstractMigrationHandler impl
 		this.writeLock = writeLock;
 	}
 
-	/**
-	 * Migrate all micronodes referencing the given microschema container to the latest version
-	 * 
-	 * @param context
-	 * @return Completable which will be completed once the migration has completed
-	 */
+	@Override
 	public Completable migrateMicronodes(MicronodeMigrationContext context) {
 		context.validate();
 		return Completable.defer(() -> {

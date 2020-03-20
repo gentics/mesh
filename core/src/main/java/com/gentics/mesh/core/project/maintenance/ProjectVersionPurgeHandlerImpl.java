@@ -40,14 +40,7 @@ public class ProjectVersionPurgeHandlerImpl implements ProjectVersionPurgeHandle
 		this.meshOptions = meshOptions;
 	}
 
-	/**
-	 * Purge the versions of all nodes in the project.
-	 * 
-	 * @param project
-	 * @param maxAge
-	 *            Limit the purge operation to versions which exceed the max age.
-	 * @return
-	 */
+	@Override
 	public Completable purgeVersions(Project project, ZonedDateTime maxAge) {
 		return Completable.fromAction(() -> {
 			db.tx(tx -> {

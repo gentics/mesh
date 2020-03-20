@@ -29,6 +29,7 @@ public class PermissionPropertiesImpl implements PermissionProperties {
 		this.boot = boot;
 	}
 
+	@Override
 	public TraversalResult<? extends Role> getRolesWithPerm(MeshVertex vertex, GraphPermission perm) {
 		Set<String> roleUuids = vertex.property(perm.propertyKey());
 		Stream<String> stream = roleUuids == null
@@ -41,6 +42,7 @@ public class PermissionPropertiesImpl implements PermissionProperties {
 		);
 	}
 
+	@Override
 	public PermissionInfo getRolePermissions(MeshVertex vertex, InternalActionContext ac, String roleUuid) {
 		if (!isEmpty(roleUuid)) {
 			Role role = boot.roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
