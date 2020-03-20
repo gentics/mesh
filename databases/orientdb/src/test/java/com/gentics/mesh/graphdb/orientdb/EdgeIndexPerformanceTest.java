@@ -64,7 +64,7 @@ public class EdgeIndexPerformanceTest {
 
 			v = g.createVertexType("item", "V");
 			v.createProperty("name", OType.STRING);
-			v.createIndex("item", OClass.INDEX_TYPE.FULLTEXT_HASH_INDEX, "name");
+			v.createIndex("item", OClass.INDEX_TYPE.UNIQUE_HASH_INDEX, "name");
 
 		} finally {
 			g.shutdown();
