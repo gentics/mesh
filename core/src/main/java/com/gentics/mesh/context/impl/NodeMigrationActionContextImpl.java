@@ -523,21 +523,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public void unlinkOut(VertexFrame vertex, String... labels) {
-
-			}
-
-			@Override
-			public void unlinkIn(VertexFrame vertex, String... labels) {
-
-			}
-
-			@Override
-			public void setLinkOut(VertexFrame vertex, String... labels) {
-
-			}
-
-			@Override
 			public VertexTraversal<?, ?, ?> traversal() {
 				return null;
 			}
@@ -756,6 +741,24 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			@Override
 			public MeshOptions options() {
 				return null;
+			}
+
+			@Override
+			public void unlinkOut(com.gentics.mesh.madl.frame.VertexFrame vertex, String... labels) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void unlinkIn(com.gentics.mesh.madl.frame.VertexFrame vertex, String... labels) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void setLinkOut(com.gentics.mesh.madl.frame.VertexFrame vertex, String... labels) {
+				// TODO Auto-generated method stub
+				
 			}
 		};
 		return user;

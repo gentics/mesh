@@ -117,29 +117,6 @@ public abstract class AbstractVertexFrame extends AbstractElementFrame implement
 			traversal().linkIn(label, vertex).iterate();
 	}
 
-	@Override
-	public void unlinkOut(final VertexFrame vertex, final String... labels) {
-		if (vertex != null)
-			outE(labels).mark().inV().retain(vertex).back().removeAll();
-		else
-			outE(labels).removeAll();
-	}
-
-	@Override
-	@Deprecated
-	public void unlinkIn(final VertexFrame vertex, final String... labels) {
-		if (vertex != null)
-			inE(labels).mark().outV().retain(vertex).back().removeAll();
-		else
-			inE(labels).removeAll();
-	}
-
-	@Override
-	public void setLinkOut(final VertexFrame vertex, final String... labels) {
-		unlinkOut(null, labels);
-		if (vertex != null)
-			linkOut(vertex, labels);
-	}
 
 	@Override
 	public VertexTraversal<?, ?, ?> traversal() {

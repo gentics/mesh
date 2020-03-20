@@ -50,4 +50,33 @@ public interface VertexFrame extends ElementFrame, com.syncleus.ferma.VertexFram
 
 	<T extends RawTraversalResult<?>> T traverse(final Function<GraphTraversal<Vertex, Vertex>, GraphTraversal<?, ?>> traverser);
 
+	/**
+	 * Remove all out edges to the supplied vertex with the supplied labels.
+	 *
+	 * @param vertex
+	 *            The vertex to removed the edges to.
+	 * @param labels
+	 *            The labels of the edges.
+	 */
+	void unlinkOut(VertexFrame vertex, String... labels);
+
+	/**
+	 * Remove all in edges to the supplied vertex with the supplied labels.
+	 *
+	 * @param vertex
+	 *            The vertex to removed the edges from.
+	 * @param labels
+	 *            The labels of the edges.
+	 */
+	void unlinkIn(VertexFrame vertex, String... labels);
+
+	/**
+	 * Remove all out edges with the labels and then add a single edge to the supplied vertex.
+	 *
+	 * @param vertex
+	 *            the vertex to link to.
+	 * @param labels
+	 *            The labels of the edges.
+	 */
+	void setLinkOut(VertexFrame vertex, String... labels);
 }

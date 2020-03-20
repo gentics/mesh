@@ -136,6 +136,12 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 		}
 	}
 
+	public void setLinkOut(final VertexFrame vertex, final String... labels) {
+		unlinkOut(null, labels);
+		if (vertex != null)
+			linkOut(vertex, labels);
+	}
+
 	/**
 	 * Add a unique <b>in-bound</b> link to the given vertex for the given set of labels. Note that this method will effectively ensure that only one
 	 * <b>in-bound</b> link exists between the two vertices for each label.

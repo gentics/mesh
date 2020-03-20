@@ -139,36 +139,6 @@ public interface VertexFrame extends ElementFrame {
 	void linkIn(VertexFrame vertex, String... labels);
 
 	/**
-	 * Remove all out edges to the supplied vertex with the supplied labels.
-	 *
-	 * @param vertex
-	 *            The vertex to removed the edges to.
-	 * @param labels
-	 *            The labels of the edges.
-	 */
-	void unlinkOut(VertexFrame vertex, String... labels);
-
-	/**
-	 * Remove all in edges to the supplied vertex with the supplied labels.
-	 *
-	 * @param vertex
-	 *            The vertex to removed the edges from.
-	 * @param labels
-	 *            The labels of the edges.
-	 */
-	void unlinkIn(VertexFrame vertex, String... labels);
-
-	/**
-	 * Remove all out edges with the labels and then add a single edge to the supplied vertex.
-	 *
-	 * @param vertex
-	 *            the vertex to link to.
-	 * @param labels
-	 *            The labels of the edges.
-	 */
-	void setLinkOut(VertexFrame vertex, String... labels);
-
-	/**
 	 * Shortcut to get frame Traversal of current element
 	 *
 	 * @return The traversal for the current element.
