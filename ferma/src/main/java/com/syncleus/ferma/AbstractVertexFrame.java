@@ -107,11 +107,6 @@ public abstract class AbstractVertexFrame extends AbstractElementFrame implement
 
 
 	@Override
-	public VertexTraversal<?, ?, ?> traversal() {
-		return new SimpleTraversal(getGraph(), this).castToVertices();
-	}
-
-	@Override
 	public JsonObject toJson() {
 		final JsonObject json = new JsonObject();
 		if (getId() instanceof Number)

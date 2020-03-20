@@ -514,11 +514,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public VertexTraversal<?, ?, ?> traversal() {
-				return null;
-			}
-
-			@Override
 			public com.google.gson.JsonObject toJson() {
 				return null;
 			}

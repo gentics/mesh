@@ -116,13 +116,6 @@ public interface VertexFrame extends ElementFrame {
 	EdgeTraversal<?, ?, ?> inE(final String... labels);
 
 	/**
-	 * Shortcut to get frame Traversal of current element
-	 *
-	 * @return The traversal for the current element.
-	 */
-	VertexTraversal<?, ?, ?> traversal();
-
-	/**
 	 * Output the vertex as JSON.
 	 *
 	 * @return A JsonObject representing this frame.
