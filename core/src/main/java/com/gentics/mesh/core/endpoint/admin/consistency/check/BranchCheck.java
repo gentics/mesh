@@ -18,6 +18,7 @@ import com.gentics.mesh.core.data.root.impl.BranchRootImpl;
 import com.gentics.mesh.core.endpoint.admin.consistency.AbstractConsistencyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.tinkerpop.blueprints.Direction;
 
 /**
  * Branch specific consistency checks.
@@ -42,30 +43,30 @@ public class BranchCheck extends AbstractConsistencyCheck {
 		return a.merge(b);
 	}
 
-	private void checkBranchRoot(BranchRoot releaseRoot, ConsistencyCheckResult result) {
-		checkIn(releaseRoot, HAS_BRANCH_ROOT, ProjectImpl.class, result, HIGH);
-		checkOut(releaseRoot, HAS_INITIAL_BRANCH, BranchImpl.class, result, HIGH);
-		checkOut(releaseRoot, HAS_LATEST_BRANCH, BranchImpl.class, result, HIGH);
+	private void checkBranchRoot(BranchRoot branchRoot, ConsistencyCheckResult result) {
+		checkIn(branchRoot, HAS_BRANCH_ROOT, ProjectImpl.class, result, HIGH);
+		checkOut(branchRoot, HAS_INITIAL_BRANCH, BranchImpl.class, result, HIGH);
+		checkOut(branchRoot, HAS_LATEST_BRANCH, BranchImpl.class, result, HIGH);
 	}
 
-	private void checkBranch(Branch release, ConsistencyCheckResult result) {
-		String uuid = release.getUuid();
+	private void checkBranch(Branch branch, ConsistencyCheckResult result) {
+		String uuid = branch.getUuid();
 
-		checkIn(release, HAS_BRANCH, BranchRootImpl.class, result, HIGH);
+		checkIn(branch, HAS_BRANCH, BranchRootImpl.class, result, HIGH);
 
 		// checkOut(release, HAS_CREATOR, UserImpl.class, response, MEDIUM);
 		// checkOut(release, HAS_EDITOR, UserImpl.class, response, MEDIUM);
 
-		checkOut(release, ASSIGNED_TO_PROJECT, ProjectImpl.class, result, HIGH, in(HAS_BRANCH, BranchRootImpl.class), in(HAS_BRANCH_ROOT,
+		checkOut(branch, ASSIGNED_TO_PROJECT, ProjectImpl.class, result, HIGH, in(HAS_BRANCH, BranchRootImpl.class), in(HAS_BRANCH_ROOT,
 			ProjectImpl.class));
 
-		if (isEmpty(release.getName())) {
+		if (isEmpty(branch.getName())) {
 			result.addInconsistency("Branch name is empty or not set", uuid, HIGH);
 		}
-		if (release.getCreationTimestamp() == null) {
+		if (branch.getCreationTimestamp() == null) {
 			result.addInconsistency("The release creation date is not set", uuid, MEDIUM);
 		}
-		if (release.getLastEditedTimestamp() == null) {
+		if (branch.getLastEditedTimestamp() == null) {
 			result.addInconsistency("The release edit timestamp is not set", uuid, MEDIUM);
 		}
 	}
