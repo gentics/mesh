@@ -110,7 +110,7 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 				if (vertex != null) {
 					Vertex outV = edge.getVertex(Direction.OUT);
 					if (outV.getId().equals(vertex.id())) {
-						continue;
+						edge.remove();
 					}
 				} else {
 					edge.remove();
@@ -127,7 +127,7 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 				if (vertex != null) {
 					Vertex outV = edge.getVertex(Direction.IN);
 					if (outV.getId().equals(vertex.id())) {
-						continue;
+						edge.remove();
 					}
 				} else {
 					edge.remove();
