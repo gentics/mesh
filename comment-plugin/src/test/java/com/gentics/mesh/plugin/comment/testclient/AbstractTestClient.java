@@ -2,6 +2,8 @@ package com.gentics.mesh.plugin.comment.testclient;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
+import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
+import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.localconfig.LocalConfigModel;
@@ -1167,4 +1169,15 @@ public class AbstractTestClient implements MeshRestClient {
 	public MeshRequest<LocalConfigModel> updateLocalConfig(LocalConfigModel arg0) {
 		throw new NotImplementedException();
 	}
+
+	@Override
+	public MeshRequest<ClusterConfigResponse> loadClusterConfig() {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<ClusterConfigResponse> updateClusterConfig(ClusterConfigRequest request) {
+		throw new NotImplementedException();
+	}
+
 }
