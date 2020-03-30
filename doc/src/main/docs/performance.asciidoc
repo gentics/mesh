@@ -15,11 +15,11 @@ When storing that amount of nodes you should keep the following design suggestio
 
 === Search Index
 
-The search index is provided by ElasticSearch. Please refer to the link:https://www.elastic.co/blog/performance-considerations-elasticsearch-indexing[Elasticsearch Performance Guide].
+The search index is provided by Elasticsearch. Please refer to the link:https://www.elastic.co/blog/performance-considerations-elasticsearch-indexing[Elasticsearch Performance Guide].
 
 Please refrain from using a remotely mounted filesystem for the search index. This would negatively impact the overall search index and node migration performance.
 
-Excerpt from ElasticSearch:
+Excerpt from Elasticsearch:
 
 > Do not place the search index on a remotely mounted filesystem (e.g. NFS or SMB/CIFS); use storage local to the machine instead.
 

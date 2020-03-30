@@ -196,15 +196,15 @@ The following optional properties may be applied to any type of field:
 
 * **`required`** If `true`, this field may not be left empty.
 * **`label`** A human-readable label for the field to be used as a form label in the Gentics Mesh User Interface. If not defined, the ```name``` field would be used.
-* **`elasticsearch`** The elasticsearch custom mapping options of the field.
+* **`elasticsearch`** The Elasticsearch custom mapping options of the field.
 
 In addition to the above, certain types expose additional properties with which to configure the field. Such additional properties are defined in the <<Schema Field Types>> section.
 
 ==== Elasticsearch integration
 
-The `elasticsearch` property of a schema field can be used to fine-tune the elasticsearch integration. The property can contain additional options which can be used to influence how the field information is added to the search index.
+The `elasticsearch` property of a schema field can be used to fine-tune the Elasticsearch integration. The property can contain additional options which can be used to influence how the field information is added to the search index.
 
-A typical example is the addition of a *raw* field. Sometimes it may be useful to store a field in the elasticsearch index without being tokenized first. 
+A typical example is the addition of a *raw* field. Sometimes it may be useful to store a field in the Elasticsearch index without being tokenized first. 
 This is useful for link:https://www.elastic.co/guide/en/elasticsearch/reference/2.3/query-dsl-term-query.html[term queries] which are used to find the *exact* term specified in the query.
 
 By default no *raw* field will be added to the search index. You can however use the `elasticsearch` property to add this field to the index.
@@ -236,7 +236,7 @@ You can read more about how to define field mappings in the link:https://www.ela
 NOTE: Raw field values which exceed 32KB in size will automatically be truncated to be indexable.
 
 The `elasticsearch` property can also be used to add field mappings which utilize custom analyzers. You can define custom analyzers and tokenizers within the top level `elasticsearch` property of the schema.
-Once a new analyzer has been defined in the toplevel elasticsearch property it can be referenced by custom field mappings which can now be added to each field.
+Once a new analyzer has been defined in the toplevel `elasticsearch` property it can be referenced by custom field mappings which can now be added to each field.
 
 ==== Schema Field Types
 

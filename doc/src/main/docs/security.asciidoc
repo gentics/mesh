@@ -28,12 +28,12 @@ The *storage.startServer* setting can be used to start the OrientDB server on po
 This server will automatically be started if the *cluster.enabled* setting is enabled. It is advised to not expose this service.
 
 The *cluster.enabled* setting will startup the OrientDB server as described above. 
-Additionally the Vert.x eventbus, ElasticSearch clustering and Hazelcast service will be started. 
+Additionally the Vert.x eventbus, Elasticsearch clustering and Hazelcast service will be started. 
 All these services will open dedicated ports which will bind to the network which can be configured via the *cluster.networkHost* setting.
 
 IMPORTANT: Do not expose the service ports which are listed in the link:{{< relref "clustering.asciidoc" >}}#_port_mapping[clustering] documentation to the internet.
 
-== ElasticSearch
+== Elasticsearch
 
 The Elasticsearch server will automatically open port *9200*. 
 Keep in mind that this service should *never* be exposed publicly since it is not protected by any authentication mechanism.

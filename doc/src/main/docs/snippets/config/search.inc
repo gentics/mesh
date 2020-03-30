@@ -18,7 +18,7 @@
 | ```search.idleDebounceTime```     | Number     | `100`                   | The maximum amount of time in milliseconds between two successful requests before the idle event is emitted.
 | ```search.retryInterval```        | Number     | `5000`                  | The time in milliseconds between retries of elastic search requests in case of a failure.
 | ```search.retryLimit```           | Number     | `3`                     | The amount of retries on a single request before the request is discarded.
-| ```search.waitForIdle```          | Boolean    | `true`                  | If true, search endpoints wait for elasticsearch to be idle before sending a response.
+| ```search.waitForIdle```          | Boolean    | `true`                  | If true, search endpoints wait for Elasticsearch to be idle before sending a response.
 | ```search.includeBinaryFields```  | Boolean    | `true`                  | If true, the content and metadata of binary fields will be included in the search index.
 | ```search.mappingMode```          | String     | `DYNAMIC`               | This setting controls the mapping mode of fields for Elasticsearch. When set to STRICT only fields which have a custom mapping will be added to Elasticsearch. Mode DYNAMIC will automatically use the Gentics Mesh default mappings which can be supplemented with custom mappings.
 |======

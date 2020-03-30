@@ -244,7 +244,7 @@ Find all nodes which have a micronode list field (vcardlist) that contain at lea
 
 *Search nodes which are tagged 'Solar' and 'Blue'*
 
-The tags field is a nested field and thus a nested query must be used to match the two tags. Please note that you need to use `match_phrase` because you want to match the whole tag name. Using `match` would cause elasticsearch to match any of trigram found within the tag name value. 
+The tags field is a nested field and thus a nested query must be used to match the two tags. Please note that you need to use `match_phrase` because you want to match the whole tag name. Using `match` would cause Elasticsearch to match any of trigram found within the tag name value. 
 
 [source,json]
 ----
@@ -629,7 +629,7 @@ Gentics Mesh currently supports two way of managing mappings for your content fi
 
 The mode can be controlled via the `search.mappingMode` option or the `MESH_ELASTICSEARCH_MAPPING_MODE` environment variable.
 
-The mapping mode setting influences how elasticsearch mappings for fields will be generated.
+The mapping mode setting influences how Elasticsearch mappings for fields will be generated.
 
 **DYNAMIC** (_default_)
 
@@ -686,7 +686,7 @@ TIP: If you just want to add your field to the source document you can create a 
 
 == Binary Fields
 
-You can add custom mappings to the `mimeType` and `file.content` field. The elasticsearch property needs to contain a custom mapping for each type.
+You can add custom mappings to the `mimeType` and `file.content` field. The `elasticsearch` property needs to contain a custom mapping for each type.
 
 Example:
 [source,json]
