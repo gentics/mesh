@@ -92,7 +92,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private static final String RIDBAG_PARAM_KEY = "ridBag.embeddedToSbtreeBonsaiThreshold";
 
-    private TypeResolver resolver;
+	private TypeResolver resolver;
 
 	private OrientStorage txProvider;
 
@@ -114,11 +114,11 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private Thread txCleanupThread;
 
-    private Timer topologyLockTimer;
+	private Timer topologyLockTimer;
 
-    private Timer commitTimer;
+	private Timer commitTimer;
 
-    private Counter topologyLockTimeoutCounter;
+	private Counter topologyLockTimeoutCounter;
 
 	@Inject
 	public OrientDBDatabase(Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, MetricsService metrics, OrientDBTypeHandler typeHandler,
@@ -131,9 +131,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 		if (metrics != null) {
 			txTimer = metrics.timer(TX_TIME);
 			txRetryCounter = metrics.counter(TX_RETRY);
-            topologyLockTimer = metrics.timer(TOPOLOGY_LOCK_WAITING_TIME);
-            topologyLockTimeoutCounter = metrics.counter(TOPOLOGY_LOCK_TIMEOUT_COUNT);
-            commitTimer = metrics.timer(COMMIT_TIME);
+			topologyLockTimer = metrics.timer(TOPOLOGY_LOCK_WAITING_TIME);
+			topologyLockTimeoutCounter = metrics.counter(TOPOLOGY_LOCK_TIMEOUT_COUNT);
+			commitTimer = metrics.timer(COMMIT_TIME);
 		}
 		this.typeHandler = typeHandler;
 		this.indexHandler = indexHandler;
@@ -376,7 +376,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		if (clusterOptions.isEnabled() && clusterManager() != null && lockTimeout != 0) {
 			long start = System.currentTimeMillis();
 			long i = 0;
-	                Timer.Sample sample = Timer.start();
+			Timer.Sample sample = Timer.start();
 			while (clusterManager().isClusterTopologyLocked()) {
 				long dur = System.currentTimeMillis() - start;
 				if (i % 250 == 0) {
@@ -396,33 +396,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 				i++;
 			}
 			sample.stop(this.topologyLockTimer);
-		}
-	}
-
-	@Override
-	public void blockingTopologyLockCheck() {
-		ClusterOptions clusterOptions = options.getClusterOptions();
-		long lockTimeout = clusterOptions.getTopologyLockTimeout();
-		if (clusterOptions.isEnabled() && clusterManager() != null && lockTimeout != 0) {
-			long start = System.currentTimeMillis();
-			long i = 0;
-			while (clusterManager().isClusterTopologyLocked()) {
-				long dur = System.currentTimeMillis() - start;
-				if (i % 250 == 0) {
-					log.info("Write operation locked due to topology lock. Locked since " + dur + "ms");
-				}
-				if (dur > lockTimeout) {
-					log.warn("Tx global lock timeout of {" + lockTimeout + "} reached.");
-					break;
-				}
-				try {
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
-					log.error("Interrupting topology lock delay.", e);
-					break;
-				}
-				i++;
-			}
 		}
 	}
 

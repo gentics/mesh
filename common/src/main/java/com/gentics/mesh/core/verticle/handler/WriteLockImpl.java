@@ -8,19 +8,25 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.metric.MetricsService;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ILock;
+import static com.gentics.mesh.metric.SimpleMetric.WRITE_LOCK_TIMEOUT_COUNT;
+import static com.gentics.mesh.metric.SimpleMetric.WRITE_LOCK_WAITING_TIME;
 
 import dagger.Lazy;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Timer;
 
 @Singleton
 public class WriteLockImpl implements WriteLock {
 
-	private ILock lock;
+	private ILock clusterLock;
 	private final Semaphore localLock = new Semaphore(1);
 	private final MeshOptions options;
 	private final Lazy<HazelcastInstance> hazelcast;
 	private final boolean isClustered;
+	private final Timer writeLockTimer;
 	private final Counter timeoutCount;
 
 	@Inject
@@ -83,8 +89,8 @@ public class WriteLockImpl implements WriteLock {
 					} catch (InterruptedException e) {
 						throw new RuntimeException(e);
 					} finally {
-					timer.stop(writeLockTimer);
-				}
+						timer.stop(writeLockTimer);
+					}
 				}
 			}
 			return this;

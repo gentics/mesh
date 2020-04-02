@@ -154,15 +154,6 @@ public class GraphStorageOptions implements Option {
 		return this;
 	}
 
-	public long getSynchronizeWritesTimeout() {
-		return synchronizeWritesTimeout;
-	}
-
-	public GraphStorageOptions setSynchronizeWritesTimeout(long synchronizeWritesTimeout) {
-		this.synchronizeWritesTimeout = synchronizeWritesTimeout;
-		return this;
-	}
-
 	public int getTxRetryDelay() {
 		return txRetryDelay;
 	}
