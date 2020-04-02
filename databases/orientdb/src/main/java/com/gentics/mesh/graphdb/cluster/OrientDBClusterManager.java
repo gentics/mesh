@@ -28,7 +28,7 @@ import org.apache.commons.lang3.StringEscapeUtils;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterInstanceInfo;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
-import com.gentics.mesh.core.verticle.handler.WriteLock;
+import com.gentics.mesh.core.verticle.handler.GlobalLock;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -404,7 +404,7 @@ public class OrientDBClusterManager implements ClusterManager {
 		}
 		if (isClusteringEnabled) {
 			long lockTimeout = clusterOptions.getTopologyLockTimeout();
-			ILock lock = hazelcastInstance.getLock(WriteLock.WRITE_LOCK_KEY);
+			ILock lock = hazelcastInstance.getLock(GlobalLock.GLOBAL_LOCK_KEY);
 			try {
 				boolean isTimeout = !lock.tryLock(lockTimeout, TimeUnit.MILLISECONDS);
 				if (isTimeout) {

@@ -26,7 +26,7 @@ import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserResetTokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.core.verticle.handler.WriteLock;
+import com.gentics.mesh.core.verticle.handler.GlobalLock;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.TokenUtil;
@@ -47,7 +47,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 	private MeshJWTAuthProvider authProvider;
 
 	@Inject
-	public UserCrudHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, MeshJWTAuthProvider authProvider, WriteLock writeLock) {
+	public UserCrudHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, MeshJWTAuthProvider authProvider, GlobalLock writeLock) {
 		super(db, utils, writeLock);
 		this.boot = boot;
 		this.authProvider = authProvider;
@@ -72,27 +72,30 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 		if (log.isDebugEnabled()) {
 			log.debug("Handling permission request for element on path {" + pathToElement + "}");
 		}
-		utils.syncTx(ac, tx -> {
-			// 1. Load the user that should be used - read perm implies that the
-			// user is able to read the attached permissions
-			User user = boot.userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 
-			// 2. Resolve the path to element that is targeted
-			MeshVertex targetElement = boot.meshRoot().resolvePathToElement(pathToElement);
-			if (targetElement == null) {
-				throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
-			}
-			UserPermissionResponse response = new UserPermissionResponse();
+		try (GlobalLock lock = globalLock.writeLock(ac)) {
+			utils.syncTx(ac, tx -> {
+				// 1. Load the user that should be used - read perm implies that the
+				// user is able to read the attached permissions
+				User user = boot.userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 
-			// 1. Add granted permissions
-			for (GraphPermission perm : user.getPermissions(targetElement)) {
-				response.set(perm.getRestPerm(), true);
-			}
+				// 2. Resolve the path to element that is targeted
+				MeshVertex targetElement = boot.meshRoot().resolvePathToElement(pathToElement);
+				if (targetElement == null) {
+					throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
+				}
+				UserPermissionResponse response = new UserPermissionResponse();
 
-			// 2. Add not granted permissions
-			response.setOthers(false);
-			return response;
-		}, model -> ac.send(model, OK));
+				// 1. Add granted permissions
+				for (GraphPermission perm : user.getPermissions(targetElement)) {
+					response.set(perm.getRestPerm(), true);
+				}
+
+				// 2. Add not granted permissions
+				response.setOthers(false);
+				return response;
+			}, model -> ac.send(model, OK));
+		}
 
 	}
 
@@ -106,7 +109,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 	public void handleFetchToken(InternalActionContext ac, String userUuid) {
 		validateParameter(userUuid, "The userUuid must not be empty");
 
-		try (WriteLock lock = writeLock.lock(ac)) {
+		try (GlobalLock lock = globalLock.writeLock(ac)) {
 			utils.syncTx(ac, tx -> {
 				// 1. Load the user that should be used
 				User user = boot.userRoot().loadObjectByUuid(ac, userUuid, CREATE_PERM);
@@ -139,7 +142,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 	public void handleIssueAPIToken(InternalActionContext ac, String userUuid) {
 		validateParameter(userUuid, "The userUuid must not be empty");
 
-		try (WriteLock lock = writeLock.lock(ac)) {
+		try (GlobalLock lock = globalLock.writeLock(ac)) {
 			utils.syncTx(ac, tx -> {
 				// 1. Load the user that should be used
 				User user = boot.userRoot().loadObjectByUuid(ac, userUuid, UPDATE_PERM);
@@ -171,7 +174,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 	public void handleDeleteAPIToken(InternalActionContext ac, String userUuid) {
 		validateParameter(userUuid, "The userUuid must not be empty");
 
-		try (WriteLock lock = writeLock.lock(ac)) {
+		try (GlobalLock lock = globalLock.writeLock(ac)) {
 			utils.syncTx(ac, tx -> {
 				// 1. Load the user that should be used
 				User user = boot.userRoot().loadObjectByUuid(ac, userUuid, UPDATE_PERM);

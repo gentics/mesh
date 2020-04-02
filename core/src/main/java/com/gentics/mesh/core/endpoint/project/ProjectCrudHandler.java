@@ -21,7 +21,7 @@ import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.core.verticle.handler.WriteLock;
+import com.gentics.mesh.core.verticle.handler.GlobalLock;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.ProjectPurgeParameters;
 
@@ -33,7 +33,7 @@ public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResp
 	private BootstrapInitializer boot;
 
 	@Inject
-	public ProjectCrudHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, WriteLock writeLock) {
+	public ProjectCrudHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, GlobalLock writeLock) {
 		super(db, utils, writeLock);
 		this.boot = boot;
 	}
@@ -51,11 +51,13 @@ public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResp
 	 *            Name of the project which should be read.
 	 */
 	public void handleReadByName(InternalActionContext ac, String projectName) {
-		utils.syncTx(ac, (tx) -> {
-			RootVertex<Project> root = getRootVertex(ac);
-			Project project = root.findByName(ac, projectName, READ_PERM);
-			return project.transformToRestSync(ac, 0);
-		}, model -> ac.send(model, OK));
+		try (GlobalLock lock = globalLock.readLock(ac)) {
+			utils.syncTx(ac, (tx) -> {
+				RootVertex<Project> root = getRootVertex(ac);
+				Project project = root.findByName(ac, projectName, READ_PERM);
+				return project.transformToRestSync(ac, 0);
+			}, model -> ac.send(model, OK));
+		}
 	}
 
 	/**
@@ -70,7 +72,7 @@ public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResp
 		ProjectPurgeParameters purgeParams = ac.getProjectPurgeParameters();
 		Optional<ZonedDateTime> before = purgeParams.getBeforeDate();
 
-		try (WriteLock lock = writeLock.lock(ac)) {
+		try (GlobalLock lock = globalLock.writeLock(ac)) {
 			utils.syncTx(ac, (tx) -> {
 				if (!ac.getUser().hasAdminRole()) {
 					throw error(FORBIDDEN, "error_admin_permission_required");

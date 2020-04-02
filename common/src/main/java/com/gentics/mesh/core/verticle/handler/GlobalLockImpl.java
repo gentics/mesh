@@ -19,7 +19,7 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Timer;
 
 @Singleton
-public class WriteLockImpl implements WriteLock {
+public class GlobalLockImpl implements GlobalLock {
 
 	private ILock clusterLock;
 	private final Semaphore localLock = new Semaphore(1);
@@ -30,7 +30,7 @@ public class WriteLockImpl implements WriteLock {
 	private final Counter timeoutCount;
 
 	@Inject
-	public WriteLockImpl(MeshOptions options, Lazy<HazelcastInstance> hazelcast, MetricsService metricsService) {
+	public GlobalLockImpl(MeshOptions options, Lazy<HazelcastInstance> hazelcast, MetricsService metricsService) {
 		this.options = options;
 		this.hazelcast = hazelcast;
 		this.isClustered = options.getClusterOptions().isEnabled();
@@ -50,13 +50,27 @@ public class WriteLockImpl implements WriteLock {
 	}
 
 	/**
+	 * Locks reads. Use this to prevent concurrent read transactions.
+	 */
+	@Override
+	public GlobalLock readLock(InternalActionContext ac) {
+		return lock(ac);
+	}
+
+	/**
 	 * Locks writes. Use this to prevent concurrent write transactions.
 	 */
 	@Override
-	public WriteLock lock(InternalActionContext ac) {
+	public GlobalLock writeLock(InternalActionContext ac) {
+		return lock(ac);
+	}
+
+	private GlobalLock lock(InternalActionContext ac) {
 		if (ac != null && ac.isSkipWriteLock()) {
 			return this;
 		} else {
+			// Lets mark this ac as being used by a lock. This way no other nested lock will cause a deadlock.
+			ac.skipWriteLock();
 			boolean syncWrites = options.getStorageOptions().isSynchronizeWrites();
 			if (syncWrites) {
 				Timer.Sample timer = Timer.start();
@@ -66,7 +80,7 @@ public class WriteLockImpl implements WriteLock {
 						if (clusterLock == null) {
 							HazelcastInstance hz = hazelcast.get();
 							if (hz != null) {
-								this.clusterLock = hz.getLock(WRITE_LOCK_KEY);
+								this.clusterLock = hz.getLock(GLOBAL_LOCK_KEY);
 							}
 						}
 						boolean isTimeout = !clusterLock.tryLock(timeout, TimeUnit.MILLISECONDS);

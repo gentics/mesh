@@ -11,7 +11,7 @@ import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.core.verticle.handler.WriteLock;
+import com.gentics.mesh.core.verticle.handler.GlobalLock;
 import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.Handler;
@@ -26,12 +26,12 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 
 	protected final Database db;
 	protected final HandlerUtilities utils;
-	protected final WriteLock writeLock;
+	protected final GlobalLock globalLock;
 
-	public AbstractCrudHandler(Database db, HandlerUtilities utils, WriteLock writeLock) {
+	public AbstractCrudHandler(Database db, HandlerUtilities utils, GlobalLock globalLock) {
 		this.db = db;
 		this.utils = utils;
-		this.writeLock = writeLock;
+		this.globalLock = globalLock;
 	}
 
 	/**

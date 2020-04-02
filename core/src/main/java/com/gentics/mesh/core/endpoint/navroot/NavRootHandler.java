@@ -15,6 +15,7 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.service.WebRootServiceImpl;
+import com.gentics.mesh.core.verticle.handler.GlobalLock;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
@@ -25,11 +26,13 @@ public class NavRootHandler {
 
 	private WebRootServiceImpl webrootService;
 	private HandlerUtilities utils;
+	private GlobalLock globalLock;
 
 	@Inject
-	public NavRootHandler(WebRootServiceImpl webRootService, HandlerUtilities utils) {
+	public NavRootHandler(WebRootServiceImpl webRootService, HandlerUtilities utils, GlobalLock globalLock) {
 		this.webrootService = webRootService;
 		this.utils = utils;
+		this.globalLock = globalLock;
 	}
 
 	/**
@@ -39,28 +42,29 @@ public class NavRootHandler {
 	 */
 	public void handleGetPath(RoutingContext rc) {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-		String path = rc.request().path().substring(
-			rc.mountPoint().length()
-		);
-		MeshAuthUser requestUser = ac.getUser();
+		try (GlobalLock lock = globalLock.readLock(ac)) {
+			String path = rc.request().path().substring(
+				rc.mountPoint().length());
+			MeshAuthUser requestUser = ac.getUser();
 
-		utils.rxSyncTx(ac, tx-> {
-			Path nodePath = webrootService.findByProjectPath(ac, path);
-			PathSegment lastSegment = nodePath.getLast();
+			utils.syncTx(ac, tx -> {
+				Path nodePath = webrootService.findByProjectPath(ac, path);
+				PathSegment lastSegment = nodePath.getLast();
 
-			if (lastSegment == null) {
-				throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(path));
-			}
-			NodeGraphFieldContainer container = lastSegment.getContainer();
-			if (container == null) {
-				throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(path));
-			}
-			Node node = container.getParentNode();
-			if (!requestUser.hasPermission(node, READ_PUBLISHED_PERM)) {
-				throw error(FORBIDDEN, "error_missing_perm", node.getUuid(), READ_PUBLISHED_PERM.getRestPerm().getName());
-			}
-			return node.transformToNavigation(ac);
-		}, model -> ac.send(model, OK));
+				if (lastSegment == null) {
+					throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(path));
+				}
+				NodeGraphFieldContainer container = lastSegment.getContainer();
+				if (container == null) {
+					throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(path));
+				}
+				Node node = container.getParentNode();
+				if (!requestUser.hasPermission(node, READ_PUBLISHED_PERM)) {
+					throw error(FORBIDDEN, "error_missing_perm", node.getUuid(), READ_PUBLISHED_PERM.getRestPerm().getName());
+				}
+				return node.transformToNavigation(ac).blockingGet();
+			}, model -> ac.send(model, OK));
+		}
 
 	}
 }

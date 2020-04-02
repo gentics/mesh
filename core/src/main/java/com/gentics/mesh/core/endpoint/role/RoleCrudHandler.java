@@ -27,7 +27,7 @@ import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.core.verticle.handler.WriteLock;
+import com.gentics.mesh.core.verticle.handler.GlobalLock;
 import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.logging.Logger;
@@ -40,7 +40,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 	private BootstrapInitializer boot;
 
 	@Inject
-	public RoleCrudHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, WriteLock writeLock) {
+	public RoleCrudHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, GlobalLock writeLock) {
 		super(db, utils, writeLock);
 		this.boot = boot;
 	}
@@ -67,29 +67,31 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 			throw error(BAD_REQUEST, "role_permission_path_missing");
 		}
 
-		utils.syncTx(ac, tx -> {
+		try (GlobalLock lock = globalLock.readLock(ac)) {
+			utils.syncTx(ac, tx -> {
 
-			if (log.isDebugEnabled()) {
-				log.debug("Handling permission request for element on path {" + pathToElement + "}");
-			}
-			// 1. Load the role that should be used - read perm implies that the user is able to read the attached permissions
-			Role role = boot.roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
+				if (log.isDebugEnabled()) {
+					log.debug("Handling permission request for element on path {" + pathToElement + "}");
+				}
+				// 1. Load the role that should be used - read perm implies that the user is able to read the attached permissions
+				Role role = boot.roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 
-			// 2. Resolve the path to element that is targeted
-			MeshVertex targetElement = boot.meshRoot().resolvePathToElement(pathToElement);
-			if (targetElement == null) {
-				throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
-			}
-			RolePermissionResponse response = new RolePermissionResponse();
+				// 2. Resolve the path to element that is targeted
+				MeshVertex targetElement = boot.meshRoot().resolvePathToElement(pathToElement);
+				if (targetElement == null) {
+					throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
+				}
+				RolePermissionResponse response = new RolePermissionResponse();
 
-			// 1. Add granted permissions
-			for (GraphPermission perm : role.getPermissions(targetElement)) {
-				response.set(perm.getRestPerm(), true);
-			}
-			// 2. Add not granted permissions
-			response.setOthers(false);
-			return response;
-		}, model -> ac.send(model, OK));
+				// 1. Add granted permissions
+				for (GraphPermission perm : role.getPermissions(targetElement)) {
+					response.set(perm.getRestPerm(), true);
+				}
+				// 2. Add not granted permissions
+				response.setOthers(false);
+				return response;
+			}, model -> ac.send(model, OK));
+		}
 
 	}
 
@@ -110,7 +112,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 			throw error(BAD_REQUEST, "role_permission_path_missing");
 		}
 
-		try (WriteLock lock = writeLock.lock(ac)) {
+		try (GlobalLock lock = globalLock.writeLock(ac)) {
 			utils.syncTx(ac, tx -> {
 
 				if (log.isDebugEnabled()) {

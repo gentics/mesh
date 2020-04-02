@@ -36,7 +36,7 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.core.verticle.handler.WriteLock;
+import com.gentics.mesh.core.verticle.handler.GlobalLock;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.NodeParameters;
@@ -60,7 +60,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	private static final Logger log = LoggerFactory.getLogger(NodeCrudHandler.class);
 
 	@Inject
-	public NodeCrudHandler(Database db, HandlerUtilities utils, MeshOptions options, BootstrapInitializer boot, WriteLock writeLock) {
+	public NodeCrudHandler(Database db, HandlerUtilities utils, MeshOptions options, BootstrapInitializer boot, GlobalLock writeLock) {
 		super(db, utils, writeLock);
 		this.options = options;
 		this.boot = boot;
@@ -75,7 +75,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleDelete(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		try (WriteLock lock = writeLock.lock(ac)) {
+		try (GlobalLock lock = globalLock.writeLock(ac)) {
 			utils.syncTx(ac, () -> {
 				Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, DELETE_PERM);
 				if (node.getProject().getBaseNode().getUuid().equals(node.getUuid())) {
@@ -102,7 +102,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleDeleteLanguage(InternalActionContext ac, String uuid, String languageTag) {
 		validateParameter(uuid, "uuid");
 
-		try (WriteLock lock = writeLock.lock(ac)) {
+		try (GlobalLock lock = globalLock.writeLock(ac)) {
 			utils.syncTx(ac, () -> {
 				Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, DELETE_PERM);
 				Language language = boot.meshRoot().getLanguageRoot().findByLanguageTag(languageTag);
@@ -130,7 +130,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		validateParameter(uuid, "uuid");
 		validateParameter(toUuid, "toUuid");
 
-		try (WriteLock lock = writeLock.lock(ac)) {
+		try (GlobalLock lock = globalLock.writeLock(ac)) {
 			utils.syncTx(ac, () -> {
 				Project project = ac.getProject();
 
@@ -163,10 +163,12 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleNavigation(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		utils.rxSyncTx(ac, tx -> {
-			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
-			return node.transformToNavigation(ac);
-		}, model -> ac.send(model, OK));
+		try (GlobalLock lock = globalLock.readLock(ac)) {
+			utils.syncTx(ac, tx -> {
+				Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
+				return node.transformToNavigation(ac).blockingGet();
+			}, model -> ac.send(model, OK));
+		}
 	}
 
 	/**
@@ -180,25 +182,27 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleReadChildren(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		utils.rxSyncTx(ac, (tx) -> {
-			NodeParameters nodeParams = ac.getNodeParameters();
-			PagingParameters pagingParams = ac.getPagingParameters();
-			VersioningParameters versionParams = ac.getVersioningParameters();
-			GraphPermission requiredPermission = "published".equals(ac.getVersioningParameters().getVersion()) ? READ_PUBLISHED_PERM : READ_PERM;
-			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, requiredPermission);
-			TransformablePage<? extends Node> page = node.getChildren(ac, nodeParams.getLanguageList(options),
-				ac.getBranch(node.getProject()).getUuid(), ContainerType.forVersion(versionParams.getVersion()), pagingParams);
+		try (GlobalLock lock = globalLock.readLock(ac)) {
+			utils.syncTx(ac, (tx) -> {
+				NodeParameters nodeParams = ac.getNodeParameters();
+				PagingParameters pagingParams = ac.getPagingParameters();
+				VersioningParameters versionParams = ac.getVersioningParameters();
+				GraphPermission requiredPermission = "published".equals(ac.getVersioningParameters().getVersion()) ? READ_PUBLISHED_PERM : READ_PERM;
+				Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, requiredPermission);
+				TransformablePage<? extends Node> page = node.getChildren(ac, nodeParams.getLanguageList(options),
+					ac.getBranch(node.getProject()).getUuid(), ContainerType.forVersion(versionParams.getVersion()), pagingParams);
 
-			// Handle etag
-			if (ac.getGenericParameters().getETag()) {
-				String etag = page.getETag(ac);
-				ac.setEtag(etag, true);
-				if (ac.matches(etag, true)) {
-					throw new NotModifiedException();
+				// Handle etag
+				if (ac.getGenericParameters().getETag()) {
+					String etag = page.getETag(ac);
+					ac.setEtag(etag, true);
+					if (ac.matches(etag, true)) {
+						throw new NotModifiedException();
+					}
 				}
-			}
-			return page.transformToRest(ac, 0);
-		}, model -> ac.send(model, OK));
+				return page.transformToRestSync(ac, 0);
+			}, model -> ac.send(model, OK));
+		}
 
 	}
 
@@ -219,23 +223,25 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void readTags(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		utils.rxSyncTx(ac, tx -> {
-			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
-			try {
-				TransformablePage<? extends Tag> tagPage = node.getTags(ac.getUser(), ac.getPagingParameters(), ac.getBranch());
-				// Handle etag
-				if (ac.getGenericParameters().getETag()) {
-					String etag = tagPage.getETag(ac);
-					ac.setEtag(etag, true);
-					if (ac.matches(etag, true)) {
-						return Single.error(new NotModifiedException());
+		try (GlobalLock lock = globalLock.readLock(ac)) {
+			utils.syncTx(ac, tx -> {
+				Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
+				try {
+					TransformablePage<? extends Tag> tagPage = node.getTags(ac.getUser(), ac.getPagingParameters(), ac.getBranch());
+					// Handle etag
+					if (ac.getGenericParameters().getETag()) {
+						String etag = tagPage.getETag(ac);
+						ac.setEtag(etag, true);
+						if (ac.matches(etag, true)) {
+							return Single.error(new NotModifiedException());
+						}
 					}
+					return tagPage.transformToRestSync(ac, 0);
+				} catch (Exception e) {
+					throw error(INTERNAL_SERVER_ERROR, "Error while loading tags for node {" + node.getUuid() + "}", e);
 				}
-				return tagPage.transformToRest(ac, 0);
-			} catch (Exception e) {
-				throw error(INTERNAL_SERVER_ERROR, "Error while loading tags for node {" + node.getUuid() + "}", e);
-			}
-		}, model -> ac.send((RestModel) model, OK));
+			}, model -> ac.send((RestModel) model, OK));
+		}
 	}
 
 	/**
@@ -252,7 +258,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		validateParameter(uuid, "uuid");
 		validateParameter(tagUuid, "tagUuid");
 
-		try (WriteLock lock = writeLock.lock(ac)) {
+		try (GlobalLock lock = globalLock.writeLock(ac)) {
 			utils.syncTx(ac, tx -> {
 				Project project = ac.getProject();
 				Branch branch = ac.getBranch();
@@ -291,7 +297,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		validateParameter(uuid, "uuid");
 		validateParameter(tagUuid, "tagUuid");
 
-		try (WriteLock lock = writeLock.lock(ac)) {
+		try (GlobalLock lock = globalLock.writeLock(ac)) {
 			utils.syncTx(ac, () -> {
 				Project project = ac.getProject();
 				Branch branch = ac.getBranch();
@@ -323,10 +329,12 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleGetPublishStatus(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		utils.syncTx(ac, (tx) -> {
-			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
-			return node.transformToPublishStatus(ac);
-		}, model -> ac.send(model, OK));
+		try (GlobalLock lock = globalLock.readLock(ac)) {
+			utils.syncTx(ac, (tx) -> {
+				Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
+				return node.transformToPublishStatus(ac);
+			}, model -> ac.send(model, OK));
+		}
 	}
 
 	/**
@@ -340,7 +348,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handlePublish(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		try (WriteLock lock = writeLock.lock(ac)) {
+		try (GlobalLock lock = globalLock.writeLock(ac)) {
 			utils.syncTx(ac, tx -> {
 				Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 				utils.bulkableAction(bac -> {
@@ -362,7 +370,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleTakeOffline(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		try (WriteLock lock = writeLock.lock(ac)) {
+		try (GlobalLock lock = globalLock.writeLock(ac)) {
 			utils.syncTx(ac, () -> {
 				Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 				utils.bulkableAction(bac -> {
@@ -385,10 +393,12 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleGetPublishStatus(InternalActionContext ac, String uuid, String languageTag) {
 		validateParameter(uuid, "uuid");
 
-		utils.syncTx(ac, tx -> {
-			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
-			return node.transformToPublishStatus(ac, languageTag);
-		}, model -> ac.send(model, OK));
+		try (GlobalLock lock = globalLock.readLock(ac)) {
+			utils.syncTx(ac, tx -> {
+				Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
+				return node.transformToPublishStatus(ac, languageTag);
+			}, model -> ac.send(model, OK));
+		}
 	}
 
 	/**
@@ -404,7 +414,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handlePublish(InternalActionContext ac, String uuid, String languageTag) {
 		validateParameter(uuid, "uuid");
 
-		try (WriteLock lock = writeLock.lock(ac)) {
+		try (GlobalLock lock = globalLock.writeLock(ac)) {
 			utils.syncTx(ac, tx -> {
 				Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 				utils.bulkableAction(bac -> {
@@ -429,7 +439,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleTakeOffline(InternalActionContext ac, String uuid, String languageTag) {
 		validateParameter(uuid, "uuid");
 
-		try (WriteLock lock = writeLock.lock(ac)) {
+		try (GlobalLock lock = globalLock.writeLock(ac)) {
 			utils.syncTx(ac, () -> {
 				Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 				utils.bulkableAction(bac -> {
@@ -453,15 +463,18 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	protected void readElement(InternalActionContext ac, String uuid, TxAction1<RootVertex<Node>> handler) {
 		validateParameter(uuid, "uuid");
 
-		utils.syncTx(ac, (tx) -> {
-			RootVertex<Node> root = handler.handle();
-			GraphPermission requiredPermission = "published".equals(ac.getVersioningParameters().getVersion()) ? READ_PUBLISHED_PERM : READ_PERM;
-			Node node = root.loadObjectByUuid(ac, uuid, requiredPermission);
-			return node.transformToRestSync(ac, 0);
-		}, model -> {
-			HttpResponseStatus code = HttpResponseStatus.valueOf(NumberUtils.toInt(ac.data().getOrDefault("statuscode", "").toString(), OK.code()));
-			ac.send(model, code);
-		});
+		try (GlobalLock lock = globalLock.readLock(ac)) {
+			utils.syncTx(ac, (tx) -> {
+				RootVertex<Node> root = handler.handle();
+				GraphPermission requiredPermission = "published".equals(ac.getVersioningParameters().getVersion()) ? READ_PUBLISHED_PERM : READ_PERM;
+				Node node = root.loadObjectByUuid(ac, uuid, requiredPermission);
+				return node.transformToRestSync(ac, 0);
+			}, model -> {
+				HttpResponseStatus code = HttpResponseStatus
+					.valueOf(NumberUtils.toInt(ac.data().getOrDefault("statuscode", "").toString(), OK.code()));
+				ac.send(model, code);
+			});
+		}
 
 	}
 
@@ -476,7 +489,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleBulkTagUpdate(InternalActionContext ac, String nodeUuid) {
 		validateParameter(nodeUuid, "nodeUuid");
 
-		try (WriteLock lock = writeLock.lock(ac)) {
+		try (GlobalLock lock = globalLock.writeLock(ac)) {
 			utils.syncTx(ac, (tx) -> {
 				Project project = ac.getProject();
 				Node node = project.getNodeRoot().loadObjectByUuid(ac, nodeUuid, UPDATE_PERM);
@@ -501,11 +514,13 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleListVersions(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		utils.syncTx(ac, (tx) -> {
-			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
-			return node.transformToVersionList(ac);
-		}, model -> {
-			ac.send(model, OK);
-		});
+		try (GlobalLock lock = globalLock.readLock(ac)) {
+			utils.syncTx(ac, (tx) -> {
+				Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
+				return node.transformToVersionList(ac);
+			}, model -> {
+				ac.send(model, OK);
+			});
+		}
 	}
 }

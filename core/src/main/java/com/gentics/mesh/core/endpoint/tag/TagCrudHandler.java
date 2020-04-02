@@ -15,7 +15,7 @@ import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.core.verticle.handler.WriteLock;
+import com.gentics.mesh.core.verticle.handler.GlobalLock;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -28,13 +28,13 @@ public class TagCrudHandler extends AbstractHandler {
 
 	private final HandlerUtilities utils;
 	private final MeshOptions options;
-	private final WriteLock writeLock;
+	private final GlobalLock globalLock;
 
 	@Inject
-	public TagCrudHandler(MeshOptions options, HandlerUtilities utils, WriteLock writeLock) {
+	public TagCrudHandler(MeshOptions options, HandlerUtilities utils, GlobalLock writeLock) {
 		this.options = options;
 		this.utils = utils;
-		this.writeLock = writeLock;
+		this.globalLock = writeLock;
 	}
 
 	public TagFamily getTagFamily(InternalActionContext ac, String tagFamilyUuid) {
@@ -57,14 +57,16 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 		validateParameter(tagUuid, "tagUuid");
 
-		utils.rxSyncTx(ac, tx -> {
-			PagingParameters pagingParams = ac.getPagingParameters();
-			NodeParameters nodeParams = ac.getNodeParameters();
-			Tag tag = getTagFamily(ac, tagFamilyUuid).loadObjectByUuid(ac, tagUuid, READ_PERM);
-			TransformablePage<? extends Node> page = tag.findTaggedNodes(ac.getUser(), ac.getBranch(), nodeParams.getLanguageList(options),
-				ContainerType.forVersion(ac.getVersioningParameters().getVersion()), pagingParams);
-			return page.transformToRest(ac, 0);
-		}, model -> ac.send(model, OK));
+		try (GlobalLock lock = globalLock.writeLock(ac)) {
+			utils.syncTx(ac, tx -> {
+				PagingParameters pagingParams = ac.getPagingParameters();
+				NodeParameters nodeParams = ac.getNodeParameters();
+				Tag tag = getTagFamily(ac, tagFamilyUuid).loadObjectByUuid(ac, tagUuid, READ_PERM);
+				TransformablePage<? extends Node> page = tag.findTaggedNodes(ac.getUser(), ac.getBranch(), nodeParams.getLanguageList(options),
+					ContainerType.forVersion(ac.getVersioningParameters().getVersion()), pagingParams);
+				return page.transformToRestSync(ac, 0);
+			}, model -> ac.send(model, OK));
+		}
 	}
 
 	/**
@@ -93,7 +95,7 @@ public class TagCrudHandler extends AbstractHandler {
 	public void handleCreate(InternalActionContext ac, String tagFamilyUuid) {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 
-		try (WriteLock lock = writeLock.lock(ac)) {
+		try (GlobalLock lock = globalLock.writeLock(ac)) {
 			utils.syncTx(ac, tx -> {
 				ResultInfo info = utils.eventAction(batch -> {
 					Tag tag = getTagFamily(ac, tagFamilyUuid).create(ac, batch);

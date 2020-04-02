@@ -27,7 +27,7 @@ import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.core.rest.event.node.MicroschemaMigrationCause;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
-import com.gentics.mesh.core.verticle.handler.WriteLock;
+import com.gentics.mesh.core.verticle.handler.GlobalLock;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.metric.MetricsService;
@@ -43,10 +43,10 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(MicronodeMigrationHandler.class);
 
-	private final WriteLock writeLock;
+	private final GlobalLock writeLock;
 
 	@Inject
-	public MicronodeMigrationHandler(Database db, BinaryUploadHandler binaryFieldHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider, WriteLock writeLock) {
+	public MicronodeMigrationHandler(Database db, BinaryUploadHandler binaryFieldHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider, GlobalLock writeLock) {
 		super(db, binaryFieldHandler, metrics, batchProvider);
 		this.writeLock = writeLock;
 	}
@@ -103,7 +103,7 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 
 			List<Exception> errorsDetected = migrateLoop(fieldContainersResult, cause, status,
 				(batch, container, errors) -> {
-					try (WriteLock lock = writeLock.lock(ac)) {
+					try (GlobalLock lock = writeLock.writeLock(ac)) {
 						migrateMicronodeContainer(ac, batch, branch, fromVersion, toVersion, container, touchedFields, errors);
 					}
 				});

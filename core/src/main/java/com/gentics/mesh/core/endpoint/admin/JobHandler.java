@@ -26,7 +26,8 @@ import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.core.verticle.handler.WriteLockImpl;
+import com.gentics.mesh.core.verticle.handler.GlobalLock;
+import com.gentics.mesh.core.verticle.handler.GlobalLockImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
 
@@ -41,7 +42,7 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 	private BootstrapInitializer boot;
 
 	@Inject
-	public JobHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, WriteLockImpl writeLock) {
+	public JobHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, GlobalLockImpl writeLock) {
 		super(db, utils, writeLock);
 		this.boot = boot;
 
@@ -54,66 +55,72 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 
 	@Override
 	public void handleReadList(InternalActionContext ac) {
-		utils.rxSyncTx(ac, tx -> {
-			if (!ac.getUser().hasAdminRole()) {
-				throw error(FORBIDDEN, "error_admin_permission_required");
-			}
-			JobRoot root = boot.jobRoot();
-
-			PagingParameters pagingInfo = ac.getPagingParameters();
-			TransformablePage<? extends Job> page = root.findAllNoPerm(ac, pagingInfo);
-
-			// Handle etag
-			if (ac.getGenericParameters().getETag()) {
-				String etag = page.getETag(ac);
-				ac.setEtag(etag, true);
-				if (ac.matches(etag, true)) {
-					throw new NotModifiedException();
+		try (GlobalLock lock = globalLock.readLock(ac)) {
+			utils.syncTx(ac, tx -> {
+				if (!ac.getUser().hasAdminRole()) {
+					throw error(FORBIDDEN, "error_admin_permission_required");
 				}
-			}
-			return page.transformToRest(ac, 0);
-		}, e -> ac.send(e, OK));
+				JobRoot root = boot.jobRoot();
+
+				PagingParameters pagingInfo = ac.getPagingParameters();
+				TransformablePage<? extends Job> page = root.findAllNoPerm(ac, pagingInfo);
+
+				// Handle etag
+				if (ac.getGenericParameters().getETag()) {
+					String etag = page.getETag(ac);
+					ac.setEtag(etag, true);
+					if (ac.matches(etag, true)) {
+						throw new NotModifiedException();
+					}
+				}
+				return page.transformToRestSync(ac, 0);
+			}, e -> ac.send(e, OK));
+		}
 	}
 
 	@Override
 	public void handleDelete(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		utils.syncTx(ac, () -> {
-			if (!ac.getUser().hasAdminRole()) {
-				throw error(FORBIDDEN, "error_admin_permission_required");
-			}
-			JobRoot root = boot.jobRoot();
-			Job job = root.loadObjectByUuidNoPerm(uuid, true);
-			db.tx(() -> {
-				if (job.hasFailed()) {
-					job.delete();
-				} else {
-					throw error(BAD_REQUEST, "job_error_invalid_state", uuid);
+		try (GlobalLock lock = globalLock.writeLock(ac)) {
+			utils.syncTx(ac, () -> {
+				if (!ac.getUser().hasAdminRole()) {
+					throw error(FORBIDDEN, "error_admin_permission_required");
 				}
-			});
-			log.info("Deleted job {" + uuid + "}");
-		}, () -> ac.send(NO_CONTENT));
+				JobRoot root = boot.jobRoot();
+				Job job = root.loadObjectByUuidNoPerm(uuid, true);
+				db.tx(() -> {
+					if (job.hasFailed()) {
+						job.delete();
+					} else {
+						throw error(BAD_REQUEST, "job_error_invalid_state", uuid);
+					}
+				});
+				log.info("Deleted job {" + uuid + "}");
+			}, () -> ac.send(NO_CONTENT));
+		}
 
 	}
 
 	@Override
 	public void handleRead(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		utils.syncTx(ac, (tx) -> {
-			if (!ac.getUser().hasAdminRole()) {
-				throw error(FORBIDDEN, "error_admin_permission_required");
-			}
-			JobRoot root = boot.jobRoot();
-			Job job = root.loadObjectByUuidNoPerm(uuid, true);
-			String etag = job.getETag(ac);
-			ac.setEtag(etag, true);
-			if (ac.matches(etag, true)) {
-				throw new NotModifiedException();
-			} else {
-				return job.transformToRestSync(ac, 0);
-			}
-		}, model -> ac.send(model, OK));
+		try (GlobalLock lock = globalLock.readLock(ac)) {
+			utils.syncTx(ac, (tx) -> {
+				if (!ac.getUser().hasAdminRole()) {
+					throw error(FORBIDDEN, "error_admin_permission_required");
+				}
+				JobRoot root = boot.jobRoot();
+				Job job = root.loadObjectByUuidNoPerm(uuid, true);
+				String etag = job.getETag(ac);
+				ac.setEtag(etag, true);
+				if (ac.matches(etag, true)) {
+					throw new NotModifiedException();
+				} else {
+					return job.transformToRestSync(ac, 0);
+				}
+			}, model -> ac.send(model, OK));
+		}
 	}
 
 	@Override
@@ -128,17 +135,19 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 	 * @param uuid
 	 */
 	public void handleResetJob(InternalActionContext ac, String uuid) {
-		utils.syncTx(ac, (tx) -> {
-			if (!ac.getUser().hasAdminRole()) {
-				throw error(FORBIDDEN, "error_admin_permission_required");
-			}
-			JobRoot root = boot.jobRoot();
-			Job job = root.loadObjectByUuidNoPerm(uuid, true);
-			db.tx(() -> {
-				job.resetJob();
-			});
-			return job.transformToRestSync(ac, 0);
-		}, (model) -> ac.send(model, OK));
+		try (GlobalLock lock = globalLock.readLock(ac)) {
+			utils.syncTx(ac, (tx) -> {
+				if (!ac.getUser().hasAdminRole()) {
+					throw error(FORBIDDEN, "error_admin_permission_required");
+				}
+				JobRoot root = boot.jobRoot();
+				Job job = root.loadObjectByUuidNoPerm(uuid, true);
+				db.tx(() -> {
+					job.resetJob();
+				});
+				return job.transformToRestSync(ac, 0);
+			}, (model) -> ac.send(model, OK));
+		}
 	}
 
 	public void handleProcess(InternalActionContext ac, String uuid) {
@@ -166,12 +175,14 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 	 * @param ac
 	 */
 	public void handleInvokeJobWorker(InternalActionContext ac) {
-		utils.syncTx(ac, (tx) -> {
-			if (!ac.getUser().hasAdminRole()) {
-				throw error(FORBIDDEN, "error_admin_permission_required");
-			}
-			MeshEvent.triggerJobWorker(boot.mesh());
-			return message(ac, "job_processing_invoked");
-		}, model -> ac.send(model, OK));
+		try (GlobalLock lock = globalLock.readLock(ac)) {
+			utils.syncTx(ac, (tx) -> {
+				if (!ac.getUser().hasAdminRole()) {
+					throw error(FORBIDDEN, "error_admin_permission_required");
+				}
+				MeshEvent.triggerJobWorker(boot.mesh());
+				return message(ac, "job_processing_invoked");
+			}, model -> ac.send(model, OK));
+		}
 	}
 }

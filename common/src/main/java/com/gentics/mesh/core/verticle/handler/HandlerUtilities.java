@@ -42,7 +42,6 @@ import com.gentics.mesh.util.ResultInfo;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.UUIDUtil;
 
-import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
@@ -62,17 +61,17 @@ public class HandlerUtilities {
 
 	private final Provider<BulkActionContext> bulkProvider;
 
-	private final WriteLock writeLock;
+	private final GlobalLock globalLock;
 
 	@Inject
 	public HandlerUtilities(Database database, MeshOptions meshOptions, MetricsService metrics, Provider<EventQueueBatch> queueProvider,
-		Provider<BulkActionContext> bulkProvider, WriteLock writeLock) {
+		Provider<BulkActionContext> bulkProvider, GlobalLock writeLock) {
 		GraphStorageOptions storageOptions = meshOptions.getStorageOptions();
 		this.database = database;
 		this.metrics = metrics;
 		this.queueProvider = queueProvider;
 		this.bulkProvider = bulkProvider;
-		this.writeLock = writeLock;
+		this.globalLock = writeLock;
 	}
 
 	/**
@@ -96,7 +95,7 @@ public class HandlerUtilities {
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void deleteElement(InternalActionContext ac, TxAction1<RootVertex<T>> handler,
 		String uuid) {
-		try (WriteLock lock = writeLock.lock(ac)) {
+		try (GlobalLock lock = globalLock.writeLock(ac)) {
 			syncTx(ac, () -> {
 				RootVertex<T> root = handler.handle();
 				T element = root.loadObjectByUuid(ac, uuid, DELETE_PERM);
@@ -139,7 +138,7 @@ public class HandlerUtilities {
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createOrUpdateElement(InternalActionContext ac, String uuid,
 		TxAction1<RootVertex<T>> handler) {
-		try (WriteLock lock = writeLock.lock(ac)) {
+		try (GlobalLock lock = globalLock.writeLock(ac)) {
 			AtomicBoolean created = new AtomicBoolean(false);
 			syncTx(ac, tx -> {
 				RootVertex<T> root = handler.handle();
@@ -191,20 +190,22 @@ public class HandlerUtilities {
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElement(InternalActionContext ac, String uuid,
 		TxAction1<RootVertex<T>> handler, GraphPermission perm) {
 
-		syncTx(ac, tx -> {
-			RootVertex<T> root = handler.handle();
-			T element = root.loadObjectByUuid(ac, uuid, perm);
+		try (GlobalLock lock = globalLock.readLock(ac)) {
+			syncTx(ac, tx -> {
+				RootVertex<T> root = handler.handle();
+				T element = root.loadObjectByUuid(ac, uuid, perm);
 
-			// Handle etag
-			if (ac.getGenericParameters().getETag()) {
-				String etag = element.getETag(ac);
-				ac.setEtag(etag, true);
-				if (ac.matches(etag, true)) {
-					throw new NotModifiedException();
+				// Handle etag
+				if (ac.getGenericParameters().getETag()) {
+					String etag = element.getETag(ac);
+					ac.setEtag(etag, true);
+					if (ac.matches(etag, true)) {
+						throw new NotModifiedException();
+					}
 				}
-			}
-			return element.transformToRestSync(ac, 0);
-		}, model -> ac.send(model, OK));
+				return element.transformToRestSync(ac, 0);
+			}, model -> ac.send(model, OK));
+		}
 	}
 
 	/**
@@ -216,38 +217,30 @@ public class HandlerUtilities {
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElementList(InternalActionContext ac, TxAction1<RootVertex<T>> handler) {
 
-		rxSyncTx(ac, tx -> {
-			RootVertex<T> root = handler.handle();
+		try (GlobalLock lock = globalLock.readLock(ac)) {
+			syncTx(ac, tx -> {
+				RootVertex<T> root = handler.handle();
 
-			PagingParameters pagingInfo = ac.getPagingParameters();
-			TransformablePage<? extends T> page = root.findAll(ac, pagingInfo);
+				PagingParameters pagingInfo = ac.getPagingParameters();
+				TransformablePage<? extends T> page = root.findAll(ac, pagingInfo);
 
-			// Handle etag
-			if (ac.getGenericParameters().getETag()) {
-				String etag = page.getETag(ac);
-				ac.setEtag(etag, true);
-				if (ac.matches(etag, true)) {
-					throw new NotModifiedException();
+				// Handle etag
+				if (ac.getGenericParameters().getETag()) {
+					String etag = page.getETag(ac);
+					ac.setEtag(etag, true);
+					if (ac.matches(etag, true)) {
+						throw new NotModifiedException();
+					}
 				}
-			}
-			return page.transformToRest(ac, 0);
-
-		}, m -> ac.send(m, OK));
+				return page.transformToRestSync(ac, 0);
+			}, m -> ac.send(m, OK));
+		}
 	}
 
 	public <RM> void syncTx(InternalActionContext ac, TxAction<RM> handler, Consumer<RM> action) {
 		try {
 			RM model = database.tx(handler);
 			action.accept(model);
-		} catch (Throwable t) {
-			ac.fail(t);
-		}
-	}
-
-	public <RM extends RestModel> void rxSyncTx(InternalActionContext ac, TxAction<Single<RM>> handler, Consumer<RM> action) {
-		try {
-			Single<RM> model = database.tx(handler);
-			model.subscribe(action::accept, ac::fail);
 		} catch (Throwable t) {
 			ac.fail(t);
 		}

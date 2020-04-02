@@ -122,7 +122,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		deployEndpoint.exampleRequest(adminExamples.createPluginDeploymentRequest());
 		deployEndpoint.exampleResponse(OK, adminExamples.createHelloWorldPluginResponse(), "Plugin response.");
 		deployEndpoint.events(PLUGIN_DEPLOYED, PLUGIN_DEPLOYING);
-		deployEndpoint.handler(rc -> {
+		deployEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			pluginHandler.handleDeploy(ac);
 		});
@@ -135,7 +135,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		undeployEndpoint.addUriParameter("id", "Id of the plugin.", PLUGIN_1_ID);
 		undeployEndpoint.exampleResponse(OK, adminExamples.createHelloWorldPluginResponse(), "Plugin response.");
 		undeployEndpoint.events(PLUGIN_UNDEPLOYED, PLUGIN_UNDEPLOYING);
-		undeployEndpoint.handler(rc -> {
+		undeployEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("id");
 			pluginHandler.handleUndeploy(ac, uuid);
@@ -148,7 +148,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		readEndpoint.produces(APPLICATION_JSON);
 		readEndpoint.addUriParameter("uuid", "Uuid of the plugin.", PLUGIN_1_ID);
 		readEndpoint.exampleResponse(OK, adminExamples.createHelloWorldPluginResponse(), "Plugin response.");
-		readEndpoint.handler(rc -> {
+		readEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("uuid");
 			pluginHandler.handleRead(ac, uuid);
@@ -160,7 +160,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		readAllEndpoint.description("Loads deployment information for all deployed plugins.");
 		readAllEndpoint.produces(APPLICATION_JSON);
 		readAllEndpoint.exampleResponse(OK, adminExamples.createPluginListResponse(), "Plugin list response.");
-		readAllEndpoint.handler(rc -> {
+		readAllEndpoint.blockingHandler(rc -> {
 			pluginHandler.handleReadList(wrap(rc));
 		});
 	}
@@ -176,7 +176,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		endpoint.description("Loads the cluster status information.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, adminExamples.createClusterStatusResponse(), "Cluster status.");
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			adminHandler.handleClusterStatus(wrap(rc));
 		});
 	}
@@ -188,7 +188,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		endpoint.description("Loads the cluster configuration.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, adminExamples.createClusterConfigResponse(), "Currently active cluster configuration.");
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			adminHandler.handleLoadClusterConfig(wrap(rc));
 		});
 
@@ -199,7 +199,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		updateEndpoint.produces(APPLICATION_JSON);
 		updateEndpoint.exampleRequest(adminExamples.createClusterConfigRequest());
 		updateEndpoint.exampleResponse(OK, adminExamples.createClusterConfigResponse(), "Updated cluster configuration.");
-		updateEndpoint.handler(rc -> {
+		updateEndpoint.blockingHandler(rc -> {
 			adminHandler.handleUpdateClusterConfig(wrap(rc));
 		});
 	}
@@ -226,7 +226,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		repairEndpoint.events(REPAIR_START, REPAIR_FINISHED);
 		repairEndpoint.blockingHandler(rc -> {
 			consistencyHandler.invokeRepair(wrap(rc));
-		}, false);
+		});
 	}
 
 	private void addExportHandler() {

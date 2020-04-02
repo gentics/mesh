@@ -20,8 +20,8 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.core.verticle.handler.WriteLock;
-import com.gentics.mesh.core.verticle.handler.WriteLockImpl;
+import com.gentics.mesh.core.verticle.handler.GlobalLock;
+import com.gentics.mesh.core.verticle.handler.GlobalLockImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 
@@ -39,7 +39,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 	private Lazy<BootstrapInitializer> boot;
 
 	@Inject
-	public GroupCrudHandler(Database db, Lazy<BootstrapInitializer> boot, HandlerUtilities utils, WriteLockImpl writeLock) {
+	public GroupCrudHandler(Database db, Lazy<BootstrapInitializer> boot, HandlerUtilities utils, GlobalLockImpl writeLock) {
 		super(db, utils, writeLock);
 		this.boot = boot;
 	}
@@ -57,12 +57,14 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 	 *            Group Uuid from which the roles should be loaded
 	 */
 	public void handleGroupRolesList(InternalActionContext ac, String groupUuid) {
-		utils.rxSyncTx(ac, tx -> {
-			Group group = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, READ_PERM);
-			PagingParametersImpl pagingInfo = new PagingParametersImpl(ac);
-			TransformablePage<? extends Role> rolePage = group.getRoles(ac.getUser(), pagingInfo);
-			return rolePage.transformToRest(ac, 0);
-		}, model -> ac.send(model, OK));
+		try (GlobalLock lock = globalLock.readLock(ac)) {
+			utils.syncTx(ac, tx -> {
+				Group group = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, READ_PERM);
+				PagingParametersImpl pagingInfo = new PagingParametersImpl(ac);
+				TransformablePage<? extends Role> rolePage = group.getRoles(ac.getUser(), pagingInfo);
+				return rolePage.transformToRestSync(ac, 0);
+			}, model -> ac.send(model, OK));
+		}
 	}
 
 	/**
@@ -76,7 +78,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(groupUuid, "groupUuid");
 		validateParameter(roleUuid, "roleUuid");
 
-		try (WriteLock lock = writeLock.lock(ac)) {
+		try (GlobalLock lock = globalLock.writeLock(ac)) {
 			utils.syncTx(ac, tx -> {
 				Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 				Role role = boot.get().roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
@@ -112,7 +114,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(roleUuid, "roleUuid");
 		validateParameter(groupUuid, "groupUuid");
 
-		try (WriteLock lock = writeLock.lock(ac)) {
+		try (GlobalLock lock = globalLock.writeLock(ac)) {
 			utils.syncTx(ac, () -> {
 				Group group = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 				Role role = boot.get().roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
@@ -144,13 +146,15 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 	public void handleGroupUserList(InternalActionContext ac, String groupUuid) {
 		validateParameter(groupUuid, "groupUuid");
 
-		db.asyncTx(() -> {
-			MeshAuthUser requestUser = ac.getUser();
-			PagingParametersImpl pagingInfo = new PagingParametersImpl(ac);
-			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, READ_PERM);
-			TransformablePage<? extends User> userPage = group.getVisibleUsers(requestUser, pagingInfo);
-			return userPage.transformToRest(ac, 0);
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+		try (GlobalLock lock = globalLock.readLock(ac)) {
+			utils.syncTx(ac, tx -> {
+				MeshAuthUser requestUser = ac.getUser();
+				PagingParametersImpl pagingInfo = new PagingParametersImpl(ac);
+				Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, READ_PERM);
+				TransformablePage<? extends User> userPage = group.getVisibleUsers(requestUser, pagingInfo);
+				return userPage.transformToRestSync(ac, 0);
+			}, model -> ac.send(model, OK));
+		}
 	}
 
 	/**
@@ -166,7 +170,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(groupUuid, "groupUuid");
 		validateParameter(userUuid, "userUuid");
 
-		try (WriteLock lock = writeLock.lock(ac)) {
+		try (GlobalLock lock = globalLock.writeLock(ac)) {
 			utils.syncTx(ac, tx -> {
 				Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 				User user = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
@@ -196,7 +200,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(groupUuid, "groupUuid");
 		validateParameter(userUuid, "userUuid");
 
-		try (WriteLock lock = writeLock.lock(ac)) {
+		try (GlobalLock lock = globalLock.writeLock(ac)) {
 			utils.syncTx(ac, () -> {
 				Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 				User user = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);

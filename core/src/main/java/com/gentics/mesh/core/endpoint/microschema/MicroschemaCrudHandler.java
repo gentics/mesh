@@ -30,7 +30,7 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.core.verticle.handler.WriteLock;
+import com.gentics.mesh.core.verticle.handler.GlobalLock;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.SchemaUpdateParameters;
@@ -46,7 +46,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 
 	@Inject
 	public MicroschemaCrudHandler(Database db, MicroschemaComparator comparator, Lazy<BootstrapInitializer> boot, HandlerUtilities utils,
-		WriteLock writeLock) {
+		GlobalLock writeLock) {
 		super(db, utils, writeLock);
 		this.comparator = comparator;
 		this.boot = boot;
@@ -61,7 +61,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	public void handleUpdate(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		try (WriteLock lock = writeLock.lock(ac)) {
+		try (GlobalLock lock = globalLock.writeLock(ac)) {
 			/**
 			 * The following code delegates the call to the handleUpdate method is very hacky at best. It would be better to move the whole update code into the
 			 * MicroschemaContainerImpl#update method and use the regular handlerUtilities. (similar to all other calls) The current code however does not
@@ -79,7 +79,6 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 
 			// Delegate to handle update which will create the microschema
 			if (delegateToCreate) {
-				ac.skipWriteLock();
 				super.handleUpdate(ac, uuid);
 				return;
 			}
@@ -160,7 +159,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	 *            Schema which should be modified
 	 */
 	public void handleApplySchemaChanges(InternalActionContext ac, String schemaUuid) {
-		try (WriteLock lock = writeLock.lock(ac)) {
+		try (GlobalLock lock = globalLock.writeLock(ac)) {
 			utils.syncTx(ac, (tx) -> {
 				MicroschemaContainer schema = boot.get().microschemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
 				utils.eventAction(batch -> {

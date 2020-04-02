@@ -43,7 +43,7 @@ public class ProjectInfoEndpoint extends AbstractInternalEndpoint {
 		endpoint.description("Return the current project info.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, projectExamples.getProjectResponse("demo"), "Project information.");
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			String projectName = rc.request().params().get("project");
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleReadByName(ac, projectName);

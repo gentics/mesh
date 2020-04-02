@@ -26,12 +26,12 @@ import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.plugin.PluginDeploymentRequest;
 import com.gentics.mesh.core.rest.plugin.PluginListResponse;
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.core.verticle.handler.GlobalLock;
+import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.plugin.MeshPlugin;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
 
-import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -43,47 +43,28 @@ public class PluginHandler extends AbstractHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(AdminHandler.class);
 
-	private Database db;
+	private final MeshPluginManager manager;
 
-	private MeshPluginManager manager;
+	private final HandlerUtilities utils;
+
+	private final GlobalLock globalLock;
 
 	@Inject
-	public PluginHandler(Database db, MeshPluginManager manager) {
-		this.db = db;
+	public PluginHandler(MeshPluginManager manager, HandlerUtilities utils, GlobalLock globalLock) {
 		this.manager = manager;
+		this.utils = utils;
+		this.globalLock = globalLock;
 	}
 
 	public void handleRead(InternalActionContext ac, String id) {
-		db.asyncTx((tx) -> {
-			if (!ac.getUser().hasAdminRole()) {
-				throw error(FORBIDDEN, "error_admin_permission_required");
-			}
-			PluginWrapper pluginWrapper = manager.getPlugin(id);
-			if (pluginWrapper == null) {
-				throw error(NOT_FOUND, "admin_plugin_error_plugin_not_found", id);
-			}
-			Plugin plugin = pluginWrapper.getPlugin();
-			if (plugin instanceof MeshPlugin) {
-				PluginResponse response = ((MeshPlugin) plugin).toResponse();
-				return Single.just(response);
-			}
-			throw error(INTERNAL_SERVER_ERROR, "admin_plugin_error_wrong_type");
-		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
-	}
-
-	public void handleDeploy(InternalActionContext ac) {
-		db.asyncTx((tx) -> {
-			if (!ac.getUser().hasAdminRole()) {
-				throw error(FORBIDDEN, "error_admin_permission_required");
-			}
-			PluginDeploymentRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), PluginDeploymentRequest.class);
-			String path = requestModel.getPath();
-			return manager.deploy(path).map(pluginId -> {
-				log.debug("Deployed plugin with deployment name {" + path + "} - Id {" + pluginId + "}");
-				PluginWrapper pluginWrapper = manager.getPlugin(pluginId);
+		try (GlobalLock lock = globalLock.readLock(ac)) {
+			utils.syncTx(ac, tx -> {
+				if (!ac.getUser().hasAdminRole()) {
+					throw error(FORBIDDEN, "error_admin_permission_required");
+				}
+				PluginWrapper pluginWrapper = manager.getPlugin(id);
 				if (pluginWrapper == null) {
-					log.error("The plugin was deployed but it could not be found by the manager. It seems that the plugin registration failed.");
-					throw error(NOT_FOUND, "admin_plugin_error_plugin_not_found", pluginId);
+					throw error(NOT_FOUND, "admin_plugin_error_plugin_not_found", id);
 				}
 				Plugin plugin = pluginWrapper.getPlugin();
 				if (plugin instanceof MeshPlugin) {
@@ -91,37 +72,68 @@ public class PluginHandler extends AbstractHandler {
 					return response;
 				}
 				throw error(INTERNAL_SERVER_ERROR, "admin_plugin_error_wrong_type");
-			});
-		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
+			}, model -> ac.send(model, CREATED));
+		}
+	}
+
+	public void handleDeploy(InternalActionContext ac) {
+		try (GlobalLock lock = globalLock.writeLock(ac)) {
+			utils.syncTx(ac, tx -> {
+				if (!ac.getUser().hasAdminRole()) {
+					throw error(FORBIDDEN, "error_admin_permission_required");
+				}
+				PluginDeploymentRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), PluginDeploymentRequest.class);
+				String path = requestModel.getPath();
+				return manager.deploy(path).map(pluginId -> {
+					log.debug("Deployed plugin with deployment name {" + path + "} - Id {" + pluginId + "}");
+					PluginWrapper pluginWrapper = manager.getPlugin(pluginId);
+					if (pluginWrapper == null) {
+						log.error("The plugin was deployed but it could not be found by the manager. It seems that the plugin registration failed.");
+						throw error(NOT_FOUND, "admin_plugin_error_plugin_not_found", pluginId);
+					}
+					Plugin plugin = pluginWrapper.getPlugin();
+					if (plugin instanceof MeshPlugin) {
+						PluginResponse response = ((MeshPlugin) plugin).toResponse();
+						return response;
+					}
+					throw error(INTERNAL_SERVER_ERROR, "admin_plugin_error_wrong_type");
+				}).blockingGet();
+			}, model -> ac.send(model, CREATED));
+		}
 	}
 
 	public void handleUndeploy(InternalActionContext ac, String uuid) {
-		db.asyncTx((tx) -> {
-			if (!ac.getUser().hasAdminRole()) {
-				throw error(FORBIDDEN, "error_admin_permission_required");
-			}
-			if (StringUtils.isEmpty(uuid)) {
-				throw error(BAD_REQUEST, "admin_plugin_error_uuid_missing");
-			}
-			return manager
-				.undeploy(uuid)
-				.toSingleDefault(message(ac, "admin_plugin_undeployed", uuid));
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+		try (GlobalLock lock = globalLock.writeLock(ac)) {
+			utils.syncTx(ac, tx -> {
+				if (!ac.getUser().hasAdminRole()) {
+					throw error(FORBIDDEN, "error_admin_permission_required");
+				}
+				if (StringUtils.isEmpty(uuid)) {
+					throw error(BAD_REQUEST, "admin_plugin_error_uuid_missing");
+				}
+
+				return manager
+					.undeploy(uuid)
+					.toSingleDefault(message(ac, "admin_plugin_undeployed", uuid)).blockingGet();
+			}, model -> ac.send(model, OK));
+		}
 	}
 
 	public void handleReadList(InternalActionContext ac) {
-		db.asyncTx((tx) -> {
-			if (!ac.getUser().hasAdminRole()) {
-				throw error(FORBIDDEN, "error_admin_permission_required");
-			}
-			List<MeshPlugin> startedPlugins = manager.getStartedMeshPlugins();
-			PluginListResponse response = new PluginListResponse();
-			Page<PluginResponse> page = new DynamicStreamPageImpl<>(startedPlugins.stream().map(MeshPlugin::toResponse),
-				ac.getPagingParameters());
-			page.setPaging(response);
-			response.getData().addAll(page.getWrappedList());
-			return Single.just(response);
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+		try (GlobalLock lock = globalLock.readLock(ac)) {
+			utils.syncTx(ac, tx -> {
+				if (!ac.getUser().hasAdminRole()) {
+					throw error(FORBIDDEN, "error_admin_permission_required");
+				}
+				List<MeshPlugin> startedPlugins = manager.getStartedMeshPlugins();
+				PluginListResponse response = new PluginListResponse();
+				Page<PluginResponse> page = new DynamicStreamPageImpl<>(startedPlugins.stream().map(MeshPlugin::toResponse),
+					ac.getPagingParameters());
+				page.setPaging(response);
+				response.getData().addAll(page.getWrappedList());
+				return response;
+			}, model -> ac.send(model, OK));
+		}
 	}
 
 }

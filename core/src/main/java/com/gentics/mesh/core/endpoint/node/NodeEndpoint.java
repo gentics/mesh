@@ -120,7 +120,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		endpoint.exampleResponse(OK, responseExample, "Loaded navigation.");
 		endpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
 		endpoint.addQueryParameters(NavigationParametersImpl.class);
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");
 			crudHandler.handleNavigation(ac, uuid);
@@ -270,7 +270,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		getTags.description("Return a list of all tags which tag the node.");
 		getTags.addQueryParameters(VersioningParametersImpl.class);
 		getTags.addQueryParameters(GenericParametersImpl.class);
-		getTags.handler(rc -> {
+		getTags.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");
 			crudHandler.readTags(ac, uuid);
@@ -285,7 +285,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		bulkUpdate.exampleRequest(tagExamples.getTagListUpdateRequest());
 		bulkUpdate.exampleResponse(OK, tagExamples.createTagListResponse(), "Updated tag list.");
 		bulkUpdate.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
-		bulkUpdate.handler(rc -> {
+		bulkUpdate.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String nodeUuid = ac.getParameter("nodeUuid");
 			crudHandler.handleBulkTagUpdate(ac, nodeUuid);
@@ -302,7 +302,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		addTag.description("Assign the given tag to the node.");
 		addTag.addQueryParameters(VersioningParametersImpl.class);
 		addTag.events(NODE_TAGGED);
-		addTag.handler(rc -> {
+		addTag.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");
 			String tagUuid = ac.getParameter("tagUuid");
@@ -320,7 +320,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		removeTag.exampleResponse(NO_CONTENT, "Removal was successful.");
 		removeTag.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or tag could not be found.");
 		removeTag.events(NODE_UNTAGGED);
-		removeTag.handler(rc -> {
+		removeTag.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");
 			String tagUuid = ac.getParameter("tagUuid");
