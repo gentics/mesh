@@ -10,6 +10,10 @@
 
 = Mesh Search Plugin Changelog
 
+[[v1.4.4]]
+== 1.4.4 (2020-04-02)
+icon:check[] AutocompleteHandler: Fix a bug which caused all custom searches to be treated as normal searches instead of basing it on type.
+
 [[v1.0.1]]
 == 1.0.1 (2019-11-08)
 
@@ -21,3 +25,5 @@ icon:check[] SearchHandler: Fix compatibility issues with Elasticsearch 7.
 == 1.0.0 (2019-08-20)
 
 Initial release
+
+

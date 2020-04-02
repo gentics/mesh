@@ -1,13 +1,5 @@
 package com.gentics.mesh.plugin.search;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.tuple.Pair;
-import org.pf4j.PluginWrapper;
-
 import com.gentics.mesh.http.HttpConstants;
 import com.gentics.mesh.plugin.AbstractPlugin;
 import com.gentics.mesh.plugin.PluginContext;
@@ -25,7 +17,6 @@ import com.gentics.mesh.plugin.search.service.BranchService;
 import com.gentics.mesh.plugin.search.service.QueryService;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.vertx.http.HttpResponseStatus;
-
 import io.reactivex.Completable;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpMethod;
@@ -33,6 +24,13 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import org.apache.commons.lang3.tuple.Pair;
+import org.pf4j.PluginWrapper;
+
+import java.util.Collection;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class SearchPlugin extends AbstractPlugin implements RestPlugin {
 
@@ -120,14 +118,18 @@ public class SearchPlugin extends AbstractPlugin implements RestPlugin {
 			}
 
 			customRouter.route(path)
-				.method(HttpMethod.GET)
-				.produces(HttpConstants.APPLICATION_JSON_UTF8)
-				.handler(fromCustomhandler(handler));
+					.method(HttpMethod.GET)
+					.produces(HttpConstants.APPLICATION_JSON_UTF8)
+					.handler(fromCustomhandler(handler));
+
+			Handler<RoutingContext> wrappedHandler = handler.type() == HandlerType.AUTOCOMPLETE
+					? fromComponent(SearchPluginComponent::autocompleteHandler, handler)
+					: fromComponent(SearchPluginComponent::searchHandler, handler);
 
 			customRouter.route(path)
-				.method(HttpMethod.GET)
-				.produces(HttpConstants.APPLICATION_JSON_UTF8)
-				.handler(fromComponent(SearchPluginComponent::searchHandler, handler));
+					.method(HttpMethod.GET)
+					.produces(HttpConstants.APPLICATION_JSON_UTF8)
+					.handler(wrappedHandler);
 		});
 
 		projectRouter.mountSubRouter("/custom", customRouter);

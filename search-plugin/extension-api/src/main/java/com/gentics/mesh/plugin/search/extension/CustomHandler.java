@@ -2,10 +2,10 @@ package com.gentics.mesh.plugin.search.extension;
 
 import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.search.HandlerType;
-
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Completable;
 import io.reactivex.Single;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -87,10 +87,18 @@ public interface CustomHandler {
 	 * @return A <code>Completable</code> for the result processing
 	 */
 	default Completable processResult(PluginContext context, Object result) {
+		String response;
+
+		if (result instanceof JsonArray) {
+			response = ((JsonArray) result).encode();
+		} else {
+			response = ((JsonObject) result).encode();
+		}
+
 		return Completable.fromAction(() ->
-			context.response()
-				.setStatusCode(HttpResponseStatus.OK.code())
-				.end(((JsonObject) result).encode()));
+				context.response()
+						.setStatusCode(HttpResponseStatus.OK.code())
+						.end(response));
 	}
 
 	/**
