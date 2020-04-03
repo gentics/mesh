@@ -41,7 +41,7 @@ public class GlobalLockImpl implements GlobalLock {
 	@Override
 	public void close() {
 		if (isClustered) {
-			if (clusterLock != null) {
+			if (clusterLock != null && clusterLock.isLockedByCurrentThread()) {
 				clusterLock.unlock();
 			}
 		} else {
