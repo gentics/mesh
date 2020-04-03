@@ -66,7 +66,6 @@ public class HandlerUtilities {
 	@Inject
 	public HandlerUtilities(Database database, MeshOptions meshOptions, MetricsService metrics, Provider<EventQueueBatch> queueProvider,
 		Provider<BulkActionContext> bulkProvider, GlobalLock writeLock) {
-		GraphStorageOptions storageOptions = meshOptions.getStorageOptions();
 		this.database = database;
 		this.metrics = metrics;
 		this.queueProvider = queueProvider;

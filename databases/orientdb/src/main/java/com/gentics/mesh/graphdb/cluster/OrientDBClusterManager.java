@@ -390,14 +390,7 @@ public class OrientDBClusterManager implements ClusterManager {
 
 		log.info("Starting OrientDB Server");
 		server.startup(getOrientServerConfig());
-
-		Optional<OServerHandlerConfiguration> hazelcastPluginConfigOpt = server.getConfiguration().handlers.stream()
-			.filter(e -> e.clazz.equals(MeshOHazelcastPlugin.class.getName())).findFirst();
-		if (!hazelcastPluginConfigOpt.isPresent()) {
-			throw new RuntimeException("Could not find hazelcast plugin configuration in orientdb configuration file");
-		}
-		OServerHandlerConfiguration hazelcastPluginConfig = hazelcastPluginConfigOpt.get();
-		hazelcastInstance = MeshOHazelcastPlugin.createHazelcast(hazelcastPluginConfig.parameters);
+		startHazelcast();
 
 		if (storageOptions().getTxCommitTimeout() != 0) {
 			startTxCleanupTask();
@@ -418,11 +411,23 @@ public class OrientDBClusterManager implements ClusterManager {
 				if (log.isDebugEnabled()) {
 					log.debug("Unlocking global write lock after server startup.");
 				}
-				lock.unlock();
+				if (lock.isLockedByCurrentThread()) {
+					lock.unlock();
+				}
 			}
 		} else {
 			activateServer();
 		}
+	}
+
+	private void startHazelcast() throws FileNotFoundException {
+		Optional<OServerHandlerConfiguration> hazelcastPluginConfigOpt = server.getConfiguration().handlers.stream()
+			.filter(e -> e.clazz.equals(MeshOHazelcastPlugin.class.getName())).findFirst();
+		if (!hazelcastPluginConfigOpt.isPresent()) {
+			throw new RuntimeException("Could not find hazelcast plugin configuration in orientdb configuration file");
+		}
+		OServerHandlerConfiguration hazelcastPluginConfig = hazelcastPluginConfigOpt.get();
+		hazelcastInstance = MeshOHazelcastPlugin.createHazelcast(hazelcastPluginConfig.parameters);
 	}
 
 	private void startTxCleanupTask() {
@@ -445,7 +450,6 @@ public class OrientDBClusterManager implements ClusterManager {
 	private void activateServer() throws Exception {
 		OServerPluginManager manager = new OServerPluginManager();
 		manager.config(server);
-
 		server.activate();
 
 		if (isClusteringEnabled) {

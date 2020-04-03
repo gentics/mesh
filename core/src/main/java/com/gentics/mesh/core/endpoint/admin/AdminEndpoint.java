@@ -360,7 +360,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		processJob.method(POST);
 		processJob.description("Process the job. Failed jobs will be automatically reset and put in queued state.");
 		processJob.addUriParameter("jobUuid", "Uuid of the job.", JOB_UUID);
-		processJob.handler(rc -> {
+		processJob.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("jobUuid");
 			jobHandler.handleProcess(ac, uuid);

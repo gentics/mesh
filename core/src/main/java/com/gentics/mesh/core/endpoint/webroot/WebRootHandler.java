@@ -206,8 +206,9 @@ public class WebRootHandler {
 		String path = rc.request().path().substring(
 			rc.mountPoint().length());
 
+		String uuid = null;
 		try (GlobalLock lock = globalLock.writeLock(ac)) {
-			String uuid = db.tx(() -> {
+			uuid = db.tx(() -> {
 
 				// Load all nodes for the given path
 				Path nodePath = webrootService.findByProjectPath(ac, path);
@@ -263,12 +264,12 @@ public class WebRootHandler {
 					return null;
 				}
 			});
+		}
 
-			if (uuid != null) {
-				nodeCrudHandler.handleUpdate(ac, uuid);
-			} else {
-				nodeCrudHandler.handleCreate(ac);
-			}
+		if (uuid != null) {
+			nodeCrudHandler.handleUpdate(ac, uuid);
+		} else {
+			nodeCrudHandler.handleCreate(ac);
 		}
 
 	}

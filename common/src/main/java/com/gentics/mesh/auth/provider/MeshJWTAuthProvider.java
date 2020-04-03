@@ -62,7 +62,7 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 
 	private final MeshOptions meshOptions;
 
-	private final GlobalLock globalLock;
+//	private final GlobalLock globalLock;
 
 	@Inject
 	public MeshJWTAuthProvider(Vertx vertx, MeshOptions meshOptions, BCryptPasswordEncoder passwordEncoder, Database database,
@@ -71,7 +71,7 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 		this.passwordEncoder = passwordEncoder;
 		this.db = database;
 		this.boot = boot;
-		this.globalLock = globalLock;
+//		this.globalLock = globalLock;
 
 		// Use the mesh JWT options in order to setup the JWTAuth provider
 		AuthenticationOptions options = meshOptions.getAuthenticationOptions();
@@ -146,9 +146,9 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 				User user = rh.result().getUser();
 				String uuid;
 				if (user instanceof MeshAuthUser) {
-					try (GlobalLock lock = globalLock.readLock(null)) {
+//					try (GlobalLock lock = globalLock.readLock(null)) {
 						uuid = db.tx(((MeshAuthUser) user)::getUuid);
-					}
+//					}
 				} else {
 					uuid = user.principal().getString("uuid");
 				}
@@ -172,14 +172,14 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 	 */
 	private void authenticate(String username, String password, String newPassword, Handler<AsyncResult<AuthenticationResult>> resultHandler) {
 		MeshAuthUser user = null;
-		try (GlobalLock lock = globalLock.readLock(null)) {
+//		try (GlobalLock lock = globalLock.readLock(null)) {
 			user = db.tx(() -> boot.userRoot().findMeshAuthUserByUsername(username));
-		}
+//		}
 		if (user != null) {
 			String accountPasswordHash = null;
-			try (GlobalLock lock = globalLock.readLock(null)) {
+//			try (GlobalLock lock = globalLock.readLock(null)) {
 				accountPasswordHash = db.tx(user::getPasswordHash);
-			}
+//			}
 			// TODO check if user is enabled
 			boolean hashMatches = false;
 			if (StringUtils.isEmpty(accountPasswordHash) && password != null) {
@@ -196,9 +196,9 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 			}
 			if (hashMatches) {
 				boolean forcedPasswordChange = false;
-				try (GlobalLock lock = globalLock.readLock(null)) {
+//				try (GlobalLock lock = globalLock.readLock(null)) {
 					forcedPasswordChange = db.tx(user::isForcedPasswordChange);
-				}
+//				}
 				if (forcedPasswordChange && newPassword == null) {
 					resultHandler.handle(Future.failedFuture(error(BAD_REQUEST, "auth_login_password_change_required")));
 					return;
@@ -207,10 +207,10 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 					return;
 				} else {
 					if (forcedPasswordChange) {
-						try (GlobalLock lock = globalLock.writeLock(null)) {
+//						try (GlobalLock lock = globalLock.writeLock(null)) {
 							MeshAuthUser localUser = user;
 							db.tx(() -> localUser.setPassword(newPassword));
-						}
+//						}
 					}
 					resultHandler.handle(Future.succeededFuture(new AuthenticationResult(user)));
 					return;
@@ -240,10 +240,10 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 		if (user instanceof MeshAuthUser) {
 			AuthenticationOptions options = meshOptions.getAuthenticationOptions();
 			JsonObject tokenData = new JsonObject();
-			try (GlobalLock lock = globalLock.readLock(null)) {
+//			try (GlobalLock lock = globalLock.readLock(null)) {
 				String uuid = db.tx(((MeshAuthUser) user)::getUuid);
 				tokenData.put(USERID_FIELD_NAME, uuid);
-			}
+//			}
 			JWTOptions jwtOptions = new JWTOptions().setAlgorithm(options.getAlgorithm())
 				.setExpiresInSeconds(options.getTokenExpirationTime());
 			return jwtProvider.generateToken(tokenData, jwtOptions);
@@ -283,7 +283,7 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 	 * @throws Exception
 	 */
 	private User loadUserByJWT(JsonObject jwt) throws Exception {
-		try (GlobalLock lock = globalLock.readLock(null)) {
+//		try (GlobalLock lock = globalLock.readLock(null)) {
 			try (Tx tx = db.tx()) {
 				String userUuid = jwt.getString(USERID_FIELD_NAME);
 				MeshAuthUser user = boot.userRoot().findMeshAuthUserByUuid(userUuid);
@@ -317,7 +317,7 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 
 				return user;
 			}
-		}
+//		}
 	}
 
 	/**

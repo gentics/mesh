@@ -94,10 +94,4 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 		return null;
 	}
 
-	@Override
-	public Single<LanguageResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return db().asyncTx(() -> {
-			return Single.just(transformToRestSync(ac, level, languageTags));
-		});
-	}
 }

@@ -13,6 +13,11 @@ import io.vertx.core.json.JsonObject;
 
 public class ClusterServer {
 
+	static {
+		// Disable direct IO (My dev system uses ZFS. Otherwise the test will not run)
+		System.setProperty("storage.wal.allowDirectIO", "false");
+	}
+
 	public static MeshOptions init(String[] args) {
 		LoggingConfigurator.init();
 		MeshOptions options = OptionsLoader.createOrloadOptions(args);
@@ -26,8 +31,8 @@ public class ClusterServer {
 		options.setInitialAdminPassword("admin");
 		options.setForceInitialAdminPasswordReset(false);
 
-		//options.getClusterOptions().setCoordinatorMode(CoordinatorMode.ALL);
-		//options.getClusterOptions().setCoordinatorRegex("gentics-mesh-[0-9]");
+		// options.getClusterOptions().setCoordinatorMode(CoordinatorMode.ALL);
+		// options.getClusterOptions().setCoordinatorRegex("gentics-mesh-[0-9]");
 		options.getStorageOptions().setStartServer(true);
 		options.getClusterOptions().setClusterName("test");
 		options.getClusterOptions().setEnabled(true);
@@ -39,7 +44,7 @@ public class ClusterServer {
 		options.getStorageOptions().setSynchronizeWrites(true);
 		options.getStorageOptions().setSynchronizeWritesTimeout(90_000);
 		options.getClusterOptions().setTopologyLockTimeout(240_000);
-		options.getClusterOptions().setTopologyLockDelay(20_000);
+		options.getClusterOptions().setTopologyLockDelay(1);
 		options.getStorageOptions().setTxCommitTimeout(10_000);
 		return options;
 	}

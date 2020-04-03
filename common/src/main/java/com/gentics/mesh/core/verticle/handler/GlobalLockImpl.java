@@ -85,10 +85,12 @@ public class GlobalLockImpl implements GlobalLock {
 								this.clusterLock = hz.getLock(GLOBAL_LOCK_KEY);
 							}
 						}
-						boolean isTimeout = !clusterLock.tryLock(timeout, TimeUnit.MILLISECONDS);
-						if (isTimeout) {
-							timeoutCount.increment();
-							throw new RuntimeException("Got timeout while waiting for write lock.");
+						if (clusterLock != null) {
+							boolean isTimeout = !clusterLock.tryLock(timeout, TimeUnit.MILLISECONDS);
+							if (isTimeout) {
+								timeoutCount.increment();
+								throw new RuntimeException("Got timeout while waiting for write lock.");
+							}
 						}
 					} catch (InterruptedException e) {
 						throw new RuntimeException(e);

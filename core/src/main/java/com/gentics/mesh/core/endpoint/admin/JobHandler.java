@@ -152,21 +152,23 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 
 	public void handleProcess(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		utils.syncTx(ac, (tx) -> {
-			if (!ac.getUser().hasAdminRole()) {
-				throw error(FORBIDDEN, "error_admin_permission_required");
-			}
-			JobRoot root = boot.jobRoot();
-			Job job = root.loadObjectByUuidNoPerm(uuid, true);
-			db.tx(() -> {
-				JobStatus status = job.getStatus();
-				if (status == FAILED || status == UNKNOWN) {
-					job.resetJob();
+		try (GlobalLock lock = globalLock.writeLock(ac)) {
+			utils.syncTx(ac, (tx) -> {
+				if (!ac.getUser().hasAdminRole()) {
+					throw error(FORBIDDEN, "error_admin_permission_required");
 				}
-			});
-			MeshEvent.triggerJobWorker(boot.mesh());
-			return job.transformToRestSync(ac, 0);
-		}, model -> ac.send(model, OK));
+				JobRoot root = boot.jobRoot();
+				Job job = root.loadObjectByUuidNoPerm(uuid, true);
+				db.tx(() -> {
+					JobStatus status = job.getStatus();
+					if (status == FAILED || status == UNKNOWN) {
+						job.resetJob();
+					}
+				});
+				MeshEvent.triggerJobWorker(boot.mesh());
+				return job.transformToRestSync(ac, 0);
+			}, model -> ac.send(model, OK));
+		}
 	}
 
 	/**

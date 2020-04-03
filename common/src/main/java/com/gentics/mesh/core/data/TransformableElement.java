@@ -12,7 +12,6 @@ import io.reactivex.Single;
  * @param <T>
  *            RestModel response class
  */
-@SuppressWarnings("unused")
 public interface TransformableElement<T extends RestModel> extends MeshElement {
 
 	/**
