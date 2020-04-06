@@ -76,7 +76,8 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 	protected final SyncMeters meters;
 
-	public AbstractIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options, SyncMetersFactory syncMetersFactory) {
+	public AbstractIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options,
+		SyncMetersFactory syncMetersFactory) {
 		this.searchProvider = searchProvider;
 		this.db = db;
 		this.boot = boot;
@@ -165,7 +166,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	@Override
 	public Observable<IndexBulkEntry> storeForBulk(UpdateDocumentEntry entry) {
 		return Observable.defer(() -> {
-			try (Tx tx = db.tx()) {
+			return db.tx(() -> {
 				String uuid = entry.getElementUuid();
 				T element = elementLoader().apply(uuid);
 				if (element == null) {
@@ -173,7 +174,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 				} else {
 					return storeForBulk(element, entry);
 				}
-			}
+			});
 		});
 	}
 

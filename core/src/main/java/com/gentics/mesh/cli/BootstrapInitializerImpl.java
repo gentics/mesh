@@ -76,7 +76,6 @@ import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
-import com.gentics.mesh.core.verticle.handler.GlobalLock;
 import com.gentics.mesh.distributed.DistributedEventManager;
 import com.gentics.mesh.distributed.coordinator.MasterElector;
 import com.gentics.mesh.etc.LanguageEntry;
@@ -310,7 +309,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				}
 			} else {
 				// We need to wait for other nodes and receive the graphdb
-				mesh.setStatus(MeshStatus.WAITING_FOR_CLUSTER);
 				db.clusterManager().start();
 				initVertx(options, isClustered);
 				db.clusterManager().registerEventHandlers();
@@ -685,9 +683,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Override
 	public boolean isEmptyInstallation() {
-		try (Tx tx = db.tx()) {
-			return !tx.getGraph().v().hasNext();
-		}
+		return db.tx(tx -> !tx.getGraph().v().hasNext());
 	}
 
 	@Override
@@ -1040,7 +1036,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Override
 	public void initPermissions() {
-		try (Tx tx = db.tx()) {
+		db.tx(tx -> {
 			Role adminRole = meshRoot().getRoleRoot().findByName("admin");
 			for (Vertex vertex : tx.getGraph().getVertices()) {
 				WrappedVertex wrappedVertex = (WrappedVertex) vertex;
@@ -1051,7 +1047,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				}
 			}
 			tx.success();
-		}
+		});
 	}
 
 	@Override
@@ -1071,13 +1067,16 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		String languagesFilePath = configuration.getLanguagesFilePath();
 		if (StringUtils.isNotEmpty(languagesFilePath)) {
 			File languagesFile = new File(languagesFilePath);
-			try (Tx tx = db.tx()) {
-				LanguageSet languageSet = new ObjectMapper().readValue(languagesFile, LanguageSet.class);
-				initLanguages(meshRoot().getLanguageRoot(), languageSet);
-				tx.success();
-			} catch (IOException e) {
-				log.error("Error while initializing optional languages from {" + languagesFilePath + "}", e);
-			}
+			db.tx(tx -> {
+				try {
+					LanguageSet languageSet = new ObjectMapper().readValue(languagesFile, LanguageSet.class);
+					initLanguages(meshRoot().getLanguageRoot(), languageSet);
+					tx.success();
+				} catch (IOException e) {
+					log.error("Error while initializing optional languages from {" + languagesFilePath + "}", e);
+					tx.rollback();
+				}
+			});
 		}
 	}
 

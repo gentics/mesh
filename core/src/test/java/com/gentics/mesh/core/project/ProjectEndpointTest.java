@@ -199,7 +199,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Test
 	@Override
 	public void testCreateWithUuid() throws Exception {
-		try (Tx noTx = db().tx()) {
+		try (Tx noTx = tx()) {
 			String uuid = UUIDUtil.randomUUID();
 
 			ProjectCreateRequest request = new ProjectCreateRequest();
@@ -219,7 +219,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Test
 	@Override
 	public void testCreateWithDuplicateUuid() throws Exception {
-		try (Tx noTx = db().tx()) {
+		try (Tx noTx = tx()) {
 			String uuid = user().getUuid();
 
 			ProjectCreateRequest request = new ProjectCreateRequest();

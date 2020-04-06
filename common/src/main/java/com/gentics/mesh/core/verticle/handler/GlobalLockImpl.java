@@ -74,7 +74,8 @@ public class GlobalLockImpl implements GlobalLock {
 				ac.skipWriteLock();
 			}
 			boolean syncWrites = options.getStorageOptions().isSynchronizeWrites();
-			if (syncWrites) {
+			boolean syncReads = true;
+			if (syncWrites || syncReads) {
 				Timer.Sample timer = Timer.start();
 				long timeout = options.getStorageOptions().getSynchronizeWritesTimeout();
 				if (isClustered) {

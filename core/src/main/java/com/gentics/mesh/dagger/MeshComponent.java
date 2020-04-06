@@ -6,6 +6,7 @@ import javax.inject.Singleton;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.cache.PermissionCache;
@@ -168,6 +169,9 @@ public interface MeshComponent {
 	interface Builder {
 		@BindsInstance
 		Builder configuration(MeshOptions options);
+
+		@BindsInstance
+		Builder mesh(Mesh mesh);
 
 		@BindsInstance
 		Builder searchProviderType(@Nullable SearchProviderType type);

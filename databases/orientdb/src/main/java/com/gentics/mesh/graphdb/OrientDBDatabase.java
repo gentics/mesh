@@ -22,6 +22,8 @@ import javax.inject.Singleton;
 import com.gentics.madl.tx.Tx;
 import com.gentics.madl.tx.TxAction;
 import com.gentics.madl.tx.TxAction0;
+import com.gentics.mesh.Mesh;
+import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -120,11 +122,14 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private Counter topologyLockTimeoutCounter;
 
+	private Mesh mesh;
+
 	@Inject
 	public OrientDBDatabase(Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, MetricsService metrics, OrientDBTypeHandler typeHandler,
 		OrientDBIndexHandler indexHandler,
 		OrientDBClusterManager clusterManager,
-		TxCleanupTask txCleanupTask) {
+		TxCleanupTask txCleanupTask,
+		Mesh mesh) {
 		super(vertx);
 		this.boot = boot;
 		this.metrics = metrics;
@@ -139,6 +144,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		this.indexHandler = indexHandler;
 		this.clusterManager = clusterManager;
 		this.txCleanUpTask = txCleanupTask;
+		this.mesh = mesh;
 	}
 
 	@Override
@@ -410,6 +416,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 		int maxRetry = options.getStorageOptions().getTxRetryLimit();
 		for (int retry = 0; retry < maxRetry; retry++) {
 			Timer.Sample sample = Timer.start();
+			// Check the status to prevent transactions during shutdown
+			checkStatus();
 			try (Tx tx = tx()) {
 				handlerResult = txHandler.handle(tx);
 				handlerFinished = true;
@@ -420,9 +428,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 				// factory.getTx().getRawGraph().getMetadata().getSchema().reload();
 				// Database.getThreadLocalGraph().getMetadata().getSchema().reload();
 			} catch (InterruptedException | ONeedRetryException | FastNoSuchElementException e) {
-				if (log.isTraceEnabled()) {
-					log.trace("Error while handling transaction. Retrying " + retry, e);
-				}
+				// if (log.isTraceEnabled()) {
+				log.error("Error while handling transaction. Retrying " + retry, e);
+				// }
 				int delay = options.getStorageOptions().getTxRetryDelay();
 				if (retry > 0 && delay > 0) {
 					try {
@@ -464,6 +472,17 @@ public class OrientDBDatabase extends AbstractDatabase {
 			}
 		}
 		throw new RuntimeException("Retry limit {" + maxRetry + "} for trx exceeded");
+	}
+
+	private void checkStatus() {
+		MeshStatus status = mesh.getStatus();
+		switch (status) {
+		case READY:
+		case STARTING:
+			return;
+		default:
+			throw new RuntimeException("Mesh is not ready. Current status " + status.name() + ". Aborting transaction.");
+		}
 	}
 
 	@Override

@@ -12,7 +12,6 @@ import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.auth.AuthenticationResult;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -62,7 +61,7 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 
 	private final MeshOptions meshOptions;
 
-//	private final GlobalLock globalLock;
+	// private final GlobalLock globalLock;
 
 	@Inject
 	public MeshJWTAuthProvider(Vertx vertx, MeshOptions meshOptions, BCryptPasswordEncoder passwordEncoder, Database database,
@@ -71,7 +70,7 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 		this.passwordEncoder = passwordEncoder;
 		this.db = database;
 		this.boot = boot;
-//		this.globalLock = globalLock;
+		// this.globalLock = globalLock;
 
 		// Use the mesh JWT options in order to setup the JWTAuth provider
 		AuthenticationOptions options = meshOptions.getAuthenticationOptions();
@@ -146,9 +145,9 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 				User user = rh.result().getUser();
 				String uuid;
 				if (user instanceof MeshAuthUser) {
-//					try (GlobalLock lock = globalLock.readLock(null)) {
-						uuid = db.tx(((MeshAuthUser) user)::getUuid);
-//					}
+					// try (GlobalLock lock = globalLock.readLock(null)) {
+					uuid = db.tx(((MeshAuthUser) user)::getUuid);
+					// }
 				} else {
 					uuid = user.principal().getString("uuid");
 				}
@@ -172,14 +171,14 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 	 */
 	private void authenticate(String username, String password, String newPassword, Handler<AsyncResult<AuthenticationResult>> resultHandler) {
 		MeshAuthUser user = null;
-//		try (GlobalLock lock = globalLock.readLock(null)) {
-			user = db.tx(() -> boot.userRoot().findMeshAuthUserByUsername(username));
-//		}
+		// try (GlobalLock lock = globalLock.readLock(null)) {
+		user = db.tx(() -> boot.userRoot().findMeshAuthUserByUsername(username));
+		// }
 		if (user != null) {
 			String accountPasswordHash = null;
-//			try (GlobalLock lock = globalLock.readLock(null)) {
-				accountPasswordHash = db.tx(user::getPasswordHash);
-//			}
+			// try (GlobalLock lock = globalLock.readLock(null)) {
+			accountPasswordHash = db.tx(user::getPasswordHash);
+			// }
 			// TODO check if user is enabled
 			boolean hashMatches = false;
 			if (StringUtils.isEmpty(accountPasswordHash) && password != null) {
@@ -196,9 +195,9 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 			}
 			if (hashMatches) {
 				boolean forcedPasswordChange = false;
-//				try (GlobalLock lock = globalLock.readLock(null)) {
-					forcedPasswordChange = db.tx(user::isForcedPasswordChange);
-//				}
+				// try (GlobalLock lock = globalLock.readLock(null)) {
+				forcedPasswordChange = db.tx(user::isForcedPasswordChange);
+				// }
 				if (forcedPasswordChange && newPassword == null) {
 					resultHandler.handle(Future.failedFuture(error(BAD_REQUEST, "auth_login_password_change_required")));
 					return;
@@ -207,10 +206,10 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 					return;
 				} else {
 					if (forcedPasswordChange) {
-//						try (GlobalLock lock = globalLock.writeLock(null)) {
-							MeshAuthUser localUser = user;
-							db.tx(() -> localUser.setPassword(newPassword));
-//						}
+						// try (GlobalLock lock = globalLock.writeLock(null)) {
+						MeshAuthUser localUser = user;
+						db.tx(() -> localUser.setPassword(newPassword));
+						// }
 					}
 					resultHandler.handle(Future.succeededFuture(new AuthenticationResult(user)));
 					return;
@@ -240,10 +239,10 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 		if (user instanceof MeshAuthUser) {
 			AuthenticationOptions options = meshOptions.getAuthenticationOptions();
 			JsonObject tokenData = new JsonObject();
-//			try (GlobalLock lock = globalLock.readLock(null)) {
-				String uuid = db.tx(((MeshAuthUser) user)::getUuid);
-				tokenData.put(USERID_FIELD_NAME, uuid);
-//			}
+			// try (GlobalLock lock = globalLock.readLock(null)) {
+			String uuid = db.tx(((MeshAuthUser) user)::getUuid);
+			tokenData.put(USERID_FIELD_NAME, uuid);
+			// }
 			JWTOptions jwtOptions = new JWTOptions().setAlgorithm(options.getAlgorithm())
 				.setExpiresInSeconds(options.getTokenExpirationTime());
 			return jwtProvider.generateToken(tokenData, jwtOptions);
@@ -283,41 +282,41 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 	 * @throws Exception
 	 */
 	private User loadUserByJWT(JsonObject jwt) throws Exception {
-//		try (GlobalLock lock = globalLock.readLock(null)) {
-			try (Tx tx = db.tx()) {
-				String userUuid = jwt.getString(USERID_FIELD_NAME);
-				MeshAuthUser user = boot.userRoot().findMeshAuthUserByUuid(userUuid);
-				if (user == null) {
-					if (log.isDebugEnabled()) {
-						log.debug("Could not load user with UUID {" + userUuid + "}.");
-					}
-					// TODO use NoStackTraceThrowable?
-					throw new Exception("Invalid credentials!");
+		// try (GlobalLock lock = globalLock.readLock(null)) {
+		return db.tx(tx -> {
+			String userUuid = jwt.getString(USERID_FIELD_NAME);
+			MeshAuthUser user = boot.userRoot().findMeshAuthUserByUuid(userUuid);
+			if (user == null) {
+				if (log.isDebugEnabled()) {
+					log.debug("Could not load user with UUID {" + userUuid + "}.");
 				}
-				// Set the uuid to cache it in the element. We know it is valid.
-				user.setCachedUuid(userUuid);
-
-				// TODO Re-enable isEnabled cache and check if User#delete behaviour changes
-				// if (!user.isEnabled()) {
-				// throw new Exception("User is disabled");
-				// }
-
-				// Check whether the token might be an API key token
-				if (!jwt.containsKey("exp")) {
-					String apiKeyToken = jwt.getString(API_KEY_TOKEN_CODE_FIELD_NAME);
-					// TODO: All tokens without exp must have a token code - See https://github.com/gentics/mesh/issues/412
-					if (apiKeyToken != null) {
-						String storedApiKey = user.getAPIKeyTokenCode();
-						// Verify that the API token is invalid.
-						if (apiKeyToken != null && !apiKeyToken.equals(storedApiKey)) {
-							throw new Exception("API key token is invalid.");
-						}
-					}
-				}
-
-				return user;
+				// TODO use NoStackTraceThrowable?
+				throw new Exception("Invalid credentials!");
 			}
-//		}
+			// Set the uuid to cache it in the element. We know it is valid.
+			user.setCachedUuid(userUuid);
+
+			// TODO Re-enable isEnabled cache and check if User#delete behaviour changes
+			// if (!user.isEnabled()) {
+			// throw new Exception("User is disabled");
+			// }
+
+			// Check whether the token might be an API key token
+			if (!jwt.containsKey("exp")) {
+				String apiKeyToken = jwt.getString(API_KEY_TOKEN_CODE_FIELD_NAME);
+				// TODO: All tokens without exp must have a token code - See https://github.com/gentics/mesh/issues/412
+				if (apiKeyToken != null) {
+					String storedApiKey = user.getAPIKeyTokenCode();
+					// Verify that the API token is invalid.
+					if (apiKeyToken != null && !apiKeyToken.equals(storedApiKey)) {
+						throw new Exception("API key token is invalid.");
+					}
+				}
+			}
+
+			return user;
+		});
+		// }
 	}
 
 	/**

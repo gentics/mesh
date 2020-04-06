@@ -135,7 +135,7 @@ public class MeshImpl implements Mesh {
 		}
 		// Create dagger context and invoke bootstrap init in order to startup mesh
 		try {
-			meshInternal = DaggerMeshComponent.builder().configuration(options).build();
+			meshInternal = DaggerMeshComponent.builder().configuration(options).mesh(this).build();
 			setMeshInternal(meshInternal);
 			meshInternal.boot().init(this, forceIndexSync, options, verticleLoader);
 			if (options.isUpdateCheckEnabled()) {
@@ -372,6 +372,17 @@ public class MeshImpl implements Mesh {
 			log.error("The search provider did encounter an error while stopping", t);
 		}
 
+		// vert.x
+		try {
+			io.vertx.reactivex.core.Vertx rxVertx = getRxVertx();
+			if (rxVertx != null) {
+				log.info("Stopping Vert.x");
+				rxVertx.rxClose().blockingAwait();
+			}
+		} catch (Throwable t) {
+			log.error("Error while stopping Vert.x", t);
+		}
+
 		// database
 		try {
 			meshInternal.database().stop();
@@ -389,17 +400,6 @@ public class MeshImpl implements Mesh {
 			log.error("Error while clearing refs", t);
 		}
 
-		// vert.x
-		try {
-			io.vertx.reactivex.core.Vertx rxVertx = getRxVertx();
-			if (rxVertx != null) {
-				log.info("Stopping Vert.x");
-				rxVertx.rxClose().blockingAwait();
-			}
-		} catch (Throwable t) {
-			log.error("Error while stopping Vert.x", t);
-		}
-		
 		meshInternal.database().clusterManager().stopHazelcast();
 
 		deleteLock();

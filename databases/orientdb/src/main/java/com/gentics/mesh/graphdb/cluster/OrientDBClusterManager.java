@@ -25,6 +25,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 
+import com.gentics.mesh.Mesh;
+import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterInstanceInfo;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
@@ -78,6 +80,8 @@ public class OrientDBClusterManager implements ClusterManager {
 
 	private TopologyEventBridge topologyEventBridge;
 
+	private final Mesh mesh;
+
 	private final Lazy<Vertx> vertx;
 
 	private final MeshOptions options;
@@ -92,11 +96,10 @@ public class OrientDBClusterManager implements ClusterManager {
 
 	private final TxCleanupTask txCleanUpTask;
 
-	private Thread txCleanupThread;
-
 	@Inject
-	public OrientDBClusterManager(Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, MeshOptions options, Lazy<OrientDBDatabase> db,
+	public OrientDBClusterManager(Mesh mesh, Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, MeshOptions options, Lazy<OrientDBDatabase> db,
 		TxCleanupTask txCleanupTask) {
+		this.mesh = mesh;
 		this.vertx = vertx;
 		this.boot = boot;
 		this.options = options;
@@ -392,9 +395,6 @@ public class OrientDBClusterManager implements ClusterManager {
 		server.startup(getOrientServerConfig());
 		startHazelcast();
 
-		if (storageOptions().getTxCommitTimeout() != 0) {
-			startTxCleanupTask();
-		}
 		if (isClusteringEnabled) {
 			long lockTimeout = clusterOptions.getTopologyLockTimeout();
 			ILock lock = hazelcastInstance.getLock(GlobalLock.GLOBAL_LOCK_KEY);
@@ -430,23 +430,6 @@ public class OrientDBClusterManager implements ClusterManager {
 		hazelcastInstance = MeshOHazelcastPlugin.createHazelcast(hazelcastPluginConfig.parameters);
 	}
 
-	private void startTxCleanupTask() {
-		txCleanupThread = new Thread(() -> {
-			while (!Thread.currentThread().isInterrupted()) {
-				txCleanUpTask.checkTransactions();
-				try {
-					// Interval is fixed
-					Thread.sleep(500);
-				} catch (InterruptedException e1) {
-					log.info("Cleanup task stopped");
-					break;
-				}
-			}
-		});
-		txCleanupThread.setName("mesh-tx-cleanup-task");
-		txCleanupThread.start();
-	}
-
 	private void activateServer() throws Exception {
 		OServerPluginManager manager = new OServerPluginManager();
 		manager.config(server);
@@ -468,7 +451,9 @@ public class OrientDBClusterManager implements ClusterManager {
 			// The registerLifecycleListener may not have been invoked. We need to redirect the online event manually.
 			postStartupDBEventHandling();
 			if (!options.isInitClusterMode()) {
+				mesh.setStatus(MeshStatus.WAITING_FOR_CLUSTER);
 				joinCluster();
+				mesh.setStatus(MeshStatus.STARTING);
 				// Add a safety margin
 				Thread.sleep(options.getClusterOptions().getTopologyLockDelay());
 			}
@@ -493,10 +478,6 @@ public class OrientDBClusterManager implements ClusterManager {
 	@Override
 	public void stop() {
 		log.info("Stopping cluster manager");
-		if (txCleanupThread != null) {
-			log.info("Stopping tx cleanup thread");
-			txCleanupThread.interrupt();
-		}
 		if (server != null) {
 			log.info("Stopping OrientDB Server");
 			server.shutdown();
