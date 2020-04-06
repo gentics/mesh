@@ -3,6 +3,7 @@ package com.gentics.mesh.graphdb.cluster;
 import java.io.IOException;
 
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
+import com.hazelcast.core.HazelcastInstance;
 
 public interface ClusterManager {
 
@@ -30,7 +31,7 @@ public interface ClusterManager {
 	 * 
 	 * @return
 	 */
-	Object getHazelcast();
+	HazelcastInstance getHazelcast();
 
 	/**
 	 * Return the database cluster status.

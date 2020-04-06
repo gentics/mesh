@@ -7,6 +7,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.graphdb.cluster.ClusterManager;
+import com.hazelcast.core.HazelcastInstance;
 
 @Singleton
 public class Neo4jClusterManager implements ClusterManager {
@@ -26,7 +27,7 @@ public class Neo4jClusterManager implements ClusterManager {
 	}
 
 	@Override
-	public Object getHazelcast() {
+	public HazelcastInstance getHazelcast() {
 		return null;
 	}
 
