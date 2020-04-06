@@ -20,6 +20,7 @@ import com.orientechnologies.orient.core.Orient;
 import com.orientechnologies.orient.core.db.ODefaultEmbeddedDatabaseInstanceFactory;
 import com.orientechnologies.orient.server.OServer;
 import com.orientechnologies.orient.server.config.OServerParameterConfiguration;
+import com.orientechnologies.orient.server.distributed.ODistributedException;
 import com.orientechnologies.orient.server.hazelcast.OHazelcastDistributedMap;
 import com.orientechnologies.orient.server.hazelcast.OHazelcastMergeStrategy;
 import com.orientechnologies.orient.server.hazelcast.OHazelcastPlugin;
@@ -37,6 +38,23 @@ public class MeshOHazelcastPlugin extends OHazelcastPlugin {
 	public HazelcastInstance configureHazelcast() throws FileNotFoundException {
 		super.hazelcastInstance = hazelcast;
 		super.hazelcastConfig = hazelcastConfig;
+		return hazelcast;
+	}
+
+	@Override
+	public HazelcastInstance getHazelcastInstance() {
+		for (int retry = 1; hazelcast == null && !Thread.currentThread().isInterrupted(); ++retry) {
+			if (retry > 25)
+				throw new ODistributedException("Hazelcast instance is not available");
+
+			// WAIT UNTIL THE INSTANCE IS READY, FOR MAXIMUM 5 SECS (25 x 200ms)
+			try {
+				Thread.sleep(200);
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				break;
+			}
+		}
 		return hazelcast;
 	}
 

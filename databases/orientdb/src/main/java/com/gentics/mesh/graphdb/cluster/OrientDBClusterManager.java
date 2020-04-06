@@ -94,11 +94,8 @@ public class OrientDBClusterManager implements ClusterManager {
 
 	private final boolean isClusteringEnabled;
 
-	private final TxCleanupTask txCleanUpTask;
-
 	@Inject
-	public OrientDBClusterManager(Mesh mesh, Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, MeshOptions options, Lazy<OrientDBDatabase> db,
-		TxCleanupTask txCleanupTask) {
+	public OrientDBClusterManager(Mesh mesh, Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, MeshOptions options, Lazy<OrientDBDatabase> db) {
 		this.mesh = mesh;
 		this.vertx = vertx;
 		this.boot = boot;
@@ -106,7 +103,6 @@ public class OrientDBClusterManager implements ClusterManager {
 		this.db = db;
 		this.clusterOptions = options.getClusterOptions();
 		this.isClusteringEnabled = clusterOptions != null && clusterOptions.isEnabled();
-		this.txCleanUpTask = txCleanupTask;
 	}
 
 	/**
