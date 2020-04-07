@@ -3,7 +3,7 @@ package com.gentics.mesh.server.cluster.test;
 import org.junit.Test;
 
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.server.cluster.test.task.RoleEdgeInserterTask;
+import com.gentics.mesh.server.cluster.test.task.RoleCRUDGlobalLockInserterTask;
 
 public class OrientDBClusterTestNodeA extends AbstractClusterTest {
 
@@ -17,7 +17,7 @@ public class OrientDBClusterTestNodeA extends AbstractClusterTest {
 		options.getHttpServerOptions().setPort(8081);
 		options.getMonitoringOptions().setPort(8881);
 		setup(options);
-		triggerLoad(new RoleEdgeInserterTask(this));
+		triggerLoad(new RoleCRUDGlobalLockInserterTask(this));
 		waitAndShutdown();
 	}
 

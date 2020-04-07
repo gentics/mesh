@@ -22,7 +22,6 @@ import org.mockito.Mockito;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
@@ -127,7 +126,7 @@ public class TestDataProvider {
 			return;
 		}
 
-		try (Tx tx = db.tx()) {
+		db.tx(tx -> {
 			boot.globalCacheClear();
 			if (meshOptions.getInitialAdminPassword() != null && !meshOptions.getInitialAdminPassword().startsWith("debug")) {
 				// We omit creating the initial admin password since hashing the password would slow down tests
@@ -189,10 +188,8 @@ public class TestDataProvider {
 			addPermissions(boot.microschemaContainerRoot());
 			addPermissions(boot.schemaContainerRoot());
 			log.debug("Added BasicPermissions to nodes took {" + (System.currentTimeMillis() - startPerm) + "} ms.");
-			tx.getGraph().commit();
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+			tx.success();
+		});
 
 		long duration = System.currentTimeMillis() - start;
 		log.debug("Setup took: {" + duration + "}");

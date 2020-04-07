@@ -9,7 +9,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.tx.Tx;
-import com.gentics.madl.tx.TxAction;
 import com.gentics.madl.tx.TxAction0;
 import com.gentics.madl.tx.TxAction1;
 import com.gentics.madl.tx.TxFactory;
@@ -17,7 +16,6 @@ import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
-import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.cluster.ClusterManager;
 import com.gentics.mesh.graphdb.model.MeshElement;
@@ -198,57 +196,6 @@ public interface Database extends TxFactory {
 	 */
 	default <T> Single<T> singleTx(Function<Tx, T> handler) {
 		return maybeTx(handler).toSingle();
-	}
-
-	/**
-	 * Asynchronously execute the trxHandler within the scope of a non transaction.
-	 * 
-	 * @param trxHandler
-	 * @return
-	 */
-	default <T> Single<T> asyncTx(TxAction<Single<T>> trxHandler) {
-		// Create an exception which we can use to enhance error information in case of timeout or other transaction errors
-		final AtomicReference<Exception> reference = new AtomicReference<Exception>(null);
-		try {
-			throw new Exception("Transaction timeout exception");
-		} catch (Exception e1) {
-			reference.set(e1);
-		}
-
-		return Single.create(sub -> {
-			vertx().executeBlocking(bc -> {
-				try (Tx tx = tx()) {
-					Single<T> result = trxHandler.handle(tx);
-					if (result == null) {
-						bc.complete();
-					} else {
-						try {
-							T ele = result.timeout(40, TimeUnit.SECONDS).blockingGet();
-							bc.complete(ele);
-						} catch (Exception e2) {
-							if (e2 instanceof TimeoutException) {
-								log.error("Timeout while processing result of transaction handler.", e2);
-								log.error("Calling transaction stacktrace.", reference.get());
-								bc.fail(reference.get());
-							} else {
-								throw e2;
-							}
-						}
-					}
-				} catch (Exception e) {
-					if (!(e instanceof GenericRestException)) {
-						log.error("Error while handling no-transaction.", e);
-					}
-					bc.fail(e);
-				}
-			}, false, (AsyncResult<T> done) -> {
-				if (done.failed()) {
-					sub.onError(done.cause());
-				} else {
-					sub.onSuccess(done.result());
-				}
-			});
-		});
 	}
 
 	/**

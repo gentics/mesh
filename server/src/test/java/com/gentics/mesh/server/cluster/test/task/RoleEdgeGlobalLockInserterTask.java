@@ -1,20 +1,19 @@
-package com.gentics.mesh.server.cluster.test.task;
 
-import java.util.concurrent.locks.Lock;
+package com.gentics.mesh.server.cluster.test.task;
 
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.verticle.handler.GlobalLock;
+import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.server.cluster.test.AbstractClusterTest;
 import com.gentics.mesh.util.UUIDUtil;
-import com.hazelcast.core.HazelcastInstance;
 import com.orientechnologies.common.concur.ONeedRetryException;
 import com.tinkerpop.blueprints.Vertex;
 
-public class RoleEdgeInserterTask extends AbstractLoadTask {
+public class RoleEdgeGlobalLockInserterTask extends AbstractLoadTask {
 
 	public static final String ROLE = "RoleImpl";
 
-	public RoleEdgeInserterTask(AbstractClusterTest test) {
+	public RoleEdgeGlobalLockInserterTask(AbstractClusterTest test) {
 		super(test);
 	}
 
@@ -28,15 +27,8 @@ public class RoleEdgeInserterTask extends AbstractLoadTask {
 	@Override
 	public void runTask(long txDelay, boolean lockTx, boolean lockForDBSync) {
 		try {
-			Lock lock = null;
-			if (lockTx) {
-				if (lockTx) {
-					HazelcastInstance hz = test.getDb().clusterManager().getHazelcast();
-					lock = hz.getLock(GlobalLock.GLOBAL_LOCK_KEY);
-					lock.lock();
-				}
-			}
-			try {
+			MeshComponent comp = test.getMesh().internal();
+			try (GlobalLock lock = comp.globalLock().writeLock(null)) {
 				String roleUuid = UUIDUtil.randomUUID();
 				test.tx(tx -> {
 					Vertex roleRoot = tx.getGraph().getVertices("@class", "RoleRootImpl").iterator().next();
@@ -53,12 +45,6 @@ public class RoleEdgeInserterTask extends AbstractLoadTask {
 				System.out.println("Ignoring ONeedRetryException - normally we would retry the action.");
 			} catch (Exception e) {
 				e.printStackTrace();
-			} finally {
-				if (lockTx) {
-					if (lock != null) {
-						lock.unlock();
-					}
-				}
 			}
 		} catch (Throwable t) {
 			t.printStackTrace();

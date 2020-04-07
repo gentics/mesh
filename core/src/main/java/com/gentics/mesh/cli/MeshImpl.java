@@ -383,6 +383,8 @@ public class MeshImpl implements Mesh {
 			log.error("Error while stopping Vert.x", t);
 		}
 
+		meshInternal.database().clusterManager().stopHazelcast();
+
 		// database
 		try {
 			meshInternal.database().stop();
@@ -400,7 +402,6 @@ public class MeshImpl implements Mesh {
 			log.error("Error while clearing refs", t);
 		}
 
-		meshInternal.database().clusterManager().stopHazelcast();
 
 		deleteLock();
 		meshInternal = null;

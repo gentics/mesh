@@ -8,10 +8,6 @@ import static org.mockito.Mockito.verify;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.gentics.madl.tx.AbstractTx;
-import com.gentics.madl.tx.Tx;
-import com.gentics.madl.tx.TxAction;
-import com.gentics.madl.tx.TxFactory;
 import com.syncleus.ferma.FramedTransactionalGraph;
 
 public class TxFactoryTest implements TxFactory {

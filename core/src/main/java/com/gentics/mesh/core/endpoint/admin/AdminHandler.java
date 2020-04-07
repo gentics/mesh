@@ -240,11 +240,11 @@ public class AdminHandler extends AbstractHandler {
 	 * @param ac
 	 */
 	public void handleImport(InternalActionContext ac) {
-		try (Tx tx = db.tx()) {
+		db.tx(tx -> {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
-		}
+		});
 		File importsDir = new File(options.getStorageOptions().getExportDirectory());
 
 		// Find the file which was last modified
@@ -264,17 +264,19 @@ public class AdminHandler extends AbstractHandler {
 	}
 
 	public void handleClusterStatus(InternalActionContext ac) {
-		utils.syncTx(ac, tx -> {
-			User user = ac.getUser();
-			if (user != null && !user.hasAdminRole()) {
-				throw error(FORBIDDEN, "error_admin_permission_required");
-			}
-			if (options.getClusterOptions() != null && options.getClusterOptions().isEnabled()) {
-				return db.clusterManager().getClusterStatus();
-			} else {
-				throw error(BAD_REQUEST, "error_cluster_status_only_available_in_cluster_mode");
-			}
-		}, model -> ac.send(model, OK));
+		try (GlobalLock lock = globalLock.readLock(ac)) {
+			utils.syncTx(ac, tx -> {
+				User user = ac.getUser();
+				if (user != null && !user.hasAdminRole()) {
+					throw error(FORBIDDEN, "error_admin_permission_required");
+				}
+				if (options.getClusterOptions() != null && options.getClusterOptions().isEnabled()) {
+					return db.clusterManager().getClusterStatus();
+				} else {
+					throw error(BAD_REQUEST, "error_cluster_status_only_available_in_cluster_mode");
+				}
+			}, model -> ac.send(model, OK));
+		}
 	}
 
 	public void handleVersions(InternalActionContext ac) {

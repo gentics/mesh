@@ -2202,13 +2202,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Single<NodeResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return db().asyncTx(() -> {
-			return Single.just(transformToRestSync(ac, level, languageTags));
-		});
-	}
-
-	@Override
 	public boolean isBaseNode() {
 		return inE(HAS_ROOT_NODE).hasNext();
 	}

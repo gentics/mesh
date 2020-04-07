@@ -64,16 +64,19 @@ public class TxCleanupTask implements Handler<Long> {
 			}).map(Map.Entry::getKey)
 			.collect(Collectors.toList());
 
+		interrupt(toInterrupt);
+	}
+
+	private void interrupt(List<Thread> toInterrupt) {
 		if (log.isDebugEnabled()) {
 			log.debug("Interrupting {} threads", toInterrupt.size());
 		}
 		for (Thread thread : toInterrupt) {
-		    	interruptCounter.increment();
+			interruptCounter.increment();
 			log.info("Interrupting transaction thread {}", thread.getName());
 			thread.interrupt();
 		}
 	}
-
 
 	public static void register(Thread thread) {
 		registeredThreads.put(thread, System.currentTimeMillis());
@@ -81,6 +84,17 @@ public class TxCleanupTask implements Handler<Long> {
 
 	public static void unregister(Thread thread) {
 		registeredThreads.remove(thread);
+	}
 
+	/**
+	 * Interrupt all active/registered transactions.
+	 */
+	public void interruptActive() {
+		List<Thread> toInterrupt = registeredThreads.entrySet()
+			.stream()
+			.map(Map.Entry::getKey)
+			.collect(Collectors.toList());
+
+		interrupt(toInterrupt);
 	}
 }

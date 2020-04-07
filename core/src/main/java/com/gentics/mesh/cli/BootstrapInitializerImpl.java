@@ -37,7 +37,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.cache.CacheRegistryImpl;
 import com.gentics.mesh.changelog.ChangelogSystem;
@@ -588,13 +587,13 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		// Handle admin password reset
 		String password = configuration.getAdminPassword();
 		if (password != null) {
-			try (Tx tx = db.tx()) {
+			db.tx(tx -> {
 				User adminUser = userRoot().findByName("admin");
 				if (adminUser != null) {
 					adminUser.setPassword(password);
 				}
 				tx.success();
-			}
+			});
 		}
 
 		registerEventHandlers();
@@ -623,7 +622,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			log.warn("You are running snapshot version {" + currentVersion
 				+ "} of Gentics Mesh. Be aware that this version could potentially alter your instance in unexpected ways.");
 		}
-		try (Tx tx = db.tx()) {
+		db.tx(tx -> {
 			String graphVersion = meshRoot().getMeshVersion();
 
 			// Check whether the information was already saved once. Otherwise set it.
@@ -678,7 +677,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 					}
 				}
 			}
-		}
+		});
 	}
 
 	@Override
@@ -831,11 +830,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Override
 	public void initMandatoryData(MeshOptions config) throws Exception {
-		Role adminRole;
-		MeshRoot meshRoot;
 
-		try (Tx tx = db.tx()) {
-			meshRoot = meshRoot();
+		db.tx(tx -> {
+			MeshRoot meshRoot = meshRoot();
 
 			// Create the initial root vertices
 			meshRoot.getTagRoot();
@@ -976,7 +973,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				log.debug("Created admin group {" + adminGroup.getUuid() + "}");
 			}
 
-			adminRole = roleRoot.findByName("admin");
+			Role adminRole = roleRoot.findByName("admin");
 			if (adminRole == null) {
 				adminRole = roleRoot.create("admin", adminUser);
 				adminGroup.addRole(adminRole);
@@ -988,7 +985,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 			schemaStorage.init();
 			tx.success();
-		}
+		});
 
 	}
 
@@ -997,7 +994,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 		// Only setup optional data for empty installations
 		if (isEmptyInstallation) {
-			try (Tx tx = db.tx()) {
+			db.tx(tx -> {
 				meshRoot = meshRoot();
 
 				UserRoot userRoot = meshRoot().getUserRoot();
@@ -1030,7 +1027,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				}
 
 				tx.success();
-			}
+			});
 		}
 	}
 

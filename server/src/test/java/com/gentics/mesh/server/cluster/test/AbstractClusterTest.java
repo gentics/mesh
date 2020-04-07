@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.gentics.madl.tx.TxAction;
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -33,14 +34,16 @@ public abstract class AbstractClusterTest extends ClusterServer {
 	public static void setup(MeshOptions options) throws Exception {
 		mesh = Mesh.create(options);
 		mesh.run(false);
-		Thread.sleep(5000);
+		while (mesh.getStatus() != MeshStatus.READY) {
+			Thread.sleep(100);
+		}
 		internal = (MeshComponent) mesh.internal();
 	}
 
 	public <T> T tx(TxAction<T> action) {
 		return internal.database().tx(action);
 	}
-	
+
 	public void triggerSlowLoad(LoadTask task) throws Exception {
 		ScheduledExecutorService executor = Executors.newScheduledThreadPool(5);
 		System.out.println("Press any key to start load");
@@ -90,6 +93,10 @@ public abstract class AbstractClusterTest extends ClusterServer {
 	public Database getDb() {
 		MeshComponent component = mesh.internal();
 		return component.database();
+	}
+
+	public static Mesh getMesh() {
+		return mesh;
 	}
 
 }
