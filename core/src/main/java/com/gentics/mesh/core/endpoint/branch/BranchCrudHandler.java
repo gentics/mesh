@@ -47,14 +47,13 @@ import com.gentics.mesh.core.rest.branch.info.BranchMicroschemaInfo;
 import com.gentics.mesh.core.rest.branch.info.BranchSchemaInfo;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.GlobalLock;
 import com.gentics.mesh.core.verticle.handler.GlobalLockImpl;
+import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.PentaFunction;
 import com.gentics.mesh.util.StreamUtil;
 
-import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -92,12 +91,10 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	 */
 	public void handleGetSchemaVersions(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		try (GlobalLock lock = globalLock.readLock(ac)) {
-			utils.syncTx(ac, tx -> {
-				Branch branch = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
-				return getSchemaVersionsInfo(branch);
-			}, model -> ac.send(model, OK));
-		}
+		utils.syncTx(ac, tx -> {
+			Branch branch = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
+			return getSchemaVersionsInfo(branch);
+		}, model -> ac.send(model, OK));
 	}
 
 	/**
@@ -152,12 +149,10 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	 */
 	public void handleGetMicroschemaVersions(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		try (GlobalLock lock = globalLock.readLock(ac)) {
-			utils.syncTx(ac, tx -> {
-				Branch branch = getRootVertex(ac).loadObjectByUuid(ac, uuid, GraphPermission.READ_PERM);
-				return getMicroschemaVersions(branch);
-			}, model -> ac.send(model, OK));
-		}
+		utils.syncTx(ac, tx -> {
+			Branch branch = getRootVertex(ac).loadObjectByUuid(ac, uuid, GraphPermission.READ_PERM);
+			return getMicroschemaVersions(branch);
+		}, model -> ac.send(model, OK));
 	}
 
 	/**
@@ -331,13 +326,11 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	public void readTags(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		try (GlobalLock lock = globalLock.readLock(ac)) {
-			utils.syncTx(ac, (tx) -> {
-				Branch branch = ac.getProject().getBranchRoot().loadObjectByUuid(ac, uuid, READ_PERM);
-				TransformablePage<? extends Tag> tagPage = branch.getTags(ac.getUser(), ac.getPagingParameters());
-				return tagPage.transformToRestSync(ac, 0);
-			}, model -> ac.send(model, OK));
-		}
+		utils.syncTx(ac, (tx) -> {
+			Branch branch = ac.getProject().getBranchRoot().loadObjectByUuid(ac, uuid, READ_PERM);
+			TransformablePage<? extends Tag> tagPage = branch.getTags(ac.getUser(), ac.getPagingParameters());
+			return tagPage.transformToRestSync(ac, 0);
+		}, model -> ac.send(model, OK));
 	}
 
 	/**

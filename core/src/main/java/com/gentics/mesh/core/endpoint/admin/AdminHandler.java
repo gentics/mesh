@@ -25,7 +25,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.naming.InvalidNameException;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -112,15 +111,13 @@ public class AdminHandler extends AbstractHandler {
 	 * @param ac
 	 */
 	public void handleBackup(InternalActionContext ac) {
-		try (GlobalLock lock = globalLock.readLock(ac)) {
-			utils.syncTx(ac, tx -> {
-				if (!ac.getUser().hasAdminRole()) {
-					throw error(FORBIDDEN, "error_admin_permission_required");
-				}
-				backup();
-				return message(ac, "backup_finished");
-			}, model -> ac.send(model, OK));
-		}
+		utils.syncTx(ac, tx -> {
+			if (!ac.getUser().hasAdminRole()) {
+				throw error(FORBIDDEN, "error_admin_permission_required");
+			}
+			backup();
+			return message(ac, "backup_finished");
+		}, model -> ac.send(model, OK));
 	}
 
 	public String backup() {
@@ -264,19 +261,17 @@ public class AdminHandler extends AbstractHandler {
 	}
 
 	public void handleClusterStatus(InternalActionContext ac) {
-		try (GlobalLock lock = globalLock.readLock(ac)) {
-			utils.syncTx(ac, tx -> {
-				User user = ac.getUser();
-				if (user != null && !user.hasAdminRole()) {
-					throw error(FORBIDDEN, "error_admin_permission_required");
-				}
-				if (options.getClusterOptions() != null && options.getClusterOptions().isEnabled()) {
-					return db.clusterManager().getClusterStatus();
-				} else {
-					throw error(BAD_REQUEST, "error_cluster_status_only_available_in_cluster_mode");
-				}
-			}, model -> ac.send(model, OK));
-		}
+		utils.syncTx(ac, tx -> {
+			User user = ac.getUser();
+			if (user != null && !user.hasAdminRole()) {
+				throw error(FORBIDDEN, "error_admin_permission_required");
+			}
+			if (options.getClusterOptions() != null && options.getClusterOptions().isEnabled()) {
+				return db.clusterManager().getClusterStatus();
+			} else {
+				throw error(BAD_REQUEST, "error_cluster_status_only_available_in_cluster_mode");
+			}
+		}, model -> ac.send(model, OK));
 	}
 
 	public void handleVersions(InternalActionContext ac) {
@@ -297,15 +292,13 @@ public class AdminHandler extends AbstractHandler {
 	}
 
 	public void handleLoadClusterConfig(InternalActionContext ac) {
-		try (GlobalLock lock = globalLock.readLock(ac)) {
-			utils.syncTx(ac, tx -> {
-				User user = ac.getUser();
-				if (user != null && !user.hasAdminRole()) {
-					throw error(FORBIDDEN, "error_admin_permission_required");
-				}
-				return db.loadClusterConfig();
-			}, model -> ac.send(model, OK));
-		}
+		utils.syncTx(ac, tx -> {
+			User user = ac.getUser();
+			if (user != null && !user.hasAdminRole()) {
+				throw error(FORBIDDEN, "error_admin_permission_required");
+			}
+			return db.loadClusterConfig();
+		}, model -> ac.send(model, OK));
 	}
 
 	public void handleUpdateClusterConfig(InternalActionContext ac) {
@@ -323,19 +316,17 @@ public class AdminHandler extends AbstractHandler {
 	}
 
 	public void handleLoadCoordinationMaster(InternalActionContext ac) {
-		try (GlobalLock lock = globalLock.readLock(ac)) {
-			utils.syncTx(ac, tx -> {
-				User user = ac.getUser();
-				if (user != null && !user.hasAdminRole()) {
-					throw error(FORBIDDEN, "error_admin_permission_required");
-				}
-				MasterServer master = coordinator.getMasterMember();
-				if (master == null) {
-					return message(ac, "error_cluster_coordination_master_not_found");
-				}
-				return toResponse(master);
-			}, model -> ac.send(model, OK));
-		}
+		utils.syncTx(ac, tx -> {
+			User user = ac.getUser();
+			if (user != null && !user.hasAdminRole()) {
+				throw error(FORBIDDEN, "error_admin_permission_required");
+			}
+			MasterServer master = coordinator.getMasterMember();
+			if (master == null) {
+				return message(ac, "error_cluster_coordination_master_not_found");
+			}
+			return toResponse(master);
+		}, model -> ac.send(model, OK));
 	}
 
 	public void handleSetCoordinationMaster(InternalActionContext ac) {
@@ -363,15 +354,13 @@ public class AdminHandler extends AbstractHandler {
 	}
 
 	public void handleLoadCoordinationConfig(InternalActionContext ac) {
-		try (GlobalLock lock = globalLock.readLock(ac)) {
-			utils.syncTx(ac, tx -> {
-				User user = ac.getUser();
-				if (user != null && !user.hasAdminRole()) {
-					throw error(FORBIDDEN, "error_admin_permission_required");
-				}
-				return coordinator.loadConfig();
-			}, model -> ac.send(model, OK));
-		}
+		utils.syncTx(ac, tx -> {
+			User user = ac.getUser();
+			if (user != null && !user.hasAdminRole()) {
+				throw error(FORBIDDEN, "error_admin_permission_required");
+			}
+			return coordinator.loadConfig();
+		}, model -> ac.send(model, OK));
 	}
 
 	public void handleUpdateCoordinationConfig(InternalActionContext ac) {

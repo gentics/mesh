@@ -51,13 +51,11 @@ public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResp
 	 *            Name of the project which should be read.
 	 */
 	public void handleReadByName(InternalActionContext ac, String projectName) {
-		try (GlobalLock lock = globalLock.readLock(ac)) {
-			utils.syncTx(ac, (tx) -> {
-				RootVertex<Project> root = getRootVertex(ac);
-				Project project = root.findByName(ac, projectName, READ_PERM);
-				return project.transformToRestSync(ac, 0);
-			}, model -> ac.send(model, OK));
-		}
+		utils.syncTx(ac, (tx) -> {
+			RootVertex<Project> root = getRootVertex(ac);
+			Project project = root.findByName(ac, projectName, READ_PERM);
+			return project.transformToRestSync(ac, 0);
+		}, model -> ac.send(model, OK));
 	}
 
 	/**

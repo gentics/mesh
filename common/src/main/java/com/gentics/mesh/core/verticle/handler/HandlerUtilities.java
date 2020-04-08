@@ -35,7 +35,6 @@ import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ResultInfo;
 import com.gentics.mesh.util.Tuple;
@@ -54,7 +53,6 @@ public class HandlerUtilities {
 	private static final Logger log = LoggerFactory.getLogger(HandlerUtilities.class);
 
 	private final Database database;
-	private final MetricsService metrics;
 
 	private final Provider<EventQueueBatch> queueProvider;
 
@@ -63,10 +61,9 @@ public class HandlerUtilities {
 	private final GlobalLock globalLock;
 
 	@Inject
-	public HandlerUtilities(Database database, MeshOptions meshOptions, MetricsService metrics, Provider<EventQueueBatch> queueProvider,
+	public HandlerUtilities(Database database, MeshOptions meshOptions, Provider<EventQueueBatch> queueProvider,
 		Provider<BulkActionContext> bulkProvider, GlobalLock writeLock) {
 		this.database = database;
-		this.metrics = metrics;
 		this.queueProvider = queueProvider;
 		this.bulkProvider = bulkProvider;
 		this.globalLock = writeLock;
@@ -188,22 +185,20 @@ public class HandlerUtilities {
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElement(InternalActionContext ac, String uuid,
 		TxAction1<RootVertex<T>> handler, GraphPermission perm) {
 
-		try (GlobalLock lock = globalLock.readLock(ac)) {
-			syncTx(ac, tx -> {
-				RootVertex<T> root = handler.handle();
-				T element = root.loadObjectByUuid(ac, uuid, perm);
+		syncTx(ac, tx -> {
+			RootVertex<T> root = handler.handle();
+			T element = root.loadObjectByUuid(ac, uuid, perm);
 
-				// Handle etag
-				if (ac.getGenericParameters().getETag()) {
-					String etag = element.getETag(ac);
-					ac.setEtag(etag, true);
-					if (ac.matches(etag, true)) {
-						throw new NotModifiedException();
-					}
+			// Handle etag
+			if (ac.getGenericParameters().getETag()) {
+				String etag = element.getETag(ac);
+				ac.setEtag(etag, true);
+				if (ac.matches(etag, true)) {
+					throw new NotModifiedException();
 				}
-				return element.transformToRestSync(ac, 0);
-			}, model -> ac.send(model, OK));
-		}
+			}
+			return element.transformToRestSync(ac, 0);
+		}, model -> ac.send(model, OK));
 	}
 
 	/**
@@ -215,24 +210,22 @@ public class HandlerUtilities {
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElementList(InternalActionContext ac, TxAction1<RootVertex<T>> handler) {
 
-		try (GlobalLock lock = globalLock.readLock(ac)) {
-			syncTx(ac, tx -> {
-				RootVertex<T> root = handler.handle();
+		syncTx(ac, tx -> {
+			RootVertex<T> root = handler.handle();
 
-				PagingParameters pagingInfo = ac.getPagingParameters();
-				TransformablePage<? extends T> page = root.findAll(ac, pagingInfo);
+			PagingParameters pagingInfo = ac.getPagingParameters();
+			TransformablePage<? extends T> page = root.findAll(ac, pagingInfo);
 
-				// Handle etag
-				if (ac.getGenericParameters().getETag()) {
-					String etag = page.getETag(ac);
-					ac.setEtag(etag, true);
-					if (ac.matches(etag, true)) {
-						throw new NotModifiedException();
-					}
+			// Handle etag
+			if (ac.getGenericParameters().getETag()) {
+				String etag = page.getETag(ac);
+				ac.setEtag(etag, true);
+				if (ac.matches(etag, true)) {
+					throw new NotModifiedException();
 				}
-				return page.transformToRestSync(ac, 0);
-			}, m -> ac.send(m, OK));
-		}
+			}
+			return page.transformToRestSync(ac, 0);
+		}, m -> ac.send(m, OK));
 	}
 
 	public <RM> void syncTx(InternalActionContext ac, TxAction<RM> handler, Consumer<RM> action) {

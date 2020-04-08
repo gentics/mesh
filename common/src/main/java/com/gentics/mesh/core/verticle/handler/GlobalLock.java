@@ -20,11 +20,4 @@ public interface GlobalLock extends AutoCloseable {
 	 */
 	GlobalLock writeLock(InternalActionContext ac);
 
-	/**
-	 * Return the lock that is configured according to the provided context.
-	 * 
-	 * @param ac
-	 * @return
-	 */
-	GlobalLock readLock(InternalActionContext ac);
 }

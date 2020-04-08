@@ -163,12 +163,10 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleNavigation(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		try (GlobalLock lock = globalLock.readLock(ac)) {
-			utils.syncTx(ac, tx -> {
-				Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
-				return node.transformToNavigation(ac).blockingGet();
-			}, model -> ac.send(model, OK));
-		}
+		utils.syncTx(ac, tx -> {
+			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
+			return node.transformToNavigation(ac).blockingGet();
+		}, model -> ac.send(model, OK));
 	}
 
 	/**
@@ -182,27 +180,25 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleReadChildren(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		try (GlobalLock lock = globalLock.readLock(ac)) {
-			utils.syncTx(ac, (tx) -> {
-				NodeParameters nodeParams = ac.getNodeParameters();
-				PagingParameters pagingParams = ac.getPagingParameters();
-				VersioningParameters versionParams = ac.getVersioningParameters();
-				GraphPermission requiredPermission = "published".equals(ac.getVersioningParameters().getVersion()) ? READ_PUBLISHED_PERM : READ_PERM;
-				Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, requiredPermission);
-				TransformablePage<? extends Node> page = node.getChildren(ac, nodeParams.getLanguageList(options),
-					ac.getBranch(node.getProject()).getUuid(), ContainerType.forVersion(versionParams.getVersion()), pagingParams);
+		utils.syncTx(ac, (tx) -> {
+			NodeParameters nodeParams = ac.getNodeParameters();
+			PagingParameters pagingParams = ac.getPagingParameters();
+			VersioningParameters versionParams = ac.getVersioningParameters();
+			GraphPermission requiredPermission = "published".equals(ac.getVersioningParameters().getVersion()) ? READ_PUBLISHED_PERM : READ_PERM;
+			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, requiredPermission);
+			TransformablePage<? extends Node> page = node.getChildren(ac, nodeParams.getLanguageList(options),
+				ac.getBranch(node.getProject()).getUuid(), ContainerType.forVersion(versionParams.getVersion()), pagingParams);
 
-				// Handle etag
-				if (ac.getGenericParameters().getETag()) {
-					String etag = page.getETag(ac);
-					ac.setEtag(etag, true);
-					if (ac.matches(etag, true)) {
-						throw new NotModifiedException();
-					}
+			// Handle etag
+			if (ac.getGenericParameters().getETag()) {
+				String etag = page.getETag(ac);
+				ac.setEtag(etag, true);
+				if (ac.matches(etag, true)) {
+					throw new NotModifiedException();
 				}
-				return page.transformToRestSync(ac, 0);
-			}, model -> ac.send(model, OK));
-		}
+			}
+			return page.transformToRestSync(ac, 0);
+		}, model -> ac.send(model, OK));
 
 	}
 
@@ -223,25 +219,23 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void readTags(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		try (GlobalLock lock = globalLock.readLock(ac)) {
-			utils.syncTx(ac, tx -> {
-				Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
-				try {
-					TransformablePage<? extends Tag> tagPage = node.getTags(ac.getUser(), ac.getPagingParameters(), ac.getBranch());
-					// Handle etag
-					if (ac.getGenericParameters().getETag()) {
-						String etag = tagPage.getETag(ac);
-						ac.setEtag(etag, true);
-						if (ac.matches(etag, true)) {
-							return Single.error(new NotModifiedException());
-						}
+		utils.syncTx(ac, tx -> {
+			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
+			try {
+				TransformablePage<? extends Tag> tagPage = node.getTags(ac.getUser(), ac.getPagingParameters(), ac.getBranch());
+				// Handle etag
+				if (ac.getGenericParameters().getETag()) {
+					String etag = tagPage.getETag(ac);
+					ac.setEtag(etag, true);
+					if (ac.matches(etag, true)) {
+						return Single.error(new NotModifiedException());
 					}
-					return tagPage.transformToRestSync(ac, 0);
-				} catch (Exception e) {
-					throw error(INTERNAL_SERVER_ERROR, "Error while loading tags for node {" + node.getUuid() + "}", e);
 				}
-			}, model -> ac.send((RestModel) model, OK));
-		}
+				return tagPage.transformToRestSync(ac, 0);
+			} catch (Exception e) {
+				throw error(INTERNAL_SERVER_ERROR, "Error while loading tags for node {" + node.getUuid() + "}", e);
+			}
+		}, model -> ac.send((RestModel) model, OK));
 	}
 
 	/**
@@ -329,12 +323,10 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleGetPublishStatus(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		try (GlobalLock lock = globalLock.readLock(ac)) {
-			utils.syncTx(ac, (tx) -> {
-				Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
-				return node.transformToPublishStatus(ac);
-			}, model -> ac.send(model, OK));
-		}
+		utils.syncTx(ac, (tx) -> {
+			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
+			return node.transformToPublishStatus(ac);
+		}, model -> ac.send(model, OK));
 	}
 
 	/**
@@ -393,12 +385,10 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleGetPublishStatus(InternalActionContext ac, String uuid, String languageTag) {
 		validateParameter(uuid, "uuid");
 
-		try (GlobalLock lock = globalLock.readLock(ac)) {
-			utils.syncTx(ac, tx -> {
-				Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
-				return node.transformToPublishStatus(ac, languageTag);
-			}, model -> ac.send(model, OK));
-		}
+		utils.syncTx(ac, tx -> {
+			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
+			return node.transformToPublishStatus(ac, languageTag);
+		}, model -> ac.send(model, OK));
 	}
 
 	/**
@@ -463,18 +453,16 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	protected void readElement(InternalActionContext ac, String uuid, TxAction1<RootVertex<Node>> handler) {
 		validateParameter(uuid, "uuid");
 
-		try (GlobalLock lock = globalLock.readLock(ac)) {
-			utils.syncTx(ac, (tx) -> {
-				RootVertex<Node> root = handler.handle();
-				GraphPermission requiredPermission = "published".equals(ac.getVersioningParameters().getVersion()) ? READ_PUBLISHED_PERM : READ_PERM;
-				Node node = root.loadObjectByUuid(ac, uuid, requiredPermission);
-				return node.transformToRestSync(ac, 0);
-			}, model -> {
-				HttpResponseStatus code = HttpResponseStatus
-					.valueOf(NumberUtils.toInt(ac.data().getOrDefault("statuscode", "").toString(), OK.code()));
-				ac.send(model, code);
-			});
-		}
+		utils.syncTx(ac, (tx) -> {
+			RootVertex<Node> root = handler.handle();
+			GraphPermission requiredPermission = "published".equals(ac.getVersioningParameters().getVersion()) ? READ_PUBLISHED_PERM : READ_PERM;
+			Node node = root.loadObjectByUuid(ac, uuid, requiredPermission);
+			return node.transformToRestSync(ac, 0);
+		}, model -> {
+			HttpResponseStatus code = HttpResponseStatus
+				.valueOf(NumberUtils.toInt(ac.data().getOrDefault("statuscode", "").toString(), OK.code()));
+			ac.send(model, code);
+		});
 
 	}
 
@@ -514,13 +502,11 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleListVersions(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		try (GlobalLock lock = globalLock.readLock(ac)) {
-			utils.syncTx(ac, (tx) -> {
-				Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
-				return node.transformToVersionList(ac);
-			}, model -> {
-				ac.send(model, OK);
-			});
-		}
+		utils.syncTx(ac, (tx) -> {
+			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
+			return node.transformToVersionList(ac);
+		}, model -> {
+			ac.send(model, OK);
+		});
 	}
 }

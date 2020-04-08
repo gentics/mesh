@@ -45,17 +45,14 @@ public class UtilityHandler extends AbstractHandler {
 
 	private final HandlerUtilities utils;
 
-	private final GlobalLock globalLock;
-
 	@Inject
 	public UtilityHandler(MeshOptions options, Database db, WebRootLinkReplacer linkReplacer, NodeIndexHandler nodeIndexHandler,
-		HandlerUtilities utils, GlobalLock globalLock) {
+		HandlerUtilities utils) {
 		this.options = options;
 		this.db = db;
 		this.linkReplacer = linkReplacer;
 		this.nodeIndexHandler = nodeIndexHandler;
 		this.utils = utils;
-		this.globalLock = globalLock;
 	}
 
 	/**
@@ -64,18 +61,16 @@ public class UtilityHandler extends AbstractHandler {
 	 * @param ac
 	 */
 	public void handleResolveLinks(InternalActionContext ac) {
-		try (GlobalLock lock = globalLock.readLock(ac)) {
-			utils.syncTx(ac, tx -> {
+		utils.syncTx(ac, tx -> {
 
-				String projectName = ac.getParameter("project");
-				if (projectName == null) {
-					projectName = "project";
-				}
+			String projectName = ac.getParameter("project");
+			if (projectName == null) {
+				projectName = "project";
+			}
 
-				return linkReplacer.replace(ac, null, null, ac.getBodyAsString(), ac.getNodeParameters().getResolveLinks(), projectName,
-					ac.getNodeParameters().getLanguageList(options));
-			}, body -> ac.send(body, OK, "text/plain"));
-		}
+			return linkReplacer.replace(ac, null, null, ac.getBodyAsString(), ac.getNodeParameters().getResolveLinks(), projectName,
+				ac.getNodeParameters().getLanguageList(options));
+		}, body -> ac.send(body, OK, "text/plain"));
 	}
 
 	/**

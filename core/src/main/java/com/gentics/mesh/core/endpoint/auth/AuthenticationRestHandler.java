@@ -15,9 +15,7 @@ import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.auth.LoginRequest;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
-import com.gentics.mesh.core.verticle.handler.GlobalLock;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 
 @Singleton
@@ -25,13 +23,11 @@ public class AuthenticationRestHandler extends AbstractHandler {
 
 	private MeshJWTAuthProvider authProvider;
 	private HandlerUtilities utils;
-	private GlobalLock globalLock;
 
 	@Inject
-	public AuthenticationRestHandler(MeshJWTAuthProvider authProvider, HandlerUtilities utils, GlobalLock globalLock) {
+	public AuthenticationRestHandler(MeshJWTAuthProvider authProvider, HandlerUtilities utils) {
 		this.authProvider = authProvider;
 		this.utils = utils;
-		this.globalLock = globalLock;
 	}
 
 	/**
@@ -40,13 +36,11 @@ public class AuthenticationRestHandler extends AbstractHandler {
 	 * @param ac
 	 */
 	public void handleMe(InternalActionContext ac) {
-		try (GlobalLock lock = globalLock.readLock(ac)) {
-			utils.syncTx(ac, tx -> {
-				// TODO add permission check
-				MeshAuthUser requestUser = ac.getUser();
-				return requestUser.transformToRestSync(ac, 0);
-			}, model -> ac.send(model, OK));
-		}
+		utils.syncTx(ac, tx -> {
+			// TODO add permission check
+			MeshAuthUser requestUser = ac.getUser();
+			return requestUser.transformToRestSync(ac, 0);
+		}, model -> ac.send(model, OK));
 	}
 
 	/**

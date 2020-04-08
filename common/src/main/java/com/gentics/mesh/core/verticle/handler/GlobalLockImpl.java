@@ -50,14 +50,6 @@ public class GlobalLockImpl implements GlobalLock {
 	}
 
 	/**
-	 * Locks reads. Use this to prevent concurrent read transactions.
-	 */
-	@Override
-	public GlobalLock readLock(InternalActionContext ac) {
-		return lock(ac);
-	}
-
-	/**
 	 * Locks writes. Use this to prevent concurrent write transactions.
 	 */
 	@Override

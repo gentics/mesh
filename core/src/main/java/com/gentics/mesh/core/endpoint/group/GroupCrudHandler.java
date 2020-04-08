@@ -57,14 +57,12 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 	 *            Group Uuid from which the roles should be loaded
 	 */
 	public void handleGroupRolesList(InternalActionContext ac, String groupUuid) {
-		try (GlobalLock lock = globalLock.readLock(ac)) {
-			utils.syncTx(ac, tx -> {
-				Group group = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, READ_PERM);
-				PagingParametersImpl pagingInfo = new PagingParametersImpl(ac);
-				TransformablePage<? extends Role> rolePage = group.getRoles(ac.getUser(), pagingInfo);
-				return rolePage.transformToRestSync(ac, 0);
-			}, model -> ac.send(model, OK));
-		}
+		utils.syncTx(ac, tx -> {
+			Group group = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, READ_PERM);
+			PagingParametersImpl pagingInfo = new PagingParametersImpl(ac);
+			TransformablePage<? extends Role> rolePage = group.getRoles(ac.getUser(), pagingInfo);
+			return rolePage.transformToRestSync(ac, 0);
+		}, model -> ac.send(model, OK));
 	}
 
 	/**
@@ -146,15 +144,13 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 	public void handleGroupUserList(InternalActionContext ac, String groupUuid) {
 		validateParameter(groupUuid, "groupUuid");
 
-		try (GlobalLock lock = globalLock.readLock(ac)) {
-			utils.syncTx(ac, tx -> {
-				MeshAuthUser requestUser = ac.getUser();
-				PagingParametersImpl pagingInfo = new PagingParametersImpl(ac);
-				Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, READ_PERM);
-				TransformablePage<? extends User> userPage = group.getVisibleUsers(requestUser, pagingInfo);
-				return userPage.transformToRestSync(ac, 0);
-			}, model -> ac.send(model, OK));
-		}
+		utils.syncTx(ac, tx -> {
+			MeshAuthUser requestUser = ac.getUser();
+			PagingParametersImpl pagingInfo = new PagingParametersImpl(ac);
+			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, READ_PERM);
+			TransformablePage<? extends User> userPage = group.getVisibleUsers(requestUser, pagingInfo);
+			return userPage.transformToRestSync(ac, 0);
+		}, model -> ac.send(model, OK));
 	}
 
 	/**

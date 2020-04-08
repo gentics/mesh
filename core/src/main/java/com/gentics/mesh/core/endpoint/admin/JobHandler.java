@@ -55,27 +55,25 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 
 	@Override
 	public void handleReadList(InternalActionContext ac) {
-		try (GlobalLock lock = globalLock.readLock(ac)) {
-			utils.syncTx(ac, tx -> {
-				if (!ac.getUser().hasAdminRole()) {
-					throw error(FORBIDDEN, "error_admin_permission_required");
-				}
-				JobRoot root = boot.jobRoot();
+		utils.syncTx(ac, tx -> {
+			if (!ac.getUser().hasAdminRole()) {
+				throw error(FORBIDDEN, "error_admin_permission_required");
+			}
+			JobRoot root = boot.jobRoot();
 
-				PagingParameters pagingInfo = ac.getPagingParameters();
-				TransformablePage<? extends Job> page = root.findAllNoPerm(ac, pagingInfo);
+			PagingParameters pagingInfo = ac.getPagingParameters();
+			TransformablePage<? extends Job> page = root.findAllNoPerm(ac, pagingInfo);
 
-				// Handle etag
-				if (ac.getGenericParameters().getETag()) {
-					String etag = page.getETag(ac);
-					ac.setEtag(etag, true);
-					if (ac.matches(etag, true)) {
-						throw new NotModifiedException();
-					}
+			// Handle etag
+			if (ac.getGenericParameters().getETag()) {
+				String etag = page.getETag(ac);
+				ac.setEtag(etag, true);
+				if (ac.matches(etag, true)) {
+					throw new NotModifiedException();
 				}
-				return page.transformToRestSync(ac, 0);
-			}, e -> ac.send(e, OK));
-		}
+			}
+			return page.transformToRestSync(ac, 0);
+		}, e -> ac.send(e, OK));
 	}
 
 	@Override
@@ -105,22 +103,20 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 	@Override
 	public void handleRead(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		try (GlobalLock lock = globalLock.readLock(ac)) {
-			utils.syncTx(ac, (tx) -> {
-				if (!ac.getUser().hasAdminRole()) {
-					throw error(FORBIDDEN, "error_admin_permission_required");
-				}
-				JobRoot root = boot.jobRoot();
-				Job job = root.loadObjectByUuidNoPerm(uuid, true);
-				String etag = job.getETag(ac);
-				ac.setEtag(etag, true);
-				if (ac.matches(etag, true)) {
-					throw new NotModifiedException();
-				} else {
-					return job.transformToRestSync(ac, 0);
-				}
-			}, model -> ac.send(model, OK));
-		}
+		utils.syncTx(ac, (tx) -> {
+			if (!ac.getUser().hasAdminRole()) {
+				throw error(FORBIDDEN, "error_admin_permission_required");
+			}
+			JobRoot root = boot.jobRoot();
+			Job job = root.loadObjectByUuidNoPerm(uuid, true);
+			String etag = job.getETag(ac);
+			ac.setEtag(etag, true);
+			if (ac.matches(etag, true)) {
+				throw new NotModifiedException();
+			} else {
+				return job.transformToRestSync(ac, 0);
+			}
+		}, model -> ac.send(model, OK));
 	}
 
 	@Override
@@ -135,19 +131,17 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 	 * @param uuid
 	 */
 	public void handleResetJob(InternalActionContext ac, String uuid) {
-		try (GlobalLock lock = globalLock.readLock(ac)) {
-			utils.syncTx(ac, (tx) -> {
-				if (!ac.getUser().hasAdminRole()) {
-					throw error(FORBIDDEN, "error_admin_permission_required");
-				}
-				JobRoot root = boot.jobRoot();
-				Job job = root.loadObjectByUuidNoPerm(uuid, true);
-				db.tx(() -> {
-					job.resetJob();
-				});
-				return job.transformToRestSync(ac, 0);
-			}, (model) -> ac.send(model, OK));
-		}
+		utils.syncTx(ac, (tx) -> {
+			if (!ac.getUser().hasAdminRole()) {
+				throw error(FORBIDDEN, "error_admin_permission_required");
+			}
+			JobRoot root = boot.jobRoot();
+			Job job = root.loadObjectByUuidNoPerm(uuid, true);
+			db.tx(() -> {
+				job.resetJob();
+			});
+			return job.transformToRestSync(ac, 0);
+		}, (model) -> ac.send(model, OK));
 	}
 
 	public void handleProcess(InternalActionContext ac, String uuid) {
@@ -177,14 +171,12 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 	 * @param ac
 	 */
 	public void handleInvokeJobWorker(InternalActionContext ac) {
-		try (GlobalLock lock = globalLock.readLock(ac)) {
-			utils.syncTx(ac, (tx) -> {
-				if (!ac.getUser().hasAdminRole()) {
-					throw error(FORBIDDEN, "error_admin_permission_required");
-				}
-				MeshEvent.triggerJobWorker(boot.mesh());
-				return message(ac, "job_processing_invoked");
-			}, model -> ac.send(model, OK));
-		}
+		utils.syncTx(ac, (tx) -> {
+			if (!ac.getUser().hasAdminRole()) {
+				throw error(FORBIDDEN, "error_admin_permission_required");
+			}
+			MeshEvent.triggerJobWorker(boot.mesh());
+			return message(ac, "job_processing_invoked");
+		}, model -> ac.send(model, OK));
 	}
 }

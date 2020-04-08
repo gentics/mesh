@@ -67,31 +67,29 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 			throw error(BAD_REQUEST, "role_permission_path_missing");
 		}
 
-		try (GlobalLock lock = globalLock.readLock(ac)) {
-			utils.syncTx(ac, tx -> {
+		utils.syncTx(ac, tx -> {
 
-				if (log.isDebugEnabled()) {
-					log.debug("Handling permission request for element on path {" + pathToElement + "}");
-				}
-				// 1. Load the role that should be used - read perm implies that the user is able to read the attached permissions
-				Role role = boot.roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
+			if (log.isDebugEnabled()) {
+				log.debug("Handling permission request for element on path {" + pathToElement + "}");
+			}
+			// 1. Load the role that should be used - read perm implies that the user is able to read the attached permissions
+			Role role = boot.roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 
-				// 2. Resolve the path to element that is targeted
-				MeshVertex targetElement = boot.meshRoot().resolvePathToElement(pathToElement);
-				if (targetElement == null) {
-					throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
-				}
-				RolePermissionResponse response = new RolePermissionResponse();
+			// 2. Resolve the path to element that is targeted
+			MeshVertex targetElement = boot.meshRoot().resolvePathToElement(pathToElement);
+			if (targetElement == null) {
+				throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
+			}
+			RolePermissionResponse response = new RolePermissionResponse();
 
-				// 1. Add granted permissions
-				for (GraphPermission perm : role.getPermissions(targetElement)) {
-					response.set(perm.getRestPerm(), true);
-				}
-				// 2. Add not granted permissions
-				response.setOthers(false);
-				return response;
-			}, model -> ac.send(model, OK));
-		}
+			// 1. Add granted permissions
+			for (GraphPermission perm : role.getPermissions(targetElement)) {
+				response.set(perm.getRestPerm(), true);
+			}
+			// 2. Add not granted permissions
+			response.setOthers(false);
+			return response;
+		}, model -> ac.send(model, OK));
 
 	}
 

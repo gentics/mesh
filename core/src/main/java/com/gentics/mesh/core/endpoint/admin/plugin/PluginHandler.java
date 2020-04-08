@@ -57,23 +57,21 @@ public class PluginHandler extends AbstractHandler {
 	}
 
 	public void handleRead(InternalActionContext ac, String id) {
-		try (GlobalLock lock = globalLock.readLock(ac)) {
-			utils.syncTx(ac, tx -> {
-				if (!ac.getUser().hasAdminRole()) {
-					throw error(FORBIDDEN, "error_admin_permission_required");
-				}
-				PluginWrapper pluginWrapper = manager.getPlugin(id);
-				if (pluginWrapper == null) {
-					throw error(NOT_FOUND, "admin_plugin_error_plugin_not_found", id);
-				}
-				Plugin plugin = pluginWrapper.getPlugin();
-				if (plugin instanceof MeshPlugin) {
-					PluginResponse response = ((MeshPlugin) plugin).toResponse();
-					return response;
-				}
-				throw error(INTERNAL_SERVER_ERROR, "admin_plugin_error_wrong_type");
-			}, model -> ac.send(model, CREATED));
-		}
+		utils.syncTx(ac, tx -> {
+			if (!ac.getUser().hasAdminRole()) {
+				throw error(FORBIDDEN, "error_admin_permission_required");
+			}
+			PluginWrapper pluginWrapper = manager.getPlugin(id);
+			if (pluginWrapper == null) {
+				throw error(NOT_FOUND, "admin_plugin_error_plugin_not_found", id);
+			}
+			Plugin plugin = pluginWrapper.getPlugin();
+			if (plugin instanceof MeshPlugin) {
+				PluginResponse response = ((MeshPlugin) plugin).toResponse();
+				return response;
+			}
+			throw error(INTERNAL_SERVER_ERROR, "admin_plugin_error_wrong_type");
+		}, model -> ac.send(model, CREATED));
 	}
 
 	public void handleDeploy(InternalActionContext ac) {
@@ -120,20 +118,18 @@ public class PluginHandler extends AbstractHandler {
 	}
 
 	public void handleReadList(InternalActionContext ac) {
-		try (GlobalLock lock = globalLock.readLock(ac)) {
-			utils.syncTx(ac, tx -> {
-				if (!ac.getUser().hasAdminRole()) {
-					throw error(FORBIDDEN, "error_admin_permission_required");
-				}
-				List<MeshPlugin> startedPlugins = manager.getStartedMeshPlugins();
-				PluginListResponse response = new PluginListResponse();
-				Page<PluginResponse> page = new DynamicStreamPageImpl<>(startedPlugins.stream().map(MeshPlugin::toResponse),
-					ac.getPagingParameters());
-				page.setPaging(response);
-				response.getData().addAll(page.getWrappedList());
-				return response;
-			}, model -> ac.send(model, OK));
-		}
+		utils.syncTx(ac, tx -> {
+			if (!ac.getUser().hasAdminRole()) {
+				throw error(FORBIDDEN, "error_admin_permission_required");
+			}
+			List<MeshPlugin> startedPlugins = manager.getStartedMeshPlugins();
+			PluginListResponse response = new PluginListResponse();
+			Page<PluginResponse> page = new DynamicStreamPageImpl<>(startedPlugins.stream().map(MeshPlugin::toResponse),
+				ac.getPagingParameters());
+			page.setPaging(response);
+			response.getData().addAll(page.getWrappedList());
+			return response;
+		}, model -> ac.send(model, OK));
 	}
 
 }
