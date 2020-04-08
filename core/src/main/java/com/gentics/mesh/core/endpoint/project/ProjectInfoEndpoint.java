@@ -47,7 +47,9 @@ public class ProjectInfoEndpoint extends AbstractInternalEndpoint {
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleReadByName(ac, projectName);
 		});
-		chain.secure(endpoint.getRoute());
+		if (chain != null) {
+			chain.secure(endpoint.getRoute());
+		}
 	}
 
 	@Override
