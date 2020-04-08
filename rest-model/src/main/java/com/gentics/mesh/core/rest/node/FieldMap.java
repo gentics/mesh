@@ -290,4 +290,32 @@ public interface FieldMap extends RestModel {
 		map.put(key, field);
 		return map;
 	}
+
+	/**
+	 * Convenience method for creating a field map with two entries.
+	 * @param key
+	 * @param field
+	 * @return
+	 */
+	static FieldMap of(String key, Field field, String key2, Field field2) {
+		FieldMap map = new FieldMapImpl();
+		map.put(key, field);
+		map.put(key2, field2);
+		return map;
+	}
+
+	/**
+	 * Convenience method for creating a field map with three entries.
+	 * @param key
+	 * @param field
+	 * @return
+	 */
+	static FieldMap of(String key, Field field, String key2, Field field2, String key3, Field field3) {
+		FieldMap map = new FieldMapImpl();
+		map.put(key, field);
+		map.put(key2, field2);
+		map.put(key3, field3);
+		return map;
+	}
+
 }

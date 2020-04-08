@@ -476,6 +476,10 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return call(() -> client().createProject(projectCreateRequest));
 	}
 
+	default public ProjectResponse getProject() {
+		return client().findProjectByName(PROJECT_NAME).blockingGet();
+	}
+
 	default public ProjectResponse readProject(String uuid) {
 		return call(() -> client().findProjectByUuid(uuid));
 	}
@@ -670,6 +674,10 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		}
 		NodeVersionsResponse response = call(() -> client().listNodeVersions(projectName(), nodeUuid, param));
 		assertEquals("The versions did not match", versions, response.listVersions(lang));
+	}
+
+	default void assertVersions(NodeResponse node, String versions) {
+		assertVersions(node.getUuid(), node.getLanguage(), versions);
 	}
 
 	default void assertVersions(String nodeUuid, String lang, String versions) {
