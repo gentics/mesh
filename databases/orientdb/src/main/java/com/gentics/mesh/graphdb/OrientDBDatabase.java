@@ -149,31 +149,19 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public void stop() {
-		// // TODO let other nodes know we are stopping the instance?
-		// if (options.getClusterOptions().isEnabled()) {
-		// Mesh.vertx().eventBus().publish(MeshEvent.CLUSTER_NODE_LEAVING, new JsonObject().put("node", getNodeName()));
-		// try {
-		// Thread.sleep(2000);
-		// } catch (InterruptedException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		// }
-		if (txProvider != null) {
-			txProvider.close();
-		}
-
-		clusterManager.stop();
-
+		txCleanUpTask.interruptActive();
+		Tx.setActive(null);
 		if (txCleanupThread != null) {
 			log.info("Stopping tx cleanup thread");
 			txCleanupThread.interrupt();
 		}
 
-		// Stop all  active tx
-		txCleanUpTask.interruptActive();
+		clusterManager.stop();
 
-		Tx.setActive(null);
+		if (txProvider != null) {
+			txProvider.close();
+		}
+
 	}
 
 	@Override

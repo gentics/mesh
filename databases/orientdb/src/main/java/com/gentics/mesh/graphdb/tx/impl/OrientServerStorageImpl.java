@@ -38,9 +38,9 @@ public class OrientServerStorageImpl extends AbstractOrientStorage {
 
 	@Override
 	public void close() {
-		if (context.isOpen()) {
-			context.close();
-		}
+//		if (context.isOpen()) {
+//			context.close();
+//		}
 		Orient.instance().shutdown();
 	}
 

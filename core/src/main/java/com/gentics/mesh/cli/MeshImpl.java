@@ -383,8 +383,6 @@ public class MeshImpl implements Mesh {
 			log.error("Error while stopping Vert.x", t);
 		}
 
-		meshInternal.database().clusterManager().stopHazelcast();
-
 		// database
 		try {
 			meshInternal.database().stop();
