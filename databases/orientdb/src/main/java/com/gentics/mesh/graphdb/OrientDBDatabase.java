@@ -363,11 +363,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	@Deprecated
 	public Tx tx() {
-//		try {
-//			throw new RuntimeException();
-//		} catch(Throwable e) {
-//			e.printStackTrace();
-//		}
 		return new OrientDBTx(this, boot.get(), txProvider, resolver, commitTimer);
 	}
 

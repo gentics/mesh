@@ -35,7 +35,6 @@ public class ProjectInfoEndpoint extends AbstractInternalEndpoint {
 
 	@Override
 	public void registerEndPoints() {
-		secureAll();
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:project");
 		endpoint.method(HttpMethod.GET);
@@ -48,6 +47,7 @@ public class ProjectInfoEndpoint extends AbstractInternalEndpoint {
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleReadByName(ac, projectName);
 		});
+		chain.secure(endpoint.getRoute());
 	}
 
 	@Override
