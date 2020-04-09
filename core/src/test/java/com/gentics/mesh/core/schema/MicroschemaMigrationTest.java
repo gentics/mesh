@@ -16,7 +16,9 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.StringField;
+import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
@@ -27,6 +29,15 @@ import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
+/**
+ * Tests for the following issues:
+ * <ul>
+ *     <li><a href="https://github.com/gentics/mesh/issues/979">https://github.com/gentics/mesh/issues/979</a></li>
+ *     <li><a href="https://github.com/gentics/mesh/issues/1014">https://github.com/gentics/mesh/issues/1014</a></li>
+ *     <li><a href="https://github.com/gentics/mesh/issues/1025">https://github.com/gentics/mesh/issues/1025</a></li>
+ * </ul>
+ *
+ */
 @MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true)
 public class MicroschemaMigrationTest extends AbstractMeshTest {
 
@@ -34,19 +45,75 @@ public class MicroschemaMigrationTest extends AbstractMeshTest {
 
 	@Before
 	public void setUp() throws Exception {
-		grantAdminRole();
-		createTestSchema();
-		createMicroschemas();
 	}
 
 	@Test
-	public void test() {
+	public void migrateNewNode() {
+		grantAdminRole();
+		createTestSchema();
+		createMicroschemas();
+
 		NodeResponse testNode = createTestNode();
 		publishNode(testNode);
 		assertVersions(testNode, "PD(1.0)=>I(0.1)");
+		updateMicroschema();
+		assertVersions(testNode, "PD(2.0)=>I(0.1)");
+	}
+
+	@Test
+	public void migrateUpdatedNode() {
+		grantAdminRole();
+		createTestSchema();
+		createMicroschemas();
+
+		NodeResponse testNode = createTestNode();
+		publishNode(testNode);
+		assertVersions(testNode, "PD(1.0)=>I(0.1)");
+		testNode = addLocation(testNode, location("aut", "salzburg"));
+		assertVersions(testNode, "PD(2.0)=>I(0.1)");
+		testNode = addLocation(testNode, location("aut", "innsbruck"));
+		assertVersions(testNode, "PD(3.0)=>I(0.1)");
+		testNode = addLocation(testNode, location("aut", "klagenfurt"));
+		assertVersions(testNode, "PD(4.0)=>I(0.1)");
+		updateMicroschema();
+		assertVersions(testNode, "PD(5.0)=>I(0.1)");
+	}
+
+	@Test
+	public void migrateNewNodeNoPurge() {
+		grantAdminRole();
+		createTestSchema(false);
+		createMicroschemas();
+
+		NodeResponse testNode = createTestNode();
+		publishNode(testNode);
+		assertVersions(testNode, "PD(1.0)=>I(0.1)");
+		updateMicroschema();
+		assertVersions(testNode, "PD(2.0)=>(1.0)=>I(0.1)");
+	}
+
+	@Test
+	public void migrateUpdatedNodeNoPurge() {
+		grantAdminRole();
+		createTestSchema(false);
+		createMicroschemas();
+
+		NodeResponse testNode = createTestNode();
+		publishNode(testNode);
+		assertVersions(testNode, "PD(1.0)=>I(0.1)");
+		testNode = addLocation(testNode, location("aut", "salzburg"));
+		assertVersions(testNode, "PD(2.0)=>(1.1)=>(1.0)=>I(0.1)");
+		testNode = addLocation(testNode, location("aut", "innsbruck"));
+		assertVersions(testNode, "PD(3.0)=>(2.1)=>(2.0)=>(1.1)=>(1.0)=>I(0.1)");
+		testNode = addLocation(testNode, location("aut", "klagenfurt"));
+		assertVersions(testNode, "PD(4.0)=>(3.1)=>(3.0)=>(2.1)=>(2.0)=>(1.1)=>(1.0)=>I(0.1)");
+		updateMicroschema();
+		assertVersions(testNode, "PD(5.0)=>(4.0)=>(3.1)=>(3.0)=>(2.1)=>(2.0)=>(1.1)=>(1.0)=>I(0.1)");
+	}
+
+	public void updateMicroschema() {
 		MicroschemaUpdateRequest updateSchemaRequest = addRandomField(phoneMicroschema);
 		waitForLatestJob(() -> client().updateMicroschema(phoneMicroschema.getUuid(), updateSchemaRequest).blockingAwait());
-		assertVersions(testNode, "PD(2.0)=>I(0.1)");
 	}
 
 	private NodeResponse createTestNode() {
@@ -63,6 +130,16 @@ public class MicroschemaMigrationTest extends AbstractMeshTest {
 					location("aut", "linz")
 			))
 		))).blockingGet();
+	}
+
+	private NodeResponse addLocation(NodeResponse node, MicronodeResponse location) {
+		NodeUpdateRequest updateRequest = node.toRequest();
+		MicronodeFieldList locations = updateRequest.getFields().getMicronodeFieldList("locations");
+		locations.getItems().add(location);
+		updateRequest.getFields().put("locations", locations);
+		NodeResponse nodeResponse = client().updateNode(PROJECT_NAME, node.getUuid(), updateRequest).blockingGet();
+		publishNode(nodeResponse);
+		return client().findNodeByUuid(PROJECT_NAME, nodeResponse.getUuid()).blockingGet();
 	}
 
 	private MicronodeResponse phoneNumber(String countryCode, String number) {
@@ -84,8 +161,13 @@ public class MicroschemaMigrationTest extends AbstractMeshTest {
 	}
 
 	private void createTestSchema() {
+		createTestSchema(true);
+	}
+
+	private void createTestSchema(boolean autoPurge) {
 		SchemaCreateRequest createRequest = new SchemaCreateRequest();
 		createRequest.setName("testSchema");
+		createRequest.setAutoPurge(autoPurge);
 		createRequest.setFields(Arrays.asList(
 			new StringFieldSchemaImpl().setName("name"),
 			new MicronodeFieldSchemaImpl().setName("phone"),
