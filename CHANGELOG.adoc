@@ -28,6 +28,8 @@ include::content/docs/variables.adoc-include[]
 [[v1.4.4]]
 == 1.4.4 (TBD)
 
+CAUTION: Microschema migrations since version 1.2.0 are very likely to cause a loss of data in nodes that contain micronodes of the migrated schema. This bug has been fixed in this version. At the first start with this version or higher, Gentics Mesh will try to restore affected nodes. However, because some data cannot be restored, we advise to restore a backup of a moment before the microschema migration, if possible. We apologize for the inconvenience.
+
 icon:plus[] Monitoring: Metrics have been added for the synchronized write lock, the topology lock, commit times and interrupts. Take a look at our link:{{< relref "monitoring.asciidoc" >}}#_metrics[documentation] for more information.
 
 [[v1.4.3]]
