@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VER
 
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicLong;
@@ -16,12 +17,14 @@ import javax.inject.Singleton;
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.changelog.highlevel.AbstractHighLevelChange;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.util.VersionNumber;
 import com.google.common.collect.Iterables;
 import com.syncleus.ferma.EdgeFrame;
@@ -91,11 +94,23 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 
 	private boolean fixNodeVersionOrder(Node node, NodeGraphFieldContainer initialContent) {
 		Set<VersionNumber> seenVersions = new HashSet<>();
+		Set<Object> deletedVertexIds = new HashSet<>();
 		TreeSet<NodeGraphFieldContainer> versions = new TreeSet<>(Comparator.comparing(NodeGraphFieldContainer::getVersion));
 		NodeGraphFieldContainer highestVersion = null;
 		NodeGraphFieldContainer currentContainer = initialContent;
 		NodeGraphFieldContainer latestPublished = null;
+		DummyBulkActionContext bac = new DummyBulkActionContext();
 		boolean mutated = false;
+
+		String branchUuid = initialContent.getBranches(ContainerType.INITIAL).iterator().next();
+		String languageTag = initialContent.getLanguageTag();
+
+		EdgeFrame originalDraftEdge = node.getGraphFieldContainerEdgeFrame(languageTag, branchUuid, ContainerType.DRAFT);
+		Optional<Object> originalDraftId = Optional.ofNullable(node.getGraphFieldContainer(languageTag, branchUuid, ContainerType.DRAFT))
+			.map(ElementFrame::id);
+		EdgeFrame originalPublishedEdge = node.getGraphFieldContainerEdgeFrame(languageTag, branchUuid, ContainerType.PUBLISHED);
+		Optional<Object> originalPublishedId = Optional.ofNullable(node.getGraphFieldContainer(languageTag, branchUuid, ContainerType.PUBLISHED))
+			.map(ElementFrame::id);
 
 		while (currentContainer != null) {
 			// Since we only look at single branch projects, there can at most only be one next version.
@@ -103,9 +118,10 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 			VersionNumber currentVersion = currentContainer.getVersion();
 			boolean isDuplicate = !seenVersions.add(currentVersion);
 			if (isDuplicate) {
-				currentContainer.remove();
+				deletedVertexIds.add(currentContainer.id());
+				currentContainer.delete(bac, false);
 				if (nextContainer != null) {
-					// previousContainer can't be null because this branch is only visited if there is a duplicate
+					// highestVersion can't be null because this if-branch is only visited if there is a duplicate
 					highestVersion.setSingleLinkOutTo(nextContainer, HAS_VERSION);
 				}
 				mutated = true;
@@ -138,39 +154,34 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 		}
 
 		// Reset draft and published edge
-		String branchUuid = initialContent.getBranches(ContainerType.INITIAL).iterator().next();
-		String languageTag = initialContent.getLanguageTag();
 
-		EdgeFrame rawDraftEdge = node.getGraphFieldContainerEdgeFrame(languageTag, branchUuid, ContainerType.DRAFT);
-		if (rawDraftEdge != null) {
-			GraphFieldContainerEdgeImpl draftEdge = rawDraftEdge
-				.reframeExplicit(GraphFieldContainerEdgeImpl.class);
-			if (!draftEdge.getNodeContainer().equals(highestVersion)) {
-				setNewOutV(draftEdge, node, highestVersion);
-				mutated = true;
+		if (originalDraftId.isPresent() && !originalDraftId.get().equals(highestVersion.id())) {
+			setNewOutV(node, highestVersion, branchUuid, languageTag, ContainerType.DRAFT);
+			// Deleting the edge would fail if it was already removed implicitly by removing one of the vertices
+			if (!deletedVertexIds.contains(originalDraftId.get())) {
+				originalDraftEdge.remove();
 			}
+			mutated = true;
 		}
 
-		EdgeFrame publishedRawEdge = node.getGraphFieldContainerEdgeFrame(languageTag, branchUuid, ContainerType.PUBLISHED);
-		if (publishedRawEdge != null) {
-			GraphFieldContainerEdgeImpl publishedEdge = publishedRawEdge.reframeExplicit(GraphFieldContainerEdgeImpl.class);
-			if (!publishedEdge.getNodeContainer().equals(latestPublished)) {
-				setNewOutV(publishedEdge, node, latestPublished);
-				mutated = true;
+		if (originalPublishedId.isPresent() && latestPublished != null && !originalPublishedId.get().equals(latestPublished.id())) {
+			setNewOutV(node, latestPublished, branchUuid, languageTag, ContainerType.PUBLISHED);
+			// Deleting the edge would fail if it was already removed implicitly by removing one of the vertices
+			if (!deletedVertexIds.contains(originalPublishedId.get())) {
+				originalPublishedEdge.remove();
 			}
+			mutated = true;
 		}
 		Tx.get().commit();
 		return mutated;
 	}
 
-	private GraphFieldContainerEdge setNewOutV(GraphFieldContainerEdgeImpl edge, Node from, NodeGraphFieldContainer to) {
+	private GraphFieldContainerEdge setNewOutV(Node from, NodeGraphFieldContainer to, String branchUuid, String languageTag, ContainerType type) {
 		GraphFieldContainerEdge newEdge = from.addFramedEdge(HAS_FIELD_CONTAINER, to, GraphFieldContainerEdgeImpl.class);
-		newEdge.setBranchUuid(edge.getBranchUuid());
-		newEdge.setLanguageTag(edge.getLanguageTag());
-		newEdge.setSegmentInfo(edge.getSegmentInfo());
-		newEdge.setType(edge.getType());
-		newEdge.setUrlFieldInfo(edge.getUrlFieldInfo());
-		edge.remove();
+		newEdge.setBranchUuid(branchUuid);
+		newEdge.setLanguageTag(languageTag);
+		newEdge.setType(type);
+		to.updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_update");
 		return newEdge;
 	}
 

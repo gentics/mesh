@@ -182,6 +182,7 @@ public class VersionNumber implements Comparable<VersionNumber> {
 
 	/**
 	 * Get the minor version part
+	 * @return
 	 */
 	public int getMinor() {
 		return minor;
