@@ -1,5 +1,6 @@
 package com.gentics.mesh.util;
 
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -10,11 +11,11 @@ public class VersionNumber implements Comparable<VersionNumber> {
 
 	private final static Pattern pattern = Pattern.compile("([0-9]+)\\.([0-9]+)");
 
-	private int major;
+	private final int major;
 
-	private int minor;
+	private final int minor;
 
-	private String fullVersion;
+	private final String fullVersion;
 
 	/**
 	 * Create an instance for Version 0.1
@@ -134,6 +135,11 @@ public class VersionNumber implements Comparable<VersionNumber> {
 		return false;
 	}
 
+	@Override
+	public int hashCode() {
+		return Objects.hash(major, minor);
+	}
+
 	/**
 	 * Compares two version strings.
 	 * 
@@ -166,4 +172,19 @@ public class VersionNumber implements Comparable<VersionNumber> {
 		return Integer.signum(vals1.length - vals2.length);
 	}
 
+	/**
+	 * Get the major version part
+	 * @return
+	 */
+	public int getMajor() {
+		return major;
+	}
+
+	/**
+	 * Get the minor version part
+	 * @return
+	 */
+	public int getMinor() {
+		return minor;
+	}
 }

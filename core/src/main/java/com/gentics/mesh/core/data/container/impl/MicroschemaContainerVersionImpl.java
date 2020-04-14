@@ -60,7 +60,8 @@ public class MicroschemaContainerVersionImpl extends
 	public TraversalResult<? extends NodeGraphFieldContainer> getDraftFieldContainers(String branchUuid) {
 		return new TraversalResult<>(getMicronodeStream()
 			.flatMap(micronode -> micronode.getContainers().stream())
-			.filter(uniqueBy(ElementFrame::getId)));
+			.filter(uniqueBy(ElementFrame::getId))
+			.filter(container -> container.isDraft(branchUuid)));
 	}
 
 	@Override

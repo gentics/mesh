@@ -12,6 +12,8 @@ import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.common.ListResponse;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
@@ -45,6 +47,12 @@ public interface ClientHelper extends EventHelper {
 
 	default SchemaUpdateRequest addRandomField(SchemaResponse schemaResponse) {
 		SchemaUpdateRequest request = schemaResponse.toUpdateRequest();
+		request.getFields().add(new StringFieldSchemaImpl().setName(RandomStringUtils.randomAlphabetic(10)));
+		return request;
+	}
+
+	default MicroschemaUpdateRequest addRandomField(MicroschemaResponse schemaResponse) {
+		MicroschemaUpdateRequest request = schemaResponse.toRequest();
 		request.getFields().add(new StringFieldSchemaImpl().setName(RandomStringUtils.randomAlphabetic(10)));
 		return request;
 	}
