@@ -11,13 +11,6 @@ public interface WriteLock extends AutoCloseable {
 	void close();
 
 	/**
-	 * Return the locked write lock.
-	 * 
-	 * @return Fluent API
-	 */
-	//WriteLock lock();
-
-	/**
 	 * Return the write lock that is configured according to the provided context.
 	 * 
 	 * @param ac

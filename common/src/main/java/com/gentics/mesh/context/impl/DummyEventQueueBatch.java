@@ -45,4 +45,23 @@ public class DummyEventQueueBatch implements EventQueueBatch {
 
 	}
 
+	@Override
+	public EventQueueBatch add(MeshEventModel event) {
+		return this;
+	}
+
+	@Override
+	public void addAll(EventQueueBatch containerBatch) {
+
+	}
+
+	@Override
+	public void clear() {
+
+	}
+
+	@Override
+	public int size() {
+		return 0;
+	}
 }

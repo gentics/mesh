@@ -55,10 +55,6 @@ public class GraphQLEndpointBranchTest extends AbstractMeshTest {
 		return call(() -> client().createNode(PROJECT_NAME, request, new VersioningParametersImpl().setBranch(BRANCH_NAME)));
 	}
 
-	private ProjectResponse getProject() {
-		return call(() -> client().findProjectByName(PROJECT_NAME));
-	}
-
 	private void createBranchRestAndWait(String name, boolean latest) {
 		waitForJobs(() -> {
 			createBranchRest(name, latest);

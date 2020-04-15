@@ -13,11 +13,23 @@ public enum SimpleMetric implements Metric {
 
 	TX_RETRY("tx_retry", "Amount of transaction retries which happen if a conflict has been encountered."),
 
-	GRAPH_ELEMENT_RELOAD("graph_element_reload", "Meter which tracks the reload operations on used vertices."),
+    TX_INTERRUPT_COUNT("tx_interrupt", "Amount of commit interrupts."),
 
-	NODE_MIGRATION_PENDING("node_migration_pending", "Pending contents which need to be processed by the node migration.");
+    COMMIT_TIME("commit_time", "Timer which tracks commit durations."),
 
-	private String key;
+    GRAPH_ELEMENT_RELOAD("graph_element_reload", "Meter which tracks the reload operations on used vertices."),
+
+	NODE_MIGRATION_PENDING("node_migration_pending", "Pending contents which need to be processed by the node migration."),
+
+	WRITE_LOCK_WAITING_TIME("write_lock_waiting_time", "Tracks the time which is spent waiting on the write lock."),
+
+    WRITE_LOCK_TIMEOUT_COUNT("write_lock_timeout", "Amount of timeouts of acquiring the write lock."),
+
+    TOPOLOGY_LOCK_WAITING_TIME("topology_lock_waiting_time", "Tracks the time which is spent waiting on the write lock."),
+
+    TOPOLOGY_LOCK_TIMEOUT_COUNT("topology_lock_timeout", "Amount of timeouts of acquiring the write lock.");
+
+    private String key;
 
 	private String description;
 

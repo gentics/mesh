@@ -31,6 +31,13 @@ icon:check[] Core: Fixed a bug that caused an internal server error if a project
 
 icon:plus[] Test: An enhanced test container class has been added. The `MeshContainer` class replaces the `MeshDockerServer` which was deprecated.
 
+[[v1.4.4]]
+== 1.4.4 (14.04.2020)
+
+CAUTION: Microschema migrations since version 1.2.0 are very likely to cause a loss of data in nodes that contain micronodes of the migrated schema. This bug has been fixed in this version. At the first start with this version or higher, Gentics Mesh will try to restore affected nodes in projects with a single branch. However, because some data cannot be restored, we advise to restore a backup of a moment before the microschema migration, if possible. We apologize for the inconvenience.
+
+icon:plus[] Monitoring: Metrics have been added for the synchronized write lock, the topology lock, commit times and interrupts. Take a look at our link:{{< relref "monitoring.asciidoc" >}}#_metrics[documentation] for more information.
+
 [[v1.4.3]]
 == 1.4.3 (17.03.2020)
 
@@ -62,7 +69,6 @@ icon:check[] UI: The Gentics Mesh UI has been updated to version link:https://gi
 icon:check[] Core: The storage filesystem compatibility check has been made more reliable.
 
 icon:check[] Core: Fixed a bug that caused errors during microschema migrations in certain situations.
-
 
 [[v1.4.1]]
 == 1.4.1 (19.01.2020)

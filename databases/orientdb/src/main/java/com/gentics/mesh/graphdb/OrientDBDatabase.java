@@ -1,6 +1,9 @@
 package com.gentics.mesh.graphdb;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.metric.SimpleMetric.COMMIT_TIME;
+import static com.gentics.mesh.metric.SimpleMetric.TOPOLOGY_LOCK_TIMEOUT_COUNT;
+import static com.gentics.mesh.metric.SimpleMetric.TOPOLOGY_LOCK_WAITING_TIME;
 import static com.gentics.mesh.metric.SimpleMetric.TX_RETRY;
 import static com.gentics.mesh.metric.SimpleMetric.TX_TIME;
 import static com.gentics.mesh.util.StreamUtil.toStream;
@@ -89,7 +92,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private static final String RIDBAG_PARAM_KEY = "ridBag.embeddedToSbtreeBonsaiThreshold";
 
-	private TypeResolver resolver;
+    private TypeResolver resolver;
 
 	private OrientStorage txProvider;
 
@@ -111,6 +114,12 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private Thread txCleanupThread;
 
+    private Timer topologyLockTimer;
+
+    private Timer commitTimer;
+
+    private Counter topologyLockTimeoutCounter;
+
 	@Inject
 	public OrientDBDatabase(Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, MetricsService metrics, OrientDBTypeHandler typeHandler,
 		OrientDBIndexHandler indexHandler,
@@ -122,6 +131,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 		if (metrics != null) {
 			txTimer = metrics.timer(TX_TIME);
 			txRetryCounter = metrics.counter(TX_RETRY);
+            topologyLockTimer = metrics.timer(TOPOLOGY_LOCK_WAITING_TIME);
+            topologyLockTimeoutCounter = metrics.counter(TOPOLOGY_LOCK_TIMEOUT_COUNT);
+            commitTimer = metrics.timer(COMMIT_TIME);
 		}
 		this.typeHandler = typeHandler;
 		this.indexHandler = indexHandler;
@@ -354,7 +366,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	@Deprecated
 	public Tx tx() {
-		return new OrientDBTx(this, boot.get(), txProvider, resolver);
+		return new OrientDBTx(this, boot.get(), txProvider, resolver, commitTimer);
 	}
 
 	@Override
@@ -364,12 +376,14 @@ public class OrientDBDatabase extends AbstractDatabase {
 		if (clusterOptions.isEnabled() && clusterManager() != null && lockTimeout != 0) {
 			long start = System.currentTimeMillis();
 			long i = 0;
+            Timer.Sample sample = Timer.start();
 			while (clusterManager().isClusterTopologyLocked()) {
 				long dur = System.currentTimeMillis() - start;
 				if (i % 250 == 0) {
 					log.info("Write operation locked due to topology lock. Locked since " + dur + "ms");
 				}
 				if (dur > lockTimeout) {
+				    topologyLockTimeoutCounter.increment();
 					log.warn("Tx global lock timeout of {" + lockTimeout + "} reached.");
 					break;
 				}
@@ -381,6 +395,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 				}
 				i++;
 			}
+			sample.stop(this.topologyLockTimer);
 		}
 	}
 
