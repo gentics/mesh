@@ -3,6 +3,7 @@ package com.gentics.mesh.core.monitoring;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -14,6 +15,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 @MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class HealthEndpointTest extends AbstractMeshTest {
 
+	@After
 	@Before
 	public void setup() {
 		meshApi().setStatus(MeshStatus.READY);
