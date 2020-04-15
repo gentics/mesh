@@ -18,6 +18,7 @@ import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.changelog.highlevel.AbstractHighLevelChange;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.impl.DummyBulkActionContext;
+import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -73,6 +74,7 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 	public void apply() {
 		AtomicLong nodeCount = new AtomicLong();
 		AtomicLong fixedNodes = new AtomicLong();
+		NodeMigrationActionContextImpl context = new NodeMigrationActionContextImpl();
 		singleBranchProjects()
 			.flatMap(project -> project.getNodeRoot().findAll().stream())
 			.forEach(node -> {
@@ -82,7 +84,7 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 				}
 				node.getGraphFieldContainers(ContainerType.INITIAL).stream()
 					.forEach(content -> {
-						boolean mutated = fixNodeVersionOrder(node, content);
+						boolean mutated = fixNodeVersionOrder(context, node, content);
 						if (mutated) {
 							fixedNodes.incrementAndGet();
 						}
@@ -90,9 +92,11 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 				nodeCount.incrementAndGet();
 			});
 		log.info("Checked {} nodes. Found and fixed {} broken nodes", nodeCount.get(), fixedNodes.get());
+		context.getConflicts()
+			.forEach(conflict -> log.info("Encountered conflict for node {" + conflict.getNodeUuid() + "} which was automatically resolved."));
 	}
 
-	private boolean fixNodeVersionOrder(Node node, NodeGraphFieldContainer initialContent) {
+	private boolean fixNodeVersionOrder(NodeMigrationActionContextImpl context, Node node, NodeGraphFieldContainer initialContent) {
 		Set<VersionNumber> seenVersions = new HashSet<>();
 		Set<Object> deletedVertexIds = new HashSet<>();
 		TreeSet<NodeGraphFieldContainer> versions = new TreeSet<>(Comparator.comparing(NodeGraphFieldContainer::getVersion));
@@ -111,6 +115,10 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 		EdgeFrame originalPublishedEdge = node.getGraphFieldContainerEdgeFrame(languageTag, branchUuid, ContainerType.PUBLISHED);
 		Optional<Object> originalPublishedId = Optional.ofNullable(node.getGraphFieldContainer(languageTag, branchUuid, ContainerType.PUBLISHED))
 			.map(ElementFrame::id);
+
+		if (log.isDebugEnabled()) {
+			log.debug("Fixing node {}-{}", node.getUuid(), languageTag);
+		}
 
 		while (currentContainer != null) {
 			// Since we only look at single branch projects, there can at most only be one next version.
@@ -156,32 +164,35 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 		// Reset draft and published edge
 
 		if (originalDraftId.isPresent() && !originalDraftId.get().equals(highestVersion.id())) {
-			setNewOutV(node, highestVersion, branchUuid, languageTag, ContainerType.DRAFT);
 			// Deleting the edge would fail if it was already removed implicitly by removing one of the vertices
 			if (!deletedVertexIds.contains(originalDraftId.get())) {
 				originalDraftEdge.remove();
 			}
+			setNewOutV(context, node, highestVersion, branchUuid, languageTag, ContainerType.DRAFT);
 			mutated = true;
 		}
 
 		if (originalPublishedId.isPresent() && latestPublished != null && !originalPublishedId.get().equals(latestPublished.id())) {
-			setNewOutV(node, latestPublished, branchUuid, languageTag, ContainerType.PUBLISHED);
 			// Deleting the edge would fail if it was already removed implicitly by removing one of the vertices
 			if (!deletedVertexIds.contains(originalPublishedId.get())) {
 				originalPublishedEdge.remove();
 			}
+			setNewOutV(context, node, latestPublished, branchUuid, languageTag, ContainerType.PUBLISHED);
 			mutated = true;
 		}
 		Tx.get().commit();
+		if (mutated && log.isDebugEnabled()) {
+			log.debug("The node was broken and has been fixed.");
+		}
 		return mutated;
 	}
 
-	private GraphFieldContainerEdge setNewOutV(Node from, NodeGraphFieldContainer to, String branchUuid, String languageTag, ContainerType type) {
+	private GraphFieldContainerEdge setNewOutV(NodeMigrationActionContextImpl context, Node from, NodeGraphFieldContainer to, String branchUuid, String languageTag, ContainerType type) {
 		GraphFieldContainerEdge newEdge = from.addFramedEdge(HAS_FIELD_CONTAINER, to, GraphFieldContainerEdgeImpl.class);
 		newEdge.setBranchUuid(branchUuid);
 		newEdge.setLanguageTag(languageTag);
 		newEdge.setType(type);
-		to.updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_update");
+		to.updateWebrootPathInfo(context, branchUuid, "node_conflicting_segmentfield_update");
 		return newEdge;
 	}
 
