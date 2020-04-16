@@ -17,7 +17,7 @@ import javax.inject.Singleton;
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.changelog.highlevel.AbstractHighLevelChange;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.context.impl.DummyBulkActionContext;
+import com.gentics.mesh.context.NodeMigrationActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -96,13 +96,12 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 			.forEach(conflict -> log.info("Encountered conflict for node {" + conflict.getNodeUuid() + "} which was automatically resolved."));
 	}
 
-	private boolean fixNodeVersionOrder(NodeMigrationActionContextImpl context, Node node, NodeGraphFieldContainer initialContent) {
+	private boolean fixNodeVersionOrder(NodeMigrationActionContext context, Node node, NodeGraphFieldContainer initialContent) {
 		Set<VersionNumber> seenVersions = new HashSet<>();
 		TreeSet<NodeGraphFieldContainer> versions = new TreeSet<>(Comparator.comparing(NodeGraphFieldContainer::getVersion));
 		NodeGraphFieldContainer highestVersion = null;
 		NodeGraphFieldContainer currentContainer = initialContent;
 		NodeGraphFieldContainer latestPublished = null;
-		DummyBulkActionContext bac = new DummyBulkActionContext();
 		boolean mutated = false;
 
 		String branchUuid = initialContent.getBranches(ContainerType.INITIAL).iterator().next();
@@ -131,7 +130,7 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 				mutated = true;
 			}
 			if (highestVersion != null && currentVersion.compareTo(highestVersion.getVersion()) < 0) {
-				// Wrong order
+				// This means that currentVersion is in the wrong order and needs to be moved.
 
 				NodeGraphFieldContainer lower = versions.lower(currentContainer);
 				// There must always be a higher version
@@ -188,7 +187,7 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 		return version;
 	}
 
-	private GraphFieldContainerEdge setNewOutV(NodeMigrationActionContextImpl context, Node from, NodeGraphFieldContainer to, String branchUuid, String languageTag, ContainerType type) {
+	private GraphFieldContainerEdge setNewOutV(NodeMigrationActionContext context, Node from, NodeGraphFieldContainer to, String branchUuid, String languageTag, ContainerType type) {
 		GraphFieldContainerEdge newEdge = from.addFramedEdge(HAS_FIELD_CONTAINER, to, GraphFieldContainerEdgeImpl.class);
 		newEdge.setBranchUuid(branchUuid);
 		newEdge.setLanguageTag(languageTag);
