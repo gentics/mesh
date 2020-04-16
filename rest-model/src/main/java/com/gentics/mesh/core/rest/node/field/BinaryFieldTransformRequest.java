@@ -8,6 +8,8 @@ import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.parameter.image.ImageRect;
 import com.gentics.mesh.parameter.image.ResizeMode;
 
+import java.text.NumberFormat;
+
 /**
  * POJO for a binary field transform request
  */
@@ -22,10 +24,10 @@ public class BinaryFieldTransformRequest implements RestModel {
 	private String language;
 
 	@JsonPropertyDescription("New width of the image.")
-	private Integer width;
+	private String width;
 
 	@JsonPropertyDescription("New height of the image.")
-	private Integer height;
+	private String height;
 
 	@JsonPropertyDescription("Crop area.")
 	private ImageRect cropRect;
@@ -37,56 +39,80 @@ public class BinaryFieldTransformRequest implements RestModel {
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Resize mode.")
 	private ResizeMode resizeMode;
-	
+
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Optional new focal point for the transformed image.")
 	private FocalPoint focalPoint;
 
 	/**
 	 * Get resize width
-	 * 
+	 *
 	 * @return resize width
 	 */
-	public Integer getWidth() {
+	public String getWidth() {
 		return width;
 	}
 
 	/**
 	 * Set the resize width
-	 * 
-	 * @param width
-	 *            resize width
+	 *
+	 * @param width resize width
 	 * @return fluent API
 	 */
-	public BinaryFieldTransformRequest setWidth(Integer width) {
+	public BinaryFieldTransformRequest setWidth(String width) {
 		this.width = width;
 		return this;
 	}
 
 	/**
+	 * Set the resize width
+	 *
+	 * @param width resize width
+	 * @return fluent API
+	 * @deprecated Use the BinaryFieldTransformRequest{@link #getWidth()} instead
+	 */
+	@Deprecated
+	public BinaryFieldTransformRequest setWidth(Integer width) {
+		this.width = width.toString();
+		return this;
+	}
+
+	/**
 	 * Get the resize height
-	 * 
+	 *
 	 * @return resize height
 	 */
-	public Integer getHeight() {
+	public String getHeight() {
 		return height;
 	}
 
 	/**
 	 * Set the resize height
-	 * 
-	 * @param height
-	 *            resize height
+	 *
+	 * @param height resize height
 	 * @return fluent API
 	 */
-	public BinaryFieldTransformRequest setHeight(Integer height) {
+	public BinaryFieldTransformRequest setHeight(String height) {
 		this.height = height;
 		return this;
 	}
 
 	/**
+	 * Set the resize height
+	 *
+	 * @param height resize height
+	 * @return fluent API
+	 * @deprecated Use the BinaryFieldTransformRequest{@link #getHeight()}instead
+	 */
+	@Deprecated
+	public BinaryFieldTransformRequest setHeight(Integer height) {
+		this.height = height.toString();
+		return this;
+	}
+
+	/**
 	 * Return the crop area.
-	 * 
+	 *
 	 * @return
 	 */
 	public ImageRect getCropRect() {
@@ -103,7 +129,7 @@ public class BinaryFieldTransformRequest implements RestModel {
 
 	/**
 	 * Set the crop area.
-	 * 
+	 *
 	 * @param startX
 	 * @param startY
 	 * @param height
@@ -116,7 +142,7 @@ public class BinaryFieldTransformRequest implements RestModel {
 
 	/**
 	 * Return the crop mode.
-	 * 
+	 *
 	 * @return
 	 */
 	public CropMode getCropMode() {
@@ -133,7 +159,7 @@ public class BinaryFieldTransformRequest implements RestModel {
 
 	/**
 	 * Return the resize mode.
-	 * 
+	 *
 	 * @return
 	 */
 	public ResizeMode getResizeMode() {
@@ -147,9 +173,10 @@ public class BinaryFieldTransformRequest implements RestModel {
 		this.resizeMode = mode;
 		return this;
 	}
+
 	/**
 	 * Return the node language.
-	 * 
+	 *
 	 * @return
 	 */
 	public String getLanguage() {
@@ -158,7 +185,7 @@ public class BinaryFieldTransformRequest implements RestModel {
 
 	/**
 	 * Set the language of the node content which contains the image.
-	 * 
+	 *
 	 * @param language
 	 * @return Fluent API
 	 */
@@ -169,7 +196,7 @@ public class BinaryFieldTransformRequest implements RestModel {
 
 	/**
 	 * Return the node version.
-	 * 
+	 *
 	 * @return
 	 */
 	public String getVersion() {
@@ -178,7 +205,7 @@ public class BinaryFieldTransformRequest implements RestModel {
 
 	/**
 	 * Set the node version.
-	 * 
+	 *
 	 * @param version
 	 * @return Fluent API
 	 */
@@ -189,7 +216,7 @@ public class BinaryFieldTransformRequest implements RestModel {
 
 	/**
 	 * Return the focal point.
-	 * 
+	 *
 	 * @return
 	 */
 	public FocalPoint getFocalPoint() {
@@ -198,7 +225,7 @@ public class BinaryFieldTransformRequest implements RestModel {
 
 	/**
 	 * Set the focal point.
-	 * 
+	 *
 	 * @param focalPoint
 	 * @return Fluent API
 	 */

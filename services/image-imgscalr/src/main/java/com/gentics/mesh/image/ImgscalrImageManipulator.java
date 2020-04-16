@@ -1,36 +1,5 @@
 package com.gentics.mesh.image;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.time.Duration;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-
-import javax.imageio.IIOImage;
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.ImageWriteParam;
-import javax.imageio.ImageWriter;
-import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
-import javax.imageio.stream.FileImageOutputStream;
-import javax.imageio.stream.ImageInputStream;
-import javax.imageio.stream.ImageOutputStream;
-
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.parser.AutoDetectParser;
-import org.apache.tika.parser.ParseContext;
-import org.apache.tika.parser.Parser;
-import org.apache.tika.sax.BodyContentHandler;
-import org.imgscalr.Scalr;
-import org.imgscalr.Scalr.Mode;
-
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.image.spi.AbstractImageManipulator;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
@@ -41,13 +10,38 @@ import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.parameter.image.ImageRect;
 import com.gentics.mesh.parameter.image.ResizeMode;
+import com.gentics.mesh.util.NumberUtils;
 import com.twelvemonkeys.image.ResampleOp;
-
 import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.WorkerExecutor;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.parser.AutoDetectParser;
+import org.apache.tika.parser.ParseContext;
+import org.apache.tika.parser.Parser;
+import org.apache.tika.sax.BodyContentHandler;
+import org.imgscalr.Scalr;
+import org.imgscalr.Scalr.Mode;
+
+import javax.imageio.*;
+import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
+import javax.imageio.stream.FileImageOutputStream;
+import javax.imageio.stream.ImageInputStream;
+import javax.imageio.stream.ImageOutputStream;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 /**
  * The ImgScalr Manipulator uses a pure java imageio image resizer.
@@ -106,33 +100,43 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 		double aspectRatio = (double) originalWidth / (double) originalHeight;
 
 		// Resize if required and calculate missing parameters if needed
-		Integer pHeight = parameters.getHeight();
-		Integer pWidth = parameters.getWidth();
+		Integer pHeight = NumberUtils.toInt(parameters.getHeight(), 0);
+		Integer pWidth = NumberUtils.toInt(parameters.getWidth(), 0);
 
 		// Resizing is only needed when one of the parameters has been specified
-		if (pHeight != null || pWidth != null) {
+		if (pHeight != 0 || pWidth != 0) {
 
 			// No operation needed when width is the same and no height was set
-			if (pHeight == null && pWidth == originalWidth) {
+			if (pHeight == 0 && pWidth == originalWidth) {
 				return originalImage;
 			}
 
 			// No operation needed when height is the same and no width was set
-			if (pWidth == null && pHeight == originalHeight) {
+			if (pWidth == 0 && pHeight == originalHeight) {
 				return originalImage;
 			}
 
 			// No operation needed when width and height match original image
-			if (pWidth != null && pWidth == originalWidth && pHeight != null && pHeight == originalHeight) {
+			if (pWidth != 0 && pWidth == originalWidth && pHeight != 0 && pHeight == originalHeight) {
 				return originalImage;
 			}
-			int width = pWidth == null ? (int) (pHeight * aspectRatio) : pWidth;
-			int height = pHeight == null ? (int) (width / aspectRatio) : pHeight;
-
 			ResizeMode resizeMode = parameters.getResizeMode();
+			// if the mode used is smart, and one of the dimensions is auto then set this dimension to the original Value
+			if (resizeMode == ResizeMode.SMART) {
+				if (parameters.getWidth() != null && parameters.getWidth().equals("auto")) {
+					pWidth = originalWidth;
+				}
+				if (parameters.getHeight() != null && parameters.getHeight().equals("auto")) {
+					pHeight = originalHeight;
+				}
+			}
+			int width = pWidth == 0 ? (int) (pHeight * aspectRatio) : pWidth;
+			int height = pHeight == 0 ? (int) (width / aspectRatio) : pHeight;
+
 
 			// if we want to use smart resizing we need to crop the original image to the correct format before resizing to avoid distortion
-			if (pWidth != null && pHeight != null && resizeMode == ResizeMode.SMART) {
+			if (pWidth != 0 && pHeight != 0 && resizeMode == ResizeMode.SMART) {
+
 				double pAspectRatio = (double) pWidth / (double) pHeight;
 				if (aspectRatio != pAspectRatio) {
 					if (aspectRatio < pAspectRatio) {
@@ -150,7 +154,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 			}
 
 			// if we want to use proportional resizing we need to make sure the destination dimension fits inside the provided dimensions
-			if (pWidth != null && pHeight != null && resizeMode == ResizeMode.PROP) {
+			if (pWidth != 0 && pHeight != 0 && resizeMode == ResizeMode.PROP) {
 				double pAspectRatio = (double) pWidth / (double) pHeight;
 				if (aspectRatio < pAspectRatio) {
 					// scale to pHeight
@@ -183,8 +187,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	/**
 	 * Create an image reader for the given input.
 	 *
-	 * @param input
-	 *            The input stream to read the original image from.
+	 * @param input The input stream to read the original image from.
 	 * @return An image reader reading from the given input stream
 	 */
 	private ImageReader getImageReader(ImageInputStream input) {
@@ -206,13 +209,11 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
 	/**
 	 * Create an image writer from the same image format as the specified image reader writing to the given output stream.
-	 *
+	 * <p>
 	 * When no respective writer to the given reader is available, a PNG writer will be created.
 	 *
-	 * @param reader
-	 *            The reader used to read the original image
-	 * @param out
-	 *            The output stream the writer should use
+	 * @param reader The reader used to read the original image
+	 * @param out    The output stream the writer should use
 	 * @return An image writer for the same type as the specified reader, or a PNG writer if that is not available
 	 */
 	private ImageWriter getImageWriter(ImageReader reader, ImageOutputStream out) {
@@ -257,10 +258,8 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	/**
 	 * Resize the given image with the specified manipulation parameters.
 	 *
-	 * @param image
-	 *            The image to process
-	 * @param parameters
-	 *            The parameters defining cropping and resizing requests
+	 * @param image      The image to process
+	 * @param parameters The parameters defining cropping and resizing requests
 	 * @return The modified image
 	 */
 	protected BufferedImage cropAndResize(BufferedImage image, ImageManipulationParameters parameters) {
@@ -268,14 +267,14 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 		boolean omitResize = false;
 		if (cropMode != null) {
 			switch (cropMode) {
-			case RECT:
-				image = crop(image, parameters.getRect());
-				break;
-			case FOCALPOINT:
-				image = focalPointModifier.apply(image, parameters);
-				// We don't need to resize the image again. The dimensions already match up with the target dimension
-				omitResize = true;
-				break;
+				case RECT:
+					image = crop(image, parameters.getRect());
+					break;
+				case FOCALPOINT:
+					image = focalPointModifier.apply(image, parameters);
+					// We don't need to resize the image again. The dimensions already match up with the target dimension
+					omitResize = true;
+					break;
 			}
 		}
 

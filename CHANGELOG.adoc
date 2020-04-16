@@ -31,6 +31,11 @@ icon:check[] Core: Fixed a bug that caused an internal server error if a project
 
 icon:plus[] Test: An enhanced test container class has been added. The `MeshContainer` class replaces the `MeshDockerServer` which was deprecated.
 
+[[v1.4.5]]
+== 1.4.5 (15.04.2020)
+
+icon:plus[] Image Manipulation: Mesh supports now the ´auto´ parameter when manipulating the images. The width and height fields in the binaries are now strings.
+
 [[v1.4.4]]
 == 1.4.4 (14.04.2020)
 
