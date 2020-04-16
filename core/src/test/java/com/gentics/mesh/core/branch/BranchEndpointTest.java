@@ -265,7 +265,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Override
 	public void testCreateWithDuplicateUuid() throws Exception {
 		String branchName = "Branch V1";
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 			String uuid = user().getUuid();
 

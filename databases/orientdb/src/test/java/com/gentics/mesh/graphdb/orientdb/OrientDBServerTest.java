@@ -9,7 +9,6 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.orientdb.graph.Person;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -41,12 +40,13 @@ public class OrientDBServerTest extends AbstractOrientDBTest {
 		db.setupConnectionPool();
 
 		for (int i = 0; i < 100; i++) {
-			try (Tx tx = db.tx()) {
+			int e = i;
+			db.tx(tx -> {
 				Person p = tx.getGraph().addFramedVertex(Person.class);
-				p.setName("personName_" + i);
+				p.setName("personName_" + e);
 				tx.success();
 				Thread.sleep(5000);
-			}
+			});
 		}
 		Thread.sleep(610000);
 		db.stop();

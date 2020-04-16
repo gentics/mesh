@@ -149,6 +149,12 @@
 			</exclusions>
 		</dependency>
 
+		<!-- Hazelcast -->
+		<dependency>
+			<groupId>com.hazelcast</groupId>
+			<artifactId>hazelcast</artifactId>
+		</dependency>
+
 		<!-- Test -->
 		<dependency>
 			<groupId>org.assertj</groupId>

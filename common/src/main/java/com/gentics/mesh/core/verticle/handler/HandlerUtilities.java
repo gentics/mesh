@@ -32,17 +32,14 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
-import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ResultInfo;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.UUIDUtil;
 
-import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
@@ -56,23 +53,20 @@ public class HandlerUtilities {
 	private static final Logger log = LoggerFactory.getLogger(HandlerUtilities.class);
 
 	private final Database database;
-	private final MetricsService metrics;
 
 	private final Provider<EventQueueBatch> queueProvider;
 
 	private final Provider<BulkActionContext> bulkProvider;
 
-	private final WriteLock writeLock;
+	private final WriteLock globalLock;
 
 	@Inject
-	public HandlerUtilities(Database database, MeshOptions meshOptions, MetricsService metrics, Provider<EventQueueBatch> queueProvider,
+	public HandlerUtilities(Database database, MeshOptions meshOptions, Provider<EventQueueBatch> queueProvider,
 		Provider<BulkActionContext> bulkProvider, WriteLock writeLock) {
-		GraphStorageOptions storageOptions = meshOptions.getStorageOptions();
 		this.database = database;
-		this.metrics = metrics;
 		this.queueProvider = queueProvider;
 		this.bulkProvider = bulkProvider;
-		this.writeLock = writeLock;
+		this.globalLock = writeLock;
 	}
 
 	/**
@@ -96,7 +90,7 @@ public class HandlerUtilities {
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void deleteElement(InternalActionContext ac, TxAction1<RootVertex<T>> handler,
 		String uuid) {
-		try (WriteLock lock = writeLock.lock(ac)) {
+		try (WriteLock lock = globalLock.lock(ac)) {
 			syncTx(ac, () -> {
 				RootVertex<T> root = handler.handle();
 				T element = root.loadObjectByUuid(ac, uuid, DELETE_PERM);
@@ -139,7 +133,7 @@ public class HandlerUtilities {
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createOrUpdateElement(InternalActionContext ac, String uuid,
 		TxAction1<RootVertex<T>> handler) {
-		try (WriteLock lock = writeLock.lock(ac)) {
+		try (WriteLock lock = globalLock.lock(ac)) {
 			AtomicBoolean created = new AtomicBoolean(false);
 			syncTx(ac, tx -> {
 				RootVertex<T> root = handler.handle();
@@ -216,7 +210,7 @@ public class HandlerUtilities {
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElementList(InternalActionContext ac, TxAction1<RootVertex<T>> handler) {
 
-		rxSyncTx(ac, tx -> {
+		syncTx(ac, tx -> {
 			RootVertex<T> root = handler.handle();
 
 			PagingParameters pagingInfo = ac.getPagingParameters();
@@ -230,8 +224,7 @@ public class HandlerUtilities {
 					throw new NotModifiedException();
 				}
 			}
-			return page.transformToRest(ac, 0);
-
+			return page.transformToRestSync(ac, 0);
 		}, m -> ac.send(m, OK));
 	}
 
@@ -239,15 +232,6 @@ public class HandlerUtilities {
 		try {
 			RM model = database.tx(handler);
 			action.accept(model);
-		} catch (Throwable t) {
-			ac.fail(t);
-		}
-	}
-
-	public <RM extends RestModel> void rxSyncTx(InternalActionContext ac, TxAction<Single<RM>> handler, Consumer<RM> action) {
-		try {
-			Single<RM> model = database.tx(handler);
-			model.subscribe(action::accept, ac::fail);
 		} catch (Throwable t) {
 			ac.fail(t);
 		}

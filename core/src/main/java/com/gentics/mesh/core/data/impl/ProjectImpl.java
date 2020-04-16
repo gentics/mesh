@@ -316,13 +316,6 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
-	public Single<ProjectResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return db().asyncTx(() -> {
-			return Single.just(transformToRestSync(ac, level, languageTags));
-		});
-	}
-
-	@Override
 	public MeshElementEventModel onCreated() {
 		MeshElementEventModel event = super.onCreated();
 		try {

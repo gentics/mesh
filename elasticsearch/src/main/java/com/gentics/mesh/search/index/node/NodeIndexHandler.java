@@ -329,9 +329,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		return Completable.defer(() -> {
 			GenericEntryContext context = entry.getContext();
 			Set<Single<String>> obs = new HashSet<>();
-			try (Tx tx = db.tx()) {
+			db.tx(() -> {
 				store(obs, node, context);
-			}
+			});
 
 			// Now merge all store actions and refresh the affected indices
 			return Observable.fromIterable(obs).map(x -> x.toObservable()).flatMap(x -> x).distinct().ignoreElements();
@@ -340,9 +340,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	public Observable<IndexBulkEntry> storeForBulk(Node node, UpdateDocumentEntry entry) {
 		GenericEntryContext context = entry.getContext();
-		try (Tx tx = db.tx()) {
+		return db.tx(() -> {
 			return storeForBulk(node, context);
-		}
+		});
 	}
 
 	/**

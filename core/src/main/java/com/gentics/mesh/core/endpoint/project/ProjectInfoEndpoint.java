@@ -35,7 +35,6 @@ public class ProjectInfoEndpoint extends AbstractInternalEndpoint {
 
 	@Override
 	public void registerEndPoints() {
-		secureAll();
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:project");
 		endpoint.method(HttpMethod.GET);
@@ -43,7 +42,10 @@ public class ProjectInfoEndpoint extends AbstractInternalEndpoint {
 		endpoint.description("Return the current project info.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, projectExamples.getProjectResponse("demo"), "Project information.");
-		endpoint.handler(rc -> {
+		if (chain != null) {
+			chain.secure(endpoint.getRoute());
+		}
+		endpoint.blockingHandler(rc -> {
 			String projectName = rc.request().params().get("project");
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleReadByName(ac, projectName);

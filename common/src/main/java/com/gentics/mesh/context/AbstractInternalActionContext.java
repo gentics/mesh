@@ -16,6 +16,8 @@ import io.vertx.core.Handler;
  */
 public abstract class AbstractInternalActionContext extends AbstractActionContext implements InternalActionContext {
 
+	private static final String SKIP_LOCK_DATA_KEY = "SKIP_LOCK";
+
 	private boolean skipWriteLock = false;
 
 	/**
@@ -66,14 +68,13 @@ public abstract class AbstractInternalActionContext extends AbstractActionContex
 
 	@Override
 	public boolean isSkipWriteLock() {
-		return skipWriteLock;
+		return this.data().containsKey(SKIP_LOCK_DATA_KEY);
 	}
 
 	@Override
 	public InternalActionContext skipWriteLock() {
-		this.skipWriteLock =true;
+		this.data().put(SKIP_LOCK_DATA_KEY, true);
 		return this;
 	}
-
 
 }

@@ -154,15 +154,6 @@ public class GraphStorageOptions implements Option {
 		return this;
 	}
 
-	public long getSynchronizeWritesTimeout() {
-		return synchronizeWritesTimeout;
-	}
-
-	public GraphStorageOptions setSynchronizeWritesTimeout(long synchronizeWritesTimeout) {
-		this.synchronizeWritesTimeout = synchronizeWritesTimeout;
-		return this;
-	}
-
 	public int getTxRetryDelay() {
 		return txRetryDelay;
 	}
@@ -170,6 +161,15 @@ public class GraphStorageOptions implements Option {
 	public GraphStorageOptions setTxRetryDelay(int txRetryDelay) {
 		this.txRetryDelay = txRetryDelay;
 
+		return this;
+	}
+
+	public long getSynchronizeWritesTimeout() {
+		return synchronizeWritesTimeout;
+	}
+
+	public GraphStorageOptions setSynchronizeWritesTimeout(long synchronizeWritesTimeout) {
+		this.synchronizeWritesTimeout = synchronizeWritesTimeout;
 		return this;
 	}
 
@@ -197,4 +197,5 @@ public class GraphStorageOptions implements Option {
 				"You have not specified a data directory and enabled the graph server. It is not possible to run Gentics Mesh in memory mode and start the graph server.");
 		}
 	}
+
 }

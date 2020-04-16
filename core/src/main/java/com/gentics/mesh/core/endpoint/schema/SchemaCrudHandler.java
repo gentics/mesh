@@ -73,7 +73,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 	@Override
 	public void handleUpdate(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		try (WriteLock lock = writeLock.lock(ac)) {
+		try (WriteLock lock = globalLock.lock(ac)) {
 
 			/**
 			 * The following code delegates the call to the handleUpdate method is very hacky at best. It would be better to move the whole update code into the
@@ -92,7 +92,6 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 			// Delegate to handle update which will create the schema
 			if (delegateToCreate) {
-				ac.skipWriteLock();
 				super.handleUpdate(ac, uuid);
 				return;
 			}
@@ -229,7 +228,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 	public void handleAddSchemaToProject(InternalActionContext ac, String schemaUuid) {
 		validateParameter(schemaUuid, "schemaUuid");
 
-		try (WriteLock lock = writeLock.lock(ac)) {
+		try (WriteLock lock = globalLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				Project project = ac.getProject();
 				String projectUuid = project.getUuid();
@@ -262,7 +261,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 	public void handleRemoveSchemaFromProject(InternalActionContext ac, String schemaUuid) {
 		validateParameter(schemaUuid, "schemaUuid");
 
-		try (WriteLock lock = writeLock.lock(ac)) {
+		try (WriteLock lock = globalLock.lock(ac)) {
 			utils.syncTx(ac, () -> {
 				Project project = ac.getProject();
 				String projectUuid = project.getUuid();
@@ -301,7 +300,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 	public void handleApplySchemaChanges(InternalActionContext ac, String schemaUuid) {
 		validateParameter(schemaUuid, "schemaUuid");
 
-		try (WriteLock lock = writeLock.lock(ac)) {
+		try (WriteLock lock = globalLock.lock(ac)) {
 			utils.syncTx(ac, (tx) -> {
 				SchemaContainer schema = boot.get().schemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
 				String version = utils.eventAction(batch -> {

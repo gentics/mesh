@@ -22,6 +22,8 @@ import javax.inject.Singleton;
 import com.gentics.madl.tx.Tx;
 import com.gentics.madl.tx.TxAction;
 import com.gentics.madl.tx.TxAction0;
+import com.gentics.mesh.Mesh;
+import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -92,7 +94,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private static final String RIDBAG_PARAM_KEY = "ridBag.embeddedToSbtreeBonsaiThreshold";
 
-    private TypeResolver resolver;
+	private TypeResolver resolver;
 
 	private OrientStorage txProvider;
 
@@ -114,57 +116,52 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private Thread txCleanupThread;
 
-    private Timer topologyLockTimer;
+	private Timer topologyLockTimer;
 
-    private Timer commitTimer;
+	private Timer commitTimer;
 
-    private Counter topologyLockTimeoutCounter;
+	private Counter topologyLockTimeoutCounter;
+
+	private Mesh mesh;
 
 	@Inject
 	public OrientDBDatabase(Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, MetricsService metrics, OrientDBTypeHandler typeHandler,
 		OrientDBIndexHandler indexHandler,
 		OrientDBClusterManager clusterManager,
-		TxCleanupTask txCleanupTask) {
+		TxCleanupTask txCleanupTask,
+		Mesh mesh) {
 		super(vertx);
 		this.boot = boot;
 		this.metrics = metrics;
 		if (metrics != null) {
 			txTimer = metrics.timer(TX_TIME);
 			txRetryCounter = metrics.counter(TX_RETRY);
-            topologyLockTimer = metrics.timer(TOPOLOGY_LOCK_WAITING_TIME);
-            topologyLockTimeoutCounter = metrics.counter(TOPOLOGY_LOCK_TIMEOUT_COUNT);
-            commitTimer = metrics.timer(COMMIT_TIME);
+			topologyLockTimer = metrics.timer(TOPOLOGY_LOCK_WAITING_TIME);
+			topologyLockTimeoutCounter = metrics.counter(TOPOLOGY_LOCK_TIMEOUT_COUNT);
+			commitTimer = metrics.timer(COMMIT_TIME);
 		}
 		this.typeHandler = typeHandler;
 		this.indexHandler = indexHandler;
 		this.clusterManager = clusterManager;
 		this.txCleanUpTask = txCleanupTask;
+		this.mesh = mesh;
 	}
 
 	@Override
 	public void stop() {
-		// // TODO let other nodes know we are stopping the instance?
-		// if (options.getClusterOptions().isEnabled()) {
-		// Mesh.vertx().eventBus().publish(MeshEvent.CLUSTER_NODE_LEAVING, new JsonObject().put("node", getNodeName()));
-		// try {
-		// Thread.sleep(2000);
-		// } catch (InterruptedException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		// }
-		if (txProvider != null) {
-			txProvider.close();
-		}
-
-		clusterManager.stop();
-
+		txCleanUpTask.interruptActive();
+		Tx.setActive(null);
 		if (txCleanupThread != null) {
 			log.info("Stopping tx cleanup thread");
 			txCleanupThread.interrupt();
 		}
 
-		Tx.setActive(null);
+		clusterManager.stop();
+
+		if (txProvider != null) {
+			txProvider.close();
+		}
+
 	}
 
 	@Override
@@ -376,14 +373,14 @@ public class OrientDBDatabase extends AbstractDatabase {
 		if (clusterOptions.isEnabled() && clusterManager() != null && lockTimeout != 0) {
 			long start = System.currentTimeMillis();
 			long i = 0;
-            Timer.Sample sample = Timer.start();
+			Timer.Sample sample = Timer.start();
 			while (clusterManager().isClusterTopologyLocked()) {
 				long dur = System.currentTimeMillis() - start;
 				if (i % 250 == 0) {
 					log.info("Write operation locked due to topology lock. Locked since " + dur + "ms");
 				}
 				if (dur > lockTimeout) {
-				    topologyLockTimeoutCounter.increment();
+					topologyLockTimeoutCounter.increment();
 					log.warn("Tx global lock timeout of {" + lockTimeout + "} reached.");
 					break;
 				}
@@ -410,6 +407,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 		int maxRetry = options.getStorageOptions().getTxRetryLimit();
 		for (int retry = 0; retry < maxRetry; retry++) {
 			Timer.Sample sample = Timer.start();
+			// Check the status to prevent transactions during shutdown
+			checkStatus();
 			try (Tx tx = tx()) {
 				handlerResult = txHandler.handle(tx);
 				handlerFinished = true;
@@ -420,9 +419,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 				// factory.getTx().getRawGraph().getMetadata().getSchema().reload();
 				// Database.getThreadLocalGraph().getMetadata().getSchema().reload();
 			} catch (InterruptedException | ONeedRetryException | FastNoSuchElementException e) {
-				if (log.isTraceEnabled()) {
-					log.trace("Error while handling transaction. Retrying " + retry, e);
-				}
+				// if (log.isTraceEnabled()) {
+				log.error("Error while handling transaction. Retrying " + retry, e);
+				// }
 				int delay = options.getStorageOptions().getTxRetryDelay();
 				if (retry > 0 && delay > 0) {
 					try {
@@ -464,6 +463,17 @@ public class OrientDBDatabase extends AbstractDatabase {
 			}
 		}
 		throw new RuntimeException("Retry limit {" + maxRetry + "} for trx exceeded");
+	}
+
+	private void checkStatus() {
+		MeshStatus status = mesh.getStatus();
+		switch (status) {
+		case READY:
+		case STARTING:
+			return;
+		default:
+			throw new RuntimeException("Mesh is not ready. Current status " + status.name() + ". Aborting transaction.");
+		}
 	}
 
 	@Override

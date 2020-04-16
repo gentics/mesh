@@ -168,6 +168,11 @@ public class MeshJWTAuthHandler extends AuthHandlerImpl implements JWTAuthHandle
 				authorizeUser(authenticatedUser, context);
 				return;
 			} else {
+				if (res.cause() != null) {
+					if (log.isDebugEnabled()) {
+						log.error("Authentication failed in Mesh JWT handler.", res.cause());
+					}
+				}
 				if (ignoreDecodeErrors) {
 					context.next();
 				} else {

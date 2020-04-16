@@ -11,7 +11,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
@@ -55,7 +54,7 @@ public class DemoDumpGeneratorTest {
 	@Test
 	public void testSetup() throws Exception {
 		generator.dump();
-		try (Tx tx = db.tx()) {
+		db.tx(tx -> {
 			Project project = boot.meshRoot().getProjectRoot().findByName("demo");
 			assertTrue(project.getNodeRoot().computeCount() > 0);
 			User user = boot.meshRoot().getUserRoot().findByUsername("webclient");
@@ -91,7 +90,8 @@ public class DemoDumpGeneratorTest {
 					fail(msg);
 				}
 			}
-		}
+			tx.success();
+		});
 	}
 
 	@After

@@ -1,11 +1,12 @@
 package com.gentics.mesh.core.monitoring;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -25,6 +26,7 @@ import io.vertx.core.impl.launcher.commands.VersionCommand;
 public class MonitoringServerEndpointTest extends AbstractMeshTest {
 
 	@Before
+	@After
 	public void setup() {
 		meshApi().setStatus(MeshStatus.READY);
 	}

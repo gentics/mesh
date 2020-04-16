@@ -72,27 +72,30 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 		if (log.isDebugEnabled()) {
 			log.debug("Handling permission request for element on path {" + pathToElement + "}");
 		}
-		utils.syncTx(ac, tx -> {
-			// 1. Load the user that should be used - read perm implies that the
-			// user is able to read the attached permissions
-			User user = boot.userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 
-			// 2. Resolve the path to element that is targeted
-			MeshVertex targetElement = boot.meshRoot().resolvePathToElement(pathToElement);
-			if (targetElement == null) {
-				throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
-			}
-			UserPermissionResponse response = new UserPermissionResponse();
+		try (WriteLock lock = globalLock.lock(ac)) {
+			utils.syncTx(ac, tx -> {
+				// 1. Load the user that should be used - read perm implies that the
+				// user is able to read the attached permissions
+				User user = boot.userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 
-			// 1. Add granted permissions
-			for (GraphPermission perm : user.getPermissions(targetElement)) {
-				response.set(perm.getRestPerm(), true);
-			}
+				// 2. Resolve the path to element that is targeted
+				MeshVertex targetElement = boot.meshRoot().resolvePathToElement(pathToElement);
+				if (targetElement == null) {
+					throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
+				}
+				UserPermissionResponse response = new UserPermissionResponse();
 
-			// 2. Add not granted permissions
-			response.setOthers(false);
-			return response;
-		}, model -> ac.send(model, OK));
+				// 1. Add granted permissions
+				for (GraphPermission perm : user.getPermissions(targetElement)) {
+					response.set(perm.getRestPerm(), true);
+				}
+
+				// 2. Add not granted permissions
+				response.setOthers(false);
+				return response;
+			}, model -> ac.send(model, OK));
+		}
 
 	}
 
@@ -106,26 +109,28 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 	public void handleFetchToken(InternalActionContext ac, String userUuid) {
 		validateParameter(userUuid, "The userUuid must not be empty");
 
-		utils.syncTx(ac, tx -> {
-			// 1. Load the user that should be used
-			User user = boot.userRoot().loadObjectByUuid(ac, userUuid, CREATE_PERM);
+		try (WriteLock lock = globalLock.lock(ac)) {
+			utils.syncTx(ac, tx -> {
+				// 1. Load the user that should be used
+				User user = boot.userRoot().loadObjectByUuid(ac, userUuid, CREATE_PERM);
 
-			// 2. Generate a new token and store it for the user
-			UserResetTokenResponse tokenResponse = db.tx(() -> {
-				Long tokenTimestamp = System.currentTimeMillis();
-				String created = DateUtils.toISO8601(tokenTimestamp, 0);
+				// 2. Generate a new token and store it for the user
+				UserResetTokenResponse tokenResponse = db.tx(() -> {
+					Long tokenTimestamp = System.currentTimeMillis();
+					String created = DateUtils.toISO8601(tokenTimestamp, 0);
 
-				String token = TokenUtil.randomToken();
-				user.setResetToken(token);
-				user.setResetTokenIssueTimestamp(tokenTimestamp);
+					String token = TokenUtil.randomToken();
+					user.setResetToken(token);
+					user.setResetTokenIssueTimestamp(tokenTimestamp);
 
-				UserResetTokenResponse response = new UserResetTokenResponse();
-				response.setCreated(created);
-				response.setToken(token);
-				return response;
-			});
-			return tokenResponse;
-		}, model -> ac.send(model, CREATED));
+					UserResetTokenResponse response = new UserResetTokenResponse();
+					response.setCreated(created);
+					response.setToken(token);
+					return response;
+				});
+				return tokenResponse;
+			}, model -> ac.send(model, CREATED));
+		}
 	}
 
 	/**
@@ -137,25 +142,27 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 	public void handleIssueAPIToken(InternalActionContext ac, String userUuid) {
 		validateParameter(userUuid, "The userUuid must not be empty");
 
-		utils.syncTx(ac, tx -> {
-			// 1. Load the user that should be used
-			User user = boot.userRoot().loadObjectByUuid(ac, userUuid, UPDATE_PERM);
+		try (WriteLock lock = globalLock.lock(ac)) {
+			utils.syncTx(ac, tx -> {
+				// 1. Load the user that should be used
+				User user = boot.userRoot().loadObjectByUuid(ac, userUuid, UPDATE_PERM);
 
-			// 2. Generate the API key for the user
-			UserAPITokenResponse apiKeyRespose = db.tx(() -> {
-				String tokenId = TokenUtil.randomToken();
-				String apiToken = authProvider.generateAPIToken(user, tokenId, null);
-				UserAPITokenResponse response = new UserAPITokenResponse();
-				response.setPreviousIssueDate(user.getAPITokenIssueDate());
+				// 2. Generate the API key for the user
+				UserAPITokenResponse apiKeyRespose = db.tx(() -> {
+					String tokenId = TokenUtil.randomToken();
+					String apiToken = authProvider.generateAPIToken(user, tokenId, null);
+					UserAPITokenResponse response = new UserAPITokenResponse();
+					response.setPreviousIssueDate(user.getAPITokenIssueDate());
 
-				// 3. Issue a new token and update the issue timestamp
-				user.setAPITokenId(tokenId);
-				user.setAPITokenIssueTimestamp();
-				response.setToken(apiToken);
-				return response;
-			});
-			return apiKeyRespose;
-		}, model -> ac.send(model, CREATED));
+					// 3. Issue a new token and update the issue timestamp
+					user.setAPITokenId(tokenId);
+					user.setAPITokenIssueTimestamp();
+					response.setToken(apiToken);
+					return response;
+				});
+				return apiKeyRespose;
+			}, model -> ac.send(model, CREATED));
+		}
 	}
 
 	/**
@@ -167,17 +174,19 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 	public void handleDeleteAPIToken(InternalActionContext ac, String userUuid) {
 		validateParameter(userUuid, "The userUuid must not be empty");
 
-		utils.syncTx(ac, tx -> {
-			// 1. Load the user that should be used
-			User user = boot.userRoot().loadObjectByUuid(ac, userUuid, UPDATE_PERM);
+		try (WriteLock lock = globalLock.lock(ac)) {
+			utils.syncTx(ac, tx -> {
+				// 1. Load the user that should be used
+				User user = boot.userRoot().loadObjectByUuid(ac, userUuid, UPDATE_PERM);
 
-			// 2. Generate the API key for the user
-			GenericMessageResponse message = db.tx(() -> {
-				user.resetAPIToken();
-				return message(ac, "api_key_invalidated");
-			});
-			return message;
-		}, model -> ac.send(model, CREATED));
+				// 2. Generate the API key for the user
+				GenericMessageResponse message = db.tx(() -> {
+					user.resetAPIToken();
+					return message(ac, "api_key_invalidated");
+				});
+				return message;
+			}, model -> ac.send(model, CREATED));
+		}
 	}
 
 }

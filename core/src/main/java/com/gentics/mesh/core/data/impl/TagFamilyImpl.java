@@ -246,13 +246,6 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	}
 
 	@Override
-	public Single<TagFamilyResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return db().asyncTx(() -> {
-			return Single.just(transformToRestSync(ac, level, languageTags));
-		});
-	}
-
-	@Override
 	public Class<? extends Tag> getPersistanceClass() {
 		return TagImpl.class;
 	}

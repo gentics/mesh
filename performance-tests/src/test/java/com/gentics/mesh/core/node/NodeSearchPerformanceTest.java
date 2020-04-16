@@ -33,12 +33,12 @@ public class NodeSearchPerformanceTest extends AbstractMeshTest {
 
 	@Test
 	public void testES() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 
 		String lastNodeUuid = null;
-		String uuid = db().tx(() -> folder("news").getUuid());
+		String uuid = tx(() -> folder("news").getUuid());
 		int total = 600;
 		for (int i = 0; i < total; i++) {
 			NodeCreateRequest request = new NodeCreateRequest();
@@ -56,7 +56,7 @@ public class NodeSearchPerformanceTest extends AbstractMeshTest {
 		}
 
 		// Revoke all but one permission
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			for (Node node : project().getNodeRoot().findAll()) {
 				if (!node.getUuid().equals(lastNodeUuid)) {
 					role().revokePermissions(node, READ_PERM);
@@ -88,11 +88,11 @@ public class NodeSearchPerformanceTest extends AbstractMeshTest {
 
 	@Test
 	public void testSearchAndSort() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 
-		String uuid = db().tx(() -> folder("news").getUuid());
+		String uuid = tx(() -> folder("news").getUuid());
 		int total = 2000;
 		for (int i = 0; i < total; i++) {
 			NodeCreateRequest request = new NodeCreateRequest();

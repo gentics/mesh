@@ -1,5 +1,13 @@
 package com.gentics.mesh.core.endpoint.auth;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -8,28 +16,17 @@ import com.gentics.mesh.core.rest.auth.LoginRequest;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 
 @Singleton
 public class AuthenticationRestHandler extends AbstractHandler {
 
 	private MeshJWTAuthProvider authProvider;
-	private Database db;
 	private HandlerUtilities utils;
 
 	@Inject
-	public AuthenticationRestHandler(MeshJWTAuthProvider authProvider, Database db, HandlerUtilities utils) {
+	public AuthenticationRestHandler(MeshJWTAuthProvider authProvider, HandlerUtilities utils) {
 		this.authProvider = authProvider;
-		this.db = db;
 		this.utils = utils;
 	}
 

@@ -47,7 +47,8 @@ public final class ChangesList {
 			new ReplaceProjectEdges(),
 			new RemoveBinaryEdges(),
 			new RemoveGlobalNodeRoot(),
-			new RemoveEditorCreatorEdges()
+			new RemoveEditorCreatorEdges(),
+			new OrientDBHazelcastConfigUpdate()
 			// ADD NEW CHANGES HERE!
 		);
 	}

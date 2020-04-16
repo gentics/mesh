@@ -3,15 +3,9 @@ package com.gentics.mesh.graphdb.cluster;
 import java.io.IOException;
 
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
+import com.hazelcast.core.HazelcastInstance;
 
 public interface ClusterManager {
-
-	/**
-	 * Join the cluster and block until the graph database has been received.
-	 * 
-	 * @throws InterruptedException
-	 */
-	void joinCluster() throws InterruptedException;
 
 	/**
 	 * Initialize the configuration files.
@@ -25,14 +19,19 @@ public interface ClusterManager {
 	 * 
 	 * @throws Exception
 	 */
-	void startServer() throws Exception;
+	void start() throws Exception;
 
 	/**
-	 * Return the hazelcast instance which was started by the graph database server.
+	 * Stop the server and release all used resources.
+	 */
+	void stop();
+
+	/**
+	 * Return the hazelcast instance which was created by the manager.
 	 * 
 	 * @return
 	 */
-	Object getHazelcast();
+	HazelcastInstance getHazelcast();
 
 	/**
 	 * Return the database cluster status.
@@ -41,11 +40,14 @@ public interface ClusterManager {
 	 */
 	ClusterStatusResponse getClusterStatus();
 
-	void stop();
-
 	/**
 	 * Register event handlers which are used to invoke operations on the database server.
 	 */
 	void registerEventHandlers();
+
+	/**
+	 * Stop the hazelcast instance that has been created by the manager.
+	 */
+	void stopHazelcast();
 
 }

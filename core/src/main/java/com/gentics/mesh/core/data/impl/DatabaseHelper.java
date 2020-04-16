@@ -70,7 +70,6 @@ public final class DatabaseHelper {
 	 * @param database
 	 */
 	public static void init(Database database) {
-
 		log.info("Creating database indices. This may take a few seconds...");
 		TypeHandler type = database.type();
 		IndexHandler index = database.index();

@@ -282,13 +282,6 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 	}
 
 	@Override
-	public Single<TagResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return db().asyncTx(() -> {
-			return Single.just(transformToRestSync(ac, level, languageTags));
-		});
-	}
-
-	@Override
 	protected TagMeshEventModel createEvent(MeshEvent type) {
 		TagMeshEventModel event = new TagMeshEventModel();
 		event.setEvent(type);

@@ -45,7 +45,8 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	private Lazy<BootstrapInitializer> boot;
 
 	@Inject
-	public MicroschemaCrudHandler(Database db, MicroschemaComparator comparator, Lazy<BootstrapInitializer> boot, HandlerUtilities utils, WriteLock writeLock) {
+	public MicroschemaCrudHandler(Database db, MicroschemaComparator comparator, Lazy<BootstrapInitializer> boot, HandlerUtilities utils,
+		WriteLock writeLock) {
 		super(db, utils, writeLock);
 		this.comparator = comparator;
 		this.boot = boot;
@@ -60,76 +61,76 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	public void handleUpdate(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-
-		/**
-		 * The following code delegates the call to the handleUpdate method is very hacky at best.
-		 * It would be better to move the whole update code into the MicroschemaContainerImpl#update 
-		 * method and use the regular handlerUtilities. (similar to all other calls)
-		 * The current code however does not return a MicroschemaResponse for update requests. 
-		 * Instead a message will be returned. Changing this behaviour would cause a breaking change. (Changed response model).
-		 */
-		boolean delegateToCreate = db.tx(() -> {
-			RootVertex<MicroschemaContainer> root = getRootVertex(ac);
-			if (!UUIDUtil.isUUID(uuid)) {
-				return false;
-			}
-			MicroschemaContainer microschemaContainer = root.findByUuid(uuid);
-			return microschemaContainer == null;
-		});
-
-		// Delegate to handle update which will create the microschema
-		if (delegateToCreate) {
-			super.handleUpdate(ac, uuid);
-			return;
-		}
-
-		utils.syncTx(ac, (tx) -> {
-
-			RootVertex<MicroschemaContainer> root = getRootVertex(ac);
-			MicroschemaContainer schemaContainer = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
-			Microschema requestModel = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModelImpl.class);
-			requestModel.validate();
-
-			SchemaChangesListModel model = new SchemaChangesListModel();
-			model.getChanges().addAll(comparator.diff(schemaContainer.getLatestVersion().getSchema(), requestModel));
-			String name = schemaContainer.getName();
-
-			if (model.getChanges().isEmpty()) {
-				return message(ac, "schema_update_no_difference_detected", name);
-			}
-			User user = ac.getUser();
-			SchemaUpdateParameters updateParams = ac.getSchemaUpdateParameters();
-			String version = utils.eventAction(batch -> {
-				MicroschemaContainerVersion createdVersion = schemaContainer.getLatestVersion().applyChanges(ac, model, batch);
-
-				if (updateParams.getUpdateAssignedBranches()) {
-					Map<Branch, MicroschemaContainerVersion> referencedBranches = schemaContainer.findReferencedBranches();
-
-					// Assign the created version to the found branches
-					for (Map.Entry<Branch, MicroschemaContainerVersion> branchEntry : referencedBranches.entrySet()) {
-						Branch branch = branchEntry.getKey();
-
-						// Check whether a list of branch names was specified and skip branches which were not included in the list.
-						List<String> branchNames = updateParams.getBranchNames();
-						if (branchNames != null && !branchNames.isEmpty() && !branchNames.contains(branch.getName())) {
-							continue;
-						}
-
-						// Assign the new version to the branch
-						branch.assignMicroschemaVersion(user, createdVersion, batch);
-					}
+		try (WriteLock lock = globalLock.lock(ac)) {
+			/**
+			 * The following code delegates the call to the handleUpdate method is very hacky at best. It would be better to move the whole update code into the
+			 * MicroschemaContainerImpl#update method and use the regular handlerUtilities. (similar to all other calls) The current code however does not
+			 * return a MicroschemaResponse for update requests. Instead a message will be returned. Changing this behaviour would cause a breaking change.
+			 * (Changed response model).
+			 */
+			boolean delegateToCreate = db.tx(() -> {
+				RootVertex<MicroschemaContainer> root = getRootVertex(ac);
+				if (!UUIDUtil.isUUID(uuid)) {
+					return false;
 				}
-				return createdVersion.getVersion();
+				MicroschemaContainer microschemaContainer = root.findByUuid(uuid);
+				return microschemaContainer == null;
 			});
 
-			if (updateParams.getUpdateAssignedBranches()) {
-				MeshEvent.triggerJobWorker(boot.get().mesh());
-				return message(ac, "schema_updated_migration_invoked", name, version);
-			} else {
-				return message(ac, "schema_updated_migration_deferred", name, version);
+			// Delegate to handle update which will create the microschema
+			if (delegateToCreate) {
+				super.handleUpdate(ac, uuid);
+				return;
 			}
 
-		}, model -> ac.send(model, OK));
+			utils.syncTx(ac, (tx) -> {
+
+				RootVertex<MicroschemaContainer> root = getRootVertex(ac);
+				MicroschemaContainer schemaContainer = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
+				Microschema requestModel = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModelImpl.class);
+				requestModel.validate();
+
+				SchemaChangesListModel model = new SchemaChangesListModel();
+				model.getChanges().addAll(comparator.diff(schemaContainer.getLatestVersion().getSchema(), requestModel));
+				String name = schemaContainer.getName();
+
+				if (model.getChanges().isEmpty()) {
+					return message(ac, "schema_update_no_difference_detected", name);
+				}
+				User user = ac.getUser();
+				SchemaUpdateParameters updateParams = ac.getSchemaUpdateParameters();
+				String version = utils.eventAction(batch -> {
+					MicroschemaContainerVersion createdVersion = schemaContainer.getLatestVersion().applyChanges(ac, model, batch);
+
+					if (updateParams.getUpdateAssignedBranches()) {
+						Map<Branch, MicroschemaContainerVersion> referencedBranches = schemaContainer.findReferencedBranches();
+
+						// Assign the created version to the found branches
+						for (Map.Entry<Branch, MicroschemaContainerVersion> branchEntry : referencedBranches.entrySet()) {
+							Branch branch = branchEntry.getKey();
+
+							// Check whether a list of branch names was specified and skip branches which were not included in the list.
+							List<String> branchNames = updateParams.getBranchNames();
+							if (branchNames != null && !branchNames.isEmpty() && !branchNames.contains(branch.getName())) {
+								continue;
+							}
+
+							// Assign the new version to the branch
+							branch.assignMicroschemaVersion(user, createdVersion, batch);
+						}
+					}
+					return createdVersion.getVersion();
+				});
+
+				if (updateParams.getUpdateAssignedBranches()) {
+					MeshEvent.triggerJobWorker(boot.get().mesh());
+					return message(ac, "schema_updated_migration_invoked", name, version);
+				} else {
+					return message(ac, "schema_updated_migration_deferred", name, version);
+				}
+
+			}, model -> ac.send(model, OK));
+		}
 
 	}
 
@@ -158,14 +159,15 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	 *            Schema which should be modified
 	 */
 	public void handleApplySchemaChanges(InternalActionContext ac, String schemaUuid) {
-		utils.syncTx(ac, (tx) -> {
-			MicroschemaContainer schema = boot.get().microschemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
-			utils.eventAction(batch -> {
-				schema.getLatestVersion().applyChanges(ac, batch);
-			});
-			return message(ac, "migration_invoked", schema.getName());
-		}, model -> ac.send(model, OK));
-
+		try (WriteLock lock = globalLock.lock(ac)) {
+			utils.syncTx(ac, (tx) -> {
+				MicroschemaContainer schema = boot.get().microschemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
+				utils.eventAction(batch -> {
+					schema.getLatestVersion().applyChanges(ac, batch);
+				});
+				return message(ac, "migration_invoked", schema.getName());
+			}, model -> ac.send(model, OK));
+		}
 	}
 
 	/**

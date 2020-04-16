@@ -683,13 +683,6 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public Single<UserResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return db().asyncTx(() -> {
-			return Single.just(transformToRestSync(ac, level, languageTags));
-		});
-	}
-
-	@Override
 	public MeshAuthUser toAuthUser() {
 		return reframeExplicit(MeshAuthUserImpl.class);
 	}

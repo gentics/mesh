@@ -36,11 +36,11 @@ public abstract class AbstractDatabase implements Database {
 		if (log.isDebugEnabled()) {
 			log.debug("Clearing graph");
 		}
-		try (Tx tx = tx()) {
+		tx(tx -> {
 			tx.getGraph().e().removeAll();
 			tx.getGraph().v().removeAll();
 			tx.success();
-		}
+		});
 		if (log.isDebugEnabled()) {
 			log.debug("Cleared graph");
 		}
