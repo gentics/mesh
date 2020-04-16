@@ -28,7 +28,7 @@ include::content/docs/variables.adoc-include[]
 [[v1.4.5]]
 == 1.4.5 (TBD)
 
-icon:plus[] Server: The `serverTokens` flag and `MESH_HTTP_SERVER_TOKENS` env has been added to the server config. The flag controls whether server version information can be exposed via REST (/api/v1), GraphQL or HTTP headers. By default server tokens are enabled.
+icon:plus[] Server: The `serverTokens` flag and `MESH_HTTP_SERVER_TOKENS` env has been added to the server config. The flag controls whether server version information can be exposed via REST (/api/v1, /api/v2), GraphQL or HTTP headers. By default server tokens are enabled.
 
 [[v1.4.4]]
 == 1.4.4 (14.04.2020)
