@@ -1,20 +1,21 @@
 package com.gentics.mesh.parameter.impl;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.util.NumberUtils.toInteger;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.raml.model.ParamType;
+import org.raml.model.parameter.QueryParameter;
+
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.AbstractParameters;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.parameter.image.ImageRect;
 import com.gentics.mesh.parameter.image.ResizeMode;
-import org.raml.model.ParamType;
-import org.raml.model.parameter.QueryParameter;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.util.NumberUtils.toInteger;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 /**
  * Crop and resize parameters for image manipulation.
