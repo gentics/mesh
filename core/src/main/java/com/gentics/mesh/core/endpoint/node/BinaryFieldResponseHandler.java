@@ -132,9 +132,12 @@ public class BinaryFieldResponseHandler {
 		Integer originalHeight = binaryField.getBinary().getImageHeight();
 		Integer originalWidth = binaryField.getBinary().getImageWidth();
 
-		if (imageParams.getHeight().equals("auto")) imageParams.setHeight(originalHeight);
-		if (imageParams.getWidth().equals("auto")) imageParams.setWidth(originalWidth);
-
+		if (imageParams.getHeight().equals("auto")){
+			imageParams.setHeight(originalHeight);
+		}
+		if (imageParams.getWidth().equals("auto")) {
+			imageParams.setWidth(originalWidth);
+		}
 		String fileName = binaryField.getFileName();
 		imageManipulator.handleResize(binaryField.getBinary(), imageParams)
 			.flatMap(cachedFilePath -> rxVertx.fileSystem().rxProps(cachedFilePath)

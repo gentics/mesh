@@ -35,7 +35,7 @@ icon:check[] Changelog: The automated recovery from v1.4.4 now renames duplicate
 [[v1.4.5]]
 == 1.4.5 (15.04.2020)
 
-icon:plus[] Image Manipulation: Mesh supports now the ´auto´ parameter when manipulating the images. The width and height fields in the binaries are now strings.
+icon:plus[] Image Manipulation: Gentics Mesh now supports the ´auto´ parameter when manipulating images.For more info check the {{< relref "image-manipulation.asciidoc" >}}[Image Manipulation documentation].
 
 [[v1.4.4]]
 == 1.4.4 (14.04.2020)

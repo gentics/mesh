@@ -40,11 +40,11 @@ public class ImageManipulationParametersImpl extends AbstractParameters implemen
 	@Override
 	public void validate() {
 		Integer width = toInteger(getWidth(), null);
-		if (getWidth() != null && width != null && width < 1) {
+		if (width != null && width < 1) {
 			throw error(BAD_REQUEST, "image_error_parameter_positive", WIDTH_QUERY_PARAM_KEY, String.valueOf(width));
 		}
 		Integer height = toInteger(getHeight(), null);
-		if (getHeight() != null && height != null && height < 1) {
+		if (height != null && height < 1) {
 			throw error(BAD_REQUEST, "image_error_parameter_positive", HEIGHT_QUERY_PARAM_KEY, String.valueOf(height));
 		}
 		ImageRect rect = getRect();

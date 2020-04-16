@@ -67,7 +67,7 @@ public class BinaryFieldTransformRequest implements RestModel {
 	 *
 	 * @param width resize width
 	 * @return fluent API
-	 * @deprecated Use the BinaryFieldTransformRequest{@link #getWidth()} instead
+	 * @deprecated Use {@link #setWidth(String)} instead
 	 */
 	@Deprecated
 	public BinaryFieldTransformRequest setWidth(Integer width) {
@@ -100,7 +100,7 @@ public class BinaryFieldTransformRequest implements RestModel {
 	 *
 	 * @param height resize height
 	 * @return fluent API
-	 * @deprecated Use the BinaryFieldTransformRequest{@link #getHeight()}instead
+	 * @deprecated Use {@link #setHeight(String)} instead
 	 */
 	@Deprecated
 	public BinaryFieldTransformRequest setHeight(Integer height) {
