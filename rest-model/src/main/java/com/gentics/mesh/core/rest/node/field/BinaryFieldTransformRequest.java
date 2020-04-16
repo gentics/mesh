@@ -8,8 +8,6 @@ import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.parameter.image.ImageRect;
 import com.gentics.mesh.parameter.image.ResizeMode;
 
-import java.text.NumberFormat;
-
 /**
  * POJO for a binary field transform request
  */

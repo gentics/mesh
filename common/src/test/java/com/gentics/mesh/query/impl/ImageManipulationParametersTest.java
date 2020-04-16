@@ -9,7 +9,6 @@ import static org.junit.Assert.fail;
 
 import java.util.Map.Entry;
 
-import com.gentics.mesh.util.NumberUtils;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -22,7 +21,7 @@ import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.parameter.image.ResizeMode;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.util.HttpQueryUtils;
-
+import com.gentics.mesh.util.NumberUtils;
 import io.vertx.core.MultiMap;
 
 public class ImageManipulationParametersTest {

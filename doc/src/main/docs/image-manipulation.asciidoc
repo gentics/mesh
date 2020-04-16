@@ -34,7 +34,8 @@ image::https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg?w=500[
 When loading an image with resizing parameters you can provide either the desired width by appending `w=:width` or the desired height by appending by appending `h=:height`. 
 
 ==== Smart resizing and Cropping
-It also possible to provide both dimensions. Note that in this case Mesh potentially crops your image to fit the desired dimensions. This happens when the aspect ratio of the source image is different from the requested dimensions. In these cases Mesh will crop _either_ pixels at the top and bottom or left and right.
+It also possible to provide both dimensions. Note that in this case Mesh potentially crops your image to fit the desired dimensions. This happens when the aspect ratio of the source image is different from the requested dimensions. In these cases Mesh will crop _either_ pixels at the top and bottom or left and right. Mesh supports the `auto` dimension when manipulating an image.
+If `auto` is used in width or height then mesh will crop the use the original value when cropping the image.
 
 NOTE: Providing no resize parameter yields the same result as providing `resize=smart`
 

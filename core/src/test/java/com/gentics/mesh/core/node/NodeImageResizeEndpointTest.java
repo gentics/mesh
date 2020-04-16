@@ -1,5 +1,26 @@
 package com.gentics.mesh.core.node;
 
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.*;
+
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+
+import javax.imageio.ImageIO;
+
+import org.apache.commons.io.IOUtils;
+import org.junit.Test;
+
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
@@ -17,25 +38,6 @@ import com.gentics.mesh.test.assertj.MeshCoreAssertion;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import io.vertx.core.buffer.Buffer;
-import org.apache.commons.io.IOUtils;
-import org.junit.Test;
-
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
-
-import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
 
 @MeshTestSetting(testSize = FULL, startServer = true)
 public class NodeImageResizeEndpointTest extends AbstractMeshTest {
@@ -509,7 +511,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 	}
 
 	private void validateResizeImage(MeshBinaryResponse download, BinaryGraphField binaryField, ImageManipulationParameters params,
-	                                 int expectedWidth, int expectedHeight) throws Exception {
+									 int expectedWidth, int expectedHeight) throws Exception {
 		File targetFile = new File("target", UUID.randomUUID() + "_resized.jpg");
 		CountDownLatch latch = new CountDownLatch(1);
 		byte[] bytes = IOUtils.toByteArray(download.getStream());
