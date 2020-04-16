@@ -419,9 +419,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 				// factory.getTx().getRawGraph().getMetadata().getSchema().reload();
 				// Database.getThreadLocalGraph().getMetadata().getSchema().reload();
 			} catch (InterruptedException | ONeedRetryException | FastNoSuchElementException e) {
-				// if (log.isTraceEnabled()) {
-				log.error("Error while handling transaction. Retrying " + retry, e);
-				// }
+				if (log.isTraceEnabled()) {
+					log.trace("Error while handling transaction. Retrying " + retry, e);
+				}
 				int delay = options.getStorageOptions().getTxRetryDelay();
 				if (retry > 0 && delay > 0) {
 					try {

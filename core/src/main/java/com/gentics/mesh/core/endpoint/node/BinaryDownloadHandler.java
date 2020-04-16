@@ -7,6 +7,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -34,7 +35,7 @@ public class BinaryDownloadHandler extends AbstractHandler {
 	}
 
 	public void handleReadBinaryField(RoutingContext rc, String uuid, String fieldName) {
-		InternalRoutingActionContextImpl ac = new InternalRoutingActionContextImpl(rc);
+		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 		db.tx(() -> {
 			Project project = ac.getProject();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, READ_PUBLISHED_PERM);

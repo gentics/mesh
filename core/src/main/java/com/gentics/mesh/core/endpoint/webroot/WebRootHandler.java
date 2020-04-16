@@ -67,20 +67,20 @@ public class WebRootHandler {
 
 	private final MeshOptions options;
 
-	private final WriteLock globalLock;
+	private final WriteLock writeLock;
 
 	private final HandlerUtilities utils;
 
 	@Inject
 	public WebRootHandler(Database database, WebRootServiceImpl webrootService, BinaryFieldResponseHandler binaryFieldResponseHandler,
-		NodeCrudHandler nodeCrudHandler, BootstrapInitializer boot, MeshOptions options, WriteLock globalLock, HandlerUtilities utils) {
+		NodeCrudHandler nodeCrudHandler, BootstrapInitializer boot, MeshOptions options, WriteLock writeLock, HandlerUtilities utils) {
 		this.db = database;
 		this.webrootService = webrootService;
 		this.binaryFieldResponseHandler = binaryFieldResponseHandler;
 		this.nodeCrudHandler = nodeCrudHandler;
 		this.boot = boot;
 		this.options = options;
-		this.globalLock = globalLock;
+		this.writeLock = writeLock;
 		this.utils = utils;
 	}
 
@@ -94,7 +94,7 @@ public class WebRootHandler {
 		String path = rc.request().path().substring(
 			rc.mountPoint().length());
 
-		try (WriteLock lock = globalLock.lock(ac)) {
+		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				MeshAuthUser requestUser = ac.getUser();
 
@@ -207,7 +207,7 @@ public class WebRootHandler {
 			rc.mountPoint().length());
 
 		String uuid = null;
-		try (WriteLock lock = globalLock.lock(ac)) {
+		try (WriteLock lock = writeLock.lock(ac)) {
 			uuid = db.tx(() -> {
 
 				// Load all nodes for the given path

@@ -491,10 +491,6 @@ public class OrientDBClusterManager implements ClusterManager {
 			log.info("Stopping OrientDB Server");
 			server.shutdown();
 		}
-//		if (hazelcastPlugin != null) {
-//			log.info("Stopping Hazelcast plugin");
-//			hazelcastPlugin.shutdown();
-//		}
 	}
 
 	@Override
