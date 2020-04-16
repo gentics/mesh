@@ -40,7 +40,9 @@ public class RootRouter {
 		// routes)
 		router.route().last().handler(DefaultNotFoundHandler.create());
 		router.route().failureHandler(FailureHandler.create());
-		router.route().handler(PoweredByHandler.create());
+		if (options.getHttpServerOptions().isServerTokens()) {
+			router.route().handler(PoweredByHandler.create());
+		}
 		router.route().handler(SecurityLoggingHandler.create());
 		router.route(API_MOUNTPOINT).handler(storage.versionHandler);
 
@@ -67,6 +69,5 @@ public class RootRouter {
 	public RouterStorage getStorage() {
 		return storage;
 	}
-	
 
 }
