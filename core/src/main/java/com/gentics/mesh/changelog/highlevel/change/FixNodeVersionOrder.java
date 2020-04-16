@@ -98,7 +98,6 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 
 	private boolean fixNodeVersionOrder(NodeMigrationActionContextImpl context, Node node, NodeGraphFieldContainer initialContent) {
 		Set<VersionNumber> seenVersions = new HashSet<>();
-		Set<Object> deletedVertexIds = new HashSet<>();
 		TreeSet<NodeGraphFieldContainer> versions = new TreeSet<>(Comparator.comparing(NodeGraphFieldContainer::getVersion));
 		NodeGraphFieldContainer highestVersion = null;
 		NodeGraphFieldContainer currentContainer = initialContent;
@@ -126,57 +125,46 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 			VersionNumber currentVersion = currentContainer.getVersion();
 			boolean isDuplicate = !seenVersions.add(currentVersion);
 			if (isDuplicate) {
-				deletedVertexIds.add(currentContainer.id());
-				currentContainer.delete(bac, false);
-				if (nextContainer != null) {
-					// highestVersion can't be null because this if-branch is only visited if there is a duplicate
-					highestVersion.setSingleLinkOutTo(nextContainer, HAS_VERSION);
+				currentVersion = generateUniqueVersion(seenVersions, currentVersion);
+				currentContainer.setVersion(currentVersion);
+				seenVersions.add(currentVersion);
+				mutated = true;
+			}
+			if (highestVersion != null && currentVersion.compareTo(highestVersion.getVersion()) < 0) {
+				// Wrong order
+
+				NodeGraphFieldContainer lower = versions.lower(currentContainer);
+				// There must always be a higher version
+				NodeGraphFieldContainer higher = versions.higher(currentContainer);
+				higher.unlinkIn(null, HAS_VERSION);
+				currentContainer.unlinkIn(null, HAS_VERSION);
+				currentContainer.unlinkOut(null, HAS_VERSION);
+				currentContainer.setNextVersion(higher);
+				if (lower != null) {
+					lower.unlinkOut(null, HAS_VERSION);
+					lower.setNextVersion(currentContainer);
 				}
 				mutated = true;
-				currentContainer = nextContainer;
-			} else {
-				if (highestVersion != null && currentVersion.compareTo(highestVersion.getVersion()) < 0) {
-					// Wrong order
-
-					NodeGraphFieldContainer lower = versions.lower(currentContainer);
-					// There must always be a higher version
-					NodeGraphFieldContainer higher = versions.higher(currentContainer);
-					higher.unlinkIn(null, HAS_VERSION);
-					currentContainer.unlinkIn(null, HAS_VERSION);
-					currentContainer.unlinkOut(null, HAS_VERSION);
-					currentContainer.setNextVersion(higher);
-					if (lower != null) {
-						lower.unlinkOut(null, HAS_VERSION);
-						lower.setNextVersion(currentContainer);
-					}
-					mutated = true;
-				}
-				versions.add(currentContainer);
-				if (currentVersion.getMinor() == 0 && (latestPublished == null || latestPublished.getVersion().getMajor() < currentVersion.getMajor())) {
-					latestPublished = currentContainer;
-				}
-
-				highestVersion = versions.last();
-				currentContainer = nextContainer;
 			}
+			versions.add(currentContainer);
+			if (currentVersion.getMinor() == 0 && (latestPublished == null || latestPublished.getVersion().getMajor() < currentVersion.getMajor())) {
+				latestPublished = currentContainer;
+			}
+
+			highestVersion = versions.last();
+			currentContainer = nextContainer;
 		}
 
 		// Reset draft and published edge
 
 		if (originalDraftId.isPresent() && !originalDraftId.get().equals(highestVersion.id())) {
-			// Deleting the edge would fail if it was already removed implicitly by removing one of the vertices
-			if (!deletedVertexIds.contains(originalDraftId.get())) {
-				originalDraftEdge.remove();
-			}
+			originalDraftEdge.remove();
 			setNewOutV(context, node, highestVersion, branchUuid, languageTag, ContainerType.DRAFT);
 			mutated = true;
 		}
 
 		if (originalPublishedId.isPresent() && latestPublished != null && !originalPublishedId.get().equals(latestPublished.id())) {
-			// Deleting the edge would fail if it was already removed implicitly by removing one of the vertices
-			if (!deletedVertexIds.contains(originalPublishedId.get())) {
-				originalPublishedEdge.remove();
-			}
+			originalPublishedEdge.remove();
 			setNewOutV(context, node, latestPublished, branchUuid, languageTag, ContainerType.PUBLISHED);
 			mutated = true;
 		}
@@ -185,6 +173,19 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 			log.debug("The node was broken and has been fixed.");
 		}
 		return mutated;
+	}
+
+	/**
+	 * Increases the minor version until a unique version has been found.
+	 * @param seenVersions
+	 * @param version
+	 * @return
+	 */
+	private VersionNumber generateUniqueVersion(Set<VersionNumber> seenVersions, VersionNumber version) {
+		while (seenVersions.contains(version)) {
+			version = version.nextDraft();
+		}
+		return version;
 	}
 
 	private GraphFieldContainerEdge setNewOutV(NodeMigrationActionContextImpl context, Node from, NodeGraphFieldContainer to, String branchUuid, String languageTag, ContainerType type) {
