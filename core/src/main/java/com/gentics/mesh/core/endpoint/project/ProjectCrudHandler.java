@@ -70,7 +70,7 @@ public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResp
 		ProjectPurgeParameters purgeParams = ac.getProjectPurgeParameters();
 		Optional<ZonedDateTime> before = purgeParams.getBeforeDate();
 
-		try (WriteLock lock = globalLock.lock(ac)) {
+		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, (tx) -> {
 				if (!ac.getUser().hasAdminRole()) {
 					throw error(FORBIDDEN, "error_admin_permission_required");

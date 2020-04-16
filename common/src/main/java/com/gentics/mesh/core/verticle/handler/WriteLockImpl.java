@@ -62,8 +62,7 @@ public class WriteLockImpl implements WriteLock {
 				ac.skipWriteLock();
 			}
 			boolean syncWrites = options.getStorageOptions().isSynchronizeWrites();
-			boolean syncReads = true;
-			if (syncWrites || syncReads) {
+			if (syncWrites) {
 				Timer.Sample timer = Timer.start();
 				long timeout = options.getStorageOptions().getSynchronizeWritesTimeout();
 				if (isClustered) {

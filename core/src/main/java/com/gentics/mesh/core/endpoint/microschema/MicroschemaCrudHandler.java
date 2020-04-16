@@ -61,7 +61,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	public void handleUpdate(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		try (WriteLock lock = globalLock.lock(ac)) {
+		try (WriteLock lock = writeLock.lock(ac)) {
 			/**
 			 * The following code delegates the call to the handleUpdate method is very hacky at best. It would be better to move the whole update code into the
 			 * MicroschemaContainerImpl#update method and use the regular handlerUtilities. (similar to all other calls) The current code however does not
@@ -159,7 +159,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	 *            Schema which should be modified
 	 */
 	public void handleApplySchemaChanges(InternalActionContext ac, String schemaUuid) {
-		try (WriteLock lock = globalLock.lock(ac)) {
+		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, (tx) -> {
 				MicroschemaContainer schema = boot.get().microschemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
 				utils.eventAction(batch -> {

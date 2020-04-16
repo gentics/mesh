@@ -80,7 +80,7 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 	public void handleDelete(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		try (WriteLock lock = globalLock.lock(ac)) {
+		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, () -> {
 				if (!ac.getUser().hasAdminRole()) {
 					throw error(FORBIDDEN, "error_admin_permission_required");
@@ -146,7 +146,7 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 
 	public void handleProcess(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		try (WriteLock lock = globalLock.lock(ac)) {
+		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, (tx) -> {
 				if (!ac.getUser().hasAdminRole()) {
 					throw error(FORBIDDEN, "error_admin_permission_required");

@@ -58,7 +58,7 @@ public class HandlerUtilities {
 
 	private final Provider<BulkActionContext> bulkProvider;
 
-	private final WriteLock globalLock;
+	private final WriteLock writeLock;
 
 	@Inject
 	public HandlerUtilities(Database database, MeshOptions meshOptions, Provider<EventQueueBatch> queueProvider,
@@ -66,7 +66,7 @@ public class HandlerUtilities {
 		this.database = database;
 		this.queueProvider = queueProvider;
 		this.bulkProvider = bulkProvider;
-		this.globalLock = writeLock;
+		this.writeLock = writeLock;
 	}
 
 	/**
@@ -90,7 +90,7 @@ public class HandlerUtilities {
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void deleteElement(InternalActionContext ac, TxAction1<RootVertex<T>> handler,
 		String uuid) {
-		try (WriteLock lock = globalLock.lock(ac)) {
+		try (WriteLock lock = writeLock.lock(ac)) {
 			syncTx(ac, () -> {
 				RootVertex<T> root = handler.handle();
 				T element = root.loadObjectByUuid(ac, uuid, DELETE_PERM);
@@ -133,7 +133,7 @@ public class HandlerUtilities {
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createOrUpdateElement(InternalActionContext ac, String uuid,
 		TxAction1<RootVertex<T>> handler) {
-		try (WriteLock lock = globalLock.lock(ac)) {
+		try (WriteLock lock = writeLock.lock(ac)) {
 			AtomicBoolean created = new AtomicBoolean(false);
 			syncTx(ac, tx -> {
 				RootVertex<T> root = handler.handle();

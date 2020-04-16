@@ -160,8 +160,8 @@ public interface Database extends TxFactory {
 	}
 
 	/**
-	 * Executes a supplier in a transaction within the worker thread pool. If the supplier returns null, the maybe is completed, else the value is returned.
-	 * 
+	 * Executes a supplier in a transaction within the worker thread pool.
+	 * If the supplier returns null, the maybe is completed, else the value is returned.
 	 * @param handler
 	 * @param <T>
 	 * @return
@@ -177,8 +177,8 @@ public interface Database extends TxFactory {
 	}
 
 	/**
-	 * Executes a supplier in a transaction within the worker thread pool. If the supplier returns null, a {@link java.util.NoSuchElementException} is emitted.
-	 * 
+	 * Executes a supplier in a transaction within the worker thread pool.
+	 * If the supplier returns null, a {@link java.util.NoSuchElementException} is emitted.
 	 * @param handler
 	 * @param <T>
 	 * @return
@@ -188,8 +188,8 @@ public interface Database extends TxFactory {
 	}
 
 	/**
-	 * Executes a supplier in a transaction within the worker thread pool. If the supplier returns null, a {@link java.util.NoSuchElementException} is emitted.
-	 * 
+	 * Executes a supplier in a transaction within the worker thread pool.
+	 * If the supplier returns null, a {@link java.util.NoSuchElementException} is emitted.
 	 * @param handler
 	 * @param <T>
 	 * @return
@@ -264,10 +264,8 @@ public interface Database extends TxFactory {
 	/**
 	 * Utilize the index and locate the matching vertices.
 	 *
-	 * @param <T>
-	 *            Type of the vertices
-	 * @param classOfVertex
-	 *            Class to be used for framing
+	 * @param <T> Type of the vertices
+	 * @param classOfVertex Class to be used for framing
 	 * @param fieldNames
 	 * @param fieldValues
 	 * @return
@@ -277,8 +275,7 @@ public interface Database extends TxFactory {
 	/**
 	 * Utilize the index and locate the matching vertices.
 	 *
-	 * @param classOfVertex
-	 *            Class to be used for framing
+	 * @param classOfVertex Class to be used for framing
 	 * @param fieldName
 	 * @param fieldValue
 	 * @return
@@ -453,7 +450,6 @@ public interface Database extends TxFactory {
 
 	/**
 	 * Load the current cluster configuration.
-	 * 
 	 * @return
 	 */
 	ClusterConfigResponse loadClusterConfig();

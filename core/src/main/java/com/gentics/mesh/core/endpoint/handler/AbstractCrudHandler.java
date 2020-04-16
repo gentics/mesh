@@ -26,12 +26,12 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 
 	protected final Database db;
 	protected final HandlerUtilities utils;
-	protected final WriteLock globalLock;
+	protected final WriteLock writeLock;
 
-	public AbstractCrudHandler(Database db, HandlerUtilities utils, WriteLock globalLock) {
+	public AbstractCrudHandler(Database db, HandlerUtilities utils, WriteLock writeLock) {
 		this.db = db;
 		this.utils = utils;
-		this.globalLock = globalLock;
+		this.writeLock = writeLock;
 	}
 
 	/**

@@ -47,13 +47,13 @@ public class PluginHandler extends AbstractHandler {
 
 	private final HandlerUtilities utils;
 
-	private final WriteLock globalLock;
+	private final WriteLock writeLock;
 
 	@Inject
-	public PluginHandler(MeshPluginManager manager, HandlerUtilities utils, WriteLock globalLock) {
+	public PluginHandler(MeshPluginManager manager, HandlerUtilities utils, WriteLock writeLock) {
 		this.manager = manager;
 		this.utils = utils;
-		this.globalLock = globalLock;
+		this.writeLock = writeLock;
 	}
 
 	public void handleRead(InternalActionContext ac, String id) {
@@ -75,7 +75,7 @@ public class PluginHandler extends AbstractHandler {
 	}
 
 	public void handleDeploy(InternalActionContext ac) {
-		try (WriteLock lock = globalLock.lock(ac)) {
+		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				if (!ac.getUser().hasAdminRole()) {
 					throw error(FORBIDDEN, "error_admin_permission_required");
@@ -101,7 +101,7 @@ public class PluginHandler extends AbstractHandler {
 	}
 
 	public void handleUndeploy(InternalActionContext ac, String uuid) {
-		try (WriteLock lock = globalLock.lock(ac)) {
+		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				if (!ac.getUser().hasAdminRole()) {
 					throw error(FORBIDDEN, "error_admin_permission_required");

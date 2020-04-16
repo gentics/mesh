@@ -76,30 +76,28 @@ public class SchemaContainerVersionImpl extends
 	public Iterator<? extends NodeGraphFieldContainer> getDraftFieldContainers(String branchUuid) {
 		return toStream(mesh().database().getVertices(
 			NodeGraphFieldContainerImpl.class,
-			new String[] { SCHEMA_CONTAINER_VERSION_KEY_PROPERTY },
-			new Object[] { getUuid() })).filter(
-				v -> toStream(v.getEdges(Direction.IN, HAS_FIELD_CONTAINER))
-					.anyMatch(
-						e -> e.getProperty(BRANCH_UUID_KEY).equals(branchUuid) && ContainerType.get(e.getProperty(EDGE_TYPE_KEY)).equals(DRAFT)))
-				.map(v -> graph.frameElementExplicit(v, NodeGraphFieldContainerImpl.class)).iterator();
+			new String[]{SCHEMA_CONTAINER_VERSION_KEY_PROPERTY},
+			new Object[]{getUuid()}
+		)).filter(v -> toStream(v.getEdges(Direction.IN, HAS_FIELD_CONTAINER))
+		.anyMatch(e -> e.getProperty(BRANCH_UUID_KEY).equals(branchUuid) && ContainerType.get(e.getProperty(EDGE_TYPE_KEY)).equals(DRAFT)))
+		.map(v -> graph.frameElementExplicit(v, NodeGraphFieldContainerImpl.class)).iterator();
 	}
 
 	@Override
 	public TraversalResult<? extends Node> getNodes(String branchUuid, User user, ContainerType type) {
 		return new TraversalResult<>(getSchemaContainer().getNodes().stream()
-			.filter(node -> GraphFieldContainerEdgeImpl.matchesBranchAndType(node.getId(), branchUuid, type)
-				&& user.hasPermissionForId(node.getId(), READ_PUBLISHED_PERM)));
+			.filter(node -> GraphFieldContainerEdgeImpl.matchesBranchAndType(node.getId(), branchUuid, type) && user.hasPermissionForId(node.getId(), READ_PUBLISHED_PERM)));
 	}
 
 	@Override
 	public Stream<NodeGraphFieldContainerImpl> getFieldContainers(String branchUuid) {
 		return toStream(mesh().database().getVertices(
 			NodeGraphFieldContainerImpl.class,
-			new String[] { SCHEMA_CONTAINER_VERSION_KEY_PROPERTY },
-			new Object[] { getUuid() })).filter(
-				v -> toStream(v.getEdges(Direction.IN, HAS_FIELD_CONTAINER))
-					.anyMatch(e -> e.getProperty(BRANCH_UUID_KEY).equals(branchUuid)))
-				.map(v -> graph.frameElementExplicit(v, NodeGraphFieldContainerImpl.class));
+			new String[]{SCHEMA_CONTAINER_VERSION_KEY_PROPERTY},
+			new Object[]{getUuid()}
+		)).filter(v -> toStream(v.getEdges(Direction.IN, HAS_FIELD_CONTAINER))
+		.anyMatch(e -> e.getProperty(BRANCH_UUID_KEY).equals(branchUuid)))
+		.map(v -> graph.frameElementExplicit(v, NodeGraphFieldContainerImpl.class));
 	}
 
 	@Override

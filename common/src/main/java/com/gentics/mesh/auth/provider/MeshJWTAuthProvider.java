@@ -61,8 +61,7 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 	private final MeshOptions meshOptions;
 
 	@Inject
-	public MeshJWTAuthProvider(Vertx vertx, MeshOptions meshOptions, BCryptPasswordEncoder passwordEncoder, Database database,
-		BootstrapInitializer boot) {
+	public MeshJWTAuthProvider(Vertx vertx, MeshOptions meshOptions, BCryptPasswordEncoder passwordEncoder, Database database, BootstrapInitializer boot) {
 		this.meshOptions = meshOptions;
 		this.passwordEncoder = passwordEncoder;
 		this.db = database;
@@ -277,9 +276,9 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 			user.setCachedUuid(userUuid);
 
 			// TODO Re-enable isEnabled cache and check if User#delete behaviour changes
-			// if (!user.isEnabled()) {
-			// throw new Exception("User is disabled");
-			// }
+			//	if (!user.isEnabled()) {
+			//		throw new Exception("User is disabled");
+			//	}
 
 			// Check whether the token might be an API key token
 			if (!jwt.containsKey("exp")) {

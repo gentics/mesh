@@ -81,12 +81,12 @@ public class AdminHandler extends AbstractHandler {
 
 	private final Coordinator coordinator;
 
-	private final WriteLock globalLock;
+	private final WriteLock writeLock;
 
 	@Inject
 	public AdminHandler(Vertx vertx, Database db, RouterStorage routerStorage, BootstrapInitializer boot, SearchProvider searchProvider,
 		HandlerUtilities utils,
-		MeshOptions options, RouterStorageRegistry routerStorageRegistry, Coordinator coordinator, WriteLock globalLock) {
+		MeshOptions options, RouterStorageRegistry routerStorageRegistry, Coordinator coordinator, WriteLock writeLock) {
 		this.vertx = vertx;
 		this.db = db;
 		this.routerStorage = routerStorage;
@@ -96,7 +96,7 @@ public class AdminHandler extends AbstractHandler {
 		this.options = options;
 		this.routerStorageRegistry = routerStorageRegistry;
 		this.coordinator = coordinator;
-		this.globalLock = globalLock;
+		this.writeLock = writeLock;
 	}
 
 	public void handleMeshStatus(InternalActionContext ac) {
@@ -302,7 +302,7 @@ public class AdminHandler extends AbstractHandler {
 	}
 
 	public void handleUpdateClusterConfig(InternalActionContext ac) {
-		try (WriteLock lock = globalLock.lock(ac)) {
+		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				User user = ac.getUser();
 				if (user != null && !user.hasAdminRole()) {
@@ -330,7 +330,7 @@ public class AdminHandler extends AbstractHandler {
 	}
 
 	public void handleSetCoordinationMaster(InternalActionContext ac) {
-		try (WriteLock lock = globalLock.lock(ac)) {
+		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				User user = ac.getUser();
 				if (user != null && !user.hasAdminRole()) {
@@ -364,7 +364,7 @@ public class AdminHandler extends AbstractHandler {
 	}
 
 	public void handleUpdateCoordinationConfig(InternalActionContext ac) {
-		try (WriteLock lock = globalLock.lock(ac)) {
+		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				User user = ac.getUser();
 				if (user != null && !user.hasAdminRole()) {
