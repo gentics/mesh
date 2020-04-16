@@ -122,7 +122,7 @@ public class HttpServerConfig implements Option {
 	private int verticleAmount = DEFAULT_VERTICLE_AMOUNT;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Set the http server tokens flag. Default is true")
+	@JsonPropertyDescription("Set the http server tokens flag which controls whether the server should expose version information via headers, REST endpoints and GraphQL. Default is true")
 	@EnvironmentVariable(name = MESH_HTTP_SERVER_TOKENS_ENV, description = "Override the http server tokens flag.")
 	private boolean serverTokens = DEFAULT_SERVER_TOKENS;
 
