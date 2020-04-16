@@ -9,6 +9,7 @@ import static org.junit.Assert.fail;
 
 import java.util.Map.Entry;
 
+import com.gentics.mesh.util.NumberUtils;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -47,9 +48,9 @@ public class ImageManipulationParametersTest {
 	public void testFromAC() throws Exception {
 
 		ImageManipulationParametersImpl parameter = new ImageManipulationParametersImpl(getActionContext(HEIGHT_QUERY_PARAM_KEY + "=112&"
-				+ WIDTH_QUERY_PARAM_KEY + "=142"));
-		assertEquals(112, parameter.getHeight().intValue());
-		assertEquals(142, parameter.getWidth().intValue());
+			+ WIDTH_QUERY_PARAM_KEY + "=142"));
+		assertEquals(112, NumberUtils.toInt(parameter.getHeight(), 0));
+		assertEquals(142, NumberUtils.toInt(parameter.getWidth(), 0));
 
 		ImageManipulationParametersImpl param = new ImageManipulationParametersImpl();
 		ImageManipulationParametersImpl paramsFromQuery = new ImageManipulationParametersImpl(getActionContext(param.getQueryParameters()));
@@ -116,12 +117,12 @@ public class ImageManipulationParametersTest {
 
 		try {
 			ImageManipulationParametersImpl request = new ImageManipulationParametersImpl(getActionContext(
-					ImageManipulationParameters.FOCAL_POINT_X_QUERY_PARAM_KEY + "=0.1"));
+				ImageManipulationParameters.FOCAL_POINT_X_QUERY_PARAM_KEY + "=0.1"));
 			request.validate();
 			fail("The validation should fail but it did not.");
 		} catch (GenericRestException e) {
 			Assert.assertException(e, BAD_REQUEST, "image_error_incomplete_focalpoint_parameters",
-					ImageManipulationParameters.FOCAL_POINT_Y_QUERY_PARAM_KEY);
+				ImageManipulationParameters.FOCAL_POINT_Y_QUERY_PARAM_KEY);
 		}
 
 		ImageManipulationParametersImpl request = new ImageManipulationParametersImpl();
@@ -150,10 +151,10 @@ public class ImageManipulationParametersTest {
 	public void testCacheKey() {
 		String cacheKey = new ImageManipulationParametersImpl().getCacheKey();
 		assertEquals("resizeSMARTfp0.5-0.5", cacheKey);
-		
+
 		cacheKey = new ImageManipulationParametersImpl().setResizeMode(ResizeMode.FORCE).getCacheKey();
 		assertEquals("resizeFORCEfp0.5-0.5", cacheKey);
-		
+
 		cacheKey = new ImageManipulationParametersImpl().setResizeMode(ResizeMode.PROP).getCacheKey();
 		assertEquals("resizePROPfp0.5-0.5", cacheKey);
 

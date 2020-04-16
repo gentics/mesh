@@ -1,20 +1,20 @@
 package com.gentics.mesh.parameter.impl;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import org.raml.model.ParamType;
-import org.raml.model.parameter.QueryParameter;
-
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.AbstractParameters;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.parameter.image.ImageRect;
 import com.gentics.mesh.parameter.image.ResizeMode;
+import org.raml.model.ParamType;
+import org.raml.model.parameter.QueryParameter;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.util.NumberUtils.toInteger;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 /**
  * Crop and resize parameters for image manipulation.
@@ -38,16 +38,14 @@ public class ImageManipulationParametersImpl extends AbstractParameters implemen
 	 */
 	@Override
 	public void validate() {
-		Integer width = getWidth();
-		if (width != null && width < 1) {
+		Integer width = toInteger(getWidth(), null);
+		if (getWidth() != null && width != null && width < 1) {
 			throw error(BAD_REQUEST, "image_error_parameter_positive", WIDTH_QUERY_PARAM_KEY, String.valueOf(width));
 		}
-
-		Integer height = getHeight();
-		if (height != null && height < 1) {
+		Integer height = toInteger(getHeight(), null);
+		if (getHeight() != null && height != null && height < 1) {
 			throw error(BAD_REQUEST, "image_error_parameter_positive", HEIGHT_QUERY_PARAM_KEY, String.valueOf(height));
 		}
-
 		ImageRect rect = getRect();
 		if (rect != null) {
 			rect.validate();
@@ -85,9 +83,9 @@ public class ImageManipulationParametersImpl extends AbstractParameters implemen
 		// fpx
 		QueryParameter fpxParameter = new QueryParameter();
 		fpxParameter.setDescription(
-				"Set the focal point x factor between 0  and 1 where 0.5 is the middle of the image.  You can use this parameter in combination with the "
-						+ CROP_MODE_QUERY_PARAM_KEY + "=" + CropMode.FOCALPOINT.getKey()
-						+ " parameter in order to crop and resize the image in relation to the given point.");
+			"Set the focal point x factor between 0  and 1 where 0.5 is the middle of the image.  You can use this parameter in combination with the "
+				+ CROP_MODE_QUERY_PARAM_KEY + "=" + CropMode.FOCALPOINT.getKey()
+				+ " parameter in order to crop and resize the image in relation to the given point.");
 		fpxParameter.setRequired(false);
 		fpxParameter.setExample("0.1");
 		fpxParameter.setType(ParamType.NUMBER);
@@ -96,9 +94,9 @@ public class ImageManipulationParametersImpl extends AbstractParameters implemen
 		// fpy
 		QueryParameter fpyParameter = new QueryParameter();
 		fpyParameter.setDescription(
-				"Set the focal point y factor between 0  and 1 where 0.5 is the middle of the image. You can use this parameter in combination with the "
-						+ CROP_MODE_QUERY_PARAM_KEY + "=" + CropMode.FOCALPOINT.getKey()
-						+ " parameter in order to crop and resize the image in relation to the given point.");
+			"Set the focal point y factor between 0  and 1 where 0.5 is the middle of the image. You can use this parameter in combination with the "
+				+ CROP_MODE_QUERY_PARAM_KEY + "=" + CropMode.FOCALPOINT.getKey()
+				+ " parameter in order to crop and resize the image in relation to the given point.");
 		fpyParameter.setRequired(false);
 		fpyParameter.setExample("0.2");
 		fpyParameter.setType(ParamType.NUMBER);
@@ -130,7 +128,7 @@ public class ImageManipulationParametersImpl extends AbstractParameters implemen
 
 		// resize
 		QueryParameter resizeParameter = new QueryParameter();
-		resizeParameter.setDescription("Set the resize mode. Possible modes: " + ResizeMode.description());		
+		resizeParameter.setDescription("Set the resize mode. Possible modes: " + ResizeMode.description());
 		resizeParameter.setExample(ResizeMode.SMART.getKey());
 		resizeParameter.setRequired(false);
 		resizeParameter.setType(ParamType.STRING);

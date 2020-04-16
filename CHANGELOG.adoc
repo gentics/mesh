@@ -32,6 +32,11 @@ icon:plus[] Server: The `serverTokens` flag and `MESH_HTTP_SERVER_TOKENS` env ha
 
 icon:check[] Changelog: The automated recovery from v1.4.4 now renames duplicate versions instead of deleting them.
 
+[[v1.4.5]]
+== 1.4.5 (15.04.2020)
+
+icon:plus[] Image Manipulation: Mesh supports now the ´auto´ parameter when manipulating the images. The width and height fields in the binaries are now strings.
+
 [[v1.4.4]]
 == 1.4.4 (14.04.2020)
 
