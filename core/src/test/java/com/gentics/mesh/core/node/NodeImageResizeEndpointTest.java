@@ -232,6 +232,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 
 		NodeResponse transformResponse = call(() -> client().transformNodeBinaryField(PROJECT_NAME, uuid, "en", version, "image", params));
 		assertEquals("The image should have been resized", 200, transformResponse.getFields().getBinaryField("image").getHeight().intValue());
+		assertEquals("The image should use the original width of 1160", 1160, transformResponse.getFields().getBinaryField("image").getWidth().intValue());
 		MeshCoreAssertion.assertThat(testContext).hasUploads(2, 2).hasTempFiles(0).hasTempUploads(0);
 
 		// 3. Validate that a new version was created
@@ -260,6 +261,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 		params.setHeight("auto");
 
 		NodeResponse transformResponse = call(() -> client().transformNodeBinaryField(PROJECT_NAME, uuid, "en", version, "image", params));
+		assertEquals("The image should have benn in the original Height of 1376", 1376, transformResponse.getFields().getBinaryField("image").getHeight().intValue());
 		assertEquals("The image should have been resized", 200, transformResponse.getFields().getBinaryField("image").getWidth().intValue());
 		MeshCoreAssertion.assertThat(testContext).hasUploads(2, 2).hasTempFiles(0).hasTempUploads(0);
 

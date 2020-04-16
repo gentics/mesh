@@ -58,7 +58,7 @@ public interface ImageManipulationParameters extends ParameterProvider {
 	 *
 	 * @param width
 	 * @return Fluent API
-	 * @deprecated Use this ImageManipulationParameters#setWidth(String) instead.
+	 * @deprecated Use {@link #setWidth(String)} instead.
 	 */
 	@Deprecated
 	default ImageManipulationParameters setWidth(Integer width) {
@@ -91,7 +91,7 @@ public interface ImageManipulationParameters extends ParameterProvider {
 	 *
 	 * @param height
 	 * @return Fluent API
-	 * @deprecated Use this ImageManipulationParameters#setHeight(String) instead.
+	 * @deprecated Use {@link #setHeight(String)} instead.
 	 */
 
 	@Deprecated
@@ -129,8 +129,8 @@ public interface ImageManipulationParameters extends ParameterProvider {
 	 * @return Image size or null when width or height are missing
 	 */
 	default Point getSize() {
-		Integer w = NumberUtils.toInt(getWidth(), 0);
-		Integer h = NumberUtils.toInt(getHeight(), 0);
+		Integer w = NumberUtils.toInt(getWidth(), null);
+		Integer h = NumberUtils.toInt(getHeight(), null);
 		if (w == null || h == null) {
 			return null;
 		}
