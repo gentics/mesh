@@ -25,6 +25,11 @@ include::content/docs/variables.adoc-include[]
 
 * The Mesh Server will require Java 11 with the release of 2.0.0. The runtime support for Java 8 will be dropped. The Mesh Java REST client will still be usable with Java 8.
 
+[[v1.4.5]]
+== 1.4.5 (TBD)
+
+icon:check[] Changelog: The automated recovery from v1.4.4 now renames duplicate versions instead of deleting them.
+
 [[v1.4.4]]
 == 1.4.4 (14.04.2020)
 
