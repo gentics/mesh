@@ -71,7 +71,7 @@ public class ChangelogSystemTest {
 			if (pVersion == null) {
 				continue;
 			}
-			if (pVersion.compareTo(VersionNumber.parse("0.39.0")) >= 0) {
+			if (pVersion.compareTo(VersionNumber.parse("1.4.0")) >= 0) {
 				data.add(new Object[] { version });
 			}
 		}
