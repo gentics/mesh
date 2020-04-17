@@ -6,7 +6,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.rest.event.node.SchemaMigrationCause;
 
-public interface NodeMigrationActionContext {
+public interface NodeMigrationActionContext extends InternalActionContext {
 
 	/**
 	 * Return referenced project.
