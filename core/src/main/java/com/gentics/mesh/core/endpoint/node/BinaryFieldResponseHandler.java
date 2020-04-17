@@ -132,10 +132,10 @@ public class BinaryFieldResponseHandler {
 		Integer originalHeight = binaryField.getBinary().getImageHeight();
 		Integer originalWidth = binaryField.getBinary().getImageWidth();
 
-		if (imageParams.getHeight().equals("auto")){
+		if ("auto".equals(imageParams.getHeight())) {
 			imageParams.setHeight(originalHeight);
 		}
-		if (imageParams.getWidth().equals("auto")) {
+		if ("auto".equals(imageParams.getWidth())) {
 			imageParams.setWidth(originalWidth);
 		}
 		String fileName = binaryField.getFileName();
