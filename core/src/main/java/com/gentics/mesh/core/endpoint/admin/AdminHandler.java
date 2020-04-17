@@ -277,14 +277,16 @@ public class AdminHandler extends AbstractHandler {
 
 	public MeshServerInfoModel getMeshServerInfoModel() {
 		MeshServerInfoModel info = new MeshServerInfoModel();
-		info.setDatabaseVendor(db.getVendorName());
-		info.setDatabaseVersion(db.getVersion());
-		info.setSearchVendor(searchProvider.getVendorName());
-		info.setSearchVersion(searchProvider.getVersion());
-		info.setMeshVersion(Mesh.getPlainVersion());
-		info.setMeshNodeName(options.getNodeName());
-		info.setVertxVersion(VersionCommand.getVersion());
-		info.setDatabaseRevision(db.getDatabaseRevision());
+		if (options.getHttpServerOptions().isServerTokens()) {
+			info.setDatabaseVendor(db.getVendorName());
+			info.setSearchVendor(searchProvider.getVendorName());
+			info.setDatabaseVersion(db.getVersion());
+			info.setSearchVersion(searchProvider.getVersion());
+			info.setMeshVersion(Mesh.getPlainVersion());
+			info.setVertxVersion(VersionCommand.getVersion());
+			info.setDatabaseRevision(db.getDatabaseRevision());
+			info.setMeshNodeName(options.getNodeName());
+		}
 		return info;
 	}
 

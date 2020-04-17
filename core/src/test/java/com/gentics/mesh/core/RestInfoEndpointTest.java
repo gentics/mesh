@@ -4,6 +4,7 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
@@ -15,9 +16,15 @@ import com.orientechnologies.orient.core.OConstants;
 
 import io.vertx.core.impl.launcher.commands.VersionCommand;
 
-
 @MeshTestSetting(testSize = FULL, startServer = true)
 public class RestInfoEndpointTest extends AbstractMeshTest {
+
+	@Test
+	public void testGetInfoWithDisabledServerTokens() {
+		options().getHttpServerOptions().setServerTokens(false);
+		MeshServerInfoModel info = call(() -> client().getApiInfo());
+		assertNull(info.getMeshVersion());
+	}
 
 	@Test
 	public void testGetInfo() {

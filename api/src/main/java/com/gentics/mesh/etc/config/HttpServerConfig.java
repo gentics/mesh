@@ -36,6 +36,7 @@ public class HttpServerConfig implements Option {
 	public static final String DEFAULT_CERT_PATH = "config/cert.pem";
 	public static final String DEFAULT_KEY_PATH = "config/key.pem";
 	public static final ClientAuth DEFAULT_CLIENT_AUTH_MODE = ClientAuth.NONE;
+	public static final boolean DEFAULT_SERVER_TOKENS = true;
 
 	public static final String MESH_HTTP_PORT_ENV = "MESH_HTTP_PORT";
 	public static final String MESH_HTTPS_PORT_ENV = "MESH_HTTPS_PORT";
@@ -51,6 +52,7 @@ public class HttpServerConfig implements Option {
 	public static final String MESH_HTTP_SSL_CLIENT_AUTH_MODE_ENV = "MESH_HTTP_SSL_CLIENT_AUTH_MODE";
 	public static final String MESH_HTTP_SSL_TRUSTED_CERTS_ENV = "MESH_HTTP_SSL_TRUSTED_CERTS";
 	public static final String MESH_HTTP_CORS_ALLOW_CREDENTIALS_ENV = "MESH_HTTP_CORS_ALLOW_CREDENTIALS";
+	public static final String MESH_HTTP_SERVER_TOKENS_ENV = "MESH_HTTP_SERVER_TOKENS";
 
 	public static final int DEFAULT_VERTICLE_AMOUNT = 2 * Runtime.getRuntime().availableProcessors();
 
@@ -118,6 +120,11 @@ public class HttpServerConfig implements Option {
 	@JsonPropertyDescription("Amount of rest API verticles to be deployed. Default is 2 * CPU Cores")
 	@EnvironmentVariable(name = "MESH_HTTP_VERTICLE_AMOUNT", description = "Override the http verticle amount.")
 	private int verticleAmount = DEFAULT_VERTICLE_AMOUNT;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Set the http server tokens flag which controls whether the server should expose version information via headers, REST endpoints and GraphQL. Default is true")
+	@EnvironmentVariable(name = MESH_HTTP_SERVER_TOKENS_ENV, description = "Override the http server tokens flag.")
+	private boolean serverTokens = DEFAULT_SERVER_TOKENS;
 
 	public HttpServerConfig() {
 	}
@@ -241,6 +248,15 @@ public class HttpServerConfig implements Option {
 
 	public HttpServerConfig setTrustedCertPaths(List<String> trustedCertPaths) {
 		this.trustedCertPaths = trustedCertPaths;
+		return this;
+	}
+
+	public boolean isServerTokens() {
+		return serverTokens;
+	}
+
+	public HttpServerConfig setServerTokens(boolean flag) {
+		this.serverTokens = flag;
 		return this;
 	}
 
