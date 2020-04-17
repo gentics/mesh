@@ -20,7 +20,6 @@ import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.EncodeUtil;
 import com.gentics.mesh.util.MimeTypeUtils;
-
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.http.impl.MimeMapping;
@@ -51,7 +50,7 @@ public class BinaryFieldResponseHandler {
 
 	/**
 	 * Handle the binary field response.
-	 * 
+	 *
 	 * @param rc
 	 * @param binaryField
 	 */
@@ -130,21 +129,30 @@ public class BinaryFieldResponseHandler {
 				imageParams.setFocalPoint(fp);
 			}
 		}
+		Integer originalHeight = binaryField.getBinary().getImageHeight();
+		Integer originalWidth = binaryField.getBinary().getImageWidth();
+
+		if (imageParams.getHeight().equals("auto")){
+			imageParams.setHeight(originalHeight);
+		}
+		if (imageParams.getWidth().equals("auto")) {
+			imageParams.setWidth(originalWidth);
+		}
 		String fileName = binaryField.getFileName();
 		imageManipulator.handleResize(binaryField.getBinary(), imageParams)
 			.flatMap(cachedFilePath -> rxVertx.fileSystem().rxProps(cachedFilePath)
-			.doOnSuccess(props -> {
-				response.putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(props.size()));
-				response.putHeader(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.getMimeTypeForFilename(cachedFilePath).orElse(DEFAULT_BINARY_MIME_TYPE));
-				response.putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
-				response.putHeader(MeshHeaders.WEBROOT_RESPONSE_TYPE, "binary");
-				// Set to IDENTITY to avoid gzip compression
-				response.putHeader(HttpHeaders.CONTENT_ENCODING, HttpHeaders.IDENTITY);
+				.doOnSuccess(props -> {
+					response.putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(props.size()));
+					response.putHeader(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.getMimeTypeForFilename(cachedFilePath).orElse(DEFAULT_BINARY_MIME_TYPE));
+					response.putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
+					response.putHeader(MeshHeaders.WEBROOT_RESPONSE_TYPE, "binary");
+					// Set to IDENTITY to avoid gzip compression
+					response.putHeader(HttpHeaders.CONTENT_ENCODING, HttpHeaders.IDENTITY);
 
-				addContentDispositionHeader(response, fileName, "inline");
+					addContentDispositionHeader(response, fileName, "inline");
 
-				response.sendFile(cachedFilePath);
-			}))
+					response.sendFile(cachedFilePath);
+				}))
 			.subscribe(ignore -> {}, rc::fail);
 	}
 

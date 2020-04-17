@@ -32,6 +32,8 @@ icon:plus[] Server: The `serverTokens` flag and `MESH_HTTP_SERVER_TOKENS` env ha
 
 icon:check[] Changelog: The automated recovery from v1.4.4 now renames duplicate versions instead of deleting them.
 
+icon:plus[] Image Manipulation: Gentics Mesh now supports the ´auto´ parameter when manipulating images.For more info check the {{< relref "image-manipulation.asciidoc" >}}[Image Manipulation documentation].
+
 [[v1.4.4]]
 == 1.4.4 (14.04.2020)
 
