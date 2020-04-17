@@ -215,7 +215,6 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
 	/**
 	 * Create an image writer from the same image format as the specified image reader writing to the given output stream.
-	 * <p>
 	 * When no respective writer to the given reader is available, a PNG writer will be created.
 	 *
 	 * @param reader The reader used to read the original image
