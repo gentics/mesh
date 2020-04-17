@@ -26,7 +26,7 @@ include::content/docs/variables.adoc-include[]
 * The Mesh Server will require Java 11 with the release of 2.0.0. The runtime support for Java 8 will be dropped. The Mesh Java REST client will still be usable with Java 8.
 
 [[v1.4.5]]
-== 1.4.5 (TBD)
+== 1.4.5 (17.04.2020)
 
 icon:plus[] Server: The `serverTokens` flag and `MESH_HTTP_SERVER_TOKENS` env has been added to the server config. The flag controls whether server version information can be exposed via REST (/api/v1, /api/v2), GraphQL or HTTP headers. By default server tokens are enabled.
 
