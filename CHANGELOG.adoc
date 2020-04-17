@@ -32,6 +32,8 @@ icon:plus[] Server: The `serverTokens` flag and `MESH_HTTP_SERVER_TOKENS` env ha
 
 icon:check[] Changelog: The automated recovery from v1.4.4 now renames duplicate versions instead of deleting them.
 
+icon:check[] Core: Migrating remaining nodes via the `/{project}/branches/{branchUuid}/migrateSchemas` and `/{project}/branches/{branchUuid}/migrateMicroschemas` now includes all previous schema versions instead of only active schema versions.
+
 [[v1.4.4]]
 == 1.4.4 (14.04.2020)
 
