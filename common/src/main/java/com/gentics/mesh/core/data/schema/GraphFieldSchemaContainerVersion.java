@@ -120,21 +120,32 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 
 	/**
 	 * Return the previous version of this schema.
-	 * 
+	 *
 	 * @return
 	 */
 	SCV getPreviousVersion();
 
 	/**
+	 * Returns a stream of all previous versions.
+	 * @return
+	 */
+	default Stream<SCV> getPreviousVersions() {
+		return StreamUtil.untilNull(
+			this::getPreviousVersion,
+			GraphFieldSchemaContainerVersion::getPreviousVersion
+		);
+	}
+
+	/**
 	 * Set the previous version of the container.
-	 * 
+	 *
 	 * @param container
 	 */
 	void setPreviousVersion(SCV container);
 
 	/**
 	 * Generate a schema change list by comparing the schema with the specified schema update model which is extracted from the action context.
-	 * 
+	 *
 	 * @param ac
 	 *            Action context that provides the schema update request
 	 * @param comparator
@@ -147,7 +158,7 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 
 	/**
 	 * Apply changes which will be extracted from the action context.
-	 * 
+	 *
 	 * @param ac
 	 *            Action context that provides the migration request data
 	 * @param batch
@@ -157,7 +168,7 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 
 	/**
 	 * Apply the given list of changes to the schema container. This method will invoke the schema migration process.
-	 * 
+	 *
 	 * @param ac
 	 * @param listOfChanges
 	 * @param batch
@@ -167,42 +178,42 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 
 	/**
 	 * Return the parent schema container of the version.
-	 * 
+	 *
 	 * @return
 	 */
 	SC getSchemaContainer();
 
 	/**
 	 * Set the parent schema container of this version.
-	 * 
+	 *
 	 * @param container
 	 */
 	void setSchemaContainer(SC container);
 
 	/**
 	 * Get the branches to which the container was assigned.
-	 * 
+	 *
 	 * @return Found branches of this version
 	 */
 	TraversalResult<? extends Branch> getBranches();
 
 	/**
 	 * Load the stored schema JSON data.
-	 * 
+	 *
 	 * @return
 	 */
 	String getJson();
 
 	/**
 	 * Update the stored schema JSON data.
-	 * 
+	 *
 	 * @param json
 	 */
 	void setJson(String json);
 
 	/**
 	 * Compare two versions.
-	 * 
+	 *
 	 * @param version
 	 */
 	default int compareTo(SCV version) {
@@ -211,14 +222,14 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 
 	/**
 	 * Return an iterable of all jobs which reference the version via the _to_ reference.
-	 * 
+	 *
 	 * @return
 	 */
 	Iterable<Job> referencedJobsViaTo();
 
 	/**
 	 * Return an iterable of all jobs which reference the version via the _from_ reference.
-	 * 
+	 *
 	 * @return
 	 */
 	Iterable<Job> referencedJobsViaFrom();

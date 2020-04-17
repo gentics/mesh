@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import javax.inject.Inject;
@@ -280,10 +281,8 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 					.map(list -> (T) list.stream().max(Comparator.comparing(Function.identity())).get())
 					.collect(Collectors.toMap(GraphFieldSchemaContainerVersion::getName, Function.identity()));
 
-				versions.stream()
-					.flatMap(Collection::stream)
-					// We don't need to migrate the latest active version
-					.filter(version -> version != latestVersions.get(version.getName()))
+				latestVersions.values().stream()
+					.flatMap(v -> (Stream<T>) v.getPreviousVersions())
 					.forEach(schemaVersion -> {
 						enqueueMigration.apply(boot.jobRoot(), ac.getUser(), branch, schemaVersion, latestVersions.get(schemaVersion.getName()));
 					});

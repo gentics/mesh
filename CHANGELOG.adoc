@@ -34,6 +34,8 @@ icon:check[] Changelog: The automated recovery from v1.4.4 now renames duplicate
 
 icon:plus[] Image Manipulation: Gentics Mesh now supports the ´auto´ parameter when manipulating images.For more info check the {{< relref "image-manipulation.asciidoc" >}}[Image Manipulation documentation].
 
+icon:check[] Core: Migrating remaining nodes via the `/{project}/branches/{branchUuid}/migrateSchemas` and `/{project}/branches/{branchUuid}/migrateMicroschemas` now includes all previous schema versions instead of only active schema versions.
+
 [[v1.4.4]]
 == 1.4.4 (14.04.2020)
 
