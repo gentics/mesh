@@ -58,7 +58,9 @@ public class NavRootHandler {
 			if (!requestUser.hasPermission(node, READ_PUBLISHED_PERM)) {
 				throw error(FORBIDDEN, "error_missing_perm", node.getUuid(), READ_PUBLISHED_PERM.getRestPerm().getName());
 			}
-			return node.transformToNavigation(ac).blockingGet();
+			return node;
+		}, node -> node.transformToNavigation(ac).subscribe(model -> ac.send(model, OK), ac::fail));
+
 		}, model -> ac.send(model, OK));
 
 	}
