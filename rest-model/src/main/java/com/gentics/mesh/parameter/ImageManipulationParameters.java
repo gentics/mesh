@@ -129,8 +129,8 @@ public interface ImageManipulationParameters extends ParameterProvider {
 	 * @return Image size or null when width or height are missing
 	 */
 	default Point getSize() {
-		Integer w = NumberUtils.toInt(getWidth(), null);
-		Integer h = NumberUtils.toInt(getHeight(), null);
+		Integer w = NumberUtils.toInteger(getWidth(), null);
+		Integer h = NumberUtils.toInteger(getHeight(), null);
 		if (w == null || h == null) {
 			return null;
 		}
