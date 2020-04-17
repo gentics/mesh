@@ -16,6 +16,7 @@ import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
+import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.cluster.ClusterManager;
 import com.gentics.mesh.graphdb.model.MeshElement;
@@ -160,16 +161,38 @@ public interface Database extends TxFactory {
 	}
 
 	/**
-	 * Executes a supplier in a transaction within the worker thread pool.
-	 * If the supplier returns null, the maybe is completed, else the value is returned.
-	 * @param handler
+	 * Executes a supplier in a transaction within the worker thread pool. If the supplier returns null, the maybe is completed, else the value is returned.
+	 * 
 	 * @param <T>
+	 * @param handler
 	 * @return
 	 */
 	default <T> Maybe<T> maybeTx(Function<Tx, T> handler) {
+		return maybeTx(handler, false);
+	}
+
+	/**
+	 * Executes a supplier in a transaction within the worker thread pool. If the supplier returns null, the maybe is completed, else the value is returned.
+	 * 
+	 * @param handler
+	 * @param useWriteLock
+	 *            Whether to apply a write lock around the transaction
+	 * @param <T>
+	 * @return
+	 */
+	default <T> Maybe<T> maybeTx(Function<Tx, T> handler, boolean useWriteLock) {
 		return new io.vertx.reactivex.core.Vertx(vertx()).rxExecuteBlocking(promise -> {
 			try {
-				promise.complete(tx(handler::apply));
+				if (useWriteLock) {
+					T result = null;
+					try (WriteLock lock = writeLock().lock(null)) {
+						result = tx(handler::apply);
+					}
+					promise.complete(result);
+				} else {
+					promise.complete(tx(handler::apply));
+				}
+
 			} catch (Throwable e) {
 				promise.fail(e);
 			}
@@ -177,25 +200,29 @@ public interface Database extends TxFactory {
 	}
 
 	/**
-	 * Executes a supplier in a transaction within the worker thread pool.
-	 * If the supplier returns null, a {@link java.util.NoSuchElementException} is emitted.
+	 * Executes a supplier in a transaction within the worker thread pool. If the supplier returns null, a {@link java.util.NoSuchElementException} is emitted.
+	 * 
 	 * @param handler
 	 * @param <T>
 	 * @return
 	 */
 	default <T> Single<T> singleTx(Supplier<T> handler) {
-		return maybeTx(tx -> handler.get()).toSingle();
+		return maybeTx(tx -> handler.get(), false).toSingle();
+	}
+
+	default <T> Single<T> singleTxWriteLock(Function<Tx, T> handler) {
+		return maybeTx(handler, true).toSingle();
 	}
 
 	/**
-	 * Executes a supplier in a transaction within the worker thread pool.
-	 * If the supplier returns null, a {@link java.util.NoSuchElementException} is emitted.
+	 * Executes a supplier in a transaction within the worker thread pool. If the supplier returns null, a {@link java.util.NoSuchElementException} is emitted.
+	 * 
 	 * @param handler
 	 * @param <T>
 	 * @return
 	 */
 	default <T> Single<T> singleTx(Function<Tx, T> handler) {
-		return maybeTx(handler).toSingle();
+		return maybeTx(handler, true).toSingle();
 	}
 
 	/**
@@ -264,8 +291,10 @@ public interface Database extends TxFactory {
 	/**
 	 * Utilize the index and locate the matching vertices.
 	 *
-	 * @param <T> Type of the vertices
-	 * @param classOfVertex Class to be used for framing
+	 * @param <T>
+	 *            Type of the vertices
+	 * @param classOfVertex
+	 *            Class to be used for framing
 	 * @param fieldNames
 	 * @param fieldValues
 	 * @return
@@ -275,7 +304,8 @@ public interface Database extends TxFactory {
 	/**
 	 * Utilize the index and locate the matching vertices.
 	 *
-	 * @param classOfVertex Class to be used for framing
+	 * @param classOfVertex
+	 *            Class to be used for framing
 	 * @param fieldName
 	 * @param fieldValue
 	 * @return
@@ -450,6 +480,7 @@ public interface Database extends TxFactory {
 
 	/**
 	 * Load the current cluster configuration.
+	 * 
 	 * @return
 	 */
 	ClusterConfigResponse loadClusterConfig();
@@ -463,5 +494,12 @@ public interface Database extends TxFactory {
 	 * Set the server role to master.
 	 */
 	void setToMaster();
+
+	/**
+	 * Return the global lockable write lock instance.
+	 * 
+	 * @return
+	 */
+	WriteLock writeLock();
 
 }

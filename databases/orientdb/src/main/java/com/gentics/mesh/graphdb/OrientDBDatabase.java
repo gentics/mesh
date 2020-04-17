@@ -32,6 +32,7 @@ import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterServerConfig;
 import com.gentics.mesh.core.rest.admin.cluster.ServerRole;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -124,12 +125,14 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private Mesh mesh;
 
+	private WriteLock writeLock;
+
 	@Inject
 	public OrientDBDatabase(Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, MetricsService metrics, OrientDBTypeHandler typeHandler,
 		OrientDBIndexHandler indexHandler,
 		OrientDBClusterManager clusterManager,
 		TxCleanupTask txCleanupTask,
-		Mesh mesh) {
+		Mesh mesh, WriteLock writeLock) {
 		super(vertx);
 		this.boot = boot;
 		this.metrics = metrics;
@@ -145,6 +148,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		this.clusterManager = clusterManager;
 		this.txCleanUpTask = txCleanupTask;
 		this.mesh = mesh;
+		this.writeLock = writeLock;
 	}
 
 	@Override
@@ -642,6 +646,11 @@ public class OrientDBDatabase extends AbstractDatabase {
 		});
 		txCleanupThread.setName("mesh-tx-cleanup-task");
 		txCleanupThread.start();
+	}
+
+	@Override
+	public WriteLock writeLock() {
+		return writeLock;
 	}
 
 }

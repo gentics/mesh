@@ -255,123 +255,120 @@ public class BinaryUploadHandler extends AbstractHandler {
 		String hash = context.getHash();
 		String binaryUuid = context.getBinaryUuid();
 
-		return Single.fromCallable(() -> {
-			try (WriteLock lock = writeLock.lock(ac)) {
-				return db.tx(tx -> {
-					Project project = ac.getProject();
-					Branch branch = ac.getBranch();
-					Node node = project.getNodeRoot().loadObjectByUuid(ac, nodeUuid, UPDATE_PERM);
+		return db.singleTxWriteLock(tx -> {
+			Project project = ac.getProject();
+			Branch branch = ac.getBranch();
+			Node node = project.getNodeRoot().loadObjectByUuid(ac, nodeUuid, UPDATE_PERM);
 
-					utils.eventAction(batch -> {
+			utils.eventAction(batch -> {
 
-						// We need to check whether someone else has stored the binary in the meanwhile
-						Binary binary = binaries.findByHash(hash).runInExistingTx(tx);
-						if (binary == null) {
-							binary = binaries.create(binaryUuid, hash, upload.size()).runInExistingTx(tx);
+				// We need to check whether someone else has stored the binary in the meanwhile
+				Binary binary = binaries.findByHash(hash).runInExistingTx(tx);
+				if (binary == null) {
+					binary = binaries.create(binaryUuid, hash, upload.size()).runInExistingTx(tx);
+				}
+				Language language = boot.get().languageRoot().findByLanguageTag(languageTag);
+				if (language == null) {
+					throw error(NOT_FOUND, "error_language_not_found", languageTag);
+				}
+
+				// Load the current latest draft
+				NodeGraphFieldContainer latestDraftVersion = node.getGraphFieldContainer(languageTag, branch, ContainerType.DRAFT);
+
+				if (latestDraftVersion == null) {
+					// latestDraftVersion = node.createGraphFieldContainer(language, branch, ac.getUser());
+					// TODO Maybe it would be better to just create a new field container for the language?
+					// In that case we would also need to:
+					// * check for segment field conflicts
+					// * update display name
+					// * fail if mandatory fields are missing
+					throw error(NOT_FOUND, "error_language_not_found", languageTag);
+				}
+
+				// Load the base version field container in order to create the diff
+				NodeGraphFieldContainer baseVersionContainer = node.findVersion(languageTag, branch.getUuid(), nodeVersion);
+				if (baseVersionContainer == null) {
+					throw error(BAD_REQUEST, "node_error_draft_not_found", nodeVersion, languageTag);
+				}
+
+				List<FieldContainerChange> baseVersionDiff = baseVersionContainer.compareTo(latestDraftVersion);
+				List<FieldContainerChange> requestVersionDiff = Arrays.asList(new FieldContainerChange(fieldName, FieldChangeTypes.UPDATED));
+
+				// Compare both sets of change sets
+				List<FieldContainerChange> intersect = baseVersionDiff.stream().filter(requestVersionDiff::contains)
+					.collect(Collectors.toList());
+
+				// Check whether the update was not based on the latest draft version. In that case a conflict check needs to occur.
+				if (!latestDraftVersion.getVersion().equals(nodeVersion)) {
+
+					// Check whether a conflict has been detected
+					if (intersect.size() > 0) {
+						NodeVersionConflictException conflictException = new NodeVersionConflictException("node_error_conflict_detected");
+						conflictException.setOldVersion(baseVersionContainer.getVersion().toString());
+						conflictException.setNewVersion(latestDraftVersion.getVersion().toString());
+						for (FieldContainerChange fcc : intersect) {
+							conflictException.addConflict(fcc.getFieldCoordinates());
 						}
-						Language language = boot.get().languageRoot().findByLanguageTag(languageTag);
-						if (language == null) {
-							throw error(NOT_FOUND, "error_language_not_found", languageTag);
-						}
+						throw conflictException;
+					}
+				}
 
-						// Load the current latest draft
-						NodeGraphFieldContainer latestDraftVersion = node.getGraphFieldContainer(languageTag, branch, ContainerType.DRAFT);
+				FieldSchema fieldSchema = latestDraftVersion.getSchemaContainerVersion().getSchema().getField(fieldName);
+				if (fieldSchema == null) {
+					throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
+				}
+				if (!(fieldSchema instanceof BinaryFieldSchema)) {
+					// TODO Add support for other field types
+					throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
+				}
 
-						if (latestDraftVersion == null) {
-							// latestDraftVersion = node.createGraphFieldContainer(language, branch, ac.getUser());
-							// TODO Maybe it would be better to just create a new field container for the language?
-							// In that case we would also need to:
-							// * check for segment field conflicts
-							// * update display name
-							// * fail if mandatory fields are missing
-							throw error(NOT_FOUND, "error_language_not_found", languageTag);
-						}
+				// Create a new node version field container to store the upload
+				NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(languageTag, branch, ac.getUser(),
+					latestDraftVersion,
+					true);
 
-						// Load the base version field container in order to create the diff
-						NodeGraphFieldContainer baseVersionContainer = node.findVersion(languageTag, branch.getUuid(), nodeVersion);
-						if (baseVersionContainer == null) {
-							throw error(BAD_REQUEST, "node_error_draft_not_found", nodeVersion, languageTag);
-						}
+				// Get the potential existing field
+				BinaryGraphField oldField = newDraftVersion.getBinary(fieldName);
 
-						List<FieldContainerChange> baseVersionDiff = baseVersionContainer.compareTo(latestDraftVersion);
-						List<FieldContainerChange> requestVersionDiff = Arrays.asList(new FieldContainerChange(fieldName, FieldChangeTypes.UPDATED));
+				// Create the new field
+				BinaryGraphField field = newDraftVersion.createBinary(fieldName, binary);
 
-						// Compare both sets of change sets
-						List<FieldContainerChange> intersect = baseVersionDiff.stream().filter(requestVersionDiff::contains)
-							.collect(Collectors.toList());
+				// Reuse the existing properties
+				if (oldField != null) {
+					oldField.copyTo(field);
 
-						// Check whether the update was not based on the latest draft version. In that case a conflict check needs to occur.
-						if (!latestDraftVersion.getVersion().equals(nodeVersion)) {
+					// If the old field was an image and the current upload is not an image we need to reset the custom image specific attributes.
+					if (oldField.hasProcessableImage() && !NodeUtil.isProcessableImage(upload.contentType())) {
+						field.setImageDominantColor(null);
+					}
+				}
 
-							// Check whether a conflict has been detected
-							if (intersect.size() > 0) {
-								NodeVersionConflictException conflictException = new NodeVersionConflictException("node_error_conflict_detected");
-								conflictException.setOldVersion(baseVersionContainer.getVersion().toString());
-								conflictException.setNewVersion(latestDraftVersion.getVersion().toString());
-								for (FieldContainerChange fcc : intersect) {
-									conflictException.addConflict(fcc.getFieldCoordinates());
-								}
-								throw conflictException;
-							}
-						}
+				// Now set the field infos. This will override any copied values as well.
+				field.setFileName(upload.fileName());
+				field.setMimeType(upload.contentType());
+				field.getBinary().setSize(upload.size());
 
-						FieldSchema fieldSchema = latestDraftVersion.getSchemaContainerVersion().getSchema().getField(fieldName);
-						if (fieldSchema == null) {
-							throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
-						}
-						if (!(fieldSchema instanceof BinaryFieldSchema)) {
-							// TODO Add support for other field types
-							throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
-						}
+				for (Consumer<BinaryGraphField> modifier : fieldModifier) {
+					modifier.accept(field);
+				}
 
-						// Create a new node version field container to store the upload
-						NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(languageTag, branch, ac.getUser(),
-							latestDraftVersion,
-							true);
+				// Now get rid of the old field
+				if (oldField != null) {
+					oldField.removeField(newDraftVersion);
+				}
+				// If the binary field is the segment field, we need to update the webroot info in the node
+				if (field.getFieldKey().equals(newDraftVersion.getSchemaContainerVersion().getSchema().getSegmentField())) {
+					newDraftVersion.updateWebrootPathInfo(branch.getUuid(), "node_conflicting_segmentfield_upload");
+				}
 
-						// Get the potential existing field
-						BinaryGraphField oldField = newDraftVersion.getBinary(fieldName);
+				if (ac.isPurgeAllowed() && newDraftVersion.isAutoPurgeEnabled() && latestDraftVersion.isPurgeable()) {
+					latestDraftVersion.purge();
+				}
 
-						// Create the new field
-						BinaryGraphField field = newDraftVersion.createBinary(fieldName, binary);
+				batch.add(newDraftVersion.onUpdated(branch.getUuid(), DRAFT));
+			});
+			return node.transformToRestSync(ac, 0);
 
-						// Reuse the existing properties
-						if (oldField != null) {
-							oldField.copyTo(field);
-
-							// If the old field was an image and the current upload is not an image we need to reset the custom image specific attributes.
-							if (oldField.hasProcessableImage() && !NodeUtil.isProcessableImage(upload.contentType())) {
-								field.setImageDominantColor(null);
-							}
-						}
-
-						// Now set the field infos. This will override any copied values as well.
-						field.setFileName(upload.fileName());
-						field.setMimeType(upload.contentType());
-						field.getBinary().setSize(upload.size());
-
-						for (Consumer<BinaryGraphField> modifier : fieldModifier) {
-							modifier.accept(field);
-						}
-
-						// Now get rid of the old field
-						if (oldField != null) {
-							oldField.removeField(newDraftVersion);
-						}
-						// If the binary field is the segment field, we need to update the webroot info in the node
-						if (field.getFieldKey().equals(newDraftVersion.getSchemaContainerVersion().getSchema().getSegmentField())) {
-							newDraftVersion.updateWebrootPathInfo(branch.getUuid(), "node_conflicting_segmentfield_upload");
-						}
-
-						if (ac.isPurgeAllowed() && newDraftVersion.isAutoPurgeEnabled() && latestDraftVersion.isPurgeable()) {
-							latestDraftVersion.purge();
-						}
-
-						batch.add(newDraftVersion.onUpdated(branch.getUuid(), DRAFT));
-					});
-					return node.transformToRestSync(ac, 0);
-				});
-			}
 		});
 	}
 
