@@ -257,6 +257,9 @@
 | *MESH_BINARY_UPLOAD_TEMP_DIR*
 | Override the configured upload temporary directory.
 
+| *MESH_HTTP_SERVER_TOKENS*
+| Override the http server tokens flag.
+
 | *MESH_GRAPH_DB_DIRECTORY*
 | Override the graph database storage directory.
 

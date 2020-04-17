@@ -13,11 +13,11 @@
       "description" : "ISO 639-1 language tag of the node which provides the image which should be transformed."
     },
     "width" : {
-      "type" : "integer",
+      "type" : "string",
       "description" : "New width of the image."
     },
     "height" : {
-      "type" : "integer",
+      "type" : "string",
       "description" : "New height of the image."
     },
     "cropRect" : {

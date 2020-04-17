@@ -52,6 +52,11 @@
 | integer
 | Configure the Gentics Mesh HTTP server port. Default is: 8080
 
+| serverTokens
+| false
+| boolean
+| Set the http server tokens flag which controls whether the server should expose version information via headers, REST endpoints and GraphQL. Default is true
+
 | ssl
 | false
 | boolean
