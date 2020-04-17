@@ -240,6 +240,12 @@ public class OrientDBClusterManager implements ClusterManager {
 		if (log.isDebugEnabled()) {
 			log.debug("OrientDB server configuration:" + configString);
 		}
+
+		// Apply on-the-fly fix for changed OrientDB configuration.
+		final String OLD_PLUGIN_REGEX = "com\\.orientechnologies\\.orient\\.server\\.hazelcast\\.OHazelcastPlugin";
+		final String NEW_PLUGIN = "com.gentics.mesh.graphdb.cluster.MeshOHazelcastPlugin";
+		configString = configString.replaceAll(OLD_PLUGIN_REGEX, NEW_PLUGIN);
+
 		return configString;
 	}
 
@@ -270,7 +276,7 @@ public class OrientDBClusterManager implements ClusterManager {
 	}
 
 	private void writeOrientServerConfig(File configFile) throws IOException {
-		String resourcePath = "/config/orientdb-server-config.xml";
+		String resourcePath = "/config/" + ORIENTDB_SERVER_CONFIG;
 		InputStream configIns = getClass().getResourceAsStream(resourcePath);
 		if (configFile == null) {
 			throw new RuntimeException("Could not find default orientdb server configuration template file {" + resourcePath + "} within classpath.");
