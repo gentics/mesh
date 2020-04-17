@@ -153,8 +153,7 @@ public class BinaryFieldResponseHandler {
 
 					response.sendFile(cachedFilePath);
 				}))
-			.subscribe(ignore -> {
-			}, rc::fail);
+			.subscribe(ignore -> {}, rc::fail);
 	}
 
 	private void addContentDispositionHeader(HttpServerResponse response, String fileName, String type) {
