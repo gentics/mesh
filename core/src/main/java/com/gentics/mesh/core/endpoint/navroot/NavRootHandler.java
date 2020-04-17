@@ -61,7 +61,5 @@ public class NavRootHandler {
 			return node;
 		}, node -> node.transformToNavigation(ac).subscribe(model -> ac.send(model, OK), ac::fail));
 
-		}, model -> ac.send(model, OK));
-
 	}
 }

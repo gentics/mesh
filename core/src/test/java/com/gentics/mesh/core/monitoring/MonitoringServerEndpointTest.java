@@ -25,6 +25,10 @@ import io.vertx.core.impl.launcher.commands.VersionCommand;
 @MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class MonitoringServerEndpointTest extends AbstractMeshTest {
 
+	/**
+	 * Make sure that the status will be reset after the test so that 
+	 * the database setup and initial login will not fail.
+	 */
 	@Before
 	@After
 	public void setup() {

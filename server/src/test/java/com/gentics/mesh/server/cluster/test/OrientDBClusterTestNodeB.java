@@ -5,6 +5,9 @@ import org.junit.Test;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.server.cluster.test.task.RoleCRUDGlobalLockInserterTask;
 
+/**
+ * Dedicated test runner class for manual cluster tests.  
+ */
 public class OrientDBClusterTestNodeB extends AbstractClusterTest {
 
 	@Test
