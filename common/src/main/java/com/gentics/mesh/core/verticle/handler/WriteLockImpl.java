@@ -57,10 +57,6 @@ public class WriteLockImpl implements WriteLock {
 		if (ac != null && ac.isSkipWriteLock()) {
 			return this;
 		} else {
-			// Lets mark this ac as being used by a lock. This way no other nested lock will cause a deadlock.
-			if (ac != null) {
-				ac.skipWriteLock();
-			}
 			boolean syncWrites = options.getStorageOptions().isSynchronizeWrites();
 			if (syncWrites) {
 				Timer.Sample timer = Timer.start();

@@ -79,6 +79,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 
 			// Delegate to handle update which will create the microschema
 			if (delegateToCreate) {
+				ac.skipWriteLock();
 				super.handleUpdate(ac, uuid);
 				return;
 			}

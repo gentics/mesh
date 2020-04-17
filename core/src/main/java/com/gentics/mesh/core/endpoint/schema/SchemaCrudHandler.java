@@ -92,6 +92,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 			// Delegate to handle update which will create the schema
 			if (delegateToCreate) {
+				ac.skipWriteLock();
 				super.handleUpdate(ac, uuid);
 				return;
 			}
