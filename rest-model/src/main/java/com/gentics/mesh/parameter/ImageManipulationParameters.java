@@ -58,9 +58,7 @@ public interface ImageManipulationParameters extends ParameterProvider {
 	 *
 	 * @param width
 	 * @return Fluent API
-	 * @deprecated Use {@link #setWidth(String)} instead.
 	 */
-	@Deprecated
 	default ImageManipulationParameters setWidth(Integer width) {
 		setParameter(WIDTH_QUERY_PARAM_KEY, String.valueOf(width));
 		return this;
@@ -91,10 +89,7 @@ public interface ImageManipulationParameters extends ParameterProvider {
 	 *
 	 * @param height
 	 * @return Fluent API
-	 * @deprecated Use {@link #setHeight(String)} instead.
 	 */
-
-	@Deprecated
 	default ImageManipulationParameters setHeight(Integer height) {
 		setParameter(HEIGHT_QUERY_PARAM_KEY, String.valueOf(height));
 		return this;
