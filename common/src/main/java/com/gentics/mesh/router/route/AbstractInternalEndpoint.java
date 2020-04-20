@@ -54,6 +54,15 @@ public abstract class AbstractInternalEndpoint implements InternalEndpoint {
 	}
 
 	/**
+	 * Add the auth chain to the endpoint.
+	 * 
+	 * @param endpoint
+	 */
+	protected void secure(InternalEndpointRoute endpoint) {
+		chain.secure(endpoint.getRoute());
+	}
+
+	/**
 	 * Register all endpoints to the local router.
 	 */
 	public abstract void registerEndPoints();

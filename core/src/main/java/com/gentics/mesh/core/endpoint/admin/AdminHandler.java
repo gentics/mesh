@@ -275,12 +275,14 @@ public class AdminHandler extends AbstractHandler {
 	}
 
 	public void handleVersions(InternalActionContext ac) {
-		ac.send(getMeshServerInfoModel(), OK);
+		MeshServerInfoModel model = getMeshServerInfoModel(ac);
+		ac.send(model, OK);
 	}
 
-	public MeshServerInfoModel getMeshServerInfoModel() {
+	public MeshServerInfoModel getMeshServerInfoModel(InternalActionContext ac) {
+		boolean admin = db.tx(() -> ac.isAdmin());
 		MeshServerInfoModel info = new MeshServerInfoModel();
-		if (options.getHttpServerOptions().isServerTokens()) {
+		if (options.getHttpServerOptions().isServerTokens() || admin) {
 			info.setDatabaseVendor(db.getVendorName());
 			info.setSearchVendor(searchProvider.getVendorName());
 			info.setDatabaseVersion(db.getVersion());

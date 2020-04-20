@@ -201,4 +201,11 @@ public interface InternalActionContext extends ActionContext, ParameterProviderC
 	 */
 	InternalActionContext skipWriteLock();
 
+	/**
+	 * Check whether the context provides a user which is admin.
+	 * 
+	 * @return
+	 */
+	boolean isAdmin();
+
 }

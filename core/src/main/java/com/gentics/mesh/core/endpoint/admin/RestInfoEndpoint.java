@@ -52,6 +52,7 @@ public class RestInfoEndpoint extends AbstractInternalEndpoint {
 	@Override
 	public void registerEndPoints() {
 
+		secureAll();
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/raml");
 		endpoint.method(GET);
@@ -60,10 +61,15 @@ public class RestInfoEndpoint extends AbstractInternalEndpoint {
 		endpoint.exampleResponse(OK, "Not yet specified");
 		endpoint.produces(APPLICATION_YAML);
 		endpoint.blockingHandler(rc -> {
-			RAMLGenerator generator = new RAMLGenerator();
-			String raml = generator.generate();
-			rc.response().putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_YAML_UTF8);
-			rc.response().end(raml);
+			InternalActionContext ac = wrap(rc);
+			if (ac.isAdmin()) {
+				RAMLGenerator generator = new RAMLGenerator();
+				String raml = generator.generate();
+				rc.response().putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_YAML_UTF8);
+				rc.response().end(raml);
+			} else {
+				rc.response().end();
+			}
 		}, false);
 
 		InternalEndpointRoute infoEndpoint = createRoute();

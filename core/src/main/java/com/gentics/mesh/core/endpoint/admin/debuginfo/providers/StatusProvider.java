@@ -34,7 +34,7 @@ public class StatusProvider implements DebugInfoProvider {
 	@Override
 	public Flowable<DebugInfoEntry> debugInfoEntries(InternalActionContext ac) {
 		return Flowable.mergeArray(
-			getVersions(),
+			getVersions(ac),
 			getClusterStatus(),
 			getElasticSearchStatus()
 		);
@@ -52,7 +52,7 @@ public class StatusProvider implements DebugInfoProvider {
 			.toFlowable();
 	}
 
-	private Flowable<DebugInfoEntry> getVersions() {
-		return Flowable.just(DebugInfoBufferEntry.fromString("versions.json", adminHandler.getMeshServerInfoModel().toJson()));
+	private Flowable<DebugInfoEntry> getVersions(InternalActionContext ac) {
+		return Flowable.just(DebugInfoBufferEntry.fromString("versions.json", adminHandler.getMeshServerInfoModel(ac).toJson()));
 	}
 }
