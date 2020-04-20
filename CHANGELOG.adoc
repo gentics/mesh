@@ -25,6 +25,15 @@ include::content/docs/variables.adoc-include[]
 
 * The Mesh Server will require Java 11 with the release of 2.0.0. The runtime support for Java 8 will be dropped. The Mesh Java REST client will still be usable with Java 8.
 
+[[TBD]]
+== 1.4.6 (TBD)
+
+icon:plus[] Clustering/Graph: The already existing `synchronizeWrites` feature has been extended. A cluster-wide write lock will now be used when running in clustered mode. This drastically reduces contention. The lock will also be used when new instances join the cluster to prevent synchronization issues with distributed transactions.
+
+icon:plus[] Graph: The internal transaction handling has been refactored and unified to better accommodate the new global write lock mechanism.
+
+icon:check[] Clustering: The cluster startup and shutdown processes have been modified to be less error prone. Hazelcast will now be started before OrientDB. Cluster instances now join the cluster sequentially instead of parallel. This results in a slower but more stable cluster startup process. The shutdown process will now avoid a write gap in which already dispatched distributed transactions could potentially be lost.
+
 [[v1.4.4]]
 == 1.4.4 (TBD)
 
