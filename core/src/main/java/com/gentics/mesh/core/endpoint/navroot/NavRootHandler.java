@@ -40,11 +40,10 @@ public class NavRootHandler {
 	public void handleGetPath(RoutingContext rc) {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 		String path = rc.request().path().substring(
-			rc.mountPoint().length()
-		);
+			rc.mountPoint().length());
 		MeshAuthUser requestUser = ac.getUser();
 
-		utils.rxSyncTx(ac, tx-> {
+		utils.syncTx(ac, tx -> {
 			Path nodePath = webrootService.findByProjectPath(ac, path);
 			PathSegment lastSegment = nodePath.getLast();
 
@@ -59,8 +58,8 @@ public class NavRootHandler {
 			if (!requestUser.hasPermission(node, READ_PUBLISHED_PERM)) {
 				throw error(FORBIDDEN, "error_missing_perm", node.getUuid(), READ_PUBLISHED_PERM.getRestPerm().getName());
 			}
-			return node.transformToNavigation(ac);
-		}, model -> ac.send(model, OK));
+			return node;
+		}, node -> node.transformToNavigation(ac).subscribe(model -> ac.send(model, OK), ac::fail));
 
 	}
 }

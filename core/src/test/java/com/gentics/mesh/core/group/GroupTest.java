@@ -129,7 +129,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 
-			GroupResponse response = group().transformToRest(ac, 0).blockingGet();
+			GroupResponse response = group().transformToRestSync(ac, 0);
 
 			assertNotNull(response);
 			assertEquals(group().getUuid(), response.getUuid());

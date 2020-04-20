@@ -106,12 +106,14 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		try {
 			JsonObject userJson = new JsonObject(searchQuery);
 
-			JsonArray roleUuids = new JsonArray();
-			try (Tx tx = db.tx()) {
+			JsonArray roleUuids = db.tx(() -> {
+				JsonArray json = new JsonArray();
 				for (Role role : ac.getUser().getRoles()) {
-					roleUuids.add(role.getUuid());
+					json.add(role.getUuid());
 				}
-			}
+				return json;
+			});
+
 			JsonObject newQuery = new JsonObject().put("bool",
 				new JsonObject().put("filter", new JsonArray().add(new JsonObject().put("terms", new JsonObject().put(
 					"_roleUuids", roleUuids)))));

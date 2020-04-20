@@ -50,7 +50,6 @@ import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.util.CompareUtils;
 import com.gentics.mesh.util.ETag;
 
-import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -285,13 +284,6 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	public String getAPIPath(InternalActionContext ac) {
 		// Micronodes have no public location
 		return null;
-	}
-
-	@Override
-	public Single<MicronodeResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return db().asyncTx(() -> {
-			return Single.just(transformToRestSync(ac, level, languageTags));
-		});
 	}
 
 	@Override

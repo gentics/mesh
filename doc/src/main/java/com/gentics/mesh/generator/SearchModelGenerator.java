@@ -78,7 +78,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		searchModelGen.run();
 	}
 
-	public static void initPaths() {
+	public static Mesh initPaths() {
 		MeshOptions options = new MeshOptions();
 		options.setNodeName("Example Generator");
 		options.getAuthenticationOptions().setKeystorePassword("ABCD");
@@ -100,11 +100,11 @@ public class SearchModelGenerator extends AbstractGenerator {
 		options.getStorageOptions().setDirectory(null);
 		options.getSearchOptions().setUrl(null);
 		options.setNodeName("exampleGenerator");
-		Mesh.create(options);
+		return Mesh.create(options);
 	}
 
 	public void run() throws Exception {
-		initPaths();
+		Mesh mesh = initPaths();
 		// String baseDirProp = System.getProperty("baseDir");
 		// if (baseDirProp == null) {
 		// baseDirProp = "src" + File.separator + "main" + File.separator + "docs" + File.separator + "examples";
@@ -113,7 +113,11 @@ public class SearchModelGenerator extends AbstractGenerator {
 		System.out.println("Writing files to  {" + outputFolder.getAbsolutePath() + "}");
 		// outputDir.mkdirs();
 
-		meshDagger = DaggerMeshComponent.builder().configuration(new MeshOptions()).searchProviderType(TRACKING).build();
+		meshDagger = DaggerMeshComponent.builder()
+			.configuration(new MeshOptions())
+			.searchProviderType(TRACKING)
+			.mesh(mesh)
+			.build();
 		provider = (TrackingSearchProvider) meshDagger.searchProvider();
 
 		try {

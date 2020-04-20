@@ -135,7 +135,7 @@ public class MeshImpl implements Mesh {
 		}
 		// Create dagger context and invoke bootstrap init in order to startup mesh
 		try {
-			meshInternal = DaggerMeshComponent.builder().configuration(options).build();
+			meshInternal = DaggerMeshComponent.builder().configuration(options).mesh(this).build();
 			setMeshInternal(meshInternal);
 			meshInternal.boot().init(this, forceIndexSync, options, verticleLoader);
 			if (options.isUpdateCheckEnabled()) {
@@ -356,23 +356,51 @@ public class MeshImpl implements Mesh {
 
 		log.info("Mesh shutting down...");
 		setStatus(MeshStatus.SHUTTING_DOWN);
+
+		// plugins
 		try {
 			meshInternal.pluginManager().stop().blockingAwait(getOptions().getPluginTimeout(), TimeUnit.SECONDS);
-		} catch (Exception e) {
-			log.error("One of the plugins could not be undeployed in the allotted time.", e);
+		} catch (Throwable t) {
+			log.error("One of the plugins could not be undeployed in the allotted time.", t);
 		}
-		io.vertx.reactivex.core.Vertx rxVertx = getRxVertx();
-		if (rxVertx != null) {
-			rxVertx.rxClose().blockingAwait();
-		}
-		try {
-			meshInternal.searchProvider().stop();
-		} catch (Exception e) {
-			log.error("The search provider did encounter an error while stopping", e);
-		}
-		meshInternal.database().stop();
 
-		meshInternal.boot().clearReferences();
+		// search
+		try {
+			log.info("Stopping search provider");
+			meshInternal.searchProvider().stop();
+		} catch (Throwable t) {
+			log.error("The search provider did encounter an error while stopping", t);
+		}
+
+		// vert.x
+		try {
+			io.vertx.reactivex.core.Vertx rxVertx = getRxVertx();
+			if (rxVertx != null) {
+				log.info("Stopping Vert.x");
+				rxVertx.rxClose().blockingAwait();
+			}
+		} catch (Throwable t) {
+			log.error("Error while stopping Vert.x", t);
+		}
+
+		// database
+		try {
+			meshInternal.database().stop();
+		} catch (Throwable t) {
+			log.error("Error while stopping database", t);
+		}
+
+		// boot
+		try {
+			BootstrapInitializer boot = meshInternal.boot();
+			if (boot != null) {
+				boot.clearReferences();
+			}
+		} catch (Throwable t) {
+			log.error("Error while clearing refs", t);
+		}
+
+
 		deleteLock();
 		meshInternal = null;
 		log.info("Shutdown completed...");

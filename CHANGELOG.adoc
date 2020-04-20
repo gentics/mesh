@@ -25,6 +25,15 @@ include::content/docs/variables.adoc-include[]
 
 * The Mesh Server will require Java 11 with the release of 2.0.0. The runtime support for Java 8 will be dropped. The Mesh Java REST client will still be usable with Java 8.
 
+[[v1.4.6]]
+== 1.4.6 (TBD)
+
+icon:plus[] Clustering/Graph: The already existing `synchronizeWrites` feature has been extended. A cluster-wide write lock will now be used when running in clustered mode. This drastically reduces contention. The lock will also be used when new instances join the cluster to prevent synchronization issues with distributed transactions.
+
+icon:plus[] Graph: The internal transaction handling has been refactored and unified to better accommodate the new global write lock mechanism.
+
+icon:check[] Clustering: The cluster startup and shutdown processes have been modified to be less error prone. Hazelcast will now be started before OrientDB. Cluster instances now join the cluster sequentially instead of parallel. This results in a slower but more stable cluster startup process. The shutdown process will now avoid a write gap in which already dispatched distributed transactions could potentially be lost.
+
 [[v1.4.5]]
 == 1.4.5 (17.04.2020)
 
@@ -49,6 +58,8 @@ icon:plus[] Monitoring: Metrics have been added for the synchronized write lock,
 icon:plus[] Graph: It is now possible to configure a transaction commit timeout. The `storage.txCommitTimeout` or `MESH_GRAPH_TX_COMMIT_TIMEOUT` environment setting can be used to configure the timeout in milliseconds. By default no timeout will be applied.
 
 icon:plus[] Graph: The `storage.synchronizeWritesTimeout` setting and `MESH_GRAPH_SYNC_WRITES_TIMEOUT` environment setting have been added. It is now possible to configure the write lock timeout using these settings.
+
+icon:plus[] Graph: It is now possible to configure a transaction commit timeout. The `storage.txCommitTimeout` or `MESH_GRAPH_TX_COMMIT_TIMEOUT` environment setting can be used to configure the timeout in milliseconds. By default no timeout will be applied.
 
 icon:plus[] GraphQL: It is now possible to use paging arguments when loading nodes via the `NodeContent#referencedBy` field.
 

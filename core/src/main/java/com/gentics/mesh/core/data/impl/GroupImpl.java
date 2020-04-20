@@ -252,13 +252,6 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	@Override
-	public Single<GroupResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return db().asyncTx(() -> {
-			return Single.just(transformToRestSync(ac, level, languageTags));
-		});
-	}
-
-	@Override
 	public GroupRoleAssignModel createRoleAssignmentEvent(Role role, Assignment assignment) {
 		GroupRoleAssignModel model = new GroupRoleAssignModel();
 		model.setGroup(transformToReference());

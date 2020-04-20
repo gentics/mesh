@@ -6,6 +6,7 @@ import javax.inject.Singleton;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.cache.PermissionCache;
@@ -22,9 +23,11 @@ import com.gentics.mesh.core.endpoint.migration.branch.BranchMigrationHandler;
 import com.gentics.mesh.core.endpoint.migration.micronode.MicronodeMigrationHandler;
 import com.gentics.mesh.core.endpoint.migration.node.NodeMigrationHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
+import com.gentics.mesh.core.endpoint.role.RoleCrudHandler;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandler;
+import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
 import com.gentics.mesh.dagger.module.BindModule;
 import com.gentics.mesh.dagger.module.DebugInfoProviderModule;
@@ -164,15 +167,23 @@ public interface MeshComponent {
 
 	PermissionProperties permissionProperties();
 
+	WriteLock globalLock();
+
+	RoleCrudHandler roleCrudHandler();
+
 	@Component.Builder
 	interface Builder {
 		@BindsInstance
 		Builder configuration(MeshOptions options);
 
 		@BindsInstance
+		Builder mesh(Mesh mesh);
+
+		@BindsInstance
 		Builder searchProviderType(@Nullable SearchProviderType type);
 
 		MeshComponent build();
 	}
+
 
 }

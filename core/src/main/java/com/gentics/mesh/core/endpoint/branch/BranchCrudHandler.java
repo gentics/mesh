@@ -50,12 +50,10 @@ import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
-import com.gentics.mesh.core.verticle.handler.WriteLockImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.PentaFunction;
 import com.gentics.mesh.util.StreamUtil;
 
-import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -69,7 +67,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	private BootstrapInitializer boot;
 
 	@Inject
-	public BranchCrudHandler(Database db, HandlerUtilities utils, BootstrapInitializer boot, WriteLockImpl writeLock) {
+	public BranchCrudHandler(Database db, HandlerUtilities utils, BootstrapInitializer boot, WriteLock writeLock) {
 		super(db, utils, writeLock);
 		this.boot = boot;
 	}
@@ -93,10 +91,10 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	 */
 	public void handleGetSchemaVersions(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		db.asyncTx(() -> {
+		utils.syncTx(ac, tx -> {
 			Branch branch = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
-			return Single.just(getSchemaVersionsInfo(branch));
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+			return getSchemaVersionsInfo(branch);
+		}, model -> ac.send(model, OK));
 	}
 
 	/**
@@ -109,14 +107,14 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	public void handleAssignSchemaVersion(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 		try (WriteLock lock = writeLock.lock(ac)) {
-			db.asyncTx(() -> {
+			utils.syncTx(ac, tx -> {
 				RootVertex<Branch> root = getRootVertex(ac);
 				Branch branch = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 				BranchInfoSchemaList schemaReferenceList = ac.fromJson(BranchInfoSchemaList.class);
 				Project project = ac.getProject();
 				SchemaContainerRoot schemaContainerRoot = project.getSchemaContainerRoot();
 
-				Single<BranchInfoSchemaList> branchList = utils.eventAction(event -> {
+				BranchInfoSchemaList branchList = utils.eventAction(event -> {
 
 					// Resolve the list of references to graph schema container versions
 					for (SchemaReference reference : schemaReferenceList.getSchemas()) {
@@ -129,7 +127,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 						branch.assignSchemaVersion(ac.getUser(), version, event);
 					}
 
-					return Single.just(getSchemaVersionsInfo(branch));
+					return getSchemaVersionsInfo(branch);
 				});
 
 				// 2. Invoke migrations which will populate the created index
@@ -137,7 +135,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 
 				return branchList;
 
-			}).subscribe(model -> ac.send(model, OK), ac::fail);
+			}, model -> ac.send(model, OK));
 		}
 
 	}
@@ -151,10 +149,10 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	 */
 	public void handleGetMicroschemaVersions(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		db.asyncTx(() -> {
+		utils.syncTx(ac, tx -> {
 			Branch branch = getRootVertex(ac).loadObjectByUuid(ac, uuid, GraphPermission.READ_PERM);
-			return Single.just(getMicroschemaVersions(branch));
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+			return getMicroschemaVersions(branch);
+		}, model -> ac.send(model, OK));
 	}
 
 	/**
@@ -326,10 +324,10 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	public void readTags(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		utils.rxSyncTx(ac, (tx) -> {
+		utils.syncTx(ac, (tx) -> {
 			Branch branch = ac.getProject().getBranchRoot().loadObjectByUuid(ac, uuid, READ_PERM);
 			TransformablePage<? extends Tag> tagPage = branch.getTags(ac.getUser(), ac.getPagingParameters());
-			return tagPage.transformToRest(ac, 0);
+			return tagPage.transformToRestSync(ac, 0);
 		}, model -> ac.send(model, OK));
 	}
 
@@ -418,14 +416,14 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 		validateParameter(branchUuid, "branchUuid");
 
 		try (WriteLock lock = writeLock.lock(ac)) {
-			utils.rxSyncTx(ac, tx -> {
+			utils.syncTx(ac, tx -> {
 				Branch branch = ac.getProject().getBranchRoot().loadObjectByUuid(ac, branchUuid, UPDATE_PERM);
 
 				TransformablePage<? extends Tag> page = utils.eventAction(batch -> {
 					return branch.updateTags(ac, batch);
 				});
 
-				return page.transformToRest(ac, 0);
+				return page.transformToRestSync(ac, 0);
 			}, model -> ac.send(model, OK));
 		}
 	}

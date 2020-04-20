@@ -424,7 +424,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			int nTransformations = 100;
 			for (int i = 0; i < nTransformations; i++) {
 				long start = System.currentTimeMillis();
-				TagResponse response = tag.transformToRest(ac, 0).blockingGet();
+				TagResponse response = tag.transformToRestSync(ac, 0);
 
 				assertNotNull(response);
 				long dur = System.currentTimeMillis() - start;

@@ -102,7 +102,8 @@ public class GroupEndpoint extends AbstractInternalEndpoint {
 		removeRole.description("Remove the given role from the group.");
 		removeRole.exampleResponse(NO_CONTENT, "Role was removed from the group.");
 		removeRole.events(GROUP_ROLE_UNASSIGNED);
-		removeRole.produces(APPLICATION_JSON).blockingHandler(rc -> {
+		removeRole.produces(APPLICATION_JSON);
+		removeRole.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String groupUuid = ac.getParameter("groupUuid");
 			String roleUuid = ac.getParameter("roleUuid");

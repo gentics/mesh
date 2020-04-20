@@ -26,6 +26,7 @@ import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.core.verticle.handler.WriteLockImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -54,7 +55,7 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 
 	@Override
 	public void handleReadList(InternalActionContext ac) {
-		utils.rxSyncTx(ac, tx -> {
+		utils.syncTx(ac, tx -> {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
@@ -71,7 +72,7 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 					throw new NotModifiedException();
 				}
 			}
-			return page.transformToRest(ac, 0);
+			return page.transformToRestSync(ac, 0);
 		}, e -> ac.send(e, OK));
 	}
 
@@ -79,21 +80,23 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 	public void handleDelete(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		utils.syncTx(ac, () -> {
-			if (!ac.getUser().hasAdminRole()) {
-				throw error(FORBIDDEN, "error_admin_permission_required");
-			}
-			JobRoot root = boot.jobRoot();
-			Job job = root.loadObjectByUuidNoPerm(uuid, true);
-			db.tx(() -> {
-				if (job.hasFailed()) {
-					job.delete();
-				} else {
-					throw error(BAD_REQUEST, "job_error_invalid_state", uuid);
+		try (WriteLock lock = writeLock.lock(ac)) {
+			utils.syncTx(ac, () -> {
+				if (!ac.getUser().hasAdminRole()) {
+					throw error(FORBIDDEN, "error_admin_permission_required");
 				}
-			});
-			log.info("Deleted job {" + uuid + "}");
-		}, () -> ac.send(NO_CONTENT));
+				JobRoot root = boot.jobRoot();
+				Job job = root.loadObjectByUuidNoPerm(uuid, true);
+				db.tx(() -> {
+					if (job.hasFailed()) {
+						job.delete();
+					} else {
+						throw error(BAD_REQUEST, "job_error_invalid_state", uuid);
+					}
+				});
+				log.info("Deleted job {" + uuid + "}");
+			}, () -> ac.send(NO_CONTENT));
+		}
 
 	}
 
@@ -143,21 +146,23 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 
 	public void handleProcess(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		utils.syncTx(ac, (tx) -> {
-			if (!ac.getUser().hasAdminRole()) {
-				throw error(FORBIDDEN, "error_admin_permission_required");
-			}
-			JobRoot root = boot.jobRoot();
-			Job job = root.loadObjectByUuidNoPerm(uuid, true);
-			db.tx(() -> {
-				JobStatus status = job.getStatus();
-				if (status == FAILED || status == UNKNOWN) {
-					job.resetJob();
+		try (WriteLock lock = writeLock.lock(ac)) {
+			utils.syncTx(ac, (tx) -> {
+				if (!ac.getUser().hasAdminRole()) {
+					throw error(FORBIDDEN, "error_admin_permission_required");
 				}
-			});
-			MeshEvent.triggerJobWorker(boot.mesh());
-			return job.transformToRestSync(ac, 0);
-		}, model -> ac.send(model, OK));
+				JobRoot root = boot.jobRoot();
+				Job job = root.loadObjectByUuidNoPerm(uuid, true);
+				db.tx(() -> {
+					JobStatus status = job.getStatus();
+					if (status == FAILED || status == UNKNOWN) {
+						job.resetJob();
+					}
+				});
+				MeshEvent.triggerJobWorker(boot.mesh());
+				return job.transformToRestSync(ac, 0);
+			}, model -> ac.send(model, OK));
+		}
 	}
 
 	/**

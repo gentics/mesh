@@ -68,7 +68,8 @@ public class RoleEndpoint extends AbstractInternalEndpoint {
 		permissionSetEndpoint.exampleRequest(roleExamples.getRolePermissionRequest());
 		permissionSetEndpoint.consumes(APPLICATION_JSON);
 		permissionSetEndpoint.events(ROLE_PERMISSIONS_CHANGED);
-		permissionSetEndpoint.produces(APPLICATION_JSON).blockingHandler(rc -> {
+		permissionSetEndpoint.produces(APPLICATION_JSON);
+		permissionSetEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String roleUuid = ac.getParameter("param0");
 			String pathToElement = ac.getParameter("param1");

@@ -25,7 +25,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.naming.InvalidNameException;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -39,6 +38,7 @@ import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfig;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorMasterResponse;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.distributed.coordinator.Coordinator;
 import com.gentics.mesh.distributed.coordinator.MasterServer;
@@ -81,10 +81,12 @@ public class AdminHandler extends AbstractHandler {
 
 	private final Coordinator coordinator;
 
+	private final WriteLock writeLock;
+
 	@Inject
 	public AdminHandler(Vertx vertx, Database db, RouterStorage routerStorage, BootstrapInitializer boot, SearchProvider searchProvider,
 		HandlerUtilities utils,
-		MeshOptions options, RouterStorageRegistry routerStorageRegistry, Coordinator coordinator) {
+		MeshOptions options, RouterStorageRegistry routerStorageRegistry, Coordinator coordinator, WriteLock writeLock) {
 		this.vertx = vertx;
 		this.db = db;
 		this.routerStorage = routerStorage;
@@ -94,6 +96,7 @@ public class AdminHandler extends AbstractHandler {
 		this.options = options;
 		this.routerStorageRegistry = routerStorageRegistry;
 		this.coordinator = coordinator;
+		this.writeLock = writeLock;
 	}
 
 	public void handleMeshStatus(InternalActionContext ac) {
@@ -234,11 +237,11 @@ public class AdminHandler extends AbstractHandler {
 	 * @param ac
 	 */
 	public void handleImport(InternalActionContext ac) {
-		try (Tx tx = db.tx()) {
+		db.tx(tx -> {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
-		}
+		});
 		File importsDir = new File(options.getStorageOptions().getExportDirectory());
 
 		// Find the file which was last modified
@@ -301,15 +304,17 @@ public class AdminHandler extends AbstractHandler {
 	}
 
 	public void handleUpdateClusterConfig(InternalActionContext ac) {
-		utils.syncTx(ac, tx -> {
-			User user = ac.getUser();
-			if (user != null && !user.hasAdminRole()) {
-				throw error(FORBIDDEN, "error_admin_permission_required");
-			}
-			ClusterConfigRequest request = ac.fromJson(ClusterConfigRequest.class);
-			db.updateClusterConfig(request);
-			return db.loadClusterConfig();
-		}, model -> ac.send(model, OK));
+		try (WriteLock lock = writeLock.lock(ac)) {
+			utils.syncTx(ac, tx -> {
+				User user = ac.getUser();
+				if (user != null && !user.hasAdminRole()) {
+					throw error(FORBIDDEN, "error_admin_permission_required");
+				}
+				ClusterConfigRequest request = ac.fromJson(ClusterConfigRequest.class);
+				db.updateClusterConfig(request);
+				return db.loadClusterConfig();
+			}, model -> ac.send(model, OK));
+		}
 	}
 
 	public void handleLoadCoordinationMaster(InternalActionContext ac) {
@@ -327,18 +332,20 @@ public class AdminHandler extends AbstractHandler {
 	}
 
 	public void handleSetCoordinationMaster(InternalActionContext ac) {
-		utils.syncTx(ac, tx -> {
-			User user = ac.getUser();
-			if (user != null && !user.hasAdminRole()) {
-				throw error(FORBIDDEN, "error_admin_permission_required");
-			}
-			if (coordinator.isElectable()) {
-				coordinator.setMaster();
-				return message(ac, "cluster_coordination_master_set");
-			} else {
-				throw error(BAD_REQUEST, "cluster_coordination_master_set_error_not_electable", options.getNodeName());
-			}
-		}, model -> ac.send(model, OK));
+		try (WriteLock lock = writeLock.lock(ac)) {
+			utils.syncTx(ac, tx -> {
+				User user = ac.getUser();
+				if (user != null && !user.hasAdminRole()) {
+					throw error(FORBIDDEN, "error_admin_permission_required");
+				}
+				if (coordinator.isElectable()) {
+					coordinator.setMaster();
+					return message(ac, "cluster_coordination_master_set");
+				} else {
+					throw error(BAD_REQUEST, "cluster_coordination_master_set_error_not_electable", options.getNodeName());
+				}
+			}, model -> ac.send(model, OK));
+		}
 	}
 
 	private static CoordinatorMasterResponse toResponse(MasterServer server) {
@@ -359,14 +366,16 @@ public class AdminHandler extends AbstractHandler {
 	}
 
 	public void handleUpdateCoordinationConfig(InternalActionContext ac) {
-		utils.syncTx(ac, tx -> {
-			User user = ac.getUser();
-			if (user != null && !user.hasAdminRole()) {
-				throw error(FORBIDDEN, "error_admin_permission_required");
-			}
-			CoordinatorConfig request = ac.fromJson(CoordinatorConfig.class);
-			coordinator.updateConfig(request);
-			return coordinator.loadConfig();
-		}, model -> ac.send(model, OK));
+		try (WriteLock lock = writeLock.lock(ac)) {
+			utils.syncTx(ac, tx -> {
+				User user = ac.getUser();
+				if (user != null && !user.hasAdminRole()) {
+					throw error(FORBIDDEN, "error_admin_permission_required");
+				}
+				CoordinatorConfig request = ac.fromJson(CoordinatorConfig.class);
+				coordinator.updateConfig(request);
+				return coordinator.loadConfig();
+			}, model -> ac.send(model, OK));
+		}
 	}
 }

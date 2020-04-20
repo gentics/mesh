@@ -8,7 +8,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import javax.inject.Inject;
 import javax.naming.InvalidNameException;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Project;
@@ -124,18 +123,24 @@ public class RouterStorage {
 		eb.consumer(PROJECT_UPDATED.address, (Message<JsonObject> rh) -> {
 			Database database = db.get();
 
-			try (Tx tx = database.tx()) {
-				// Check whether there are any projects which do not have an
-				// active project router
-				for (Project project : boot.get().projectRoot().findAll()) {
-					if (!projectsRouter.hasProjectRouter(project.getName())) {
-						log.info("Mounting project {" + project.getName() + "}");
-						projectsRouter.addProjectRouter(project.getName());
+			try {
+				database.tx(tx -> {
+					// Check whether there are any projects which do not have an
+					// active project router
+					for (Project project : boot.get().projectRoot().findAll()) {
+						if (!projectsRouter.hasProjectRouter(project.getName())) {
+							log.info("Mounting project {" + project.getName() + "}");
+							projectsRouter.addProjectRouter(project.getName());
+						}
 					}
+				});
+			} catch (RuntimeException e) {
+				if (e.getCause() instanceof InvalidNameException) {
+					log.error("Could not update project routers", e);
+					rh.fail(400, "Invalid project name found");
+				} else {
+					throw e;
 				}
-			} catch (InvalidNameException e) {
-				log.error("Could not update project routers", e);
-				rh.fail(400, "Invalid project name found");
 			}
 
 		});

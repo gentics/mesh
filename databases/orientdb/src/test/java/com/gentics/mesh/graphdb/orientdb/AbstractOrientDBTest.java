@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 import org.mockito.Mockito;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.graphdb.cluster.OrientDBClusterManager;
 import com.gentics.mesh.graphdb.orientdb.graph.Person;
@@ -26,7 +27,8 @@ public class AbstractOrientDBTest {
 		Lazy<BootstrapInitializer> lazyBoot = mock(Lazy.class);
 		BootstrapInitializer bootMock = mock(BootstrapInitializer.class);
 		when(lazyBoot.get()).thenReturn(bootMock);
-		Database db = new OrientDBDatabase(null, lazyBoot, metrics, null, null, new OrientDBClusterManager(null, null, null, null), null);
+		MeshOptions options = new MeshOptions();
+		Database db = new OrientDBDatabase(null, lazyBoot, metrics, null, null, new OrientDBClusterManager(null, null, null, options, null), null, null, null);
 		return db;
 	}
 
