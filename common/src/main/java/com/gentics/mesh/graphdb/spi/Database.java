@@ -222,7 +222,7 @@ public interface Database extends TxFactory {
 	 * @return
 	 */
 	default <T> Single<T> singleTx(Function<Tx, T> handler) {
-		return maybeTx(handler, true).toSingle();
+		return maybeTx(handler, false).toSingle();
 	}
 
 	/**
