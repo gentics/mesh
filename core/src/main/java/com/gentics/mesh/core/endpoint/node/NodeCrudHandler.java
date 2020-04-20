@@ -161,10 +161,9 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleNavigation(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		utils.syncTx(ac, tx -> {
-			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
-			return node.transformToNavigation(ac).blockingGet();
-		}, model -> ac.send(model, OK));
+		Node node = db.tx(() -> getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM));
+		node.transformToNavigation(ac).subscribe(model -> ac.send(model, OK), ac::fail);
+
 	}
 
 	/**
