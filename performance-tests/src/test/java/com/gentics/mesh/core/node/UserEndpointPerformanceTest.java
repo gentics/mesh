@@ -33,7 +33,7 @@ public class UserEndpointPerformanceTest extends AbstractMeshTest {
 	@Test
 	public void testPermissionPerformance() {
 		loggingStopWatch(logger, "user.hasPermission", 100000, (step) -> {
-			try (Tx tx = db().tx()) {
+			try (Tx tx = tx()) {
 				user().hasPermission(content(), GraphPermission.READ_PERM);
 			}
 		});
@@ -41,10 +41,10 @@ public class UserEndpointPerformanceTest extends AbstractMeshTest {
 
 	@Test
 	public void testPermissionInfoPerformance() {
-		User user = db().tx(() -> user());
-		Node content = db().tx(() -> content());
+		User user = tx(() -> user());
+		Node content = tx(() -> content());
 		loggingStopWatch(logger, "user.getPermissionInfo", 70000, (step) -> {
-			try (Tx tx = db().tx()) {
+			try (Tx tx = tx()) {
 				user.getPermissionInfo(content);
 			}
 		});
@@ -55,7 +55,7 @@ public class UserEndpointPerformanceTest extends AbstractMeshTest {
 	public void testPerformance() {
 		addUsers();
 
-		String uuid = db().tx(() -> user().getUuid());
+		String uuid = tx(() -> user().getUuid());
 
 		loggingStopWatch(logger, "user.read-page-100", 200, (step) -> {
 			call(() -> client().findUsers(new PagingParametersImpl().setPerPage(100L)));

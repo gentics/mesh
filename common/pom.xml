@@ -11,7 +11,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>1.4.5-SNAPSHOT</version>
+		<version>1.4.7-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -147,6 +147,12 @@
 					<artifactId>slf4j-log4j12</artifactId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+
+		<!-- Hazelcast -->
+		<dependency>
+			<groupId>com.hazelcast</groupId>
+			<artifactId>hazelcast</artifactId>
 		</dependency>
 
 		<!-- Test -->

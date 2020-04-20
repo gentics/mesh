@@ -165,7 +165,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	@Override
 	public Observable<IndexBulkEntry> storeForBulk(UpdateDocumentEntry entry) {
 		return Observable.defer(() -> {
-			try (Tx tx = db.tx()) {
+			return db.tx(() -> {
 				String uuid = entry.getElementUuid();
 				T element = elementLoader().apply(uuid);
 				if (element == null) {
@@ -173,7 +173,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 				} else {
 					return storeForBulk(element, entry);
 				}
-			}
+			});
 		});
 	}
 

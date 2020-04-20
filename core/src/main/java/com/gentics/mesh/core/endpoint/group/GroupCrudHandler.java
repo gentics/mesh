@@ -20,7 +20,7 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.core.verticle.handler.WriteLockImpl;
+import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 
@@ -38,7 +38,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 	private Lazy<BootstrapInitializer> boot;
 
 	@Inject
-	public GroupCrudHandler(Database db, Lazy<BootstrapInitializer> boot, HandlerUtilities utils, WriteLockImpl writeLock) {
+	public GroupCrudHandler(Database db, Lazy<BootstrapInitializer> boot, HandlerUtilities utils, WriteLock writeLock) {
 		super(db, utils, writeLock);
 		this.boot = boot;
 	}
@@ -56,11 +56,11 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 	 *            Group Uuid from which the roles should be loaded
 	 */
 	public void handleGroupRolesList(InternalActionContext ac, String groupUuid) {
-		utils.rxSyncTx(ac, tx -> {
+		utils.syncTx(ac, tx -> {
 			Group group = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, READ_PERM);
 			PagingParametersImpl pagingInfo = new PagingParametersImpl(ac);
 			TransformablePage<? extends Role> rolePage = group.getRoles(ac.getUser(), pagingInfo);
-			return rolePage.transformToRest(ac, 0);
+			return rolePage.transformToRestSync(ac, 0);
 		}, model -> ac.send(model, OK));
 	}
 
@@ -75,24 +75,26 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(groupUuid, "groupUuid");
 		validateParameter(roleUuid, "roleUuid");
 
-		utils.syncTx(ac, tx -> {
-			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
-			Role role = boot.get().roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
-			// Handle idempotency
-			if (group.hasRole(role)) {
-				if (log.isDebugEnabled()) {
-					log.debug("Role {" + role.getUuid() + "} is already assigned to group {" + group.getUuid() + "}.");
+		try (WriteLock lock = writeLock.lock(ac)) {
+			utils.syncTx(ac, tx -> {
+				Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
+				Role role = boot.get().roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
+				// Handle idempotency
+				if (group.hasRole(role)) {
+					if (log.isDebugEnabled()) {
+						log.debug("Role {" + role.getUuid() + "} is already assigned to group {" + group.getUuid() + "}.");
+					}
+				} else {
+					utils.eventAction(batch -> {
+						group.addRole(role);
+						group.setEditor(ac.getUser());
+						group.setLastEditedTimestamp();
+						batch.add(group.createRoleAssignmentEvent(role, ASSIGNED));
+					});
 				}
-			} else {
-				utils.eventAction(batch -> {
-					group.addRole(role);
-					group.setEditor(ac.getUser());
-					group.setLastEditedTimestamp();
-					batch.add(group.createRoleAssignmentEvent(role, ASSIGNED));
-				});
-			}
-			return group.transformToRestSync(ac, 0);
-		}, model -> ac.send(model, OK));
+				return group.transformToRestSync(ac, 0);
+			}, model -> ac.send(model, OK));
+		}
 
 	}
 
@@ -109,24 +111,26 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(roleUuid, "roleUuid");
 		validateParameter(groupUuid, "groupUuid");
 
-		utils.syncTx(ac, () -> {
-			Group group = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
-			Role role = boot.get().roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
+		try (WriteLock lock = writeLock.lock(ac)) {
+			utils.syncTx(ac, () -> {
+				Group group = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
+				Role role = boot.get().roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 
-			// No need to update the group if it is not assigned
-			if (!group.hasRole(role)) {
-				return;
-			}
+				// No need to update the group if it is not assigned
+				if (!group.hasRole(role)) {
+					return;
+				}
 
-			utils.eventAction(batch -> {
-				group.removeRole(role);
-				group.setEditor(ac.getUser());
-				group.setLastEditedTimestamp();
-				batch.add(group.createRoleAssignmentEvent(role, UNASSIGNED));
-				return batch;
-			});
+				utils.eventAction(batch -> {
+					group.removeRole(role);
+					group.setEditor(ac.getUser());
+					group.setLastEditedTimestamp();
+					batch.add(group.createRoleAssignmentEvent(role, UNASSIGNED));
+					return batch;
+				});
 
-		}, () -> ac.send(NO_CONTENT));
+			}, () -> ac.send(NO_CONTENT));
+		}
 	}
 
 	/**
@@ -139,13 +143,13 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 	public void handleGroupUserList(InternalActionContext ac, String groupUuid) {
 		validateParameter(groupUuid, "groupUuid");
 
-		db.asyncTx(() -> {
+		utils.syncTx(ac, tx -> {
 			MeshAuthUser requestUser = ac.getUser();
 			PagingParametersImpl pagingInfo = new PagingParametersImpl(ac);
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, READ_PERM);
 			TransformablePage<? extends User> userPage = group.getVisibleUsers(requestUser, pagingInfo);
-			return userPage.transformToRest(ac, 0);
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+			return userPage.transformToRestSync(ac, 0);
+		}, model -> ac.send(model, OK));
 	}
 
 	/**
@@ -161,20 +165,21 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(groupUuid, "groupUuid");
 		validateParameter(userUuid, "userUuid");
 
-		utils.syncTx(ac, tx -> {
-			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
-			User user = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
+		try (WriteLock lock = writeLock.lock(ac)) {
+			utils.syncTx(ac, tx -> {
+				Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
+				User user = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 
-			// Only add the user if it is not yet assigned
-			if (!group.hasUser(user)) {
-				utils.eventAction(batch -> {
-					group.addUser(user);
-					batch.add(group.createUserAssignmentEvent(user, ASSIGNED));
-				});
-			}
-			return group.transformToRestSync(ac, 0);
-		}, model -> ac.send(model, OK));
-
+				// Only add the user if it is not yet assigned
+				if (!group.hasUser(user)) {
+					utils.eventAction(batch -> {
+						group.addUser(user);
+						batch.add(group.createUserAssignmentEvent(user, ASSIGNED));
+					});
+				}
+				return group.transformToRestSync(ac, 0);
+			}, model -> ac.send(model, OK));
+		}
 	}
 
 	/**
@@ -190,20 +195,22 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(groupUuid, "groupUuid");
 		validateParameter(userUuid, "userUuid");
 
-		utils.syncTx(ac, () -> {
-			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
-			User user = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
+		try (WriteLock lock = writeLock.lock(ac)) {
+			utils.syncTx(ac, () -> {
+				Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
+				User user = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 
-			// No need to remove the user if it is not assigned
-			if (!group.hasUser(user)) {
-				return;
-			}
+				// No need to remove the user if it is not assigned
+				if (!group.hasUser(user)) {
+					return;
+				}
 
-			utils.eventAction(batch -> {
-				group.removeUser(user);
-				batch.add(group.createUserAssignmentEvent(user, UNASSIGNED));
-			});
-		}, () -> ac.send(NO_CONTENT));
+				utils.eventAction(batch -> {
+					group.removeUser(user);
+					batch.add(group.createUserAssignmentEvent(user, UNASSIGNED));
+				});
+			}, () -> ac.send(NO_CONTENT));
+		}
 	}
 
 }

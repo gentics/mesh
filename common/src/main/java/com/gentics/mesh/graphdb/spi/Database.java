@@ -9,7 +9,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.tx.Tx;
-import com.gentics.madl.tx.TxAction;
 import com.gentics.madl.tx.TxAction0;
 import com.gentics.madl.tx.TxAction1;
 import com.gentics.madl.tx.TxFactory;
@@ -17,8 +16,7 @@ import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
-import com.gentics.mesh.core.rest.admin.cluster.ServerRole;
-import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.cluster.ClusterManager;
 import com.gentics.mesh.graphdb.model.MeshElement;
@@ -163,16 +161,38 @@ public interface Database extends TxFactory {
 	}
 
 	/**
-	 * Executes a supplier in a transaction within the worker thread pool.
-	 * If the supplier returns null, the maybe is completed, else the value is returned.
-	 * @param handler
+	 * Executes a supplier in a transaction within the worker thread pool. If the supplier returns null, the maybe is completed, else the value is returned.
+	 * 
 	 * @param <T>
+	 * @param handler
 	 * @return
 	 */
 	default <T> Maybe<T> maybeTx(Function<Tx, T> handler) {
+		return maybeTx(handler, false);
+	}
+
+	/**
+	 * Executes a supplier in a transaction within the worker thread pool. If the supplier returns null, the maybe is completed, else the value is returned.
+	 * 
+	 * @param handler
+	 * @param useWriteLock
+	 *            Whether to apply a write lock around the transaction
+	 * @param <T>
+	 * @return
+	 */
+	default <T> Maybe<T> maybeTx(Function<Tx, T> handler, boolean useWriteLock) {
 		return new io.vertx.reactivex.core.Vertx(vertx()).rxExecuteBlocking(promise -> {
 			try {
-				promise.complete(tx(handler::apply));
+				if (useWriteLock) {
+					T result = null;
+					try (WriteLock lock = writeLock().lock(null)) {
+						result = tx(handler::apply);
+					}
+					promise.complete(result);
+				} else {
+					promise.complete(tx(handler::apply));
+				}
+
 			} catch (Throwable e) {
 				promise.fail(e);
 			}
@@ -180,76 +200,29 @@ public interface Database extends TxFactory {
 	}
 
 	/**
-	 * Executes a supplier in a transaction within the worker thread pool.
-	 * If the supplier returns null, a {@link java.util.NoSuchElementException} is emitted.
+	 * Executes a supplier in a transaction within the worker thread pool. If the supplier returns null, a {@link java.util.NoSuchElementException} is emitted.
+	 * 
 	 * @param handler
 	 * @param <T>
 	 * @return
 	 */
 	default <T> Single<T> singleTx(Supplier<T> handler) {
-		return maybeTx(tx -> handler.get()).toSingle();
+		return maybeTx(tx -> handler.get(), false).toSingle();
+	}
+
+	default <T> Single<T> singleTxWriteLock(Function<Tx, T> handler) {
+		return maybeTx(handler, true).toSingle();
 	}
 
 	/**
-	 * Executes a supplier in a transaction within the worker thread pool.
-	 * If the supplier returns null, a {@link java.util.NoSuchElementException} is emitted.
+	 * Executes a supplier in a transaction within the worker thread pool. If the supplier returns null, a {@link java.util.NoSuchElementException} is emitted.
+	 * 
 	 * @param handler
 	 * @param <T>
 	 * @return
 	 */
 	default <T> Single<T> singleTx(Function<Tx, T> handler) {
-		return maybeTx(handler).toSingle();
-	}
-
-	/**
-	 * Asynchronously execute the trxHandler within the scope of a non transaction.
-	 * 
-	 * @param trxHandler
-	 * @return
-	 */
-	default <T> Single<T> asyncTx(TxAction<Single<T>> trxHandler) {
-		// Create an exception which we can use to enhance error information in case of timeout or other transaction errors
-		final AtomicReference<Exception> reference = new AtomicReference<Exception>(null);
-		try {
-			throw new Exception("Transaction timeout exception");
-		} catch (Exception e1) {
-			reference.set(e1);
-		}
-
-		return Single.create(sub -> {
-			vertx().executeBlocking(bc -> {
-				try (Tx tx = tx()) {
-					Single<T> result = trxHandler.handle(tx);
-					if (result == null) {
-						bc.complete();
-					} else {
-						try {
-							T ele = result.timeout(40, TimeUnit.SECONDS).blockingGet();
-							bc.complete(ele);
-						} catch (Exception e2) {
-							if (e2 instanceof TimeoutException) {
-								log.error("Timeout while processing result of transaction handler.", e2);
-								log.error("Calling transaction stacktrace.", reference.get());
-								bc.fail(reference.get());
-							} else {
-								throw e2;
-							}
-						}
-					}
-				} catch (Exception e) {
-					if (!(e instanceof GenericRestException)) {
-						log.error("Error while handling no-transaction.", e);
-					}
-					bc.fail(e);
-				}
-			}, false, (AsyncResult<T> done) -> {
-				if (done.failed()) {
-					sub.onError(done.cause());
-				} else {
-					sub.onSuccess(done.result());
-				}
-			});
-		});
+		return maybeTx(handler, false).toSingle();
 	}
 
 	/**
@@ -318,8 +291,10 @@ public interface Database extends TxFactory {
 	/**
 	 * Utilize the index and locate the matching vertices.
 	 *
-	 * @param <T> Type of the vertices
-	 * @param classOfVertex Class to be used for framing
+	 * @param <T>
+	 *            Type of the vertices
+	 * @param classOfVertex
+	 *            Class to be used for framing
 	 * @param fieldNames
 	 * @param fieldValues
 	 * @return
@@ -329,13 +304,14 @@ public interface Database extends TxFactory {
 	/**
 	 * Utilize the index and locate the matching vertices.
 	 *
-	 * @param classOfVertex Class to be used for framing
+	 * @param classOfVertex
+	 *            Class to be used for framing
 	 * @param fieldName
 	 * @param fieldValue
 	 * @return
 	 */
-	default<T extends VertexFrame> TraversalResult<T> getVerticesTraversal(Class<T> classOfVertex, String fieldName, Object fieldValue) {
-		return getVerticesTraversal(classOfVertex, new String[]{fieldName}, new Object[]{fieldValue});
+	default <T extends VertexFrame> TraversalResult<T> getVerticesTraversal(Class<T> classOfVertex, String fieldName, Object fieldValue) {
+		return getVerticesTraversal(classOfVertex, new String[] { fieldName }, new Object[] { fieldValue });
 	}
 
 	/**
@@ -504,12 +480,13 @@ public interface Database extends TxFactory {
 
 	/**
 	 * Load the current cluster configuration.
+	 * 
 	 * @return
 	 */
 	ClusterConfigResponse loadClusterConfig();
 
 	/**
-	 * Check whether a topology change causes a lock.
+	 * Block execution if a topology lock was found.
 	 */
 	void blockingTopologyLockCheck();
 
@@ -517,5 +494,12 @@ public interface Database extends TxFactory {
 	 * Set the server role to master.
 	 */
 	void setToMaster();
+
+	/**
+	 * Return the global lockable write lock instance.
+	 * 
+	 * @return
+	 */
+	WriteLock writeLock();
 
 }

@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "1.4.4"
+version: "1.4.6"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -6000,7 +6000,7 @@ mediaType: application/json
                                 | vertxVersion | false | string | Used Vert.x version. |
                             example: |
                                 {
-                                  "meshVersion" : "1.4.4",
+                                  "meshVersion" : "1.4.6",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",
@@ -7387,17 +7387,17 @@ mediaType: application/json
                         | cropMode | false | string | Crop mode. To be used in conjunction with cropRect |
                         | cropRect | false | object | Crop area. |
                         | focalPoint | false | object | Optional new focal point for the transformed image. |
-                        | height | false | integer | New height of the image. |
+                        | height | false | string | New height of the image. |
                         | language | true | string | ISO 639-1 language tag of the node which provides the image which should be transformed. |
                         | resizeMode | false | string | Resize mode. |
                         | version | true | string | Version number which must be provided in order to handle and detect concurrent changes to the node content. |
-                        | width | false | integer | New width of the image. |
+                        | width | false | string | New width of the image. |
                     example: |
                         {
                           "version" : "1.0",
                           "language" : "en",
-                          "width" : 100,
-                          "height" : 200,
+                          "width" : "100",
+                          "height" : "200",
                           "cropRect" : {
                             "startX" : 50,
                             "startY" : 20,

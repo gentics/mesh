@@ -204,11 +204,4 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 		return mesh().userProperties().getEditor(this);
 	}
 
-	@Override
-	public Single<RoleResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return db().asyncTx(() -> {
-			return Single.just(transformToRestSync(ac, level, languageTags));
-		});
-	}
-
 }

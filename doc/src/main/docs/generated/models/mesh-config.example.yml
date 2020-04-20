@@ -26,6 +26,7 @@ httpServer:
   clientAuthMode: "NONE"
   trustedCertPaths: []
   verticleAmount: 16
+  serverTokens: true
 monitoring:
   enabled: true
   port: 8081

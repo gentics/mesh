@@ -13,9 +13,7 @@ import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 import static com.gentics.mesh.util.StreamUtil.toStream;
 
 import java.util.Iterator;
-import java.util.Spliterator;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
@@ -30,7 +28,6 @@ import com.gentics.mesh.core.data.impl.BranchImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -47,12 +44,8 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
-import com.gentics.mesh.util.StreamUtil;
-import com.syncleus.ferma.VertexFrame;
 import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Vertex;
 
-import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -164,13 +157,6 @@ public class SchemaContainerVersionImpl extends
 	@Override
 	public TraversalResult<? extends Branch> getBranches() {
 		return in(HAS_SCHEMA_VERSION, BranchImpl.class);
-	}
-
-	@Override
-	public Single<SchemaResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return db().asyncTx(() -> {
-			return Single.just(transformToRestSync(ac, level, languageTags));
-		});
 	}
 
 	@Override

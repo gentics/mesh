@@ -12,7 +12,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.naming.InvalidNameException;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Project;
@@ -49,7 +48,8 @@ public class DistributedEventManager {
 	private final Lazy<PermissionCache> permCache;
 
 	@Inject
-	public DistributedEventManager(Lazy<Vertx> vertx, Lazy<Database> db, Lazy<BootstrapInitializer> boot, RouterStorageRegistry routerStorageRegistry, Lazy<PermissionCache> permCache) {
+	public DistributedEventManager(Lazy<Vertx> vertx, Lazy<Database> db, Lazy<BootstrapInitializer> boot, RouterStorageRegistry routerStorageRegistry,
+		Lazy<PermissionCache> permCache) {
 		this.vertx = vertx;
 		this.db = db;
 		this.boot = boot;
@@ -118,7 +118,7 @@ public class DistributedEventManager {
 		BootstrapInitializer cboot = boot.get();
 		Database cdb = db.get();
 
-		try (Tx tx = cdb.tx()) {
+		cdb.tx(tx -> {
 			for (RouterStorage rs : routerStorageRegistry.getInstances()) {
 				Map<String, Router> registeredProjectRouters = rs.root().apiRouter().projectsRouter().getProjectRouters();
 				// Load all projects and check whether they are already registered
@@ -130,6 +130,6 @@ public class DistributedEventManager {
 					}
 				}
 			}
-		}
+		});
 	}
 }

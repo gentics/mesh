@@ -87,6 +87,11 @@
 | int
 | Amount of rest API verticles to be deployed. Default is 2 * CPU Cores
 
+| httpServerOptions.serverTokens
+| false
+| boolean
+| Set the http server tokens flag which controls whether the server should expose version information via headers, REST endpoints and GraphQL. Default is true
+
 | monitoringOptions.enabled
 | false
 | boolean

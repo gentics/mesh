@@ -1,8 +1,8 @@
 {
   "version" : "1.0",
   "language" : "en",
-  "width" : 100,
-  "height" : 200,
+  "width" : "100",
+  "height" : "200",
   "cropRect" : {
     "startX" : 50,
     "startY" : 20,

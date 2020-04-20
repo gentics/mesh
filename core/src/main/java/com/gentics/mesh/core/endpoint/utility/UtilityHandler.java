@@ -16,17 +16,17 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.validation.SchemaValidationResponse;
 import com.gentics.mesh.core.rest.validation.ValidationStatus;
+import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandler;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
 
+import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.reactivex.Single;
 
 /**
  * Handler for utility request methods.
@@ -43,18 +43,15 @@ public class UtilityHandler extends AbstractHandler {
 
 	private final NodeIndexHandler nodeIndexHandler;
 
-	private final MicroschemaContainerIndexHandler microschemaIndexHandler;
-
 	private final HandlerUtilities utils;
 
 	@Inject
 	public UtilityHandler(MeshOptions options, Database db, WebRootLinkReplacer linkReplacer, NodeIndexHandler nodeIndexHandler,
-		MicroschemaContainerIndexHandler microschemaIndexHandler, HandlerUtilities utils) {
+		HandlerUtilities utils) {
 		this.options = options;
 		this.db = db;
 		this.linkReplacer = linkReplacer;
 		this.nodeIndexHandler = nodeIndexHandler;
-		this.microschemaIndexHandler = microschemaIndexHandler;
 		this.utils = utils;
 	}
 
@@ -115,12 +112,11 @@ public class UtilityHandler extends AbstractHandler {
 	 * @param ac
 	 */
 	public void validateMicroschema(InternalActionContext ac) {
-		db.asyncTx(() -> {
+		utils.syncTx(ac, tx -> {
 			Microschema model = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModelImpl.class);
 			model.validate();
-			SchemaValidationResponse report = new SchemaValidationResponse();
-			return Single.just(report);
-		}).subscribe(msg -> ac.send(msg, OK), ac::fail);
+			return new SchemaValidationResponse();
+		}, msg -> ac.send(msg, OK));
 	}
 
 }

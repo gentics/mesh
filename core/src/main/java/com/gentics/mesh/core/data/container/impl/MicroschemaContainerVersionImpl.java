@@ -150,13 +150,6 @@ public class MicroschemaContainerVersionImpl extends
 	}
 
 	@Override
-	public Single<MicroschemaResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return mesh().database().asyncTx(() -> {
-			return Single.just(transformToRestSync(ac, level, languageTags));
-		});
-	}
-
-	@Override
 	public void delete(BulkActionContext bac) {
 		// Delete change
 		SchemaChange<?> change = getNextChange();

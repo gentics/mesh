@@ -31,6 +31,26 @@ icon:check[] Core: Fixed a bug that caused an internal server error if a project
 
 icon:plus[] Test: An enhanced test container class has been added. The `MeshContainer` class replaces the `MeshDockerServer` which was deprecated.
 
+[[v1.4.6]]
+== 1.4.6 (20.04.2020)
+
+icon:plus[] Clustering/Graph: The already existing `synchronizeWrites` feature has been extended. A cluster-wide write lock will now be used when running in clustered mode. This drastically reduces contention. The lock will also be used when new instances join the cluster to prevent synchronization issues with distributed transactions.
+
+icon:plus[] Graph: The internal transaction handling has been refactored and unified to better accommodate the new global write lock mechanism.
+
+icon:check[] Clustering: The cluster startup and shutdown processes have been modified to be less error prone. Hazelcast will now be started before OrientDB. Cluster instances now join the cluster sequentially instead of parallel. This results in a slower but more stable cluster startup process. The shutdown process will now avoid a write gap in which already dispatched distributed transactions could potentially be lost.
+
+[[v1.4.5]]
+== 1.4.5 (17.04.2020)
+
+icon:plus[] Server: The `serverTokens` flag and `MESH_HTTP_SERVER_TOKENS` env has been added to the server config. The flag controls whether server version information can be exposed via REST (/api/v1, /api/v2), GraphQL or HTTP headers. By default server tokens are enabled.
+
+icon:check[] Changelog: The automated recovery introduced in v1.4.4 now renames duplicate versions instead of deleting them.
+
+icon:plus[] Image Manipulation: Gentics Mesh now supports the ´auto´ parameter when manipulating images. For more info check the link:{{< relref "image-manipulation.asciidoc" >}}[Image Manipulation documentation].
+
+icon:check[] Core: Migrating remaining nodes via the `/{project}/branches/{branchUuid}/migrateSchemas` and `/{project}/branches/{branchUuid}/migrateMicroschemas` now includes all previous schema versions instead of only active schema versions.
+
 [[v1.4.4]]
 == 1.4.4 (14.04.2020)
 
@@ -44,6 +64,8 @@ icon:plus[] Monitoring: Metrics have been added for the synchronized write lock,
 icon:plus[] Graph: It is now possible to configure a transaction commit timeout. The `storage.txCommitTimeout` or `MESH_GRAPH_TX_COMMIT_TIMEOUT` environment setting can be used to configure the timeout in milliseconds. By default no timeout will be applied.
 
 icon:plus[] Graph: The `storage.synchronizeWritesTimeout` setting and `MESH_GRAPH_SYNC_WRITES_TIMEOUT` environment setting have been added. It is now possible to configure the write lock timeout using these settings.
+
+icon:plus[] Graph: It is now possible to configure a transaction commit timeout. The `storage.txCommitTimeout` or `MESH_GRAPH_TX_COMMIT_TIMEOUT` environment setting can be used to configure the timeout in milliseconds. By default no timeout will be applied.
 
 icon:plus[] GraphQL: It is now possible to use paging arguments when loading nodes via the `NodeContent#referencedBy` field.
 

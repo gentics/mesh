@@ -168,7 +168,6 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			Arrays.asList("tag-query", true, "draft"),
 			Arrays.asList("branch-query", true, "draft"),
 			Arrays.asList("user-query", true, "draft"),
-			Arrays.asList("mesh-query", true, "draft"),
 			Arrays.asList("microschema-projects-query", true, "draft"),
 			Arrays.asList("node-version-published-query", true, "published"),
 			Arrays.asList("filtering/children", true, "draft"),
@@ -211,7 +210,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			microschemaUuid = microschemaResponse.getUuid();
 			call(() -> client.assignMicroschemaToProject(PROJECT_NAME, microschemaResponse.getUuid()));
 		} else {
-			try (Tx tx = db().tx()) {
+			try (Tx tx = tx()) {
 				for (MicroschemaContainer microschema : meshRoot().getMicroschemaContainerRoot().findAll()) {
 					microschema.remove();
 				}

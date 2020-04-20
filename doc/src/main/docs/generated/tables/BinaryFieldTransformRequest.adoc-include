@@ -24,7 +24,7 @@
 
 | height
 | false
-| integer
+| string
 | New height of the image.
 
 | language
@@ -44,7 +44,7 @@
 
 | width
 | false
-| integer
+| string
 | New width of the image.
 
 |======

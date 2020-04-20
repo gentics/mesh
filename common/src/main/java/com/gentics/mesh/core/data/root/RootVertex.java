@@ -151,7 +151,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 
 		MeshAuthUser requestUser = ac.getUser();
 		String elementUuid = element.getUuid();
-		if (requestUser.hasPermission(element, perm)) {
+		if (requestUser != null && requestUser.hasPermission(element, perm)) {
 			return element;
 		} else {
 			throw error(FORBIDDEN, "error_missing_perm", elementUuid, perm.getRestPerm().getName());

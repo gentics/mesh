@@ -240,7 +240,7 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			MicroschemaContainer vcard = microschemaContainer("vcard");
-			MicroschemaResponse schema = vcard.transformToRest(ac, 0, "en").blockingGet();
+			MicroschemaResponse schema = vcard.transformToRestSync(ac, 0, "en");
 			assertEquals(vcard.getUuid(), schema.getUuid());
 		}
 	}

@@ -13,6 +13,11 @@ import io.vertx.core.json.JsonObject;
 
 public class ClusterServer {
 
+	static {
+		// Disable direct IO (My dev system uses ZFS. Otherwise the test will not run)
+		System.setProperty("storage.wal.allowDirectIO", "false");
+	}
+
 	public static MeshOptions init(String[] args) {
 		LoggingConfigurator.init();
 		MeshOptions options = OptionsLoader.createOrloadOptions(args);
@@ -22,13 +27,12 @@ public class ClusterServer {
 		// options.getHttpServerOptions().setCorsAllowCredentials(true);
 		// options.getHttpServerOptions().setEnableCors(true);
 		// options.getHttpServerOptions().setCorsAllowedOriginPattern("http://localhost:5000");
-
 		options.getAuthenticationOptions().setKeystorePassword("finger");
 		options.setInitialAdminPassword("admin");
 		options.setForceInitialAdminPasswordReset(false);
 
-		//options.getClusterOptions().setCoordinatorMode(CoordinatorMode.ALL);
-		//options.getClusterOptions().setCoordinatorRegex("gentics-mesh-[0-9]");
+		// options.getClusterOptions().setCoordinatorMode(CoordinatorMode.ALL);
+		// options.getClusterOptions().setCoordinatorRegex("gentics-mesh-[0-9]");
 		options.getStorageOptions().setStartServer(true);
 		options.getClusterOptions().setClusterName("test");
 		options.getClusterOptions().setEnabled(true);
@@ -38,8 +42,10 @@ public class ClusterServer {
 
 		// New settings
 		options.getStorageOptions().setSynchronizeWrites(true);
+		options.getStorageOptions().setSynchronizeWritesTimeout(290_000);
 		options.getClusterOptions().setTopologyLockTimeout(240_000);
-		options.getStorageOptions().setTxCommitTimeout(10_000);
+		options.getClusterOptions().setTopologyLockDelay(1);
+		options.getStorageOptions().setTxCommitTimeout(50_000);
 		return options;
 	}
 

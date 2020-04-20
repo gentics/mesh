@@ -37,7 +37,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.cache.CacheRegistryImpl;
 import com.gentics.mesh.changelog.ChangelogSystem;
@@ -296,7 +295,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				db.closeConnectionPool();
 				db.shutdown();
 
-				db.clusterManager().startServer();
+				db.clusterManager().start();
 				vertx.close();
 				vertx = null;
 				initVertx(options, isClustered);
@@ -309,10 +308,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				}
 			} else {
 				// We need to wait for other nodes and receive the graphdb
-				db.clusterManager().startServer();
+				db.clusterManager().start();
 				initVertx(options, isClustered);
-				mesh.setStatus(MeshStatus.WAITING_FOR_CLUSTER);
-				db.clusterManager().joinCluster();
 				db.clusterManager().registerEventHandlers();
 				isInitialSetup = false;
 				db.setupConnectionPool();
@@ -340,7 +337,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			initLocalData(options, false);
 			if (startOrientServer) {
 				db.closeConnectionPool();
-				db.clusterManager().startServer();
+				db.clusterManager().start();
 				db.setupConnectionPool();
 			}
 		}
@@ -590,13 +587,13 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		// Handle admin password reset
 		String password = configuration.getAdminPassword();
 		if (password != null) {
-			try (Tx tx = db.tx()) {
+			db.tx(tx -> {
 				User adminUser = userRoot().findByName("admin");
 				if (adminUser != null) {
 					adminUser.setPassword(password);
 				}
 				tx.success();
-			}
+			});
 		}
 
 		registerEventHandlers();
@@ -625,7 +622,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			log.warn("You are running snapshot version {" + currentVersion
 				+ "} of Gentics Mesh. Be aware that this version could potentially alter your instance in unexpected ways.");
 		}
-		try (Tx tx = db.tx()) {
+		db.tx(tx -> {
 			String graphVersion = meshRoot().getMeshVersion();
 
 			// Check whether the information was already saved once. Otherwise set it.
@@ -680,14 +677,12 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 					}
 				}
 			}
-		}
+		});
 	}
 
 	@Override
 	public boolean isEmptyInstallation() {
-		try (Tx tx = db.tx()) {
-			return !tx.getGraph().v().hasNext();
-		}
+		return db.tx(tx -> !tx.getGraph().v().hasNext());
 	}
 
 	@Override
@@ -835,11 +830,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Override
 	public void initMandatoryData(MeshOptions config) throws Exception {
-		Role adminRole;
-		MeshRoot meshRoot;
 
-		try (Tx tx = db.tx()) {
-			meshRoot = meshRoot();
+		db.tx(tx -> {
+			MeshRoot meshRoot = meshRoot();
 
 			// Create the initial root vertices
 			meshRoot.getTagRoot();
@@ -980,7 +973,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				log.debug("Created admin group {" + adminGroup.getUuid() + "}");
 			}
 
-			adminRole = roleRoot.findByName("admin");
+			Role adminRole = roleRoot.findByName("admin");
 			if (adminRole == null) {
 				adminRole = roleRoot.create("admin", adminUser);
 				adminGroup.addRole(adminRole);
@@ -992,7 +985,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 			schemaStorage.init();
 			tx.success();
-		}
+		});
 
 	}
 
@@ -1001,7 +994,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 		// Only setup optional data for empty installations
 		if (isEmptyInstallation) {
-			try (Tx tx = db.tx()) {
+			db.tx(tx -> {
 				meshRoot = meshRoot();
 
 				UserRoot userRoot = meshRoot().getUserRoot();
@@ -1034,13 +1027,13 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				}
 
 				tx.success();
-			}
+			});
 		}
 	}
 
 	@Override
 	public void initPermissions() {
-		try (Tx tx = db.tx()) {
+		db.tx(tx -> {
 			Role adminRole = meshRoot().getRoleRoot().findByName("admin");
 			for (Vertex vertex : tx.getGraph().getVertices()) {
 				WrappedVertex wrappedVertex = (WrappedVertex) vertex;
@@ -1051,7 +1044,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				}
 			}
 			tx.success();
-		}
+		});
 	}
 
 	@Override
@@ -1071,13 +1064,16 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		String languagesFilePath = configuration.getLanguagesFilePath();
 		if (StringUtils.isNotEmpty(languagesFilePath)) {
 			File languagesFile = new File(languagesFilePath);
-			try (Tx tx = db.tx()) {
-				LanguageSet languageSet = new ObjectMapper().readValue(languagesFile, LanguageSet.class);
-				initLanguages(meshRoot().getLanguageRoot(), languageSet);
-				tx.success();
-			} catch (IOException e) {
-				log.error("Error while initializing optional languages from {" + languagesFilePath + "}", e);
-			}
+			db.tx(tx -> {
+				try {
+					LanguageSet languageSet = new ObjectMapper().readValue(languagesFile, LanguageSet.class);
+					initLanguages(meshRoot().getLanguageRoot(), languageSet);
+					tx.success();
+				} catch (IOException e) {
+					log.error("Error while initializing optional languages from {" + languagesFilePath + "}", e);
+					tx.rollback();
+				}
+			});
 		}
 	}
 

@@ -404,4 +404,11 @@ public interface InternalEndpointRoute extends Comparable<InternalEndpointRoute>
 	 * @return
 	 */
 	InternalEndpointRoute setMutating(Boolean mutating);
+
+	/**
+	 * Return underlying route.
+	 * 
+	 * @return
+	 */
+	Route getRoute();
 }

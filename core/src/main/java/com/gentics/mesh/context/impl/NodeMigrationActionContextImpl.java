@@ -56,7 +56,6 @@ import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Vertex;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.reactivex.Single;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
@@ -648,13 +647,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			@Override
 			public User getEditor() {
 				return null;
-			}
-
-			@Override
-			public Single<UserResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-				return db().asyncTx(() -> {
-					return Single.just(transformToRestSync(ac, level, languageTags));
-				});
 			}
 
 			@Override

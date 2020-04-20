@@ -12,6 +12,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 
@@ -34,12 +35,15 @@ public class MeshTypeProvider {
 
 	private final LocalConfigApi localConfigApi;
 
+	private final MeshOptions options;
+
 	@Inject
-	public MeshTypeProvider(BootstrapInitializer boot, Database db, SearchProvider searchProvider, LocalConfigApi localConfigApi) {
+	public MeshTypeProvider(BootstrapInitializer boot, Database db, SearchProvider searchProvider, LocalConfigApi localConfigApi, MeshOptions options) {
 		this.boot = boot;
 		this.db = db;
 		this.searchProvider = searchProvider;
 		this.localConfigApi = localConfigApi;
+		this.options = options;
 	}
 
 	public GraphQLObjectType createType() {
@@ -47,24 +51,41 @@ public class MeshTypeProvider {
 		root.name(MESH_TYPE_NAME);
 		root.description("Mesh version information");
 		root.field(newFieldDefinition().name("meshVersion").description("Version of mesh").type(GraphQLString).dataFetcher((env) -> {
-			return Mesh.getPlainVersion();
+			if (options.getHttpServerOptions().isServerTokens()) {
+				return Mesh.getPlainVersion();
+			} else {
+				return null;
+			}
 		}));
 
 		// .meshNodeId
-		root.field(newFieldDefinition().name("meshNodeId").description("Node id of this mesh instance").type(GraphQLString).dataFetcher((env) -> {
-			return boot.mesh().getOptions().getNodeName();
-		}));
+		root.field(newFieldDefinition().name("meshNodeId").description("Node id of this mesh instance").type(GraphQLString)
+			.dataFetcher((env) -> {
+				if (options.getHttpServerOptions().isServerTokens()) {
+					return boot.mesh().getOptions().getNodeName();
+				} else {
+					return null;
+				}
+			}));
 
 		// .databaseVendor
 		root.field(newFieldDefinition().name("databaseVendor").description("Name of the graph database vendor").type(GraphQLString)
 				.dataFetcher((env) -> {
-					return db.getVendorName();
+					if (options.getHttpServerOptions().isServerTokens()) {
+						return db.getVendorName();
+					} else {
+						return null;
+					}
 				}));
 
 		// .databaseVersion
 		root.field(newFieldDefinition().name("databaseVersion").description("Version of the used graph database").type(GraphQLString)
-				.dataFetcher((env) -> {
-					return db.getVersion();
+				.dataFetcher(env -> {
+					if (options.getHttpServerOptions().isServerTokens()) {
+						return db.getVersion();
+					} else {
+						return null;
+					}
 				}));
 
 		// .searchVendor
@@ -74,13 +95,21 @@ public class MeshTypeProvider {
 
 		// .searchVersion
 		root.field(
-				newFieldDefinition().name("searchVersion").description("Version of the used search index").type(GraphQLString).dataFetcher((env) -> {
-					return searchProvider.getVersion();
+				newFieldDefinition().name("searchVersion").description("Version of the used search index").type(GraphQLString).dataFetcher(env -> {
+					if (options.getHttpServerOptions().isServerTokens()) {
+						return searchProvider.getVersion();
+					} else {
+						return null;
+					}
 				}));
 
 		// .vertxVersion
 		root.field(newFieldDefinition().name("vertxVersion").description("Vert.x version").type(GraphQLString).dataFetcher((env) -> {
-			return VersionCommand.getVersion();
+			if (options.getHttpServerOptions().isServerTokens()) {
+				return VersionCommand.getVersion();
+			} else {
+				return null;
+			}
 		}));
 
 		root.field(newFieldDefinition().name("config").description("The local configuration of this instance")

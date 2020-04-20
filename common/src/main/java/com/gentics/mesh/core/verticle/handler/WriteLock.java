@@ -7,6 +7,8 @@ import com.gentics.mesh.context.InternalActionContext;
  */
 public interface WriteLock extends AutoCloseable {
 
+	public static final String GLOBAL_LOCK_KEY = "MESH_GLOBAL_LOCK";
+
 	@Override
 	void close();
 
@@ -17,4 +19,5 @@ public interface WriteLock extends AutoCloseable {
 	 * @return Fluent API
 	 */
 	WriteLock lock(InternalActionContext ac);
+
 }

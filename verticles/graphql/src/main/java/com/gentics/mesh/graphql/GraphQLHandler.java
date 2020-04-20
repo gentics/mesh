@@ -55,44 +55,46 @@ public class GraphQLHandler {
 	 * Handle the GraphQL query.
 	 *
 	 * @param gc
-	 * 		Context
+	 *            Context
 	 * @param body
-	 * 		GraphQL query
+	 *            GraphQL query
 	 */
 	public void handleQuery(GraphQLContext gc, String body) {
 		waitUtil.awaitSync(gc).andThen(vertx.rxExecuteBlocking(promise -> {
-			try (Tx tx = db.tx()) {
-				JsonObject queryJson = new JsonObject(body);
-				String query = queryJson.getString("query");
-				GraphQL graphQL = newGraphQL(typeProvider.getRootSchema(gc)).build();
-				ExecutionInput executionInput = ExecutionInput
+			try {
+				db.tx(tx -> {
+					JsonObject queryJson = new JsonObject(body);
+					String query = queryJson.getString("query");
+					GraphQL graphQL = newGraphQL(typeProvider.getRootSchema(gc)).build();
+					ExecutionInput executionInput = ExecutionInput
 						.newExecutionInput()
 						.query(query)
 						.context(gc)
 						.variables(extractVariables(queryJson))
 						.build();
-				ExecutionResult result = graphQL.execute(executionInput);
-				List<GraphQLError> errors = result.getErrors();
-				JsonObject response = new JsonObject();
-				if (!errors.isEmpty()) {
-					addErrors(errors, response);
-					if (log.isDebugEnabled()) {
-						log.debug("Encountered {" + errors.size() + "} errors while executing query {" + query + "}");
-						for (GraphQLError error : errors) {
-							String loc = "unknown location";
-							if (error.getLocations() != null) {
-								loc = error.getLocations().stream().map(Object::toString).collect(Collectors.joining(","));
+					ExecutionResult result = graphQL.execute(executionInput);
+					List<GraphQLError> errors = result.getErrors();
+					JsonObject response = new JsonObject();
+					if (!errors.isEmpty()) {
+						addErrors(errors, response);
+						if (log.isDebugEnabled()) {
+							log.debug("Encountered {" + errors.size() + "} errors while executing query {" + query + "}");
+							for (GraphQLError error : errors) {
+								String loc = "unknown location";
+								if (error.getLocations() != null) {
+									loc = error.getLocations().stream().map(Object::toString).collect(Collectors.joining(","));
+								}
+								log.debug("Error: " + error.getErrorType() + ":" + error.getMessage() + ":" + loc);
 							}
-							log.debug("Error: " + error.getErrorType() + ":" + error.getMessage() + ":" + loc);
 						}
 					}
-				}
-				if (result.getData() != null) {
-					Map<String, Object> data = result.getData();
-					response.put("data", new JsonObject(data));
-				}
-				gc.send(response.encodePrettily(), OK);
-				promise.complete();
+					if (result.getData() != null) {
+						Map<String, Object> data = result.getData();
+						response.put("data", new JsonObject(data));
+					}
+					gc.send(response.encodePrettily(), OK);
+					promise.complete();
+				});
 			} catch (Exception e) {
 				promise.fail(e);
 			}
@@ -105,7 +107,7 @@ public class GraphQLHandler {
 	 * Extracts the variables of a query as a map. Returns empty map if no variables are found.
 	 *
 	 * @param request
-	 * 		The request body
+	 *            The request body
 	 *
 	 * @return GraphQL variables
 	 */

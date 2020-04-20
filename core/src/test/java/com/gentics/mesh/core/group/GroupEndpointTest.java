@@ -114,7 +114,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		assertThat(trackingSearchProvider()).hasStore(Group.composeIndexName(), uuid);
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			assertThat(restGroup).matches(request);
 			Group reloadedGroup = boot().groupRoot().findByUuid(uuid);
 			assertEquals("The group should have been updated", name, reloadedGroup.getName());

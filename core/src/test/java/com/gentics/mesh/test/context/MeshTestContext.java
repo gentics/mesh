@@ -35,7 +35,6 @@ import org.testcontainers.containers.ToxiproxyContainer;
 import org.testcontainers.containers.ToxiproxyContainer.ContainerProxy;
 import org.testcontainers.containers.wait.strategy.Wait;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.util.KeycloakUtils;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
@@ -305,7 +304,7 @@ public class MeshTestContext extends TestWatcher {
 		meshDagger.routerStorageRegistry().addProject(TestDataProvider.PROJECT_NAME);
 
 		// Setup the rest client
-		try (Tx tx = db().tx()) {
+		db().tx(tx -> {
 			MeshRestClientConfig.Builder httpConfigBuilder = new MeshRestClientConfig.Builder()
 				.setHost("localhost")
 				.setPort(httpPort)
@@ -356,7 +355,7 @@ public class MeshTestContext extends TestWatcher {
 				oldClient.setAuthenticationProvider(httpClient.getAuthentication());
 				clients.put("http_v" + version, oldClient);
 			});
-		}
+		});
 		log.info("Using monitoring port: " + monitoringPort);
 		MonitoringClientConfig monitoringClientConfig = new MonitoringClientConfig.Builder()
 			.setBasePath(CURRENT_API_BASE_PATH)
@@ -671,16 +670,17 @@ public class MeshTestContext extends TestWatcher {
 	 */
 	public void initDagger(MeshOptions options, MeshTestSetting settings) throws Exception {
 		log.info("Initializing dagger context");
-		meshDagger = DaggerMeshComponent.builder()
-			.configuration(options)
-			.searchProviderType(settings.elasticsearch().toSearchProviderType())
-			.build();
-		dataProvider = new TestDataProvider(settings.testSize(), meshDagger.boot(), meshDagger.database(), meshDagger.batchProvider());
-		if (meshDagger.searchProvider() instanceof TrackingSearchProvider) {
-			trackingSearchProvider = meshDagger.trackingSearchProvider();
-		}
 		try {
 			mesh = Mesh.create(options);
+			meshDagger = DaggerMeshComponent.builder()
+				.configuration(options)
+				.searchProviderType(settings.elasticsearch().toSearchProviderType())
+				.mesh(mesh)
+				.build();
+			dataProvider = new TestDataProvider(settings.testSize(), meshDagger.boot(), meshDagger.database(), meshDagger.batchProvider());
+			if (meshDagger.searchProvider() instanceof TrackingSearchProvider) {
+				trackingSearchProvider = meshDagger.trackingSearchProvider();
+			}
 			mesh.setMeshInternal(meshDagger);
 			// We omit creating the initial admin password since hashing the password would slow down tests
 			if (!meshOptions.getInitialAdminPassword().startsWith("debug")) {

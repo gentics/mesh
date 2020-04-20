@@ -4,6 +4,7 @@ import static com.gentics.mesh.MeshEnv.CONFIG_FOLDERNAME;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -14,6 +15,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 
 import javax.inject.Inject;
@@ -23,9 +26,12 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 
+import com.gentics.mesh.Mesh;
+import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterInstanceInfo;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
+import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -33,9 +39,13 @@ import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.PropertyUtil;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.ILock;
 import com.orientechnologies.orient.core.record.impl.ODocument;
 import com.orientechnologies.orient.server.OServer;
 import com.orientechnologies.orient.server.OServerMain;
+import com.orientechnologies.orient.server.config.OServerConfiguration;
+import com.orientechnologies.orient.server.config.OServerConfigurationManager;
+import com.orientechnologies.orient.server.config.OServerHandlerConfiguration;
 import com.orientechnologies.orient.server.distributed.ODistributedServerManager;
 import com.orientechnologies.orient.server.distributed.ODistributedServerManager.DB_STATUS;
 import com.orientechnologies.orient.server.hazelcast.OHazelcastPlugin;
@@ -67,9 +77,13 @@ public class OrientDBClusterManager implements ClusterManager {
 
 	private OServer server;
 
+	private HazelcastInstance hazelcastInstance;
+
 	private OHazelcastPlugin hazelcastPlugin;
 
 	private TopologyEventBridge topologyEventBridge;
+
+	private final Mesh mesh;
 
 	private final Lazy<Vertx> vertx;
 
@@ -79,12 +93,19 @@ public class OrientDBClusterManager implements ClusterManager {
 
 	private final Lazy<BootstrapInitializer> boot;
 
+	private final ClusterOptions clusterOptions;
+
+	private final boolean isClusteringEnabled;
+
 	@Inject
-	public OrientDBClusterManager(Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, MeshOptions options, Lazy<OrientDBDatabase> db) {
+	public OrientDBClusterManager(Mesh mesh, Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, MeshOptions options, Lazy<OrientDBDatabase> db) {
+		this.mesh = mesh;
 		this.vertx = vertx;
 		this.boot = boot;
 		this.options = options;
 		this.db = db;
+		this.clusterOptions = options.getClusterOptions();
+		this.isClusteringEnabled = clusterOptions != null && clusterOptions.isEnabled();
 	}
 
 	/**
@@ -219,6 +240,12 @@ public class OrientDBClusterManager implements ClusterManager {
 		if (log.isDebugEnabled()) {
 			log.debug("OrientDB server configuration:" + configString);
 		}
+
+		// Apply on-the-fly fix for changed OrientDB configuration.
+		final String OLD_PLUGIN_REGEX = "com\\.orientechnologies\\.orient\\.server\\.hazelcast\\.OHazelcastPlugin";
+		final String NEW_PLUGIN = "com.gentics.mesh.graphdb.cluster.MeshOHazelcastPlugin";
+		configString = configString.replaceAll(OLD_PLUGIN_REGEX, NEW_PLUGIN);
+
 		return configString;
 	}
 
@@ -233,7 +260,7 @@ public class OrientDBClusterManager implements ClusterManager {
 
 	@Override
 	public HazelcastInstance getHazelcast() {
-		return hazelcastPlugin != null ? hazelcastPlugin.getHazelcastInstance() : null;
+		return hazelcastInstance;
 	}
 
 	private void writeOrientBackupConfig(File configFile) throws IOException {
@@ -249,7 +276,7 @@ public class OrientDBClusterManager implements ClusterManager {
 	}
 
 	private void writeOrientServerConfig(File configFile) throws IOException {
-		String resourcePath = "/config/orientdb-server-config.xml";
+		String resourcePath = "/config/" + ORIENTDB_SERVER_CONFIG;
 		InputStream configIns = getClass().getResourceAsStream(resourcePath);
 		if (configFile == null) {
 			throw new RuntimeException("Could not find default orientdb server configuration template file {" + resourcePath + "} within classpath.");
@@ -355,43 +382,106 @@ public class OrientDBClusterManager implements ClusterManager {
 	 * @throws Exception
 	 */
 	@Override
-	public void startServer() throws Exception {
-		ClusterOptions clusterOptions = options.getClusterOptions();
-		boolean isClusteringEnabled = clusterOptions != null && clusterOptions.isEnabled();
+	public void start() throws Exception {
+
 		String orientdbHome = new File("").getAbsolutePath();
 		System.setProperty("ORIENTDB_HOME", orientdbHome);
-		if (server == null) {
-			server = OServerMain.create();
-			updateOrientDBPlugin();
-		}
-
 		if (clusterOptions != null && clusterOptions.isEnabled()) {
 			// This setting will be referenced by the hazelcast configuration
 			System.setProperty("mesh.clusterName", clusterOptions.getClusterName() + "@" + db.get().getDatabaseRevision());
 		}
 
+		ByteArrayInputStream configXML = new ByteArrayInputStream(getOrientServerConfig().getBytes());
+		OServerConfigurationManager serverConfigManager = new OServerConfigurationManager(configXML);
+		OServerConfiguration serverConfig = serverConfigManager.getConfiguration();
+
+		startHazelcast(serverConfig);
+		ILock lock = null;
+		long lockTimeout = clusterOptions.getTopologyLockTimeout();
+		if (isClusteringEnabled) {
+			lock = hazelcastInstance.getLock(WriteLock.GLOBAL_LOCK_KEY);
+			Thread.sleep(4000);
+		}
+		if (server == null) {
+			server = OServerMain.create();
+			updateOrientDBPlugin();
+		}
+
 		log.info("Starting OrientDB Server");
 		server.startup(getOrientServerConfig());
+
+		try {
+			if (lock != null) {
+				boolean isTimeout = !lock.tryLock(lockTimeout, TimeUnit.MILLISECONDS);
+				Thread.sleep(4000);
+				if (isTimeout) {
+					log.warn("The topology lock for the pending server startup reached the timeout limit.");
+				}
+				if (log.isDebugEnabled()) {
+					log.debug("Locking global write lock due to server startup.");
+				}
+			}
+			activateServer();
+		} finally {
+			if (lock != null) {
+				if (log.isDebugEnabled()) {
+					log.debug("Unlocking global write lock after server startup.");
+				}
+				Thread.sleep(8000);
+				if (lock.isLockedByCurrentThread()) {
+					lock.unlock();
+				}
+			}
+		}
+	}
+
+	private void startHazelcast(OServerConfiguration serverConfig) throws FileNotFoundException {
+		Optional<OServerHandlerConfiguration> hazelcastPluginConfigOpt = serverConfig.handlers.stream()
+			.filter(e -> e.clazz.equals(MeshOHazelcastPlugin.class.getName())).findFirst();
+		if (!hazelcastPluginConfigOpt.isPresent()) {
+			throw new RuntimeException("Could not find hazelcast plugin configuration in orientdb configuration file");
+		}
+		OServerHandlerConfiguration hazelcastPluginConfig = hazelcastPluginConfigOpt.get();
+		hazelcastInstance = MeshOHazelcastPlugin.createHazelcast(hazelcastPluginConfig.parameters);
+	}
+
+	private void activateServer() throws Exception {
 		OServerPluginManager manager = new OServerPluginManager();
 		manager.config(server);
 		server.activate();
+
 		if (isClusteringEnabled) {
 			ODistributedServerManager distributedManager = server.getDistributedManager();
 			if (server.getDistributedManager() instanceof OHazelcastPlugin) {
 				hazelcastPlugin = (OHazelcastPlugin) distributedManager;
 			}
+
 			topologyEventBridge = new TopologyEventBridge(options, vertx, boot, this, getHazelcast());
 			distributedManager.registerLifecycleListener(topologyEventBridge);
 		}
+
 		manager.startup();
+
 		if (isClusteringEnabled) {
 			// The registerLifecycleListener may not have been invoked. We need to redirect the online event manually.
 			postStartupDBEventHandling();
+			if (!options.isInitClusterMode()) {
+				mesh.setStatus(MeshStatus.WAITING_FOR_CLUSTER);
+				joinCluster();
+				mesh.setStatus(MeshStatus.STARTING);
+				// Add a safety margin
+				Thread.sleep(options.getClusterOptions().getTopologyLockDelay());
+			}
 		}
+
 	}
 
-	@Override
-	public void joinCluster() throws InterruptedException {
+	/**
+	 * Join the cluster and block until the graph database has been received.
+	 * 
+	 * @throws InterruptedException
+	 */
+	private void joinCluster() throws InterruptedException {
 		// Wait until another node joined the cluster
 		int timeout = 500;
 		log.info("Waiting {" + timeout + "} seconds for other nodes in the cluster.");
@@ -402,8 +492,18 @@ public class OrientDBClusterManager implements ClusterManager {
 
 	@Override
 	public void stop() {
+		log.info("Stopping cluster manager");
 		if (server != null) {
+			log.info("Stopping OrientDB Server");
 			server.shutdown();
+		}
+	}
+
+	@Override
+	public void stopHazelcast() {
+		if (hazelcastInstance != null) {
+			log.info("Stopping hazelcast");
+			hazelcastInstance.shutdown();
 		}
 	}
 
@@ -450,5 +550,4 @@ public class OrientDBClusterManager implements ClusterManager {
 			return topologyEventBridge.isClusterTopologyLocked();
 		}
 	}
-
 }

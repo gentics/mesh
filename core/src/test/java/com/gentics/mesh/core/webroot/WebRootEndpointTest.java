@@ -448,7 +448,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		}
 
 		// 3. Assert that published path can be found
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			MeshWebrootResponse restNode = call(
 				() -> client().webroot(PROJECT_NAME, path, new NodeParametersImpl(), new VersioningParametersImpl().published()));
 			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("1.0").hasLanguage("en");
@@ -461,7 +461,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		String draftPath = "/News_draft/2015_draft";
 
 		// 1. Publish nodes
-		db().tx(() -> {
+		tx(() -> {
 			BulkActionContext bac = createBulkContext();
 			folder("news").publish(mockActionContext(), bac);
 			folder("2015").publish(mockActionContext(), bac);
@@ -474,25 +474,25 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		updateSlug(folder2015Uuid, "en", "2015_draft", initialBranchUuid());
 
 		// 3. Assert published path in published
-		db().tx(() -> {
+		tx(() -> {
 			MeshWebrootResponse restNode = call(() -> client().webroot(PROJECT_NAME, publishedPath, new VersioningParametersImpl().published()));
 			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("1.0").hasLanguage("en");
 		});
 
 		// 4. Assert published path in draft
-		db().tx(() -> {
+		tx(() -> {
 			call(() -> client().webroot(PROJECT_NAME, publishedPath, new VersioningParametersImpl().draft()), NOT_FOUND, "node_not_found_for_path",
 				publishedPath);
 		});
 
 		// 5. Assert draft path in draft
-		db().tx(() -> {
+		tx(() -> {
 			MeshWebrootResponse restNode = call(() -> client().webroot(PROJECT_NAME, draftPath, new VersioningParametersImpl().draft()));
 			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("1.1").hasLanguage("en");
 		});
 
 		// 6. Assert draft path in published
-		db().tx(() -> {
+		tx(() -> {
 			call(() -> client().webroot(PROJECT_NAME, draftPath, new VersioningParametersImpl().published()), NOT_FOUND, "node_not_found_for_path",
 				draftPath);
 		});

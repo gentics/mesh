@@ -52,7 +52,7 @@ public class UtilityEndpoint extends AbstractInternalEndpoint {
 		endpoint.description("Validate the posted schema and report errors.");
 		endpoint.exampleRequest(schemaExamples.getSchemaUpdateRequest());
 		endpoint.exampleResponse(OK, utilityExamples.createValidationResponse(), "The validation message");
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			utilityHandler.validateSchema(ac);
 		});
@@ -66,7 +66,7 @@ public class UtilityEndpoint extends AbstractInternalEndpoint {
 		endpoint.description("Validate the posted microschema and report errors.");
 		endpoint.exampleRequest(microschemaExamples.getGeolocationMicroschemaCreateRequest());
 		endpoint.exampleResponse(OK, utilityExamples.createValidationResponse(), "The validation report");
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			utilityHandler.validateMicroschema(ac);
 		});
@@ -85,7 +85,7 @@ public class UtilityEndpoint extends AbstractInternalEndpoint {
 		endpoint.addQueryParameters(NodeParametersImpl.class);
 		endpoint.exampleRequest("Some text before {{mesh.link(\"" + NODE_DELOREAN_UUID + "\", \"en\")}} and after.");
 		endpoint.exampleResponse(OK, "Some text before " + CURRENT_API_BASE_PATH + "/dummy/webroot/flower.jpg and after");
-		endpoint.handler(rc -> {
+		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			utilityHandler.handleResolveLinks(ac);
 		});

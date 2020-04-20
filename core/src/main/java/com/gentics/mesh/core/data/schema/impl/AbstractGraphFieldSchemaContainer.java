@@ -22,8 +22,6 @@ import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.util.ETag;
 
-import io.reactivex.Single;
-
 /**
  * The {@link AbstractGraphFieldSchemaContainer} contains the abstract graph element implementation for {@link GraphFieldSchemaContainer} implementations (e.g.:
  * {@link SchemaContainerImpl}, {@link MicroschemaContainerImpl}).
@@ -85,21 +83,6 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 	@Override
 	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
 		throw new NotImplementedException("Updating is not directly supported for schemas. Please start a schema migration");
-	}
-
-	@Override
-	public Single<R> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		String version = ac.getVersioningParameters().getVersion();
-		// Delegate transform call to latest version
-		if (version == null || version.equals("draft")) {
-			return getLatestVersion().transformToRest(ac, level, languageTags);
-		} else {
-			SCV foundVersion = findVersionByRev(version);
-			if (foundVersion == null) {
-				throw error(NOT_FOUND, "object_not_found_for_uuid_version", getUuid(), version);
-			}
-			return foundVersion.transformToRest(ac, level, languageTags);
-		}
 	}
 
 	@Override

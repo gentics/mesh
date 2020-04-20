@@ -516,4 +516,9 @@ public class InternalEndpointRouteImpl implements InternalEndpointRoute {
 		this.mutating = mutating;
 		return this;
 	}
+
+	@Override
+	public Route getRoute() {
+		return route;
+	}
 }

@@ -568,13 +568,6 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
-	public Single<BranchResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return db().asyncTx(() -> {
-			return Single.just(transformToRestSync(ac, level, languageTags));
-		});
-	}
-
-	@Override
 	public BranchSchemaEdge findBranchSchemaEdge(SchemaContainerVersion schemaContainerVersion) {
 		return outE(HAS_SCHEMA_VERSION).mark().inV().retain(schemaContainerVersion).back().nextOrDefaultExplicit(BranchSchemaEdgeImpl.class, null);
 	}

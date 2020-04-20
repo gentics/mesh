@@ -71,7 +71,7 @@ public class ChangelogSystemTest {
 			if (pVersion == null) {
 				continue;
 			}
-			if (pVersion.compareTo(VersionNumber.parse("0.39.0")) >= 0) {
+			if (pVersion.compareTo(VersionNumber.parse("1.4.0")) >= 0) {
 				data.add(new Object[] { version });
 			}
 		}
@@ -129,7 +129,7 @@ public class ChangelogSystemTest {
 		MetricsService metrics = Mockito.mock(MetricsService.class);
 		Mockito.when(metrics.timer(Mockito.any())).thenReturn(Mockito.mock(Timer.class));
 		Mockito.when(metrics.counter(Mockito.any())).thenReturn(Mockito.mock(Counter.class));
-		Database database = new OrientDBDatabase(null, null, metrics, null, null, new OrientDBClusterManager(null, null, options, null), null);
+		Database database = new OrientDBDatabase(null, null, metrics, null, null, new OrientDBClusterManager(null, null, null, options, null), null, null, null);
 		try {
 			database.init(options, null);
 			return database;

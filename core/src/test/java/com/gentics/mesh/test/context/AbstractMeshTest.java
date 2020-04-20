@@ -118,7 +118,7 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 	public String getJson(Node node) throws Exception {
 		InternalActionContext ac = mockActionContext("lang=en&version=draft");
 		ac.data().put(ProjectsRouter.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
-		return node.transformToRest(ac, 0).blockingGet().toJson();
+		return node.transformToRestSync(ac, 0).toJson();
 	}
 
 	protected void testPermission(GraphPermission perm, MeshCoreVertex<?, ?> element) {
