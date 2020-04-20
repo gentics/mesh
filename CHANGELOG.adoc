@@ -26,7 +26,7 @@ include::content/docs/variables.adoc-include[]
 * The Mesh Server will require Java 11 with the release of 2.0.0. The runtime support for Java 8 will be dropped. The Mesh Java REST client will still be usable with Java 8.
 
 [[v1.4.6]]
-== 1.4.6 (TBD)
+== 1.4.6 (20.04.2020)
 
 icon:plus[] Clustering/Graph: The already existing `synchronizeWrites` feature has been extended. A cluster-wide write lock will now be used when running in clustered mode. This drastically reduces contention. The lock will also be used when new instances join the cluster to prevent synchronization issues with distributed transactions.
 
