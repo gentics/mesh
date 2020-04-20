@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.generic;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -34,7 +35,10 @@ public class PermissionProperties {
 			? Stream.empty()
 			: roleUuids.stream();
 		RoleRoot roleRoot = boot.roleRoot();
-		return new TraversalResult<>(stream.map(roleRoot::findByUuid));
+		return new TraversalResult<>(stream
+			.map(roleRoot::findByUuid)
+			.filter(Objects::nonNull)
+		);
 	}
 
 	public PermissionInfo getRolePermissions(MeshVertex vertex, InternalActionContext ac, String roleUuid) {
