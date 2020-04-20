@@ -300,10 +300,14 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		call(() -> client().deleteGroup(uuid));
 	}
 
-	default public RoleResponse createRole(String roleName, String groupUuid) {
+	default RoleResponse createRole(String roleName) {
 		RoleCreateRequest roleCreateRequest = new RoleCreateRequest();
 		roleCreateRequest.setName(roleName);
-		RoleResponse roleResponse = call(() -> client().createRole(roleCreateRequest));
+		return call(() -> client().createRole(roleCreateRequest));
+	}
+
+	default public RoleResponse createRole(String roleName, String groupUuid) {
+		RoleResponse roleResponse = createRole(roleName);
 		client().addRoleToGroup(groupUuid, roleResponse.getUuid()).blockingAwait();
 		return roleResponse;
 	}

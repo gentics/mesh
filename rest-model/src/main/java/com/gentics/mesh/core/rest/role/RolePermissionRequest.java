@@ -25,7 +25,7 @@ public class RolePermissionRequest implements RestModel {
 
 	/**
 	 * Return a set of permissions that should be set to the affected elements.
-	 * 
+	 *
 	 * @return
 	 */
 	public PermissionInfo getPermissions() {
@@ -34,7 +34,7 @@ public class RolePermissionRequest implements RestModel {
 
 	/**
 	 * Flag that indicated that the request should be executed recursively.
-	 * 
+	 *
 	 * @return Flag value
 	 */
 	public Boolean getRecursive() {
@@ -43,7 +43,7 @@ public class RolePermissionRequest implements RestModel {
 
 	/**
 	 * Set the flag which indicated whether the permission changes should be applied recursively.
-	 * 
+	 *
 	 * @param recursive
 	 *            Recursive flag value
 	 * @return Fluent API
@@ -67,5 +67,13 @@ public class RolePermissionRequest implements RestModel {
 		}
 		permissionsInfo.setOthers(false);
 		return rolePermissionRequest;
+	}
+
+	/**
+	 * Creates a {@link RolePermissionRequest} that is non-recursive and grants all permissions.
+	 * @return
+	 */
+	public static RolePermissionRequest grantAll() {
+		return withPermissions(Permission.values());
 	}
 }
