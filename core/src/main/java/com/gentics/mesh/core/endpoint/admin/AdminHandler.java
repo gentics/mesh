@@ -9,6 +9,7 @@ import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_IMPORT_START;
 import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_RESTORE_FINISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_RESTORE_START;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.http.HttpConstants.APPLICATION_YAML_UTF8;
 import static com.gentics.mesh.rest.Messages.message;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -38,11 +39,12 @@ import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfig;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorMasterResponse;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
-import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.distributed.coordinator.Coordinator;
 import com.gentics.mesh.distributed.coordinator.MasterServer;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.generator.RAMLGenerator;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.router.RouterStorageRegistry;
@@ -293,6 +295,17 @@ public class AdminHandler extends AbstractHandler {
 			info.setMeshNodeName(options.getNodeName());
 		}
 		return info;
+	}
+
+	public void handleRAML(InternalActionContext ac) {
+		boolean admin = db.tx(() -> ac.isAdmin());
+		if (admin) {
+			RAMLGenerator generator = new RAMLGenerator();
+			String raml = generator.generate();
+			ac.send(raml, OK, APPLICATION_YAML_UTF8);
+		} else {
+			throw error(FORBIDDEN, "error_admin_permission_required");
+		}
 	}
 
 	public void handleLoadClusterConfig(InternalActionContext ac) {

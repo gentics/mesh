@@ -62,14 +62,7 @@ public class RestInfoEndpoint extends AbstractInternalEndpoint {
 		endpoint.produces(APPLICATION_YAML);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
-			if (ac.isAdmin()) {
-				RAMLGenerator generator = new RAMLGenerator();
-				String raml = generator.generate();
-				rc.response().putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_YAML_UTF8);
-				rc.response().end(raml);
-			} else {
-				rc.response().end();
-			}
+			adminHandler.handleRAML(ac);
 		}, false);
 
 		InternalEndpointRoute infoEndpoint = createRoute();
