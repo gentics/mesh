@@ -1,6 +1,7 @@
 {
 	"name": "formgenerator_plugin",
 	"displayField": "name",
+	"segmentField": "name",
 	"container": true,
 	"fields": [
 		{

@@ -8,12 +8,15 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -25,6 +28,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.client.GenericParametersImpl;
 import com.gentics.mesh.plugin.MeshPlugin;
 import com.gentics.mesh.plugin.common.model.SchemaCreateOrUpdateResponse;
 import com.gentics.mesh.plugin.common.util.MiscUtil;
@@ -282,7 +286,8 @@ public class MeshPluginService {
 			.filter(s -> s.getName().equals(folderSchemaName))
 			.singleOrError()
 			.doOnError(e -> log.error("Could not find folder schema \"{}\"", folderSchemaName))
-			.flatMap(folderSchema -> ensureFoldersRec(project, folderSchema, path, publish));
+			.zipWith(prefixPath(project, path), (folderSchema, p) -> Pair.of(folderSchema, p))
+			.flatMap(pair -> ensureFoldersRec(project, pair.getLeft(), pair.getRight(), publish));
 	}
 
 	/**
@@ -590,5 +595,42 @@ public class MeshPluginService {
 			index == 0 ? "/" : path.substring(0, index),
 			path.substring(index + 1)
 		};
+	}
+
+	/**
+	 * Make sure, that the path is prefixed with the pathPrefix of the project's default branch
+	 * @param project project name
+	 * @param path given path
+	 * @return single of prefixed path (or the original path, if that already started with the path prefix)
+	 */
+	private Single<String> prefixPath(String project, String path) {
+		return adminClient
+				.findBranches(project, new GenericParametersImpl().setETag(false).setFields("latest", "pathPrefix"))
+				.toSingle()
+				.flatMap(branchList -> Observable.fromIterable(branchList.getData())
+						.filter(branch -> Objects.equals(Boolean.TRUE, branch.getLatest()))
+						.map(BranchResponse::getPathPrefix).firstOrError())
+				.map(pathPrefix -> {
+					if (StringUtils.isBlank(pathPrefix)) {
+						return path;
+					} else if (path.startsWith(pathPrefix)) {
+						return path;
+					} else {
+						// prefix the path with the pathPrefix
+						StringBuilder prefixed = new StringBuilder();
+						// ensure that the prefixed path starts with a single /
+						if (!pathPrefix.startsWith("/")) {
+							prefixed.append("/");
+						}
+						prefixed.append(pathPrefix);
+						// make sure, that there is a single / between the prefix and the path
+						if (!pathPrefix.endsWith("/")) {
+							prefixed.append("/");
+						}
+						// but only one /
+						prefixed.append(path.startsWith("/") ? path.substring(1) : path);
+						return prefixed.toString();
+					}
+				});
 	}
 }
