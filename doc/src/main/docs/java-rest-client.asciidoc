@@ -1,10 +1,39 @@
 ---
-title: Java REST Client
+title: Gentics Mesh Java Client
 ---
 
 include::content/docs/variables.adoc-include[]
 
-== Java Rest Client
+== Installation
+
+You can add the following maven dependency and repository to your project to get the Gentics Mesh Java client dependencies.
+
+[source,xml]
+----
+…
+	<dependency>
+		<artifactId>mesh-rest-client</artifactId>
+		<groupId>com.gentics.mesh</groupId>
+		<version>${mesh.version}</version>
+	</dependency>
+…
+	<repositories>
+		<repository>
+			<id>maven.gentics.com</id>
+			<name>Gentics Maven Repository</name>
+			<url>https://maven.gentics.com/maven2</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+…
+----
+
+== Java REST Client
 
 The REST client can be used to interact with all link:/docs/api[Gentics Mesh API Endpoints].
 

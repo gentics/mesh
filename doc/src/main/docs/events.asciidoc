@@ -34,7 +34,7 @@ The ```{apiLatest}/eventbus``` endpoint allows clients to access the eventbus. T
 
 The endpoint is https://github.com/sockjs[SockJS] compliant. It is also possible to access the websocket directly via: ```{apiLatest}/eventbus/websocket```.
 
-Javascript projects can use the link:https://www.npmjs.com/package/vertx3-eventbus-client[vertx3-eventbus-client] library to connect to the eventbus bridge.
+JavaScript projects can use the link:https://www.npmjs.com/package/vertx3-eventbus-client[vertx3-eventbus-client] library to connect to the eventbus bridge.
 
 == Message Types
 

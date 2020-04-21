@@ -1,58 +1,25 @@
 ---
-title: Platforms
+title: Platforms & Clients
 ---
 
 include::content/docs/variables.adoc-include[]
 
 == JavaScript
 
-* link:https://github.com/gentics/mesh-angular-example[Mesh Angular Example]
-* link:https://github.com/gentics/mesh-express-example[Mesh Express Example]
-* link:https://github.com/gentics/mesh-js-api[Mesh Javascript API] - An API client for Gentics Mesh written in TypeScript.
+* link:https://github.com/gentics/mesh-js-api[Gentics Mesh JavaScript Client] - A work-in-progress client for Gentics Mesh written in TypeScript.
+* link:https://github.com/gentics/mesh-angular-example[Gentics Mesh Angular Example]
+* link:https://github.com/gentics/mesh-express-example[Gentics Mesh Express Example]
 
 == PHP
 
-* link:https://github.com/gentics/mesh-silex-example[Mesh PHP Example] - This example shows how to use Gentics Mesh in combination with the Silex PHP routing framework.
+* link:https://github.com/gentics/mesh-php-client[Gentics Mesh PHP Client] - a client for Gentics Mesh written in PHP.
+* link:https://github.com/gentics/mesh-silex-example[Gentics Mesh PHP Example] - This example shows how to use Gentics Mesh in combination with the Silex PHP routing framework.
 
 == Go
 
-* link:https://github.com/gentics/mesh-go-example[Mesh Go Example]
+* link:https://github.com/gentics/mesh-go-example[Gentics Mesh Go Example]
 
 == Java
 
-=== Vert.x Frontend Example
-
-link:https://github.com/gentics/mesh-vertx-example[Mesh Vert.x Example]
-
-=== Clients
-
-You can add the following maven dependency and repository to your project to get the Gentics Mesh client dependencies.
-
-[source,xml]
-----
-…
-	<dependency>
-		<artifactId>mesh-rest-client</artifactId>
-		<groupId>com.gentics.mesh</groupId>
-		<version>${mesh.version}</version>
-	</dependency>
-…
-	<repositories>
-		<repository>
-			<id>maven.gentics.com</id>
-			<name>Gentics Maven Repository</name>
-			<url>https://maven.gentics.com/maven2</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
-…
-----
-
-==== REST Client
-
-See link:{{< relref "java-rest-client.asciidoc" >}}[Java Rest Client]
+* link:{{< relref "java-rest-client.asciidoc" >}}[Gentics Mesh Java Client] - a client for Gentics Mesh written in Java
+* link:https://github.com/gentics/mesh-vertx-example[Gentics Mesh Vert.x Example]
