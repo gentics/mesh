@@ -28,7 +28,7 @@ include::content/docs/variables.adoc-include[]
 [[v1.4.7]]
 == 1.4.7 (TBD)
 
-icon:plus[] Server: The `/api/v1/RAML` endpoint can now only be accessed by admin users.
+icon:plus[] Server: The `/api/v2/raml` endpoint can now only be accessed by admin users.
 
 icon:plus[] Server: Admin users can now always see the `serverTokens` regardless of the `serverTokens` setting.
 
