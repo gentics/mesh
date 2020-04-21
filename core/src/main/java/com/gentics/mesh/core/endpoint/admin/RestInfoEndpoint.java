@@ -2,7 +2,6 @@ package com.gentics.mesh.core.endpoint.admin;
 
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_YAML;
-import static com.gentics.mesh.http.HttpConstants.APPLICATION_YAML_UTF8;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.GET;
 
@@ -11,13 +10,11 @@ import javax.inject.Inject;
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.example.RestInfoExamples;
-import com.gentics.mesh.generator.RAMLGenerator;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpHeaders;
 import io.vertx.ext.web.Router;
 
 public class RestInfoEndpoint extends AbstractInternalEndpoint {
@@ -52,7 +49,7 @@ public class RestInfoEndpoint extends AbstractInternalEndpoint {
 	@Override
 	public void registerEndPoints() {
 
-		secureAll();
+		secure("/raml");
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/raml");
 		endpoint.method(GET);
@@ -65,6 +62,7 @@ public class RestInfoEndpoint extends AbstractInternalEndpoint {
 			adminHandler.handleRAML(ac);
 		}, false);
 
+		secure("/");
 		InternalEndpointRoute infoEndpoint = createRoute();
 		infoEndpoint.path("/");
 		infoEndpoint.description("Endpoint which returns version information");
