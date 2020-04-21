@@ -215,7 +215,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 			return Single.just(user);
 		}))
 		// Create the user if it can't be found.
-		.switchIfEmpty(assertReadOnlyDeactivated().andThen(db.singleTx(() -> {
+		.switchIfEmpty(assertReadOnlyDeactivated().andThen(db.singleTxWriteLock(tx -> {
 			UserRoot root = boot.userRoot();
 			com.gentics.mesh.core.data.User admin = root.findByUsername("admin");
 			com.gentics.mesh.core.data.User createdUser = root.create(username, admin);
