@@ -54,6 +54,17 @@ public abstract class AbstractInternalEndpoint implements InternalEndpoint {
 	}
 
 	/**
+	 * Add a route which will secure the given path.
+	 * 
+	 * @param endpoint
+	 */
+	protected void secure(String path) {
+		if (chain != null) {
+			chain.secure(getRouter().route(path));
+		}
+	}
+
+	/**
 	 * Register all endpoints to the local router.
 	 */
 	public abstract void registerEndPoints();

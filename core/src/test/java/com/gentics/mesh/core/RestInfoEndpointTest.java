@@ -24,6 +24,10 @@ public class RestInfoEndpointTest extends AbstractMeshTest {
 		options().getHttpServerOptions().setServerTokens(false);
 		MeshServerInfoModel info = call(() -> client().getApiInfo());
 		assertNull(info.getMeshVersion());
+
+		grantAdminRole();
+		info = call(() -> client().getApiInfo());
+		assertNotNull(info.getMeshVersion());
 	}
 
 	@Test
@@ -41,6 +45,7 @@ public class RestInfoEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testLoadRAML() {
+		grantAdminRole();
 		String raml = call(() -> client().getRAML());
 		assertNotNull(raml);
 	}

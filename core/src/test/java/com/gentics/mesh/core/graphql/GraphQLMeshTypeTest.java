@@ -30,6 +30,13 @@ public class GraphQLMeshTypeTest extends AbstractMeshTest {
 		assertType("mesh/mesh-no-servertoken-query");
 	}
 
+	@Test
+	public void testWithDisabledServerTokensAsAdmin() throws IOException {
+		grantAdminRole();
+		options().getHttpServerOptions().setServerTokens(false);
+		assertType("mesh/mesh-query");
+	}
+
 	public void assertType(String queryName) throws IOException {
 		GraphQLResponse response = call(
 			() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName)));

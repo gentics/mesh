@@ -31,6 +31,15 @@ icon:check[] Core: Fixed a bug that caused an internal server error if a project
 
 icon:plus[] Test: An enhanced test container class has been added. The `MeshContainer` class replaces the `MeshDockerServer` which was deprecated.
 
+[[v1.4.7]]
+== 1.4.7 (21.04.2020)
+
+icon:plus[] Server: The `/api/v2/raml` endpoint can now only be accessed by admin users.
+
+icon:plus[] Server: Admin users can now always see the `serverTokens` regardless of the `serverTokens` setting.
+
+icon:checked[] Elasticsearch: Fixed a bug that prevented Elasticsearch synchronization of projects after deleting a role. link:https://github.com/gentics/mesh/issues/1041[#1041]
+
 [[v1.4.6]]
 == 1.4.6 (20.04.2020)
 
