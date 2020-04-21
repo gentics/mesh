@@ -28,6 +28,8 @@ include::content/docs/variables.adoc-include[]
 [[TBD]]
 == TBD (TBD)
 
+icon:check[] Clustering: The coordinator layer feature will now exclude redirection for requests to the `/api/v2/health/live` and `/api/v2/health/ready` endpoints.
+
 icon:check[] OAuth2: The write lock will now also be utilized when mapping JWT's.
 
 [[v1.4.7]]

@@ -235,6 +235,8 @@ public class RequestDelegatorImpl implements RequestDelegator {
 		Set<Pattern> patterns = new HashSet<>();
 		patterns.add(Pattern.compile("/api/v[0-9]+/?"));
 		patterns.add(Pattern.compile("/api/v[0-9]+/admin/.*"));
+		patterns.add(Pattern.compile("/api/v[0-9]+/health/live/?"));
+		patterns.add(Pattern.compile("/api/v[0-9]+/health/ready/?"));
 		return patterns;
 	}
 
