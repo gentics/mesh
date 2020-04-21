@@ -25,8 +25,8 @@ include::content/docs/variables.adoc-include[]
 
 * The Mesh Server will require Java 11 with the release of 2.0.0. The runtime support for Java 8 will be dropped. The Mesh Java REST client will still be usable with Java 8.
 
-[[TBD]]
-== TBD (TBD)
+[[v1.4.8]]
+== 1.4.8 (21.04.2020)
 
 icon:check[] Clustering: The coordinator layer feature will now exclude redirection for requests to the `/api/v2/health/live` and `/api/v2/health/ready` endpoints.
 
