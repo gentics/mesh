@@ -2,7 +2,10 @@ package com.gentics.mesh.context;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+
+
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -75,6 +78,16 @@ public abstract class AbstractInternalActionContext extends AbstractActionContex
 	public InternalActionContext skipWriteLock() {
 		this.data().put(SKIP_LOCK_DATA_KEY, true);
 		return this;
+	}
+
+	@Override
+	public boolean isAdmin() {
+		MeshAuthUser user = getUser();
+		if (user == null) {
+			return false;
+		}
+
+		return user.hasAdminRole();
 	}
 
 }

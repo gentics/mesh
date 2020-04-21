@@ -28,6 +28,10 @@ include::content/docs/variables.adoc-include[]
 [[v1.4.7]]
 == 1.4.7 (TBD)
 
+icon:plus[] Server: The `/api/v2/raml` endpoint can now only be accessed by admin users.
+
+icon:plus[] Server: Admin users can now always see the `serverTokens` regardless of the `serverTokens` setting.
+
 icon:checked[] Elasticsearch: Fixed a bug that prevented Elasticsearch synchronization of projects after deleting a role. link:https://github.com/gentics/mesh/issues/1041[#1041]
 
 [[v1.4.6]]
