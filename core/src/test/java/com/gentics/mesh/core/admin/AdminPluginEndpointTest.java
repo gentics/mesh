@@ -1,7 +1,9 @@
 package com.gentics.mesh.core.admin;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.rest.plugin.PluginStatus.INITIALIZED;
 import static com.gentics.mesh.core.rest.plugin.PluginStatus.PRE_REGISTERED;
+import static com.gentics.mesh.core.rest.plugin.PluginStatus.REGISTERED;
 import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
@@ -92,8 +94,10 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 		PluginResponse deployment = copyAndDeploy(BASIC_PATH, "basic-plugin.jar");
 		assertEquals("basic", deployment.getId());
 		assertEquals(PRE_REGISTERED, deployment.getStatus());
+		sleep(2000);
 
-		//pluginManager().register();
+		PluginResponse response1 = call(() -> client().findPlugin(deployment.getId()));
+		assertEquals(REGISTERED, response1.getStatus());
 
 		assertEquals("world", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/" + API_NAME + "/hello"));
 		assertEquals("world-project", httpGetNow(CURRENT_API_BASE_PATH + "/" + PROJECT_NAME + "/plugins/" + API_NAME + "/hello"));
@@ -101,8 +105,8 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 		PluginListResponse list = call(() -> client().findPlugins());
 		assertEquals(1, list.getMetainfo().getTotalCount());
 
-		PluginResponse response = call(() -> client().findPlugin(deployment.getId()));
-		assertEquals(deployment.getName(), response.getName());
+		PluginResponse response2 = call(() -> client().findPlugin(deployment.getId()));
+		assertEquals(deployment.getName(), response2.getName());
 
 		call(() -> client().undeployPlugin(deployment.getId()));
 

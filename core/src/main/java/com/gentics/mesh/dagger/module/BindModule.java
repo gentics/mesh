@@ -38,6 +38,8 @@ import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
 import com.gentics.mesh.plugin.manager.MeshPluginManagerImpl;
 import com.gentics.mesh.plugin.pf4j.PluginEnvironmentImpl;
+import com.gentics.mesh.plugin.registry.DelegatingPluginRegistry;
+import com.gentics.mesh.plugin.registry.DelegatingPluginRegistryImpl;
 import com.gentics.mesh.search.index.common.DropIndexHandler;
 import com.gentics.mesh.search.index.common.DropIndexHandlerImpl;
 import com.gentics.mesh.storage.BinaryStorage;
@@ -111,4 +113,7 @@ public abstract class BindModule {
 
 	@Binds
 	abstract WriteLock bindWriteLock(WriteLockImpl e);
+
+	@Binds
+	abstract DelegatingPluginRegistry bindPluginRegistry(DelegatingPluginRegistryImpl e);
 }

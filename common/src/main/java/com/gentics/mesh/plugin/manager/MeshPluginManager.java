@@ -154,6 +154,4 @@ public interface MeshPluginManager {
 	 */
 	PluginResponse toResponse(MeshPlugin plugin);
 
-	void register();
-
 }

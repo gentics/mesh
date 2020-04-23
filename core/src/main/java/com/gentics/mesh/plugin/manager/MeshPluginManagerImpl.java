@@ -117,6 +117,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 		pluginsRoot = Paths.get(base);
 		// Re-create the plugin repo since the root dir might have changed
 		pluginRepository = createPluginRepository();
+		pluginRegistry.start();
 	}
 
 	@Override
@@ -198,7 +199,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 			return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_did_not_register", name);
 		}
 		setStatus(id, LOADED);
-		
+
 		// 3. Invoke the loading of the plugin class
 		try {
 			PluginWrapper plugin = getPlugin(id);
@@ -453,6 +454,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 				rollback(id);
 				return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_did_not_register").ignoreElement();
 			}
+
 			return Completable.complete();
 		});
 
@@ -581,11 +583,6 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 		PluginResponse response = plugin.toResponse();
 		response.setStatus(getStatus(plugin.id()));
 		return response;
-	}
-
-	@Override
-	public void register() {
-		pluginRegistry.register();
 	}
 
 }

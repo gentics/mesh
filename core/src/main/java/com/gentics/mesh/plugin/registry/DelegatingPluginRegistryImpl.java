@@ -1,10 +1,8 @@
 package com.gentics.mesh.plugin.registry;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.plugin.PluginStatus.FAILED;
 import static com.gentics.mesh.core.rest.plugin.PluginStatus.INITIALIZED;
 import static com.gentics.mesh.core.rest.plugin.PluginStatus.REGISTERED;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -27,14 +25,15 @@ import com.gentics.mesh.plugin.manager.MeshPluginManager;
 import dagger.Lazy;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
+import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 /**
- * Central plugin registry which delegates to other registry.
+ * Central plugin registry which delegates to other registry and handles plugin pre-registration.
  */
 @Singleton
-public class DelegatingPluginRegistry implements PluginRegistry {
+public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 
 	private static final Logger log = LoggerFactory.getLogger(DelegatingPluginRegistry.class);
 
@@ -48,37 +47,50 @@ public class DelegatingPluginRegistry implements PluginRegistry {
 
 	private final MeshOptions options;
 
-	private Lazy<MeshPluginManager> manager;
+	private final Lazy<MeshPluginManager> manager;
+
+	private final Lazy<Vertx> vertx;
+
+	private long timerId = -1;
 
 	@Inject
-	public DelegatingPluginRegistry(MeshOptions options, RestPluginRegistry restRegistry, GraphQLPluginRegistry graphqlRegistry,
-		AuthServicePluginRegistry authServiceRegistry, Lazy<MeshPluginManager> manager) {
+	public DelegatingPluginRegistryImpl(MeshOptions options, RestPluginRegistry restRegistry, GraphQLPluginRegistry graphqlRegistry,
+		AuthServicePluginRegistry authServiceRegistry, Lazy<MeshPluginManager> manager, Lazy<Vertx> vertx) {
 		this.options = options;
 		this.restRegistry = restRegistry;
 		this.graphqlRegistry = graphqlRegistry;
 		this.authServiceRegistry = authServiceRegistry;
 		this.manager = manager;
+		this.vertx = vertx;
 	}
 
 	@Override
-	public Completable register(MeshPlugin plugin) {
-		Objects.requireNonNull(plugin, "The plugin must not be null");
-		log.debug("Registering plugin {}", plugin.id());
-		return registries().flatMapCompletable(r -> r.register(plugin));
+	public void start() {
+		timerId = vertx.get().setTimer(1000, rh -> {
+			if (log.isDebugEnabled()) {
+				log.debug("Invoking registration of pre-registered plugins");
+			}
+			register();
+		});
+	}
+
+	@Override
+	public void stop() {
+		if (timerId != -1) {
+			vertx.get().cancelTimer(timerId);
+		}
 	}
 
 	@Override
 	public Completable deregister(MeshPlugin plugin) {
 		Objects.requireNonNull(plugin, "The plugin must not be null");
-		log.debug("Deregistering plugin {}", plugin.id());
-		return registries().flatMapCompletable(r -> r.deregister(plugin));
+		String id = plugin.id();
+		log.debug("Deregistering plugin {}", id);
+		return registries().flatMapCompletable(r -> r.deregister(plugin)).doOnComplete(() -> {
+			preRegisteredPlugins.remove(plugin);
+		});
 	}
 
-	/**
-	 * Check whether any other plugin already occupies the api name of the given plugin.
-	 * 
-	 * @param plugin
-	 */
 	@Override
 	public synchronized void checkForConflict(MeshPlugin plugin) {
 		for (PluginRegistry registry : Arrays.asList(graphqlRegistry, restRegistry)) {
@@ -86,24 +98,28 @@ public class DelegatingPluginRegistry implements PluginRegistry {
 		}
 	}
 
-	private Observable<PluginRegistry> registries() {
-		return Observable.fromArray(graphqlRegistry, restRegistry, authServiceRegistry);
-	}
-
+	@Override
 	public void preRegister(MeshPlugin plugin) {
 		preRegisteredPlugins.add(plugin);
+	}
+
+	private Observable<PluginRegistry> registries() {
+		return Observable.fromArray(graphqlRegistry, restRegistry, authServiceRegistry);
 	}
 
 	/**
 	 * Register all currently pre registered plugins.
 	 */
-	public void register() {
+	private void register() {
 		long timeout = getPluginTimeout().getSeconds();
 		Iterator<MeshPlugin> it = preRegisteredPlugins.iterator();
 		while (it.hasNext()) {
 			MeshPlugin plugin = it.next();
 			// TODO check whether quorum is reached
 			String id = plugin.id();
+			if (log.isDebugEnabled()) {
+				log.debug("Invoking initialization of plugin {" + id + "}");
+			}
 			plugin.initialize().doOnComplete(() -> {
 				manager.get().setStatus(id, INITIALIZED);
 			}).andThen(register(plugin).timeout(timeout, TimeUnit.SECONDS).doOnComplete(() -> {
@@ -114,15 +130,22 @@ public class DelegatingPluginRegistry implements PluginRegistry {
 				if (err instanceof TimeoutException) {
 					log.error("The registration of plugin {" + id + "} did not complete within {" + timeout
 						+ "} seconds. Unloading plugin.");
-					manager.get().setStatus(id, FAILED);
-					throw error(INTERNAL_SERVER_ERROR, "admin_plugin_error_timeout", id);
 				}
+				log.error("Plugin init and register failed for plugin {" + id + "}", err);
+				manager.get().setStatus(id, FAILED);
 			});
 		}
 	}
 
-	public Duration getPluginTimeout() {
+	private Duration getPluginTimeout() {
 		int timeoutInSeconds = options.getPluginTimeout();
 		return Duration.ofSeconds(timeoutInSeconds);
 	}
+
+	private Completable register(MeshPlugin plugin) {
+		Objects.requireNonNull(plugin, "The plugin must not be null");
+		log.debug("Registering plugin {}", plugin.id());
+		return registries().flatMapCompletable(r -> r.register(plugin));
+	}
+
 }
