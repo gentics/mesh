@@ -67,8 +67,7 @@ public class PluginHandler extends AbstractHandler {
 			}
 			Plugin plugin = pluginWrapper.getPlugin();
 			if (plugin instanceof MeshPlugin) {
-				PluginResponse response = ((MeshPlugin) plugin).toResponse();
-				return response;
+				return manager.toResponse((MeshPlugin)plugin);
 			}
 			throw error(INTERNAL_SERVER_ERROR, "admin_plugin_error_wrong_type");
 		}, model -> ac.send(model, CREATED));
@@ -91,8 +90,8 @@ public class PluginHandler extends AbstractHandler {
 					}
 					Plugin plugin = pluginWrapper.getPlugin();
 					if (plugin instanceof MeshPlugin) {
-						PluginResponse response = ((MeshPlugin) plugin).toResponse();
-						return response;
+						MeshPlugin meshPlugin = (MeshPlugin)plugin;
+						return manager.toResponse(meshPlugin);
 					}
 					throw error(INTERNAL_SERVER_ERROR, "admin_plugin_error_wrong_type");
 				}).blockingGet();
@@ -124,7 +123,7 @@ public class PluginHandler extends AbstractHandler {
 			}
 			List<MeshPlugin> startedPlugins = manager.getStartedMeshPlugins();
 			PluginListResponse response = new PluginListResponse();
-			Page<PluginResponse> page = new DynamicStreamPageImpl<>(startedPlugins.stream().map(MeshPlugin::toResponse),
+			Page<PluginResponse> page = new DynamicStreamPageImpl<>(startedPlugins.stream().map(manager::toResponse),
 				ac.getPagingParameters());
 			page.setPaging(response);
 			response.getData().addAll(page.getWrappedList());

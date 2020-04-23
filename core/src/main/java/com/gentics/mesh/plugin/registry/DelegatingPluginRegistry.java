@@ -1,12 +1,21 @@
 package com.gentics.mesh.plugin.registry;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+
+import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.auth.AuthServicePluginRegistry;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.plugin.GraphQLPluginRegistry;
 import com.gentics.mesh.plugin.MeshPlugin;
 
@@ -29,9 +38,14 @@ public class DelegatingPluginRegistry implements PluginRegistry {
 
 	private final AuthServicePluginRegistry authServiceRegistry;
 
+	private final List<MeshPlugin> preRegisteredPlugins = new ArrayList<>();
+
+	private final MeshOptions options;
+
 	@Inject
-	public DelegatingPluginRegistry(RestPluginRegistry restRegistry, GraphQLPluginRegistry graphqlRegistry,
+	public DelegatingPluginRegistry(MeshOptions options, RestPluginRegistry restRegistry, GraphQLPluginRegistry graphqlRegistry,
 		AuthServicePluginRegistry authServiceRegistry) {
+		this.options = options;
 		this.restRegistry = restRegistry;
 		this.graphqlRegistry = graphqlRegistry;
 		this.authServiceRegistry = authServiceRegistry;
@@ -65,5 +79,34 @@ public class DelegatingPluginRegistry implements PluginRegistry {
 
 	private Observable<PluginRegistry> registries() {
 		return Observable.fromArray(graphqlRegistry, restRegistry, authServiceRegistry);
+	}
+
+	public void preRegister(MeshPlugin plugin) {
+		preRegisteredPlugins.add(plugin);
+	}
+
+	/**
+	 * Register all currently pre registered plugins.
+	 */
+	public void register() {
+		long timeout = getPluginTimeout().getSeconds();
+		for (MeshPlugin plugin : preRegisteredPlugins) {
+			// TODO check whether quorum is reached
+			String id = plugin.id();
+			plugin.initialize().andThen(register(plugin)).timeout(timeout, TimeUnit.SECONDS).subscribe(() -> {
+				preRegisteredPlugins.remove(plugin);
+			}, err -> {
+				if (err instanceof TimeoutException) {
+					log.error("The registration of plugin {" + id + "} did not complete within {" + timeout
+						+ "} seconds. Unloading plugin.");
+					throw error(INTERNAL_SERVER_ERROR, "admin_plugin_error_timeout", id);
+				}
+			});
+		}
+	}
+
+	public Duration getPluginTimeout() {
+		int timeoutInSeconds = options.getPluginTimeout();
+		return Duration.ofSeconds(timeoutInSeconds);
 	}
 }
