@@ -10,7 +10,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh-services</artifactId>
-		<version>1.4.8-SNAPSHOT</version>
+		<version>1.4.9-SNAPSHOT</version>
 	</parent>
 
 	<properties>

@@ -31,6 +31,13 @@ icon:check[] Core: Fixed a bug that caused an internal server error if a project
 
 icon:plus[] Test: An enhanced test container class has been added. The `MeshContainer` class replaces the `MeshDockerServer` which was deprecated.
 
+[[v1.4.8]]
+== 1.4.8 (21.04.2020)
+
+icon:check[] Clustering: The coordinator layer feature will now exclude redirection for requests to the `/api/v2/health/live` and `/api/v2/health/ready` endpoints.
+
+icon:check[] OAuth2: The write lock will now also be utilized when mapping JWT's.
+
 [[v1.4.7]]
 == 1.4.7 (21.04.2020)
 
