@@ -18,6 +18,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.auth.AuthServicePluginRegistry;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphql.plugin.GraphQLPluginRegistry;
 import com.gentics.mesh.plugin.MeshPlugin;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
@@ -53,15 +54,18 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 
 	private long timerId = -1;
 
+	private final Database db;
+
 	@Inject
 	public DelegatingPluginRegistryImpl(MeshOptions options, RestPluginRegistry restRegistry, GraphQLPluginRegistry graphqlRegistry,
-		AuthServicePluginRegistry authServiceRegistry, Lazy<MeshPluginManager> manager, Lazy<Vertx> vertx) {
+		AuthServicePluginRegistry authServiceRegistry, Lazy<MeshPluginManager> manager, Lazy<Vertx> vertx, Database db) {
 		this.options = options;
 		this.restRegistry = restRegistry;
 		this.graphqlRegistry = graphqlRegistry;
 		this.authServiceRegistry = authServiceRegistry;
 		this.manager = manager;
 		this.vertx = vertx;
+		this.db = db;
 	}
 
 	@Override
@@ -115,7 +119,10 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 		Iterator<MeshPlugin> it = preRegisteredPlugins.iterator();
 		while (it.hasNext()) {
 			MeshPlugin plugin = it.next();
-			// TODO check whether quorum is reached
+			if (options.getClusterOptions().isEnabled()) {
+				// TODO alternatively we could just check the mesh status / ready only mode and set the mode whenever the quorum is not reached.
+				//db.clusterManager().isWriteQuorumReached();
+			}
 			String id = plugin.id();
 			if (log.isDebugEnabled()) {
 				log.debug("Invoking initialization of plugin {" + id + "}");
