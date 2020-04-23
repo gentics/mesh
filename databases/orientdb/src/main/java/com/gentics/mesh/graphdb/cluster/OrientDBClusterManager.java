@@ -36,6 +36,7 @@ import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
+import com.gentics.mesh.graphdb.spi.GraphStorage;
 import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.PropertyUtil;
 import com.hazelcast.core.HazelcastInstance;
@@ -549,5 +550,10 @@ public class OrientDBClusterManager implements ClusterManager {
 		} else {
 			return topologyEventBridge.isClusterTopologyLocked();
 		}
+	}
+
+	@Override
+	public boolean isWriteQuorumReached() {
+		return server.getDistributedManager().isWriteQuorumPresent(GraphStorage.DB_NAME);
 	}
 }

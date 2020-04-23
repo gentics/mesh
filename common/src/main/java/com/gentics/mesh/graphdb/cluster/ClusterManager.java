@@ -50,4 +50,11 @@ public interface ClusterManager {
 	 */
 	void stopHazelcast();
 
+	/**
+	 * Check whether the write quorum is reached.
+	 * 
+	 * @return
+	 */
+	boolean isWriteQuorumReached();
+
 }

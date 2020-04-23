@@ -119,11 +119,13 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 		Iterator<MeshPlugin> it = preRegisteredPlugins.iterator();
 		while (it.hasNext()) {
 			MeshPlugin plugin = it.next();
-			if (options.getClusterOptions().isEnabled()) {
-				// TODO alternatively we could just check the mesh status / ready only mode and set the mode whenever the quorum is not reached.
-				//db.clusterManager().isWriteQuorumReached();
-			}
 			String id = plugin.id();
+			if (options.getClusterOptions().isEnabled()) {
+				if (!db.clusterManager().isWriteQuorumReached()) {
+					log.debug("Write quorum not reached. Skipping initialization of plugin {" + id + "} for now.");
+					continue;
+				}
+			}
 			if (log.isDebugEnabled()) {
 				log.debug("Invoking initialization of plugin {" + id + "}");
 			}
