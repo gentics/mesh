@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.admin;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.rest.plugin.PluginStatus.PRE_REGISTERED;
 import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
@@ -90,7 +91,9 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 
 		PluginResponse deployment = copyAndDeploy(BASIC_PATH, "basic-plugin.jar");
 		assertEquals("basic", deployment.getId());
-		System.out.println(deployment.toJson());
+		assertEquals(PRE_REGISTERED, deployment.getStatus());
+
+		//pluginManager().register();
 
 		assertEquals("world", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/" + API_NAME + "/hello"));
 		assertEquals("world-project", httpGetNow(CURRENT_API_BASE_PATH + "/" + PROJECT_NAME + "/plugins/" + API_NAME + "/hello"));

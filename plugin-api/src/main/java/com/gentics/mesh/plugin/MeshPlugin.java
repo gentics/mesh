@@ -5,7 +5,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
-import com.gentics.mesh.core.rest.plugin.PluginStatus;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.rest.client.MeshRestClient;
 

@@ -583,4 +583,9 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 		return response;
 	}
 
+	@Override
+	public void register() {
+		pluginRegistry.register();
+	}
+
 }
