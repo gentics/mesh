@@ -3,26 +3,32 @@
   "elasticsearch": {
     "_meshLanguageOverride": {
       "de": {
-        "analyzer": {
-          "my_stop_analyzer": {
-            "type": "stop",
-            "stopwords": "_german_"
+        "analysis": {
+          "analyzer": {
+            "my_stop_analyzer": {
+              "type": "stop",
+              "stopwords": "_german_"
+            }
           }
         }
       },
       "jp,zh,ko": {
-        "analyzer": {
-          "my_stop_analyzer": {
-            "type": "stop",
-            "stopwords": "_cjk_"
+        "analysis": {
+          "analyzer": {
+            "my_stop_analyzer": {
+              "type": "stop",
+              "stopwords": ["_english_", "_cjk_"]
+            }
           }
         }
       }
     },
-    "analyzer": {
-      "my_stop_analyzer": {
-        "type": "stop",
-        "stopwords": "_english_"
+    "analysis": {
+      "analyzer": {
+        "my_stop_analyzer": {
+          "type": "stop",
+          "stopwords": "_english_"
+        }
       }
     }
   },

@@ -12,5 +12,7 @@ public interface Transactional<T> {
 	<R> Transactional<R> mapInTx(BiFunction<Tx, T, R> mapper);
 	<R> Transactional<R> flatMap(Function<T, Transactional<R>> mapper);
 
-
+	default <R> Transactional<R> mapInTx(Function<T, R> mapper) {
+		return mapInTx((tx, t) -> mapper.apply(t));
+	}
 }

@@ -3,10 +3,13 @@ package com.gentics.mesh.search.index.node;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.search.index.node.NodeIndexUtil.getDefaultSetting;
+import static com.gentics.mesh.search.index.node.NodeIndexUtil.getLanguageOverride;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -19,7 +22,6 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
@@ -152,26 +154,36 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	public Transactional<Map<String, IndexInfo>> getIndices(Project project, Branch branch, SchemaContainerVersion containerVersion) {
 		return db.transactional(tx -> {
-			Map<String, IndexInfo> indexInfo = new HashMap<>();
-			String draftIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(), containerVersion
-				.getUuid(), DRAFT);
-			String publishIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(), containerVersion
-				.getUuid(), PUBLISHED);
-			if (log.isDebugEnabled()) {
-				log.debug("Adding index to map of known indices {" + draftIndexName + "}");
-				log.debug("Adding index to map of known indices {" + publishIndexName + "}");
-			}
-			// Load the index mapping information for the index
+			Map<String, IndexInfo> indexInfos = new HashMap<>();
 			SchemaModel schema = containerVersion.getSchema();
-			JsonObject mapping = getMappingProvider().getMapping(schema, branch);
-			JsonObject settings = schema.getElasticsearch();
-			IndexInfo draftInfo = new IndexInfo(draftIndexName, settings, mapping, schema.getName() + "@" + schema.getVersion());
-			IndexInfo publishInfo = new IndexInfo(publishIndexName, settings, mapping, schema.getName() + "@" + schema.getVersion());
 
-			indexInfo.put(draftIndexName, draftInfo);
-			indexInfo.put(publishIndexName, publishInfo);
-			return indexInfo;
+			// Add all language specific indices (might be none)
+			schema.findOverriddenSearchLanguages().forEach(language -> Stream.of(DRAFT, PUBLISHED).forEach(version -> {
+				String indexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(), containerVersion
+					.getUuid(), version, language);
+				log.debug("Adding index to map of known indices {" + indexName + "}");
+				// Load the index mapping information for the index
+				indexInfos.put(indexName, createIndexInfo(branch, schema, language, indexName, schema.getName() + "@" + schema.getVersion()));
+			}));
+
+			// And all default indices
+			Stream.of(DRAFT, PUBLISHED).forEach(version -> {
+				String indexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(), containerVersion
+					.getUuid(), version);
+				log.debug("Adding index to map of known indices {" + indexName + "}");
+				// Load the index mapping information for the index
+				indexInfos.put(indexName, createIndexInfo(branch, schema, null, indexName, schema.getName() + "@" + schema.getVersion()));
+			});
+			return indexInfos;
 		});
+	}
+
+	public IndexInfo createIndexInfo(Branch branch, Schema schema, String language, String indexName, String sourceInfo) {
+		JsonObject mapping = getMappingProvider().getMapping(schema, branch, language);
+		JsonObject settings = language == null
+			? getDefaultSetting(schema.getElasticsearch())
+			: getLanguageOverride(schema.getElasticsearch(), language);
+		return new IndexInfo(indexName, settings, mapping, sourceInfo);
 	}
 
 	@Override
@@ -297,30 +309,21 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	@Override
-	public Set<String> getSelectedIndices(InternalActionContext ac) {
+	public Set<String> getIndicesForSearch(InternalActionContext ac) {
 		return db.tx(() -> {
-			Set<String> indices = new HashSet<>();
 			Project project = ac.getProject();
 			if (project != null) {
 				Branch branch = ac.getBranch();
-				// Locate all schema versions which need to be taken into consideration when choosing the indices
-				for (SchemaContainerVersion version : branch.findActiveSchemaVersions()) {
-					indices.add(NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(), version.getUuid(), ContainerType
-						.forVersion(ac.getVersioningParameters().getVersion())));
-				}
+				return Collections.singleton(NodeGraphFieldContainer.composeIndexPattern(
+					project.getUuid(),
+					branch.getUuid(),
+					ContainerType.forVersion(ac.getVersioningParameters().getVersion())
+				));
 			} else {
-				// The project was not specified. Maybe a global search wants to know which indices must be searched.
-				// In that case we just iterate over all projects and collect index names per branch.
-				for (Project currentProject : boot.meshRoot().getProjectRoot().findAll()) {
-					for (Branch branch : currentProject.getBranchRoot().findAll()) {
-						for (SchemaContainerVersion version : branch.findActiveSchemaVersions()) {
-							indices.add(NodeGraphFieldContainer.composeIndexName(currentProject.getUuid(), branch.getUuid(), version.getUuid(),
-								ContainerType.forVersion(ac.getVersioningParameters().getVersion())));
-						}
-					}
-				}
+				return Collections.singleton(NodeGraphFieldContainer.composeIndexPattern(
+					ContainerType.forVersion(ac.getVersioningParameters().getVersion())
+				));
 			}
-			return indices;
 		});
 	}
 
@@ -622,32 +625,38 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 * @param schema
 	 */
 	public Completable validate(Schema schema) {
-		String indexName = "validationDummy";
-		JsonObject mapping = getMappingProvider().getMapping(schema, null);
-		JsonObject settings = schema.getElasticsearch();
-		IndexInfo info = new IndexInfo(indexName, settings, mapping, schema.getName());
-		return Completable.create(sub -> {
-			try {
-				schema.validate();
-				sub.onComplete();
-			} catch (Exception e) {
-				sub.onError(e);
-			}
-		}).andThen(searchProvider.validateCreateViaTemplate(info));
+		return Flowable.defer(() -> {
+			schema.validate();
+			return Flowable.fromIterable(schema.findOverriddenSearchLanguages()::iterator);
+		}).map(language -> createDummyIndexInfo(schema, language))
+			.flatMapCompletable(searchProvider::validateCreateViaTemplate);
 	}
 
 	/**
-	 * Construct the full index settings using the provided schema as a source.
-	 * 
+	 * Construct the full index settings using the provided schema and language as a source.
+	 *
 	 * @param schema
 	 * @return
 	 */
 	public JsonObject createIndexSettings(Schema schema) {
-		JsonObject mapping = getMappingProvider().getMapping(schema, null);
-		JsonObject settings = schema.getElasticsearch();
-		IndexInfo info = new IndexInfo("validationDummy", settings, mapping, schema.getName());
-		JsonObject fullSettings = searchProvider.createIndexSettings(info);
-		return fullSettings;
+		return createIndexSettings(schema, null);
+	}
+
+	/**
+	 * Construct the full index settings using the provided schema and language as a source.
+	 *
+	 * @param schema
+	 * @return
+	 */
+	public JsonObject createIndexSettings(Schema schema, String language) {
+		return searchProvider.createIndexSettings(createDummyIndexInfo(schema, language));
+	}
+
+	private IndexInfo createDummyIndexInfo(Schema schema, String language) {
+		String indexName = language != null
+			? "validationDummy-" + language
+			: "validationDummy";
+		return createIndexInfo(null, schema, language, indexName, schema.getName());
 	}
 
 	/**

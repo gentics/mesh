@@ -101,14 +101,18 @@ public interface IndexHandler<T extends MeshCoreVertex<?, T>> {
 	Map<String, IndexInfo> getIndices();
 
 	/**
-	 * Get the names of all selected indices. The action context will be examined to determine the project scope and the branch scope. If possible even the
-	 * version type will be extracted from the action context in order to generate the set of indices which are selected.
+	 * Get the names of all indices for searching purposes. The action context will be examined to determine the project scope and the branch scope.
+	 * If possible even the version type will be extracted from the action context in order to generate the set of indices which are selected.
+	 *
+	 * This can also create
+	 * <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/multi-index.html">wildcard patterns</a>
+	 * catching multiple indices.
 	 * 
 	 * @param ac
 	 *            action context
 	 * @return name of selected indices
 	 */
-	Set<String> getSelectedIndices(InternalActionContext ac);
+	Set<String> getIndicesForSearch(InternalActionContext ac);
 
 	/**
 	 * Get the permission required to read the elements found in the index.

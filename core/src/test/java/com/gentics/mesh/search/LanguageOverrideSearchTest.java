@@ -13,6 +13,7 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.ElasticsearchTestMode;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -48,10 +49,10 @@ public class LanguageOverrideSearchTest extends AbstractMultiESTest {
 
 		// We expect only one result because "die" is a stop word in german
 		assertContentSearch("die", "Report");
-		// We expect only one result, because "no" is a stop word in all other languages.
-		// It is not a stop word in french, but there is an exception in the schema for that.
+		// We expect only two results, because "no" is a stop word in all languages except german and french.
+		// French would use the standard analyzer, but there is an exception for that language in the schema.
 		// There is no analyzer defined for italian, so the default english stop word list should be used.
-		assertContentSearch("no", "Kino", "Cinema");
+		assertContentSearch("no", "Kino", "Film");
 	}
 
 	private NodeResponse createPage(String language, String title, String content) {
@@ -84,9 +85,10 @@ public class LanguageOverrideSearchTest extends AbstractMultiESTest {
 		return client().searchNodes(new JsonObject()
 			.put("query", new JsonObject()
 				.put("match", new JsonObject()
-					.put("fields.content", content)
+					.put("fields.content.basicsearch", content)
 				)
-			).toString()
+			).toString(),
+			new NodeParametersImpl().setLanguages("en", "de", "fr", "it", "zh", "ja", "ko")
 		).blockingGet();
 	}
 

@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.rest.validation;
 
+import java.util.Map;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -21,8 +23,12 @@ public class SchemaValidationResponse implements RestModel {
 	GenericMessageResponse message;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("The generated elasticsearch index configuration which includes the used analyzers and mappings.")
+	@JsonPropertyDescription("The generated default elasticsearch index configuration which includes the used analyzers and mappings.")
 	JsonObject elasticsearch;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("The generated elasticsearch index configuration for each language.")
+	Map<String, JsonObject> languageElasticsearch;
 
 	/**
 	 * Return the elasticsearch index configuration which was generated using the schema.
@@ -42,6 +48,14 @@ public class SchemaValidationResponse implements RestModel {
 	public SchemaValidationResponse setElasticsearch(JsonObject elasticsearch) {
 		this.elasticsearch = elasticsearch;
 		return this;
+	}
+
+	public Map<String, JsonObject> getLanguageElasticsearch() {
+		return languageElasticsearch;
+	}
+
+	public void setLanguageElasticsearch(Map<String, JsonObject> languageElasticsearch) {
+		this.languageElasticsearch = languageElasticsearch;
 	}
 
 	/**
