@@ -149,11 +149,6 @@ public class PluginManagerTest extends AbstractPluginTest {
 		assertEquals("testabc", project.getName());
 	}
 
-	private void waitForPreRegistration() {
-		// The pre-registration is processed every 1s
-		sleep(2000);
-	}
-
 	private String getJSONViaClient(String path) throws IOException {
 		HttpUrl url = prepareUrl(path);
 

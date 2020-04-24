@@ -79,7 +79,11 @@ public class AbstractPluginTest extends AbstractMeshTest {
 		FileUtil.copy(new File(sourcePath), new File(pluginDir(), name));
 		PluginDeploymentRequest request = new PluginDeploymentRequest().setPath(name);
 		call(() -> client().deployPlugin(request), status, key, params);
+	}
 
+	public void waitForPreRegistration() {
+		// The pre-registration is processed every 1s
+		sleep(2000);
 	}
 
 }

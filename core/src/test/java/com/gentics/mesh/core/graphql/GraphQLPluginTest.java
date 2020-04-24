@@ -28,6 +28,7 @@ public class GraphQLPluginTest extends AbstractPluginTest {
 			deployPlugin(ClonePlugin.class, "clone" + i);
 		}
 
+		waitForPreRegistration();
 		String queryName = "plugin/plugin-query";
 		GraphQLResponse response = call(
 			() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName)));
@@ -40,6 +41,7 @@ public class GraphQLPluginTest extends AbstractPluginTest {
 		grantAdminRole();
 
 		copyAndDeploy(GRAPHQL_PATH, "graphql.jar");
+		waitForPreRegistration();
 
 		String queryName = "plugin/graphql-plugin-query";
 		GraphQLResponse response = call(
