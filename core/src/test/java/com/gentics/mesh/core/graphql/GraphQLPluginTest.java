@@ -46,7 +46,6 @@ public class GraphQLPluginTest extends AbstractPluginTest {
 		String queryName = "plugin/graphql-plugin-query";
 		GraphQLResponse response = call(
 			() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName)));
-		System.out.println(response.toJson());
 		assertThat(new JsonObject(response.toJson())).compliesToAssertions(queryName);
 	}
 

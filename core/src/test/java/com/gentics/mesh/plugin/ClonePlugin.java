@@ -17,6 +17,9 @@ public class ClonePlugin extends AbstractPlugin implements RestPlugin {
 
 	public ClonePlugin(PluginWrapper wrapper, PluginEnvironment env) {
 		super(wrapper, env);
+		if (myCount == null) {
+			myCount = counter.getAndIncrement();
+		}
 	}
 
 	public static AtomicInteger counter = new AtomicInteger(1);
@@ -37,9 +40,6 @@ public class ClonePlugin extends AbstractPlugin implements RestPlugin {
 
 	@Override
 	public Completable initialize() {
-		if (myCount == null) {
-			myCount = counter.getAndIncrement();
-		}
 		return Completable.complete();
 	}
 

@@ -34,7 +34,7 @@ import io.vertx.core.logging.LoggerFactory;
 @Singleton
 public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 
-	private static final Logger log = LoggerFactory.getLogger(DelegatingPluginRegistry.class);
+	private static final Logger log = LoggerFactory.getLogger(DelegatingPluginRegistryImpl.class);
 
 	private final GraphQLPluginRegistry graphqlRegistry;
 
