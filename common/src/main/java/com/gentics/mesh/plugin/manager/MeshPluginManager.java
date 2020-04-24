@@ -24,7 +24,7 @@ public interface MeshPluginManager {
 	/**
 	 * Initialize the plugin manager.
 	 */
-	void init();
+	void start();
 
 	/**
 	 * Deploy the plugin with the given path.

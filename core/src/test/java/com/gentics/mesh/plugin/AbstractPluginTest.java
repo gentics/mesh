@@ -47,7 +47,7 @@ public class AbstractPluginTest extends AbstractMeshTest {
 		MeshPluginManager manager = pluginManager();
 		manager.stop().blockingAwait(15, TimeUnit.SECONDS);
 		// We need to init again since each test will setup a new plugin directory
-		manager.init();
+		manager.start();
 		cleanup();
 	}
 
@@ -65,7 +65,7 @@ public class AbstractPluginTest extends AbstractMeshTest {
 		pluginDir.mkdirs();
 		MeshOptions options = testContext.getOptions();
 		options.setPluginDirectory(baseDir);
-		pluginManager().init();
+		pluginManager().start();
 	}
 
 	public PluginResponse copyAndDeploy(String sourcePath, String name) throws IOException {

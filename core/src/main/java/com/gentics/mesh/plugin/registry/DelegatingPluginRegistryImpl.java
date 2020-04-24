@@ -5,11 +5,9 @@ import static com.gentics.mesh.core.rest.plugin.PluginStatus.INITIALIZED;
 import static com.gentics.mesh.core.rest.plugin.PluginStatus.REGISTERED;
 
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Objects;
+import java.util.Stack;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -44,7 +42,7 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 
 	private final AuthServicePluginRegistry authServiceRegistry;
 
-	private final List<MeshPlugin> preRegisteredPlugins = new ArrayList<>();
+	private final Stack<MeshPlugin> preRegisteredPlugins = new Stack<>();
 
 	private final MeshOptions options;
 
@@ -70,19 +68,24 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 
 	@Override
 	public void start() {
-		timerId = vertx.get().setTimer(1000, rh -> {
-			if (log.isDebugEnabled()) {
-				log.debug("Invoking registration of pre-registered plugins");
-			}
-			register();
-		});
+		// Check to avoid bogus restarts
+		if (timerId == -1) {
+			timerId = vertx.get().setTimer(1000, rh -> {
+				if (log.isDebugEnabled()) {
+					log.debug("Invoking registration of pre-registered plugins");
+				}
+				register();
+			});
+		}
 	}
 
 	@Override
 	public void stop() {
 		if (timerId != -1) {
 			vertx.get().cancelTimer(timerId);
+			timerId = -1;
 		}
+		preRegisteredPlugins.clear();
 	}
 
 	@Override
@@ -116,34 +119,35 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 	 */
 	private void register() {
 		long timeout = getPluginTimeout().getSeconds();
-		Iterator<MeshPlugin> it = preRegisteredPlugins.iterator();
-		while (it.hasNext()) {
-			MeshPlugin plugin = it.next();
+		while (!preRegisteredPlugins.isEmpty()) {
+			MeshPlugin plugin = preRegisteredPlugins.pop();
 			String id = plugin.id();
 			if (options.getClusterOptions().isEnabled()) {
 				if (!db.clusterManager().isWriteQuorumReached()) {
 					log.debug("Write quorum not reached. Skipping initialization of plugin {" + id + "} for now.");
-					continue;
+					return;
 				}
 			}
 			if (log.isDebugEnabled()) {
 				log.debug("Invoking initialization of plugin {" + id + "}");
 			}
-			plugin.initialize().doOnComplete(() -> {
+			plugin.initialize().timeout(timeout, TimeUnit.SECONDS).doOnComplete(() -> {
 				manager.get().setStatus(id, INITIALIZED);
-			}).andThen(register(plugin).timeout(timeout, TimeUnit.SECONDS).doOnComplete(() -> {
+			}).andThen(register(plugin).doOnComplete(() -> {
 				manager.get().setStatus(id, REGISTERED);
 			})).subscribe(() -> {
-				it.remove();
+				log.info("Completed handling of pre-registered plugin {" + id + "}");
 			}, err -> {
 				if (err instanceof TimeoutException) {
 					log.error("The registration of plugin {" + id + "} did not complete within {" + timeout
 						+ "} seconds. Unloading plugin.");
+				} else {
+					log.error("Plugin init and register failed for plugin {" + id + "}", err);
 				}
-				log.error("Plugin init and register failed for plugin {" + id + "}", err);
 				manager.get().setStatus(id, FAILED);
 			});
 		}
+
 	}
 
 	private Duration getPluginTimeout() {

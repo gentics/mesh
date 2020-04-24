@@ -108,7 +108,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 	}
 
 	@Override
-	public void init() {
+	public void start() {
 		String base = options.getPluginDirectory();
 		if (base == null) {
 			base = "plugins";
@@ -318,6 +318,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 	@Override
 	public Completable stop() {
 		return Completable.fromRunnable(() -> {
+			pluginRegistry.stop();
 			stopPlugins();
 			unloadPlugins();
 		});

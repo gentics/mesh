@@ -346,7 +346,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		handleLocalData(forceIndexSync, options, verticleLoader);
 
 		// Load existing plugins
-		pluginManager.init();
+		pluginManager.start();
 		pluginManager.deployExistingPluginFiles().subscribe(() -> {
 			// Finally fire the startup event and log that bootstrap has completed
 			log.info("Sending startup completed event to {" + STARTUP + "}");
