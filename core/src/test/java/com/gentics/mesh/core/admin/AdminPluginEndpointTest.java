@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.admin;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.rest.plugin.PluginStatus.INITIALIZED;
 import static com.gentics.mesh.core.rest.plugin.PluginStatus.PRE_REGISTERED;
 import static com.gentics.mesh.core.rest.plugin.PluginStatus.REGISTERED;
 import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
@@ -159,6 +158,7 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 
 		copyAndDeploy(BASIC_PATH, "plugin.jar");
 		copyAndDeploy(BASIC2_PATH, "plugin2.jar");
+		waitForPreRegistration();
 
 		assertEquals("world", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/basic/hello"));
 		assertEquals("world2", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/basic2/hello"));
@@ -171,6 +171,7 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 		grantAdminRole();
 
 		copyAndDeploy(CLASSLOADER_PATH, "plugin.jar");
+		waitForPreRegistration();
 
 		assertEquals("plugin", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/classloader/scope"));
 		assertEquals("plugin", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/classloader/check"));
@@ -222,10 +223,11 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 		for (int i = 1; i <= 100; i++) {
 			deployPlugin(ClonePlugin.class, "clone" + i);
 		}
+		waitForPreRegistration();
 
 		PluginListResponse result = call(() -> client().findPlugins(new PagingParametersImpl().setPerPage(10L).setPage(10)));
 		PluginResponse lastElement = result.getData().get(9);
-		System.out.println(lastElement.toJson());
+
 		assertEquals("Clone Plugin 100", lastElement.getName());
 		assertEquals(10, result.getMetainfo().getPerPage().longValue());
 		assertEquals(10, result.getMetainfo().getCurrentPage());
@@ -255,6 +257,7 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 
 		copyAndDeploy(EXTENSION_CONSUMER_PATH, "extension-consumer.jar");
 		copyAndDeploy(EXTENSION_PROVIDER_PATH, "extension-provider.jar");
+		waitForPreRegistration();
 
 		assertEquals("My dummy extension\n", httpGetNow(CURRENT_API_BASE_PATH + "/plugins/extension-consumer/extensions"));
 
