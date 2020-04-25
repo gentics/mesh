@@ -81,9 +81,4 @@ public class AbstractPluginTest extends AbstractMeshTest {
 		call(() -> client().deployPlugin(request), status, key, params);
 	}
 
-	public void waitForPreRegistration() {
-		// The pre-registration is processed every 1s
-		sleep(2000);
-	}
-
 }

@@ -68,12 +68,14 @@ public class MetricsLabelTest extends AbstractMeshTest {
 	@Test
 	public void testPlugin() {
 		meshApi2().deployPlugin(DummyPlugin.class, "dummy").blockingAwait();
+		waitForPreRegistration();
 		testMetric(pathLabel("plugin_dummy"), client().get("/plugins/dummy/hello"));
 	}
 
 	@Test
 	public void testProjectPlugin() {
 		meshApi2().deployPlugin(DummyPlugin.class, "dummy").blockingAwait();
+		waitForPreRegistration();
 		testMetric(pathLabel("plugin_dummy"), client().get("/dummy/plugins/dummy/hello"));
 	}
 
