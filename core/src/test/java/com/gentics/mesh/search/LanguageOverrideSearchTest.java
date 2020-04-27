@@ -1,5 +1,6 @@
 package com.gentics.mesh.search;
 
+import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -22,6 +23,7 @@ import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.ElasticsearchTestMode;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.json.JsonObject;
 import okhttp3.Request;
 
@@ -36,7 +38,7 @@ public class LanguageOverrideSearchTest extends AbstractMultiESTest {
 	public void testIndexCountAfterUpdatingSchema() {
 		grantAdminRole();
 		int originalIndexCount = getIndexCount();
-		SchemaResponse schema = createSchema(loadResourceJsonAsPojo("schemas/languageOverride.json", SchemaCreateRequest.class));
+		SchemaResponse schema = createSchema(loadResourceJsonAsPojo("schemas/languageOverride/page.json", SchemaCreateRequest.class));
 		waitForSearchIdleEvent();
 		// We expect 12 additional indices. (5 overridden languages + 1 default index) * 2 versions (draft, published)
 		assertThat(getIndexCount()).isEqualTo(originalIndexCount + 12);
@@ -44,7 +46,7 @@ public class LanguageOverrideSearchTest extends AbstractMultiESTest {
 		waitForJob(() -> {
 			client().updateSchema(
 				schema.getUuid(),
-				loadResourceJsonAsPojo("schemas/languageOverrideNoEs.json", SchemaUpdateRequest.class)
+				loadResourceJsonAsPojo("schemas/languageOverride/pageNoEs.json", SchemaUpdateRequest.class)
 			).blockingAwait();
 		});
 		waitForSearchIdleEvent();
@@ -56,7 +58,7 @@ public class LanguageOverrideSearchTest extends AbstractMultiESTest {
 	@Test
 	public void testIndexCountAfterDeletingSchema() {
 		int originalIndexCount = getIndexCount();
-		SchemaResponse schema = createSchema(loadResourceJsonAsPojo("schemas/languageOverride.json", SchemaCreateRequest.class));
+		SchemaResponse schema = createSchema(loadResourceJsonAsPojo("schemas/languageOverride/page.json", SchemaCreateRequest.class));
 		waitForSearchIdleEvent();
 		// We expect 12 additional indices. (5 overridden languages + 1 default index) * 2 versions (draft, published)
 		assertThat(getIndexCount()).isEqualTo(originalIndexCount + 12);
@@ -68,7 +70,7 @@ public class LanguageOverrideSearchTest extends AbstractMultiESTest {
 
 	@Test
 	public void testLanguageOverride() {
-		createSchema(loadResourceJsonAsPojo("schemas/languageOverride.json", SchemaCreateRequest.class));
+		createSchema(loadResourceJsonAsPojo("schemas/languageOverride/page.json", SchemaCreateRequest.class));
 
 		createPage("de", "Wetter", "Es ist herrliches Wetter, denn die Sonne kommt heraus.");
 		createPage("en", "Report", "Many innocent people die during war.");

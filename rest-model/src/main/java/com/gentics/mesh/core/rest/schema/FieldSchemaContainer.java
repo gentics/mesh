@@ -30,9 +30,6 @@ public interface FieldSchemaContainer extends RestModel {
 
 	public static final String NAME_REGEX = "^[_a-zA-Z][_a-zA-Z0-9]*$";
 
-	String LANGUAGE_OVERRIDE_KEY = "_meshLanguageOverride";
-	Pattern LANGUAGE_SPLIT_PATTERN = Pattern.compile(",");
-
 	/**
 	 * Return the name of the container.
 	 * 
@@ -186,16 +183,7 @@ public interface FieldSchemaContainer extends RestModel {
 			.map(FieldSchema::getElasticsearch);
 
 		return Stream.concat(settings, mappings)
-			.filter(Objects::nonNull)
-			.flatMap(json -> {
-				JsonObject languageOverrides = json.getJsonObject(LANGUAGE_OVERRIDE_KEY);
-				return languageOverrides == null
-					? Stream.empty()
-					: languageOverrides.fieldNames().stream();
-			})
-			.flatMap(LANGUAGE_SPLIT_PATTERN::splitAsStream)
-			.map(String::trim)
-			.filter(StringUtils::isNotEmpty)
+			.flatMap(LanguageOverrideUtil::findLanguages)
 			.distinct();
 	}
 
@@ -217,6 +205,8 @@ public interface FieldSchemaContainer extends RestModel {
 		if (!getName().matches(NAME_REGEX)) {
 			throw error(BAD_REQUEST, "schema_error_invalid_name", getName());
 		}
+
+		LanguageOverrideUtil.validateLanguageOverrides(getElasticsearch());
 
 		Set<String> fieldNames = new HashSet<>();
 		for (FieldSchema field : getFields()) {

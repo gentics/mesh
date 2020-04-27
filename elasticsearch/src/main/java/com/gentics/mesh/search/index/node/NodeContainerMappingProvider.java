@@ -1,7 +1,5 @@
 package com.gentics.mesh.search.index.node;
 
-import static com.gentics.mesh.core.rest.schema.FieldSchemaContainer.LANGUAGE_OVERRIDE_KEY;
-import static com.gentics.mesh.core.rest.schema.FieldSchemaContainer.LANGUAGE_SPLIT_PATTERN;
 import static com.gentics.mesh.search.SearchProvider.DEFAULT_TYPE;
 import static com.gentics.mesh.search.index.MappingHelper.BOOLEAN;
 import static com.gentics.mesh.search.index.MappingHelper.DATE;

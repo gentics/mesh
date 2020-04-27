@@ -1,7 +1,7 @@
 package com.gentics.mesh.search.index.node;
 
-import static com.gentics.mesh.core.rest.schema.FieldSchemaContainer.LANGUAGE_OVERRIDE_KEY;
-import static com.gentics.mesh.core.rest.schema.FieldSchemaContainer.LANGUAGE_SPLIT_PATTERN;
+import static com.gentics.mesh.core.rest.schema.LanguageOverrideUtil.LANGUAGE_OVERRIDE_KEY;
+import static com.gentics.mesh.core.rest.schema.LanguageOverrideUtil.LANGUAGE_SPLIT_PATTERN;
 
 import java.util.Optional;
 
