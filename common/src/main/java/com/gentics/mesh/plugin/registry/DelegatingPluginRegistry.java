@@ -28,6 +28,12 @@ public interface DelegatingPluginRegistry {
 	 */
 	void checkForConflict(MeshPlugin plugin);
 
+	/**
+	 * Deregister the plugin. This will also delegate the de-registration.
+	 * 
+	 * @param plugin
+	 * @return
+	 */
 	Completable deregister(MeshPlugin plugin);
 
 }

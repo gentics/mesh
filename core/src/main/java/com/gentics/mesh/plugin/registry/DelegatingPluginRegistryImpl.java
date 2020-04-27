@@ -54,9 +54,12 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 
 	private final Database db;
 
+	private final PluginDeploymentLock pluginLock;
+
 	@Inject
 	public DelegatingPluginRegistryImpl(MeshOptions options, RestPluginRegistry restRegistry, GraphQLPluginRegistry graphqlRegistry,
-		AuthServicePluginRegistry authServiceRegistry, Lazy<MeshPluginManager> manager, Lazy<Vertx> vertx, Database db) {
+		AuthServicePluginRegistry authServiceRegistry, Lazy<MeshPluginManager> manager, Lazy<Vertx> vertx, Database db,
+		PluginDeploymentLock pluginLock) {
 		this.options = options;
 		this.restRegistry = restRegistry;
 		this.graphqlRegistry = graphqlRegistry;
@@ -64,6 +67,7 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 		this.manager = manager;
 		this.vertx = vertx;
 		this.db = db;
+		this.pluginLock = pluginLock;
 	}
 
 	@Override
@@ -120,6 +124,7 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 	private void register() {
 		long timeout = getPluginTimeout().getSeconds();
 		while (!preRegisteredPlugins.isEmpty()) {
+
 			MeshPlugin plugin = preRegisteredPlugins.pop();
 			String id = plugin.id();
 			if (options.getClusterOptions().isEnabled()) {
@@ -131,21 +136,24 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 			if (log.isDebugEnabled()) {
 				log.debug("Invoking initialization of plugin {" + id + "}");
 			}
-			plugin.initialize().timeout(timeout, TimeUnit.SECONDS).doOnComplete(() -> {
-				manager.get().setStatus(id, INITIALIZED);
-			}).andThen(register(plugin).doOnComplete(() -> {
-				manager.get().setStatus(id, REGISTERED);
-			})).subscribe(() -> {
-				log.info("Completed handling of pre-registered plugin {" + id + "}");
-			}, err -> {
-				if (err instanceof TimeoutException) {
-					log.error("The registration of plugin {" + id + "} did not complete within {" + timeout
-						+ "} seconds. Unloading plugin.");
-				} else {
-					log.error("Plugin init and register failed for plugin {" + id + "}", err);
-				}
-				manager.get().setStatus(id, FAILED);
-			});
+			// Use the lock to prevent concurrent inits in clustered setups.
+			try (PluginDeploymentLock lock = pluginLock.lock()) {
+				plugin.initialize().timeout(timeout, TimeUnit.SECONDS).doOnComplete(() -> {
+					manager.get().setStatus(id, INITIALIZED);
+				}).andThen(register(plugin).doOnComplete(() -> {
+					manager.get().setStatus(id, REGISTERED);
+				})).subscribe(() -> {
+					log.info("Completed handling of pre-registered plugin {" + id + "}");
+				}, err -> {
+					if (err instanceof TimeoutException) {
+						log.error("The registration of plugin {" + id + "} did not complete within {" + timeout
+							+ "} seconds. Unloading plugin.");
+					} else {
+						log.error("Plugin init and register failed for plugin {" + id + "}", err);
+					}
+					manager.get().setStatus(id, FAILED);
+				});
+			}
 		}
 
 	}
