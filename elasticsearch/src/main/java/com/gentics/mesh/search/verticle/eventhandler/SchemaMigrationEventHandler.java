@@ -73,13 +73,11 @@ public class SchemaMigrationEventHandler implements EventHandler {
 	}
 
 	private Flowable<DropIndexRequest> migrationEnd(String projectUuid, String branchUuid, String schemaVersionUuid) {
-		return Flowable.just(ContainerType.DRAFT, ContainerType.PUBLISHED)
-			.map(type -> new DropIndexRequest(NodeGraphFieldContainer.composeIndexName(
-				projectUuid,
-				branchUuid,
-				schemaVersionUuid,
-				type
-			)));
+		return Flowable.just(new DropIndexRequest(NodeGraphFieldContainer.composeIndexPattern(
+			projectUuid,
+			branchUuid,
+			schemaVersionUuid
+		)));
 	}
 
 	public Flowable<SearchRequest> migrationStart(BranchSchemaAssignEventModel model) {

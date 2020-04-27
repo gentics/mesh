@@ -100,14 +100,31 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	}
 
 	/**
+	 * Construct an index name pattern catching all node indices of a specific project, branch and schema.
+	 *
+	 * @param projectUuid
+	 * @param branchUuid
+	 * @param schemaContainerVersionUuid
+	 * @return
+	 */
+	static String composeIndexPattern(String projectUuid, String branchUuid, String schemaContainerVersionUuid) {
+		Objects.requireNonNull(projectUuid, "The project uuid was not set");
+		Objects.requireNonNull(branchUuid, "The branch uuid was not set");
+		Objects.requireNonNull(schemaContainerVersionUuid, "The schema container version uuid was not set");
+		return String.format("node-%s-%s-%s-*", projectUuid, branchUuid, schemaContainerVersionUuid);
+	}
+
+	/**
 	 * Construct an index name pattern catching all node indices of a specific project, branch and version.
 	 *
 	 * @param projectUuid
+	 * @param branchUuid
 	 * @param type
 	 * @return
 	 */
 	static String composeIndexPattern(String projectUuid, String branchUuid, ContainerType type) {
 		Objects.requireNonNull(projectUuid, "The project uuid was not set");
+		Objects.requireNonNull(branchUuid, "The branch uuid was not set");
 		Objects.requireNonNull(type, "The container type was not set");
 		return String.format("node-%s-%s-*-%s*", projectUuid, branchUuid, type.toString().toLowerCase());
 	}
