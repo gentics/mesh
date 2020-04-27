@@ -15,6 +15,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.auth.AuthServicePluginRegistry;
+import com.gentics.mesh.core.rest.plugin.PluginStatus;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphql.plugin.GraphQLPluginRegistry;
@@ -75,6 +76,7 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 		// Check to avoid bogus restarts
 		if (timerId == -1) {
 			timerId = vertx.get().setTimer(1000, rh -> {
+				System.out.println("Invoking registration of pre-registered plugins");
 				if (log.isDebugEnabled()) {
 					log.debug("Invoking registration of pre-registered plugins");
 				}
@@ -111,6 +113,7 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 
 	@Override
 	public void preRegister(MeshPlugin plugin) {
+		manager.get().setStatus(plugin.id(), PluginStatus.PRE_REGISTERED);
 		preRegisteredPlugins.add(plugin);
 	}
 
@@ -127,8 +130,10 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 
 			MeshPlugin plugin = preRegisteredPlugins.pop();
 			String id = plugin.id();
+			log.info("Invoking registration of" + id);
 			if (options.getClusterOptions().isEnabled()) {
 				if (!db.clusterManager().isWriteQuorumReached()) {
+					log.info("Quirum!");
 					log.debug("Write quorum not reached. Skipping initialization of plugin {" + id + "} for now.");
 					return;
 				}
@@ -137,14 +142,19 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 				log.debug("Invoking initialization of plugin {" + id + "}");
 			}
 			// Use the lock to prevent concurrent inits in clustered setups.
-			try (PluginDeploymentLock lock = pluginLock.lock()) {
+			PluginDeploymentLock lock = pluginLock.lock();
+			log.info("Got lock");
+			try {
 				plugin.initialize().timeout(timeout, TimeUnit.SECONDS).doOnComplete(() -> {
 					manager.get().setStatus(id, INITIALIZED);
 				}).andThen(register(plugin).doOnComplete(() -> {
 					manager.get().setStatus(id, REGISTERED);
 				})).subscribe(() -> {
+					lock.close();
 					log.info("Completed handling of pre-registered plugin {" + id + "}");
+					manager.get().setStatus(id, REGISTERED);
 				}, err -> {
+					lock.close();
 					if (err instanceof TimeoutException) {
 						log.error("The registration of plugin {" + id + "} did not complete within {" + timeout
 							+ "} seconds. Unloading plugin.");
@@ -154,6 +164,7 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 					manager.get().setStatus(id, FAILED);
 				});
 			} catch (Throwable t) {
+				lock.close();
 				log.error("Plugin {" + id + "} failed to initialize since the plugin lock threw an error.", t);
 				manager.get().setStatus(id, FAILED);
 			}

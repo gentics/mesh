@@ -3,7 +3,6 @@ package com.gentics.mesh.plugin.manager;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.error.Errors.rxError;
 import static com.gentics.mesh.core.rest.plugin.PluginStatus.LOADED;
-import static com.gentics.mesh.core.rest.plugin.PluginStatus.PRE_REGISTERED;
 import static com.gentics.mesh.core.rest.plugin.PluginStatus.STARTED;
 import static com.gentics.mesh.core.rest.plugin.PluginStatus.VALIDATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -155,7 +154,6 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 						MeshPlugin meshPlugin = (MeshPlugin) plugin;
 						setStatus(meshPlugin.id(), PluginStatus.STARTED);
 						pluginRegistry.preRegister(meshPlugin);
-						setStatus(meshPlugin.id(), PluginStatus.PRE_REGISTERED);
 					}
 					startedPlugins.add(pluginWrapper);
 
@@ -241,7 +239,6 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 			if (plugin instanceof MeshPlugin) {
 				MeshPlugin meshPlugin = (MeshPlugin) plugin;
 				pluginRegistry.preRegister(meshPlugin);
-				setStatus(meshPlugin.id(), PRE_REGISTERED);
 			}
 		} catch (Throwable e) {
 			log.error("Plugin registration failed with error", e);
@@ -582,7 +579,8 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 	@Override
 	public PluginResponse toResponse(MeshPlugin plugin) {
 		PluginResponse response = plugin.toResponse();
-		response.setStatus(getStatus(plugin.id()));
+		PluginStatus status = getStatus(plugin.id());
+		response.setStatus(status);
 		return response;
 	}
 
