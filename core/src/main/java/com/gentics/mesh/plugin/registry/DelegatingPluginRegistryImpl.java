@@ -153,6 +153,9 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 					}
 					manager.get().setStatus(id, FAILED);
 				});
+			} catch (Throwable t) {
+				log.error("Plugin {" + id + "} failed to initialize since the plugin lock threw an error.", t);
+				manager.get().setStatus(id, FAILED);
 			}
 		}
 
