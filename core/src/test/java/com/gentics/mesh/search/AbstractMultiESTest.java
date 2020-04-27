@@ -1,8 +1,10 @@
 package com.gentics.mesh.search;
 
 import java.lang.annotation.Annotation;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Before;
@@ -18,6 +20,7 @@ import com.gentics.mesh.test.context.PluginHelper;
 import com.gentics.mesh.test.context.TestGraphHelper;
 import com.gentics.mesh.test.context.TestHttpMethods;
 import com.gentics.mesh.test.context.event.EventAsserter;
+import com.gentics.mesh.test.util.MeshAssert;
 
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
@@ -29,6 +32,8 @@ public abstract class AbstractMultiESTest implements TestHttpMethods, TestGraphH
 		// Use slf4j instead of JUL
 		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
 	}
+
+	private OkHttpClient httpClient;
 
 	private static ElasticsearchTestMode currentMode = null;
 
@@ -165,10 +170,20 @@ public abstract class AbstractMultiESTest implements TestHttpMethods, TestGraphH
 
 	@Override
 	public OkHttpClient httpClient() {
-		/**
-		 * See AbstractMeshTest#httpClient
-		 */
-		throw new RuntimeException("Not implemented");
+		if (this.httpClient == null) {
+			int timeout;
+			try {
+				timeout = MeshAssert.getTimeout();
+				this.httpClient = new OkHttpClient.Builder()
+					.writeTimeout(timeout, TimeUnit.SECONDS)
+					.readTimeout(timeout, TimeUnit.SECONDS)
+					.connectTimeout(timeout, TimeUnit.SECONDS)
+					.build();
+			} catch (UnknownHostException e) {
+				throw new RuntimeException(e);
+			}
+		}
+		return this.httpClient;
 	}
 
 	@Override

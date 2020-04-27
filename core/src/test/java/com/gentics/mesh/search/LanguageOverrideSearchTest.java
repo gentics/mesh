@@ -3,6 +3,8 @@ package com.gentics.mesh.search;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -13,18 +15,55 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.ElasticsearchTestMode;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.vertx.core.json.JsonObject;
+import okhttp3.Request;
 
 @RunWith(Parameterized.class)
 @MeshTestSetting(startServer = true, testSize = TestSize.PROJECT)
 public class LanguageOverrideSearchTest extends AbstractMultiESTest {
 	public LanguageOverrideSearchTest(ElasticsearchTestMode elasticsearch) throws Exception {
 		super(elasticsearch);
+	}
+
+	@Test
+	public void testIndexCountAfterUpdatingSchema() {
+		grantAdminRole();
+		int originalIndexCount = getIndexCount();
+		SchemaResponse schema = createSchema(loadResourceJsonAsPojo("schemas/languageOverride.json", SchemaCreateRequest.class));
+		waitForSearchIdleEvent();
+		// We expect 12 additional indices. (5 overridden languages + 1 default index) * 2 versions (draft, published)
+		assertThat(getIndexCount()).isEqualTo(originalIndexCount + 12);
+
+		waitForJob(() -> {
+			client().updateSchema(
+				schema.getUuid(),
+				loadResourceJsonAsPojo("schemas/languageOverrideNoEs.json", SchemaUpdateRequest.class)
+			).blockingAwait();
+		});
+		waitForSearchIdleEvent();
+
+		// All overrides have been removed. This leaves only the 2 default versions
+		assertThat(getIndexCount()).isEqualTo(originalIndexCount + 2);
+	}
+
+	@Test
+	public void testIndexCountAfterDeletingSchema() {
+		int originalIndexCount = getIndexCount();
+		SchemaResponse schema = createSchema(loadResourceJsonAsPojo("schemas/languageOverride.json", SchemaCreateRequest.class));
+		waitForSearchIdleEvent();
+		// We expect 12 additional indices. (5 overridden languages + 1 default index) * 2 versions (draft, published)
+		assertThat(getIndexCount()).isEqualTo(originalIndexCount + 12);
+
+		deleteSchema(schema.getUuid());
+		waitForSearchIdleEvent();
+		assertThat(getIndexCount()).isEqualTo(originalIndexCount);
 	}
 
 	@Test
@@ -92,4 +131,16 @@ public class LanguageOverrideSearchTest extends AbstractMultiESTest {
 		).blockingGet();
 	}
 
+	private int getIndexCount() {
+		try {
+			String response = httpClient().newCall(new Request.Builder()
+				.url(getTestContext().getOptions().getSearchOptions().getUrl() + "/_all")
+				.build()
+			).execute().body().string();
+
+			return new JsonObject(response).size();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
 }
