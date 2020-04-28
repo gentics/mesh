@@ -234,13 +234,34 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		}));
 	}
 
-	private Map<String, NodeGraphFieldContainer> loadVersionsFromGraph(Branch branch, SchemaContainerVersion version, ContainerType type) {
+	/**
+	 *
+	 * @param branch
+	 * @param version
+	 * @param type
+	 * @return indexName -> documentName -> NodeGraphFieldContainer
+	 */
+	private Map<String, Map<String, NodeGraphFieldContainer>> loadVersionsFromGraph(Branch branch, SchemaContainerVersion version, ContainerType type) {
 		return db.tx(() -> {
 			String branchUuid = branch.getUuid();
+			List<String> indexLanguages = version.getSchema().findOverriddenSearchLanguages().collect(Collectors.toList());
+
 			return version.getFieldContainers(branchUuid)
-				.filter(c -> c.getSchemaContainerVersion().equals(version))
 				.filter(c -> c.isType(type, branchUuid))
-				.collect(Collectors.toMap(c -> c.getParentNode().getUuid() + "-" + c.getLanguageTag(), Function.identity()));
+				.collect(Collectors.groupingBy(content -> {
+					String languageTag = content.getLanguageTag();
+					return NodeGraphFieldContainer.composeIndexName(
+							branch.getProject().getUuid(),
+							branchUuid,
+							version.getUuid(),
+							type,
+							indexLanguages.contains(languageTag)
+								? languageTag
+								: null
+						);
+					},
+					Collectors.toMap(c -> c.getParentNode().getUuid() + "-" + c.getLanguageTag(), Function.identity())
+				));
 		});
 	}
 
@@ -260,14 +281,19 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	private Flowable<SearchRequest> diffAndSync(Project project, Branch branch, SchemaContainerVersion version, ContainerType type) {
-		String indexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(),
-			version.getUuid(), type);
-
-		return Single.zip(
-			loadVersionsFromIndex(indexName),
-			Single.fromCallable(() -> loadVersionsFromGraph(branch, version, type)),
-			(sinkVersions, sourceNodes) -> {
+		return Flowable.defer(() -> {
+			Map<String, Map<String, NodeGraphFieldContainer>> sourceNodesPerIndex = loadVersionsFromGraph(branch, version, type);
+			return Flowable.fromIterable(
+				db.tx(() -> Stream.concat(
+					version.getSchema().findOverriddenSearchLanguages()
+						.map(lang -> NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(),
+							version.getUuid(), type, lang)),
+					Stream.of(NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(),
+						version.getUuid(), type)
+				)).collect(Collectors.toList()))
+			).flatMap(indexName -> loadVersionsFromIndex(indexName).flatMapPublisher(sinkVersions -> {
 				log.info("Handling index sync on handler {" + getClass().getName() + "}");
+				Map<String, NodeGraphFieldContainer> sourceNodes = sourceNodesPerIndex.getOrDefault(indexName, Collections.emptyMap());
 				String branchUuid = branch.getUuid();
 
 				Map<String, String> sourceVersions = db.tx(() -> sourceNodes.entrySet().stream()
@@ -276,7 +302,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				// 3. Diff the maps
 				MapDifference<String, String> diff = Maps.difference(sourceVersions, sinkVersions);
 				if (diff.areEqual()) {
-					return Flowable.<SearchRequest>empty();
+					return Flowable.empty();
 				}
 				Set<String> needInsertionInES = diff.entriesOnlyOnLeft().keySet();
 				Set<String> needRemovalInES = diff.entriesOnlyOnRight().keySet();
@@ -305,7 +331,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 					.map(uuid -> helper.deleteDocumentRequest(indexName, uuid, complianceMode, meters.getDeleteMeter()::synced));
 
 				return Flowable.merge(toInsert, toUpdate, toDelete);
-			}).flatMapPublisher(x -> x);
+			}));
+		});
 	}
 
 	@Override

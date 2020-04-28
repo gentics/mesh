@@ -12,7 +12,7 @@
           }
         }
       },
-      "jp,zh,ko,de": {
+      "ja,zh,ko,de": {
         "analysis": {
           "analyzer": {
             "my_stop_analyzer": {

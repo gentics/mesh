@@ -1,15 +1,26 @@
 package com.gentics.mesh.search;
 
-import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -23,9 +34,10 @@ import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.ElasticsearchTestMode;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.json.JsonObject;
+import okhttp3.MediaType;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 
 @RunWith(Parameterized.class)
 @MeshTestSetting(startServer = true, testSize = TestSize.PROJECT)
@@ -34,8 +46,15 @@ public class LanguageOverrideSearchTest extends AbstractMultiESTest {
 		super(elasticsearch);
 	}
 
+	private List<NodeResponse> createdPages;
+
+	@Before
+	public void setUp() throws Exception {
+		createdPages = new ArrayList<>();
+	}
+
 	@Test
-	public void testIndexCountAfterUpdatingSchema() {
+	public void testIndexCountAfterRemovingSettings() {
 		grantAdminRole();
 		int originalIndexCount = getIndexCount();
 		SchemaResponse schema = createSchema(loadResourceJsonAsPojo("schemas/languageOverride/page.json", SchemaCreateRequest.class));
@@ -56,6 +75,28 @@ public class LanguageOverrideSearchTest extends AbstractMultiESTest {
 	}
 
 	@Test
+	public void testSchemaMigration() {
+		grantAdminRole();
+		int originalIndexCount = getIndexCount();
+		SchemaResponse schema = createSchema(loadResourceJsonAsPojo("schemas/languageOverride/page.json", SchemaCreateRequest.class));
+		createContent();
+		publishCreatedPages();
+		waitForSearchIdleEvent();
+
+		assertPublishedContentCount();
+
+		// We expect 12 additional indices. (5 overridden languages + 1 default index) * 2 versions (draft, published)
+		assertThat(getIndexCount()).isEqualTo(originalIndexCount + 12);
+
+		migrateSchema(schema.getName()).blockingAwait();
+		waitForSearchIdleEvent();
+
+		assertThat(getIndexCount()).isEqualTo(originalIndexCount + 12);
+
+		assertPublishedContentCount();
+	}
+
+	@Test
 	public void testIndexCountAfterDeletingSchema() {
 		int originalIndexCount = getIndexCount();
 		SchemaResponse schema = createSchema(loadResourceJsonAsPojo("schemas/languageOverride/page.json", SchemaCreateRequest.class));
@@ -69,9 +110,60 @@ public class LanguageOverrideSearchTest extends AbstractMultiESTest {
 	}
 
 	@Test
+	public void testIndexCountAfterSync() throws Exception {
+		int originalIndexCount = getIndexCount();
+		createSchema(loadResourceJsonAsPojo("schemas/languageOverride/page.json", SchemaCreateRequest.class));
+		waitForSearchIdleEvent();
+		// We expect 12 additional indices. (5 overridden languages + 1 default index) * 2 versions (draft, published)
+		assertThat(getIndexCount()).isEqualTo(originalIndexCount + 12);
+
+		recreateIndices();
+
+		assertThat(getIndexCount()).isEqualTo(originalIndexCount + 12);
+	}
+
+	@Test
 	public void testLanguageOverride() {
 		createSchema(loadResourceJsonAsPojo("schemas/languageOverride/page.json", SchemaCreateRequest.class));
+		createContent();
+		waitForSearchIdleEvent();
 
+		assertContentCount();
+
+		// We expect only one result because "die" is a stop word in german
+		assertContentSearch("die", "Report");
+		// We expect only two results, because "no" is a stop word in all languages except german and french.
+		// French would use the standard analyzer, but there is an exception for that language in the schema.
+		// There is no analyzer defined for italian, so the default english stop word list should be used.
+		assertContentSearch("no", "Kino", "Film");
+
+		publishCreatedPages();
+		waitForSearchIdleEvent();
+
+		assertPublishedContentCount();
+	}
+
+	@Test
+	public void testIndexSync() throws Exception {
+		createSchema(loadResourceJsonAsPojo("schemas/languageOverride/page.json", SchemaCreateRequest.class));
+		createContent();
+		waitForSearchIdleEvent();
+
+		assertContentCount();
+
+		recreateIndices();
+
+		assertContentCount();
+
+		// We expect only one result because "die" is a stop word in german
+		assertContentSearch("die", "Report");
+		// We expect only two results, because "no" is a stop word in all languages except german and french.
+		// French would use the standard analyzer, but there is an exception for that language in the schema.
+		// There is no analyzer defined for italian, so the default english stop word list should be used.
+		assertContentSearch("no", "Kino", "Film");
+	}
+
+	private void createContent() {
 		createPage("de", "Wetter", "Es ist herrliches Wetter, denn die Sonne kommt heraus.");
 		createPage("en", "Report", "Many innocent people die during war.");
 
@@ -85,15 +177,39 @@ public class LanguageOverrideSearchTest extends AbstractMultiESTest {
 		createPage("zh", "Apology", "There is no chinese content yet.");
 		createPage("ja", "Apology", "There is no japanese content yet.");
 		createPage("ko", "Apology", "There is no korean content yet.");
+	}
 
-		waitForSearchIdleEvent();
+	private void assertContentCount() {
+		assertDocumentCount(fromEntries(
+			docs("de", DRAFT, 2),
+			docs("fr", DRAFT, 1),
+			docs("zh", DRAFT, 1),
+			docs("ja", DRAFT, 1),
+			docs("ko", DRAFT, 1),
+			// italian and english contents use default settings
+			docs(DRAFT, 3)
+		));
+	}
 
-		// We expect only one result because "die" is a stop word in german
-		assertContentSearch("die", "Report");
-		// We expect only two results, because "no" is a stop word in all languages except german and french.
-		// French would use the standard analyzer, but there is an exception for that language in the schema.
-		// There is no analyzer defined for italian, so the default english stop word list should be used.
-		assertContentSearch("no", "Kino", "Film");
+	private void assertPublishedContentCount() {
+		assertDocumentCount(fromEntries(
+			docs("de", DRAFT, 2),
+			docs("fr", DRAFT, 1),
+			docs("zh", DRAFT, 1),
+			docs("ja", DRAFT, 1),
+			docs("ko", DRAFT, 1),
+			// italian and english contents use default settings
+			docs(DRAFT, 3),
+
+			docs("de", PUBLISHED, 2),
+			docs("fr", PUBLISHED, 1),
+			docs("zh", PUBLISHED, 1),
+			docs("ja", PUBLISHED, 1),
+			docs("ko", PUBLISHED, 1),
+			// italian and english contents use default settings
+			docs(PUBLISHED, 3)
+		));
+
 	}
 
 	private NodeResponse createPage(String language, String title, String content) {
@@ -106,7 +222,15 @@ public class LanguageOverrideSearchTest extends AbstractMultiESTest {
 				"title", StringField.of(title),
 				"content", StringField.of(content)
 			));
-		return client().createNode(PROJECT_NAME, nodeCreateRequest).blockingGet();
+		NodeResponse nodeResponse = client().createNode(PROJECT_NAME, nodeCreateRequest).blockingGet();
+		createdPages.add(nodeResponse);
+		return nodeResponse;
+	}
+
+	private void publishCreatedPages() {
+		for (NodeResponse createdPage : createdPages) {
+			publishNode(createdPage);
+		}
 	}
 
 	/**
@@ -143,6 +267,92 @@ public class LanguageOverrideSearchTest extends AbstractMultiESTest {
 			return new JsonObject(response).size();
 		} catch (IOException e) {
 			throw new RuntimeException(e);
+		}
+	}
+
+	private <K, V> Map<K, V> fromEntries(Map.Entry<K, V>... entries) {
+		return Stream.of(entries)
+			.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+	}
+
+	private void assertDocumentCount(Map<Document, Long> expected) {
+		try {
+			String response = httpClient().newCall(new Request.Builder()
+				.url(getTestContext().getOptions().getSearchOptions().getUrl() + "/mesh-node-*/_search")
+				.method("POST", RequestBody.create(MediaType.parse("application/json"), new JsonObject()
+					.put("size", 100)
+					.put("query", new JsonObject()
+						.put("term", new JsonObject()
+							.put("schema.name.raw", "page")
+						)
+					).toString()
+				))
+				.build()
+			).execute().body().string();
+
+			Map<Document, Long> actual = new JsonObject(response)
+				.getJsonObject("hits").getJsonArray("hits")
+				.stream()
+				.map(doc -> (JsonObject) doc)
+				.map(Document::fromElasticsearch)
+				.collect(Collectors.groupingBy(
+					Function.identity(),
+					Collectors.counting()
+				));
+
+			assertThat(actual).isEqualTo(expected);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private Map.Entry<Document, Long> docs(ContainerType type, long count) {
+		return docs(null, type, count);
+	}
+
+	private Map.Entry<Document, Long> docs(String language, ContainerType type, long count) {
+		return new AbstractMap.SimpleImmutableEntry<>(new Document(type, language), count);
+	}
+	private static class Document {
+
+		private final ContainerType type;
+		private final String language;
+
+		private Document(ContainerType type, String language) {
+			this.language = language;
+			this.type = type;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || getClass() != o.getClass()) return false;
+			Document that = (Document) o;
+			return Objects.equals(language, that.language) &&
+				type == that.type;
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(language, type);
+		}
+
+		@Override
+		public String toString() {
+			return type.getShortName() +
+				(language == null
+					? ""
+					: "-" + language);
+		}
+
+		public static Document fromElasticsearch(JsonObject doc) {
+			String[] split = doc.getString("_index").split("-");
+			return new Document(
+				ContainerType.forVersion(split[5]),
+				split.length > 6
+					? split[6]
+					: null
+			);
 		}
 	}
 }
