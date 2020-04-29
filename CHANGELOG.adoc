@@ -32,7 +32,7 @@ icon:check[] Core: Fixed a bug that caused an internal server error if a project
 
 icon:plus[] Test: An enhanced test container class has been added. The `MeshContainer` class replaces the `MeshDockerServer` which was deprecated.
 
-icon:plus[] Elasticsearch: It is now possible to define Elasticsearch settings / mappings per language. Please refer to the link:{{< relref "elasticsearch.asciidoc" >}}#language-override[documentation] for more information.
+icon:plus[] Elasticsearch: It is now possible to define Elasticsearch settings / mappings per language. This helps using language specific stemmers or stop word lists. Please refer to the link:{{< relref "elasticsearch.asciidoc" >}}#language-override[documentation] for more information.
 
 [[v1.4.8]]
 == 1.4.8 (21.04.2020)
