@@ -5,8 +5,6 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.openjdk.tools.sjavac.Log;
-
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ILock;
@@ -40,7 +38,7 @@ public class PluginDeploymentLock implements AutoCloseable {
 	public void close() {
 		if (isClustered) {
 			if (clusterLock != null && clusterLock.isLockedByCurrentThread()) {
-				Log.info("Unlock");
+				System.out.println("Unlock");
 				clusterLock.unlock();
 			}
 		}
