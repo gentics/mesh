@@ -687,7 +687,7 @@ TIP: If you just want to add your field to the source document you can create a 
 [[language-override]]
 === Mappings / Settings per Language
 
-It is also possible to define different settings / mappings for different languages. To do so, add the `_meshLanguageOverride` property to the `elasticsearch` object.
+It is also possible to define different settings / mappings for different languages. This is useful to use language specific stemmers and link:https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-stop-tokenfilter.html[stop word lists].To do so, add the `_meshLanguageOverride` property to the `elasticsearch` object.
 In this object you can override settings / mappings for each language. You can also provide the same setting / mapping for multiple language by using a
 comma separated list of languages as the key.
 
