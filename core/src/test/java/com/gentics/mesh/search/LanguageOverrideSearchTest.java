@@ -97,6 +97,28 @@ public class LanguageOverrideSearchTest extends AbstractMultiESTest {
 	}
 
 	@Test
+	public void testIndexCountAfterMigratingOldSchema() {
+		grantAdminRole();
+		int originalIndexCount = getIndexCount();
+		SchemaResponse schema = createSchema(loadResourceJsonAsPojo("schemas/languageOverride/pageNoEs.json", SchemaCreateRequest.class));
+		waitForSearchIdleEvent();
+		// The old schema has no overrides. This leaves only the 2 default versions
+		assertThat(getIndexCount()).isEqualTo(originalIndexCount + 2);
+
+		waitForJob(() -> {
+			client().updateSchema(
+				schema.getUuid(),
+				loadResourceJsonAsPojo("schemas/languageOverride/page.json", SchemaUpdateRequest.class)
+			).blockingAwait();
+		});
+		waitForSearchIdleEvent();
+
+
+		// We expect 12 additional indices. (5 overridden languages + 1 default index) * 2 versions (draft, published)
+		assertThat(getIndexCount()).isEqualTo(originalIndexCount + 12);
+	}
+
+	@Test
 	public void testIndexCountAfterDeletingSchema() {
 		int originalIndexCount = getIndexCount();
 		SchemaResponse schema = createSchema(loadResourceJsonAsPojo("schemas/languageOverride/page.json", SchemaCreateRequest.class));

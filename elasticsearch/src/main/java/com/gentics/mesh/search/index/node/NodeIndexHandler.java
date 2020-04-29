@@ -283,15 +283,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	private Flowable<SearchRequest> diffAndSync(Project project, Branch branch, SchemaContainerVersion version, ContainerType type) {
 		return Flowable.defer(() -> {
 			Map<String, Map<String, NodeGraphFieldContainer>> sourceNodesPerIndex = loadVersionsFromGraph(branch, version, type);
-			return Flowable.fromIterable(
-				db.tx(() -> Stream.concat(
-					version.getSchema().findOverriddenSearchLanguages()
-						.map(lang -> NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(),
-							version.getUuid(), type, lang)),
-					Stream.of(NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(),
-						version.getUuid(), type)
-				)).collect(Collectors.toList()))
-			).flatMap(indexName -> loadVersionsFromIndex(indexName).flatMapPublisher(sinkVersions -> {
+			return Flowable.fromIterable(getIndexNames(project, branch, version, type))
+				.flatMap(indexName -> loadVersionsFromIndex(indexName).flatMapPublisher(sinkVersions -> {
 				log.info("Handling index sync on handler {" + getClass().getName() + "}");
 				Map<String, NodeGraphFieldContainer> sourceNodes = sourceNodesPerIndex.getOrDefault(indexName, Collections.emptyMap());
 				String branchUuid = branch.getUuid();
@@ -332,6 +325,27 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 				return Flowable.merge(toInsert, toUpdate, toDelete);
 			}));
+		});
+	}
+
+	private List<String> getIndexNames(Project project, Branch branch, SchemaContainerVersion version, ContainerType type) {
+		return db.tx(() -> {
+			Stream<String> languageIndices = version.getSchema().findOverriddenSearchLanguages()
+				.map(lang -> NodeGraphFieldContainer.composeIndexName(
+					project.getUuid(),
+					branch.getUuid(),
+					version.getUuid(),
+					type,
+					lang
+				));
+			Stream<String> defaultIndex = Stream.of(NodeGraphFieldContainer.composeIndexName(
+				project.getUuid(),
+				branch.getUuid(),
+				version.getUuid(),
+				type
+			));
+			return Stream.concat(languageIndices, defaultIndex)
+				.collect(Collectors.toList());
 		});
 	}
 
@@ -656,6 +670,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			schema.validate();
 			return Flowable.fromIterable(schema.findOverriddenSearchLanguages()::iterator);
 		}).map(language -> createDummyIndexInfo(schema, language))
+			.startWith(createDummyIndexInfo(schema, null))
 			.flatMapCompletable(searchProvider::validateCreateViaTemplate);
 	}
 

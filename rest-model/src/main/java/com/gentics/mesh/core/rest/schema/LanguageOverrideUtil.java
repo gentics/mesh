@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.rest.schema;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.util.StreamUtil.unique;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.HashSet;
@@ -50,39 +51,5 @@ public final class LanguageOverrideUtil {
 			.flatMap(LANGUAGE_SPLIT_PATTERN::splitAsStream)
 			.map(String::trim)
 			.filter(StringUtils::isNotEmpty);
-	}
-
-
-	/**
-	 * Filters out duplicate items in the stream. Use this with {@link Stream#filter(Predicate)}.
-	 *
-	 * TODO Use same function from mesh-common instead
-	 * @return
-	 */
-	public static <T> Predicate<T> unique() {
-		return uniqueBy(Function.identity());
-	}
-
-	/**
-	 * Filters out duplicate items in the stream. Use this with {@link Stream#filter(Predicate)}.
-	 * Two items are considered equal when the results of the <code>keyMapper</code> function are equal by {@link #equals(Object)}.
-	 *
-	 * TODO Use same function from mesh-common instead
-	 * @param keyMapper
-	 * @param <T>
-	 * @param <K>
-	 * @return
-	 */
-	public static <T, K> Predicate<T> uniqueBy(Function<T, K> keyMapper) {
-		Set<K> keys = new HashSet<>();
-		return item -> {
-			K key = keyMapper.apply(item);
-			if (keys.contains(key)) {
-				return false;
-			} else {
-				keys.add(key);
-				return true;
-			}
-		};
 	}
 }

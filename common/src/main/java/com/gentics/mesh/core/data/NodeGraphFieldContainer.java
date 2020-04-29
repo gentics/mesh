@@ -94,7 +94,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 		indexName.append(type.toString().toLowerCase());
 		if (language != null) {
 			indexName.append("-");
-			indexName.append(language);
+			indexName.append(language.toLowerCase());
 		}
 		return indexName.toString();
 	}
