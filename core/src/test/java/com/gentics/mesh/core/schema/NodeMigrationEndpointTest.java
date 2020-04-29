@@ -182,9 +182,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		// The initial index should have been removed
 		waitForSearchIdleEvent();
 		assertThat(trackingSearchProvider())
-			.hasDrop(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(), versionUuid, DRAFT));
-		assertThat(trackingSearchProvider()).hasDrop(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(), versionUuid,
-			PUBLISHED));
+			.hasDrop(NodeGraphFieldContainer.composeIndexPattern(projectUuid(), initialBranchUuid(), versionUuid));
 
 		/**
 		 * 4. Create a node and update the schema again. This node should be migrated. A deleteDocument call must be recorded for the old index. A store event
@@ -256,9 +254,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 		// The old index should have been removed
 		assertThat(trackingSearchProvider())
-			.hasDrop(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(), versionBUuid, DRAFT));
-		assertThat(trackingSearchProvider()).hasDrop(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(), versionBUuid,
-			PUBLISHED));
+			.hasDrop(NodeGraphFieldContainer.composeIndexPattern(projectUuid(), initialBranchUuid(), versionBUuid));
 
 		// The node should have been removed from the old index and placed in the new one
 		assertThat(trackingSearchProvider()).hasDelete(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(), versionBUuid,
@@ -454,7 +450,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			int store = 2;
 			int update = 0;
 			int delete = 2;
-			int indexDrop = 2;
+			int indexDrop = 1;
 			int indexCreate = 2;
 			assertThat(trackingSearchProvider()).hasEvents(store, update, delete, indexDrop, indexCreate);
 		}
@@ -499,7 +495,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		int store = nFieldContainers + nFieldContainers + 1;
 		int update = 0;
 		int delete = nFieldContainers + nFieldContainers;
-		int dropIndex = 2;
+		int dropIndex = 1;
 		int createIndex = 2;
 		assertThat(trackingSearchProvider()).hasEvents(store, update, delete, dropIndex, createIndex);
 		for (JsonObject mapping : trackingSearchProvider().getCreateIndexEvents().values()) {
