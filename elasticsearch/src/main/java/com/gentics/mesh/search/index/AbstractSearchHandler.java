@@ -24,7 +24,6 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.elasticsearch.client.okhttp.RequestBuilder;
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.Role;
@@ -153,7 +152,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			if (log.isDebugEnabled()) {
 				log.debug("Invoking search with query {" + searchQuery + "}");
 			}
-			Set<String> indices = indexHandler.getSelectedIndices(ac);
+			Set<String> indices = indexHandler.getIndicesForSearch(ac);
 
 			// Modify the query and add permission checks
 			JsonObject request = prepareSearchQuery(ac, searchQuery, false);
@@ -221,7 +220,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 				log.debug("Invoking search with query {" + searchQuery + "} for {" + classOfRL.getName() + "}");
 			}
 
-			Set<String> indices = indexHandler.getSelectedIndices(ac);
+			Set<String> indices = indexHandler.getIndicesForSearch(ac);
 
 			// Add permission checks to the query
 			JsonObject request = prepareSearchQuery(ac, searchQuery, filterLanguage);
@@ -368,7 +367,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			log.debug("Invoking search with query {" + query + "} for {" + indexHandler.getElementClass().getName() + "}");
 		}
 
-		Set<String> indices = indexHandler.getSelectedIndices(ac);
+		Set<String> indices = indexHandler.getIndicesForSearch(ac);
 
 		// Add permission checks to the query
 		JsonObject queryJson = prepareSearchQuery(ac, query, false);

@@ -1,0 +1,13 @@
+{
+  "name": "page",
+  "fields": [
+    {
+      "name": "title",
+      "type": "string"
+    },
+    {
+      "name": "content",
+      "type": "string"
+    }
+  ]
+}

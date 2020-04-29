@@ -10,6 +10,7 @@ import static org.junit.Assert.assertNotNull;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
@@ -73,6 +74,7 @@ import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.SchemaUpdateParameters;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
@@ -81,6 +83,7 @@ import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.test.context.helper.ClientHelper;
 import com.gentics.mesh.test.context.helper.EventHelper;
 import com.gentics.mesh.util.VersionNumber;
+import com.google.common.io.Resources;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
@@ -501,6 +504,12 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		call(() -> client().deleteProject(uuid));
 	}
 
+	default SchemaResponse createSchema(SchemaCreateRequest request) {
+		SchemaResponse schemaResponse = client().createSchema(request).blockingGet();
+		client().assignSchemaToProject(PROJECT_NAME, schemaResponse.getUuid()).blockingAwait();
+		return schemaResponse;
+	}
+
 	default public SchemaResponse createSchema(String schemaName) {
 		SchemaCreateRequest schema = FieldUtil.createSchemaCreateRequest();
 		schema.setName(schemaName);
@@ -778,4 +787,22 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return Buffer.buffer(bytes);
 	}
 
+	/**
+	 * Loads a resource and converts to a POJO using {@link JsonUtil#readValue(String, Class)}
+	 *
+	 * @param path
+	 * @param clazz
+	 * @param <T>
+	 * @return
+	 */
+	default <T> T loadResourceJsonAsPojo(String path, Class<T> clazz) {
+		try {
+			return JsonUtil.readValue(
+				Resources.toString(
+					Resources.getResource(path), StandardCharsets.UTF_8),
+				clazz);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
 }

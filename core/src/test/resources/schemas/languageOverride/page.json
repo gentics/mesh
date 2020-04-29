@@ -1,0 +1,65 @@
+{
+  "name": "page",
+  "elasticsearch": {
+    "_meshLanguageOverride": {
+      "de": {
+        "analysis": {
+          "analyzer": {
+            "my_stop_analyzer": {
+              "type": "stop",
+              "stopwords": "_german_"
+            }
+          }
+        }
+      },
+      "ja,zh,ko": {
+        "analysis": {
+          "analyzer": {
+            "my_stop_analyzer": {
+              "type": "stop",
+              "stopwords": ["_english_", "_cjk_"]
+            }
+          }
+        }
+      }
+    },
+    "analysis": {
+      "analyzer": {
+        "my_stop_analyzer": {
+          "type": "stop",
+          "stopwords": "_english_"
+        }
+      }
+    }
+  },
+  "fields": [
+    {
+      "name": "title",
+      "type": "string",
+      "elasticsearch": {
+        "basicsearch": {
+          "type": "text",
+          "analyzer": "my_stop_analyzer"
+        }
+      }
+    },
+    {
+      "name": "content",
+      "type": "string",
+      "elasticsearch": {
+        "_meshLanguageOverride": {
+          "fr": {
+            "basicsearch": {
+              "type": "text",
+              "analyzer": "standard"
+            }
+          }
+        },
+        "basicsearch": {
+          "type": "text",
+          "analyzer": "my_stop_analyzer"
+        }
+      }
+    }
+  ]
+}

@@ -10,6 +10,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -153,6 +157,7 @@ public interface FieldSchemaContainer extends RestModel {
 
 	/**
 	 * Return the search index configuration.
+	 * This includes the "_meshLanguageOverride" field and must be removed before creating the index in Elasticsearch.
 	 * 
 	 * @return
 	 */
@@ -165,6 +170,22 @@ public interface FieldSchemaContainer extends RestModel {
 	 * @return Fluent API
 	 */
 	FieldSchemaContainer setElasticsearch(JsonObject elasticsearch);
+
+	/**
+	 * Finds all languages that override the default index settings/mappings.
+	 * This includes index settings and the mappings for each field.
+	 * This also splits up lists of languages.
+	 * @return
+	 */
+	default Stream<String> findOverriddenSearchLanguages() {
+		Stream<JsonObject> settings = Stream.of(getElasticsearch());
+		Stream<JsonObject> mappings = getFields().stream()
+			.map(FieldSchema::getElasticsearch);
+
+		return Stream.concat(settings, mappings)
+			.flatMap(LanguageOverrideUtil::findLanguages)
+			.distinct();
+	}
 
 	/**
 	 * Set the list of schema fields.
@@ -184,6 +205,8 @@ public interface FieldSchemaContainer extends RestModel {
 		if (!getName().matches(NAME_REGEX)) {
 			throw error(BAD_REQUEST, "schema_error_invalid_name", getName());
 		}
+
+		LanguageOverrideUtil.validateLanguageOverrides(getElasticsearch());
 
 		Set<String> fieldNames = new HashSet<>();
 		for (FieldSchema field : getFields()) {

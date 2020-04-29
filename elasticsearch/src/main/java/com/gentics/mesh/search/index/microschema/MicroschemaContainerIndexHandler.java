@@ -86,7 +86,7 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 	}
 
 	@Override
-	public Set<String> getSelectedIndices(InternalActionContext ac) {
+	public Set<String> getIndicesForSearch(InternalActionContext ac) {
 		return Collections.singleton(MicroschemaContainer.composeIndexName());
 	}
 

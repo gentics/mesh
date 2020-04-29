@@ -91,7 +91,7 @@ public class RoleIndexHandler extends AbstractIndexHandler<Role> {
 	}
 
 	@Override
-	public Set<String> getSelectedIndices(InternalActionContext ac) {
+	public Set<String> getIndicesForSearch(InternalActionContext ac) {
 		return Collections.singleton(Role.composeIndexName());
 	}
 

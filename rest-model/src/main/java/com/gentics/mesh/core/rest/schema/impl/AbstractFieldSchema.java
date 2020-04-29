@@ -22,6 +22,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.LanguageOverrideUtil;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.google.common.base.Equivalence;
@@ -123,6 +124,7 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 		if (StringUtils.isEmpty(getName())) {
 			throw error(BAD_REQUEST, "schema_error_fieldname_not_set");
 		}
+		LanguageOverrideUtil.validateLanguageOverrides(getElasticsearch());
 	}
 
 	@Override

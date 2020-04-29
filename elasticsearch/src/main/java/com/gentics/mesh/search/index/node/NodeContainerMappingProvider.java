@@ -16,6 +16,7 @@ import static com.gentics.mesh.search.index.MappingHelper.TRIGRAM_ANALYZER;
 import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.notAnalyzedType;
 import static com.gentics.mesh.search.index.MappingHelper.trigramTextType;
+import static com.gentics.mesh.search.index.node.NodeIndexUtil.getLanguageOverride;
 
 import java.util.Optional;
 import java.util.Set;
@@ -69,7 +70,7 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 	 * @return An ES-Mapping for the given Schema
 	 */
 	public JsonObject getMapping(Schema schema) {
-		return getMapping(schema, null);
+		return getMapping(schema, null, null);
 	}
 
 	/**
@@ -79,9 +80,11 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 	 *            Schema from which the mapping should be constructed
 	 * @param branch
 	 *            The branch-version which should be used for the construction
+	 * @param language
+	 *            The language override to use
 	 * @return An ES-Mapping for the given Schema in the branch
 	 */
-	public JsonObject getMapping(Schema schema, Branch branch) {
+	public JsonObject getMapping(Schema schema, Branch branch, String language) {
 		// 1. Get the common type specific mapping
 		JsonObject mapping = getMapping();
 
@@ -160,8 +163,7 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 		
 
 		for (FieldSchema field : schema.getFields()) {
-			Optional<JsonObject> mappingInfo = getFieldMapping(field, branch);
-			mappingInfo.ifPresent(info -> {
+			getFieldMapping(field, branch, language).ifPresent(info -> {
 				fieldProps.put(field.getName(), info);
 			});
 		}
@@ -184,7 +186,7 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 	 *            Field schema which will be used to construct the mapping info
 	 * @return Optional with the JSON object which contains the mapping info or it can be empty if the mapping should be omitted.
 	 */
-	public Optional<JsonObject> getFieldMapping(FieldSchema fieldSchema, Branch branch) {
+	public Optional<JsonObject> getFieldMapping(FieldSchema fieldSchema, Branch branch, String language) {
 
 		// Create the mapping if the field is required.
 		// It may be required if the mapping mode is set to dynamic
@@ -196,7 +198,7 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 		}
 
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
-		JsonObject customIndexOptions = fieldSchema.getElasticsearch();
+		JsonObject customIndexOptions = getLanguageOverride(fieldSchema.getElasticsearch(), language);
 		JsonObject fieldInfo = new JsonObject();
 
 		switch (type) {
@@ -221,11 +223,11 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 			break;
 		case LIST:
 			if (fieldSchema instanceof ListFieldSchemaImpl) {
-				addListFieldMapping(fieldInfo, branch, (ListFieldSchemaImpl) fieldSchema, customIndexOptions);
+				addListFieldMapping(fieldInfo, branch, (ListFieldSchemaImpl) fieldSchema, language, customIndexOptions);
 			}
 			break;
 		case MICRONODE:
-			addMicronodeMapping(fieldInfo, fieldSchema, branch, customIndexOptions);
+			addMicronodeMapping(fieldInfo, fieldSchema, branch, language, customIndexOptions);
 			break;
 		default:
 			throw new RuntimeException("Mapping type  for field type {" + type + "} unknown.");
@@ -259,7 +261,7 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 		}
 	}
 
-	private void addMicronodeMapping(JsonObject fieldInfo, FieldSchema fieldSchema, Branch branch, JsonObject customIndexOptions) {
+	private void addMicronodeMapping(JsonObject fieldInfo, FieldSchema fieldSchema, Branch branch, String language, JsonObject customIndexOptions) {
 		if (isStrictMode) {
 			fieldInfo.mergeIn(customIndexOptions);
 		} else {
@@ -269,7 +271,7 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 			String[] allowed = ((MicronodeFieldSchema) fieldSchema).getAllowedMicroSchemas();
 
 			// Merge the options into the info
-			fieldInfo.mergeIn(getMicroschemaMappingOptions(allowed, branch));
+			fieldInfo.mergeIn(getMicroschemaMappingOptions(allowed, branch, language));
 		}
 	}
 
@@ -282,7 +284,7 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 		}
 	}
 
-	private void addListFieldMapping(JsonObject fieldInfo, Branch branch, ListFieldSchemaImpl fieldSchema, JsonObject customIndexOptions) {
+	private void addListFieldMapping(JsonObject fieldInfo, Branch branch, ListFieldSchemaImpl fieldSchema, String language, JsonObject customIndexOptions) {
 		if (isStrictMode) {
 			fieldInfo.mergeIn(customIndexOptions);
 		} else {
@@ -309,7 +311,7 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 				String[] allowed = listFieldSchema.getAllowedSchemas();
 
 				// Merge the options into the info
-				fieldInfo.mergeIn(getMicroschemaMappingOptions(allowed, branch));
+				fieldInfo.mergeIn(getMicroschemaMappingOptions(allowed, branch, language));
 
 				// fieldProps.put(field.getName(), fieldInfo);
 				break;
@@ -431,7 +433,7 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 	 *            The branch for which the mapping should be created
 	 * @return An Properties-mapping for a microschema field.
 	 */
-	public JsonObject getMicroschemaMappingOptions(String[] allowed, Branch branch) {
+	public JsonObject getMicroschemaMappingOptions(String[] allowed, Branch branch, String language) {
 		// Prevent Null-Pointers
 		if (allowed == null) {
 			allowed = new String[0];
@@ -475,7 +477,7 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 				JsonObject fields = new JsonObject();
 				microschema.getFields().stream()
 					.forEach(microschemaField -> {
-						Optional<JsonObject> mapping = getFieldMapping(microschemaField, branch);
+						Optional<JsonObject> mapping = getFieldMapping(microschemaField, branch, language);
 						mapping.ifPresent(info -> {
 							fields.put(microschemaField.getName(), info);
 						});

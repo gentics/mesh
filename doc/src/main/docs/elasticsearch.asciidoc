@@ -684,6 +684,89 @@ TIP: You can use the `POST {apiLatest}/utilities/validateSchema` endpoint to val
 
 TIP: If you just want to add your field to the source document you can create a mapping with `"index": false`.
 
+[[language-override]]
+=== Mappings / Settings per Language
+
+It is also possible to define different settings / mappings for different languages. This is useful to use language specific stemmers and link:https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-stop-tokenfilter.html[stop word lists].To do so, add the `_meshLanguageOverride` property to the `elasticsearch` object.
+In this object you can override settings / mappings for each language. You can also provide the same setting / mapping for multiple language by using a
+comma separated list of languages as the key.
+
+NOTE: For each overridden language, Gentics Mesh will create additional indices in Elasticsearch. This might affect the resources used by Elasticsearch.
+
+ Node contents of that language will be saved in that index.
+When a node content is created with a language that is not overridden, the node content will be saved in the default index. The settings / mappings of the
+default index can be configured like shown in the example above.
+
+Here is an example using this feature:
+[source,json]
+----
+{
+  "name": "page",
+  "elasticsearch": {
+    "_meshLanguageOverride": {
+      "de": {
+        "analysis": {
+          "analyzer": {
+            "my_stop_analyzer": {
+              "type": "stop",
+              "stopwords": "_german_"
+            }
+          }
+        }
+      },
+      "ja,zh,ko": {
+        "analysis": {
+          "analyzer": {
+            "my_stop_analyzer": {
+              "type": "stop",
+              "stopwords": ["_english_", "_cjk_"]
+            }
+          }
+        }
+      }
+    },
+    "analysis": {
+      "analyzer": {
+        "my_stop_analyzer": {
+          "type": "stop",
+          "stopwords": "_english_"
+        }
+      }
+    }
+  },
+  "fields": [
+    {
+      "name": "title",
+      "type": "string",
+      "elasticsearch": {
+        "basicsearch": {
+          "type": "text",
+          "analyzer": "my_stop_analyzer"
+        }
+      }
+    },
+    {
+      "name": "content",
+      "type": "string",
+      "elasticsearch": {
+        "_meshLanguageOverride": {
+          "fr": {
+            "basicsearch": {
+              "type": "text",
+              "analyzer": "standard"
+            }
+          }
+        },
+        "basicsearch": {
+          "type": "text",
+          "analyzer": "my_stop_analyzer"
+        }
+      }
+    }
+  ]
+}
+----
+
 == Binary Fields
 
 You can add custom mappings to the `mimeType` and `file.content` field. The `elasticsearch` property needs to contain a custom mapping for each type.

@@ -84,7 +84,7 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 	}
 
 	@Override
-	public Set<String> getSelectedIndices(InternalActionContext ac) {
+	public Set<String> getIndicesForSearch(InternalActionContext ac) {
 		return Collections.singleton(SchemaContainer.composeIndexName());
 	}
 

@@ -2,6 +2,10 @@ package com.gentics.mesh.core.endpoint.utility;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import javax.inject.Inject;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -85,6 +89,13 @@ public class UtilityHandler extends AbstractHandler {
 			SchemaValidationResponse response = new SchemaValidationResponse();
 			response.setElasticsearch(fullSettings);
 			response.setStatus(ValidationStatus.VALID);
+			Map<String, JsonObject> languageElasticsearch = schema.findOverriddenSearchLanguages().collect(Collectors.toMap(
+				Function.identity(),
+				lang -> nodeIndexHandler.createIndexSettings(schema, lang)
+			));
+			if (!languageElasticsearch.isEmpty()) {
+				response.setLanguageElasticsearch(languageElasticsearch);
+			}
 			return nodeIndexHandler.validate(schema).onErrorComplete(error -> {
 				log.error("Validation of schema {" + schema.getName() + "} failed with error", error);
 				response.setStatus(ValidationStatus.INVALID);

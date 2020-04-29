@@ -83,7 +83,7 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 		if (log.isDebugEnabled()) {
 			log.debug("Invoking search with query {" + query + "} for {Containers}");
 		}
-		Set<String> indices = getIndexHandler().getSelectedIndices(ac);
+		Set<String> indices = getIndexHandler().getIndicesForSearch(ac);
 
 		// Add permission checks to the query
 		JsonObject queryJson = prepareSearchQuery(ac, query, true);

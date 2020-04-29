@@ -19,6 +19,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.request.BulkRequest;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.DeleteDocumentRequest;
@@ -30,6 +31,8 @@ import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
+import com.gentics.mesh.graphdb.model.MeshElement;
+import com.gentics.mesh.graphdb.spi.Transactional;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.entity.MeshEntities;
 import com.gentics.mesh.search.verticle.eventhandler.EventCauseHelper;
@@ -79,7 +82,7 @@ public class NodeContentEventHandler implements EventHandler {
 					if (EventCauseHelper.isProjectDeleteCause(message)) {
 						return Flowable.empty();
 					} else {
-						return Flowable.just(deleteNodes(message, getSchemaVersionUuid(message)));
+						return Flowable.just(deleteNodes(message, getSchemaVersionUuid(message).runInNewTx()));
 					}
 				default:
 					throw new RuntimeException("Unexpected event " + event.address);
@@ -101,7 +104,7 @@ public class NodeContentEventHandler implements EventHandler {
 	private Optional<CreateDocumentRequest> upsertNodes(NodeMeshEventModel message) {
 		return helper.getDb().tx(() -> entities.nodeContent.getDocument(message))
 			.map(doc -> helper.createDocumentRequest(
-				getIndexName(message, getSchemaVersionUuid(message)),
+				getIndexName(message, getSchemaVersionUuid(message).runInNewTx()),
 				NodeGraphFieldContainer.composeDocumentId(message.getUuid(), message.getLanguageTag()),
 				doc, complianceMode));
 	}
@@ -117,16 +120,32 @@ public class NodeContentEventHandler implements EventHandler {
 			message.getProject().getUuid(),
 			message.getBranchUuid(),
 			schemaVersionUuid,
-			message.getType());
+			message.getType(),
+			getIndexLanguage(message).runInNewTx()
+		);
 	}
 
-	private String getSchemaVersionUuid(NodeMeshEventModel message) {
-		return helper.getDb().tx(() -> {
+	private Transactional<String> getIndexLanguage(NodeMeshEventModel message) {
+		return findLatestSchemaVersion(message)
+			.mapInTx(schema -> schema.getSchema().findOverriddenSearchLanguages()
+				.anyMatch(lang -> lang.equals(message.getLanguageTag()))
+					? message.getLanguageTag()
+					: null
+			);
+	}
+
+
+	private Transactional<String> getSchemaVersionUuid(NodeMeshEventModel message) {
+		return findLatestSchemaVersion(message)
+			.mapInTx(MeshElement::getUuid);
+	}
+
+	private Transactional<SchemaContainerVersion> findLatestSchemaVersion(NodeMeshEventModel message) {
+		return helper.getDb().transactional(tx -> {
 			SchemaContainer schema = boot.schemaContainerRoot().findByUuid(message.getSchema().getUuid());
 			return boot.projectRoot().findByUuid(message.getProject().getUuid())
 				.getBranchRoot().findByUuid(message.getBranchUuid())
-				.findLatestSchemaVersion(schema)
-				.getUuid();
+				.findLatestSchemaVersion(schema);
 		});
 	}
 

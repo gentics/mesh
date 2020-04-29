@@ -86,6 +86,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
 import com.gentics.mesh.util.UUIDUtil;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Observable;
 
 @MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true)
@@ -754,5 +755,13 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 		client().createMicroschema(microSchemaRequest).blockingAwait();
 		call(() -> client().createSchema(schemaRequest), CONFLICT, "microschema_conflicting_name", "test");
+	}
+
+	@Test
+	public void testDuplicateLanguage() {
+		call(
+			() -> client().createSchema(loadResourceJsonAsPojo("schemas/languageOverride/duplicateLanguage.json", SchemaCreateRequest.class)),
+			HttpResponseStatus.BAD_REQUEST, "error_language_duplicate_override", "de"
+		);
 	}
 }
