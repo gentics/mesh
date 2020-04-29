@@ -25,11 +25,14 @@ include::content/docs/variables.adoc-include[]
 
 * The Mesh Server will require Java 11 with the release of 2.0.0. The runtime support for Java 8 will be dropped. The Mesh Java REST client will still be usable with Java 8.
 
-[[Unreleased]]
+[[v1.5.0]]
+== 1.5.0 (TBD)
 
 icon:check[] Core: Fixed a bug that caused an internal server error if a project was attempted to be created after any role with permissions to create projects was deleted.
 
 icon:plus[] Test: An enhanced test container class has been added. The `MeshContainer` class replaces the `MeshDockerServer` which was deprecated.
+
+icon:plus[] Elasticsearch: It is now possible to define Elasticsearch settings / mappings per language. Please refer to the link:{{< relref "elasticsearch.asciidoc" >}}#language-override[documentation] for more information.
 
 [[v1.4.8]]
 == 1.4.8 (21.04.2020)
