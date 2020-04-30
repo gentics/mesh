@@ -38,7 +38,6 @@ public class PluginDeploymentLock implements AutoCloseable {
 	public void close() {
 		if (isClustered) {
 			if (clusterLock != null && clusterLock.isLockedByCurrentThread()) {
-				System.out.println("Unlock");
 				clusterLock.unlock();
 			}
 		}

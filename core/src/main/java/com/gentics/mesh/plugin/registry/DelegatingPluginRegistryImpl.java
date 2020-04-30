@@ -107,6 +107,7 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 
 	@Override
 	public void preRegister(MeshPlugin plugin) {
+		Objects.requireNonNull(plugin, "The plugin must not be null");
 		manager.get().setStatus(plugin.id(), PluginStatus.PRE_REGISTERED);
 		preRegisteredPlugins.add(plugin);
 	}
@@ -145,7 +146,6 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 			if (log.isDebugEnabled()) {
 				log.debug("Invoking initialization of plugin {" + id + "}");
 			}
-			log.info("Invoking registration of" + id);
 			try {
 				plugin.initialize().timeout(timeout, TimeUnit.SECONDS).doOnComplete(() -> {
 					manager.get().setStatus(id, INITIALIZED);
