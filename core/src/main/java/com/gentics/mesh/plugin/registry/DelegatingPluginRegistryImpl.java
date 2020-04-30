@@ -75,13 +75,7 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 	public void start() {
 		// Check to avoid bogus restarts
 		if (timerId == -1) {
-			timerId = vertx.get().setTimer(1000, rh -> {
-				System.out.println("Invoking registration of pre-registered plugins");
-				if (log.isDebugEnabled()) {
-					log.debug("Invoking registration of pre-registered plugins");
-				}
-				register();
-			});
+			timerId = vertx.get().setPeriodic(1000, id -> register());
 		}
 	}
 
@@ -125,25 +119,33 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 	 * Register all currently pre registered plugins.
 	 */
 	private void register() {
-		long timeout = getPluginTimeout().getSeconds();
-		while (!preRegisteredPlugins.isEmpty()) {
+		if (log.isDebugEnabled()) {
+			log.debug("Invoking registration of pre-registered plugins");
+		}
 
-			MeshPlugin plugin = preRegisteredPlugins.pop();
-			String id = plugin.id();
-			log.info("Invoking registration of" + id);
+		long timeout = getPluginTimeout().getSeconds();
+
+		if (preRegisteredPlugins.isEmpty()) {
+			if (log.isDebugEnabled()) {
+				log.debug("No pre-registered plugins found.");
+			}
+		}
+		while (!preRegisteredPlugins.isEmpty()) {
 			if (options.getClusterOptions().isEnabled()) {
 				if (!db.clusterManager().isWriteQuorumReached()) {
-					log.info("Quirum!");
-					log.debug("Write quorum not reached. Skipping initialization of plugin {" + id + "} for now.");
+					log.debug("Write quorum not reached. Skipping initialization of pre-registered plugins.");
 					return;
 				}
 			}
+
+			// Use the lock to prevent concurrent inits in clustered setups.
+			PluginDeploymentLock lock = pluginLock.lock();
+			MeshPlugin plugin = preRegisteredPlugins.pop();
+			String id = plugin.id();
 			if (log.isDebugEnabled()) {
 				log.debug("Invoking initialization of plugin {" + id + "}");
 			}
-			// Use the lock to prevent concurrent inits in clustered setups.
-			PluginDeploymentLock lock = pluginLock.lock();
-			log.info("Got lock");
+			log.info("Invoking registration of" + id);
 			try {
 				plugin.initialize().timeout(timeout, TimeUnit.SECONDS).doOnComplete(() -> {
 					manager.get().setStatus(id, INITIALIZED);
@@ -164,8 +166,8 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 					manager.get().setStatus(id, FAILED);
 				});
 			} catch (Throwable t) {
-				lock.close();
 				log.error("Plugin {" + id + "} failed to initialize since the plugin lock threw an error.", t);
+				lock.close();
 				manager.get().setStatus(id, FAILED);
 			}
 		}
