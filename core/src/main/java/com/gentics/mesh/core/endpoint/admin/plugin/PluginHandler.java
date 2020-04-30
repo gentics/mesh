@@ -26,7 +26,6 @@ import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.plugin.PluginDeploymentRequest;
 import com.gentics.mesh.core.rest.plugin.PluginListResponse;
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
-import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.plugin.MeshPlugin;
@@ -47,13 +46,10 @@ public class PluginHandler extends AbstractHandler {
 
 	private final HandlerUtilities utils;
 
-	private final WriteLock writeLock;
-
 	@Inject
-	public PluginHandler(MeshPluginManager manager, HandlerUtilities utils, WriteLock writeLock) {
+	public PluginHandler(MeshPluginManager manager, HandlerUtilities utils) {
 		this.manager = manager;
 		this.utils = utils;
-		this.writeLock = writeLock;
 	}
 
 	public void handleRead(InternalActionContext ac, String id) {
@@ -75,46 +71,42 @@ public class PluginHandler extends AbstractHandler {
 	}
 
 	public void handleDeploy(InternalActionContext ac) {
-		try (WriteLock lock = writeLock.lock(ac)) {
-			utils.syncTx(ac, tx -> {
-				if (!ac.getUser().hasAdminRole()) {
-					throw error(FORBIDDEN, "error_admin_permission_required");
+		utils.syncTx(ac, tx -> {
+			if (!ac.getUser().hasAdminRole()) {
+				throw error(FORBIDDEN, "error_admin_permission_required");
+			}
+			PluginDeploymentRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), PluginDeploymentRequest.class);
+			String path = requestModel.getPath();
+			return manager.deploy(path).map(pluginId -> {
+				log.debug("Deployed plugin with deployment name {" + path + "} - Id {" + pluginId + "}");
+				PluginWrapper pluginWrapper = manager.getPlugin(pluginId);
+				if (pluginWrapper == null) {
+					log.error("The plugin was deployed but it could not be found by the manager. It seems that the plugin registration failed.");
+					throw error(NOT_FOUND, "admin_plugin_error_plugin_not_found", pluginId);
 				}
-				PluginDeploymentRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), PluginDeploymentRequest.class);
-				String path = requestModel.getPath();
-				return manager.deploy(path).map(pluginId -> {
-					log.debug("Deployed plugin with deployment name {" + path + "} - Id {" + pluginId + "}");
-					PluginWrapper pluginWrapper = manager.getPlugin(pluginId);
-					if (pluginWrapper == null) {
-						log.error("The plugin was deployed but it could not be found by the manager. It seems that the plugin registration failed.");
-						throw error(NOT_FOUND, "admin_plugin_error_plugin_not_found", pluginId);
-					}
-					Plugin plugin = pluginWrapper.getPlugin();
-					if (plugin instanceof MeshPlugin) {
-						PluginResponse response = ((MeshPlugin) plugin).toResponse();
-						return response;
-					}
-					throw error(INTERNAL_SERVER_ERROR, "admin_plugin_error_wrong_type");
-				}).blockingGet();
-			}, model -> ac.send(model, CREATED));
-		}
+				Plugin plugin = pluginWrapper.getPlugin();
+				if (plugin instanceof MeshPlugin) {
+					PluginResponse response = ((MeshPlugin) plugin).toResponse();
+					return response;
+				}
+				throw error(INTERNAL_SERVER_ERROR, "admin_plugin_error_wrong_type");
+			}).blockingGet();
+		}, model -> ac.send(model, CREATED));
 	}
 
 	public void handleUndeploy(InternalActionContext ac, String uuid) {
-		try (WriteLock lock = writeLock.lock(ac)) {
-			utils.syncTx(ac, tx -> {
-				if (!ac.getUser().hasAdminRole()) {
-					throw error(FORBIDDEN, "error_admin_permission_required");
-				}
-				if (StringUtils.isEmpty(uuid)) {
-					throw error(BAD_REQUEST, "admin_plugin_error_uuid_missing");
-				}
+		utils.syncTx(ac, tx -> {
+			if (!ac.getUser().hasAdminRole()) {
+				throw error(FORBIDDEN, "error_admin_permission_required");
+			}
+			if (StringUtils.isEmpty(uuid)) {
+				throw error(BAD_REQUEST, "admin_plugin_error_uuid_missing");
+			}
 
-				return manager
-					.undeploy(uuid)
-					.toSingleDefault(message(ac, "admin_plugin_undeployed", uuid)).blockingGet();
-			}, model -> ac.send(model, OK));
-		}
+			return manager
+				.undeploy(uuid)
+				.toSingleDefault(message(ac, "admin_plugin_undeployed", uuid)).blockingGet();
+		}, model -> ac.send(model, OK));
 	}
 
 	public void handleReadList(InternalActionContext ac) {
