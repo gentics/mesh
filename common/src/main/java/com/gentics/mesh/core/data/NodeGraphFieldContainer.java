@@ -130,6 +130,17 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	}
 
 	/**
+	 * Construct an index name pattern catching all node indices of a specific project.
+	 *
+	 * @param projectUuid
+	 * @return
+	 */
+	static String composeIndexPattern(String projectUuid) {
+		Objects.requireNonNull(projectUuid, "The project uuid was not set");
+		return String.format("node-%s-*", projectUuid);
+	}
+
+	/**
 	 * Construct an index name pattern catching all node indices of a specific version.
 	 *
 	 * @param type

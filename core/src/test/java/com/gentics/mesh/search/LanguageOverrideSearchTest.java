@@ -26,6 +26,7 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.StringField;
+import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
@@ -127,6 +128,23 @@ public class LanguageOverrideSearchTest extends AbstractMultiESTest {
 		assertThat(getIndexCount()).isEqualTo(originalIndexCount + 12);
 
 		deleteSchema(schema.getUuid());
+		waitForSearchIdleEvent();
+		assertThat(getIndexCount()).isEqualTo(originalIndexCount);
+	}
+
+	@Test
+	public void testIndexCountAfterProjectDeletion() {
+		int originalIndexCount = getIndexCount();
+		ProjectResponse project = createProject();
+		waitForSearchIdleEvent();
+		// Tag Index + Folder Nodes (Draft, Published)
+		assertThat(getIndexCount()).isEqualTo(originalIndexCount + 3);
+		createSchema(project.getName(), loadResourceJsonAsPojo("schemas/languageOverride/page.json", SchemaCreateRequest.class));
+		waitForSearchIdleEvent();
+		// We expect 12 additional indices. (5 overridden languages + 1 default index) * 2 versions (draft, published)
+		assertThat(getIndexCount()).isEqualTo(originalIndexCount + 15);
+
+		deleteProject(project.getUuid());
 		waitForSearchIdleEvent();
 		assertThat(getIndexCount()).isEqualTo(originalIndexCount);
 	}
