@@ -1,6 +1,7 @@
 package com.gentics.mesh.rest.client;
 
 import io.reactivex.Completable;
+import io.reactivex.Flowable;
 import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -19,9 +20,9 @@ public interface MeshRequest<T> {
 	}
 
 	/**
-	 * Converts the request to a single. When subscribed, the request is invoked. When the response is received, onSuccess or onError is called.
+	 * Converts the request to a maybe. When subscribed, the request is invoked. When the response is received, onSuccess or onError is called.
 	 *
-	 * @return An RxJava single
+	 * @return An RxJava maybe
 	 */
 	default Maybe<T> toMaybe() {
 		return toSingle().toMaybe();
@@ -41,6 +42,15 @@ public interface MeshRequest<T> {
 	 */
 	default Observable<T> toObservable() {
 		return toMaybe().toObservable();
+	}
+
+	/**
+	 * Converts the request to a Flowable. When subscribed, the request is invoked. When the response is received, onNext or onError is called.
+	 *
+	 * @return An RxJava flowable
+	 */
+	default Flowable<T> toFlowable() {
+		return toMaybe().toFlowable();
 	}
 
 	/**
