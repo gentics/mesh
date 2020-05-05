@@ -76,11 +76,11 @@ public class SearchPlugin extends AbstractPlugin implements RestPlugin {
 		Router router = Router.router(vertx());
 
 		router.route("/search")
-			.produces(HttpConstants.APPLICATION_JSON_UTF8)
+			.produces(HttpConstants.APPLICATION_JSON)
 			.handler(fromComponent(SearchPluginComponent::searchHandler));
 
 		router.route("/autocomplete")
-			.produces(HttpConstants.APPLICATION_JSON_UTF8)
+			.produces(HttpConstants.APPLICATION_JSON)
 			.handler(fromComponent(SearchPluginComponent::autocompleteHandler));
 
 		registerCustomEndpoints(router);
@@ -119,7 +119,7 @@ public class SearchPlugin extends AbstractPlugin implements RestPlugin {
 
 			customRouter.route(path)
 					.method(HttpMethod.GET)
-					.produces(HttpConstants.APPLICATION_JSON_UTF8)
+					.produces(HttpConstants.APPLICATION_JSON)
 					.handler(fromCustomhandler(handler));
 
 			Handler<RoutingContext> wrappedHandler = handler.type() == HandlerType.AUTOCOMPLETE
@@ -128,7 +128,7 @@ public class SearchPlugin extends AbstractPlugin implements RestPlugin {
 
 			customRouter.route(path)
 					.method(HttpMethod.GET)
-					.produces(HttpConstants.APPLICATION_JSON_UTF8)
+					.produces(HttpConstants.APPLICATION_JSON)
 					.handler(wrappedHandler);
 		});
 

@@ -10,6 +10,11 @@
 
 = Mesh Search Plugin Changelog
 
+[[Unreleased]]
+== Unreleased
+
+icon:check[] All routes now require the request header `Accept: application/json` instead of `Accept: application/json; charset=utf8`. This makes it possible to use the search plugin with the Java MeshRestClient. 
+
 [[v1.4.4]]
 == 1.4.4 (2020-04-02)
 icon:check[] AutocompleteHandler: Fix a bug which caused all custom searches to be treated as normal searches instead of basing it on type.
