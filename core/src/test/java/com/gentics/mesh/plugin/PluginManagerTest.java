@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.plugin.PluginStatus;
@@ -208,8 +209,7 @@ public class PluginManagerTest extends AbstractPluginTest {
 		options().setPluginTimeout(1);
 		MeshPluginManager manager = pluginManager();
 		manager.deploy(InitializeTimeoutPlugin.class, "timeout").blockingAwait();
-		// Wait until init fails
-		sleep(4000);
+		waitForEvent(MeshEvent.PLUGIN_DEPLOY_FAILED);
 		assertEquals(1, manager.getPluginIds().size());
 		PluginStatus status = manager.getStatus(manager.getPluginIds().iterator().next());
 		assertEquals(FAILED, status);
