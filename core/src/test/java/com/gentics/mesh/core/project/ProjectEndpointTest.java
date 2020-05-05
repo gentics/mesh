@@ -628,8 +628,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			droppedIndices.add(Tag.composeIndexName(projectUuid()));
 
 			// 1. Determine a list all project indices which must be dropped
-			droppedIndices.add(NodeGraphFieldContainer.composeIndexName(uuid, "*", "*", PUBLISHED));
-			droppedIndices.add(NodeGraphFieldContainer.composeIndexName(uuid, "*", "*", DRAFT));
+			droppedIndices.add(NodeGraphFieldContainer.composeIndexPattern(uuid));
 			// for (Branch branch : project.getBranchRoot().findAll()) {
 			// for (SchemaContainerVersion version : branch.findActiveSchemaVersions()) {
 			// String schemaContainerVersionUuid = version.getUuid();

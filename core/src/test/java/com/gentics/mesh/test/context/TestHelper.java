@@ -479,6 +479,10 @@ public interface TestHelper extends EventHelper, ClientHelper {
 			() -> client().createNode(nodeResponse.getUuid(), projectName, create, new VersioningParametersImpl().setBranch(targetBranchName)));
 	}
 
+	default ProjectResponse createProject() {
+		return createProject(RandomStringUtils.randomAlphabetic(10));
+	}
+
 	default public ProjectResponse createProject(String projectName) {
 		ProjectCreateRequest projectCreateRequest = new ProjectCreateRequest();
 		projectCreateRequest.setName(projectName);
@@ -505,8 +509,12 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	}
 
 	default SchemaResponse createSchema(SchemaCreateRequest request) {
+		return createSchema(PROJECT_NAME, request);
+	}
+
+	default SchemaResponse createSchema(String projectName, SchemaCreateRequest request) {
 		SchemaResponse schemaResponse = client().createSchema(request).blockingGet();
-		client().assignSchemaToProject(PROJECT_NAME, schemaResponse.getUuid()).blockingAwait();
+		client().assignSchemaToProject(projectName, schemaResponse.getUuid()).blockingAwait();
 		return schemaResponse;
 	}
 
