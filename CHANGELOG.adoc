@@ -34,6 +34,8 @@ icon:plus[] Test: An enhanced test container class has been added. The `MeshCont
 
 icon:plus[] Elasticsearch: It is now possible to define Elasticsearch settings / mappings per language. This helps using language specific stemmers or stop word lists. Please refer to the link:{{< relref "elasticsearch.asciidoc" >}}#language-override[documentation] for more information.
 
+icon:check[] Java Rest Client: The response body is now properly closed when calling `blockingAwait()` on a request.
+
 [[v1.4.8]]
 == 1.4.8 (21.04.2020)
 

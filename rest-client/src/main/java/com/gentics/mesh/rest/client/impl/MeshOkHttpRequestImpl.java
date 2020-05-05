@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import org.apache.commons.lang.StringUtils;
@@ -18,6 +19,7 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshRestClientMessageException;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
 
+import io.reactivex.Completable;
 import io.reactivex.Single;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -27,6 +29,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 import okio.BufferedSink;
 import okio.Okio;
 
@@ -133,6 +136,14 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 		return getOkResponse().map(this::mapResponse);
 	}
 
+	@Override
+	public Completable toCompletable() {
+		return getOkResponse()
+			.doOnSuccess(response -> Optional.ofNullable(response)
+				.ifPresent(Response::close))
+			.ignoreElement();
+	}
+
 	private T mapResponse(Response response) throws IOException, MeshRestClientMessageException {
 		throwOnError(response);
 
@@ -205,6 +216,8 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 		try {
 			Response response = client.newCall(createRequest()).execute();
 			throwOnError(response);
+			Optional.ofNullable(response.body())
+				.ifPresent(ResponseBody::close);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
