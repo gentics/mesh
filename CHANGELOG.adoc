@@ -28,13 +28,15 @@ include::content/docs/variables.adoc-include[]
 [[v1.5.0]]
 == 1.5.0 (TBD)
 
-icon:check[] Core: Fixed a bug that caused an internal server error if a project was attempted to be created after any role with permissions to create projects was deleted.
-
 icon:plus[] Test: An enhanced test container class has been added. The `MeshContainer` class replaces the `MeshDockerServer` which was deprecated.
 
 icon:plus[] Elasticsearch: It is now possible to define Elasticsearch settings / mappings per language. This helps using language specific stemmers or stop word lists. Please refer to the link:{{< relref "elasticsearch.asciidoc" >}}#language-override[documentation] for more information.
 
+icon:check[] Core: Fixed a bug that caused an internal server error if a project was attempted to be created after any role with permissions to create projects was deleted.
+
 icon:check[] Java Rest Client: The response body is now properly closed when calling `blockingAwait()` on a request.
+
+icon:check[] GraphQL: Errors during GraphQL queries are now correctly propagated to the client.
 
 [[v1.4.8]]
 == 1.4.8 (21.04.2020)
@@ -123,8 +125,6 @@ icon:check[] OrientDB: The included OrientDB version has been updated to version
 icon:check[] Core: The handler for webroot updates is now running in a worker thread. This will prevent "Thread blocked" messages in the log.
 
 icon:check[] Core: The debuginfo endpoint now correctly includes the `default-distributed-db-config.json` file.
-
-icon:check[] GraphQL: Errors during GraphQL queries are now correctly propagated to the client.
 
 [[v1.4.0]]
 == 1.4.0 (24.01.2020)
