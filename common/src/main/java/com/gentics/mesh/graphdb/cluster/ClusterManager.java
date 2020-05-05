@@ -5,6 +5,8 @@ import java.io.IOException;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.hazelcast.core.HazelcastInstance;
 
+import io.reactivex.Completable;
+
 public interface ClusterManager {
 
 	/**
@@ -51,10 +53,10 @@ public interface ClusterManager {
 	void stopHazelcast();
 
 	/**
-	 * Check whether the write quorum is reached.
+	 * Returns a completable which will complete once the quorum has been reached.
 	 * 
 	 * @return
 	 */
-	boolean isWriteQuorumReached();
+	Completable waitUntilWriteQuorumReached();
 
 }

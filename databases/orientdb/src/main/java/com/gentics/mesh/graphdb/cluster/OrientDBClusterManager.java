@@ -53,6 +53,7 @@ import com.orientechnologies.orient.server.hazelcast.OHazelcastPlugin;
 import com.orientechnologies.orient.server.plugin.OServerPluginManager;
 
 import dagger.Lazy;
+import io.reactivex.Completable;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -553,7 +554,13 @@ public class OrientDBClusterManager implements ClusterManager {
 	}
 
 	@Override
-	public boolean isWriteQuorumReached() {
-		return server.getDistributedManager().isWriteQuorumPresent(GraphStorage.DB_NAME);
+	public Completable waitUntilWriteQuorumReached() {
+		return new io.vertx.reactivex.core.Vertx(vertx.get())
+			.periodicStream(1000)
+			.toObservable()
+			.map(ignore -> server.getDistributedManager().isWriteQuorumPresent(GraphStorage.DB_NAME))
+			.takeUntil(ready -> ready)
+			.ignoreElements();
 	}
+
 }

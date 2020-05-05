@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.rest.plugin.PluginStatus.REGISTERED;
 
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.EmptyStackException;
 import java.util.Objects;
 import java.util.Stack;
 import java.util.concurrent.TimeUnit;
@@ -15,6 +16,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.auth.AuthServicePluginRegistry;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.plugin.PluginStatus;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -25,15 +27,19 @@ import com.gentics.mesh.plugin.manager.MeshPluginManager;
 import dagger.Lazy;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
-import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.reactivex.core.Vertx;
+import io.vertx.reactivex.core.eventbus.EventBus;
+import io.vertx.reactivex.core.eventbus.MessageConsumer;
 
 /**
  * Central plugin registry which delegates to other registry and handles plugin pre-registration.
  */
 @Singleton
 public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
+
+	public static final String GLOBAL_PLUGIN_LOCK_KEY = "MESH_PLUGIN_REGISTRATION_LOCK";
 
 	private static final Logger log = LoggerFactory.getLogger(DelegatingPluginRegistryImpl.class);
 
@@ -49,41 +55,47 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 
 	private final Lazy<MeshPluginManager> manager;
 
-	private final Lazy<Vertx> vertx;
-
-	private long timerId = -1;
+	private final Lazy<Vertx> rxVertx;
 
 	private final Database db;
 
-	private final PluginDeploymentLock pluginLock;
+	private MessageConsumer<Object> clusterConsumer;
+	private MessageConsumer<Object> preRegisterConsumer;
 
 	@Inject
 	public DelegatingPluginRegistryImpl(MeshOptions options, RestPluginRegistry restRegistry, GraphQLPluginRegistry graphqlRegistry,
-		AuthServicePluginRegistry authServiceRegistry, Lazy<MeshPluginManager> manager, Lazy<Vertx> vertx, Database db,
-		PluginDeploymentLock pluginLock) {
+		AuthServicePluginRegistry authServiceRegistry, Lazy<MeshPluginManager> manager, Lazy<Vertx> rxVertx, Database db) {
 		this.options = options;
 		this.restRegistry = restRegistry;
 		this.graphqlRegistry = graphqlRegistry;
 		this.authServiceRegistry = authServiceRegistry;
 		this.manager = manager;
-		this.vertx = vertx;
+		this.rxVertx = rxVertx;
 		this.db = db;
-		this.pluginLock = pluginLock;
 	}
 
 	@Override
 	public void start() {
-		// Check to avoid bogus restarts
-		if (timerId == -1) {
-			timerId = vertx.get().setPeriodic(1000, id -> register());
+		EventBus eb = rxVertx.get().eventBus();
+		if (options.getClusterOptions().isEnabled()) {
+			log.debug("Starting to listen to cluster joined events");
+			clusterConsumer = eb.consumer(MeshEvent.CLUSTER_NODE_JOINED.getAddress(), ignore -> {
+				register();
+			});
 		}
+		log.debug("Starting to listen to plugin pre-registered events");
+		preRegisterConsumer = eb.localConsumer(MeshEvent.PLUGIN_PRE_REGISTERED.getAddress(), ignore -> {
+			register();
+		});
 	}
 
 	@Override
 	public void stop() {
-		if (timerId != -1) {
-			vertx.get().cancelTimer(timerId);
-			timerId = -1;
+		if (clusterConsumer != null) {
+			clusterConsumer.unregister();
+		}
+		if (preRegisterConsumer != null) {
+			preRegisterConsumer.unregister();
 		}
 		preRegisteredPlugins.clear();
 	}
@@ -107,9 +119,12 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 
 	@Override
 	public void preRegister(MeshPlugin plugin) {
+		EventBus eb = rxVertx.get().eventBus();
 		Objects.requireNonNull(plugin, "The plugin must not be null");
 		manager.get().setStatus(plugin.id(), PluginStatus.PRE_REGISTERED);
 		preRegisteredPlugins.add(plugin);
+		// TODO add payload
+		eb.publish(MeshEvent.PLUGIN_PRE_REGISTERED.getAddress(), null);
 	}
 
 	private Observable<PluginRegistry> registries() {
@@ -120,58 +135,93 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 	 * Register all currently pre registered plugins.
 	 */
 	private void register() {
+		EventBus eb = rxVertx.get().eventBus();
 		if (log.isDebugEnabled()) {
 			log.debug("Invoking registration of pre-registered plugins");
 		}
-
 		long timeout = getPluginTimeout().getSeconds();
-
 		if (preRegisteredPlugins.isEmpty()) {
 			if (log.isDebugEnabled()) {
 				log.debug("No pre-registered plugins found.");
 			}
 		}
-		while (!preRegisteredPlugins.isEmpty()) {
-			if (options.getClusterOptions().isEnabled()) {
-				if (!db.clusterManager().isWriteQuorumReached()) {
-					log.debug("Write quorum not reached. Skipping initialization of pre-registered plugins.");
-					return;
-				}
-			}
 
-			// Use the lock to prevent concurrent inits in clustered setups.
-			PluginDeploymentLock lock = pluginLock.lock();
-			MeshPlugin plugin = preRegisteredPlugins.pop();
-			String id = plugin.id();
-			if (log.isDebugEnabled()) {
-				log.debug("Invoking initialization of plugin {" + id + "}");
-			}
+		while (!preRegisteredPlugins.isEmpty()) {
+
+			MeshPlugin plugin;
 			try {
-				plugin.initialize().timeout(timeout, TimeUnit.SECONDS).doOnComplete(() -> {
-					manager.get().setStatus(id, INITIALIZED);
-				}).andThen(register(plugin).doOnComplete(() -> {
-					manager.get().setStatus(id, REGISTERED);
-				})).subscribe(() -> {
-					lock.close();
-					log.info("Completed handling of pre-registered plugin {" + id + "}");
-					manager.get().setStatus(id, REGISTERED);
-				}, err -> {
-					lock.close();
-					if (err instanceof TimeoutException) {
-						log.error("The registration of plugin {" + id + "} did not complete within {" + timeout
-							+ "} seconds. Unloading plugin.");
-					} else {
-						log.error("Plugin init and register failed for plugin {" + id + "}", err);
-					}
-					manager.get().setStatus(id, FAILED);
-				});
-			} catch (Throwable t) {
-				log.error("Plugin {" + id + "} failed to initialize since the plugin lock threw an error.", t);
-				lock.close();
-				manager.get().setStatus(id, FAILED);
+				plugin = preRegisteredPlugins.pop();
+			} catch (EmptyStackException e) {
+				return;
 			}
+			String id = plugin.id();
+
+			optionalLock(registerAndInitalizePlugin(plugin)).subscribe(() -> {
+				log.info("Completed handling of pre-registered plugin {" + id + "}");
+				manager.get().setStatus(id, REGISTERED);
+				eb.publish(MeshEvent.PLUGIN_REGISTERED.getAddress(), null);
+				eb.publish(MeshEvent.PLUGIN_DEPLOYED.getAddress(), null);
+			}, err -> {
+				if (err instanceof TimeoutException) {
+					log.error("The registration of plugin {" + id + "} did not complete within {" + timeout
+						+ "} seconds. Unloading plugin.");
+				} else {
+					log.error("Plugin init and register failed for plugin {" + id + "}", err);
+				}
+				manager.get().setStatus(id, FAILED);
+				eb.publish(MeshEvent.PLUGIN_DEPLOY_FAILED.getAddress(), null);
+			});
+
 		}
 
+	}
+
+	private Completable registerAndInitalizePlugin(MeshPlugin plugin) {
+		long timeout = getPluginTimeout().getSeconds();
+		String id = plugin.id();
+
+		if (log.isDebugEnabled()) {
+			log.debug("Invoking initialization of plugin {" + id + "}");
+		}
+
+		return optionalQuorumCheck().andThen(plugin.initialize().timeout(timeout, TimeUnit.SECONDS).doOnComplete(() -> {
+			manager.get().setStatus(id, INITIALIZED);
+		}).andThen(register(plugin).doOnComplete(() -> {
+			manager.get().setStatus(id, REGISTERED);
+		})));
+
+	}
+
+	/**
+	 * Use the lock in clustered mode to prevent concurrent inits
+	 * 
+	 * @param lockedAction
+	 * @return
+	 */
+	private Completable optionalLock(Completable lockedAction) {
+		long timeout = getPluginTimeout().getSeconds();
+		if (options.getClusterOptions().isEnabled()) {
+			return rxVertx.get().sharedData().rxGetLockWithTimeout(GLOBAL_PLUGIN_LOCK_KEY, timeout).toMaybe()
+				.flatMapCompletable(lock -> {
+					try {
+						return lockedAction
+							.doFinally(lock::release);
+					} catch (Throwable t) {
+						lock.release();
+						return Completable.error(t);
+					}
+				});
+		} else {
+			return lockedAction;
+		}
+	}
+
+	private Completable optionalQuorumCheck() {
+		if (options.getClusterOptions().isEnabled()) {
+			return db.clusterManager().waitUntilWriteQuorumReached();
+		} else {
+			return Completable.complete();
+		}
 	}
 
 	private Duration getPluginTimeout() {

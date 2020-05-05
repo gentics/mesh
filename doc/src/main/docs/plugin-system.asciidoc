@@ -95,6 +95,40 @@ mesh.run(false);
 mesh.deployPlugin(YourPlugin.class, "your-plugin").blockingAwait();
 ----
 
+=== Events
+
+Gentics Mesh provides various link:{{< relref "events.asciidoc" >}}[events] which can be acted upon.
+The events can be via the internal API or via the websocket endpoint.
+
+[options="header",cols="2*"]
+|======
+
+| Name
+| Description
+
+| mesh.plugin.deploying
+| Emitted once a plugin is being deployed.
+
+| mesh.plugin.pre-registered
+| Emitted once a plugin has been pre-registered.
+
+| mesh.plugin.registered
+| Emitted once a plugin has been registered.
+
+| mesh.plugin.deployed
+| Emitted once a plugin has been deployed.
+
+| mesh.plugin.deploy.failed
+| Emitted when a plugin deployment fails.
+
+| mesh.plugin.undeploying
+| Emitted once a plugin is being undeployed.
+
+| mesh.plugin.undeployed
+| Emitted once a plugin has been undeployed.
+
+|======
+
 === Clustering
 
 Plugins will only be registered once the write quorum has been reached. Until then the deployed plugins will remain in the pre-registered status.

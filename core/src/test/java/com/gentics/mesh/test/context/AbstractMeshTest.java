@@ -28,6 +28,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.router.ProjectsRouter;
 import com.gentics.mesh.test.TestDataProvider;
@@ -215,7 +216,6 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 	}
 
 	public void waitForPreRegistration() {
-		// The pre-registration is processed every 1s
-		sleep(2000);
+		waitForEvent(MeshEvent.PLUGIN_REGISTERED);
 	}
 }
