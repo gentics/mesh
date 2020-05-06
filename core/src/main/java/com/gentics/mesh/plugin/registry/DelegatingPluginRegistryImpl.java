@@ -186,7 +186,7 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 	private Completable optionalQuorumCheck() {
 		if (options.getClusterOptions().isEnabled()) {
 			System.out.println("CLUSTERING");
-			return Completable.complete().delay(20, TimeUnit.SECONDS).andThen(db.clusterManager().waitUntilWriteQuorumReached());
+			return db.clusterManager().waitUntilWriteQuorumReached();
 		} else {
 			return Completable.complete();
 		}

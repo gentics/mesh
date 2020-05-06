@@ -17,6 +17,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 
 import javax.inject.Inject;
@@ -54,9 +55,11 @@ import com.orientechnologies.orient.server.plugin.OServerPluginManager;
 
 import dagger.Lazy;
 import io.reactivex.Completable;
+import io.reactivex.Observable;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.reactivex.core.TimeoutStream;
 
 @Singleton
 public class OrientDBClusterManager implements ClusterManager {
@@ -556,31 +559,31 @@ public class OrientDBClusterManager implements ClusterManager {
 	@Override
 	public Completable waitUntilWriteQuorumReached() {
 		return Completable.defer(() -> {
-			try {
-				return new io.vertx.reactivex.core.Vertx(vertx.get())
-					.periodicStream(1000)
-					.toObservable()
-					.map(ignore -> {
-						System.out.println("Ping: " + ignore);
-						try {
-							// The server and manager may not yet be initialized. We need to wait until those are ready
-							if (server != null && server.getDistributedManager() != null) {
-								return server.getDistributedManager().isWriteQuorumPresent(GraphStorage.DB_NAME);
-							} else {
-								return false;
-							}
-						} catch (Throwable e) {
-							log.error("Error while checking write quorum", e);
-							return false;
-						}
-					})
-					.takeUntil(ready -> ready)
-					.ignoreElements();
-			} catch (Throwable t) {
-				t.printStackTrace();
+			if (writeQuorumReached()) {
 				return Completable.complete();
 			}
+			return Observable.using(
+				() -> new io.vertx.reactivex.core.Vertx(vertx.get()).periodicStream(1000),
+				TimeoutStream::toObservable,
+				TimeoutStream::cancel
+			).takeUntil(ignore -> {
+				return writeQuorumReached();
+			})
+			.ignoreElements();
 		});
 	}
 
+	private boolean writeQuorumReached() {
+		try {
+			// The server and manager may not yet be initialized. We need to wait until those are ready
+			if (server != null && server.getDistributedManager() != null) {
+				return server.getDistributedManager().isWriteQuorumPresent(GraphStorage.DB_NAME);
+			} else {
+				return false;
+			}
+		} catch (Throwable e) {
+			log.error("Error while checking write quorum", e);
+			return false;
+		}
+	}
 }
