@@ -137,7 +137,7 @@ public interface EventHelper extends BaseHelper {
 	}
 
 	default void waitForPluginRegistration() {
-		waitForEvent(MeshEvent.PLUGIN_REGISTERED, 40_000);
+		waitForEvent(MeshEvent.PLUGIN_REGISTERED, 20_000);
 	}
 
 	default JobListResponse waitForJob(Runnable action) {

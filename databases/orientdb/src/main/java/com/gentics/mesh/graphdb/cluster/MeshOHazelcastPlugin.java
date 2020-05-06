@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import com.gentics.mesh.MeshEnv;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.FileSystemXmlConfig;
 import com.hazelcast.core.Hazelcast;
@@ -58,7 +59,7 @@ public class MeshOHazelcastPlugin extends OHazelcastPlugin {
 
 	public static HazelcastInstance createHazelcast() {
 		if (hazelcast == null) {
-			File configFile = new File("config/hazelcast.xml");
+			File configFile = new File(MeshEnv.CONFIG_FOLDERNAME, "hazelcast.xml");
 			if (!configFile.exists()) {
 				throw new RuntimeException("Could not find configuration file for hazelcast.");
 			}

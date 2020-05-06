@@ -171,7 +171,7 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 	 */
 	private Completable optionalLock(Completable lockedAction) {
 		if (options.getClusterOptions().isEnabled()) {
-			return rxVertx.get().sharedData().rxGetLockWithTimeout(GLOBAL_PLUGIN_LOCK_KEY, 400_000).toMaybe()
+			return rxVertx.get().sharedData().rxGetLockWithTimeout(GLOBAL_PLUGIN_LOCK_KEY, 10_000).toMaybe()
 				.flatMapCompletable(lock -> {
 					log.debug("Acquired lock for plugin registration.");
 					return lockedAction

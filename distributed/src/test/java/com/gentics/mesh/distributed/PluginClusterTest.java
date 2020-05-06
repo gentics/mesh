@@ -6,9 +6,10 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.util.TokenUtil.randomToken;
 import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -16,9 +17,11 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import com.gentics.mesh.context.impl.LoggingConfigurator;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.plugin.PluginListResponse;
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
 import com.gentics.mesh.distributed.containers.MeshDockerServer;
+import com.gentics.mesh.rest.client.MeshWebsocket;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -100,27 +103,24 @@ public class PluginClusterTest extends AbstractClusterTest {
 	 * @throws InterruptedException
 	 */
 	private void waitForPluginRegistration(MeshDockerServer container, int timeoutInMilliseconds) throws InterruptedException {
-		long start = System.currentTimeMillis();
-		PluginResponse plugin = null;
-		while (true) {
-			long dur = System.currentTimeMillis() - start;
-			if (dur >= timeoutInMilliseconds) {
-				if (plugin != null) {
-					log.info("Last response: " + plugin.toJson());
-				}
-				fail("Timeout for plugin registration exceeded in " + container.getNodeName());
+		// 1. Initial check
+		PluginListResponse plugins = call(() -> container.client().findPlugins());
+		if (plugins.getData().size() == 1) {
+			PluginResponse plugin = plugins.getData().get(0);
+			if (REGISTERED == plugin.getStatus()) {
+				log.info("Plugin registered in container {}", container.getNodeName());
+				return;
 			}
-			PluginListResponse plugins = call(() -> container.client().findPlugins());
-			if (plugins.getData().size() == 1) {
-				plugin = plugins.getData().get(0);
-				if (REGISTERED == plugin.getStatus()) {
-					log.info("Plugin registered in container {}", container.getNodeName());
-					return;
-				}
-			}
-			// Plugin not yet seen as ready. Lets wait.
-			Thread.sleep(250);
 		}
+		// Wait for event
+		MeshWebsocket eb = container.client().eventbus();
+		eb.registerEvents(MeshEvent.PLUGIN_REGISTERED);
+		CountDownLatch latch = new CountDownLatch(1);
+		eb.events().subscribe(ignore -> {
+			latch.countDown();
+		}, err -> err.printStackTrace());
+
+		latch.await(timeoutInMilliseconds, TimeUnit.MILLISECONDS);
 	}
 
 	private void login(MeshDockerServer server) {
