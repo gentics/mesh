@@ -28,7 +28,6 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
-import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.router.ProjectsRouter;
 import com.gentics.mesh.test.TestDataProvider;
@@ -48,6 +47,11 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 	static {
 		// Use slf4j instead of JUL
 		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
+		// Disable direct IO (My dev system uses ZFS. Otherwise the test will not run)
+		if ("jotschi".equalsIgnoreCase(System.getProperty("user.name"))) {
+			System.setProperty("storage.wal.allowDirectIO", "false");
+		}
+
 	}
 
 	private OkHttpClient httpClient;
@@ -215,7 +219,4 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 		return eventAsserter;
 	}
 
-	public void waitForPreRegistration() {
-		waitForEvent(MeshEvent.PLUGIN_REGISTERED);
-	}
 }

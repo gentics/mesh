@@ -555,12 +555,32 @@ public class OrientDBClusterManager implements ClusterManager {
 
 	@Override
 	public Completable waitUntilWriteQuorumReached() {
-		return new io.vertx.reactivex.core.Vertx(vertx.get())
-			.periodicStream(1000)
-			.toObservable()
-			.map(ignore -> server.getDistributedManager().isWriteQuorumPresent(GraphStorage.DB_NAME))
-			.takeUntil(ready -> ready)
-			.ignoreElements();
+		return Completable.defer(() -> {
+			try {
+				return new io.vertx.reactivex.core.Vertx(vertx.get())
+					.periodicStream(1000)
+					.toObservable()
+					.map(ignore -> {
+						System.out.println("Ping: " + ignore);
+						try {
+							// The server and manager may not yet be initialized. We need to wait until those are ready
+							if (server != null && server.getDistributedManager() != null) {
+								return server.getDistributedManager().isWriteQuorumPresent(GraphStorage.DB_NAME);
+							} else {
+								return false;
+							}
+						} catch (Throwable e) {
+							log.error("Error while checking write quorum", e);
+							return false;
+						}
+					})
+					.takeUntil(ready -> ready)
+					.ignoreElements();
+			} catch (Throwable t) {
+				t.printStackTrace();
+				return Completable.complete();
+			}
+		});
 	}
 
 }

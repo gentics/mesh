@@ -51,6 +51,15 @@ public interface EventHelper extends BaseHelper {
 	 * @throws TimeoutException
 	 */
 	default void waitForEvent(String address, Action code) {
+		waitForEvent(address, code, 10_000);
+	}
+
+	default void waitForEvent(MeshEvent event, int timeoutMs) {
+		waitForEvent(event.getAddress(), () -> {
+		}, timeoutMs);
+	}
+
+	default void waitForEvent(String address, Action code, int timeoutMs) {
 		CountDownLatch latch = new CountDownLatch(1);
 		MessageConsumer<Object> consumer = vertx().eventBus().consumer(address);
 		consumer.handler(msg -> latch.countDown());
@@ -66,7 +75,7 @@ public interface EventHelper extends BaseHelper {
 			}
 		});
 		try {
-			latch.await(10, TimeUnit.SECONDS);
+			latch.await(timeoutMs, TimeUnit.MILLISECONDS);
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		}
@@ -125,6 +134,10 @@ public interface EventHelper extends BaseHelper {
 	default void waitForEvent(MeshEvent event) {
 		waitForEvent(event.address, () -> {
 		});
+	}
+
+	default void waitForPluginRegistration() {
+		waitForEvent(MeshEvent.PLUGIN_REGISTERED, 40_000);
 	}
 
 	default JobListResponse waitForJob(Runnable action) {

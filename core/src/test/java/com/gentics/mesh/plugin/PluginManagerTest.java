@@ -59,7 +59,7 @@ public class PluginManagerTest extends AbstractPluginTest {
 		setPluginBaseDir("abc");
 		String id = pluginManager().deploy(Paths.get(BASIC_PATH)).blockingGet();
 		assertEquals("basic", id);
-		waitForPreRegistration();
+		waitForPluginRegistration();
 
 		for (int i = 0; i < 2; i++) {
 			ProjectCreateRequest request = new ProjectCreateRequest();
@@ -97,7 +97,7 @@ public class PluginManagerTest extends AbstractPluginTest {
 		manager.start();
 		manager.deployExistingPluginFiles().blockingAwait();
 		assertEquals(2, manager.getPluginIds().size());
-		waitForPreRegistration();
+		waitForPluginRegistration();
 
 		// Assert that plugins were registered and initialized
 		String queryName = "plugin/graphql-plugin-query";
@@ -117,7 +117,7 @@ public class PluginManagerTest extends AbstractPluginTest {
 	public void testPluginAuth() throws IOException {
 		MeshPluginManager manager = pluginManager();
 		manager.deploy(ClientPlugin.class, "client").blockingAwait();
-		waitForPreRegistration();
+		waitForPluginRegistration();
 		JsonObject json = new JsonObject(getJSONViaClient(CURRENT_API_BASE_PATH + "/plugins/client/user"));
 		assertNotNull(json.getString("uuid"));
 	}
@@ -130,7 +130,7 @@ public class PluginManagerTest extends AbstractPluginTest {
 	@Test
 	public void testClientAPI() throws IOException {
 		pluginManager().deploy(ClientPlugin.class, "client").blockingAwait();
-		waitForPreRegistration();
+		waitForPluginRegistration();
 
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName("testabc");
@@ -172,7 +172,7 @@ public class PluginManagerTest extends AbstractPluginTest {
 		MeshPluginManager manager = pluginManager();
 		manager.deploy(DummyPlugin.class, "dummy").blockingAwait();
 		assertEquals(1, manager.getPluginIds().size());
-		waitForPreRegistration();
+		waitForPluginRegistration();
 
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName("test");
@@ -219,7 +219,7 @@ public class PluginManagerTest extends AbstractPluginTest {
 	public void testRedeployAfterInitFailure() {
 		MeshPluginManager manager = pluginManager();
 		manager.deploy(FailingInitializePlugin.class, "failing").blockingAwait();
-		waitForPreRegistration();
+		waitForPluginRegistration();
 		PluginStatus status = manager.getStatus(manager.getPluginIds().iterator().next());
 		assertEquals(FAILED, status);
 		assertEquals(1, manager.getPluginIds().size());

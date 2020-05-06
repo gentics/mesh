@@ -6,9 +6,7 @@ import static com.gentics.mesh.core.rest.plugin.PluginStatus.REGISTERED;
 
 import java.time.Duration;
 import java.util.Arrays;
-import java.util.EmptyStackException;
 import java.util.Objects;
-import java.util.Stack;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -49,8 +47,6 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 
 	private final AuthServicePluginRegistry authServiceRegistry;
 
-	private final Stack<MeshPlugin> preRegisteredPlugins = new Stack<>();
-
 	private final MeshOptions options;
 
 	private final Lazy<MeshPluginManager> manager;
@@ -76,17 +72,11 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 
 	@Override
 	public void start() {
-		EventBus eb = rxVertx.get().eventBus();
-		if (options.getClusterOptions().isEnabled()) {
-			log.debug("Starting to listen to cluster joined events");
-			clusterConsumer = eb.consumer(MeshEvent.CLUSTER_NODE_JOINED.getAddress(), ignore -> {
-				register();
-			});
-		}
+		// EventBus eb = rxVertx.get().eventBus();
 		log.debug("Starting to listen to plugin pre-registered events");
-		preRegisterConsumer = eb.localConsumer(MeshEvent.PLUGIN_PRE_REGISTERED.getAddress(), ignore -> {
-			register();
-		});
+		// preRegisterConsumer = eb.localConsumer(MeshEvent.PLUGIN_PRE_REGISTERED.getAddress(), ignore -> {
+		// register();
+		// });
 	}
 
 	@Override
@@ -97,7 +87,6 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 		if (preRegisterConsumer != null) {
 			preRegisterConsumer.unregister();
 		}
-		preRegisteredPlugins.clear();
 	}
 
 	@Override
@@ -105,9 +94,7 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 		Objects.requireNonNull(plugin, "The plugin must not be null");
 		String id = plugin.id();
 		log.debug("Deregistering plugin {}", id);
-		return registries().flatMapCompletable(r -> r.deregister(plugin)).doOnComplete(() -> {
-			preRegisteredPlugins.remove(plugin);
-		});
+		return registries().flatMapCompletable(r -> r.deregister(plugin));
 	}
 
 	@Override
@@ -122,9 +109,9 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 		EventBus eb = rxVertx.get().eventBus();
 		Objects.requireNonNull(plugin, "The plugin must not be null");
 		manager.get().setStatus(plugin.id(), PluginStatus.PRE_REGISTERED);
-		preRegisteredPlugins.add(plugin);
 		// TODO add payload
 		eb.publish(MeshEvent.PLUGIN_PRE_REGISTERED.getAddress(), null);
+		initAndRegister(plugin);
 	}
 
 	private Observable<PluginRegistry> registries() {
@@ -134,45 +121,30 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 	/**
 	 * Register all currently pre registered plugins.
 	 */
-	private void register() {
+	private void initAndRegister(MeshPlugin plugin) {
 		EventBus eb = rxVertx.get().eventBus();
 		if (log.isDebugEnabled()) {
 			log.debug("Invoking registration of pre-registered plugins");
 		}
 		long timeout = getPluginTimeout().getSeconds();
-		if (preRegisteredPlugins.isEmpty()) {
-			if (log.isDebugEnabled()) {
-				log.debug("No pre-registered plugins found.");
+
+		String id = plugin.id();
+
+		optionalLock(registerAndInitalizePlugin(plugin)).subscribe(() -> {
+			log.info("Completed handling of pre-registered plugin {" + id + "}");
+			manager.get().setStatus(id, REGISTERED);
+			eb.publish(MeshEvent.PLUGIN_REGISTERED.getAddress(), null);
+			eb.publish(MeshEvent.PLUGIN_DEPLOYED.getAddress(), null);
+		}, err -> {
+			if (err instanceof TimeoutException) {
+				log.error("The registration of plugin {" + id + "} did not complete within {" + timeout
+					+ "} seconds. Unloading plugin.");
+			} else {
+				log.error("Plugin init and register failed for plugin {" + id + "}", err);
 			}
-		}
-
-		while (!preRegisteredPlugins.isEmpty()) {
-
-			MeshPlugin plugin;
-			try {
-				plugin = preRegisteredPlugins.pop();
-			} catch (EmptyStackException e) {
-				return;
-			}
-			String id = plugin.id();
-
-			optionalLock(registerAndInitalizePlugin(plugin)).subscribe(() -> {
-				log.info("Completed handling of pre-registered plugin {" + id + "}");
-				manager.get().setStatus(id, REGISTERED);
-				eb.publish(MeshEvent.PLUGIN_REGISTERED.getAddress(), null);
-				eb.publish(MeshEvent.PLUGIN_DEPLOYED.getAddress(), null);
-			}, err -> {
-				if (err instanceof TimeoutException) {
-					log.error("The registration of plugin {" + id + "} did not complete within {" + timeout
-						+ "} seconds. Unloading plugin.");
-				} else {
-					log.error("Plugin init and register failed for plugin {" + id + "}", err);
-				}
-				manager.get().setStatus(id, FAILED);
-				eb.publish(MeshEvent.PLUGIN_DEPLOY_FAILED.getAddress(), null);
-			});
-
-		}
+			manager.get().setStatus(id, FAILED);
+			eb.publish(MeshEvent.PLUGIN_DEPLOY_FAILED.getAddress(), null);
+		});
 
 	}
 
@@ -180,16 +152,15 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 		long timeout = getPluginTimeout().getSeconds();
 		String id = plugin.id();
 
-		if (log.isDebugEnabled()) {
-			log.debug("Invoking initialization of plugin {" + id + "}");
-		}
-
-		return optionalQuorumCheck().andThen(plugin.initialize().timeout(timeout, TimeUnit.SECONDS).doOnComplete(() -> {
+		return optionalQuorumCheck().doOnComplete(() -> {
+			if (log.isDebugEnabled()) {
+				log.debug("Invoking initialization of plugin {" + id + "}");
+			}
+		}).andThen(plugin.initialize().timeout(timeout, TimeUnit.SECONDS).doOnComplete(() -> {
 			manager.get().setStatus(id, INITIALIZED);
 		}).andThen(register(plugin).doOnComplete(() -> {
 			manager.get().setStatus(id, REGISTERED);
 		})));
-
 	}
 
 	/**
@@ -199,17 +170,13 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 	 * @return
 	 */
 	private Completable optionalLock(Completable lockedAction) {
-		long timeout = getPluginTimeout().getSeconds();
 		if (options.getClusterOptions().isEnabled()) {
-			return rxVertx.get().sharedData().rxGetLockWithTimeout(GLOBAL_PLUGIN_LOCK_KEY, timeout).toMaybe()
+			return rxVertx.get().sharedData().rxGetLockWithTimeout(GLOBAL_PLUGIN_LOCK_KEY, 400_000).toMaybe()
 				.flatMapCompletable(lock -> {
-					try {
-						return lockedAction
-							.doFinally(lock::release);
-					} catch (Throwable t) {
-						lock.release();
-						return Completable.error(t);
-					}
+					log.debug("Acquired lock for plugin registration.");
+					System.out.println("Locked");
+					return lockedAction
+						.doFinally(lock::release);
 				});
 		} else {
 			return lockedAction;
@@ -218,7 +185,8 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 
 	private Completable optionalQuorumCheck() {
 		if (options.getClusterOptions().isEnabled()) {
-			return db.clusterManager().waitUntilWriteQuorumReached();
+			System.out.println("CLUSTERING");
+			return Completable.complete().delay(20, TimeUnit.SECONDS).andThen(db.clusterManager().waitUntilWriteQuorumReached());
 		} else {
 			return Completable.complete();
 		}
