@@ -1,5 +1,6 @@
 package com.gentics.mesh.graphdb.cluster;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.HashSet;
 import java.util.Map;
@@ -10,16 +11,13 @@ import com.hazelcast.config.FileSystemXmlConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.HazelcastInstanceNotActiveException;
-import com.orientechnologies.common.io.OFileUtils;
 import com.orientechnologies.common.log.OLogManager;
-import com.orientechnologies.common.parser.OSystemVariableResolver;
 import com.orientechnologies.common.util.OCallableNoParamNoReturn;
 import com.orientechnologies.common.util.OCallableUtils;
 import com.orientechnologies.orient.core.OSignalHandler;
 import com.orientechnologies.orient.core.Orient;
 import com.orientechnologies.orient.core.db.ODefaultEmbeddedDatabaseInstanceFactory;
 import com.orientechnologies.orient.server.OServer;
-import com.orientechnologies.orient.server.config.OServerParameterConfiguration;
 import com.orientechnologies.orient.server.distributed.ODistributedException;
 import com.orientechnologies.orient.server.hazelcast.OHazelcastDistributedMap;
 import com.orientechnologies.orient.server.hazelcast.OHazelcastMergeStrategy;
@@ -58,26 +56,22 @@ public class MeshOHazelcastPlugin extends OHazelcastPlugin {
 		return hazelcast;
 	}
 
-	public static HazelcastInstance createHazelcast(OServerParameterConfiguration[] iParams) throws FileNotFoundException {
+	public static HazelcastInstance createHazelcast() {
 		if (hazelcast == null) {
-			String hazelcastConfigFile = null;
-			for (OServerParameterConfiguration param : iParams) {
-				if (param.name.equalsIgnoreCase("configuration.hazelcast")) {
-					hazelcastConfigFile = OSystemVariableResolver.resolveSystemVariables(param.value);
-					hazelcastConfigFile = OFileUtils.getPath(hazelcastConfigFile);
-				}
+			File configFile = new File("config/hazelcast.xml");
+			if (!configFile.exists()) {
+				throw new RuntimeException("Could not find configuration file for hazelcast.");
 			}
-
-			if (hazelcastConfigFile == null) {
-				throw new RuntimeException("Could not determine configuration setting.");
+			try {
+				hazelcastConfig = new FileSystemXmlConfig(configFile.getAbsolutePath());
+				hazelcastConfig.setClassLoader(MeshOHazelcastPlugin.class.getClassLoader());
+				hazelcastConfig.getMapConfig(CONFIG_REGISTEREDNODES).setBackupCount(6);
+				hazelcastConfig.getMapConfig(OHazelcastDistributedMap.ORIENTDB_MAP).setMergePolicy(OHazelcastMergeStrategy.class.getName());
+				hazelcastConfig.setProperty("hazelcast.shutdownhook.enabled", "false");
+				hazelcast = Hazelcast.newHazelcastInstance(hazelcastConfig);
+			} catch (Throwable t) {
+				throw new RuntimeException("Error while starting hazelcast", t);
 			}
-
-			hazelcastConfig = new FileSystemXmlConfig(hazelcastConfigFile);
-			hazelcastConfig.setClassLoader(MeshOHazelcastPlugin.class.getClassLoader());
-			hazelcastConfig.getMapConfig(CONFIG_REGISTEREDNODES).setBackupCount(6);
-			hazelcastConfig.getMapConfig(OHazelcastDistributedMap.ORIENTDB_MAP).setMergePolicy(OHazelcastMergeStrategy.class.getName());
-			hazelcastConfig.setProperty("hazelcast.shutdownhook.enabled", "false");
-			hazelcast = Hazelcast.newHazelcastInstance(hazelcastConfig);
 		}
 		return hazelcast;
 	}

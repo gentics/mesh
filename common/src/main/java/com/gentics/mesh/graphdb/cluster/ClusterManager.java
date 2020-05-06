@@ -59,4 +59,11 @@ public interface ClusterManager {
 	 */
 	Completable waitUntilWriteQuorumReached();
 
+	/**
+	 * Start the hazelcast instance.
+	 * 
+	 * @return
+	 */
+	HazelcastInstance startHazelcast();
+
 }

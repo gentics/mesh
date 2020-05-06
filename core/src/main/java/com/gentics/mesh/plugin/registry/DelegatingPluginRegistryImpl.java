@@ -174,7 +174,6 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 			return rxVertx.get().sharedData().rxGetLockWithTimeout(GLOBAL_PLUGIN_LOCK_KEY, 400_000).toMaybe()
 				.flatMapCompletable(lock -> {
 					log.debug("Acquired lock for plugin registration.");
-					System.out.println("Locked");
 					return lockedAction
 						.doFinally(lock::release);
 				});
@@ -185,7 +184,6 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 
 	private Completable optionalQuorumCheck() {
 		if (options.getClusterOptions().isEnabled()) {
-			System.out.println("CLUSTERING");
 			return db.clusterManager().waitUntilWriteQuorumReached();
 		} else {
 			return Completable.complete();
