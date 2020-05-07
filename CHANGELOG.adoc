@@ -26,7 +26,7 @@ include::content/docs/variables.adoc-include[]
 * The Mesh Server will require Java 11 with the release of 2.0.0. The runtime support for Java 8 will be dropped. The Mesh Java REST client will still be usable with Java 8.
 
 [[v1.4.9]]
-== 1.4.9 (TBD)
+== 1.4.9 (07.04.2020)
 
 icon:plus[] Plugins: The plugin registration process was changed. Plugins will now no longer be directly registered when deployed. Instead the plugins will remain in a pre-registration status util Gentics Mesh is able to deploy them. This is especially useful when running plugins in clustered mode. Plugins will only be registered once the write quorum has been reached. Additionally the plugin deployment process will now utilize a lock in clustered mode to prevent concurrent deployments of plugins. The plugin status was added to the plugin endpoint response.
 
