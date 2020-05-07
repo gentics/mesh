@@ -386,14 +386,21 @@ public class OrientDBClusterManager implements ClusterManager {
 		String orientdbHome = new File("").getAbsolutePath();
 		System.setProperty("ORIENTDB_HOME", orientdbHome);
 
-		if (hazelcastInstance == null) {
-			throw new RuntimeException("Hazelcast was not started. Can't proceed with startup.");
-		}
-		ILock lock = null;
 		long lockTimeout = clusterOptions.getTopologyLockTimeout();
-		if (isClusteringEnabled) {
-			lock = hazelcastInstance.getLock(WriteLock.GLOBAL_LOCK_KEY);
-			Thread.sleep(4000);
+		boolean isClustering = options.getClusterOptions().isEnabled();
+
+		if (isClustering) {
+			if (hazelcastInstance == null) {
+				throw new RuntimeException("Hazelcast was not started. Can't proceed with startup.");
+			}
+		}
+
+		ILock lock = null;
+		if (isClustering) {
+			if (isClusteringEnabled) {
+				lock = hazelcastInstance.getLock(WriteLock.GLOBAL_LOCK_KEY);
+				Thread.sleep(4000);
+			}
 		}
 		if (server == null) {
 			server = OServerMain.create();
