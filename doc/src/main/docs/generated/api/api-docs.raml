@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "1.4.8"
+version: "1.4.9"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -3666,6 +3666,7 @@ mediaType: application/json
                                 | id | true | string | Id of the plugin. |
                                 | manifest | true | object | Manifest of the plugin |
                                 | name | true | string | Name of the plugin. |
+                                | status | true | string | Status of the plugin |
                             example: |
                                 {
                                   "id" : "hello-world",
@@ -3760,6 +3761,7 @@ mediaType: application/json
                                 | id | true | string | Id of the plugin. |
                                 | manifest | true | object | Manifest of the plugin |
                                 | name | true | string | Name of the plugin. |
+                                | status | true | string | Status of the plugin |
                             example: |
                                 {
                                   "id" : "hello-world",
@@ -3796,6 +3798,7 @@ mediaType: application/json
                                 | id | true | string | Id of the plugin. |
                                 | manifest | true | object | Manifest of the plugin |
                                 | name | true | string | Name of the plugin. |
+                                | status | true | string | Status of the plugin |
                             example: |
                                 {
                                   "id" : "hello-world",
@@ -6000,7 +6003,7 @@ mediaType: application/json
                                 | vertxVersion | false | string | Used Vert.x version. |
                             example: |
                                 {
-                                  "meshVersion" : "1.4.8",
+                                  "meshVersion" : "1.4.9",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",
