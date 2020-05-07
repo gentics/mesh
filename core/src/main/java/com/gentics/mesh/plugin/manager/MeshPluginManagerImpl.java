@@ -2,6 +2,9 @@ package com.gentics.mesh.plugin.manager;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.error.Errors.rxError;
+import static com.gentics.mesh.core.rest.plugin.PluginStatus.LOADED;
+import static com.gentics.mesh.core.rest.plugin.PluginStatus.STARTED;
+import static com.gentics.mesh.core.rest.plugin.PluginStatus.VALIDATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
@@ -10,6 +13,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
@@ -21,6 +25,7 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.collections4.map.HashedMap;
 import org.pf4j.AbstractPluginManager;
 import org.pf4j.CompoundPluginLoader;
 import org.pf4j.CompoundPluginRepository;
@@ -48,6 +53,8 @@ import org.pf4j.VersionManager;
 import org.pf4j.util.FileUtils;
 
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.plugin.PluginResponse;
+import com.gentics.mesh.core.rest.plugin.PluginStatus;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.plugin.MeshPlugin;
 import com.gentics.mesh.plugin.MeshPluginDescriptor;
@@ -76,6 +83,9 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 
 	private final MeshOptions options;
 
+	// We track our own plugin status since the PF4J state is not extendible.
+	private final Map<String, PluginStatus> pluginStatusMap = new HashedMap<>();
+
 	private final DelegatingPluginRegistry pluginRegistry;
 
 	@Inject
@@ -97,7 +107,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 	}
 
 	@Override
-	public void init() {
+	public void start() {
 		String base = options.getPluginDirectory();
 		if (base == null) {
 			base = "plugins";
@@ -106,6 +116,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 		pluginsRoot = Paths.get(base);
 		// Re-create the plugin repo since the root dir might have changed
 		pluginRepository = createPluginRepository();
+		pluginRegistry.start();
 	}
 
 	@Override
@@ -136,10 +147,13 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 					log.info("Start plugin '{}'", getPluginLabel(pluginWrapper.getDescriptor()));
 					Plugin plugin = pluginWrapper.getPlugin();
 					plugin.start();
+					// Set state for PF4J
 					pluginWrapper.setPluginState(PluginState.STARTED);
 					if (plugin instanceof MeshPlugin) {
+						// Set status for Mesh
 						MeshPlugin meshPlugin = (MeshPlugin) plugin;
-						withTimeout(meshPlugin.id(), "registration", meshPlugin.initialize().andThen(pluginRegistry.register(meshPlugin)));
+						setStatus(meshPlugin.id(), PluginStatus.STARTED);
+						pluginRegistry.preRegister(meshPlugin);
 					}
 					startedPlugins.add(pluginWrapper);
 
@@ -182,6 +196,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 			log.warn("The plugin was not registered after deployment. Maybe the initialisation failed. Going to unload the plugin.");
 			return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_did_not_register", name);
 		}
+		setStatus(id, LOADED);
 
 		// 3. Invoke the loading of the plugin class
 		try {
@@ -192,19 +207,21 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 				return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_loading_failed", name);
 			}
 			validate(plugin.getPlugin());
+			setStatus(id, VALIDATED);
 		} catch (GenericRestException e) {
 			log.error("Post start validation of plugin {" + path + "/" + id + "} failed.", e);
-			plugins.remove(id);
+			removePlugin(id);
 			throw e;
 		} catch (Throwable e) {
 			log.error("Error while loading plugin class", e);
-			plugins.remove(id);
+			removePlugin(id);
 			return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_loading_failed", name);
 		}
 
 		// 4. Start the plugin
 		try {
 			startPlugin(id);
+			setStatus(id, STARTED);
 		} catch (GenericRestException e) {
 			log.error("Starting of plugin {" + path + "/" + id + "} failed.", e);
 			rollback(id);
@@ -221,7 +238,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 			Plugin plugin = wrapper.getPlugin();
 			if (plugin instanceof MeshPlugin) {
 				MeshPlugin meshPlugin = (MeshPlugin) plugin;
-				withTimeout(meshPlugin.id(), "registration", meshPlugin.initialize().andThen(pluginRegistry.register(meshPlugin)));
+				pluginRegistry.preRegister(meshPlugin);
 			}
 		} catch (Throwable e) {
 			log.error("Plugin registration failed with error", e);
@@ -230,6 +247,11 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 		}
 
 		return Single.just(id);
+	}
+
+	private void removePlugin(String id) {
+		plugins.remove(id);
+		pluginStatusMap.remove(id);
 	}
 
 	/**
@@ -242,6 +264,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 	private boolean rollback(String id) {
 		try {
 			unloadPlugin(id);
+			removePlugin(id);
 			return true;
 		} catch (Throwable e2) {
 			log.error("Error while unloading plugin {" + id + "}", e2);
@@ -292,6 +315,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 	@Override
 	public Completable stop() {
 		return Completable.fromRunnable(() -> {
+			pluginRegistry.stop();
 			stopPlugins();
 			unloadPlugins();
 		});
@@ -375,6 +399,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 				if (!(desc instanceof MeshPluginDescriptor)) {
 					return rxError(INTERNAL_SERVER_ERROR, "plugin_desc_wrong").ignoreElement();
 				}
+				setStatus(id, LOADED);
 			} catch (Throwable e) {
 				log.error("Error while deploying plugin via class", e);
 				return Completable.error(new RuntimeException("Error while deploying plugin {" + clazz + "}", e));
@@ -385,17 +410,18 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 				PluginWrapper wrapper = getPlugin(id);
 				if (wrapper == null || wrapper.getPlugin() == null) {
 					log.error("The plugin {" + name + "/" + id + "} could not be loaded.");
-					plugins.remove(id);
+					removePlugin(id);
 					return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_loading_failed", name).ignoreElement();
 				}
 				validate(wrapper.getPlugin());
+				setStatus(id, VALIDATED);
 			} catch (GenericRestException e) {
 				log.error("Post start validation of plugin {" + name + "/" + id + "} failed.", e);
-				plugins.remove(id);
+				removePlugin(id);
 				return Completable.error(e);
 			} catch (Throwable e) {
 				log.error("Error while loading plugin class", e);
-				plugins.remove(id);
+				removePlugin(id);
 				return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_loading_failed", name).ignoreElement();
 			}
 
@@ -414,7 +440,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 				Plugin plugin = wrapper.getPlugin();
 				if (plugin instanceof MeshPlugin) {
 					MeshPlugin meshPlugin = (MeshPlugin) plugin;
-					withTimeout(id, "registration", meshPlugin.initialize().andThen(pluginRegistry.register(meshPlugin)));
+					pluginRegistry.preRegister(meshPlugin);
 				}
 			} catch (Throwable e) {
 				log.error("Plugin registration failed with error", e);
@@ -426,17 +452,29 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 				rollback(id);
 				return rxError(INTERNAL_SERVER_ERROR, "admin_plugin_error_plugin_did_not_register").ignoreElement();
 			}
+
 			return Completable.complete();
 		});
 
 	}
 
+	@Override
+	public void setStatus(String id, PluginStatus status) {
+		pluginStatusMap.put(id, status);
+	}
+
+	@Override
+	public PluginStatus getStatus(String id) {
+		return pluginStatusMap.get(id);
+	}
+
 	private void withTimeout(String id, String operationName, Completable op) {
+		long timeout = getPluginTimeout().getSeconds();
 		try {
-			op.timeout(getPluginTimeout().getSeconds(), TimeUnit.SECONDS).blockingAwait();
+			op.timeout(timeout, TimeUnit.SECONDS).blockingAwait();
 		} catch (Throwable t) {
 			if (t instanceof TimeoutException) {
-				log.error("The " + operationName + " of plugin {" + id + "} did not complete within {" + getPluginTimeout().getSeconds()
+				log.error("The registration of plugin {" + id + "} did not complete within {" + timeout
 					+ "} seconds. Unloading plugin.");
 				throw error(INTERNAL_SERVER_ERROR, "admin_plugin_error_timeout", id);
 			}
@@ -536,6 +574,14 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 	protected PluginLoader createPluginLoader() {
 		return new CompoundPluginLoader()
 			.add(new JarPluginLoader(this), this::isNotDevelopment);
+	}
+
+	@Override
+	public PluginResponse toResponse(MeshPlugin plugin) {
+		PluginResponse response = plugin.toResponse();
+		PluginStatus status = getStatus(plugin.id());
+		response.setStatus(status);
+		return response;
 	}
 
 }

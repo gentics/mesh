@@ -56,8 +56,8 @@ public abstract class AbstractClusterTest {
 		return "random" + System.currentTimeMillis();
 	}
 
-	public MeshContainer addSlave(String string, String name, String name2, boolean b) {
-		return addSlave(string, name, name2, b, -1);
+	public MeshContainer addSlave(String clusterName, String nodeName, String dataPathPostfix, boolean clearFolders) {
+		return addSlave(clusterName, nodeName, dataPathPostfix, clearFolders, -1);
 	}
 
 	/**
@@ -76,6 +76,12 @@ public abstract class AbstractClusterTest {
 	 * @return
 	 */
 	protected MeshContainer addSlave(String clusterName, String nodeName, String dataPathPostfix, boolean clearFolders, int writeQuorum) {
+		MeshContainer server = prepareSlave(clusterName, nodeName, dataPathPostfix, clearFolders, writeQuorum);
+		server.start();
+		return server;
+	}
+
+	protected MeshContainer prepareSlave(String clusterName, String nodeName, String dataPathPostfix, boolean clearFolders, int writeQuorum) {
 		MeshContainer server = new MeshContainer(MeshContainer.LOCAL_PROVIDER)
 			.withDataPathPostfix(dataPathPostfix)
 			.withClusterName(clusterName)
@@ -86,7 +92,6 @@ public abstract class AbstractClusterTest {
 		if (clearFolders) {
 			server.withClearFolders();
 		}
-		server.start();
 		return server;
 	}
 

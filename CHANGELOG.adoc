@@ -38,12 +38,16 @@ icon:check[] Java Rest Client: The response body is now properly closed when cal
 
 icon:check[] GraphQL: Errors during GraphQL queries are now correctly propagated to the client.
 
+icon:plus[] Plugins: The plugin registration process was changed. Plugins will now no longer be directly registered when deployed. Instead the plugins will remain in a pre-registration status util Gentics Mesh is able to deploy them. This is especially useful when running plugins in clustered mode. Plugins will only be registered once the write quorum has been reached. Additionally the plugin deployment process will now utilize a lock in clustered mode to prevent concurrent deployments of plugins. The plugin status was added to the plugin endpoint response.
+
+icon:check[] Clustering: The write lock was removed from the `DELETE /api/v2/admin/plugins/:id` and `POST /api/v2/admin/plugins` endpoints to prevent potential deadlocks.
+
 [[v1.4.8]]
 == 1.4.8 (21.04.2020)
 
 icon:check[] Clustering: The coordinator layer feature will now exclude redirection for requests to the `/api/v2/health/live` and `/api/v2/health/ready` endpoints.
 
-icon:check[] OAuth2: The write lock will now also be utilized when mapping JWT's.
+icon:check[] OAuth2: The write lock will now also be utilized when mapping JWTs.
 
 [[v1.4.7]]
 == 1.4.7 (21.04.2020)
@@ -61,16 +65,16 @@ icon:plus[] Clustering/Graph: The already existing `synchronizeWrites` feature h
 
 icon:plus[] Graph: The internal transaction handling has been refactored and unified to better accommodate the new global write lock mechanism.
 
-icon:check[] Clustering: The cluster startup and shutdown processes have been modified to be less error prone. Hazelcast will now be started before OrientDB. Cluster instances now join the cluster sequentially instead of parallel. This results in a slower but more stable cluster startup process. The shutdown process will now avoid a write gap in which already dispatched distributed transactions could potentially be lost.
+icon:check[] Clustering: The cluster startup and shutdown processes have been modified to be less error prone. Hazelcast will now be started before OrientDB. Cluster instances now join the cluster sequentially instead of in parallel. This results in a slower but more stable cluster startup process. The shutdown process is now hardened against situations where already dispatched distributed transactions could potentially be lost.
 
 [[v1.4.5]]
 == 1.4.5 (17.04.2020)
 
-icon:plus[] Server: The `serverTokens` flag and `MESH_HTTP_SERVER_TOKENS` env has been added to the server config. The flag controls whether server version information can be exposed via REST (/api/v1, /api/v2), GraphQL or HTTP headers. By default server tokens are enabled.
+icon:plus[] Server: The `serverTokens` flag and `MESH_HTTP_SERVER_TOKENS` env has been added to the server config. The flag controls whether server version information is exposed via REST (/api/v1, /api/v2), GraphQL or HTTP headers. By default server tokens are enabled.
 
 icon:check[] Changelog: The automated recovery introduced in v1.4.4 now renames duplicate versions instead of deleting them.
 
-icon:plus[] Image Manipulation: Gentics Mesh now supports the ´auto´ parameter when manipulating images. For more info check the link:{{< relref "image-manipulation.asciidoc" >}}[Image Manipulation documentation].
+icon:plus[] Image Manipulation: Gentics Mesh now supports the `auto` parameter when manipulating images. For more info check the link:{{< relref "image-manipulation.asciidoc" >}}[Image Manipulation documentation].
 
 icon:check[] Core: Migrating remaining nodes via the `/{project}/branches/{branchUuid}/migrateSchemas` and `/{project}/branches/{branchUuid}/migrateMicroschemas` now includes all previous schema versions instead of only active schema versions.
 

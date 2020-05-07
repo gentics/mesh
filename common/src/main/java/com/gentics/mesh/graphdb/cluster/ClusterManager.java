@@ -5,6 +5,8 @@ import java.io.IOException;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.hazelcast.core.HazelcastInstance;
 
+import io.reactivex.Completable;
+
 public interface ClusterManager {
 
 	/**
@@ -49,5 +51,19 @@ public interface ClusterManager {
 	 * Stop the hazelcast instance that has been created by the manager.
 	 */
 	void stopHazelcast();
+
+	/**
+	 * Returns a completable which will complete once the quorum has been reached.
+	 * 
+	 * @return
+	 */
+	Completable waitUntilWriteQuorumReached();
+
+	/**
+	 * Start the hazelcast instance.
+	 * 
+	 * @return
+	 */
+	HazelcastInstance startHazelcast();
 
 }

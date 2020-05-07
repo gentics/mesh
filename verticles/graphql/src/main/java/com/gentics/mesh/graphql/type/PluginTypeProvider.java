@@ -17,6 +17,7 @@ import org.pf4j.PluginWrapper;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.rest.error.PermissionException;
+import com.gentics.mesh.core.rest.plugin.PluginStatus;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.plugin.MeshPlugin;
@@ -137,6 +138,13 @@ public class PluginTypeProvider extends AbstractTypeProvider {
 		root.field(newFieldDefinition().name("inception").description("The inception date of the plugin").type(GraphQLString).dataFetcher((env) -> {
 			MeshPlugin plugin = env.getSource();
 			return plugin.getManifest().getInception();
+		}));
+
+		// .status
+		root.field(newFieldDefinition().name("status").description("The status of the plugin.").type(GraphQLString).dataFetcher(env -> {
+			MeshPlugin plugin = env.getSource();
+			PluginStatus status = manager.getStatus(plugin.id());
+			return status == null ? null : status.name();
 		}));
 
 		// .version

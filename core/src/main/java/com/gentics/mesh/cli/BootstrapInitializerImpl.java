@@ -282,23 +282,20 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				clusterOptions.setNetworkHost(localIp);
 			}
 
+			// Ensure that hazelcast is started before Vert.x since it is required for Vert.x creation.
+			db.clusterManager().startHazelcast();
+			initVertx(options);
+
 			if (isInitMode) {
 				log.info("Init cluster flag was found. Creating initial graph database now.");
 				// We need to init the graph db before starting the OrientDB Server. Otherwise the database will not get picked up by the orientdb server which
 				// handles the clustering.
 				db.setupConnectionPool();
-				// TODO find a better way around the chicken and the egg issues.
-				// Vert.x is currently needed for eventQueueBatch creation.
-				// This process fails if vert.x has not been made accessible during local data setup.
-				vertx = Vertx.vertx();
 				boolean setupData = initLocalData(options, false);
 				db.closeConnectionPool();
 				db.shutdown();
 
 				db.clusterManager().start();
-				vertx.close();
-				vertx = null;
-				initVertx(options, isClustered);
 				db.clusterManager().registerEventHandlers();
 				db.setupConnectionPool();
 				searchProvider.init();
@@ -309,7 +306,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			} else {
 				// We need to wait for other nodes and receive the graphdb
 				db.clusterManager().start();
-				initVertx(options, isClustered);
 				db.clusterManager().registerEventHandlers();
 				isInitialSetup = false;
 				db.setupConnectionPool();
@@ -329,7 +325,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			}
 			coordinatorMasterElector.start();
 		} else {
-			initVertx(options, isClustered);
+			initVertx(options);
 			searchProvider.init();
 			searchProvider.start();
 			// No cluster mode - Just setup the connection pool and load or setup the local data
@@ -346,7 +342,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		handleLocalData(forceIndexSync, options, verticleLoader);
 
 		// Load existing plugins
-		pluginManager.init();
+		pluginManager.start();
 		pluginManager.deployExistingPluginFiles().subscribe(() -> {
 			// Finally fire the startup event and log that bootstrap has completed
 			log.info("Sending startup completed event to {" + STARTUP + "}");
@@ -474,7 +470,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		}
 	}
 
-	public void initVertx(MeshOptions options, boolean isClustered) {
+	public void initVertx(MeshOptions options) {
 		VertxOptions vertxOptions = new VertxOptions();
 		vertxOptions.getEventBusOptions().setClustered(options.getClusterOptions().isEnabled());
 		vertxOptions.setWorkerPoolSize(options.getVertxOptions().getWorkerPoolSize());
