@@ -15,6 +15,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.auth.AuthServicePluginRegistry;
 import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.event.plugin.PluginEventModel;
 import com.gentics.mesh.core.rest.plugin.PluginStatus;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -25,6 +26,7 @@ import com.gentics.mesh.plugin.manager.MeshPluginManager;
 import dagger.Lazy;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
@@ -71,15 +73,6 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 	}
 
 	@Override
-	public void start() {
-		// EventBus eb = rxVertx.get().eventBus();
-		log.debug("Starting to listen to plugin pre-registered events");
-		// preRegisterConsumer = eb.localConsumer(MeshEvent.PLUGIN_PRE_REGISTERED.getAddress(), ignore -> {
-		// register();
-		// });
-	}
-
-	@Override
 	public void stop() {
 		if (clusterConsumer != null) {
 			clusterConsumer.unregister();
@@ -109,8 +102,8 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 		EventBus eb = rxVertx.get().eventBus();
 		Objects.requireNonNull(plugin, "The plugin must not be null");
 		manager.get().setStatus(plugin.id(), PluginStatus.PRE_REGISTERED);
-		// TODO add payload
-		eb.publish(MeshEvent.PLUGIN_PRE_REGISTERED.getAddress(), null);
+		JsonObject payload = toEventPayload(plugin);
+		eb.publish(MeshEvent.PLUGIN_PRE_REGISTERED.getAddress(), payload);
 		initAndRegister(plugin);
 	}
 
@@ -129,12 +122,13 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 		long timeout = getPluginTimeout().getSeconds();
 
 		String id = plugin.id();
-
+		JsonObject payload = toEventPayload(plugin);
 		optionalLock(registerAndInitalizePlugin(plugin)).subscribe(() -> {
 			log.info("Completed handling of pre-registered plugin {" + id + "}");
 			manager.get().setStatus(id, REGISTERED);
-			eb.publish(MeshEvent.PLUGIN_REGISTERED.getAddress(), null);
-			eb.publish(MeshEvent.PLUGIN_DEPLOYED.getAddress(), null);
+
+			eb.publish(MeshEvent.PLUGIN_REGISTERED.getAddress(), payload);
+			eb.publish(MeshEvent.PLUGIN_DEPLOYED.getAddress(), payload);
 		}, err -> {
 			if (err instanceof TimeoutException) {
 				log.error("The registration of plugin {" + id + "} did not complete within {" + timeout
@@ -143,7 +137,7 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 				log.error("Plugin init and register failed for plugin {" + id + "}", err);
 			}
 			manager.get().setStatus(id, FAILED);
-			eb.publish(MeshEvent.PLUGIN_DEPLOY_FAILED.getAddress(), null);
+			eb.publish(MeshEvent.PLUGIN_DEPLOY_FAILED.getAddress(), payload);
 		});
 
 	}
@@ -170,8 +164,9 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 	 * @return
 	 */
 	private Completable optionalLock(Completable lockedAction) {
+		int timeout = options.getPluginTimeout();
 		if (options.getClusterOptions().isEnabled()) {
-			return rxVertx.get().sharedData().rxGetLockWithTimeout(GLOBAL_PLUGIN_LOCK_KEY, 10_000).toMaybe()
+			return rxVertx.get().sharedData().rxGetLockWithTimeout(GLOBAL_PLUGIN_LOCK_KEY, timeout * 2 * 1000).toMaybe()
 				.flatMapCompletable(lock -> {
 					log.debug("Acquired lock for plugin registration.");
 					return lockedAction
@@ -199,6 +194,13 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 		Objects.requireNonNull(plugin, "The plugin must not be null");
 		log.debug("Registering plugin {}", plugin.id());
 		return registries().flatMapCompletable(r -> r.register(plugin));
+	}
+
+	private JsonObject toEventPayload(MeshPlugin plugin) {
+		PluginEventModel model = new PluginEventModel();
+		model.setId(plugin.id());
+		model.setOrigin(options.getNodeName());
+		return new JsonObject(model.toJson());
 	}
 
 }
