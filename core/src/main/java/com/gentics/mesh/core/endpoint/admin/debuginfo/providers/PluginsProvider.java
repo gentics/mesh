@@ -11,7 +11,6 @@ import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoBufferEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
-import com.gentics.mesh.plugin.MeshPlugin;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
 
 import io.reactivex.Flowable;
@@ -33,7 +32,7 @@ public class PluginsProvider implements DebugInfoProvider {
 	@Override
 	public Flowable<DebugInfoEntry> debugInfoEntries(InternalActionContext ac) {
 		List<PluginResponse> plugins = pluginManager.getStartedMeshPlugins().stream()
-			.map(MeshPlugin::toResponse)
+			.map(pluginManager::toResponse)
 			.collect(Collectors.toList());
 
 		return Flowable.just(DebugInfoBufferEntry.asJson("plugins.json", plugins));

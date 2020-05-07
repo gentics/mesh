@@ -1,9 +1,5 @@
 package com.gentics.mesh.test.context;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
-import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -14,7 +10,6 @@ import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -26,9 +21,7 @@ import org.junit.Rule;
 
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
-import com.gentics.mesh.cli.CoreVerticleLoader;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -36,10 +29,6 @@ import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
-import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
-import com.gentics.mesh.core.rest.branch.BranchResponse;
-import com.gentics.mesh.core.rest.node.NodeCreateRequest;
-import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.router.ProjectsRouter;
 import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.test.context.event.EventAsserter;
@@ -47,8 +36,6 @@ import com.gentics.mesh.test.docker.ElasticsearchContainer;
 import com.gentics.mesh.test.util.MeshAssert;
 
 import eu.rekawek.toxiproxy.model.ToxicList;
-import io.reactivex.Completable;
-import io.reactivex.Single;
 import io.reactivex.functions.Action;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
@@ -60,6 +47,11 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 	static {
 		// Use slf4j instead of JUL
 		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
+		// Disable direct IO (My dev system uses ZFS. Otherwise the test will not run)
+		if ("jotschi".equalsIgnoreCase(System.getProperty("user.name"))) {
+			System.setProperty("storage.wal.allowDirectIO", "false");
+		}
+
 	}
 
 	private OkHttpClient httpClient;
@@ -226,4 +218,5 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 	public EventAsserter eventAsserter() {
 		return eventAsserter;
 	}
+
 }

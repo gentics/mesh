@@ -28,6 +28,8 @@ include::content/docs/variables.adoc-include[]
 [[v1.4.9]]
 == 1.4.9 (TBD)
 
+icon:plus[] Plugins: The plugin registration process was changed. Plugins will now no longer be directly registered when deployed. Instead the plugins will remain in a pre-registration status util Gentics Mesh is able to deploy them. This is especially useful when running plugins in clustered mode. Plugins will only be registered once the write quorum has been reached. Additionally the plugin deployment process will now utilize a lock in clustered mode to prevent concurrent deployments of plugins. The plugin status was added to the plugin endpoint response.
+
 icon:check[] Clustering: The write lock was removed from the `DELETE /api/v2/admin/plugins/:id` and `POST /api/v2/admin/plugins` endpoints to prevent potential deadlocks.
 
 [[v1.4.8]]

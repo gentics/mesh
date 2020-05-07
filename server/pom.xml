@@ -64,6 +64,7 @@
 						<configuration>
 							<excludeScope>test</excludeScope>
 							<includeScope>runtime</includeScope>
+							<excludeGroupIds>com.gentics.mesh</excludeGroupIds>
 							<outputDirectory>${project.build.directory}/mavendependencies-sharedlibs</outputDirectory>
 						</configuration>
 					</execution>

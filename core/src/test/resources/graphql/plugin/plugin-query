@@ -31,6 +31,9 @@
 
 			# [$.data.plugins.elements[0].apiName=<not-null>] 
 			apiName
+
+			# [$.data.plugins.elements[0].status=REGISTERED]
+			status
 		}
 	}
 
@@ -60,6 +63,9 @@
 
 		# [$.data.plugin.description=A very dummy plugin for tests]
 		description
+
+		# [$.data.plugins.elements[0].status=REGISTERED]
+		status
 	}
 }
 # [$.errors=<is-undefined>]

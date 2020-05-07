@@ -9,6 +9,8 @@ import java.util.Set;
 import org.pf4j.Plugin;
 import org.pf4j.PluginWrapper;
 
+import com.gentics.mesh.core.rest.plugin.PluginResponse;
+import com.gentics.mesh.core.rest.plugin.PluginStatus;
 import com.gentics.mesh.plugin.MeshPlugin;
 
 import io.reactivex.Completable;
@@ -22,7 +24,7 @@ public interface MeshPluginManager {
 	/**
 	 * Initialize the plugin manager.
 	 */
-	void init();
+	void start();
 
 	/**
 	 * Deploy the plugin with the given path.
@@ -127,5 +129,29 @@ public interface MeshPluginManager {
 	 * @return
 	 */
 	Duration getPluginTimeout();
+
+	/**
+	 * Set the plugin status.
+	 * 
+	 * @param id
+	 * @param status
+	 */
+	void setStatus(String id, PluginStatus status);
+
+	/**
+	 * Return the plugin status for the plugin with the given id.
+	 * 
+	 * @param id
+	 * @return
+	 */
+	PluginStatus getStatus(String id);
+
+	/**
+	 * Create a REST response for the given plugin.
+	 * 
+	 * @param plugin
+	 * @return
+	 */
+	PluginResponse toResponse(MeshPlugin plugin);
 
 }

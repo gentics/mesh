@@ -22,6 +22,10 @@ public class PluginResponse implements RestModel {
 	@JsonPropertyDescription("Manifest of the plugin")
 	private PluginManifest manifest;
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Status of the plugin")
+	private PluginStatus status;
+
 	public PluginResponse() {
 	}
 
@@ -84,4 +88,14 @@ public class PluginResponse implements RestModel {
 		this.manifest = manifest;
 		return this;
 	}
+
+	public PluginStatus getStatus() {
+		return status;
+	}
+
+	public PluginResponse setStatus(PluginStatus status) {
+		this.status = status;
+		return this;
+	}
+
 }

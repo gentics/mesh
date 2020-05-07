@@ -148,6 +148,8 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 		addEnv(MeshOptions.MESH_NODE_NAME_ENV, nodeName);
 		addEnv(ClusterOptions.MESH_CLUSTER_NAME_ENV, clusterName);
 		addEnv(ClusterOptions.MESH_CLUSTER_VERTX_PORT_ENV, "8123");
+		addEnv(MeshOptions.MESH_PLUGIN_DIR_ENV, "/plugins");
+
 		if (startEmbeddedES) {
 			exposedPorts.add(9200);
 			exposedPorts.add(9300);
@@ -256,7 +258,9 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 			File projectRoot = new File("..");
 
 			// Locate all class folders
-			List<Path> classFolders = Files.walk(projectRoot.toPath()).filter(file -> "classes".equals(file.toFile().getName()))
+			List<Path> classFolders = Files.walk(projectRoot.toPath())
+				.filter(file -> "classes".equals(file.toFile().getName()))
+				.filter(file -> !file.toFile().getAbsolutePath().contains("test/plugins"))
 				.collect(Collectors.toList());
 
 			// Iterate over all classes in the class folders and add those to the docker context
@@ -551,6 +555,19 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 
 	public MeshDockerServer withWriteQuorum(int writeQuorum) {
 		this.writeQuorum = writeQuorum;
+		return this;
+	}
+
+	public MeshDockerServer withPlugin(File file, String targetFileName) {
+		if (!file.exists()) {
+			fail("The provided plugin file {" + file + "} does not exist.");
+		}
+		addFileSystemBind(file.getAbsolutePath(), "/plugins/" + targetFileName, BindMode.READ_ONLY);
+		return this;
+	}
+
+	public MeshDockerServer withPluginTimeout(int timeoutInSeconds) {
+		addEnv(MeshOptions.MESH_PLUGIN_TIMEOUT_ENV, String.valueOf(timeoutInSeconds));
 		return this;
 	}
 

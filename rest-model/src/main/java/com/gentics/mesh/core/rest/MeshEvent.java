@@ -578,9 +578,21 @@ public enum MeshEvent {
 		null,
 		"Emitted once a plugin is being deployed."),
 
+	PLUGIN_PRE_REGISTERED("mesh.plugin.pre-registered",
+		null,
+		"Emitted once a plugin has been pre-registered."),
+	
+	PLUGIN_REGISTERED("mesh.plugin.registered",
+		null,
+		"Emitted once a plugin has been registered."),
+
 	PLUGIN_DEPLOYED("mesh.plugin.deployed",
 		null,
 		"Emitted once a plugin has been deployed."),
+
+	PLUGIN_DEPLOY_FAILED("mesh.plugin.deploy.failed",
+		null,
+		"Emitted when a plugin deployment fails."),
 
 	PLUGIN_UNDEPLOYING("mesh.plugin.undeploying",
 		null,
