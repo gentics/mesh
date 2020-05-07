@@ -1666,9 +1666,36 @@ Emitted once a plugin is being deployed.
 
 
 
+=== _mesh.plugin.pre-registered_
+
+Emitted once a plugin has been pre-registered.
+
+
+
+
+
+
+=== _mesh.plugin.registered_
+
+Emitted once a plugin has been registered.
+
+
+
+
+
+
 === _mesh.plugin.deployed_
 
 Emitted once a plugin has been deployed.
+
+
+
+
+
+
+=== _mesh.plugin.deploy.failed_
+
+Emitted when a plugin deployment fails.
 
 
 

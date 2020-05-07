@@ -22,4 +22,9 @@
 | string
 | Name of the plugin.
 
+| status
+| true
+| string
+| Status of the plugin
+
 |======
