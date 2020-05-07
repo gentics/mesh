@@ -1,0 +1,25 @@
+---
+title: LTS Changelog
+---
+
+include::content/docs/variables.adoc-include[]
+
+////
+* Write changelog entries in present tense
+* Include GitHub issue or PR if possible using link:http://...[#123] format
+* Review your changelog entries
+* Don't include security sensitive information in the changelog
+* Include links to documentation if possible
+////
+
+= Gentics Mesh LTS Changelog
+
+The LTS changelog lists releases which are only accessible via a commercial subscription.
+All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
+
+[[v1.4.9]]
+== 1.4.9 (07.04.2020)
+
+icon:plus[] Plugins: The plugin registration process was changed. Plugins will now no longer be directly registered when deployed. Instead the plugins will remain in a pre-registration status util Gentics Mesh is able to deploy them. This is especially useful when running plugins in clustered mode. Plugins will only be registered once the write quorum has been reached. Additionally the plugin deployment process will now utilize a lock in clustered mode to prevent concurrent deployments of plugins. The plugin status was added to the plugin endpoint response.
+
+icon:check[] Clustering: The write lock was removed from the `DELETE /api/v2/admin/plugins/:id` and `POST /api/v2/admin/plugins` endpoints to prevent potential deadlocks.
