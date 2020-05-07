@@ -8,6 +8,8 @@ JobContext.set(this)
 final def dockerRegistry       = "gentics-docker-jenkinsbuilds.docker.apa-it.at"
 final def dockerImageName      = dockerRegistry + "/gentics/jenkinsbuilds/mesh-slave-openjdk8"
 
+final def imagePrefix		   = "gtx-docker-releases-staging-mesh.docker.apa-it.at/"
+
 properties([
 	parameters([
 		booleanParam(name: 'runTests',            defaultValue: true,  description: "Whether to run the unit tests"),
@@ -157,14 +159,15 @@ stage("Setup Build Environment") {
 			}
 
 			stage("Docker Build") {
+
 				if (Boolean.valueOf(params.runDocker)) {
 					// demo
 					sh "rm demo/target/*sources.jar"
-					sh "cd demo ; docker build --network=host -t gentics/mesh-demo:latest -t gentics/mesh-demo:" + version + " . "
+					sh "cd demo ; docker build --network=host -t " + imagePrefix + "gentics/mesh-demo:latest -t " + imagePrefix + "gentics/mesh-demo:" + version + " . "
 
 					// server
 					sh "rm server/target/*sources.jar"
-					sh "cd server ; docker build --network=host -t gentics/mesh:latest -t gentics/mesh:" + version + " . "
+					sh "cd server ; docker build --network=host -t " + imagePrefix + "gentics/mesh:latest -t " + imagePrefix + "gentics/mesh:" + version + " . "
 				} else {
 					echo "Docker build skipped.."
 				}
@@ -197,12 +200,12 @@ stage("Setup Build Environment") {
 			stage("Deploy") {
 				if (Boolean.valueOf(params.runDeploy)) {
 					if (Boolean.valueOf(params.runDocker)) {
-						withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'dockerhub_login', passwordVariable: 'DOCKER_HUB_PASSWORD', usernameVariable: 'DOCKER_HUB_USERNAME']]) {
-							sh 'docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD'
-							sh 'docker push gentics/mesh-demo:latest'
-							sh 'docker push gentics/mesh-demo:' + version
-							sh 'docker push gentics/mesh:latest'
-							sh 'docker push gentics/mesh:' + version
+						withCredentials([usernamePassword(credentialsId: 'repo.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
+							sh 'docker login -u $repoUsername -p $repoPassword'
+							sh 'docker push ' + imagePrefix + 'gentics/mesh-demo:latest'
+							sh 'docker push ' + imagePrefix + 'gentics/mesh-demo:' + version
+							sh 'docker push ' + imagePrefix + 'gentics/mesh:latest'
+							sh 'docker push ' + imagePrefix + 'gentics/mesh:' + version
 						}
 					}
 				} else {
