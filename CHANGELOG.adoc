@@ -26,7 +26,7 @@ include::content/docs/variables.adoc-include[]
 * The Mesh Server will require Java 11 with the release of 2.0.0. The runtime support for Java 8 will be dropped. The Mesh Java REST client will still be usable with Java 8.
 
 [[v1.5.0]]
-== 1.5.0 (TBD)
+== 1.5.0 (08.05.2019)
 
 icon:plus[] Test: An enhanced test container class has been added. The `MeshContainer` class replaces the `MeshDockerServer` which was deprecated.
 
