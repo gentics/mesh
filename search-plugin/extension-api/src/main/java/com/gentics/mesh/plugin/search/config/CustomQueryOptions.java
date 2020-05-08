@@ -21,19 +21,25 @@ public class CustomQueryOptions {
 	@JsonPropertyDescription("The GraphQL query to use to load additional data about hits")
 	private String resultQuery;
 
+	@JsonProperty(defaultValue = "0")
+	@JsonPropertyDescription("How many search hits should be returned per page. (0 means the general pageSize configuration should be used")
+	private int pageSize;
+
 	@JsonCreator
 	public CustomQueryOptions(String name) {
-		this(name, HandlerType.SEARCH, null);
+		this(name, HandlerType.SEARCH, null, 0);
 	}
 
 	@JsonCreator
 	public CustomQueryOptions(
 			@JsonProperty("name") String name,
 			@JsonProperty("type") HandlerType type,
-			@JsonProperty("resultQuery") String resultQuery) {
+			@JsonProperty("resultQuery") String resultQuery,
+			@JsonProperty("pageSize") int pageSize) {
 		this.name = name;
 		this.type = type;
 		this.resultQuery = resultQuery;
+		this.pageSize = pageSize;
 	}
 
 	public String getName() {
@@ -58,6 +64,14 @@ public class CustomQueryOptions {
 
 	public void setResultQuery(String resultQuery) {
 		this.resultQuery = resultQuery;
+	}
+
+	public int getPageSize() {
+		return pageSize;
+	}
+
+	public void setPageSize(int pageSize) {
+		this.pageSize = pageSize;
 	}
 
 	@Override

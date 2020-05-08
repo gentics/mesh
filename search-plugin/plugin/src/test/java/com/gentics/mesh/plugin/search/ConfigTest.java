@@ -35,12 +35,14 @@ public class ConfigTest {
 		assertThat(config.getCustomQueries())
 			.as("Custom queries")
 			.containsOnly(
-				// This entry is configured using the shorthand notation.
-				new CustomQueryOptions("custom_search", HandlerType.SEARCH, null),
-				// This entry has all three parts specified explicitly.
-				new CustomQueryOptions("custom_with_result_query", HandlerType.SEARCH, "customResultQuery"),
-				// This entry uses the default empty resultQuery.
-				new CustomQueryOptions("custom_auto", HandlerType.AUTOCOMPLETE, null)
+					// This entry is configured using the shorthand notation.
+					new CustomQueryOptions("custom_search", HandlerType.SEARCH, null, 0),
+					// This entry has all three parts specified explicitly.
+					new CustomQueryOptions("custom_with_result_query", HandlerType.SEARCH, "customResultQuery", 0),
+					// This entry uses the default empty resultQuery.
+					new CustomQueryOptions("custom_auto", HandlerType.AUTOCOMPLETE, null, 0),
+					// This entry has the pageSize defined
+					new CustomQueryOptions("custom_pagesize", null, null, 10)
 			);
 	}
 }

@@ -7,6 +7,8 @@ customQueries:
     resultQuery: customResultQuery
   - name: custom_auto
     type: AUTOCOMPLETE
+  - name: custom_pagesize
+    pageSize: 10
 projects:
   foo:
     - bar

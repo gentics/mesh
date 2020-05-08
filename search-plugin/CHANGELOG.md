@@ -10,10 +10,10 @@
 
 = Mesh Search Plugin Changelog
 
-[[Unreleased]]
-== Unreleased
-
-icon:check[] All routes now require the request header `Accept: application/json` instead of `Accept: application/json; charset=utf8`. This makes it possible to use the search plugin with the Java MeshRestClient. 
+[[v1.4.6]]
+== 1.4.6 (2020-05-08)
+icon:check[] Custom Search: Made it possible to define a seperate pageSize for each custom Query.
+icon:check[] All routes now require the request header `Accept: application/json` instead of `Accept: application/json; charset=utf8`. This makes it possible to use the search plugin with the Java MeshRestClient.
 
 [[v1.4.4]]
 == 1.4.4 (2020-04-02)
