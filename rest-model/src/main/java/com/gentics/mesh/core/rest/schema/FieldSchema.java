@@ -99,19 +99,19 @@ public interface FieldSchema {
 	void validate();
 
 	/**
-	 * Return the search index fields configuration.
-	 *
-	 * @return
-	 */
-	JsonObject getElasticsearch();
-
-	/**
 	 * Return a map of all properties of the schema.
 	 *
 	 * @return
 	 */
 	@JsonIgnore
 	Map<String, Object> getAllChangeProperties();
+
+	/**
+	 * Return the search index fields configuration.
+	 *
+	 * @return
+	 */
+	JsonObject getElasticsearch();
 
 	/**
 	 * Set the elasticsearch index fields configuration.
