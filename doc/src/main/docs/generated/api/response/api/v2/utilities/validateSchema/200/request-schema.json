@@ -36,7 +36,7 @@
     "elasticsearch" : {
       "type" : "object",
       "id" : "urn:jsonschema:io:vertx:core:json:JsonObject",
-      "description" : "The generated elasticsearch index configuration which includes the used analyzers and mappings.",
+      "description" : "The generated default elasticsearch index configuration which includes the used analyzers and mappings.",
       "properties" : {
         "map" : {
           "type" : "object",
@@ -47,6 +47,14 @@
         "empty" : {
           "type" : "boolean"
         }
+      }
+    },
+    "languageElasticsearch" : {
+      "type" : "object",
+      "description" : "The generated elasticsearch index configuration for each language.",
+      "additionalProperties" : {
+        "type" : "object",
+        "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
       }
     }
   }

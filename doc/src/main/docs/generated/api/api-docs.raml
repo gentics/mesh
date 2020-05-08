@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "1.4.9"
+version: "1.5.0"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -5386,7 +5386,8 @@ mediaType: application/json
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
-                                | elasticsearch | false | object | The generated elasticsearch index configuration which includes the used analyzers and mappings. |
+                                | elasticsearch | false | object | The generated default elasticsearch index configuration which includes the used analyzers and mappings. |
+                                | languageElasticsearch | false | object | The generated elasticsearch index configuration for each language. |
                                 | message | true | object | Detailed validation message. |
                                 | status | true | string | Status of the validation. |
                             example: |
@@ -5635,7 +5636,8 @@ mediaType: application/json
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
-                                | elasticsearch | false | object | The generated elasticsearch index configuration which includes the used analyzers and mappings. |
+                                | elasticsearch | false | object | The generated default elasticsearch index configuration which includes the used analyzers and mappings. |
+                                | languageElasticsearch | false | object | The generated elasticsearch index configuration for each language. |
                                 | message | true | object | Detailed validation message. |
                                 | status | true | string | Status of the validation. |
                             example: |
@@ -6003,7 +6005,7 @@ mediaType: application/json
                                 | vertxVersion | false | string | Used Vert.x version. |
                             example: |
                                 {
-                                  "meshVersion" : "1.4.9",
+                                  "meshVersion" : "1.5.0",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",
