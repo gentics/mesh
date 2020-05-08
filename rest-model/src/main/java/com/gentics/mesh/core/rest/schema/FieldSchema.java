@@ -11,6 +11,7 @@ import com.gentics.mesh.etc.config.search.MappingMode;
 
 import io.vertx.core.json.JsonObject;
 
+
 /**
  * A field schema is a field within a schema. In contradiction to node fields a field schema is the blueprint of a field and will not store any data. Instead it
  * only defines a field within a schema.
@@ -19,7 +20,7 @@ public interface FieldSchema {
 
 	/**
 	 * Return the type of the field schema.
-	 * 
+	 *
 	 * @return Field schema type
 	 */
 	@JsonProperty(required = true)
@@ -28,7 +29,7 @@ public interface FieldSchema {
 
 	/**
 	 * Return the label of the field schema.
-	 * 
+	 *
 	 * @return Label
 	 */
 	@JsonProperty(required = false)
@@ -37,7 +38,7 @@ public interface FieldSchema {
 
 	/**
 	 * Set the label of the field schema.
-	 * 
+	 *
 	 * @param label
 	 *            Field schema label
 	 * @return Fluent API
@@ -47,7 +48,7 @@ public interface FieldSchema {
 	// TODO is this not the fieldkey? is the key the name??
 	/**
 	 * Return the name of the field schema.
-	 * 
+	 *
 	 * @return Name
 	 */
 	@JsonProperty(required = true)
@@ -56,7 +57,7 @@ public interface FieldSchema {
 
 	/**
 	 * Set the name of the field schema.
-	 * 
+	 *
 	 * @param name
 	 * @return Fluent API
 	 */
@@ -64,22 +65,22 @@ public interface FieldSchema {
 
 	/**
 	 * Return the required flag of the field schema.
-	 * 
+	 *
 	 * @return
 	 */
-	boolean isRequired();
+	Boolean isRequired();
 
 	/**
 	 * Set the required flag.
-	 * 
+	 *
 	 * @param isRequired
 	 * @return Fluent API
 	 */
-	FieldSchema setRequired(boolean isRequired);
+	FieldSchema setRequired(Boolean isRequired);
 
 	/**
 	 * Compare the field schema with the given field schema.
-	 * 
+	 *
 	 * @param fieldSchema
 	 * @return Detected change
 	 */
@@ -87,7 +88,7 @@ public interface FieldSchema {
 
 	/**
 	 * Apply the given field properties to the field schema.
-	 * 
+	 *
 	 * @param fieldProperties
 	 */
 	void apply(Map<String, Object> fieldProperties);
@@ -98,23 +99,23 @@ public interface FieldSchema {
 	void validate();
 
 	/**
+	 * Return the search index fields configuration.
+	 *
+	 * @return
+	 */
+	JsonObject getElasticsearch();
+
+	/**
 	 * Return a map of all properties of the schema.
-	 * 
+	 *
 	 * @return
 	 */
 	@JsonIgnore
 	Map<String, Object> getAllChangeProperties();
 
 	/**
-	 * Return the search index fields configuration.
-	 * 
-	 * @return
-	 */
-	JsonObject getElasticsearch();
-
-	/**
 	 * Set the elasticsearch index fields configuration.
-	 * 
+	 *
 	 * @param elasticsearch
 	 * @return Fluent API
 	 */
@@ -122,7 +123,7 @@ public interface FieldSchema {
 
 	/**
 	 * Checks if the field can be used as a display field.
-	 * 
+	 *
 	 * @return
 	 */
 	@JsonIgnore
@@ -133,7 +134,7 @@ public interface FieldSchema {
 	/**
 	 * Check whether the mapping is required. A mapping can not be required when the default mappings option has been disabled and the field schema does not
 	 * specify a custom mapping.
-	 * 
+	 *
 	 * @param options
 	 *            Search options
 	 * @return

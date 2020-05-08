@@ -47,7 +47,7 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Flag which indicates whether the field is required or not. A create request will fail if no field value has been specified. The update request will fail when the value is omitted and the field has never been saved before.")
-	private boolean required = false;
+	private Boolean required;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Additional elasticsearch index field configuration. This can be used to add custom fields with custom analyzers to the search index.")
@@ -76,12 +76,12 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 	}
 
 	@Override
-	public boolean isRequired() {
+	public Boolean isRequired() {
 		return required;
 	}
 
 	@Override
-	public AbstractFieldSchema setRequired(boolean flag) {
+	public AbstractFieldSchema setRequired(Boolean flag) {
 		this.required = flag;
 		return this;
 	}
@@ -164,9 +164,12 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 			// Check whether fields have been updated
 			Map<String, ValueDifference<Object>> differentProperties = diff.entriesDiffering();
 			if (!differentProperties.isEmpty()) {
-				change.setOperation(UPDATEFIELD);
 				for (String key : differentProperties.keySet()) {
-					change.getProperties().put(key, differentProperties.get(key).rightValue());
+					Object rightValue = differentProperties.get(key).rightValue();
+					if (rightValue != null) {
+						change.setOperation(UPDATEFIELD);
+						change.getProperties().put(key, rightValue);
+					}
 				}
 			}
 		}
@@ -179,8 +182,7 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 		Map<String, Object> map = new HashMap<>();
 		map.put(LABEL_KEY, getLabel());
 		map.put(REQUIRED_KEY, isRequired());
-		// empty object and null/missing should be treated the same
-		map.put(ELASTICSEARCH_KEY, getElasticsearch() == null || getElasticsearch().size() == 0 ? new JsonObject() : getElasticsearch());
+		map.put(ELASTICSEARCH_KEY, getElasticsearch());
 		return map;
 	}
 

@@ -146,9 +146,15 @@ public class SchemaOptionalUpdateTest extends AbstractMeshTest {
 	private JsonObject createSchemaUpdateRequest() {
 		return new JsonObject()
 			.put("name", "testSchema")
-			.put("fields", new JsonArray().add(new JsonObject()
-				.put("name", "testField")
-				.put("type", "string")));
+			.put("fields", new JsonArray()
+				.add(new JsonObject()
+					.put("name", "testField")
+					.put("type", "string"))
+				.add(new JsonObject()
+					.put("name", "testField2")
+					.put("type", "string")
+				)
+			);
 	}
 
 	private static class PropertyChange {

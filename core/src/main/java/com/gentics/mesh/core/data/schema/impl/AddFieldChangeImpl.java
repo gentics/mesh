@@ -160,10 +160,7 @@ public class AddFieldChangeImpl extends AbstractSchemaFieldChange implements Add
 		}
 		field.setName(getFieldName());
 		field.setLabel(getLabel());
-		Boolean required = getRequired();
-		if (required != null) {
-			field.setRequired(required);
-		}
+		field.setRequired(getRequired());
 		container.addField(field, position);
 		return container;
 	}

@@ -194,7 +194,7 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 	 */
 	protected void compareAndAddSchemaProperty(List<SchemaChangeModel> changes, String key, Object objectA, Object objectB,
 			Class<? extends FC> classOfFC) {
-		if (!CompareUtils.equals(objectA, objectB)) {
+		if (objectB != null && !CompareUtils.equals(objectA, objectB)) {
 			SchemaChangeModel change = createFieldContainerUpdateChange(classOfFC);
 			change.getProperties().put(key, objectB);
 			changes.add(change);
@@ -212,12 +212,15 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 	 */
 	protected void compareAndAddSchemaElasticSearchProperty(List<SchemaChangeModel> changes, String key, JsonObject objectA, JsonObject objectB,
 															Class<? extends FC> classOfFC) {
+		// Unset properties / null values should not change the property
+		// See https://github.com/gentics/mesh/issues/1072
+		if (objectB == null) {
+			return;
+		}
+
 		// Empty objects and null/missing values should be treated the same
 		if (objectA == null) {
 			objectA = new JsonObject();
-		}
-		if (objectB == null) {
-			objectB = new JsonObject();
 		}
 		compareAndAddSchemaProperty(changes, key, objectA, objectB, classOfFC);
 	}

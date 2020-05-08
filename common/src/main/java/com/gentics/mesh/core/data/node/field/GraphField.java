@@ -7,6 +7,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.lang.BooleanUtils;
+
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
@@ -35,7 +37,7 @@ public interface GraphField {
 	 */
 	public static void failOnMissingRequiredField(GraphField field, boolean isFieldNull, FieldSchema fieldSchema, String key,
 		FieldSchemaContainer schema) throws GenericRestException {
-		if (field == null && fieldSchema.isRequired() && isFieldNull) {
+		if (field == null && BooleanUtils.isTrue(fieldSchema.isRequired()) && isFieldNull) {
 			throw error(BAD_REQUEST, "node_error_missing_required_field_value", key, schema.getName());
 		}
 	}
@@ -52,7 +54,7 @@ public interface GraphField {
 	public static void failOnDeletionOfRequiredField(GraphField graphField, boolean isFieldSetToNull, FieldSchema fieldSchema, String key,
 		FieldSchemaContainer schema) {
 		// Field is required and already set and value is null -> deletion is not allowed for required fields
-		if (fieldSchema.isRequired() && graphField != null && isFieldSetToNull) {
+		if (BooleanUtils.isTrue(fieldSchema.isRequired()) && graphField != null && isFieldSetToNull) {
 			throw error(BAD_REQUEST, "node_error_required_field_not_deletable", key, schema.getName());
 		}
 	}

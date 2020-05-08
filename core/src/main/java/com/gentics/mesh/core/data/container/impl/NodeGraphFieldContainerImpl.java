@@ -38,6 +38,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.BooleanUtils;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
@@ -526,7 +527,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 		schema.getFields().stream().forEach(fieldSchema -> {
 			GraphField field = fieldsMap.get(fieldSchema.getName());
-			if (fieldSchema.isRequired() && field == null) {
+			if (BooleanUtils.isTrue(fieldSchema.isRequired()) && field == null) {
 				throw error(CONFLICT, "node_error_missing_mandatory_field_value", fieldSchema.getName(), schema.getName());
 			}
 			if (field != null) {

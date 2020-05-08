@@ -52,6 +52,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang3.NotImplementedException;
 
 import com.gentics.madl.index.IndexHandler;
@@ -820,7 +821,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					// fieldsToExpand.contains(fieldEntry.getName()) ||
 					// ac.getExpandAllFlag();
 					Field restField = fieldContainer.getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry, containerLanguageTags, level);
-					if (fieldEntry.isRequired() && restField == null) {
+					if (BooleanUtils.isTrue(fieldEntry.isRequired()) && restField == null) {
 						// TODO i18n
 						// throw error(BAD_REQUEST, "The field {" +
 						// fieldEntry.getName()

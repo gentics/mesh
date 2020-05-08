@@ -17,6 +17,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang.BooleanUtils;
+
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
@@ -229,7 +231,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 
 		microschema.getFields().stream().forEach(fieldSchema -> {
 			GraphField field = fieldsMap.get(fieldSchema.getName());
-			if (fieldSchema.isRequired() && field == null) {
+			if (BooleanUtils.isTrue(fieldSchema.isRequired()) && field == null) {
 				throw error(CONFLICT, "node_error_missing_mandatory_field_value", fieldSchema.getName(), microschema.getName());
 			}
 			if (field != null) {
