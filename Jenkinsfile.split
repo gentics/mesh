@@ -227,7 +227,7 @@ stage("Setup Build Environment") {
 				if (Boolean.valueOf(params.runDeploy)) {
 					if (Boolean.valueOf(params.runDocker)) {
 						withCredentials([usernamePassword(credentialsId: 'repo.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
-							sh 'docker login -u $repoUsername -p $repoPassword'
+							sh 'docker login -u $repoUsername -p $repoPassword gtx-docker-releases-staging-mesh.docker.apa-it.at'
 							sh 'docker push ' + imagePrefix + 'gentics/mesh-demo:latest'
 							sh 'docker push ' + imagePrefix + 'gentics/mesh-demo:' + version
 							sh 'docker push ' + imagePrefix + 'gentics/mesh:latest'
