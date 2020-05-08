@@ -163,10 +163,12 @@ stage("Setup Build Environment") {
 				if (Boolean.valueOf(params.runDocker)) {
 					// demo
 					sh "rm demo/target/*sources.jar"
+					sh "rm demo/target/*javadoc.jar"
 					sh "cd demo ; docker build --network=host -t " + imagePrefix + "gentics/mesh-demo:latest -t " + imagePrefix + "gentics/mesh-demo:" + version + " . "
 
 					// server
 					sh "rm server/target/*sources.jar"
+					sh "rm server/target/*javadoc.jar"
 					sh "cd server ; docker build --network=host -t " + imagePrefix + "gentics/mesh:latest -t " + imagePrefix + "gentics/mesh:" + version + " . "
 				} else {
 					echo "Docker build skipped.."
