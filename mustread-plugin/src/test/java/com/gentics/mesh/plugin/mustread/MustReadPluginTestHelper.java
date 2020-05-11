@@ -18,15 +18,15 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.OkHttpClient.Builder;
 
-public abstract class AbstractPluginTest {
+public interface MustReadPluginTestHelper {
 
-	protected abstract MeshRestClient meshClient();
+	MeshRestClient meshClient();
 
 	public static final String API_NAME = "mustread";
 
-	protected abstract String serverURL();
+	String serverURL();
 
-	protected OkHttpClient client() {
+	default OkHttpClient client() {
 		Builder builder = new Builder();
 		CookieJar cookieJar = new CookieJar() {
 			private final HashMap<String, List<Cookie>> cookieStore = new HashMap<>();
@@ -55,15 +55,15 @@ public abstract class AbstractPluginTest {
 		return builder.build();
 	}
 
-	protected String getResponseTextGetRequest(String path) throws IOException {
+	default  String getResponseTextGetRequest(String path) throws IOException {
 		return getResponseGetRequest(path).body().string();
 	}
 
-	protected int getResponseCodeGetRequest(String path) throws IOException {
+	default  int getResponseCodeGetRequest(String path) throws IOException {
 		return getResponseGetRequest(path).code();
 	}
 
-	protected Response getResponseGetRequest(String path) throws IOException {
+	default  Response getResponseGetRequest(String path) throws IOException {
 		Request request = new Request.Builder()
 			.header("Accept", "application/json")
 			.url(serverURL() + path)
@@ -73,15 +73,15 @@ public abstract class AbstractPluginTest {
 		return response;
 	}
 
-	protected String getResponseTextPostRequest(String path, JsonObject body) throws IOException {
+	default  String getResponseTextPostRequest(String path, JsonObject body) throws IOException {
 		return getResponsePostRequest(path, body).body().string();
 	}
 
-	protected int getResponseCodePostRequest(String path, JsonObject body) throws IOException {
+	default  int getResponseCodePostRequest(String path, JsonObject body) throws IOException {
 		return getResponsePostRequest(path, body).code();
 	}
 
-	protected Response getResponsePostRequest(String path, JsonObject body) throws IOException {
+	default  Response getResponsePostRequest(String path, JsonObject body) throws IOException {
 		Request request = new Request.Builder()
 			.header("Accept", "application/json")
 			.url(serverURL() + path)
@@ -92,7 +92,7 @@ public abstract class AbstractPluginTest {
 		return response;
 	}
 
-	protected JsonObject getResponseJsonGetRequest(String path) throws IOException {
+	default  JsonObject getResponseJsonGetRequest(String path) throws IOException {
 		String jsonString = getResponseTextGetRequest(path);
 		return new JsonObject(jsonString);
 	}

@@ -6,18 +6,22 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
+import com.gentics.mesh.plugin.test.common.AbstractPluginLocalIntegrationTest;
+import com.gentics.mesh.plugin.test.common.util.PluginTestUtil;
 import com.gentics.mesh.test.local.MeshLocalServer;
 
 /**
  * Test case for enabling the plugin for a project, that has a non-empty pathPrefix
  */
-public class ProjectWithPathPrefixTest {
+public class ProjectWithPathPrefixTest extends AbstractPluginLocalIntegrationTest {
+
 	@ClassRule
 	public static final MeshLocalServer server = new MeshLocalServer().withInMemoryMode().waitForStartup();
 
 	@Test
 	public void startPlugin() throws Exception {
 		server.getMesh().deployPlugin(FormGeneratorTestPlugin.class, "fg").blockingAwait();
+		PluginTestUtil.waitForPluginRegistration(server, 5_000, "fg");
 
 		// This project is configured
 		createProject("testproject");

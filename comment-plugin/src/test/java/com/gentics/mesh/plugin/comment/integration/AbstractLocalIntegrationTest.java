@@ -37,20 +37,16 @@ import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.plugin.comment.TestCommentClient;
 import com.gentics.mesh.plugin.comment.TestCommentPlugin;
 import com.gentics.mesh.plugin.comment.model.NestedCommentSection;
+import com.gentics.mesh.plugin.test.common.AbstractPluginLocalIntegrationTest;
+import com.gentics.mesh.plugin.test.common.util.PluginTestUtil;
 import com.gentics.mesh.test.local.MeshLocalServer;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.logging.SLF4JLogDelegateFactory;
 import okhttp3.Response;
 
-public abstract class AbstractLocalIntegrationTest {
-
-	static {
-		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
-	}
+public abstract class AbstractLocalIntegrationTest extends AbstractPluginLocalIntegrationTest {
 
 	@ClassRule
 	public static final MeshLocalServer server = new MeshLocalServer()
@@ -70,11 +66,11 @@ public abstract class AbstractLocalIntegrationTest {
 	protected static UserResponse editorUser;
 	protected static UserResponse adminUser;
 
-	protected static void initMesh(String testConfig) {
+	protected static void initMesh(String testConfig) throws InterruptedException {
 		initMesh(testConfig, null);
 	}
 
-	protected static void initMesh(String testConfig, String nodeConfigJson) {
+	protected static void initMesh(String testConfig, String nodeConfigJson) throws InterruptedException {
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName(PROJECT_NAME);
 		request.setSchemaRef("folder");
@@ -108,11 +104,11 @@ public abstract class AbstractLocalIntegrationTest {
 			server,
 			project.getName(),
 			publicNode,
-			tokens
-		);
+			tokens);
 
 		TestCommentPlugin.config = testConfig;
-		server.getMesh().deployPlugin(TestCommentPlugin.class, "comment").blockingAwait();;
+		server.getMesh().deployPlugin(TestCommentPlugin.class, "comment").blockingAwait();
+		PluginTestUtil.waitForPluginRegistration(server, 5_000, "comment");
 	}
 
 	private static UserResponse getUser(String userName) {
@@ -207,14 +203,12 @@ public abstract class AbstractLocalIntegrationTest {
 
 	private static RoleResponse createRole() {
 		return call(() -> server.client().createRole(new RoleCreateRequest()
-			.setName("editor")
-		));
+			.setName("editor")));
 	}
 
 	private static GroupResponse createAndAssignGroup(RoleResponse role, UserResponse user) {
 		GroupResponse group = call(() -> server.client().createGroup(new GroupCreateRequest()
-			.setName("editor")
-		));
+			.setName("editor")));
 
 		call(() -> server.client().addRoleToGroup(group.getUuid(), role.getUuid()));
 		call(() -> server.client().addUserToGroup(group.getUuid(), user.getUuid()));
@@ -236,14 +230,13 @@ public abstract class AbstractLocalIntegrationTest {
 			.flatMapObservable(nodes -> Observable.fromIterable(nodes.getData()))
 			.flatMapCompletable(node -> server.client().deleteNode(
 				project.getName(), node.getUuid(),
-				new DeleteParametersImpl().setRecursive(true)
-			).toCompletable()).blockingAwait();
+				new DeleteParametersImpl().setRecursive(true)).toCompletable())
+			.blockingAwait();
 
 		server.client().deleteNode(
 			project.getName(),
 			playground.getUuid(),
-			new DeleteParametersImpl().setRecursive(true)
-		).blockingAwait();
+			new DeleteParametersImpl().setRecursive(true)).blockingAwait();
 	}
 
 	protected String stringResponse(Response response) {

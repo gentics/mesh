@@ -6,6 +6,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
+import com.gentics.mesh.plugin.test.common.util.PluginTestUtil;
 import com.gentics.mesh.test.local.MeshLocalServer;
 
 /**
@@ -20,6 +21,7 @@ public class NoProjectTest {
 	@Test
 	public void startPluginWithoutProject() throws Exception {
 		server.getMesh().deployPlugin(FormGeneratorTestPlugin.class, "fg").blockingAwait();
+		PluginTestUtil.waitForPluginRegistration(server, 5_000, "fg");
 
 		// This project is configured
 		createProject("testproject");

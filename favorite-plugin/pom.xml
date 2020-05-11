@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>mesh-favorite-plugin</artifactId>
@@ -37,7 +38,6 @@
 		<dependency>
 			<groupId>com.gentics.mesh.plugin.commercial</groupId>
 			<artifactId>mesh-commercial-plugins-common</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<!-- Test dependencies -->
@@ -49,6 +49,11 @@
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-test-common</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh.plugin.commercial</groupId>
+			<artifactId>mesh-commercial-plugins-test-common</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -110,8 +115,10 @@
 						</goals>
 						<configuration>
 							<transformers>
-								<!-- We use the transformer to add the manifest properties to the jar manifest -->
-								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+								<!-- We use the transformer to add the manifest properties to the 
+									jar manifest -->
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 									<manifestEntries>
 										<Plugin-Id>${plugin.id}</Plugin-Id>
 										<Plugin-Name>${plugin.name}</Plugin-Name>
