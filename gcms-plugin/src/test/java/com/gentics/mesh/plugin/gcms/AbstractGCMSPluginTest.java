@@ -9,6 +9,8 @@ import org.junit.Rule;
 import org.testcontainers.shaded.org.apache.commons.io.IOUtils;
 
 import com.gentics.mesh.plugin.gcms.config.GCMSPluginConfig;
+import com.gentics.mesh.plugin.test.common.AbstractPluginLocalIntegrationTest;
+import com.gentics.mesh.plugin.test.common.util.PluginTestUtil;
 import com.gentics.mesh.test.local.MeshLocalServer;
 
 import io.vertx.core.json.JsonObject;
@@ -19,7 +21,8 @@ import io.vertx.ext.jwt.JWTOptions;
 /**
  * Test cases for the GCMS plugin
  */
-public abstract class AbstractGCMSPluginTest {
+public abstract class AbstractGCMSPluginTest extends AbstractPluginLocalIntegrationTest {
+
 	@BeforeClass
 	public static void configurePlugin() throws IOException {
 		GCMSTestPlugin.config = new GCMSPluginConfig();
@@ -41,6 +44,11 @@ public abstract class AbstractGCMSPluginTest {
 	public void createAuthProvider() throws IOException {
 		provider = JWTAuth.create(server.getMesh().getVertx(), new JWTAuthOptions().addJwk(
 				new JsonObject(IOUtils.toString(AbstractGCMSPluginTest.class.getResource("/private-key.jwk"), "UTF-8"))));
+	}
+
+	@Before
+	public void setupPlugin() throws InterruptedException {
+		PluginTestUtil.waitForPluginRegistration(server, 5_000, "gcmsPlugin");
 	}
 
 	/**

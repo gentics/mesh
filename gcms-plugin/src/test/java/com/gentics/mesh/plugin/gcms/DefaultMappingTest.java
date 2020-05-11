@@ -17,6 +17,7 @@ import com.gentics.mesh.rest.client.MeshRestClient;
  * Test for the default mapping
  */
 public class DefaultMappingTest extends AbstractGCMSPluginTest {
+
 	@Test
 	public void testDefaultMapping() throws IOException {
 		String token = getToken("testuser", "First", "Last", "testuser@nowhere", Arrays.asList("Group1", "Group2"));

@@ -10,6 +10,7 @@ import static com.gentics.mesh.plugin.comment.TestCommentClient.User.EDITOR;
 import static org.junit.Assert.assertEquals;
 
 public class NeedsApprovalTest extends AbstractLocalIntegrationTest {
+
 	@BeforeClass
 	public static void createProject() throws Exception {
 		initMesh("anonymousApprovalNoFieldsRequired");

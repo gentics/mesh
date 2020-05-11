@@ -49,7 +49,6 @@
 		<dependency>
 			<groupId>com.gentics.mesh.plugin.commercial</groupId>
 			<artifactId>mesh-commercial-plugins-common</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<!-- Dagger -->
@@ -129,6 +128,11 @@
 			<groupId>com.icegreen</groupId>
 			<artifactId>greenmail</artifactId>
 			<version>1.5.10</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh.plugin.commercial</groupId>
+			<artifactId>mesh-commercial-plugins-test-common</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

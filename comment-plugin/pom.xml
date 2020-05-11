@@ -47,7 +47,6 @@
 		<dependency>
 			<groupId>com.gentics.mesh.plugin.commercial</groupId>
 			<artifactId>mesh-commercial-plugins-common</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<!-- Test dependencies -->
@@ -87,6 +86,11 @@
 			<groupId>co.unruly</groupId>
 			<artifactId>java-8-matchers</artifactId>
 			<version>1.5</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh.plugin.commercial</groupId>
+			<artifactId>mesh-commercial-plugins-test-common</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

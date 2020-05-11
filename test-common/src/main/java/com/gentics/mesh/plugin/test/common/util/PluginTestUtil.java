@@ -1,0 +1,51 @@
+package com.gentics.mesh.plugin.test.common.util;
+
+import static com.gentics.mesh.core.rest.plugin.PluginStatus.REGISTERED;
+import static com.gentics.mesh.test.ClientHelper.call;
+
+import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.plugin.PluginListResponse;
+import com.gentics.mesh.core.rest.plugin.PluginResponse;
+import com.gentics.mesh.rest.client.MeshWebsocket;
+import com.gentics.mesh.test.MeshTestServer;
+
+public final class PluginTestUtil {
+
+	private PluginTestUtil() {
+	}
+
+	/**
+	 * Check whether the plugin can be found and is registered. Otherwise fail after the given timeout is exceeded.
+	 * 
+	 * @param container
+	 * @param timeoutInMilliseconds
+	 * @param pluginId
+	 * @throws InterruptedException
+	 */
+	public static void waitForPluginRegistration(MeshTestServer server, int timeoutInMilliseconds, String pluginId) throws InterruptedException {
+		// 1. Initial check
+		PluginListResponse plugins = call(() -> server.client().findPlugins());
+		Optional<PluginResponse> foundPlugin = plugins.getData().stream().filter(plugin -> plugin.getId().equals(pluginId)).findFirst();
+		if (foundPlugin.isPresent()) {
+			if (REGISTERED == foundPlugin.get().getStatus()) {
+				return;
+			}
+		}
+		// Wait for event
+		MeshWebsocket eb = server.client().eventbus();
+		try {
+			eb.registerEvents(MeshEvent.PLUGIN_REGISTERED);
+			CountDownLatch latch = new CountDownLatch(1);
+			eb.events().subscribe(ignore -> {
+				latch.countDown();
+			}, err -> err.printStackTrace());
+			latch.await(timeoutInMilliseconds, TimeUnit.MILLISECONDS);
+		} finally {
+			eb.close();
+		}
+	}
+}

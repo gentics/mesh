@@ -1,23 +1,27 @@
 package com.gentics.mesh.plugin.favorite;
 
-import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
-import com.gentics.mesh.core.rest.user.UserCreateRequest;
-import com.gentics.mesh.rest.client.MeshRestClientMessageException;
-import com.gentics.mesh.test.local.MeshLocalServer;
-import io.reactivex.Completable;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
+import com.gentics.mesh.core.rest.user.UserCreateRequest;
+import com.gentics.mesh.plugin.test.common.AbstractPluginLocalIntegrationTest;
+import com.gentics.mesh.plugin.test.common.util.PluginTestUtil;
+import com.gentics.mesh.rest.client.MeshRestClientMessageException;
+import com.gentics.mesh.test.local.MeshLocalServer;
+
+import io.reactivex.Completable;
 
 /**
  * Integration tests for the FavoritePlugin
  */
-public class FavoritePluginIntegrationTest {
+public class FavoritePluginIntegrationTest extends AbstractPluginLocalIntegrationTest {
 
 	private static FavoritePluginClient client;
 
@@ -32,9 +36,9 @@ public class FavoritePluginIntegrationTest {
 		server.client().createUser(new UserCreateRequest().setUsername("user1").setPassword("user1"));
 
 		server.getMesh().deployPlugin(FavoriteTestPlugin.class, "favorite").blockingAwait();
+		PluginTestUtil.waitForPluginRegistration(server, 5_000, "favorite");
 		client = new FavoritePluginClient(server.client(), "test");
 	}
-
 
 	@After
 	public void cleanUp() {

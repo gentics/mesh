@@ -52,7 +52,10 @@ import com.gentics.mesh.plugin.like.model.Rating;
 import com.gentics.mesh.plugin.like.model.StatisticsResponse;
 import com.gentics.mesh.plugin.like.model.Type;
 import com.gentics.mesh.plugin.like.service.SchemaService;
+import com.gentics.mesh.plugin.test.common.AbstractPluginLocalIntegrationTest;
+import com.gentics.mesh.plugin.test.common.util.PluginTestUtil;
 import com.gentics.mesh.test.local.MeshLocalServer;
+import com.gentics.mesh.test.util.TestUtils;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import okhttp3.MediaType;
@@ -65,7 +68,8 @@ import okhttp3.Response;
 /**
  * Integration tests for the LikePlugin
  */
-public class LikePluginIntegrationTest {
+public class LikePluginIntegrationTest extends AbstractPluginLocalIntegrationTest {
+
 	private final static String PROJECT_NAME = "testproject";
 
 	@ClassRule
@@ -103,6 +107,7 @@ public class LikePluginIntegrationTest {
 		call(() -> server.client().assignSchemaToProject(PROJECT_NAME, schema.getUuid()));
 
 		server.getMesh().deployPlugin(LikeTestPlugin.class, "like").blockingAwait();
+		PluginTestUtil.waitForPluginRegistration(server, 5_000, "like");
 
 		for (int i = 1; i <= 100; i++) {
 			UserCreateRequest createUser = new UserCreateRequest();
