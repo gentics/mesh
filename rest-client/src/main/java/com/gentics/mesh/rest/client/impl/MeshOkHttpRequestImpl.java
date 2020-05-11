@@ -139,6 +139,7 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 	@Override
 	public Completable toCompletable() {
 		return getOkResponse()
+			.doOnSuccess(this::throwOnError)
 			.doOnSuccess(response -> Optional.ofNullable(response)
 				.ifPresent(Response::close))
 			.ignoreElement();
