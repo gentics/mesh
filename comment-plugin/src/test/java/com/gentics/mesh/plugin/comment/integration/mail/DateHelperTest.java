@@ -30,7 +30,7 @@ public class DateHelperTest extends AbstractLocalIntegrationTest {
 	public final GreenMailRule greenMail = new GreenMailRule(ServerSetupTest.SMTP_IMAP);
 
 	@BeforeClass
-	public static void createProject() {
+	public static void createProject() throws InterruptedException {
 		initMesh("datehelper");
 	}
 
