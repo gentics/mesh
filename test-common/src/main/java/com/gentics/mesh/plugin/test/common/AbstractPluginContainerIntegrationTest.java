@@ -15,6 +15,7 @@ import org.junit.ClassRule;
 import com.gentics.mesh.core.rest.plugin.PluginDeploymentRequest;
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
 import com.gentics.mesh.plugin.test.common.util.ConfigSetupAction;
+import com.gentics.mesh.plugin.test.common.util.MeshVersionUtil;
 import com.gentics.mesh.plugin.test.common.util.PluginTestUtil;
 import com.gentics.mesh.test.docker.MeshDockerServer;
 
@@ -72,7 +73,7 @@ public abstract class AbstractPluginContainerIntegrationTest {
 	}
 
 	public static String meshImage() {
-		return "docker.apa-it.at/gentics/mesh:1.4.9";
+		return MeshVersionUtil.getMatchingImage();
 	}
 
 	@AfterClass
