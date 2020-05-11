@@ -28,7 +28,7 @@ public class ImageManipulatorOptions implements Option {
 	public static final ResampleFilter DEFAULT_RESAMPLE_FILTER = ResampleFilter.LANCZOS;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Configure the path for image cache directory. Default:data\\binaryImageCache ")
+	@JsonPropertyDescription("Configure the path for image cache directory. Default: data/binaryImageCache")
 	@EnvironmentVariable(name = MESH_IMAGE_CACHE_DIRECTORY_ENV, description = "Override the path for image cache directory.")
 	private String imageCacheDirectory = DEFAULT_IMAGE_CACHE_DIRECTORY;
 

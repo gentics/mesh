@@ -76,7 +76,7 @@ public class OptionsLoaderTest {
 		assertEquals("0.0.0.0", options.getMonitoringOptions().getHost());
 		assertTrue(options.getContentOptions().isAutoPurge());
 		assertEquals(MappingMode.STRICT, options.getSearchOptions().getMappingMode());
-		assertEquals("data" + File.separator +"binaryImageCache", options.getImageOptions().getImageCacheDirectory());
+		assertEquals("data" + File.separator + "binaryImageCache", options.getImageOptions().getImageCacheDirectory());
 	}
 
 	@Test
