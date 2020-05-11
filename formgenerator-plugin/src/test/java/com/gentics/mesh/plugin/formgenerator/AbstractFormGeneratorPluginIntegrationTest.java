@@ -27,6 +27,8 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.client.DeleteParametersImpl;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.plugin.formgenerator.service.SchemaService;
+import com.gentics.mesh.plugin.test.common.AbstractPluginLocalIntegrationTest;
+import com.gentics.mesh.plugin.test.common.util.PluginTestUtil;
 import com.gentics.mesh.test.local.MeshLocalServer;
 import com.icegreen.greenmail.junit.GreenMailRule;
 import com.icegreen.greenmail.util.ServerSetupTest;
@@ -44,7 +46,8 @@ import okhttp3.Response;
 /**
  * Integration tests for the FormGeneratorPlugin
  */
-public abstract class AbstractFormGeneratorPluginIntegrationTest {
+public abstract class AbstractFormGeneratorPluginIntegrationTest extends AbstractPluginLocalIntegrationTest {
+
 	protected final static String PROJECT_NAME = "testproject";
 	protected final static String PROJECT_HOSTNAME = "testhost";
 
@@ -72,6 +75,11 @@ public abstract class AbstractFormGeneratorPluginIntegrationTest {
 		call(() -> server.client().createProject(createProject));
 
 		server.getMesh().deployPlugin(FormGeneratorTestPlugin.class, "fg").blockingAwait();
+	}
+
+	@Before
+	public void setupPlugin() throws InterruptedException {
+		PluginTestUtil.waitForPluginRegistration(server, 5_000, "fg");
 	}
 
 	/**

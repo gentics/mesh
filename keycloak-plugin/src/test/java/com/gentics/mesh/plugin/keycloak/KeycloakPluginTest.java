@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -18,6 +19,8 @@ import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.plugin.keycloak.config.KeycloakPluginConfig;
+import com.gentics.mesh.plugin.test.common.AbstractPluginLocalIntegrationTest;
+import com.gentics.mesh.plugin.test.common.util.PluginTestUtil;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.test.docker.KeycloakContainer;
 import com.gentics.mesh.test.local.MeshLocalServer;
@@ -29,7 +32,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class KeycloakPluginTest {
+public class KeycloakPluginTest extends AbstractPluginLocalIntegrationTest {
 
 	@ClassRule
 	public static final KeycloakContainer keycloak = new KeycloakContainer("/keycloak/realm.json", "8.0.1")
@@ -50,6 +53,11 @@ public class KeycloakPluginTest {
 		.waitForStartup();
 
 	private static OkHttpClient httpClient = new OkHttpClient.Builder().build();
+
+	@Before
+	public void setupPlugin() throws InterruptedException {
+		PluginTestUtil.waitForPluginRegistration(server, 5_000, "authPlugin");
+	}
 
 	@Test
 	public void testPlugin() throws IOException {
