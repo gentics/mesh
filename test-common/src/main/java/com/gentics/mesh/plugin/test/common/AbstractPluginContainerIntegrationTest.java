@@ -25,7 +25,7 @@ import io.vertx.core.logging.SLF4JLogDelegateFactory;
 /**
  * Abstract class for tests which are run against a mesh container. The tests deploys the final plugin jar in the container and runs the testcases.
  */
-public abstract class AbstractPluginContainerIntegrationTest implements PluginHelper {
+public abstract class AbstractPluginContainerIntegrationTest {
 
 	public static final File PLUGINS_DIR = new File("target", "it_" + System.currentTimeMillis());
 
