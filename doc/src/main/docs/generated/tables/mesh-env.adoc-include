@@ -194,6 +194,9 @@
 | *MESH_CLUSTER_NAME*
 | Override the cluster name.
 
+| *MESH_MAX_PURGE_BATCH_SIZE*
+| Override the maximum purge batch size.
+
 | *MESH_ELASTICSEARCH_BULK_DEBOUNCE_TIME*
 | Override the bulk debounce time.
 
