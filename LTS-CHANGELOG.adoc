@@ -23,3 +23,9 @@ All fixes and changes in LTS releases will be released the next minor release. C
 icon:plus[] Plugins: The plugin registration process was changed. Plugins will now no longer be directly registered when deployed. Instead the plugins will remain in a pre-registration status util Gentics Mesh is able to deploy them. This is especially useful when running plugins in clustered mode. Plugins will only be registered once the write quorum has been reached. Additionally the plugin deployment process will now utilize a lock in clustered mode to prevent concurrent deployments of plugins. The plugin status was added to the plugin endpoint response.
 
 icon:check[] Clustering: The write lock was removed from the `DELETE /api/v2/admin/plugins/:id` and `POST /api/v2/admin/plugins` endpoints to prevent potential deadlocks.
+
+[[v1.3.4]]
+== 1.3.4
+
+CAUTION: Microschema migrations since version 1.2.0 are very likely to cause a loss of data in nodes that contain micronodes of the migrated schema. This bug has been fixed in this version. At the first start with this version or higher, Gentics Mesh will try to restore affected nodes in projects with a single branch. However, because some data cannot be restored, we advise to restore a backup of a moment before the microschema migration, if possible. We apologize for the inconvenience.
+
