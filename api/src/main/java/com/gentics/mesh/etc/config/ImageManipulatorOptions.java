@@ -18,13 +18,19 @@ public class ImageManipulatorOptions implements Option {
 	public static final String MESH_IMAGE_MAX_HEIGHT_ENV = "MESH_IMAGE_MAX_HEIGHT";
 	public static final String MESH_IMAGE_JPEG_QUALITY_ENV = "MESH_IMAGE_JPEG_QUALITY";
 	public static final String MESH_IMAGE_RESAMPLE_FILTER_ENV = "MESH_IMAGE_RESAMPLE_FILTER";
+	public static final String MESH_IMAGE_CACHE_DIRECTORY_ENV = "MESH_IMAGE_CACHE_DIRECTORY";
+
 	public static final int DEFAULT_MAX_WIDTH = 2048;
 	public static final int DEFAULT_MAX_HEIGHT = 2048;
 	public static final float DEFAULT_JPEG_QUALITY = 0.95f;
+	public static final String DEFAULT_IMAGE_CACHE_DIRECTORY = "data" + File.separator + "binaryImageCache";
 	// This is the default filter in ImageMagick
 	public static final ResampleFilter DEFAULT_RESAMPLE_FILTER = ResampleFilter.LANCZOS;
 
-	private String imageCacheDirectory = "data" + File.separator + "binaryImageCache";
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Configure the path for image cache directory. Default:data\\binaryImageCache ")
+	@EnvironmentVariable(name = MESH_IMAGE_CACHE_DIRECTORY_ENV, description = "Override the path for image cache directory.")
+	private String imageCacheDirectory = DEFAULT_IMAGE_CACHE_DIRECTORY;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Configure the maximum allowed image resize width. Resizing is a memory intensive operation and thus this limit can help avoid memory issues. Default: "
