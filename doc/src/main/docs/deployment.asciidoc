@@ -26,7 +26,9 @@ docker push registry.heroku.com/mesh-test/worker
 
 == Kubernetes
 
-We are currently working on providing a Helm Chart for K8S deployment.
+
+We provide a https://getmesh.io/premium-features/helm-chart/[Helm Chart for Gentics Mesh] as a premium feature.
+
 
 == Linux (via systemd)
 
@@ -155,7 +157,7 @@ volumes:
 
 NOTE: The `stop_grace_period` setting is important to allow for a clean shutdown of Gentics Mesh.
 
-==== Cluster
+=== Cluster
 
 The cluster stack contains the following components:
 

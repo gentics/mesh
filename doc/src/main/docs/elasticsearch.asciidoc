@@ -693,7 +693,7 @@ comma separated list of languages as the key.
 
 NOTE: For each overridden language, Gentics Mesh will create additional indices in Elasticsearch. This might affect the resources used by Elasticsearch.
 
- Node contents of that language will be saved in that index.
+Node contents of that language will be saved in that index.
 When a node content is created with a language that is not overridden, the node content will be saved in the default index. The settings / mappings of the
 default index can be configured like shown in the example above.
 
