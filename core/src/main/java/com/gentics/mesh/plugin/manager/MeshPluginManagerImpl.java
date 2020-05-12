@@ -277,6 +277,10 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 		return Completable.fromRunnable(() -> {
 			resolvePlugins();
 			PluginWrapper wrapper = getPlugin(id);
+			if (wrapper == null) {
+				log.debug("Plugin with id {} could not be found", id);
+				return;
+			}
 			Plugin plugin = wrapper.getPlugin();
 			if (plugin instanceof MeshPlugin) {
 				try {

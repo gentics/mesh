@@ -123,7 +123,7 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 
 		String id = plugin.id();
 		JsonObject payload = toEventPayload(plugin);
-		optionalLock(registerAndInitalizePlugin(plugin)).subscribe(() -> {
+		optionalQuorumCheck().andThen(optionalLock(registerAndInitializePlugin(plugin), id)).subscribe(() -> {
 			log.info("Completed handling of pre-registered plugin {" + id + "}");
 			manager.get().setStatus(id, REGISTERED);
 
@@ -142,35 +142,36 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 
 	}
 
-	private Completable registerAndInitalizePlugin(MeshPlugin plugin) {
+	private Completable registerAndInitializePlugin(MeshPlugin plugin) {
 		long timeout = getPluginTimeout().getSeconds();
 		String id = plugin.id();
-
-		return optionalQuorumCheck().doOnComplete(() -> {
-			if (log.isDebugEnabled()) {
-				log.debug("Invoking initialization of plugin {" + id + "}");
-			}
-		}).andThen(plugin.initialize().timeout(timeout, TimeUnit.SECONDS).doOnComplete(() -> {
+		return plugin.initialize().timeout(timeout, TimeUnit.SECONDS).doOnComplete(() -> {
 			manager.get().setStatus(id, INITIALIZED);
+			log.debug("Plugin initialization of plugin {} completed", id);
 		}).andThen(register(plugin).doOnComplete(() -> {
+			log.debug("Plugin registration of plugin {} completed", id);
 			manager.get().setStatus(id, REGISTERED);
-		})));
+		}));
 	}
 
 	/**
 	 * Use the lock in clustered mode to prevent concurrent inits
 	 * 
 	 * @param lockedAction
+	 * @param id
 	 * @return
 	 */
-	private Completable optionalLock(Completable lockedAction) {
+	private Completable optionalLock(Completable lockedAction, String id) {
 		int timeout = options.getPluginTimeout();
 		if (options.getClusterOptions().isEnabled()) {
-			return rxVertx.get().sharedData().rxGetLockWithTimeout(GLOBAL_PLUGIN_LOCK_KEY, timeout * 2 * 1000).toMaybe()
+			return rxVertx.get().sharedData().rxGetLockWithTimeout(GLOBAL_PLUGIN_LOCK_KEY, timeout * 4 * 1000).toMaybe()
 				.flatMapCompletable(lock -> {
-					log.debug("Acquired lock for plugin registration.");
+					log.debug("Acquired lock for registration of plugin {}", id);
 					return lockedAction
-						.doFinally(lock::release);
+						.doFinally(() -> {
+							log.debug("Releasing lock for plugin {}", id);
+							lock.release();
+						});
 				});
 		} else {
 			return lockedAction;

@@ -17,8 +17,13 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.4.10]]
+== 1.4.10 (12.05.2020)
+
+icon:check[] Plugins: Fixed an error which was triggered when trying to un-deploy a not yet deployed plugin.
+
 [[v1.4.9]]
-== 1.4.9 (07.04.2020)
+== 1.4.9 (07.05.2020)
 
 icon:plus[] Plugins: The plugin registration process was changed. Plugins will now no longer be directly registered when deployed. Instead the plugins will remain in a pre-registration status util Gentics Mesh is able to deploy them. This is especially useful when running plugins in clustered mode. Plugins will only be registered once the write quorum has been reached. Additionally the plugin deployment process will now utilize a lock in clustered mode to prevent concurrent deployments of plugins. The plugin status was added to the plugin endpoint response.
 
