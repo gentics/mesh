@@ -278,6 +278,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 			resolvePlugins();
 			PluginWrapper wrapper = getPlugin(id);
 			if (wrapper == null) {
+				log.debug("Plugin with id {} could not be found", id);
 				return;
 			}
 			Plugin plugin = wrapper.getPlugin();
