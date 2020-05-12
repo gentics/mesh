@@ -405,4 +405,29 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 			"binary", new ImageManipulationParametersImpl().setWidth(250)),
 			NOT_FOUND, "node_error_binary_data_not_found");
 	}
+
+	@Test
+	public void testUploadEmptyFile() {
+		NodeResponse binaryNode = createBinaryNode();
+
+		InputStream emptyStream = new InputStream() {
+			@Override
+			public int read() throws IOException {
+				return -1;
+			}
+		};
+
+		client().updateNodeBinaryField(
+			PROJECT_NAME,
+			binaryNode.getUuid(),
+			binaryNode.getLanguage(),
+			binaryNode.getVersion(),
+			"binary",
+			emptyStream,
+			0,
+			"emptyFile",
+			"application/binary"
+		).blockingAwait();
+	}
+
 }

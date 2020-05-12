@@ -30,6 +30,8 @@ include::content/docs/variables.adoc-include[]
 
 icon:check[] Config: It is now possible to configure the image cache directory path using the `MESH_IMAGE_CACHE_DIRECTORY` environment variable. Fixes link:https://github.com/gentics/mesh/issues/1067[#1067]
 
+icon:check[] Consistency Checks: An empty binary will no longer be considered inconsistent.
+
 [[v1.5.1]]
 == 1.5.1 (11.05.2020)
 
