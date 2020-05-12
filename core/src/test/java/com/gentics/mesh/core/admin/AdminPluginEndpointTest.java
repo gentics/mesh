@@ -76,6 +76,13 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 	}
 
 	@Test
+	public void testUndeployBogusPlugin() {
+		grantAdminRole();
+		String id = "bogus";
+		call(() -> client().undeployPlugin(id), NOT_FOUND, "object_not_found_for_uuid", id);
+	}
+
+	@Test
 	public void testReadPluginListMissingPermission() {
 		revokeAdminRole();
 		call(() -> client().findPlugins(), FORBIDDEN, "error_admin_permission_required");
