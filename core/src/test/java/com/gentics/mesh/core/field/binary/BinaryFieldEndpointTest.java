@@ -19,6 +19,7 @@ import java.util.List;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.input.NullInputStream;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -405,4 +406,29 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 			"binary", new ImageManipulationParametersImpl().setWidth(250)),
 			NOT_FOUND, "node_error_binary_data_not_found");
 	}
+
+	@Test
+	public void testUploadEmptyFile() {
+		NodeResponse binaryNode = createBinaryNode();
+
+		InputStream emptyStream = new InputStream() {
+			@Override
+			public int read() throws IOException {
+				return -1;
+			}
+		};
+
+		client().updateNodeBinaryField(
+			PROJECT_NAME,
+			binaryNode.getUuid(),
+			binaryNode.getLanguage(),
+			binaryNode.getVersion(),
+			"binary",
+			emptyStream,
+			0,
+			"emptyFile",
+			"application/binary"
+		).blockingAwait();
+	}
+
 }

@@ -36,7 +36,7 @@ public class BinaryCheck extends AbstractConsistencyCheck {
 			result.addInconsistency("The binary has no sha512sum", uuid, MEDIUM);
 		}
 
-		if (binary.getSize() == 0) {
+		if (binary.getSize() < 0) {
 			result.addInconsistency("The binary has no valid size specified", uuid, LOW);
 		}
 
