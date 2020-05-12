@@ -123,7 +123,7 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 
 		String id = plugin.id();
 		JsonObject payload = toEventPayload(plugin);
-		optionalLock(registerAndInitalizePlugin(plugin)).subscribe(() -> {
+		optionalLock(registerAndInitalizePlugin(plugin), id).subscribe(() -> {
 			log.info("Completed handling of pre-registered plugin {" + id + "}");
 			manager.get().setStatus(id, REGISTERED);
 
@@ -161,16 +161,20 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 	 * Use the lock in clustered mode to prevent concurrent inits
 	 * 
 	 * @param lockedAction
+	 * @param id
 	 * @return
 	 */
-	private Completable optionalLock(Completable lockedAction) {
+	private Completable optionalLock(Completable lockedAction, String id) {
 		int timeout = options.getPluginTimeout();
 		if (options.getClusterOptions().isEnabled()) {
 			return rxVertx.get().sharedData().rxGetLockWithTimeout(GLOBAL_PLUGIN_LOCK_KEY, timeout * 2 * 1000).toMaybe()
 				.flatMapCompletable(lock -> {
-					log.debug("Acquired lock for plugin registration.");
+					log.info("Acquired lock for registration of plugin {}", id);
 					return lockedAction
-						.doFinally(lock::release);
+						.doFinally(() -> {
+							log.info("Releasing lock for plugin {}", id);
+							lock.release();
+						});
 				});
 		} else {
 			return lockedAction;

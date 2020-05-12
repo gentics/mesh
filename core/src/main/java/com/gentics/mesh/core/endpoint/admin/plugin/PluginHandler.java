@@ -93,18 +93,20 @@ public class PluginHandler extends AbstractHandler {
 		}, model -> ac.send(model, CREATED));
 	}
 
-	public void handleUndeploy(InternalActionContext ac, String uuid) {
+	public void handleUndeploy(InternalActionContext ac, String pluginId) {
 		utils.syncTx(ac, tx -> {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
-			if (StringUtils.isEmpty(uuid)) {
+			if (StringUtils.isEmpty(pluginId)) {
 				throw error(BAD_REQUEST, "admin_plugin_error_uuid_missing");
 			}
-
+			if (manager.getPlugin(pluginId) == null) {
+				throw error(NOT_FOUND, "object_not_found_for_uuid", pluginId);
+			}
 			return manager
-				.undeploy(uuid)
-				.toSingleDefault(message(ac, "admin_plugin_undeployed", uuid)).blockingGet();
+				.undeploy(pluginId)
+				.toSingleDefault(message(ac, "admin_plugin_undeployed", pluginId)).blockingGet();
 		}, model -> ac.send(model, OK));
 	}
 
