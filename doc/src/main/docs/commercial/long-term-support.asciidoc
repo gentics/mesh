@@ -27,7 +27,7 @@ For every supported feature release, we regularly release hotfixes with the goal
 * fix high-impact bugs (e.g., data loss)
 * fix bugs with substantial benefit and low risk
 
-We do not introducing new features with these releases.
+We do not introduce new features with these releases.
 
 == link:/docs/lts-changelog/[LTS Changelog]
 
