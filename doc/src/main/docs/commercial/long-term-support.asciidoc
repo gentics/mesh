@@ -23,7 +23,7 @@ After that date, the software is no longer supported by Gentics.
 
 For every supported feature release, we regularly release hotfixes with the goal to:
 
-* fixing security vulnerabilities
+* fix security vulnerabilities
 * fix high-impact bugs (e.g., data loss)
 * fix bugs with substantial benefit and low risk
 
