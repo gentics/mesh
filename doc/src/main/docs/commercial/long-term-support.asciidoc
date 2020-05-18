@@ -7,7 +7,7 @@ include::content/docs/variables.adoc-include[]
 == Intro
 
 Long-term support releases provide you with a stable and secure upgrade path for your Gentics Mesh projects.
-New features can always reduce the stabiltiy of a product. This is why we decided to provide our customers with another option.
+New features can always reduce the stability of a product. This is why we decided to provide our customers with another option.
 The Long-Term support releases will not contain new features. Only bugfixes and security updates will be included.
 
 Fixes for LTS releases will automatically be included in the next public release of Gentics Mesh.
