@@ -1,0 +1,45 @@
+---
+title: Long-Term Support
+---
+
+include::content/docs/variables.adoc-include[]
+
+== Intro
+
+Long-term support releases provide you with a stable and secure upgrade path for your Gentics Mesh projects.
+New features can always reduce the stability of a product. This is why we decided to provide our customers with another option.
+The Long-Term support releases will not contain new features. Only bugfixes and security updates will be included.
+
+Fixes for LTS releases will automatically be included in the next public release of Gentics Mesh.
+
+A link:/services/[Product Maintenance] subscription is required to access LTS releases.
+
+== Support Length
+
+The end-of-life date of each feature release is usually one year after its initial release date.
+After that date, the software is no longer supported by Gentics.
+
+== Maintenance and security updates
+
+For every supported feature release, we regularly release hotfixes with the goal to:
+
+* fix security vulnerabilities
+* fix high-impact bugs (e.g., data loss)
+* fix bugs with substantial benefit and low risk
+
+We do not introduce new features with these releases.
+
+== link:/docs/lts-changelog/[LTS Changelog]
+
+== Access
+
+Download access is restricted and can be obtained via a link:/services/[Product Maintenance] subscription.
+
+=== Maven / Downloads
+
+The releases can be downloaded via the link:https://maven.gentics.com/maven2-commercial/com/gentics/mesh/mesh-server/[commercial maven repository]
+
+=== Docker
+
+* Server: docker.apa-it.at/gentics/mesh:VERSION
+* Demo: docker.apa-it.at/gentics/mesh-demo:VERSION

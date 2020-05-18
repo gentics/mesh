@@ -131,18 +131,51 @@ The ```elasticsearch``` folder contains the included Elasticsearch installation 
 
 === Server Requirements
 
-Gentics Mesh comes with OrientDB, an embedded graph database and Elasticsearch. There are no external dependencies besides Java Runtime 8.
+Gentics Mesh comes with OrientDB, an embedded graph database. There are no external dependencies besides Java Runtime 8.
+
+Production servers must be run on Linux. Windows is not supported. You can however run Gentics Mesh on Windows via link:https://docs.docker.com/docker-for-windows/[Docker Windows].
+
+==== GraphDB Storage Requirements
+
+The underlying storage filesystem for the Graph Database must support DirectIO.
+
+[options="header"]
+|======
+| Filesystem       | Supported
+| ```Ext4```       | Yes
+| ```XFS```        | Yes
+| ```NFS```        | No
+| ```GlusterFS```  | No
+| ```Ceph```       | No
+| ```ZFS```        | No
+| ```Amazon EFS``` | No
+| ```Amazon EBS``` | Yes
+|======
+
+Storage solutions which provide one of the supported filesystems by the means of iSCSI or Fiberchannel are supported.
+
+==== Cluster Requirements
+
+* Each Gentics Mesh instance needs at least 1.5 GB heap memory.
+* A shared filesystem needs to be provided for the upload folder. This folder needs to be shared among all cluster instances. Using NFS is a typical choice for these folders.
 
 ==== System Configuration
 
 The maximum open file limit on Linux has to be raised on most Linux systems since the embedded graph database and Elasticsearch server often exceed the amount of concurrent open files.
 
+The limits need to be configured specific to your execution environment.
+
+* Docker: Limits can be specified during startup or inside the `docker-compose.yaml`.
+* Systemd: Limits can be specified within the startup service file.
+* K8S/Openshift: Limits need to be configured in the deployments. The commercial helm chart already includes these.
+* sysvinit: The limits can be configured in the `/etc/security/limits.conf`
+
 Edit _/etc/security/limits.conf_ and add these two lines:
 
 [source,bash]
 ----
-Mesh   soft    nofile  60000
-Mesh   hard    nofile  60000
+mesh   soft    nofile  60000
+mesh   hard    nofile  60000
 ----
 
 Edit _/etc/pam.d/su_ and uncomment or add the following line:
