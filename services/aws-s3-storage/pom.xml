@@ -45,11 +45,6 @@
 			<groupId>software.amazon.awssdk</groupId>
 			<artifactId>s3</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-			<version>4.4.10</version>
-		</dependency>
 
 		<!-- 4.4.10 to workaround classpath issue in s3 client -->
 		<dependency>
