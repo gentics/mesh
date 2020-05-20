@@ -12,8 +12,8 @@
     }) {
       elements {
         uuid
-        fields {
-          ... on category {
+        ... on category {
+          fields {
             name
           }
         }
