@@ -18,8 +18,8 @@
   }) {
     elements {
       uuid
-      fields {
-        ... on vehicle {
+      ... on vehicle {
+        fields {
           name
         }
       }

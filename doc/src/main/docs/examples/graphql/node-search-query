@@ -5,8 +5,8 @@
   nodes(query: "{\"query\":{\"query_string\":{\"query\":\"car\"}}}") {
     elements {
       uuid
-      fields {
-        ... on vehicle {
+      ... on vehicle {
+        fields {
           slug
         }
       }

@@ -2,8 +2,8 @@
 <div class="graphql-example" style="height: 46em">
 {
   node(path: "/yachts/pelorus") {
-    fields {
-      ... on vehicle {
+    ... on vehicle {
+      fields {
         name
         description
         # The vehicleImage field is a node field
@@ -13,8 +13,8 @@
           # We need to specify what kind of node we expect.
           # Otherwise we can't retrieve the image
           # binary field information.
-          fields {
-            ... on vehicleImage {
+          ... on vehicleImage {
+            fields {
               image {
                 width
                 height
