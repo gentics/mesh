@@ -40,6 +40,8 @@ import com.gentics.mesh.plugin.manager.MeshPluginManagerImpl;
 import com.gentics.mesh.plugin.pf4j.PluginEnvironmentImpl;
 import com.gentics.mesh.plugin.registry.DelegatingPluginRegistry;
 import com.gentics.mesh.plugin.registry.DelegatingPluginRegistryImpl;
+import com.gentics.mesh.plugin.registry.binary.BinaryStoragePluginRegistry;
+import com.gentics.mesh.plugin.registry.binary.BinaryStoragePluginRegistryImpl;
 import com.gentics.mesh.search.index.common.DropIndexHandler;
 import com.gentics.mesh.search.index.common.DropIndexHandlerImpl;
 import com.gentics.mesh.storage.BinaryStorage;
@@ -116,4 +118,7 @@ public abstract class BindModule {
 
 	@Binds
 	abstract DelegatingPluginRegistry bindPluginRegistry(DelegatingPluginRegistryImpl e);
+
+	@Binds
+	abstract BinaryStoragePluginRegistry bindBinaryStoragePluginRegistry(BinaryStoragePluginRegistryImpl e);
 }
