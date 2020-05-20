@@ -36,16 +36,16 @@ public interface BinaryStoragePlugin extends MeshPlugin {
 	 * 
 	 * @param rc
 	 * @param uuid
-	 * @return 
+	 * @return
 	 */
 	// TODO decide whether this should return a completable. It may be better to end the request here since it is terminated at this point?
 	default Completable read(RoutingContext rc, String uuid) {
 		Flowable<Buffer> flow = read(uuid);
 		// TODO set header (content-encoding, content-length, content-type, cache-control)
-		return flow.map(buf -> {
-			rc.response().write(buf);
-			return buf;
-		}).ignoreElements().doFinally(rc.response()::end);
+		return flow.doOnNext(rc.response()::write)
+			.doFinally(rc.response()::end)
+			.doOnError(rc::fail)
+			.ignoreElements();
 	}
 
 	/**
