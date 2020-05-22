@@ -1,15 +1,5 @@
 package com.gentics.mesh.core.schema;
 
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
-
-import java.util.Collections;
-
-import com.gentics.mesh.core.rest.schema.impl.*;
-import org.junit.Before;
-import org.junit.Test;
-
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -17,8 +7,22 @@ import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.util.Collections;
+
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 @MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true)
 public class SchemaAllowNodeFieldTest extends AbstractMeshTest {
@@ -43,20 +47,35 @@ public class SchemaAllowNodeFieldTest extends AbstractMeshTest {
     private void createNode(Field field) {
         NodeCreateRequest req = new NodeCreateRequest();
         req.setLanguage("en");
-        req.setSchema(new SchemaReferenceImpl().setName("test"));
+        req.setSchemaName("test");
         req.setParentNodeUuid(nodeUuid);
         FieldMapImpl fieldMap = new FieldMapImpl();
         fieldMap.put("testField", field);
         req.setFields(fieldMap);
 
         client().createNode(PROJECT_NAME, req).blockingAwait();
-        //call(() -> client().createNode(PROJECT_NAME, req), BAD_REQUEST, "node_error_missing_reference");
+    }
+    
+    private void createNodeAndExpectFailure(Field field) {
+        NodeCreateRequest req = new NodeCreateRequest();
+        req.setLanguage("en");
+        req.setSchemaName("test");
+        req.setParentNodeUuid(nodeUuid);
+        FieldMapImpl fieldMap = new FieldMapImpl();
+        fieldMap.put("testField", field);
+        req.setFields(fieldMap);
 
+        call(() -> client().createNode(PROJECT_NAME, req), BAD_REQUEST,"node_error_invalid_schema_field_value","testField","test");
     }
 
     private void runTest(FieldSchema schemaField, Field nodeField) {
         createSchema(schemaField);
         createNode(nodeField);
+    }
+
+    private void runTestAndExpectFailure(FieldSchema schemaField, Field nodeField) {
+        createSchema(schemaField);
+        createNodeAndExpectFailure(nodeField);
     }
 
     @Test
@@ -68,7 +87,7 @@ public class SchemaAllowNodeFieldTest extends AbstractMeshTest {
 
     @Test
     public void nodeNotAllowed() {
-        runTest(
+        runTestAndExpectFailure(
                 new NodeFieldSchemaImpl().setAllowedSchemas("test2"),
                 new NodeFieldImpl().setUuid(nodeUuid));
     }
@@ -82,7 +101,7 @@ public class SchemaAllowNodeFieldTest extends AbstractMeshTest {
 
     @Test
     public void nodeListNotAllowed() {
-        runTest(
+        runTestAndExpectFailure(
                 new ListFieldSchemaImpl().setListType("node").setAllowedSchemas("test2"),
                 new NodeFieldListImpl().setItems(Collections.singletonList(new NodeFieldListItemImpl().setUuid(nodeUuid))));
     }

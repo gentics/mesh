@@ -8,13 +8,15 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.util.StreamUtil.toStream;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -98,26 +100,19 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 			// TODO check whether we want to allow cross project node references
 
 			NodeFieldSchema nodeFieldSchema = (NodeFieldSchema) fieldSchema;
+			String schemaName = schema.getName();
 
-			SchemaReference schemaReference = nodeField.getSchema();
-			if (schemaReference == null || !schemaReference.isSet()) {
-				throw error(BAD_REQUEST, "node_error_missing_reference", fieldKey);
-			}
-
-			SchemaContainerVersion schemaContainerVersion = ac.getProject().getSchemaContainerRoot().fromReference(schemaReference);
-
-			// check whether schema is allowed
 			if (!ArrayUtils.isEmpty(nodeFieldSchema.getAllowedSchemas())
-					&& !Arrays.asList(nodeFieldSchema.getAllowedSchemas()).contains(schemaContainerVersion.getName())) {
-				log.error("Node update not allowed since the schema {" + schemaContainerVersion.getName()
-						+ "} is now allowed. Allowed schemas {" + Arrays.toString(nodeFieldSchema.getAllowedSchemas()) + "}");
-				throw error(BAD_REQUEST, "node_error_invalid_schema_field_value", fieldKey, schemaContainerVersion.getName());
+					&& !Arrays.asList(nodeFieldSchema.getAllowedSchemas()).contains(schemaName)) {
+				log.error("Node update not allowed since the schema {" + schemaName
+						+ "} is not allowed. Allowed schemas {" + Arrays.toString(nodeFieldSchema.getAllowedSchemas()) + "}");
+				throw error(BAD_REQUEST, "node_error_invalid_schema_field_value", fieldKey, schemaName);
 			}
 
 			if (graphNodeField == null) {
 				container.createNode(fieldKey, node);
 			} else {
-				// We can't update the graphNodeField since it is in fact an edge.
+				// We can't update the graphNodeField since it is in fact an edge. 
 				// We need to delete it and create a new one.
 				container.deleteFieldEdge(fieldKey);
 				container.createNode(fieldKey, node);
@@ -142,7 +137,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 	@Override
 	public Stream<? extends NodeGraphFieldContainer> getReferencingContents() {
 		return getReferencingFieldContainers()
-				.flatMap(GraphFieldContainer::getContents);
+			.flatMap(GraphFieldContainer::getContents);
 	}
 
 	/**
@@ -231,8 +226,8 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 			return skipper.getName();
 		} else {
 			return skipper.nextVertex.inE(HAS_FIELD, HAS_ITEM)
-					.nextExplicit(NodeGraphFieldImpl.class)
-					.getFieldName();
+				.nextExplicit(NodeGraphFieldImpl.class)
+				.getFieldName();
 		}
 	}
 
