@@ -2,6 +2,7 @@ package com.gentics.mesh.core.schema;
 
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
@@ -27,6 +28,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 @MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true)
 public class SchemaAllowNodeFieldTest extends AbstractMeshTest {
     private String nodeUuid;
+    private String testNodeUuid;
 
     @Before
     public void setUp() throws Exception {
@@ -56,6 +58,16 @@ public class SchemaAllowNodeFieldTest extends AbstractMeshTest {
         client().createNode(PROJECT_NAME, req).blockingAwait();
     }
     
+    private void createTestNode() {
+        NodeCreateRequest nodeReq = new NodeCreateRequest();
+        nodeReq.setLanguage("en");
+        nodeReq.setSchemaName("test");
+        nodeReq.setParentNodeUuid(nodeUuid);
+        NodeResponse createdNode = call(() -> client().createNode(PROJECT_NAME, nodeReq));
+
+        testNodeUuid = createdNode.getUuid();
+    }
+    
     private void createNodeAndExpectFailure(Field field) {
         NodeCreateRequest req = new NodeCreateRequest();
         req.setLanguage("en");
@@ -68,41 +80,43 @@ public class SchemaAllowNodeFieldTest extends AbstractMeshTest {
         call(() -> client().createNode(PROJECT_NAME, req), BAD_REQUEST,"node_error_invalid_schema_field_value","testField","test");
     }
 
-    private void runTest(FieldSchema schemaField, Field nodeField) {
-        createSchema(schemaField);
+    private void runTest(Field nodeField) {
         createNode(nodeField);
     }
 
-    private void runTestAndExpectFailure(FieldSchema schemaField, Field nodeField) {
-        createSchema(schemaField);
+    private void runTestAndExpectFailure(Field nodeField) {
         createNodeAndExpectFailure(nodeField);
     }
 
     @Test
     public void node() {
+        createSchema(new NodeFieldSchemaImpl().setAllowedSchemas("test"));
+        createTestNode();
         runTest(
-                new NodeFieldSchemaImpl().setAllowedSchemas("test"),
-                new NodeFieldImpl().setUuid(nodeUuid));
+                new NodeFieldImpl().setUuid(testNodeUuid));
     }
 
     @Test
     public void nodeNotAllowed() {
+        createSchema(new NodeFieldSchemaImpl().setAllowedSchemas("test2"));
+        createTestNode();
         runTestAndExpectFailure(
-                new NodeFieldSchemaImpl().setAllowedSchemas("test2"),
-                new NodeFieldImpl().setUuid(nodeUuid));
+                new NodeFieldImpl().setUuid(testNodeUuid));
     }
 
     @Test
     public void nodeList() {
+        createSchema(new ListFieldSchemaImpl().setListType("node").setAllowedSchemas("test"));
+        createTestNode();
         runTest(
-                new ListFieldSchemaImpl().setListType("node").setAllowedSchemas("test"),
-                new NodeFieldListImpl().setItems(Collections.singletonList(new NodeFieldListItemImpl().setUuid(nodeUuid))));
+                new NodeFieldListImpl().setItems(Collections.singletonList(new NodeFieldListItemImpl().setUuid(testNodeUuid))));
     }
 
     @Test
     public void nodeListNotAllowed() {
+        createSchema(new ListFieldSchemaImpl().setListType("node").setAllowedSchemas("test2"));
+        createTestNode();
         runTestAndExpectFailure(
-                new ListFieldSchemaImpl().setListType("node").setAllowedSchemas("test2"),
-                new NodeFieldListImpl().setItems(Collections.singletonList(new NodeFieldListItemImpl().setUuid(nodeUuid))));
+                new NodeFieldListImpl().setItems(Collections.singletonList(new NodeFieldListItemImpl().setUuid(testNodeUuid))));
     }
 }

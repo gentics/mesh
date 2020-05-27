@@ -100,7 +100,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 			// TODO check whether we want to allow cross project node references
 
 			NodeFieldSchema nodeFieldSchema = (NodeFieldSchema) fieldSchema;
-			String schemaName = schema.getName();
+			String schemaName = node.getSchemaContainer().getName();
 
 			if (!ArrayUtils.isEmpty(nodeFieldSchema.getAllowedSchemas())
 					&& !Arrays.asList(nodeFieldSchema.getAllowedSchemas()).contains(schemaName)) {

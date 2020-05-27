@@ -89,7 +89,7 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 				throw error(BAD_REQUEST, "node_list_item_not_found", item.getUuid());
 			}
 			ListFieldSchema listFieldSchema = (ListFieldSchema) fieldSchema;
-			String schemaName = schema.getName();
+			String schemaName = node.getSchemaContainer().getName();
 
 			if (!ArrayUtils.isEmpty(listFieldSchema.getAllowedSchemas())
 					&& !Arrays.asList(listFieldSchema.getAllowedSchemas()).contains(schemaName)) {
