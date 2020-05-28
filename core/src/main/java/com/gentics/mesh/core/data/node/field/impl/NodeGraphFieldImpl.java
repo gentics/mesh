@@ -8,6 +8,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.util.StreamUtil.toStream;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,8 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -95,6 +98,17 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 			// Check whether the container already contains a node field
 			// TODO check node permissions
 			// TODO check whether we want to allow cross project node references
+
+			NodeFieldSchema nodeFieldSchema = (NodeFieldSchema) fieldSchema;
+			String schemaName = node.getSchemaContainer().getName();
+
+			if (!ArrayUtils.isEmpty(nodeFieldSchema.getAllowedSchemas())
+					&& !Arrays.asList(nodeFieldSchema.getAllowedSchemas()).contains(schemaName)) {
+				log.error("Node update not allowed since the schema {" + schemaName
+						+ "} is not allowed. Allowed schemas {" + Arrays.toString(nodeFieldSchema.getAllowedSchemas()) + "}");
+				throw error(BAD_REQUEST, "node_error_invalid_schema_field_value", fieldKey, schemaName);
+			}
+
 			if (graphNodeField == null) {
 				container.createNode(fieldKey, node);
 			} else {

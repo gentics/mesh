@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.node.field.list.impl;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -26,9 +27,11 @@ import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
+import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.util.CompareUtils;
+import org.apache.commons.lang.ArrayUtils;
 
 public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<NodeGraphField, NodeFieldList, Node> implements NodeGraphFieldList {
 
@@ -84,6 +87,15 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 			Node node = nodeRoot.findByUuid(item.getUuid());
 			if (node == null) {
 				throw error(BAD_REQUEST, "node_list_item_not_found", item.getUuid());
+			}
+			ListFieldSchema listFieldSchema = (ListFieldSchema) fieldSchema;
+			String schemaName = node.getSchemaContainer().getName();
+
+			if (!ArrayUtils.isEmpty(listFieldSchema.getAllowedSchemas())
+					&& !Arrays.asList(listFieldSchema.getAllowedSchemas()).contains(schemaName)) {
+				log.error("Node update not allowed since the schema {" + schemaName
+						+ "} is not allowed. Allowed schemas {" + Arrays.toString(listFieldSchema.getAllowedSchemas()) + "}");
+				throw error(BAD_REQUEST, "node_error_invalid_schema_field_value", fieldKey, schemaName);
 			}
 			int pos = integer.getAndIncrement();
 			if (log.isDebugEnabled()) {
