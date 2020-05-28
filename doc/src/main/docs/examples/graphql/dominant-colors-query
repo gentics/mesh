@@ -3,8 +3,8 @@
 {
   node(path: "images/ford-gt.jpg") {
     path
-    fields {
-      ... on vehicleImage {
+    ... on vehicleImage {
+      fields {
         image {
           width
           height

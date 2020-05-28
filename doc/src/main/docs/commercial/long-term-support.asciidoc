@@ -4,32 +4,33 @@ title: Long-Term Support
 
 include::content/docs/variables.adoc-include[]
 
-== Intro
+== Introduction
 
-Long-term support releases provide you with a stable and secure upgrade path for your Gentics Mesh projects.
-New features can always reduce the stability of a product. This is why we decided to provide our customers with another option.
-The Long-Term support releases will not contain new features. Only bugfixes and security updates will be included.
+Once your project is mature, regularly upgrading to new feature releases just to receive bug fixes and security updates can be a burden for you.
+This is why we decided to provide our users with another option:
+*Long-term support (LTS) releases* provide you with a stable and secure upgrade path for your Gentics Mesh projects, while minimizing the risks involved.
+These releases do not contain new features; instead only bugfixes and security updates will be included.
 
-Fixes for LTS releases will automatically be included in the next public release of Gentics Mesh.
-
-A link:/services/[Product Maintenance] subscription is required to access LTS releases.
+Long-term support releases are only available for customers of a link:/services/[Product Maintenance] subscription.
+Of course, all bugfixes and security updates are made available to the open source community as well, as part of the latest feature release.
 
 == Support Length
 
-The end-of-life date of each feature release is usually one year after its initial release date.
-After that date, the software is no longer supported by Gentics.
+For customers of a product maintenance subscription, feature releases are supported for one year after its initial release date.
 
 == Maintenance and security updates
 
 For every supported feature release, we regularly release hotfixes with the goal to:
 
 * fix security vulnerabilities
-* fix high-impact bugs (e.g., data loss)
+* fix high-impact bugs
 * fix bugs with substantial benefit and low risk
 
 We do not introduce new features with these releases.
 
-== link:/docs/lts-changelog/[LTS Changelog]
+== Changelog
+
+You can access the changelog for releases that are only available for customers of a product maintenance subscription on the link:/docs/lts-changelog/[LTS Changelog] page.
 
 == Access
 
@@ -39,7 +40,7 @@ Download access is restricted and can be obtained via a link:/services/[Product 
 
 The releases can be downloaded via the link:https://maven.gentics.com/maven2-commercial/com/gentics/mesh/mesh-server/[commercial maven repository]
 
-=== Docker
+=== Docker Images
 
 * Server: docker.apa-it.at/gentics/mesh:VERSION
 * Demo: docker.apa-it.at/gentics/mesh-demo:VERSION
