@@ -10,6 +10,11 @@
 
 = Mesh Search Plugin Changelog
 
+[[v1.5.1]]
+== 1.5.1 (2020-06-05)
+
+icon:check[] Added JSON Content-type headers to the search response in the Custom search handler
+
 [[v1.4.8]]
 == 1.4.8 (2020-06-05)
 
