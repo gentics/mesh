@@ -1,10 +1,12 @@
 package com.gentics.mesh.plugin.search.extension;
 
+import com.gentics.mesh.http.HttpConstants;
 import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.search.HandlerType;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Completable;
 import io.reactivex.Single;
+import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -96,9 +98,10 @@ public interface CustomHandler {
 		}
 
 		return Completable.fromAction(() ->
-				context.response()
-						.setStatusCode(HttpResponseStatus.OK.code())
-						.end(response));
+			context.response()
+				.setStatusCode(HttpResponseStatus.OK.code())
+				.putHeader(HttpHeaders.CONTENT_TYPE, HttpConstants.APPLICATION_JSON_UTF8)
+				.end(response));
 	}
 
 	/**
