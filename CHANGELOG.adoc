@@ -1373,7 +1373,7 @@ icon:bullhorn[] Metadata extraction
 ____
 This version of Gentics Mesh introduces the __Metadata extraction__ of file uploads (PDF, Images).
 GPS information of images will now be added to the search index. That information can be used to run link:{{< relref "elasticsearch.asciidoc" >}}#_search_nodes_by_geolocation_of_images[geo search queries].
-A detailed description of this feature can be found in our {{< relref "features.asciidoc" >}}#_metadata_handling[File Uploads Documentation].
+A detailed description of this feature can be found in our link:{{< relref "features.asciidoc" >}}#_metadata_handling[File Uploads Documentation].
 
 Existing binary fields will not be automatically be processed to provide the metadata. You need to manually re-upload the data in order to generate the metadata properties.
 ____
