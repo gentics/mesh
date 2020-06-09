@@ -2,9 +2,7 @@
 title: Gentics Mesh React - Event Handling
 ---
 
-:icons: font
-:source-highlighter: prettify
-:toc:
+include::content/docs/variables.adoc-include[]
 
 == Intro
 
@@ -39,12 +37,12 @@ npm install vertx3-eventbus-client
 Next we create the `eventbus.js` file which contains the needed code to register callbacks and event subscription.
 
 .eventbus.js
-[source,javascript]
+[source,javascript,subs="+attributes"]
 ----
 import EventBus from 'vertx3-eventbus-client';
 import { useEffect } from 'react';
 
-let eb = new EventBus(":apiLatest:/eventbus")
+let eb = new EventBus("{apiLatest}/eventbus")
 eb.enableReconnect(true);
 
 let callbacks = [];

@@ -64,7 +64,7 @@ In Gentics Mesh, a user can be authenticated by invoking a regular ```GET``` req
 
 Example:
 
-[source,bash]
+[source,bash,subs="+attributes"]
 ----
 curl -v -X GET   http://localhost:8080{apiLatest}/auth/login   -H 'authorization: Basic YWRtaW46YWRtaW4='
 ----
@@ -92,7 +92,7 @@ If authentication has been successful, the server will respond with a JSON objec
 Additionally, the token will also be provided in a cookie.
 
 Example:
-[source,bash]
+[source,bash,subs="+attributes"]
 ----
 curl -v -X POST \
   http://localhost:8080{apiLatest}/auth/login \
@@ -103,7 +103,7 @@ curl -v -X POST \
 }'
 ----
 
-[source,bash]
+[source,bash,subs="+attributes"]
 ----
 
 *   Trying ::1...
@@ -135,7 +135,7 @@ Both login methods will yield a JSON web token.
 For further requests, the JWT can be provided in two ways. By default it is passed along with a cookie value. E.g., this is useful for embedding binary image nodes directly in HTML, since the browser will automatically handle authentication on the basis of the cookie.
 Alternatively, the token can be passed along within the ```Authorization``` header which includes the regular JWT ```Bearer <Token>```, where ```<Token>``` is the token you received from the login/cookie.
 
-[source,bash]
+[source,bash,subs="+attributes"]
 ----
 curl -X GET \
   http://localhost:8080{apiLatest}/demo/nodes \
@@ -156,7 +156,7 @@ NOTE: Creating a new API token will automatically invalidate a previously issued
 
 Since the token is just a regular JWT you just need to add it to your request `Authorization` header field.
 
-[source,bash]
+[source,bash,subs="+attributes"]
 ----
 curl -X GET \
   http://localhost:8080{apiLatest}/demo/nodes \

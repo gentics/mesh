@@ -2,9 +2,7 @@
 title: Gentics Mesh - API Introduction
 ---
 
-:icons: font
-:source-highlighter: prettify
-:toc:
+include::content/docs/variables.adoc-include[]
 
 == Intro
 
@@ -54,11 +52,11 @@ docker run -p 8080:8080 --rm gentics/mesh-demo:0.33.1
 
 Now lets set the base so we can reuse it in our examples:
 
-[source,bash]
+[source,bash,subs="+attributes"]
 ----
-export MESH_BASE="http://localhost:8080/api/:apiLatest:"
+export MESH_BASE="http://localhost:8080{apiLatest}"
 or
-export MESH_BASE="https://demo.getmesh.io/api/:apiLatest:"
+export MESH_BASE="https://demo.getmesh.io{apiLatest}"
 ----
 
 In this guide we only use `curl` and `jq` which is just used to increase readability.

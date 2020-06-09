@@ -126,7 +126,7 @@ The following example shows how the link:https://www.arduino.cc/[Arduino] compat
 
 The shown sketch utilizes the link:https://github.com/Links2004/arduinoWebSockets[arduinoWebSockets] library.
 
-[source,c]
+[source,c,subs="+attributes"]
 ----
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
