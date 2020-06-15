@@ -229,7 +229,11 @@ public class WebRootLinkReplacer {
 		case SHORT:
 			// We also try to append the scheme and authority part of the uri for foreign nodes.
 			// Otherwise that part will be empty and thus the link relative.
-			return generateSchemeAuthorityForNode(node, branch) + path;
+			if (ac.getBranch().equals(branch)) {
+				return path;
+			} else {
+				return generateSchemeAuthorityForNode(node, branch) + path;
+			}
 		case MEDIUM:
 			return "/" + node.getProject().getName() + path;
 		case FULL:
