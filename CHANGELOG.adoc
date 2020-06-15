@@ -32,9 +32,9 @@ icon:check[] Config: It is now possible to configure the image cache directory p
 
 icon:check[] Consistency Checks: An empty binary will no longer be considered inconsistent.
 
-[[Unreleased]]
-
 icon:check[] REST: Allow field during node field update is now validated strictly in the API. Fixes link:https://github.com/gentics/mesh/issues/975[#975]
+
+icon:check[] Core: Resolving node links to nodes in the same project and branch will now yield relative URLs, as documented.
 
 [[v1.5.1]]
 == 1.5.1 (11.05.2020)
