@@ -146,6 +146,10 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return client().createBranch(PROJECT_NAME, request).blockingGet();
 	}
 
+	default BranchResponse getBranch() {
+		return client().findBranchByUuid(PROJECT_NAME, initialBranchUuid()).blockingGet();
+	}
+
 	default String roleUuid() {
 		return data().getUserInfo().getRoleUuid();
 	}

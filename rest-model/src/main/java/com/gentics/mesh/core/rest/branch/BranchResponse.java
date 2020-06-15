@@ -151,4 +151,12 @@ public class BranchResponse extends AbstractGenericRestResponse {
 		this.pathPrefix = pathPrefix;
 		return this;
 	}
+
+	public BranchUpdateRequest toRequest() {
+		return new BranchUpdateRequest()
+			.setName(getName())
+			.setPathPrefix(getPathPrefix())
+			.setHostname(getHostname())
+			.setSsl(getSsl());
+	}
 }
