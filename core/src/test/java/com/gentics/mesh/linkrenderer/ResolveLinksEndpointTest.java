@@ -8,12 +8,16 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.branch.BranchResponse;
+import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
+import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+
+import io.vertx.core.json.JsonObject;
 
 @MeshTestSetting(testSize = FULL, startServer = true)
 public class ResolveLinksEndpointTest extends AbstractMeshTest {
@@ -32,6 +36,20 @@ public class ResolveLinksEndpointTest extends AbstractMeshTest {
 	public void testShortLink() {
 		// scheme and hostname should not be appended on references to nodes of the same branch
 		assertThat(getNodeWithReference(LinkType.SHORT)).hasStringField("name", "/News");
+	}
+
+	@Test
+	public void testShortLinkGraphQl() {
+		// scheme and hostname should not be appended on references to nodes of the same branch
+		GraphQLResponse response = client().graphql(PROJECT_NAME, new GraphQLRequest()
+			.setQuery("query($uuid: String) { node(uuid: $uuid) { ... on folder { fields { name(linkType: SHORT) } } } }")
+			.setVariables(new JsonObject().put("uuid", nodeWithReference.getUuid()))
+		).blockingGet();
+		assertThat(response.getData()
+			.getJsonObject("node")
+			.getJsonObject("fields")
+			.getString("name"))
+		.isEqualTo("/News");
 	}
 
 	@Test
