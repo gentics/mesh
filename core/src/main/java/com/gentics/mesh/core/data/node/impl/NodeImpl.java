@@ -910,7 +910,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			// Path
 			WebRootLinkReplacer linkReplacer = mesh().webRootLinkReplacer();
-			String path = linkReplacer.resolve(ac, branchUuid, type, getUuid(), linkType, getProject().getName(), restNode.getLanguage());
+			String path = linkReplacer.resolve(ac, branchUuid, type, getUuid(), linkType, getProject().getName(), true, restNode.getLanguage());
 			restNode.setPath(path);
 
 			// languagePaths
@@ -928,7 +928,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		WebRootLinkReplacer linkReplacer = mesh().webRootLinkReplacer();
 		for (GraphFieldContainer currentFieldContainer : getGraphFieldContainers(branch, forVersion(versioiningParameters.getVersion()))) {
 			String currLanguage = currentFieldContainer.getLanguageTag();
-			String languagePath = linkReplacer.resolve(ac, branchUuid, type, this, linkType, currLanguage);
+			String languagePath = linkReplacer.resolve(ac, branchUuid, type, this, linkType, true, currLanguage);
 			languagePaths.put(currLanguage, languagePath);
 		}
 		return languagePaths;
