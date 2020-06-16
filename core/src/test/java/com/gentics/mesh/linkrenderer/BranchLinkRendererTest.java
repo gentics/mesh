@@ -188,14 +188,15 @@ public class BranchLinkRendererTest extends AbstractMeshTest {
 		VersioningParametersImpl versionParams = new VersioningParametersImpl();
 		versionParams.setBranch(branchUuid);
 		NodeResponse response = call(() -> client().findNodeByUuid(projectName(), contentUuid, nodeParams, versionParams));
-		String expectedPath = getPrefix() + "/News/News%20Overview.en.html";
-		assertEquals("The path did not match", expectedPath, response.getPath());
+		String expectedPath = "/News/News%20Overview.en.html";
+		String expectedPathWithPrefix = getPrefix() + expectedPath;
+		assertEquals("The path did not match", expectedPathWithPrefix, response.getPath());
 
 		// Test resolving the path using a local node to the created branch
 		NodeResponse response2 = call(() -> client().findNodeByUuid(projectName(), localNodeUuid, nodeParams, versionParams));
 		String expectedPath2 = getPrefix() + "/News/localNode";
 		assertEquals("The path did not match", expectedPath2, response2.getPath());
-		assertEquals("Content2: " + expectedPath, response2.getFields().getStringField("content").getString());
+		assertEquals("Content2: " + getPathPrefix() + expectedPath, response2.getFields().getStringField("content").getString());
 	}
 
 	private String getPrefix() {
@@ -203,9 +204,17 @@ public class BranchLinkRendererTest extends AbstractMeshTest {
 		if (!StringUtils.isEmpty(hostname)) {
 			prefix = String.format("http%s://%s", ssl ? "s" : "", hostname);
 		}
-		if (!StringUtils.isEmpty(pathPrefix)) {
-			prefix = prefix + pathPrefix;
-		}
+		prefix = prefix + getPathPrefix();
 		return prefix;
 	}
+
+	private String getPathPrefix() {
+		if (pathPrefix == null) {
+			return "";
+		} else {
+			return pathPrefix;
+		}
+	}
+
+
 }
