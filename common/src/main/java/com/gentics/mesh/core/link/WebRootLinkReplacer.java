@@ -153,6 +153,32 @@ public class WebRootLinkReplacer {
 	 */
 	public String resolve(InternalActionContext ac, String branch, ContainerType edgeType, String uuid, LinkType type, String projectName,
 		String... languageTags) {
+		return resolve(ac, branch, edgeType, uuid, type, projectName, false, languageTags);
+	}
+
+	/**
+	 * Resolve the link to the node with uuid (in the given language) into an observable
+	 * 
+	 * @param ac
+	 * @param branch
+	 *            branch Uuid or name
+	 * @param edgeType
+	 *            edge type
+	 * @param uuid
+	 *            target uuid
+	 * @param type
+	 *            link type
+	 * @param projectName
+	 *            project name (which is used for 404 links)
+	 * @param forceAbsolute
+	 * 			  if true, the resolved link will always be absolute
+	 * @param languageTags
+	 *            optional language tags
+	 * @return observable of the rendered link
+	 */
+	public String resolve(InternalActionContext ac, String branch, ContainerType edgeType, String uuid, LinkType type, String projectName,
+		boolean forceAbsolute,
+		String... languageTags) {
 		// Get rid of additional whitespaces
 		uuid = uuid.trim();
 		Node node = boot.meshRoot().findNodeByUuid(uuid);
@@ -173,7 +199,7 @@ public class WebRootLinkReplacer {
 				throw error(BAD_REQUEST, "Cannot render link with type " + type);
 			}
 		}
-		return resolve(ac, branch, edgeType, node, type, languageTags);
+		return resolve(ac, branch, edgeType, node, type, forceAbsolute, languageTags);
 	}
 
 	/**
@@ -194,6 +220,31 @@ public class WebRootLinkReplacer {
 	 * @return observable of the rendered link
 	 */
 	public String resolve(InternalActionContext ac, String branchNameOrUuid, ContainerType edgeType, Node node, LinkType type,
+		String... languageTags) {
+		return resolve(ac, branchNameOrUuid, edgeType, node, type, false, languageTags);
+	}
+
+	/**
+	 * Resolve the link to the given node.
+	 * 
+	 * @param ac
+	 * @param branchNameOrUuid
+	 *            Branch UUID or name which will be used to render the path to the linked node. If this is invalid, the default branch of the target node will
+	 *            be used.
+	 * @param edgeType
+	 *            edge type
+	 * @param node
+	 *            target node
+	 * @param type
+	 *            link type
+	 * @param forceAbsolute
+	 * 			  if true, the resolved link will always be absolute
+	 * @param languageTags
+	 *            target language
+	 * @return observable of the rendered link
+	 */
+	public String resolve(InternalActionContext ac, String branchNameOrUuid, ContainerType edgeType, Node node, LinkType type,
+		boolean forceAbsolute,
 		String... languageTags) {
 		String defaultLanguage = options.getDefaultLanguage();
 		if (languageTags == null || languageTags.length == 0) {
@@ -229,7 +280,11 @@ public class WebRootLinkReplacer {
 		case SHORT:
 			// We also try to append the scheme and authority part of the uri for foreign nodes.
 			// Otherwise that part will be empty and thus the link relative.
-			return generateSchemeAuthorityForNode(node, branch) + path;
+			if (!forceAbsolute && ac.getProject() != null && ac.getBranch().equals(branch)) {
+				return path;
+			} else {
+				return generateSchemeAuthorityForNode(node, branch) + path;
+			}
 		case MEDIUM:
 			return "/" + node.getProject().getName() + path;
 		case FULL:

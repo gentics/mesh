@@ -954,9 +954,6 @@ The links will automatically start with `https://` if the ssl flag of the branch
 
 NOTE: Foreign links can only be rendered using the *?resolveLinks=short* type. Other resolver types do not support this mechanism.
 
-NOTE: Foreign links currently don't contain any branch reference thus it is not possible to render links to a foreign node within a specific branch. 
-      Instead the foreign link resolving mechanism will automatically use the latest branch of the node's project to render the links.
-
 [[linkresolvingbranches]]
 === Specifying Branches
 
