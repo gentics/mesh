@@ -61,8 +61,8 @@ public class OAuth2KeycloakPluginTest extends AbstractOAuthTest {
 		// 2. Invoke authenticated request
 		UserResponse me = call(() -> client().me());
 		assertEquals("mapped@email.tld", me.getEmailAddress());
-		assertEquals("mapepdFirstname", me.getFirstname());
-		assertEquals("mapepdLastname", me.getLastname());
+		assertEquals("mappedFirstname", me.getFirstname());
+		assertEquals("mappedLastname", me.getLastname());
 		assertEquals("dummyuser", me.getUsername());
 		String uuid = me.getUuid();
 

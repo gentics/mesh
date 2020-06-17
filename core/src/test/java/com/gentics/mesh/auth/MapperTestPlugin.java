@@ -133,8 +133,8 @@ public class MapperTestPlugin extends AbstractPlugin implements AuthServicePlugi
 
 		UserUpdateRequest user = new UserUpdateRequest();
 		user.setEmailAddress("mapped@email.tld");
-		user.setFirstname("mapepdFirstname");
-		user.setLastname("mapepdLastname");
+		user.setFirstname("mappedFirstname");
+		user.setLastname("mappedLastname");
 		userResult = user;
 	}
 
