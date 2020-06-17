@@ -1,7 +1,7 @@
 # Search Plugin
 
 For most search use cases, adjusting the plugin configuration and search
-queries should be enough. So no extra Java code and build process isrequired.
+queries should be enough. So no extra Java code and build process is required.
 
 (Maybe the `BasicHitTransformer` needs some adjustments for this to be
 entirely true.)
@@ -13,7 +13,7 @@ description, see the documentation in _search.adoc_.
 
 The plugin only registers project specific endpoints.
 
-* `/api/v1/[project]/plugins/search/seach`: normal search
+* `/api/v1/[project]/plugins/search/search`: normal search
 * `/api/v1/[project]/plugins/search/autocomplete`: autocompletion
 
 ## Configuration
