@@ -141,7 +141,7 @@ At this stage only the Space Shuttle will be listed in the Aircraft category.
 
 == Step 2 - Gentics Mesh
 
-Start the docker container and login `http://localhost:8080` using the login `admin:admin` once the container has been setup.
+Once the container has been setup, start the docker container and login `http://localhost:8080` using the user `admin` and the password that was auto-generated and printed on first startup.
 
 [source,bash]
 ----

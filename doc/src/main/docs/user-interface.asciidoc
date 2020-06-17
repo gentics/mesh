@@ -7,10 +7,7 @@ include::content/docs/variables.adoc-include[]
 The Gentics Mesh user interface is a web-based administration tool for the Gentics Mesh server. 
 By default it can be reached via ```http://localhost:8080/mesh-ui/```.
 
-
-NOTE: We are currently working on a complete redesign of the user interface to be available this fall.
-
-To start, log in with the administrator credentials: `admin:admin`. In case, you've downloaded Gentics Mesh including our _demo_ project, you can click on the project to begin exploring its contents. Otherwise, you create a new project in the **admin area**.
+To start, log in with the administrator credentials: `admin` and the password that has been auto-generated and printed on first startup. In case, you've downloaded Gentics Mesh including our _demo_ project, you can click on the project to begin exploring its contents. Otherwise, you create a new project in the **admin area**.
 
 == Creating and Managing Content
 
