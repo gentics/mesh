@@ -1,20 +1,5 @@
 package com.gentics.mesh.plugin.common.service;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Function;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
-
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
@@ -35,7 +20,6 @@ import com.gentics.mesh.plugin.common.util.MiscUtil;
 import com.gentics.mesh.plugin.common.util.RxUtil;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.google.common.collect.Sets;
-
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
@@ -46,8 +30,23 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.buffer.Buffer;
+import io.vertx.reactivex.core.eventbus.EventBus;
 import io.vertx.reactivex.core.eventbus.Message;
 import io.vertx.reactivex.core.eventbus.MessageConsumer;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Function;
 
 /**
  * This utility service provides methods commonly used by Mesh plugins,
@@ -209,7 +208,7 @@ public class MeshPluginService {
 	 * 		to the project
 	 */
 	public Function<String, Completable> ensureSchemas(String prefix, List<String> schemaNames) {
-		Observable<Message<JsonObject>> events = registerEvent(MeshEvent.SCHEMA_MIGRATION_FINISHED);
+		Observable<Message<JsonObject>> events = registerEvent(MeshEvent.SCHEMA_MIGRATION_FINISHED, false);
 
 		return project -> adminClient.findSchemas().toSingle()
 			.doOnSubscribe(ignored -> log.info("Checking schemas for project {}", project))
@@ -320,11 +319,13 @@ public class MeshPluginService {
 			.flatMap(rs -> Observable.fromIterable(rs.getData()))
 			.map(ProjectResponse::getName)
 			.filter(projectsFilter)
-			.flatMapCompletable(project -> initProject(project, actions))
-			.doOnComplete(() -> registerEvent(MeshEvent.PROJECT_CREATED)
+			.flatMap(project -> initProject(project, actions).toObservable(), 1)
+			.ignoreElements()
+			.doOnComplete(() -> registerEvent(MeshEvent.PROJECT_CREATED, true)
 				.map(evt -> evt.body().getString("name"))
 				.filter(projectsFilter)
-				.flatMapCompletable(project -> initProject(project, actions))
+				.flatMap(project -> initProject(project, actions).toObservable(), 1)
+				.ignoreElements()
 				.subscribe());
 	}
 
@@ -333,11 +334,13 @@ public class MeshPluginService {
 	 * {@link #registeredConsumers registered consumers}.
 	 *
 	 * @param event The event to listen for
+	 * @param local Whether to use a local consumer to handle only local events.
 	 * @return The <code>Observable</code> created from the
 	 * 		{@link MessageConsumer}.
 	 */
-	private Observable<Message<JsonObject>> registerEvent(MeshEvent event) {
-		MessageConsumer<JsonObject> consumer = vertx.eventBus().consumer(event.address);
+	private Observable<Message<JsonObject>> registerEvent(MeshEvent event, boolean local) {
+		EventBus eb = vertx.eventBus();
+		MessageConsumer<JsonObject> consumer = local ? eb.localConsumer(event.address) : eb.consumer(event.address);
 
 		registeredConsumers.add(consumer);
 
