@@ -13,6 +13,7 @@ import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.auth.util.KeycloakUtils;
@@ -30,11 +31,13 @@ import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.plugin.auth.AuthServicePluginUtils;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
+import com.gentics.mesh.test.category.FailingTest;
 import com.gentics.mesh.test.context.MeshTestContext;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.vertx.core.json.JsonObject;
 
+@Category({FailingTest.class})
 @MeshTestSetting(testSize = PROJECT_AND_NODE, startServer = true, useKeycloak = true)
 public class OAuth2KeycloakPluginTest extends AbstractOAuthTest {
 

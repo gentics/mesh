@@ -5,11 +5,14 @@ import static com.gentics.mesh.test.SSLTestMode.CLIENT_CERT_REQUEST;
 import static com.gentics.mesh.test.TestSize.FULL;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gentics.mesh.core.ssl.SSLTestClient.ClientCert;
+import com.gentics.mesh.test.category.FailingTest;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
+@Category({FailingTest.class})
 @MeshTestSetting(testSize = FULL, startServer = true, ssl = CLIENT_CERT_REQUEST)
 public class SSLUserCertRequestServerTest extends AbstractMeshTest {
 

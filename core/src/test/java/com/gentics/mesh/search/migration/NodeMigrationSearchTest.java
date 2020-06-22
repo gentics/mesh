@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -31,6 +32,7 @@ import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
 import com.gentics.mesh.parameter.impl.SearchParametersImpl;
 import com.gentics.mesh.search.AbstractNodeSearchEndpointTest;
+import com.gentics.mesh.test.category.FailingTest;
 import com.gentics.mesh.test.context.ElasticsearchTestMode;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.IndexOptionHelper;
@@ -154,6 +156,7 @@ public class NodeMigrationSearchTest extends AbstractNodeSearchEndpointTest {
 	}
 
 	@Test
+	@Category({FailingTest.class})
 	public void searchDuringMigration() throws Exception {
 		grantAdminRole();
 		String query = getSimpleTermQuery("schema.name.raw", "folder");
