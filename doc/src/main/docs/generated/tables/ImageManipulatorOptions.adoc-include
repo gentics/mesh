@@ -7,6 +7,11 @@
 | Description
 
 
+| imageCacheDirectory
+| false
+| string
+| Configure the path for image cache directory. Default: data/binaryImageCache
+
 | jpegQuality
 | false
 | number

@@ -158,6 +158,9 @@
 | *MESH_DEBUGINFO_LOG_ENABLED*
 | Enables the debug info log
 
+| *MESH_IMAGE_CACHE_DIRECTORY*
+| Override the path for image cache directory.
+
 | *MESH_ELASTICSEARCH_RETRY_LIMIT*
 | Override the retry limit.
 

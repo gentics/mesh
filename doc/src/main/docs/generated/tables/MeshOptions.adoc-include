@@ -382,6 +382,11 @@
 | string
 | Path to the public keys file which contains a list of additional JWK formatted public keys which will be used to verify JWTs.
 
+| imageOptions.imageCacheDirectory
+| false
+| string
+| Configure the path for image cache directory. Default: data/binaryImageCache
+
 | imageOptions.maxWidth
 | false
 | integer
