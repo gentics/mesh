@@ -126,7 +126,7 @@ stage("Setup Build Environment") {
 				}
 			}
 
-			stage("Failing Tests") {
+			stage("Unstable Tests") {
 				if (Boolean.valueOf(params.runFailingTests)) {
 					sshagent(["git"]) {
 						try {
