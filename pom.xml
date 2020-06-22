@@ -18,10 +18,14 @@
 		<mesh.admin-ui2.version>1.1.1</mesh.admin-ui2.version>
 
 		<dagger.version>2.24</dagger.version>
+
+		<!-- Tests -->
 		<surefire.forkcount>1</surefire.forkcount>
 		<surefire.jvm.postfix></surefire.jvm.postfix>
 		<skip.unit.tests>false</skip.unit.tests>
 		<skip.cluster.tests>false</skip.cluster.tests>
+		<surefire.excludedGroups></surefire.excludedGroups>
+		<surefire.groups></surefire.groups>
 
 		<!-- Jacoco -->
 		<jacoco.skip.merge>true</jacoco.skip.merge>
@@ -268,6 +272,8 @@
 						<exclude>**/*Abstract*.java</exclude>
 						<exclude>**/Abstract*.java</exclude>
 					</excludes>
+					<groups>${surefire.groups}</groups>
+					<excludedGroups>${surefire.excludedGroups}</excludedGroups>
 				</configuration>
 			</plugin>
 		</plugins>

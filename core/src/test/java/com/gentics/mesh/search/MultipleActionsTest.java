@@ -23,7 +23,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
-import com.gentics.mesh.test.category.FailingTest;
+import com.gentics.mesh.test.category.FailingTests;
 import com.gentics.mesh.test.context.ElasticsearchTestMode;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
@@ -54,7 +54,7 @@ public class MultipleActionsTest extends AbstractNodeSearchEndpointTest {
 	 * @throws Exception
 	 */
 	@Test
-	@Category({FailingTest.class})
+	@Category({FailingTests.class})
 	public void testActions() throws Exception {
 		recreateIndices();
 		final int nodeCount = 1;

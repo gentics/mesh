@@ -24,7 +24,7 @@ import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
-import com.gentics.mesh.test.category.FailingTest;
+import com.gentics.mesh.test.category.FailingTests;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
@@ -66,7 +66,7 @@ public class MicroschemaDiffEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	@Category({FailingTest.class})
+	@Category({FailingTests.class})
 	public void testDiffEmptyDescription() {
 		// Set the description to empty string
 		String microschemaUuid = tx(() -> microschemaContainer("vcard").getUuid());

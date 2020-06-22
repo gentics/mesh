@@ -31,7 +31,7 @@ import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import com.gentics.mesh.test.category.FailingTest;
+import com.gentics.mesh.test.category.FailingTests;
 import com.gentics.mesh.test.context.ElasticsearchTestMode;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.IndexOptionHelper;
@@ -50,7 +50,7 @@ public class NodeBinaryDisabledSearchTest extends AbstractNodeSearchEndpointTest
 	}
 
 	@Test
-	@Category({FailingTest.class})
+	@Category({FailingTests.class})
 	public void testBinarySearchMapping() throws Exception {
 		grantAdminRole();
 		Node nodeA = content("concorde");
