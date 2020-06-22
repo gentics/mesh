@@ -63,7 +63,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			NodeFieldSchema nodeFieldSchema = new NodeFieldSchemaImpl();
 			nodeFieldSchema.setName(FIELD_NAME);
 			nodeFieldSchema.setLabel("Some label");
-			nodeFieldSchema.setAllowedSchemas("folder");
+			nodeFieldSchema.setAllowedSchemas("folder", "content");
 			schema.addField(nodeFieldSchema);
 			schemaContainer("folder").getLatestVersion().setSchema(schema);
 			tx.success();
