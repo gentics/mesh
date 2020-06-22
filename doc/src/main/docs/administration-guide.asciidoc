@@ -194,7 +194,7 @@ The Gentics Mesh user interface has been designed mobile-first and does not impo
 [[env]]
 == Environment Variables
 
-Settings within the `mesh.yml` file can be override via these environment variables.
+Environment variables will override settings within the `mesh.yml`.
 
 include::content/docs/examples/tables/mesh-env.adoc-include[]
 
