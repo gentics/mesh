@@ -10,6 +10,9 @@ import static org.junit.Assert.assertNotNull;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
@@ -773,6 +776,15 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		assertNotNull("The resource for path {" + path + "} could not be found", ins);
 		byte[] bytes = IOUtils.toByteArray(ins);
 		return Buffer.buffer(bytes);
+	}
+
+	default int threadCount() {
+		ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+		int i = 0;
+		for (ThreadInfo threadInfo : threadMXBean.dumpAllThreads(true, true)) {
+			i++;
+		}
+		return i;
 	}
 
 }

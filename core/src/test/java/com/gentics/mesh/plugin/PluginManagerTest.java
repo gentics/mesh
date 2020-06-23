@@ -18,6 +18,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.plugin.PluginStatus;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
@@ -120,6 +121,22 @@ public class PluginManagerTest extends AbstractPluginTest {
 		waitForPluginRegistration();
 		JsonObject json = new JsonObject(getJSONViaClient(CURRENT_API_BASE_PATH + "/plugins/client/user"));
 		assertNotNull(json.getString("uuid"));
+	}
+
+	@Test
+	public void testClientFlooding() throws GenericRestException, IOException {
+		pluginManager().deploy(ClientPlugin.class, "client").blockingAwait();
+		waitForPluginRegistration();
+
+		int before = threadCount();
+		for (int i = 0; i < 200; i++) {
+			UserResponse anonymous = JsonUtil.readValue(httpGetNow(CURRENT_API_BASE_PATH + "/plugins/client/me"), UserResponse.class);
+			assertEquals("The plugin should return the anonymous user since no api key was passed along", "anonymous", anonymous.getUsername());
+		}
+		int after = threadCount();
+
+		int diff = after - before;
+		assertThat(diff).isLessThan(100);
 	}
 
 	/**
