@@ -17,6 +17,11 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.4.11]]
+== 1.4.11 (23.06.2020)
+
+icon:check[] Plugins: A potential resource leak could cause thread exhaustion when using new REST Clients for each request. This has been fixed now.
+
 [[v1.4.10]]
 == 1.4.10 (12.05.2020)
 
