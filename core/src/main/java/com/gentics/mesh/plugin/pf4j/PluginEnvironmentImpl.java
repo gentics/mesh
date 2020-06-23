@@ -3,6 +3,7 @@ package com.gentics.mesh.plugin.pf4j;
 import java.util.Objects;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -16,11 +17,12 @@ import com.gentics.mesh.rest.client.MeshRestClientConfig;
 
 import dagger.Lazy;
 import io.vertx.core.Vertx;
+import okhttp3.OkHttpClient;
 
 public class PluginEnvironmentImpl implements PluginEnvironment {
 
 	private final Database db;
-	
+
 	private final Lazy<Vertx> vertx;
 
 	private final MeshOptions options;
@@ -29,17 +31,21 @@ public class PluginEnvironmentImpl implements PluginEnvironment {
 
 	private Lazy<BootstrapInitializer> boot;
 
+	private final OkHttpClient pluginOkHttpClient;
+
 	private static final String WILDCARD_IP = "0.0.0.0";
 
 	private static final String LOOPBACK_IP = "127.0.0.1";
 
 	@Inject
-	public PluginEnvironmentImpl(Lazy<BootstrapInitializer> boot, Database db, Lazy<MeshJWTAuthProvider> authProvider, Lazy<Vertx> vertx, MeshOptions options) {
+	public PluginEnvironmentImpl(Lazy<BootstrapInitializer> boot, Database db, Lazy<MeshJWTAuthProvider> authProvider, Lazy<Vertx> vertx,
+		MeshOptions options, @Named("pluginClient") OkHttpClient pluginOkHttpClient) {
 		this.boot = boot;
 		this.db = db;
 		this.authProvider = authProvider;
 		this.vertx = vertx;
 		this.options = options;
+		this.pluginOkHttpClient = pluginOkHttpClient;
 	}
 
 	@Override
@@ -70,9 +76,27 @@ public class PluginEnvironmentImpl implements PluginEnvironment {
 			.setPort(port)
 			.setHost(host)
 			.setBasePath(version.getBasePath())
-			.build()
-		);
+			.build(), pluginOkHttpClient);
+
 		client.setAPIKey(adminToken());
+		return client;
+	}
+
+	@Override
+	public MeshRestClient createClient(String token) {
+		int port = options.getHttpServerOptions().getPort();
+		String host = options.getHttpServerOptions().getHost();
+
+		MeshRestClient client = MeshRestClient.create(new MeshRestClientConfig.Builder()
+			.setHost(host)
+			.setPort(port)
+			.setSsl(false)
+			.build(), pluginOkHttpClient);
+
+		// Set the token to the client if it was specified.
+		if (token != null) {
+			client.setAPIKey(token);
+		}
 		return client;
 	}
 

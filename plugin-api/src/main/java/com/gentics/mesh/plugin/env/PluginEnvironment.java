@@ -33,6 +33,14 @@ public interface PluginEnvironment {
 	MeshRestClient createAdminClient();
 
 	/**
+	 * Create a new rest client.
+	 * 
+	 * @param token Token to be set in the client
+	 * @return
+	 */
+	MeshRestClient createClient(String token);
+
+	/**
 	 * Creates a new admin client for the specified version.
 	 *
 	 * @param version
@@ -48,4 +56,5 @@ public interface PluginEnvironment {
 	 * @return
 	 */
 	MeshOptions options();
+
 }

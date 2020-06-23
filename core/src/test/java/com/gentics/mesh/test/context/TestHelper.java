@@ -10,6 +10,9 @@ import static org.junit.Assert.assertNotNull;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -816,5 +819,14 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	default int threadCount() {
+		ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+		int i = 0;
+		for (ThreadInfo threadInfo : threadMXBean.dumpAllThreads(true, true)) {
+			i++;
+		}
+		return i;
 	}
 }
