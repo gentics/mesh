@@ -8,11 +8,9 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.http.HttpConstants;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.rest.client.MeshRestClient;
-import com.gentics.mesh.rest.client.MeshRestClientConfig;
 
 import io.reactivex.annotations.Nullable;
 import io.vertx.core.Handler;
@@ -62,16 +60,9 @@ public class PluginContext implements RoutingContext {
 	 * @return
 	 */
 	public MeshRestClient client() {
-		MeshOptions options = env.options();
-		int port = options.getHttpServerOptions().getPort();
-		String host = options.getHttpServerOptions().getHost();
-		MeshRestClient client = MeshRestClient.create(host, port, false);
-		// The authentication token / header may be missing if the inbound request was anonymous.
 		String token = parseHeader(rc);
-		if (token != null) {
-			client.setAPIKey(token);
-		}
-		return client;
+		// The authentication token / header may be missing if the inbound request was anonymous.
+		return env.createClient(token);
 	}
 
 	/**

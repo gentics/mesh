@@ -817,4 +817,13 @@ public interface TestHelper extends EventHelper, ClientHelper {
 			throw new RuntimeException(e);
 		}
 	}
+
+	default int threadCount() {
+		ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+		int i = 0;
+		for (ThreadInfo threadInfo : threadMXBean.dumpAllThreads(true, true)) {
+			i++;
+		}
+		return i;
+	}
 }
