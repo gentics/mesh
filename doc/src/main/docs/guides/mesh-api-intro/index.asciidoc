@@ -128,7 +128,7 @@ We should now see `"username": "admin"` in the response which means that we have
 
 == Load Contents
 
-In Gentics Mesh each content is called a _Node_. Nodes are link:{{< relref "features.asciidoc" >}}#multilanguage[translateable], link:{{< relref "features.asciidoc" >}}#_moving_nodes[movable], link:{{< relref "features.asciidoc" >}}#contenttree[nestable], link:{{< relref "features.asciidoc" >}}#_versioning[versionable] and link:{{< relref "features.asciidoc" >}}#_tagging_nodes[taggable].
+In Gentics Mesh each content is called a _Node_. Nodes are link:{{< relref "docs/features.asciidoc" >}}#multilanguage[translateable], link:{{< relref "docs/features.asciidoc" >}}#_moving_nodes[movable], link:{{< relref "docs/features.asciidoc" >}}#contenttree[nestable], link:{{< relref "docs/features.asciidoc" >}}#_versioning[versionable] and link:{{< relref "docs/features.asciidoc" >}}#_tagging_nodes[taggable].
 
 Loading contents can be done via a simple GET request.
 
@@ -399,7 +399,7 @@ curl -X GET -H "Authorization: Bearer $MESH_TOKEN" \
  --output sr71.jpg
 ----
 
-TIP: The link:{{< relref "features.asciidoc" >}}#imagemanipulation[Image Manipulation] feature can also be used to crop images. You can set a focal point to images so that this focal point may be utilized when dynamically cropping image for responsive designs.
+TIP: The link:{{< relref "docs/features.asciidoc" >}}#imagemanipulation[Image Manipulation] feature can also be used to crop images. You can set a focal point to images so that this focal point may be utilized when dynamically cropping image for responsive designs.
 
 == Next
 
@@ -407,7 +407,7 @@ More information about the REST API can be found in our link:/docs/api[API speci
 
 Other guides:
 
-* link:{{< relref "../guides/mesh-react/index.asciidoc" >}}[Gentics Mesh - React Basics]
-* link:{{< relref "../guides/mesh-react-2/index.asciidoc" >}}[Gentics Mesh - React Event Handling]
-* link:{{< relref "../guides/mesh-hugo/index.asciidoc" >}}[Gentics Mesh - Hugo]
+* link:{{< relref "docs/guides/mesh-react/index.asciidoc" >}}[Gentics Mesh - React Basics]
+* link:{{< relref "docs/guides/mesh-react-2/index.asciidoc" >}}[Gentics Mesh - React Event Handling]
+* link:{{< relref "docs/guides/mesh-hugo/index.asciidoc" >}}[Gentics Mesh - Hugo]
 

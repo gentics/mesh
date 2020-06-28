@@ -163,7 +163,7 @@ curl -X POST \
  $MESH_BASE/admin/plugins
 ----
 
-You can read more about how to use the REST API with cURL in the link:{{< relref "../guides/mesh-api-intro" >}}[API guide].
+You can read more about how to use the REST API with cURL in the link:{{< relref "docs/guides/mesh-api-intro" >}}[API guide].
 
 == Accessing
 
