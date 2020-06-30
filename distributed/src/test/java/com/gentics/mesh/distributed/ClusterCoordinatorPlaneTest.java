@@ -18,7 +18,7 @@ public class ClusterCoordinatorPlaneTest extends AbstractClusterTest {
 
 	private static String clusterPostFix = randomUUID();
 
-	public static MeshDockerServer serverA = new MeshDockerServer(vertx)
+	public static MeshDockerServer serverA = new MeshDockerServer()
 		.withClusterName("dockerCluster" + clusterPostFix)
 		.withNodeName("nodeA")
 		.withDataPathPostfix(randomToken())
@@ -28,7 +28,7 @@ public class ClusterCoordinatorPlaneTest extends AbstractClusterTest {
 		.waitForStartup()
 		.withClearFolders();
 
-	public static MeshDockerServer serverB = new MeshDockerServer(vertx)
+	public static MeshDockerServer serverB = new MeshDockerServer()
 		.withClusterName("dockerCluster" + clusterPostFix)
 		.withNodeName("nodeB")
 		.withCoordinatorPlane()

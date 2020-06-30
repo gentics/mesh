@@ -40,7 +40,6 @@ import com.gentics.mesh.test.docker.StartupLatchingConsumer;
 import com.gentics.mesh.util.UUIDUtil;
 import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 
-import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -55,8 +54,6 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 	private Slf4jLogConsumer logConsumer = new Slf4jLogConsumer(log);
 
 	private MeshRestClient client;
-
-	private Vertx vertx;
 
 	private static ImageFromDockerfile image = prepareDockerImage(true);
 
@@ -101,13 +98,10 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 
 	/**
 	 * Create a new docker server
-	 * 
-	 * @param vertx
-	 *            Vert.x instances used to create the rest client
+	 *
 	 */
-	public MeshDockerServer(Vertx vertx) {
+	public MeshDockerServer() {
 		super(image);
-		this.vertx = vertx;
 		setWaitStrategy(new NoWaitStrategy());
 	}
 

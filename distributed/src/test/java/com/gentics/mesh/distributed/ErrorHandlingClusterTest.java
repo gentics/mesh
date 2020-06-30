@@ -25,7 +25,7 @@ public class ErrorHandlingClusterTest extends AbstractClusterTest {
 	private static String clusterPostFix = randomUUID();
 
 	@ClassRule
-	public static MeshDockerServer serverA = new MeshDockerServer(vertx)
+	public static MeshDockerServer serverA = new MeshDockerServer()
 		.withClusterName("dockerCluster" + clusterPostFix)
 		.withNodeName("nodeA")
 		.withDataPathPostfix(randomToken())

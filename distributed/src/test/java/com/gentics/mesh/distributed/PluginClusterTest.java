@@ -38,7 +38,7 @@ public class PluginClusterTest extends AbstractClusterTest {
 	private static final Logger log = LoggerFactory.getLogger(PluginClusterTest.class);
 
 	@ClassRule
-	public static MeshDockerServer serverA = new MeshDockerServer(vertx)
+	public static MeshDockerServer serverA = new MeshDockerServer()
 		.withClusterName(clusterPostFix)
 		.withNodeName("nodeA")
 		.withDataPathPostfix(randomToken())

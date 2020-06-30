@@ -23,7 +23,7 @@ public class NodeRejectionClusterTest extends AbstractClusterTest {
 
 	private static String clusterPostFix = randomUUID();
 
-	public static MeshDockerServer serverA = new MeshDockerServer(vertx)
+	public static MeshDockerServer serverA = new MeshDockerServer()
 		.withClusterName("dockerCluster" + clusterPostFix)
 		.withNodeName("nodeA")
 		.withDataPathPostfix(randomToken())
@@ -32,7 +32,7 @@ public class NodeRejectionClusterTest extends AbstractClusterTest {
 		.waitForStartup()
 		.withExtraOpts("-Dmesh.internal.version=0.10.0 -Dmesh.internal.dbrev=EFG");
 
-	public static MeshDockerServer serverB = new MeshDockerServer(vertx)
+	public static MeshDockerServer serverB = new MeshDockerServer()
 		.withClusterName("dockerCluster" + clusterPostFix)
 		.withNodeName("nodeB")
 		.withDataPathPostfix(randomToken())
