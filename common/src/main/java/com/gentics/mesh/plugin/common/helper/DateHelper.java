@@ -1,24 +1,34 @@
-package com.gentics.mesh.plugin.comment.util;
+package com.gentics.mesh.plugin.common.helper;
+
+import com.github.jknack.handlebars.Helper;
+import com.github.jknack.handlebars.Options;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.io.IOException;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
-import com.github.jknack.handlebars.Helper;
-import com.github.jknack.handlebars.Options;
-
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
 /**
- * Example: {{date reference.edited "MM.dd.YYYY"}}
+ * Handlebars helper to format date with a given pattern.
+ *
+ * <p>
+ *     Example: {{date reference.edited "MM.dd.YYYY"}}
+ * </p>
+ *
+ * <p>
+ *     The original date must be a valid {@link DateTimeFormatter#ISO_INSTANT}
+ *     in UTC.
+ * </p>
  */
 public class DateHelper implements Helper<String> {
+
 	private static final Logger log = LoggerFactory.getLogger(DateHelper.class);
 
 	@Override
 	public String apply(String date, Options options) throws IOException {
+		// We need to get the dateFormat from the options to satisfy the Helper interface.
 		String dateFormat = options.param(0, null);
 
 		if (date == null || dateFormat == null) {
