@@ -11,7 +11,7 @@
 = Mesh Commercial Plugin Commons Changelog
 
 [[v1.3.11]]
-== 1.3.10 (TBD)
+== 1.3.10 (2020-07-02)
 
 icon:check[] MeshPluginService: Make sure project initialization via `prepareProjects()` does not initialize multiple projects in parallel.
 
