@@ -69,7 +69,26 @@ public class RxUtil {
 	 * 		an empty <code>Maybe</code> otherwise
 	 */
 	public static Maybe<NodeResponse> webrootMaybe(MeshRestClient client, String project, String path) {
-		return client.webroot(project, path).toSingle()
+		return webrootMaybe(client, project, path.split("/"));
+	}
+
+	/**
+	 * Tries to load the given <code>pathSegments</code> via webroot and wraps it in a
+	 * {@link Maybe}.
+	 *
+	 * <p>
+	 *     When the webroot response has the status <em>404 Not Found</em>, the
+	 *     returned <code>Maybe</code> will be {@link Maybe#empty() empty}.
+	 * </p>
+	 *
+	 * @param client The client to use
+	 * @param project The project to load the pathSegments from
+	 * @param pathSegments The segments of the path to load
+	 * @return A <code>Maybe</code> with the loaded resource if it exists, or
+	 * 		an empty <code>Maybe</code> otherwise
+	 */
+	public static Maybe<NodeResponse> webrootMaybe(MeshRestClient client, String project, String[] pathSegments) {
+		return client.webroot(project, pathSegments).toSingle()
 			.toMaybe()
 			.onErrorComplete(err -> {
 				if (err instanceof MeshRestClientMessageException) {

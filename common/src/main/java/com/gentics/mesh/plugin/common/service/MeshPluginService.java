@@ -46,15 +46,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Function;
 
 /**
  * This utility service provides methods commonly used by Mesh plugins,
  * especially during initialization.
  *
  * <p>
- *     The {@link #prepareProject(String, Function[]) prepareProject()} and
- *     {@link #prepareProjects(Collection, Function[]) prepareProjects()}
+ *     The {@link #prepareProject(String, InitializationAction[]) prepareProject()} and
+ *     {@link #prepareProjects(Collection, InitializationAction[]) prepareProjects()}
  *     methods can be used to make sure certain actions are performed to
  *     initialize projects for which the plugin should be active.
  * </p>
@@ -136,13 +135,12 @@ public class MeshPluginService {
 	 * 		available projects are initialized, and the necessary events are
 	 * 		registered
 	 */
-	@SafeVarargs
-	public final Completable prepareProjects(Collection<String> projects, Function<String, Completable>... actions) {
+	public final Completable prepareProjects(Collection<String> projects, InitializationAction ...actions) {
 		return prepareProjects(projects::contains, actions);
 	}
 
 	/**
-	 * Convenience method for {@link #prepareProjects(Collection, Function[])}
+	 * Convenience method for {@link #prepareProjects(Collection, InitializationAction[])}
 	 * which will perform the actions for <em>all</em> projects.
 	 *
 	 * @param actions The actions to perform
@@ -150,13 +148,13 @@ public class MeshPluginService {
 	 * 		available projects are initialized, and the necessary events are
 	 * 		registered
 	 */
-	public Completable prepareProjects(Function<String, Completable> ...actions) {
+	public Completable prepareProjects(InitializationAction ...actions) {
 		return prepareProjects(ignored -> true, actions);
 	}
 
 	/**
 	 * Convenience method which calls
-	 * {@link #prepareProjects(Collection, Function[]) prepareProjects} just for
+	 * {@link #prepareProjects(Collection, InitializationAction[]) prepareProjects} just for
 	 * the one project.
 	 *
 	 * <p>
@@ -165,14 +163,13 @@ public class MeshPluginService {
 	 *     {@link MeshPlugin#shutdown() shuts down}.
 	 * </p>
 	 *
-	 * @see #prepareProjects(Collection, Function[])
+	 * @see #prepareProjects(Collection, InitializationAction[])
 	 * @see #unregisterEvents()
 	 * @param project The project to be prepared
 	 * @param actions The actions to perform once the project is available
 	 * @return A completable representing the specified <code>actions</code>
 	 */
-	@SafeVarargs
-	public final Completable prepareProject(String project, Function<String, Completable>... actions) {
+	public final Completable prepareProject(String project, InitializationAction ...actions) {
 		return prepareProjects(Collections.singleton(project), actions);
 	}
 
@@ -207,7 +204,7 @@ public class MeshPluginService {
 	 * @return A function that will make sure the schemas exist and are assigned
 	 * 		to the project
 	 */
-	public Function<String, Completable> ensureSchemas(String prefix, List<String> schemaNames) {
+	public InitializationAction ensureSchemas(String prefix, List<String> schemaNames) {
 		Observable<Message<JsonObject>> events = registerEvent(MeshEvent.SCHEMA_MIGRATION_FINISHED, false);
 
 		return project -> adminClient.findSchemas().toSingle()
@@ -248,7 +245,7 @@ public class MeshPluginService {
 	 * @return A function that will make sure the schemas exist and are assigned
 	 * 		to the project
 	 */
-	public Function<String, Completable> ensureSchemas(String ...schemaNames) {
+	public InitializationAction ensureSchemas(String ...schemaNames) {
 		return ensureSchemas("", Arrays.asList(schemaNames));
 	}
 
@@ -262,7 +259,7 @@ public class MeshPluginService {
 	 * 		<code>Completable</code> which creates the folder for the
 	 * 		project
 	 */
-	public Function<String, Completable> ensureFolders(String folderSchemaName, String path) {
+	public InitializationAction ensureFolders(String folderSchemaName, String path) {
 		return project -> ensureFolders(project, folderSchemaName, path, false).ignoreElement();
 	}
 
@@ -285,7 +282,7 @@ public class MeshPluginService {
 			.filter(s -> s.getName().equals(folderSchemaName))
 			.singleOrError()
 			.doOnError(e -> log.error("Could not find folder schema \"{}\"", folderSchemaName))
-			.zipWith(prefixPath(project, path), (folderSchema, p) -> Pair.of(folderSchema, p))
+			.zipWith(prefixPath(project, path), Pair::of)
 			.flatMap(pair -> ensureFoldersRec(project, pair.getLeft(), pair.getRight(), publish));
 	}
 
@@ -314,7 +311,7 @@ public class MeshPluginService {
 	 * 		available projects are initialized, and the necessary events are
 	 * 		registered
 	 */
-	private Completable prepareProjects(Predicate<String> projectsFilter, Function<String, Completable>... actions) {
+	private Completable prepareProjects(Predicate<String> projectsFilter, InitializationAction ...actions) {
 		return adminClient.findProjects().toObservable()
 			.flatMap(rs -> Observable.fromIterable(rs.getData()))
 			.map(ProjectResponse::getName)
@@ -359,8 +356,7 @@ public class MeshPluginService {
 	 * @return A <code>Completable</code> that completes when all the
 	 * 		<code>actions</code> have been performed
 	 */
-	@SafeVarargs
-	private final Completable initProject(String project, Function<String, Completable>... actions) {
+	private Completable initProject(String project, InitializationAction ...actions) {
 		return Flowable.fromArray(actions)
 			.doOnSubscribe(ignored -> {
 				if (log.isInfoEnabled()) {
@@ -452,11 +448,9 @@ public class MeshPluginService {
 				return ensureFoldersRec(project, folderSchema, split[0], publish)
 					.flatMap(parent -> createFolder(project, folderSchema, parent.getUuid(), split[1]))
 					.flatMap(node -> publish
-						? adminClient.publishNode(project, node.getUuid()).toCompletable()
-							.andThen(Single.just(node))
-						: Single.just(node)
-					);
-		}));
+						? adminClient.publishNode(project, node.getUuid()).toCompletable().andThen(Single.just(node))
+						: Single.just(node));
+			}));
 	}
 
 	/**
