@@ -2,10 +2,7 @@ package com.gentics.mesh.plugin.comment.dagger;
 
 import com.gentics.mesh.plugin.comment.config.Configuration;
 import com.gentics.mesh.plugin.comment.config.ProjectConfiguration;
-import com.gentics.mesh.plugin.comment.util.DateHelper;
-import com.gentics.mesh.plugin.common.service.MeshPluginService;
-import com.gentics.mesh.rest.client.MeshRestClient;
-
+import com.gentics.mesh.plugin.common.helper.DateHelper;
 import dagger.Module;
 import dagger.Provides;
 import io.vertx.core.json.JsonObject;
