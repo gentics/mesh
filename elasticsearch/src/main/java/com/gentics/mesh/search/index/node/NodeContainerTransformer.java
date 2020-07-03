@@ -528,6 +528,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 		displayField.put("key", container.getSchemaContainerVersion().getSchema().getDisplayField());
 		displayField.put("value", container.getDisplayFieldValue());
 		document.put("displayField", displayField);
+		document.put("branchUuid", branchUuid);
 		document.put(VERSION_KEY, generateVersion(container, branchUuid, type));
 		return document;
 	}

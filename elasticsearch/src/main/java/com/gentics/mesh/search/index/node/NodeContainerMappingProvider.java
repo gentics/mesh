@@ -146,6 +146,7 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 		displayFieldMappingProperties.put("value", trigramTextType());
 		displayFieldMapping.put("properties", displayFieldMappingProperties);
 		typeProperties.put("displayField", displayFieldMapping);
+		typeProperties.put("branchUuid", notAnalyzedType(KEYWORD));
 
 		// .parentNode
 		JsonObject parentNodeMapping = new JsonObject();
