@@ -7,6 +7,7 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 
@@ -15,6 +16,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
+import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
@@ -87,6 +90,31 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 		assertThat(response.getData()).as("Published search result").isEmpty();
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", newContent)));
 		assertThat(response.getData()).as("Published search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
+	}
+
+	/**
+	 * Assert that branchUuid field can be used for searches.
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testSearchWithBranchUuid() throws Exception {
+		recreateIndices();
+		grantAdminRole();
+
+		String query = getSimpleTermQuery("branchUuid", initialBranchUuid());
+		long initialCount = call(() -> client().searchNodes(PROJECT_NAME, query)).getMetainfo().getTotalCount();
+
+		waitForLatestJob(() -> {
+			BranchCreateRequest branchCreateRequest = new BranchCreateRequest();
+			branchCreateRequest.setName("extraBranch");
+			branchCreateRequest.setLatest(false);
+			branchCreateRequest.setBaseBranch(new BranchReference().setUuid(initialBranchUuid()));
+			call(() -> client().createBranch(PROJECT_NAME, branchCreateRequest));
+		});
+
+		long afterCount = call(() -> client().searchNodes(PROJECT_NAME, query)).getMetainfo().getTotalCount();
+		assertEquals("The amount of hits should not change after creating a new branch",afterCount, initialCount);
 	}
 
 	@Test
