@@ -223,6 +223,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 
 			MeshAuthUser user = root.findMeshAuthUserByUsername(username);
 			String uuid = user.getUuid();
+			batch.add(user.onCreated());
 			// Not setting uuid since the user has not yet been committed.
 			runPlugins(rc, batch, admin, user, null, token);
 			TOKEN_ID_LOG.put(uuid, cachingId);

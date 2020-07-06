@@ -107,7 +107,7 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 
 	@Override
 	protected void configure() {
-		String basePath = "/opt/jenkins-slave/" + clusterName + "-" + nodeName;
+		String basePath = "/tmp/jenkins-slave/" + clusterName + "-" + nodeName;
 		String dataPath = basePath + "/data-" + dataPathPostfix;
 		String confPath = basePath + "/config";
 		// Ensure that the folder is created upfront. This is important to keep the uid and gids correct.
@@ -247,7 +247,7 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 	 * @return
 	 */
 	public static ImageFromDockerfile prepareDockerImage(boolean enableClustering) {
-		ImageFromDockerfile dockerImage = new ImageFromDockerfile("mesh-local", true);
+		ImageFromDockerfile dockerImage = new ImageFromDockerfile("mesh-local", false);
 		try {
 			File projectRoot = new File("..");
 
@@ -562,6 +562,11 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 
 	public MeshDockerServer withPluginTimeout(int timeoutInSeconds) {
 		addEnv(MeshOptions.MESH_PLUGIN_TIMEOUT_ENV, String.valueOf(timeoutInSeconds));
+		return this;
+	}
+
+	public MeshDockerServer withPublicKeys(File file) {
+		addFileSystemBind(file.getAbsolutePath(), "/config/public-keys.json", BindMode.READ_ONLY);
 		return this;
 	}
 
