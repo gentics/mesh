@@ -20,6 +20,7 @@ import com.gentics.mesh.assertj.impl.JsonObjectAssert;
 import com.gentics.mesh.assertj.impl.LanguageAssert;
 import com.gentics.mesh.assertj.impl.MeshElementEventModelAssert;
 import com.gentics.mesh.assertj.impl.MeshEventModelAssert;
+import com.gentics.mesh.assertj.impl.MeshResponseAssert;
 import com.gentics.mesh.assertj.impl.MeshRestClientMessageExceptionAssert;
 import com.gentics.mesh.assertj.impl.MicronodeAssert;
 import com.gentics.mesh.assertj.impl.MicronodeResponseAssert;
@@ -78,6 +79,7 @@ import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshRestClientMessageException;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import com.gentics.mesh.search.TrackingSearchProvider;
@@ -245,5 +247,9 @@ public class MeshAssertions extends Assertions {
 
 	public static CoordinatorMasterResponseAssert assertThat(CoordinatorMasterResponse actual) {
 		return new CoordinatorMasterResponseAssert(actual);
+	}
+
+	public static MeshResponseAssert assertThat(MeshResponse<?> actual) {
+		return new MeshResponseAssert(actual);
 	}
 }
