@@ -18,11 +18,7 @@ import java.util.stream.StreamSupport;
 
 import org.apache.commons.io.IOUtils;
 
-import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.ListResponse;
-import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.rest.client.MeshRestClient;
-import com.gentics.mesh.rest.client.MeshWebsocket;
 
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -196,11 +192,4 @@ public final class TestUtils {
 		return StreamSupport.stream(iterable.spliterator(), false);
 	}
 
-	public static <T> Observable<T> listenForEvent(MeshRestClient client, MeshEvent event) {
-		return Observable.using(client::eventbus, ws -> {
-			ws.registerEvents(event);
-			return ws.events();
-		}, MeshWebsocket::close)
-			.map(ev -> (T) JsonUtil.getMapper().treeToValue(ev.getBodyAsJson(), event.bodyModel));
-	}
 }

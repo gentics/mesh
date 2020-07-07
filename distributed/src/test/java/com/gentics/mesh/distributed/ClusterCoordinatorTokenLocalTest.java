@@ -8,11 +8,10 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;
-import com.gentics.mesh.test.util.TestUtils;
+import com.gentics.mesh.test.util.EventUtils;
 
 import io.reactivex.observers.TestObserver;
 import io.vertx.core.Vertx;
@@ -41,17 +40,23 @@ public class ClusterCoordinatorTokenLocalTest {
 	 	userName = "testuser" + randomUUID();
 	}
 
+	/**
+	 * Calls /auth/me with a new token on nodeB which causes a new user to be created.
+	 * Asserts that we only receive a user created event from nodeA.
+	 */
 	@Test
 	public void createNewUser() throws Exception {
-		serverBClient.setAPIKey(createToken());
-		TestObserver<MeshElementEventModelImpl> testObserverA = TestUtils.<MeshElementEventModelImpl>listenForEvent(serverAClient, MeshEvent.USER_CREATED)
+		assertClusterCoordinatorSetup();
+
+		TestObserver<MeshElementEventModelImpl> testObserverA = EventUtils.userCreated(serverAClient)
 			.take(1)
 			.test();
-		TestObserver<MeshElementEventModelImpl> testObserverB = TestUtils.<MeshElementEventModelImpl>listenForEvent(serverBClient, MeshEvent.USER_CREATED)
+		TestObserver<MeshElementEventModelImpl> testObserverB = EventUtils.userCreated(serverBClient)
 			.filter(ev -> ev.getOrigin().equals("nodeB"))
 			.take(1)
 			.test();
 
+		serverBClient.setAPIKey(createToken());
 		UserResponse userResponse = serverBClient.me().blockingGet();
 		assertThat(userResponse).hasName(userName);
 
@@ -60,6 +65,13 @@ public class ClusterCoordinatorTokenLocalTest {
 
 		testObserverB.await(200, TimeUnit.MILLISECONDS);
 		testObserverB.assertNoValues();
+	}
+
+	private void assertClusterCoordinatorSetup() {
+		serverBClient.setLogin("admin", "admin");
+		serverBClient.login().blockingGet();
+		assertThat(serverBClient.loadCoordinationMaster().blockingGet())
+			.hasName("nodeA");
 	}
 
 	private String createToken() {

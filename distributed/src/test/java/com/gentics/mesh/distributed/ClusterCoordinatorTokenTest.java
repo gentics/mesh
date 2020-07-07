@@ -19,7 +19,7 @@ import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.distributed.containers.MeshDockerServer;
 import com.gentics.mesh.rest.client.MeshRestClient;
-import com.gentics.mesh.test.util.TestUtils;
+import com.gentics.mesh.test.util.EventUtils;
 
 import io.reactivex.observers.TestObserver;
 import io.vertx.core.Vertx;
@@ -90,10 +90,10 @@ public class ClusterCoordinatorTokenTest {
 	@Test
 	public void createNewUser() throws Exception {
 		serverBClient.setAPIKey(createToken());
-		TestObserver<MeshElementEventModelImpl> testObserverA = TestUtils.<MeshElementEventModelImpl>listenForEvent(serverAClient, MeshEvent.USER_CREATED)
+		TestObserver<MeshElementEventModelImpl> testObserverA = EventUtils.<MeshElementEventModelImpl>listenForEvent(serverAClient, MeshEvent.USER_CREATED)
 			.take(1)
 			.test();
-		TestObserver<MeshElementEventModelImpl> testObserverB = TestUtils.<MeshElementEventModelImpl>listenForEvent(serverBClient, MeshEvent.USER_CREATED)
+		TestObserver<MeshElementEventModelImpl> testObserverB = EventUtils.<MeshElementEventModelImpl>listenForEvent(serverBClient, MeshEvent.USER_CREATED)
 			.filter(ev -> ev.getOrigin().equals("nodeB"))
 			.take(1)
 			.test();
