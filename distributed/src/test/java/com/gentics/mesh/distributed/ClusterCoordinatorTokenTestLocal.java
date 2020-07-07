@@ -77,9 +77,41 @@ public class ClusterCoordinatorTokenTestLocal {
 		assertThat(response.getBody()).hasName(userName);
 	}
 
+	@Test
+	public void changedEmail() {
+		serverBClient.setAPIKey(createToken());
+
+		// This creates the user
+		MeshResponse<UserResponse> response = serverBClient.me().getResponse().blockingGet();
+		assertThat(response).isForwardedFrom("nodeA");
+		assertThat(response.getBody()).hasName(userName);
+
+		// User should not be changed anymore, so no redirect should happen
+		response = serverBClient.me().getResponse().blockingGet();
+		assertThat(response).isNotForwarded();
+		assertThat(response.getBody()).hasName(userName);
+
+		// Email has changed. The request has to be redirected.
+		serverBClient.setAPIKey(createTokenWithEmail("test@gentics.com"));
+		response = serverBClient.me().getResponse().blockingGet();
+		assertThat(response).isForwardedFrom("nodeA");
+		assertThat(response.getBody())
+			.hasName(userName)
+			.hasEmail("test@gentics.com");
+	}
+
 	private String createToken() {
 		return provider.generateToken(new JsonObject()
 			.put("preferred_username", userName)
+			.put("jti", randomUUID())
+		);
+	}
+
+	private String createTokenWithEmail(String email) {
+		return provider.generateToken(new JsonObject()
+			.put("preferred_username", userName)
+			.put("jti", randomUUID())
+			.put("email", email)
 		);
 	}
 }

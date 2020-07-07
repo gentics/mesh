@@ -1,14 +1,15 @@
 package com.gentics.mesh.assertj.impl;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import org.assertj.core.api.AbstractAssert;
+
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
-import org.assertj.core.api.AbstractAssert;
-
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 public class UserResponseAssert extends AbstractAssert<UserResponseAssert, UserResponse> {
 
@@ -88,6 +89,13 @@ public class UserResponseAssert extends AbstractAssert<UserResponseAssert, UserR
 
 	public UserResponseAssert hasName(String name) {
 		assertThat(actual.getUsername()).as(String.format("User has name %s", name)).isEqualTo(name);
+		return this;
+	}
+
+	public UserResponseAssert hasEmail(String email) {
+		assertThat(actual.getEmailAddress())
+			.withFailMessage("Expecting user to have email address %s but was %s.", email, actual.getEmailAddress())
+			.isEqualTo(email);
 		return this;
 	}
 }

@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.DateUtils;
@@ -237,6 +238,16 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @return Fluent API
 	 */
 	User inheritRolePermissions(MeshVertex sourceNode, MeshVertex targetNode);
+
+	/**
+	 * Same as {@link User#update(InternalActionContext, EventQueueBatch)}, but does not actually perform any changes.
+	 *
+	 * Useful to check if any changes have to be made.
+	 *
+	 * @param ac
+	 * @return true if the user would have been modified
+	 */
+	boolean updateDry(InternalActionContext ac);
 
 	/**
 	 * Return a page of groups which the user was assigned to.
