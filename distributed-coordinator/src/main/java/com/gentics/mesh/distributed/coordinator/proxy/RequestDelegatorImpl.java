@@ -127,6 +127,7 @@ public class RequestDelegatorImpl implements RequestDelegator {
 		HttpClientRequest forwardRequest = httpClient.request(method, port, host, requestURI, forwardResponse -> {
 			response.setChunked(true);
 			response.setStatusCode(forwardResponse.statusCode());
+			response.putHeader(MESH_FORWARDED_FROM_HEADER, master.getName());
 			forwardHeaders(response, forwardResponse);
 			printHeaders("Forward response headers", response.headers());
 			Pump.pump(forwardResponse, response)
