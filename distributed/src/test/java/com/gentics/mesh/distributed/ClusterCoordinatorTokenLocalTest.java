@@ -31,7 +31,7 @@ public class ClusterCoordinatorTokenLocalTest {
 		provider = JWTAuth.create(Vertx.vertx(), new JWTAuthOptions()
 			.addPubSecKey(new PubSecKeyOptions()
 				.setAlgorithm("HS256")
-				// public-keys/symmetric-key.json contains the base64url encoded key
+				// public-keys/symmetric-key.json contains the key
 				.setPublicKey("test-key")
 				.setSymmetric(true)));
 

@@ -1,4 +1,4 @@
-package com.gentics.mesh.auth;
+package com.gentics.mesh.auth.oauth2;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.event.Assignment.ASSIGNED;
@@ -17,6 +17,9 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.auth.AuthHandlerContainer;
+import com.gentics.mesh.auth.AuthServicePluginRegistry;
+import com.gentics.mesh.auth.MeshOAuthService;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
@@ -32,6 +35,7 @@ import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
+import com.gentics.mesh.distributed.RequestDelegator;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -45,6 +49,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
+import io.reactivex.SingleTransformer;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -76,10 +81,12 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 	private final AuthHandlerContainer authHandlerContainer;
 	private final LocalConfigApi localConfigApi;
 
+	private final RequestDelegator delegator;
+
 	@Inject
 	public MeshOAuth2ServiceImpl(Database db, BootstrapInitializer boot, MeshOptions meshOptions,
-								 Provider<EventQueueBatch> batchProvider, AuthServicePluginRegistry authPluginRegistry,
-								 AuthHandlerContainer authHandlerContainer, LocalConfigApi localConfigApi) {
+		Provider<EventQueueBatch> batchProvider, AuthServicePluginRegistry authPluginRegistry,
+		AuthHandlerContainer authHandlerContainer, LocalConfigApi localConfigApi, RequestDelegator delegator) {
 		this.db = db;
 		this.boot = boot;
 		this.batchProvider = batchProvider;
@@ -87,6 +94,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		this.authOptions = meshOptions.getAuthenticationOptions();
 		this.authHandlerContainer = authHandlerContainer;
 		this.localConfigApi = localConfigApi;
+		this.delegator = delegator;
 	}
 
 	private JWTAuthHandler createJWTHandler() {
@@ -163,8 +171,12 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 					}
 				}
 				syncUser(rc, token.principal()).subscribe(syncedUser -> {
-					rc.setUser(syncedUser);
-					rc.next();
+					if (syncedUser.requiresRedirect()) {
+						delegator.redirectToMaster(rc);
+					} else {
+						rc.setUser(syncedUser.meshAuthUser());
+						rc.next();
+					}
 				}, rc::fail);
 			} else {
 				rc.fail(401);
@@ -180,7 +192,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 	 * @param token
 	 * @return
 	 */
-	protected Single<MeshAuthUser> syncUser(RoutingContext rc, JsonObject token) {
+	protected Single<SyncUserResult> syncUser(RoutingContext rc, JsonObject token) {
 		Optional<String> usernameOpt = extractUsername(token);
 		if (!usernameOpt.isPresent()) {
 			throw new RuntimeException(
@@ -206,13 +218,17 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 			// In that case a sync must be invoked.
 			String lastSeenTokenId = TOKEN_ID_LOG.getIfPresent(user.getUuid());
 			if (lastSeenTokenId == null || !lastSeenTokenId.equals(cachingId)) {
-				return assertReadOnlyDeactivated().andThen(db.asyncTx(() -> {
-					com.gentics.mesh.core.data.User admin = boot.userRoot().findByUsername("admin");
-					runPlugins(rc, batch, admin, user, uuid, token);
-					TOKEN_ID_LOG.put(uuid, cachingId);
-				})).andThen(Single.just(user));
+				if (delegator.canWrite()) {
+					return assertReadOnlyDeactivated().andThen(db.asyncTx(() -> {
+						com.gentics.mesh.core.data.User admin = boot.userRoot().findByUsername("admin");
+						runPlugins(rc, batch, admin, user, uuid, token);
+						TOKEN_ID_LOG.put(uuid, cachingId);
+					})).andThen(Single.just(SyncUserResult.just(user)));
+				} else {
+					return Single.just(SyncUserResult.redirect());
+				}
 			}
-			return Single.just(user);
+			return Single.just(SyncUserResult.just(user));
 		}))
 		// Create the user if it can't be found.
 		.switchIfEmpty(assertReadOnlyDeactivated().andThen(db.singleTxWriteLock(tx -> {
@@ -227,9 +243,24 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 			// Not setting uuid since the user has not yet been committed.
 			runPlugins(rc, batch, admin, user, null, token);
 			TOKEN_ID_LOG.put(uuid, cachingId);
-			return user;
-		})))
+			return SyncUserResult.just(user);
+		})).compose(onlyInMaster()))
 		.doOnSuccess(ignore -> batch.dispatch());
+	}
+
+	/**
+	 * Returns the upstream if this node is the coordinator master.
+	 * Otherwise a {@link SyncUserResult#redirect()} is returned.
+	 * @return
+	 */
+	private SingleTransformer<SyncUserResult, SyncUserResult> onlyInMaster() {
+		return upstream -> {
+			if (delegator.canWrite()) {
+				return upstream;
+			} else {
+				return Single.just(SyncUserResult.redirect());
+			}
+		};
 	}
 
 	private Completable assertReadOnlyDeactivated() {

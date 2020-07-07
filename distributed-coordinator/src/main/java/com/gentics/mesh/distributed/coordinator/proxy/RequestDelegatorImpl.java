@@ -46,7 +46,6 @@ public class RequestDelegatorImpl implements RequestDelegator {
 	@Override
 	public void handle(RoutingContext rc) {
 		HttpServerRequest request = rc.request();
-		HttpServerResponse response = rc.response();
 		String requestURI = request.uri();
 		String path = request.path();
 		HttpMethod method = request.method();
@@ -100,6 +99,23 @@ public class RequestDelegatorImpl implements RequestDelegator {
 			rc.next();
 			return;
 		}
+
+		redirectToMaster(rc);
+	}
+
+	@Override
+	public boolean canWrite() {
+		return coordinator.getCoordinatorMode().equals(CoordinatorMode.DISABLED)
+			|| coordinator.getMasterMember().isSelf();
+	}
+
+	@Override
+	public void redirectToMaster(RoutingContext rc) {
+		HttpServerRequest request = rc.request();
+		String requestURI = request.uri();
+		HttpMethod method = request.method();
+		HttpServerResponse response = rc.response();
+		MasterServer master = coordinator.getMasterMember();
 		String host = master.getHost();
 		int port = master.getPort();
 
@@ -133,7 +149,6 @@ public class RequestDelegatorImpl implements RequestDelegator {
 				.setWriteQueueMaxSize(8192)
 				.start();
 		}
-
 	}
 
 	/**
