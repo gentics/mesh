@@ -4,9 +4,13 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.assertj.core.api.AbstractAssert;
 
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.rest.common.AbstractNameUuidReference;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
@@ -96,6 +100,17 @@ public class UserResponseAssert extends AbstractAssert<UserResponseAssert, UserR
 		assertThat(actual.getEmailAddress())
 			.withFailMessage("Expecting user to have email address %s but was %s.", email, actual.getEmailAddress())
 			.isEqualTo(email);
+		return this;
+	}
+
+	public UserResponseAssert hasGroup(String testGroup) {
+		List<String> groupNames = this.actual.getGroups().stream()
+			.map(AbstractNameUuidReference::getName)
+			.collect(Collectors.toList());
+
+		assertThat(groupNames)
+			.withFailMessage("Expecting user to be in group \"%s\". Actual groups: [%s]", testGroup, String.join(", ", groupNames))
+			.contains(testGroup);
 		return this;
 	}
 }

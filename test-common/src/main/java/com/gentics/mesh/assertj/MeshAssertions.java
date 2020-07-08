@@ -13,6 +13,7 @@ import com.gentics.mesh.assertj.impl.FieldMapAssert;
 import com.gentics.mesh.assertj.impl.FieldSchemaContainerAssert;
 import com.gentics.mesh.assertj.impl.GenericMessageResponseAssert;
 import com.gentics.mesh.assertj.impl.GenericRestExceptionAssert;
+import com.gentics.mesh.assertj.impl.GroupListResponseAssert;
 import com.gentics.mesh.assertj.impl.GroupResponseAssert;
 import com.gentics.mesh.assertj.impl.JobListResponseAssert;
 import com.gentics.mesh.assertj.impl.JsonArrayAssert;
@@ -61,6 +62,7 @@ import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.event.tag.TagMeshEventModel;
 import com.gentics.mesh.core.rest.event.tagfamily.TagFamilyMeshEventModel;
+import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
@@ -251,5 +253,9 @@ public class MeshAssertions extends Assertions {
 
 	public static MeshResponseAssert assertThat(MeshResponse<?> actual) {
 		return new MeshResponseAssert(actual);
+	}
+
+	public static GroupListResponseAssert assertThat(GroupListResponse actual) {
+		return new GroupListResponseAssert(actual);
 	}
 }

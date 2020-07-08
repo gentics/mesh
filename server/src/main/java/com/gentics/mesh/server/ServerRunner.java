@@ -32,6 +32,7 @@ public class ServerRunner {
 
 		Mesh mesh = Mesh.create(options);
 		mesh.setCustomLoader((vertx) -> {
+			mesh.deployPlugin(AuthPlugin.class, "auth").subscribe(() -> System.out.println("plugin deployed!"));
 			JsonObject config = new JsonObject();
 			config.put("port", options.getHttpServerOptions().getPort());
 

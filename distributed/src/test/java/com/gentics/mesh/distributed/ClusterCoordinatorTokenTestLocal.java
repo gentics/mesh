@@ -3,6 +3,8 @@ package com.gentics.mesh.distributed;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 
+import java.util.Arrays;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -11,6 +13,7 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.PubSecKeyOptions;
 import io.vertx.ext.auth.jwt.JWTAuth;
@@ -24,8 +27,8 @@ import io.vertx.ext.auth.jwt.JWTAuthOptions;
 public class ClusterCoordinatorTokenTestLocal {
 	private String userName;
 	private JWTAuth provider;
-	private MeshRestClient serverAClient;
 	private MeshRestClient serverBClient;
+	private MeshRestClient serverBAdminClient;
 
 	@Before
 	public void setup() {
@@ -36,17 +39,17 @@ public class ClusterCoordinatorTokenTestLocal {
 				.setPublicKey("test-key")
 				.setSymmetric(true)));
 
-		serverAClient = MeshRestClient.create("localhost", 8080, false);
 		serverBClient = MeshRestClient.create("localhost", 8081, false);
+		serverBAdminClient = MeshRestClient.create("localhost", 8081, false);
 	 	userName = "testuser" + randomUUID();
 
 	 	assertClusterCoordinatorSetup();
 	}
 
 	private void assertClusterCoordinatorSetup() {
-		serverBClient.setLogin("admin", "admin");
-		serverBClient.login().blockingGet();
-		assertThat(serverBClient.loadCoordinationMaster().blockingGet())
+		serverBAdminClient.setLogin("admin", "admin");
+		serverBAdminClient.login().blockingGet();
+		assertThat(serverBAdminClient.loadCoordinationMaster().blockingGet())
 			.hasName("nodeA");
 	}
 
@@ -56,62 +59,104 @@ public class ClusterCoordinatorTokenTestLocal {
 	 */
 	@Test
 	public void createNewUser() {
-		serverBClient.setAPIKey(createToken());
-		MeshResponse<UserResponse> response = serverBClient.me().getResponse().blockingGet();
-		assertThat(response).isForwardedFrom("nodeA");
-		assertThat(response.getBody()).hasName(userName);
+		createInitialUser();
 	}
 
 	@Test
 	public void nonMutatingReadRequest() {
-		serverBClient.setAPIKey(createToken());
-
-		// This creates the user
-		MeshResponse<UserResponse> response = serverBClient.me().getResponse().blockingGet();
-		assertThat(response).isForwardedFrom("nodeA");
-		assertThat(response.getBody()).hasName(userName);
-
-		// User should not be changed anymore, so no redirect should happen
-		response = serverBClient.me().getResponse().blockingGet();
-		assertThat(response).isNotForwarded();
-		assertThat(response.getBody()).hasName(userName);
+		createInitialUser();
+		checkRepeatedRead();
 	}
 
 	@Test
 	public void changedEmail() {
-		serverBClient.setAPIKey(createToken());
-
-		// This creates the user
-		MeshResponse<UserResponse> response = serverBClient.me().getResponse().blockingGet();
-		assertThat(response).isForwardedFrom("nodeA");
-		assertThat(response.getBody()).hasName(userName);
-
-		// User should not be changed anymore, so no redirect should happen
-		response = serverBClient.me().getResponse().blockingGet();
-		assertThat(response).isNotForwarded();
-		assertThat(response.getBody()).hasName(userName);
+		createInitialUser();
+		MeshResponse<UserResponse> response;
+		checkRepeatedRead();
 
 		// Email has changed. The request has to be redirected.
-		serverBClient.setAPIKey(createTokenWithEmail("test@gentics.com"));
+		serverBClient.setAPIKey(new TokenBuilder().setMail("test@gentics.com").build());
 		response = serverBClient.me().getResponse().blockingGet();
 		assertThat(response).isForwardedFrom("nodeA");
 		assertThat(response.getBody())
 			.hasName(userName)
 			.hasEmail("test@gentics.com");
+
+		checkRepeatedRead();
 	}
 
-	private String createToken() {
-		return provider.generateToken(new JsonObject()
-			.put("preferred_username", userName)
-			.put("jti", randomUUID())
-		);
+	@Test
+	public void addGroup() {
+		createInitialUser();
+
+		serverBClient.setAPIKey(new TokenBuilder().addGroup("testGroup").build());
+		MeshResponse<UserResponse> response = serverBClient.me().getResponse().blockingGet();
+		assertThat(response).isForwardedFrom("nodeA");
+		assertThat(response.getBody())
+			.hasName(userName)
+			.hasGroup("testGroup");
+		checkRepeatedRead();
+
+		assertThat(serverBAdminClient.findGroups().blockingGet()).contains("testGroup");
 	}
 
-	private String createTokenWithEmail(String email) {
-		return provider.generateToken(new JsonObject()
+	@Test
+	public void addRole() {
+		createInitialUser();
+
+		serverBClient.setAPIKey(new TokenBuilder()
+			.addGroup("testGroup", "testRole")
+			.build());
+		MeshResponse<UserResponse> response = serverBClient.me().getResponse().blockingGet();
+		assertThat(response).isForwardedFrom("nodeA");
+		assertThat(response.getBody())
+			.hasName(userName);
+
+		checkRepeatedRead();
+
+		assertThat(serverBAdminClient.findGroups().blockingGet())
+			.containsGroupWithRoles("testGroup", "testRole");
+	}
+
+	private void checkRepeatedRead() {
+		// User should not be changed anymore, so no redirect should happen
+		MeshResponse<UserResponse> response = serverBClient.me().getResponse().blockingGet();
+		assertThat(response).isNotForwarded();
+		assertThat(response.getBody()).hasName(userName);
+	}
+
+	private void createInitialUser() {
+		serverBClient.setAPIKey(new TokenBuilder().build());
+
+		// This creates the user
+		MeshResponse<UserResponse> response = serverBClient.me().getResponse().blockingGet();
+		assertThat(response).isForwardedFrom("nodeA");
+		assertThat(response.getBody()).hasName(userName);
+	}
+
+	private class TokenBuilder {
+		private final JsonObject token = new JsonObject()
 			.put("preferred_username", userName)
-			.put("jti", randomUUID())
-			.put("email", email)
-		);
+			.put("jti", randomUUID());
+
+		public TokenBuilder setMail(String email) {
+			token.put("email", email);
+			return this;
+		}
+
+		public TokenBuilder addGroup(String groupName, String... roles) {
+			if (!token.containsKey("groups")) {
+				token.put("groups", new JsonArray());
+			}
+			token.getJsonArray("groups").add(new JsonObject()
+				.put("name", groupName)
+				.put("roles", new JsonArray(Arrays.asList(roles)))
+			);
+			return this;
+		}
+
+		public String build() {
+			return provider.generateToken(token);
+		}
 	}
 }
