@@ -1,13 +1,13 @@
 package com.gentics.mesh.auth.oauth2;
 
 public class CannotWriteException extends Exception {
-	private final static CannotWriteException instance = new CannotWriteException();
+	public final static CannotWriteException INSTANCE = new CannotWriteException();
 	private CannotWriteException() {
 		super("Cannot write to database", null, false, false);
 	}
 
 	public static void throwException() throws CannotWriteException {
-		throw instance;
+		throw INSTANCE;
 	}
 
 	@Override

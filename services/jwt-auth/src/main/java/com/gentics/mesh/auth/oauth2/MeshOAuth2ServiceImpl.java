@@ -3,6 +3,7 @@ package com.gentics.mesh.auth.oauth2;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.event.Assignment.ASSIGNED;
 import static com.gentics.mesh.event.Assignment.UNASSIGNED;
+import static com.google.common.base.Throwables.getRootCause;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 
 import java.util.HashSet;
@@ -49,7 +50,6 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
-import io.reactivex.SingleTransformer;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
@@ -172,13 +172,15 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 					}
 				}
 				syncUser(rc, token.principal()).subscribe(syncedUser -> {
-					if (syncedUser.requiresRedirect()) {
+					rc.setUser(syncedUser);
+					rc.next();
+				}, error -> {
+					if (getRootCause(error) instanceof CannotWriteException) {
 						delegator.redirectToMaster(rc);
 					} else {
-						rc.setUser(syncedUser.meshAuthUser());
-						rc.next();
+						rc.fail(error);
 					}
-				}, rc::fail);
+				});
 			} else {
 				rc.fail(401);
 				return;
@@ -193,7 +195,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 	 * @param token
 	 * @return
 	 */
-	protected Single<SyncUserResult> syncUser(RoutingContext rc, JsonObject token) {
+	protected Single<MeshAuthUser> syncUser(RoutingContext rc, JsonObject token) {
 		Optional<String> usernameOpt = extractUsername(token);
 		if (!usernameOpt.isPresent()) {
 			throw new RuntimeException(
@@ -221,48 +223,33 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 			if (lastSeenTokenId == null || !lastSeenTokenId.equals(cachingId)) {
 				return assertReadOnlyDeactivated().andThen(db.singleTx(() -> {
 					com.gentics.mesh.core.data.User admin = boot.userRoot().findByUsername("admin");
-					try {
 						runPlugins(rc, batch, admin, user, uuid, token);
 						TOKEN_ID_LOG.put(uuid, cachingId);
-						return SyncUserResult.just(user);
-					} catch (CannotWriteException e) {
-						return SyncUserResult.redirect();
-					}
+						return user;
 				}));
 			}
-			return Single.just(SyncUserResult.just(user));
+			return Single.just(user);
 		}))
 		// Create the user if it can't be found.
-		.switchIfEmpty(assertReadOnlyDeactivated().andThen(db.singleTxWriteLock(tx -> {
-			UserRoot root = boot.userRoot();
-			com.gentics.mesh.core.data.User admin = root.findByUsername("admin");
-			com.gentics.mesh.core.data.User createdUser = root.create(username, admin);
-			admin.inheritRolePermissions(root, createdUser);
+		.switchIfEmpty(
+			assertReadOnlyDeactivated()
+			.andThen(requiresWriteCompletable())
+			.andThen(db.singleTxWriteLock(tx -> {
+				UserRoot root = boot.userRoot();
+				com.gentics.mesh.core.data.User admin = root.findByUsername("admin");
+				com.gentics.mesh.core.data.User createdUser = root.create(username, admin);
+				admin.inheritRolePermissions(root, createdUser);
 
-			MeshAuthUser user = root.findMeshAuthUserByUsername(username);
-			String uuid = user.getUuid();
-			batch.add(user.onCreated());
-			// Not setting uuid since the user has not yet been committed.
-			runPlugins(rc, batch, admin, user, null, token);
-			TOKEN_ID_LOG.put(uuid, cachingId);
-			return SyncUserResult.just(user);
-		})).compose(onlyInMaster()))
+				MeshAuthUser user = root.findMeshAuthUserByUsername(username);
+				String uuid = user.getUuid();
+				batch.add(user.onCreated());
+				// Not setting uuid since the user has not yet been committed.
+				runPlugins(rc, batch, admin, user, null, token);
+				TOKEN_ID_LOG.put(uuid, cachingId);
+				return user;
+			}))
+		)
 		.doOnSuccess(ignore -> batch.dispatch());
-	}
-
-	/**
-	 * Returns the upstream if this node is the coordinator master.
-	 * Otherwise a {@link SyncUserResult#redirect()} is returned.
-	 * @return
-	 */
-	private SingleTransformer<SyncUserResult, SyncUserResult> onlyInMaster() {
-		return upstream -> {
-			if (delegator.canWrite()) {
-				return upstream;
-			} else {
-				return Single.just(SyncUserResult.redirect());
-			}
-		};
 	}
 
 	private Completable assertReadOnlyDeactivated() {
@@ -333,15 +320,13 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 	/**
 	 * Runs all {@link AuthServicePlugin} to detect and apply any changes that are returned from {@link AuthServicePlugin#mapToken(HttpServerRequest, String, JsonObject)}.
 	 *
-	 * If a change is required but this instance cannot be written to because of cluster coordination, this method will immediately stop its flow and return true.
-	 * Otherwise, no changes had to be made or the user could be written. In this case false is returned.
-	 *
 	 * @param rc
 	 * @param batch
 	 * @param admin
 	 * @param user
 	 * @param userUuid
 	 * @param token
+	 * @throws CannotWriteException If a change is required but this instance cannot be written to because of cluster coordination.
 	 * @return
 	 */
 	private void runPlugins(RoutingContext rc, EventQueueBatch batch, com.gentics.mesh.core.data.User admin, MeshAuthUser user, String userUuid,
@@ -522,6 +507,14 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 	private void requiresWrite() throws CannotWriteException {
 		if (!delegator.canWrite()) {
 			CannotWriteException.throwException();
+		}
+	}
+
+	private Completable requiresWriteCompletable() {
+		if (delegator.canWrite()) {
+			return Completable.complete();
+		} else {
+			return Completable.error(CannotWriteException.INSTANCE);
 		}
 	}
 }
