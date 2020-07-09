@@ -1,4 +1,4 @@
-package com.gentics.mesh.server;
+package com.gentics.mesh.plugin;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -9,7 +9,6 @@ import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
-import com.gentics.mesh.plugin.AbstractPlugin;
 import com.gentics.mesh.plugin.auth.AuthServicePlugin;
 import com.gentics.mesh.plugin.auth.MappingResult;
 import com.gentics.mesh.plugin.env.PluginEnvironment;

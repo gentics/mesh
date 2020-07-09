@@ -12,6 +12,7 @@ import com.gentics.mesh.rest.client.MeshRestClient;
  *     <li>The cluster coordination has to activated and nodeA must be the master coordinator.</li>
  *     <li>The AuthPlugin (found in <code>core/src/test/plugins</code>) must be deployed on both systems.</li>
  *     <li>Both nodes must use the JWK found in the resources (<code>/public-keys/symmetric-key.json</code>).</li>
+ *     <li>nodeB must listen to port 8081</li>
  * </ul>
  *
  */
