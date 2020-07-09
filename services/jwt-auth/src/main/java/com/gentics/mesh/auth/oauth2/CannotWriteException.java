@@ -1,17 +1,11 @@
 package com.gentics.mesh.auth.oauth2;
 
+/**
+ * This exception can be thrown during the sync user process.
+ * Throwing this exception causes the request to be delegated to the cluster coordinator master.
+ */
 public class CannotWriteException extends Exception {
-	public final static CannotWriteException INSTANCE = new CannotWriteException();
-	private CannotWriteException() {
-		super("Cannot write to database", null, false, false);
-	}
-
-	public static void throwException() throws CannotWriteException {
-		throw INSTANCE;
-	}
-
-	@Override
-	public synchronized Throwable fillInStackTrace() {
-		return this;
+	public CannotWriteException() {
+		super("Cannot write to database");
 	}
 }

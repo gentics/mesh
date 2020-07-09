@@ -107,7 +107,7 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 
 	@Override
 	protected void configure() {
-		String basePath = "/tmp/jenkins-slave/" + clusterName + "-" + nodeName;
+		String basePath = "/opt/jenkins-slave/" + clusterName + "-" + nodeName;
 		String dataPath = basePath + "/data-" + dataPathPostfix;
 		String confPath = basePath + "/config";
 		// Ensure that the folder is created upfront. This is important to keep the uid and gids correct.
@@ -247,7 +247,7 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 	 * @return
 	 */
 	public static ImageFromDockerfile prepareDockerImage(boolean enableClustering) {
-		ImageFromDockerfile dockerImage = new ImageFromDockerfile("mesh-local", false);
+		ImageFromDockerfile dockerImage = new ImageFromDockerfile("mesh-local", true);
 		try {
 			File projectRoot = new File("..");
 

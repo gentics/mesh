@@ -191,5 +191,4 @@ public final class TestUtils {
 	public static <T> Stream<T> streamFromIterable(Iterable<T> iterable) {
 		return StreamSupport.stream(iterable.spliterator(), false);
 	}
-
 }

@@ -354,7 +354,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 						ac.setBody(mappedUser);
 						ac.setUser(admin.toAuthUser());
 						if (!delegator.canWrite() && user.updateDry(ac)) {
-							CannotWriteException.throwException();
+							throw new CannotWriteException();
 						}
 						user.update(ac, batch);
 					} else {
@@ -506,7 +506,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 
 	private void requiresWrite() throws CannotWriteException {
 		if (!delegator.canWrite()) {
-			CannotWriteException.throwException();
+			throw new CannotWriteException();
 		}
 	}
 
@@ -514,7 +514,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		if (delegator.canWrite()) {
 			return Completable.complete();
 		} else {
-			return Completable.error(CannotWriteException.INSTANCE);
+			return Completable.error(new CannotWriteException());
 		}
 	}
 }

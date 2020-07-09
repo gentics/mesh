@@ -26,11 +26,6 @@
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-common</artifactId>
 		</dependency>
-		<!-- For OAuth2 redirection -->
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-distributed-coordinator</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-web</artifactId>
@@ -42,7 +37,6 @@
 			<artifactId>mesh-test-common</artifactId>
 			<scope>test</scope>
 		</dependency>
-
     </dependencies>
 
 	<build>
