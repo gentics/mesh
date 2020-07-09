@@ -92,7 +92,7 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 
 	private boolean startEmbeddedES = false;
 
-	private boolean coordinatorPlane = false;
+	private CoordinatorMode coordinatorMode = null;
 
 	private String coordinatorPlaneRegex;
 
@@ -156,8 +156,8 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 		addEnv(MeshOptions.MESH_INITIAL_ADMIN_PASSWORD_ENV, "admin");
 		addEnv(MeshOptions.MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET_ENV, "false");
 
-		if (coordinatorPlane) {
-			addEnv(ClusterOptions.MESH_CLUSTER_COORDINATOR_MODE_ENV, CoordinatorMode.ALL.name());
+		if (coordinatorMode != null) {
+			addEnv(ClusterOptions.MESH_CLUSTER_COORDINATOR_MODE_ENV, coordinatorMode.name());
 		}
 
 		if (coordinatorPlaneRegex != null) {
@@ -495,7 +495,11 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 	}
 
 	public MeshDockerServer withCoordinatorPlane() {
-		this.coordinatorPlane = true;
+		return withCoordinatorPlane(CoordinatorMode.ALL);
+	}
+
+	public MeshDockerServer withCoordinatorPlane(CoordinatorMode coordinatorMode) {
+		this.coordinatorMode = coordinatorMode;
 		return this;
 	}
 

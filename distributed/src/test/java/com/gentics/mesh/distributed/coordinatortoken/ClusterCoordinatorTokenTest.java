@@ -10,6 +10,7 @@ import org.junit.ClassRule;
 import org.junit.rules.RuleChain;
 
 import com.gentics.mesh.distributed.containers.MeshDockerServer;
+import com.gentics.mesh.etc.config.cluster.CoordinatorMode;
 import com.gentics.mesh.rest.client.MeshRestClient;
 
 public class ClusterCoordinatorTokenTest extends AbstractClusterCoordinatorTokenTest {
@@ -20,7 +21,7 @@ public class ClusterCoordinatorTokenTest extends AbstractClusterCoordinatorToken
 		.withClusterName("dockerCluster" + clusterPostFix)
 		.withNodeName("nodeA")
 		.withDataPathPostfix(randomToken())
-		.withCoordinatorPlane()
+		.withCoordinatorPlane(CoordinatorMode.CUD)
 		.withCoordinatorRegex(coordinatorRegex)
 		.withInitCluster()
 		.withPlugin(new File("../core/target/test-plugins/auth/target/auth-plugin-0.0.1-SNAPSHOT.jar"), "auth.jar")
@@ -32,7 +33,7 @@ public class ClusterCoordinatorTokenTest extends AbstractClusterCoordinatorToken
 		.withClusterName("dockerCluster" + clusterPostFix)
 		.withNodeName("nodeB")
 		.withDataPathPostfix(randomToken())
-		.withCoordinatorPlane()
+		.withCoordinatorPlane(CoordinatorMode.CUD)
 		.withCoordinatorRegex(coordinatorRegex)
 		.withPlugin(new File("../core/target/test-plugins/auth/target/auth-plugin-0.0.1-SNAPSHOT.jar"), "auth.jar")
 		.withPublicKeys(getResourceAsFile("/public-keys/symmetric-key.json"))

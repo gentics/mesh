@@ -11,7 +11,7 @@
       <env name="MESH_CLUSTER_VERTX_PORT" value="8090" />
       <env name="MESH_AUTH_PUBLIC_KEYS_PATH" value="$PROJECT_DIR$/distributed/src/test/resources/public-keys/symmetric-key.json" />
       <env name="MESH_NODE_NAME" value="nodeA" />
-      <env name="MESH_CLUSTER_COORDINATOR_MODE" value="CUD" />
+      <env name="MESH_CLUSTER_COORDINATOR_MODE" value="ALL" />
       <env name="MESH_CLUSTER_COORDINATOR_REGEX" value="nodeA" />
     </envs>
     <option name="MAIN_CLASS_NAME" value="com.gentics.mesh.server.ServerRunner" />
