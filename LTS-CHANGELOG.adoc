@@ -21,6 +21,8 @@ All fixes and changes in LTS releases will be released the next minor release. C
 
 icon:check[] Clustering: The cluster coordinator will now detect changes caused by the OAuth token mapping and will redirect the request if necessary.
 
+icon:plus[] Clustering: When using the cluster coordinator, forwarded requests will now contain the link:{{< relref "image-manipulation.asciidoc" >}}#_headers[`X-Mesh-Forwarded-From` header].
+
 [[v1.4.11]]
 == 1.4.11 (23.06.2020)
 
