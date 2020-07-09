@@ -115,6 +115,7 @@ import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.rest.client.MeshRestClientConfig;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import com.gentics.mesh.rest.client.MeshWebsocket;
 import com.gentics.mesh.rest.client.impl.EmptyResponse;
@@ -1649,6 +1650,11 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Override
 	public JWTAuthentication getAuthentication() {
+		return null;
+	}
+
+	@Override
+	public MeshRestClientConfig getConfig() {
 		return null;
 	}
 

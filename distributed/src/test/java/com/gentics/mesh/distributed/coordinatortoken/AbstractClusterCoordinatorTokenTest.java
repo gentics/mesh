@@ -1,4 +1,4 @@
-package com.gentics.mesh.distributed;
+package com.gentics.mesh.distributed.coordinatortoken;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.util.UUIDUtil.randomUUID;
@@ -19,16 +19,14 @@ import io.vertx.ext.auth.PubSecKeyOptions;
 import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.auth.jwt.JWTAuthOptions;
 
-/**
- * Same as {@link ClusterCoordinatorTokenTest}, but intended for local testing.
- * This requires a previously started mesh cluster with two nodes "nodeA" and "nodeB".
- * The cluster coordination has to activated and nodeA has to be the master coordinator.
- */
-public class ClusterCoordinatorTokenTestLocal {
+
+public abstract class AbstractClusterCoordinatorTokenTest {
 	private String userName;
 	private JWTAuth provider;
 	private MeshRestClient serverBClient;
 	private MeshRestClient serverBAdminClient;
+
+	protected abstract MeshRestClient getServerBClient();
 
 	@Before
 	public void setup() {
@@ -39,8 +37,8 @@ public class ClusterCoordinatorTokenTestLocal {
 				.setPublicKey("test-key")
 				.setSymmetric(true)));
 
-		serverBClient = MeshRestClient.create("localhost", 8081, false);
-		serverBAdminClient = MeshRestClient.create("localhost", 8081, false);
+		serverBClient = getServerBClient();
+		serverBAdminClient = MeshRestClient.create(serverBClient.getConfig());
 	 	userName = "testuser" + randomUUID();
 
 	 	assertClusterCoordinatorSetup();
