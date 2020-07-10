@@ -1,8 +1,12 @@
 package com.gentics.mesh.core.data;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.rest.MeshEvent.USER_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.USER_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.USER_UPDATED;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 
 import java.util.Objects;
 import java.util.Set;
@@ -340,6 +344,16 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	boolean hasPermissionForId(Object elementId, GraphPermission permission);
 
 	/**
+	 * Check the read permission on the given container and return false if the needed permission to read the container is not set.
+	 * This method will not return false if the user has READ permission or READ_PUBLISH permission on a published node.
+	 *
+	 * @param container
+	 * @param branchUuid
+	 * @param requestedVersion
+	 */
+	boolean hasReadPermission(NodeGraphFieldContainer container, String branchUuid, String requestedVersion);
+
+	/**
 	 * Check the read permission on the given container and fail if the needed permission to read the container is not set. This method will not fail if the
 	 * user has READ permission or READ_PUBLISH permission on a published node.
 	 *
@@ -347,7 +361,15 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @param branchUuid
 	 * @param requestedVersion
 	 */
-	void failOnNoReadPermission(NodeGraphFieldContainer container, String branchUuid, String requestedVersion);
+	default void failOnNoReadPermission(NodeGraphFieldContainer container, String branchUuid, String requestedVersion) {
+		Node node = container.getParentNode();
+		if (!hasReadPermission(container, branchUuid, requestedVersion)) {
+			throw error(FORBIDDEN, "error_missing_perm", node.getUuid(),
+				"published".equals(requestedVersion)
+					? READ_PUBLISHED_PERM.getRestPerm().getName()
+					: READ_PERM.getRestPerm().getName());
+		}
+	}
 
 	/**
 	 * Check whether the admin role was assigned to the user.

@@ -254,9 +254,11 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 				// TODO Throw graphql aware not found exception
 				return null;
 			}
-			node = gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 			List<String> languageTags = getLanguageArgument(env);
 			NodeGraphFieldContainer container = node.findVersion(gc, languageTags);
+			if (container != null && !gc.getUser().hasReadPermission(container, gc.getBranch().getUuid(), gc.getVersioningParameters().getVersion())) {
+				throw new PermissionException("node", uuid);
+			}
 			return new NodeContent(node, container, languageTags);
 		}
 		String path = env.getArgument("path");
@@ -270,6 +272,9 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 
 			NodeGraphFieldContainer container = pathResult.getLast().getContainer();
 			Node nodeOfContainer = container.getParentNode();
+			if (!gc.getUser().hasReadPermission(container, gc.getBranch().getUuid(), gc.getVersioningParameters().getVersion())) {
+				throw new PermissionException("node", nodeOfContainer.getUuid());
+			}
 			nodeOfContainer = gc.requiresPerm(nodeOfContainer, READ_PERM, READ_PUBLISHED_PERM);
 			return new NodeContent(nodeOfContainer, container, Arrays.asList(container.getLanguageTag()));
 		}
