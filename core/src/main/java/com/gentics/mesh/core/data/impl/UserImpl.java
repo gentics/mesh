@@ -335,7 +335,9 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		} else {
 			// Admin users have all permissions
 			if (isAdmin()) {
-				permissionCache.store(id(), permission, elementId);
+				for (GraphPermission perm : GraphPermission.values()) {
+					permissionCache.store(id(), perm, elementId);
+				}
 				return true;
 			}
 
@@ -570,6 +572,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		if (shouldUpdate(requestModel.getAdmin(), isAdmin())) {
 			if (ac.getUser().isAdmin()) {
 				setAdmin(requestModel.getAdmin());
+				// Permissions need to be purged
+				mesh().permissionCache().clear();
 			} else {
 				throw error(FORBIDDEN, "user_error_admin_privilege_needed_for_admin_flag");
 			}

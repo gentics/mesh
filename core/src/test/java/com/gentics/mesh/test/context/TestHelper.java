@@ -27,6 +27,7 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
@@ -111,6 +112,14 @@ public interface TestHelper extends EventHelper, ClientHelper {
 
 	default Role anonymousRole() {
 		return data().getAnonymousRole();
+	}
+
+	@Override
+	default Branch createBranch(String name, boolean latest) {
+		grantAdmin();
+		Branch branch = ClientHelper.super.createBranch(name, latest);
+		revokeAdmin();
+		return branch;
 	}
 
 	default MeshRoot meshRoot() {
