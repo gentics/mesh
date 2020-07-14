@@ -3,8 +3,8 @@
     # [$.data.me.username=anonymous]
     username
   }
+  # [$.data.node=<is-null>]
   node(path:"/Neuigkeiten/2015") {
-    # [$.data.node.uuid=<is-uuid>]
     uuid
   }
   tag(name: "red") {
@@ -31,4 +31,8 @@
     totalCount
   }
 }
-# [$.errors=<is-undefined>]
+# [$.errors.length()=1]
+# [$.errors[0].message=graphql_error_missing_perm]
+# [$.errors[0].type=missing_perm]
+# [$.errors[0].elementId=<is-uuid>]
+# [$.errors[0].elementType=node]

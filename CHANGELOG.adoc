@@ -30,6 +30,8 @@ include::content/docs/variables.adoc-include[]
 
 icon:plus[] Elasticsearch: The `branchUuid` property was added to documents in the search index.
 
+icon:check[] Security: A minor security issue has been fixed.
+
 [[v1.5.2]]
 == 1.5.2 (22.06.2020)
 

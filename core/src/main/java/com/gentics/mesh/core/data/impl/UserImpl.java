@@ -15,7 +15,6 @@ import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.Optional;
@@ -74,7 +73,6 @@ import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
-import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -370,19 +368,16 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public void failOnNoReadPermission(NodeGraphFieldContainer container, String branchUuid, String requestedVersion) {
+	public boolean hasReadPermission(NodeGraphFieldContainer container, String branchUuid, String requestedVersion) {
 		Node node = container.getParentNode();
 		if (hasPermission(node, READ_PERM)) {
-			return;
+			return true;
 		}
 		boolean published = container.isPublished(branchUuid);
 		if (published && hasPermission(node, READ_PUBLISHED_PERM)) {
-			return;
+			return true;
 		}
-		throw error(FORBIDDEN, "error_missing_perm", node.getUuid(),
-			"published".equals(requestedVersion)
-				? READ_PUBLISHED_PERM.getRestPerm().getName()
-				: READ_PERM.getRestPerm().getName());
+		return false;
 	}
 
 	@Override
