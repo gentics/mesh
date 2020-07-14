@@ -262,7 +262,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 			.sorted()
 			.collect(Collectors.joining());
 
-		return ETag.hash(roles);
+		return ETag.hash(roles + String.valueOf(isAdmin()));
 	}
 
 	@Override
@@ -664,6 +664,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		for (Group group : getGroups()) {
 			keyBuilder.append(group.getUuid());
 		}
+		keyBuilder.append(String.valueOf(isAdmin()));
 
 		return keyBuilder.toString();
 	}
