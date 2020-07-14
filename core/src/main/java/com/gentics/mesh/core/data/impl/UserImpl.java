@@ -333,6 +333,12 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		if (permissionCache.hasPermission(id(), permission, elementId)) {
 			return true;
 		} else {
+			// Admin users have all permissions
+			if (isAdmin()) {
+				permissionCache.store(id(), permission, elementId);
+				return true;
+			}
+
 			FramedGraph graph = getGraph();
 			// Find all roles that are assigned to the user by checking the
 			// shortcut edge from the index
