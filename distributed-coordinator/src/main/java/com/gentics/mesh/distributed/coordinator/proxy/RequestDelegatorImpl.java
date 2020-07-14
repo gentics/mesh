@@ -46,7 +46,6 @@ public class RequestDelegatorImpl implements RequestDelegator {
 	@Override
 	public void handle(RoutingContext rc) {
 		HttpServerRequest request = rc.request();
-		HttpServerResponse response = rc.response();
 		String requestURI = request.uri();
 		String path = request.path();
 		HttpMethod method = request.method();
@@ -100,6 +99,27 @@ public class RequestDelegatorImpl implements RequestDelegator {
 			rc.next();
 			return;
 		}
+
+		redirectToMaster(rc);
+	}
+
+	@Override
+	public boolean canWrite() {
+		if (CoordinatorMode.DISABLED.equals(coordinator.getCoordinatorMode())) {
+			return true;
+		} else {
+			MasterServer master = coordinator.getMasterMember();
+			return master != null && master.isSelf();
+		}
+	}
+
+	@Override
+	public void redirectToMaster(RoutingContext rc) {
+		HttpServerRequest request = rc.request();
+		String requestURI = request.uri();
+		HttpMethod method = request.method();
+		HttpServerResponse response = rc.response();
+		MasterServer master = coordinator.getMasterMember();
 		String host = master.getHost();
 		int port = master.getPort();
 
@@ -111,6 +131,7 @@ public class RequestDelegatorImpl implements RequestDelegator {
 		HttpClientRequest forwardRequest = httpClient.request(method, port, host, requestURI, forwardResponse -> {
 			response.setChunked(true);
 			response.setStatusCode(forwardResponse.statusCode());
+			response.putHeader(MESH_FORWARDED_FROM_HEADER, master.getName());
 			forwardHeaders(response, forwardResponse);
 			printHeaders("Forward response headers", response.headers());
 			Pump.pump(forwardResponse, response)
@@ -133,7 +154,6 @@ public class RequestDelegatorImpl implements RequestDelegator {
 				.setWriteQueueMaxSize(8192)
 				.start();
 		}
-
 	}
 
 	/**

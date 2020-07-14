@@ -17,6 +17,12 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[Unreleased]]
+
+icon:check[] Clustering: The cluster coordinator will now detect changes caused by the OAuth token mapping and will redirect the request if necessary.
+
+icon:plus[] Clustering: When using the cluster coordinator, forwarded requests will now contain the link:{{< relref "image-manipulation.asciidoc" >}}#_headers[`X-Mesh-Forwarded-From` header].
+
 [[v1.4.11]]
 == 1.4.11 (23.06.2020)
 

@@ -1,7 +1,7 @@
 package com.gentics.mesh.dagger.module;
 
-import com.gentics.mesh.auth.MeshOAuth2ServiceImpl;
 import com.gentics.mesh.auth.MeshOAuthService;
+import com.gentics.mesh.auth.oauth2.MeshOAuth2ServiceImpl;
 import com.gentics.mesh.cache.CacheRegistry;
 import com.gentics.mesh.cache.CacheRegistryImpl;
 import com.gentics.mesh.cache.PermissionCache;

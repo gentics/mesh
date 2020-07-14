@@ -82,7 +82,7 @@ public abstract class AbstractClusterTest {
 	}
 
 	protected MeshDockerServer prepareSlave(String clusterName, String nodeName, String dataPathPostfix, boolean clearFolders, int writeQuorum) {
-		MeshDockerServer server = new MeshDockerServer(vertx)
+		MeshDockerServer server = new MeshDockerServer()
 			.withDataPathPostfix(dataPathPostfix)
 			.withClusterName(clusterName)
 			.withNodeName(nodeName)

@@ -35,6 +35,14 @@ public class MeshRestClientConfig {
 		this.clientKey = builder.clientKey;
 	}
 
+	/**
+	 * Creates a new builder based on the values of this config.
+	 * @return
+	 */
+	public MeshRestClientConfig.Builder asBuilder() {
+		return new Builder(this);
+	}
+
 	public String getHost() {
 		return host;
 	}
@@ -93,9 +101,36 @@ public class MeshRestClientConfig {
 		private Duration websocketReconnectInterval = Duration.ofSeconds(5);
 		private Duration websocketPingInterval = Duration.ofSeconds(2);
 		public boolean hostnameVerification = false;
-		private Set<byte[]> trustedCAs = new HashSet<>();
+		private final Set<byte[]> trustedCAs;
 		private byte[] clientCert;
 		private byte[] clientKey;
+
+		public Builder() {
+			trustedCAs = new HashSet<>();
+		}
+
+		/**
+		 * Creates a new builder based on the values of the given config.
+		 * @param config
+		 */
+		public Builder(MeshRestClientConfig config) {
+			Objects.requireNonNull(config);
+
+			setHost(config.getHost());
+			setBasePath(config.getBasePath());
+			setPort(config.getPort());
+			setSsl(config.isSsl());
+			setWebsocketReconnectInterval(config.getWebsocketReconnectInterval());
+			setWebsocketPingInterval(config.getWebsocketPingInterval());
+			setHostnameVerification(config.isVerifyHostnames());
+			trustedCAs = new HashSet<>(config.trustedCAs);
+			if (config.getClientCert() != null) {
+				setClientCert(config.getClientCert().clone());
+			}
+			if (config.getClientKey() != null) {
+				setClientKey(config.getClientKey().clone());
+			}
+		}
 
 		public MeshRestClientConfig build() {
 			return new MeshRestClientConfig(this);

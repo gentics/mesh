@@ -40,7 +40,6 @@ import com.gentics.mesh.test.docker.StartupLatchingConsumer;
 import com.gentics.mesh.util.UUIDUtil;
 import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 
-import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -55,8 +54,6 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 	private Slf4jLogConsumer logConsumer = new Slf4jLogConsumer(log);
 
 	private MeshRestClient client;
-
-	private Vertx vertx;
 
 	private static ImageFromDockerfile image = prepareDockerImage(true);
 
@@ -95,19 +92,16 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 
 	private boolean startEmbeddedES = false;
 
-	private boolean coordinatorPlane = false;
+	private CoordinatorMode coordinatorMode = null;
 
 	private String coordinatorPlaneRegex;
 
 	/**
 	 * Create a new docker server
-	 * 
-	 * @param vertx
-	 *            Vert.x instances used to create the rest client
+	 *
 	 */
-	public MeshDockerServer(Vertx vertx) {
+	public MeshDockerServer() {
 		super(image);
-		this.vertx = vertx;
 		setWaitStrategy(new NoWaitStrategy());
 	}
 
@@ -162,8 +156,8 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 		addEnv(MeshOptions.MESH_INITIAL_ADMIN_PASSWORD_ENV, "admin");
 		addEnv(MeshOptions.MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET_ENV, "false");
 
-		if (coordinatorPlane) {
-			addEnv(ClusterOptions.MESH_CLUSTER_COORDINATOR_MODE_ENV, CoordinatorMode.ALL.name());
+		if (coordinatorMode != null) {
+			addEnv(ClusterOptions.MESH_CLUSTER_COORDINATOR_MODE_ENV, coordinatorMode.name());
 		}
 
 		if (coordinatorPlaneRegex != null) {
@@ -501,7 +495,11 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 	}
 
 	public MeshDockerServer withCoordinatorPlane() {
-		this.coordinatorPlane = true;
+		return withCoordinatorPlane(CoordinatorMode.ALL);
+	}
+
+	public MeshDockerServer withCoordinatorPlane(CoordinatorMode coordinatorMode) {
+		this.coordinatorMode = coordinatorMode;
 		return this;
 	}
 
@@ -568,6 +566,11 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> {
 
 	public MeshDockerServer withPluginTimeout(int timeoutInSeconds) {
 		addEnv(MeshOptions.MESH_PLUGIN_TIMEOUT_ENV, String.valueOf(timeoutInSeconds));
+		return this;
+	}
+
+	public MeshDockerServer withPublicKeys(File file) {
+		addFileSystemBind(file.getAbsolutePath(), "/config/public-keys.json", BindMode.READ_ONLY);
 		return this;
 	}
 

@@ -80,4 +80,9 @@ public class MeshRestOkHttpClientImpl extends MeshRestHttpClientImpl {
 		// * The default client. This cannot be closed because other instances might use it.
 		// * A user provided client. The user could use the client somewhere else, so we should not close it here.
 	}
+
+	@Override
+	public MeshRestClientConfig getConfig() {
+		return config;
+	}
 }

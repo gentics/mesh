@@ -1,0 +1,9 @@
+{
+  "keys": [
+    {
+      "kty": "oct",
+      "k": "test-key",
+      "kid": "HMAC symmetric key"
+    }
+  ]
+}

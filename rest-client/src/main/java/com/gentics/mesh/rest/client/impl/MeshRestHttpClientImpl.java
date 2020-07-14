@@ -23,6 +23,8 @@ import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
+import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfig;
+import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorMasterResponse;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.localconfig.LocalConfigModel;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
@@ -1476,6 +1478,26 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 			includeString = "?include=" + includeString;
 		}
 		return prepareRequest(GET, "/admin/debuginfo" + includeString, MeshBinaryResponse.class);
+	}
+
+	@Override
+	public MeshRequest<CoordinatorMasterResponse> loadCoordinationMaster() {
+		return prepareRequest(GET, "/admin/coordinator/master", CoordinatorMasterResponse.class);
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> setCoordinationMaster() {
+		return prepareRequest(POST, "/admin/coordinator/master", GenericMessageResponse.class);
+	}
+
+	@Override
+	public MeshRequest<CoordinatorConfig> loadCoordinationConfig() {
+		return prepareRequest(GET, "/admin/coordinator/config", CoordinatorConfig.class);
+	}
+
+	@Override
+	public MeshRequest<CoordinatorConfig> updateCoordinationConfig(CoordinatorConfig coordinatorConfig) {
+		return prepareRequest(POST, "/admin/coordinator/config", CoordinatorConfig.class, coordinatorConfig);
 	}
 
 	@Override
