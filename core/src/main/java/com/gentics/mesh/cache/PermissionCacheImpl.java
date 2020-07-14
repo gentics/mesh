@@ -83,7 +83,7 @@ public class PermissionCacheImpl extends AbstractMeshCache<String, Boolean> impl
 	/**
 	 * Invalidate the LRU cache and optionally notify other instances in the cluster.
 	 * 
-	 * @param notify
+	 * @param notify Whether to publish an event to inform other nodes in the cluster
 	 */
 	@Override
 	public void clear(boolean notify) {
