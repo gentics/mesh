@@ -58,7 +58,7 @@ public class SchemaSearchEndpointTest extends AbstractMultiESTest implements Bas
 	public void testEmptySchema() throws Exception {
 		final String SCHEMA_NAME = "TestSchema";
 		final String parentNodeUuid = tx(() -> project().getBaseNode().getUuid());
-		grantAdminRole();
+		grantAdmin();
 		try (Tx tx = tx()) {
 			recreateIndices();
 		}

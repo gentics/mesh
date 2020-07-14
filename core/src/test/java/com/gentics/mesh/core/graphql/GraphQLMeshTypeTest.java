@@ -32,7 +32,7 @@ public class GraphQLMeshTypeTest extends AbstractMeshTest {
 
 	@Test
 	public void testWithDisabledServerTokensAsAdmin() throws IOException {
-		grantAdminRole();
+		grantAdmin();
 		options().getHttpServerOptions().setServerTokens(false);
 		assertType("mesh/mesh-query");
 	}

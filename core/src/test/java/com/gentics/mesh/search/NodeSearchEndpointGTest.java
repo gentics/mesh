@@ -108,11 +108,11 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		schemaUpdate.addField(FieldUtil.createMicronodeFieldSchema("micro").setAllowedMicroSchemas("TestMicroschema"));
 
 		// Trigger the migration
-		tx(() -> group().addRole(roles().get("admin")));
+		grantAdmin();
 		waitForJobs(() -> {
 			call(() -> client().updateSchema(schemaUuid, schemaUpdate));
 		}, COMPLETED, 1);
-		tx(() -> group().removeRole(roles().get("admin")));
+		revokeAdmin();
 
 		waitForSearchIdleEvent();
 
@@ -143,11 +143,11 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		microschemaUpdate.addField(FieldUtil.createStringFieldSchema("textNew"));
 		microschemaUpdate.addField(FieldUtil.createNodeFieldSchema("nodeRefNew").setAllowedSchemas("content"));
 
-		tx(() -> group().addRole(roles().get("admin")));
+		grantAdmin();
 		waitForJobs(() -> {
 			call(() -> client().updateMicroschema(microschemaUuid, microschemaUpdate));
 		}, COMPLETED, 1);
-		tx(() -> group().removeRole(roles().get("admin")));
+		revokeAdmin();
 
 		// Update the node and populate the new fields
 		NodeUpdateRequest updateRequest = new NodeUpdateRequest();
@@ -175,7 +175,7 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchPublishedInBranch() throws Exception {
-		grantAdminRole();
+		grantAdmin();
 		recreateIndices();
 
 		String uuid = tx(() -> content("concorde").getUuid());

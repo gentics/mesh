@@ -56,7 +56,7 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 	@Override
 	public void handleReadList(InternalActionContext ac) {
 		utils.syncTx(ac, tx -> {
-			if (!ac.getUser().hasAdminRole()) {
+			if (!ac.getUser().isAdmin()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
 			JobRoot root = boot.jobRoot();
@@ -82,7 +82,7 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, () -> {
-				if (!ac.getUser().hasAdminRole()) {
+				if (!ac.getUser().isAdmin()) {
 					throw error(FORBIDDEN, "error_admin_permission_required");
 				}
 				JobRoot root = boot.jobRoot();
@@ -104,7 +104,7 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 	public void handleRead(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 		utils.syncTx(ac, (tx) -> {
-			if (!ac.getUser().hasAdminRole()) {
+			if (!ac.getUser().isAdmin()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
 			JobRoot root = boot.jobRoot();
@@ -132,7 +132,7 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 	 */
 	public void handleResetJob(InternalActionContext ac, String uuid) {
 		utils.syncTx(ac, (tx) -> {
-			if (!ac.getUser().hasAdminRole()) {
+			if (!ac.getUser().isAdmin()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
 			JobRoot root = boot.jobRoot();
@@ -148,7 +148,7 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 		validateParameter(uuid, "uuid");
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, (tx) -> {
-				if (!ac.getUser().hasAdminRole()) {
+				if (!ac.getUser().isAdmin()) {
 					throw error(FORBIDDEN, "error_admin_permission_required");
 				}
 				JobRoot root = boot.jobRoot();
@@ -172,7 +172,7 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 	 */
 	public void handleInvokeJobWorker(InternalActionContext ac) {
 		utils.syncTx(ac, (tx) -> {
-			if (!ac.getUser().hasAdminRole()) {
+			if (!ac.getUser().isAdmin()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
 			MeshEvent.triggerJobWorker(boot.mesh());

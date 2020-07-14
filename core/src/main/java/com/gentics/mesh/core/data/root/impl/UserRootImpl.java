@@ -159,6 +159,15 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 			user.setForcedPasswordChange(forcedPasswordChange);
 		}
 
+		Boolean adminFlag = requestModel.getAdmin();
+		if (adminFlag != null) {
+			if (requestUser.isAdmin()) {
+				user.setAdmin(adminFlag);
+			} else {
+				throw error(FORBIDDEN, "user_error_admin_privilege_needed_for_admin_flag");
+			}
+		}
+
 		requestUser.inheritRolePermissions(this, user);
 		ExpandableNode reference = requestModel.getNodeReference();
 		batch.add(user.onCreated());

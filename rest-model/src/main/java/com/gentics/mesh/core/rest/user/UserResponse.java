@@ -51,6 +51,10 @@ public class UserResponse extends AbstractGenericRestResponse {
 	@JsonPropertyDescription("When true, the user needs to change their password on the next login.")
 	private Boolean forcedPasswordChange;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Flag which indicates whether the user is an admin.")
+	private Boolean admin;
+
 	public UserResponse() {
 	}
 
@@ -270,6 +274,24 @@ public class UserResponse extends AbstractGenericRestResponse {
 	public UserResponse setForcedPasswordChange(Boolean forcedPasswordChange) {
 		this.forcedPasswordChange = forcedPasswordChange;
 		return this;
+	}
+
+	/**
+	 * Return the admin flag.
+	 * 
+	 * @return
+	 */
+	public Boolean getAdmin() {
+		return admin;
+	}
+
+	/**
+	 * Set the admin flag.
+	 * 
+	 * @param flag
+	 */
+	public void setAdmin(Boolean flag) {
+		this.admin = flag;
 	}
 
 }

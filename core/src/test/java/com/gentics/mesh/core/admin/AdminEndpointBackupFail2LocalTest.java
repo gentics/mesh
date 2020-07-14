@@ -28,7 +28,7 @@ public class AdminEndpointBackupFail2LocalTest extends AbstractMeshTest {
 		testContext.getOptions().getStorageOptions().setBackupDirectory(testFile.getAbsolutePath());
 		testFile.createNewFile();
 		testFile.deleteOnExit();
-		grantAdminRole();
+		grantAdmin();
 
 		// Override the current status
 		status(READY);

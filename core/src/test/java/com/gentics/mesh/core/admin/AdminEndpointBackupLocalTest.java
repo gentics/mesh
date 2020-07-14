@@ -30,7 +30,7 @@ public class AdminEndpointBackupLocalTest extends AbstractMeshTest {
 		final String NEW_PROJECT_NAME = "enemenemuh";
 		final String backupDir = testContext.getOptions().getStorageOptions().getBackupDirectory();
 		assertFilesInDir(backupDir, 0);
-		grantAdminRole();
+		grantAdmin();
 
 		expect(GRAPH_BACKUP_START).one();
 		expect(GRAPH_BACKUP_FINISHED).one();
@@ -61,7 +61,7 @@ public class AdminEndpointBackupLocalTest extends AbstractMeshTest {
 	@Test
 	@Ignore("Endpoint disabled")
 	public void testExportImport() {
-		grantAdminRole();
+		grantAdmin();
 		GenericMessageResponse message = call(() -> client().invokeExport());
 		assertThat(message).matches("export_finished");
 

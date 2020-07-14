@@ -39,7 +39,7 @@ public class IndexSyncCleanupTest extends AbstractMeshTest {
 
 	@Before
 	public void setup() {
-		grantAdminRole();
+		grantAdmin();
 	}
 
 	@Test

@@ -372,13 +372,6 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	}
 
 	/**
-	 * Check whether the admin role was assigned to the user.
-	 *
-	 * @return
-	 */
-	boolean hasAdminRole();
-
-	/**
 	 * Check whether the user is allowed to read the given node. Internally this check the currently configured version scope and check for
 	 * {@link GraphPermission#READ_PERM} or {@link GraphPermission#READ_PUBLISHED_PERM}.
 	 *
@@ -547,5 +540,19 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @return
 	 */
 	MeshAuthUser toAuthUser();
+
+	/**
+	 * Return the admin flag of the user.
+	 * 
+	 * @return
+	 */
+	boolean isAdmin();
+
+	/**
+	 * Set the admin flag for the user.
+	 * 
+	 * @param flag
+	 */
+	void setAdmin(boolean flag);
 
 }

@@ -15,6 +15,7 @@ import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.Optional;
@@ -95,6 +96,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	public static final String ENABLED_FLAG_PROPERTY_KEY = "enabledFlag";
 
+	public static final String ADMIN_FLAG_PROPERTY_KEY = "adminFlag";
+
 	public static final String RESET_TOKEN_KEY = "resetToken";
 
 	public static final String RESET_TOKEN_ISSUE_TIMESTAMP_KEY = "resetTokenTimestamp";
@@ -108,7 +111,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public User disable() {
-		//TODO Fixme - The #delete method will currently remove the user instead of disabling it.
+		// TODO Fixme - The #delete method will currently remove the user instead of disabling it.
 		// Thus this method is not used.
 		property(ENABLED_FLAG_PROPERTY_KEY, false);
 		return this;
@@ -163,15 +166,26 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public boolean isEnabled() {
-		//TODO the #delete method will currently delete the user. It will not be deleted.
-//		Boolean isEnabled = USER_STATE_CACHE.get(getUuid());
-//		if (isEnabled == null) {
-//			isEnabled = BooleanUtils.toBoolean(property(ENABLED_FLAG_PROPERTY_KEY).toString());
-//			USER_STATE_CACHE.put(getUuid(), isEnabled);
-//		}
-//
-//		return isEnabled;
+		// TODO the #delete method will currently delete the user. It will not be deleted.
+		// Boolean isEnabled = USER_STATE_CACHE.get(getUuid());
+		// if (isEnabled == null) {
+		// isEnabled = BooleanUtils.toBoolean(property(ENABLED_FLAG_PROPERTY_KEY).toString());
+		// USER_STATE_CACHE.put(getUuid(), isEnabled);
+		// }
+		//
+		// return isEnabled;
 		return BooleanUtils.toBoolean(property(ENABLED_FLAG_PROPERTY_KEY).toString());
+	}
+
+	@Override
+	public boolean isAdmin() {
+		Boolean flag = property(ADMIN_FLAG_PROPERTY_KEY);
+		return BooleanUtils.toBoolean(flag);
+	}
+
+	@Override
+	public void setAdmin(boolean flag) {
+		property(ADMIN_FLAG_PROPERTY_KEY, flag);
 	}
 
 	@Override
@@ -314,16 +328,6 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public boolean hasAdminRole() {
-		for (Role role : getRolesViaShortcut()) {
-			if ("admin".equals(role.getName())) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	@Override
 	public boolean hasPermissionForId(Object elementId, GraphPermission permission) {
 		PermissionCache permissionCache = mesh().permissionCache();
 		if (permissionCache.hasPermission(id(), permission, elementId)) {
@@ -402,6 +406,9 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		}
 		if (fields.has("lastname")) {
 			restUser.setLastname(getLastname());
+		}
+		if (fields.has("admin")) {
+			restUser.setAdmin(isAdmin());
 		}
 		if (fields.has("enabled")) {
 			restUser.setEnabled(isEnabled());
@@ -551,6 +558,15 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 				throw conflict(conflictingUser.getUuid(), requestModel.getUsername(), "user_conflicting_username");
 			}
 			setUsername(requestModel.getUsername());
+			modified = true;
+		}
+
+		if (shouldUpdate(requestModel.getAdmin(), isAdmin())) {
+			if (ac.getUser().isAdmin()) {
+				setAdmin(requestModel.getAdmin());
+			} else {
+				throw error(FORBIDDEN, "user_error_admin_privilege_needed_for_admin_flag");
+			}
 			modified = true;
 		}
 

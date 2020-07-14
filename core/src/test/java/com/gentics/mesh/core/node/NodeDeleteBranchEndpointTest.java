@@ -22,7 +22,7 @@ public class NodeDeleteBranchEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void deleteNodeInBranch() {
-		grantAdminRole();
+		grantAdmin();
 		NodeResponse parent = createNode();
 		NodeResponse otherParent = createNode();
 		publishNode(parent);

@@ -48,7 +48,7 @@ public class MicronodeMigrationAllFieldsTest extends AbstractMeshTest {
 
 	@Test
 	public void testMigration() {
-		grantAdminRole();
+		grantAdmin();
 		createSchema();
 		createAllFieldsNode();
 		updateMicroschema();

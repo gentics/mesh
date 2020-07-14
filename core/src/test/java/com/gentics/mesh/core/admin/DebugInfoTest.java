@@ -88,7 +88,7 @@ public class DebugInfoTest extends AbstractMeshTest {
 	}
 
 	private DebugInfo getDebugInfo(String... includes) throws IOException {
-		grantAdminRole();
+		grantAdmin();
 		MeshBinaryResponse response = client().debugInfo(includes).blockingGet();
 		return new DebugInfo(response);
 	}

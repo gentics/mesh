@@ -53,7 +53,7 @@ public class PluginTypeProvider extends AbstractTypeProvider {
 		return newFieldDefinition().name("plugin").description("Load plugin by id").argument(createIdArg("Id of the plugin."))
 			.type(new GraphQLTypeReference(PLUGIN_TYPE_NAME)).dataFetcher(env -> {
 				GraphQLContext gc = env.getContext();
-				if (!gc.getUser().hasAdminRole()) {
+				if (!gc.getUser().isAdmin()) {
 					return new PermissionException("plugins", "Missing admin permission");
 				}
 				String id = env.getArgument("id");
@@ -78,7 +78,7 @@ public class PluginTypeProvider extends AbstractTypeProvider {
 		return newFieldDefinition().name("plugins").description("Load plugins").argument(createPagingArgs())
 			.type(new GraphQLTypeReference(PLUGIN_PAGE_TYPE_NAME)).dataFetcher(env -> {
 				GraphQLContext gc = env.getContext();
-				if (!gc.getUser().hasAdminRole()) {
+				if (!gc.getUser().isAdmin()) {
 					return new PermissionException("plugins", "Missing admin permission");
 				}
 				Map<String, MeshPlugin> deployments = manager.getPluginsMap();

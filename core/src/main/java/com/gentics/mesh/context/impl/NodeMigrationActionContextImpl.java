@@ -293,11 +293,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public boolean hasAdminRole() {
-				return false;
-			}
-
-			@Override
 			public String getUsername() {
 				return "node_migration";
 			}
@@ -364,6 +359,16 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			@Override
 			public TraversalResult<? extends Group> getGroups() {
 				return new TraversalResult<>(() -> Collections.emptyIterator());
+			}
+
+			@Override
+			public boolean isAdmin() {
+				return true;
+			}
+
+			@Override
+			public void setAdmin(boolean flag) {
+
 			}
 
 			@Override

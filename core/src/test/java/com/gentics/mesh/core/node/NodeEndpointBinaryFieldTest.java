@@ -57,7 +57,7 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 
 	@Before
 	public void setupPerm() {
-		grantAdminRole();
+		grantAdmin();
 	}
 
 	@Test
@@ -188,7 +188,7 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 			SchemaUpdateRequest.class);
 		schemaRequest.getFields().add(FieldUtil.createBinaryFieldSchema("binary"));
 
-		tx(() -> group().addRole(roles().get("admin")));
+		grantAdmin();
 		waitForJobs(() -> {
 			call(() -> client().updateSchema(schemaUuid, schemaRequest));
 		}, COMPLETED, 1);

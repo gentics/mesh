@@ -49,7 +49,7 @@ public class MicroschemaMigrationTest extends AbstractMeshTest {
 
 	@Test
 	public void migrateNewNode() {
-		grantAdminRole();
+		grantAdmin();
 		createTestSchema();
 		createMicroschemas();
 
@@ -62,7 +62,7 @@ public class MicroschemaMigrationTest extends AbstractMeshTest {
 
 	@Test
 	public void migrateUpdatedNode() {
-		grantAdminRole();
+		grantAdmin();
 		createTestSchema();
 		createMicroschemas();
 
@@ -81,7 +81,7 @@ public class MicroschemaMigrationTest extends AbstractMeshTest {
 
 	@Test
 	public void migrateNewNodeNoPurge() {
-		grantAdminRole();
+		grantAdmin();
 		createTestSchema(false);
 		createMicroschemas();
 
@@ -94,7 +94,7 @@ public class MicroschemaMigrationTest extends AbstractMeshTest {
 
 	@Test
 	public void migrateUpdatedNodeNoPurge() {
-		grantAdminRole();
+		grantAdmin();
 		createTestSchema(false);
 		createMicroschemas();
 

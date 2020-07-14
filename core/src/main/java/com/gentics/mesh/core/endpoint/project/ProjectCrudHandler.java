@@ -72,7 +72,7 @@ public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResp
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, (tx) -> {
-				if (!ac.getUser().hasAdminRole()) {
+				if (!ac.getUser().isAdmin()) {
 					throw error(FORBIDDEN, "error_admin_permission_required");
 				}
 				RootVertex<Project> root = getRootVertex(ac);

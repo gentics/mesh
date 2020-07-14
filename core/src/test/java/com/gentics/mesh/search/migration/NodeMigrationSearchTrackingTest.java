@@ -22,7 +22,7 @@ public class NodeMigrationSearchTrackingTest extends AbstractNodeSearchEndpointT
 
 	@Test
 	public void testMigrationRequests() {
-		grantAdminRole();
+		grantAdmin();
 		waitForJob(() -> {
 			waitForSearchIdleEvent(migrateSchema("folder"));
 		});

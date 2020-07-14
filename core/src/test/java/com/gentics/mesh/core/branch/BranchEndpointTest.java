@@ -104,7 +104,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Before
 	public void addAdminPerms() {
 		// Grant admin perms. Otherwise we can't check the jobs
-		tx(() -> group().addRole(roles().get("admin")));
+		grantAdmin();
 	}
 
 	@Override
@@ -910,7 +910,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Test
 	public void testAssignSchemaVersion() throws Exception {
 		// Grant admin perm
-		tx(() -> group().addRole(roles().get("admin")));
+		grantAdmin();
 
 		// create version 1 of a schema
 		SchemaResponse schema = createSchema("schemaname");

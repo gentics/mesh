@@ -23,7 +23,7 @@ public class BranchIndexSyncTest extends AbstractMeshTest {
 
 	@Test
 	public void testSyncWithUnmigratedBranch() {
-		grantAdminRole();
+		grantAdmin();
 
 		// 1. Create second branch
 		waitForJob(() -> {

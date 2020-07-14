@@ -41,7 +41,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 	@Before
 	public void addAdminPerms() {
 		// Grant admin perms. Otherwise we can't check the jobs
-		tx(() -> group().addRole(roles().get("admin")));
+		grantAdmin();
 	}
 
 	@Test

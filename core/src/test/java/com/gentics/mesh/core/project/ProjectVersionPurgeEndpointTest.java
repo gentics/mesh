@@ -36,13 +36,13 @@ public class ProjectVersionPurgeEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testBogusProject() {
-		grantAdminRole();
+		grantAdmin();
 		call(() -> client().purgeProject(userUuid()), NOT_FOUND, "object_not_found_for_uuid", userUuid());
 	}
 
 	@Test
 	public void testPurge() {
-		grantAdminRole();
+		grantAdmin();
 		disableAutoPurge();
 		String nodeUuid = contentUuid();
 		waitForJob(() -> {
@@ -68,7 +68,7 @@ public class ProjectVersionPurgeEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testPurgeWithBefore() throws InterruptedException, ExecutionException {
-		grantAdminRole();
+		grantAdmin();
 		disableAutoPurge();
 		String nodeUuid = contentUuid();
 		String middle = null;

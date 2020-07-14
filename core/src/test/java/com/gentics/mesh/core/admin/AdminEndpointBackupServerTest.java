@@ -22,7 +22,7 @@ public class AdminEndpointBackupServerTest extends AbstractMeshTest {
 	public void testBackupRestore() throws IOException {
 		final String NEW_PROJECT_NAME = "enemenemuh";
 		final String backupDir = testContext.getOptions().getStorageOptions().getBackupDirectory();
-		grantAdminRole();
+		grantAdmin();
 
 		assertFilesInDir(backupDir, 0);
 		GenericMessageResponse message = call(() -> client().invokeBackup());

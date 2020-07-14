@@ -179,11 +179,11 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 			SchemaUpdateRequest.class));
 		request.getField("teaser").setElasticsearch(IndexOptionHelper.getRawFieldOption());
 
-		grantAdminRole();
+		grantAdmin();
 		waitForJob(() -> {
 			call(() -> client().updateSchema(schemaUuid, request));
 		});
-		revokeAdminRole();
+		revokeAdmin();
 	}
 
 }

@@ -22,7 +22,7 @@ public class StringFieldEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testResetAllowField() {
-		grantAdminRole();
+		grantAdmin();
 		final String schemaUuid = tx(() -> schemaContainer("content").getUuid());
 		final String nodeUuid = tx(() -> contentUuid());
 

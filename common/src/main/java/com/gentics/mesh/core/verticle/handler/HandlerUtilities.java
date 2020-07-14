@@ -325,7 +325,7 @@ public class HandlerUtilities {
 
 	public void requiresAdminRole(RoutingContext context) {
 		InternalRoutingActionContextImpl rc = new InternalRoutingActionContextImpl(context);
-		if (database.tx(() -> !rc.getUser().hasAdminRole())) {
+		if (database.tx(() -> !rc.getUser().isAdmin())) {
 			throw error(FORBIDDEN, "error_admin_permission_required");
 		} else {
 			context.next();

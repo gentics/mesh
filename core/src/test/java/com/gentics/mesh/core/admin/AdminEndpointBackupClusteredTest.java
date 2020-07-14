@@ -35,7 +35,7 @@ public class AdminEndpointBackupClusteredTest extends AbstractMeshTest {
 		final String backupDir = testContext.getOptions().getStorageOptions().getBackupDirectory();
 
 		assertFilesInDir(backupDir, 0);
-		grantAdminRole();
+		grantAdmin();
 		GenericMessageResponse message = call(() -> client().invokeBackup());
 		assertThat(message).matches("backup_finished");
 		assertFilesInDir(backupDir, 1);

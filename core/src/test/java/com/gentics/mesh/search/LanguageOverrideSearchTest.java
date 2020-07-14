@@ -56,7 +56,7 @@ public class LanguageOverrideSearchTest extends AbstractMultiESTest {
 
 	@Test
 	public void testIndexCountAfterRemovingSettings() {
-		grantAdminRole();
+		grantAdmin();
 		int originalIndexCount = getIndexCount();
 		SchemaResponse schema = createSchema(loadResourceJsonAsPojo("schemas/languageOverride/page.json", SchemaCreateRequest.class));
 		waitForSearchIdleEvent();
@@ -77,7 +77,7 @@ public class LanguageOverrideSearchTest extends AbstractMultiESTest {
 
 	@Test
 	public void testSchemaMigration() {
-		grantAdminRole();
+		grantAdmin();
 		int originalIndexCount = getIndexCount();
 		SchemaResponse schema = createSchema(loadResourceJsonAsPojo("schemas/languageOverride/page.json", SchemaCreateRequest.class));
 		createContent();
@@ -99,7 +99,7 @@ public class LanguageOverrideSearchTest extends AbstractMultiESTest {
 
 	@Test
 	public void testIndexCountAfterMigratingOldSchema() {
-		grantAdminRole();
+		grantAdmin();
 		int originalIndexCount = getIndexCount();
 		SchemaResponse schema = createSchema(loadResourceJsonAsPojo("schemas/languageOverride/pageNoEs.json", SchemaCreateRequest.class));
 		waitForSearchIdleEvent();

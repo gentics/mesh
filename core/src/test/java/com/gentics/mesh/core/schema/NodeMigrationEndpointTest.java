@@ -86,7 +86,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 	@Before
 	public void setup() {
 		// Grant admin perms. Otherwise we can't check the jobs
-		grantAdminRole();
+		grantAdmin();
 	}
 
 	/**

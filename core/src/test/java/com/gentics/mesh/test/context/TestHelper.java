@@ -681,12 +681,12 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		meshApi().getOptions().getAuthenticationOptions().setEnableAnonymousAccess(false);
 	}
 
-	default void grantAdminRole() {
-		tx(() -> group().addRole(roles().get("admin")));
+	default void grantAdmin() {
+		tx(() -> user().setAdmin(true));
 	}
 
-	default void revokeAdminRole() {
-		tx(() -> group().removeRole(roles().get("admin")));
+	default void revokeAdmin() {
+		tx(() -> user().setAdmin(false));
 	}
 
 	default void assertFilesInDir(String path, long expectedCount) {

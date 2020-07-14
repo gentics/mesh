@@ -134,12 +134,12 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
 
 		// Wait for migration to complete
-		tx(() -> group().addRole(roles().get("admin")));
+		grantAdmin();
 		waitForJobs(() -> {
 			call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, db().tx(() -> project().getLatestBranch().getUuid()),
 				new SchemaReferenceImpl().setUuid(updatedSchema.getUuid()).setVersion(updatedSchema.getVersion())));
 		}, COMPLETED, 1);
-		tx(() -> group().removeRole(roles().get("admin")));
+		revokeAdmin();
 
 		waitForSearchIdleEvent();
 

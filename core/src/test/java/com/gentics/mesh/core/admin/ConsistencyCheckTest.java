@@ -49,7 +49,7 @@ public class ConsistencyCheckTest extends AbstractMeshTest {
 
 	@Test
 	public void testConsistencyRepair() {
-		grantAdminRole();
+		grantAdmin();
 
 		ConsistencyCheckResponse response = call(() -> client().checkConsistency());
 		assertThat(response.getInconsistencies()).isEmpty();

@@ -778,7 +778,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		String uuid = projectUuid();
 		String branchName = "Branch_V1";
 
-		tx(() -> group().addRole(roles().get("admin")));
+		grantAdmin();
 
 		BranchCreateRequest request = new BranchCreateRequest();
 		request.setName(branchName);

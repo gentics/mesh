@@ -70,7 +70,7 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testDeleteLastLanguageFromNode() throws Exception {
-		grantAdminRole();
+		grantAdmin();
 		Node node = folder("news");
 		String branchName = "newBranch";
 
@@ -171,7 +171,7 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testDeleteNodeFromRelease() {
-		grantAdminRole();
+		grantAdmin();
 		final String schemaUuid = tx(() -> schemaContainer("content").getUuid());
 		final String parentNodeUuid = tx(() -> folder("news").getUuid());
 		final String SECOND_BRANCH_NAME = "branch2";
@@ -328,7 +328,7 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 	@Test
 	@Ignore
 	public void testDeleteRecursiveFromBranch2() throws InterruptedException {
-		grantAdminRole();
+		grantAdmin();
 		String newsFolderUuid = tx(() -> folder("news").getUuid());
 
 		List<String> uuids = new ArrayList<>();
@@ -437,7 +437,7 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testDeleteRecursiveFromBranch() {
-		grantAdminRole();
+		grantAdmin();
 		String newsFolderUuid = tx(() -> folder("news").getUuid());
 		String branchedNodeUuid = tx(() -> content("concorde").getUuid());
 		String nodeInBoth = createNode(null, newsFolderUuid, "root", initialBranchUuid(), false).getUuid();

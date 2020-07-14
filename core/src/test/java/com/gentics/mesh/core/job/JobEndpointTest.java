@@ -37,7 +37,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 		call(() -> client().findJobs(), FORBIDDEN, "error_admin_permission_required");
 
-		tx(() -> group().addRole(roles().get("admin")));
+		grantAdmin();
 
 		JobListResponse jobList = call(() -> client().findJobs());
 		assertThat(jobList.getData()).isEmpty();
@@ -70,7 +70,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 		call(() -> client().deleteJob(jobUuid), FORBIDDEN, "error_admin_permission_required");
 
-		tx(() -> group().addRole(roles().get("admin")));
+		grantAdmin();
 
 		call(() -> client().deleteJob(jobUuid), BAD_REQUEST, "job_error_invalid_state", jobUuid);
 
@@ -94,7 +94,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 			return job.getUuid();
 		});
 
-		tx(() -> group().addRole(roles().get("admin")));
+		grantAdmin();
 
 		waitForJob(() -> {
 			GenericMessageResponse msg = call(() -> client().invokeJobProcessing());
@@ -111,8 +111,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testLoadBogusJob() {
-		tx(() -> group().addRole(roles().get("admin")));
-
+		grantAdmin();
 		call(() -> client().findJobByUuid("bogus"), NOT_FOUND, "object_not_found_for_uuid", "bogus");
 	}
 
@@ -122,8 +121,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 		call(() -> client().invokeJobProcessing(), FORBIDDEN, "error_admin_permission_required");
 
-		tx(() -> group().addRole(roles().get("admin")));
-
+		grantAdmin();
 		JobResponse response = waitForJob(() -> {
 			GenericMessageResponse message = call(() -> client().invokeJobProcessing());
 			assertThat(message).matches("job_processing_invoked");
@@ -151,7 +149,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 			return job.getUuid();
 		});
 
-		tx(() -> group().addRole(roles().get("admin")));
+		grantAdmin();
 
 		JobResponse jobResponse = call(() -> client().findJobByUuid(job3Uuid));
 		try (Tx tx = tx()) {
@@ -177,7 +175,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 		call(() -> client().resetJob(jobUuid), FORBIDDEN, "error_admin_permission_required");
 
-		grantAdminRole();
+		grantAdmin();
 
 		triggerAndWaitForJob(jobUuid, FAILED);
 
@@ -198,7 +196,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 		call(() -> client().processJob(jobUuid), FORBIDDEN, "error_admin_permission_required");
 
-		grantAdminRole();
+		grantAdmin();
 
 		triggerAndWaitForJob(jobUuid, FAILED);
 
@@ -222,7 +220,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testJobStatusWithNoMigrationRunning() {
-		tx(() -> group().addRole(roles().get("admin")));
+		grantAdmin();
 		JobListResponse status = call(() -> client().findJobs());
 		assertEquals(0, status.getMetainfo().getTotalCount());
 	}

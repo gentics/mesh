@@ -79,9 +79,9 @@ public class AdminIndexHandler {
 	}
 
 	public void handleSync(InternalActionContext ac) {
-		db.asyncTx(() -> Single.just(ac.getUser().hasAdminRole()))
-			.subscribe(hasAdminRole -> {
-				if (hasAdminRole) {
+		db.asyncTx(() -> Single.just(ac.getUser().isAdmin()))
+			.subscribe(isAdmin -> {
+				if (isAdmin) {
 					SyncEventHandler.invokeSync(vertx);
 					ac.send(message(ac, "search_admin_index_sync_invoked"), OK);
 				} else {
@@ -91,8 +91,8 @@ public class AdminIndexHandler {
 	}
 
 	public void handleClear(InternalActionContext ac) {
-		db.asyncTx(() -> Single.just(ac.getUser().hasAdminRole())).flatMapCompletable(hasAdminRole -> {
-			if (hasAdminRole) {
+		db.asyncTx(() -> Single.just(ac.getUser().isAdmin())).flatMapCompletable(isAdmin -> {
+			if (isAdmin) {
 				return searchProvider.clear()
 					.andThen(Observable.fromIterable(registry.getHandlers())
 					.flatMapCompletable(handler -> handler.init()));

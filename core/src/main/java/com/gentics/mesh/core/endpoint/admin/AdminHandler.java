@@ -114,7 +114,7 @@ public class AdminHandler extends AbstractHandler {
 	 */
 	public void handleBackup(InternalActionContext ac) {
 		utils.syncTx(ac, tx -> {
-			if (!ac.getUser().hasAdminRole()) {
+			if (!ac.getUser().isAdmin()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
 			backup();
@@ -169,7 +169,7 @@ public class AdminHandler extends AbstractHandler {
 		}
 
 		db.tx((tx) -> {
-			if (!ac.getUser().hasAdminRole()) {
+			if (!ac.getUser().isAdmin()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
 		});
@@ -221,7 +221,7 @@ public class AdminHandler extends AbstractHandler {
 	 */
 	public void handleExport(InternalActionContext ac) {
 		utils.syncTx(ac, tx -> {
-			if (!ac.getUser().hasAdminRole()) {
+			if (!ac.getUser().isAdmin()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
 			String exportDir = options.getStorageOptions().getExportDirectory();
@@ -240,7 +240,7 @@ public class AdminHandler extends AbstractHandler {
 	 */
 	public void handleImport(InternalActionContext ac) {
 		db.tx(tx -> {
-			if (!ac.getUser().hasAdminRole()) {
+			if (!ac.getUser().isAdmin()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
 		});
@@ -265,7 +265,7 @@ public class AdminHandler extends AbstractHandler {
 	public void handleClusterStatus(InternalActionContext ac) {
 		utils.syncTx(ac, tx -> {
 			User user = ac.getUser();
-			if (user != null && !user.hasAdminRole()) {
+			if (user != null && !user.isAdmin()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
 			if (options.getClusterOptions() != null && options.getClusterOptions().isEnabled()) {
@@ -311,7 +311,7 @@ public class AdminHandler extends AbstractHandler {
 	public void handleLoadClusterConfig(InternalActionContext ac) {
 		utils.syncTx(ac, tx -> {
 			User user = ac.getUser();
-			if (user != null && !user.hasAdminRole()) {
+			if (user != null && !user.isAdmin()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
 			return db.loadClusterConfig();
@@ -322,7 +322,7 @@ public class AdminHandler extends AbstractHandler {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				User user = ac.getUser();
-				if (user != null && !user.hasAdminRole()) {
+				if (user != null && !user.isAdmin()) {
 					throw error(FORBIDDEN, "error_admin_permission_required");
 				}
 				ClusterConfigRequest request = ac.fromJson(ClusterConfigRequest.class);
@@ -335,7 +335,7 @@ public class AdminHandler extends AbstractHandler {
 	public void handleLoadCoordinationMaster(InternalActionContext ac) {
 		utils.syncTx(ac, tx -> {
 			User user = ac.getUser();
-			if (user != null && !user.hasAdminRole()) {
+			if (user != null && !user.isAdmin()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
 			MasterServer master = coordinator.getMasterMember();
@@ -350,7 +350,7 @@ public class AdminHandler extends AbstractHandler {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				User user = ac.getUser();
-				if (user != null && !user.hasAdminRole()) {
+				if (user != null && !user.isAdmin()) {
 					throw error(FORBIDDEN, "error_admin_permission_required");
 				}
 				if (coordinator.isElectable()) {
@@ -373,7 +373,7 @@ public class AdminHandler extends AbstractHandler {
 	public void handleLoadCoordinationConfig(InternalActionContext ac) {
 		utils.syncTx(ac, tx -> {
 			User user = ac.getUser();
-			if (user != null && !user.hasAdminRole()) {
+			if (user != null && !user.isAdmin()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
 			return coordinator.loadConfig();
@@ -384,7 +384,7 @@ public class AdminHandler extends AbstractHandler {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				User user = ac.getUser();
-				if (user != null && !user.hasAdminRole()) {
+				if (user != null && !user.isAdmin()) {
 					throw error(FORBIDDEN, "error_admin_permission_required");
 				}
 				CoordinatorConfig request = ac.fromJson(CoordinatorConfig.class);

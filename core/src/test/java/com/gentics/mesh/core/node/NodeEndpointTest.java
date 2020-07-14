@@ -98,7 +98,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Before
 	public void addAdminPerms() {
 		// Grant admin perms. Otherwise we can't check the jobs
-		grantAdminRole();
+		grantAdmin();
 	}
 
 	@Test
