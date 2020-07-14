@@ -69,12 +69,6 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		super(elasticsearch);
 	}
 
-	@Before
-	public void addAdminPerms() {
-		// Grant admin perms. Otherwise we can't check the jobs
-		grantAdmin();
-	}
-
 	@Test
 	public void testUpdateName() throws GenericRestException, Exception {
 		String name = "new_name";

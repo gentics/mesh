@@ -395,7 +395,6 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		SchemaUpdateRequest request = JsonUtil.readValue(json, SchemaUpdateRequest.class);
 		request.setUrlFields("slug");
 
-		grantAdmin();
 		waitForJob(() -> {
 			call(() -> client().updateSchema(uuid, request));
 		});
@@ -403,7 +402,6 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 	@Test
 	public void testSetAutoPurgeToNull() {
-		grantAdmin();
 		String schemaUuid = tx(() -> schemaContainer("folder").getUuid());
 		SchemaResponse response = call(() -> client().findSchemaByUuid(schemaUuid));
 		assertNull(response.getAutoPurge());

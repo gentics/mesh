@@ -94,6 +94,7 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 		Node node = prepareSchema();
 
 		// Only grant read_published perm
+		revokeAdmin();
 		try (Tx tx = tx()) {
 			role().revokePermissions(node, READ_PERM);
 			role().grantPermissions(node, READ_PUBLISHED_PERM);

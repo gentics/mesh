@@ -56,7 +56,6 @@ public class LanguageOverrideSearchTest extends AbstractMultiESTest {
 
 	@Test
 	public void testIndexCountAfterRemovingSettings() {
-		grantAdmin();
 		int originalIndexCount = getIndexCount();
 		SchemaResponse schema = createSchema(loadResourceJsonAsPojo("schemas/languageOverride/page.json", SchemaCreateRequest.class));
 		waitForSearchIdleEvent();

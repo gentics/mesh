@@ -426,8 +426,10 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 	@Test
 	public void testCreateWithoutBaseBranch() {
+		grantAdmin();
 		Branch latest = createBranch("Latest", true);
 
+		grantAdmin();
 		BranchCreateRequest request = new BranchCreateRequest();
 		request.setName("New Branch");
 		Branch created = createBranch(request);
@@ -446,6 +448,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		BranchCreateRequest request = new BranchCreateRequest();
 		request.setName("New Branch");
 		request.setBaseBranch(new BranchReference().setUuid(baseUuid));
+		grantAdmin();
 		Branch created = createBranch(request);
 
 		tx(() -> {
@@ -462,6 +465,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		BranchCreateRequest request = new BranchCreateRequest();
 		request.setName("New Branch");
 		request.setBaseBranch(new BranchReference().setName(baseName));
+		grantAdmin();
 		Branch created = createBranch(request);
 
 		tx(() -> {
@@ -553,6 +557,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Test
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
+		revokeAdmin();
 		try (Tx tx = tx()) {
 			role().revokePermissions(project().getInitialBranch(), READ_PERM);
 			tx.success();
@@ -605,6 +610,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 			thirdBranch = project.getBranchRoot().create("Three", user(), batch);
 			tx.success();
 		}
+		revokeAdmin();
 		try (Tx tx = tx()) {
 			role().revokePermissions(firstBranch, READ_PERM);
 			role().revokePermissions(thirdBranch, READ_PERM);
@@ -670,6 +676,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Test
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
+		revokeAdmin();
 		try (Tx tx = tx()) {
 			role().revokePermissions(project().getInitialBranch(), UPDATE_PERM);
 			tx.success();
@@ -801,6 +808,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 	@Test
 	public void testSetLatestNoPerm() {
+		revokeAdmin();
 		try (Tx tx = tx()) {
 			role().revokePermissions(project().getInitialBranch(), UPDATE_PERM);
 			tx.success();
@@ -1039,6 +1047,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 	@Test
 	public void testAssignSchemaVersionNoPermission() throws Exception {
+		revokeAdmin();
 		try (Tx tx = tx()) {
 			Project project = project();
 			role().revokePermissions(project.getInitialBranch(), UPDATE_PERM);
@@ -1234,6 +1243,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 	@Test
 	public void testAssignMicroschemaVersionNoPermission() throws Exception {
+		revokeAdmin();
 		try (Tx tx = tx()) {
 			Project project = project();
 			role().revokePermissions(project.getInitialBranch(), UPDATE_PERM);

@@ -42,7 +42,6 @@ public class ProjectVersionPurgeEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testPurge() {
-		grantAdmin();
 		disableAutoPurge();
 		String nodeUuid = contentUuid();
 		waitForJob(() -> {
@@ -61,7 +60,9 @@ public class ProjectVersionPurgeEndpointTest extends AbstractMeshTest {
 
 		// Now only D I and P must remain.
 		waitForJob(() -> {
-			call(() -> client().purgeProject(projectUuid()));
+			runAsAdmin(() -> {
+				call(() -> client().purgeProject(projectUuid()));
+			});
 		});
 		assertVersions(nodeUuid, "en", "D(1.5)=>P(1.0)=>I(0.1)");
 	}

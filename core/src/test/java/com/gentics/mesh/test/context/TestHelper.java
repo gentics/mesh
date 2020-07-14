@@ -45,6 +45,7 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
+import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
@@ -106,20 +107,8 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return data().getUserInfo().getUser().reframe(MeshAuthUserImpl.class);
 	}
 
-	default User user() {
-		return data().user();
-	}
-
 	default Role anonymousRole() {
 		return data().getAnonymousRole();
-	}
-
-	@Override
-	default Branch createBranch(String name, boolean latest) {
-		grantAdmin();
-		Branch branch = ClientHelper.super.createBranch(name, latest);
-		revokeAdmin();
-		return branch;
 	}
 
 	default MeshRoot meshRoot() {
@@ -688,14 +677,6 @@ public interface TestHelper extends EventHelper, ClientHelper {
 
 	default void disableAnonymousAccess() {
 		meshApi().getOptions().getAuthenticationOptions().setEnableAnonymousAccess(false);
-	}
-
-	default void grantAdmin() {
-		tx(() -> user().setAdmin(true));
-	}
-
-	default void revokeAdmin() {
-		tx(() -> user().setAdmin(false));
 	}
 
 	default void assertFilesInDir(String path, long expectedCount) {

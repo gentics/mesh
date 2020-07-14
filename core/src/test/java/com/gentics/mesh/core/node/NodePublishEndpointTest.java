@@ -48,11 +48,6 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true)
 public class NodePublishEndpointTest extends AbstractMeshTest {
-	@Before
-	public void addAdminPerms() {
-		// Grant admin perms. Otherwise we can't check the jobs
-		grantAdmin();
-	}
 
 	/**
 	 * Folder /news/2015 is not published. A new node will be created in folder 2015. Publishing the created folder should fail since the parent folder

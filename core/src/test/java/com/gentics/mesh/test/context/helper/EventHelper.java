@@ -9,6 +9,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -145,6 +146,37 @@ public interface EventHelper extends BaseHelper {
 	}
 
 	/**
+	 * Run the given action with admin permissions enabled.
+	 * 
+	 * @param action
+	 * @throws Exception
+	 */
+	default <T> T runAsAdmin(Supplier<T> action) {
+		boolean isAdmin = tx(() -> user().isAdmin());
+		// Grant perms to check the job
+		if (!isAdmin) {
+			grantAdmin();
+		}
+		T t = action.get();
+		if (isAdmin) {
+			revokeAdmin();
+		}
+		return t;
+	}
+
+	default void runAsAdmin(Runnable action) {
+		boolean isAdmin = tx(() -> user().isAdmin());
+		// Grant perms to check the job
+		if (!isAdmin) {
+			grantAdmin();
+		}
+		action.run();
+		if (isAdmin) {
+			revokeAdmin();
+		}
+	}
+
+	/**
 	 * Execute the action and check that the jobs are executed and yields the given status.
 	 *
 	 * @param action
@@ -156,8 +188,11 @@ public interface EventHelper extends BaseHelper {
 	 * @return Migration status
 	 */
 	default JobListResponse waitForJobs(Runnable action, JobStatus status, int expectedJobs) {
+
 		// Load a status just before the action
-		JobListResponse before = call(() -> client().findJobs());
+		JobListResponse before = runAsAdmin(() -> {
+			return call(() -> client().findJobs());
+		});
 
 		// Invoke the action
 		action.run();
@@ -165,7 +200,9 @@ public interface EventHelper extends BaseHelper {
 		// Now poll the migration status and check the response
 		final int MAX_WAIT = 120;
 		for (int i = 0; i < MAX_WAIT; i++) {
-			JobListResponse response = call(() -> client().findJobs());
+
+			JobListResponse response = runAsAdmin(() -> call(() -> client().findJobs()));
+
 			if (response.getMetainfo().getTotalCount() == before.getMetainfo().getTotalCount() + expectedJobs) {
 				if (status != null) {
 					boolean allMatching = true;

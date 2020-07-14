@@ -117,7 +117,6 @@ public class NodeBinaryDisabledSearchTest extends AbstractNodeSearchEndpointTest
 
 	@Test
 	public void testDocumentSearch() throws Exception {
-		grantAdmin();
 		Node nodeA = content("concorde");
 		String nodeUuid = tx(() -> nodeA.getUuid());
 		String contentSchemaUuid = tx(() -> schemaContainer("content").getUuid());
