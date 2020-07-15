@@ -101,12 +101,6 @@ import static org.junit.Assert.assertNotNull;
 @MeshTestSetting(testSize = FULL, startServer = true)
 public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
 
-	@Before
-	public void addAdminPerms() {
-		// Grant admin perms. Otherwise we can't check the jobs
-		grantAdmin();
-	}
-
 	@Override
 	public void testUpdateMultithreaded() throws Exception {
 		// TODO Auto-generated method stub
@@ -982,7 +976,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		}, COMPLETED, 1);
 		awaitEvents();
 
-		JobListResponse jobList = call(() -> client().findJobs());
+		JobListResponse jobList = adminCall(() -> client().findJobs());
 		JobResponse job = jobList.getData().stream().filter(j -> j.getProperties().get("schemaUuid").equals(schema.getUuid())).findAny().get();
 
 		BranchInfoSchemaList schemaList = call(() -> client().getBranchSchemaVersions(PROJECT_NAME, initialBranchUuid()));

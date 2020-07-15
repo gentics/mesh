@@ -233,7 +233,7 @@ public interface EventHelper extends BaseHelper {
 
 	default void waitForLatestJob(Runnable action, JobStatus status) {
 		// Load a status just before the action
-		JobListResponse before = call(() -> client().findJobs());
+		JobListResponse before = runAsAdmin(() -> call(() -> client().findJobs()));
 
 		// Invoke the action
 		action.run();
@@ -241,7 +241,7 @@ public interface EventHelper extends BaseHelper {
 		// Now poll the migration status and check the response
 		final int MAX_WAIT = 120;
 		for (int i = 0; i < MAX_WAIT; i++) {
-			JobListResponse response = call(() -> client().findJobs());
+			JobListResponse response = runAsAdmin(() -> call(() -> client().findJobs()));
 			List<JobResponse> diff = TestUtils.difference(response.getData(), before.getData(), JobResponse::getUuid);
 			if (diff.size() > 1) {
 				System.out.println(response.toJson());
@@ -281,7 +281,7 @@ public interface EventHelper extends BaseHelper {
 		// Now poll the migration status and check the response
 		final int MAX_WAIT = 120;
 		for (int i = 0; i < MAX_WAIT; i++) {
-			JobResponse response = call(() -> client().findJobByUuid(jobUuid));
+			JobResponse response = runAsAdmin(() -> call(() -> client().findJobByUuid(jobUuid)));
 
 			if (response.getStatus().equals(status)) {
 				return response;
@@ -325,7 +325,7 @@ public interface EventHelper extends BaseHelper {
 		waitForJob(() -> {
 			MeshEvent.triggerJobWorker(meshApi());
 		}, jobUuid, status);
-		return call(() -> client().findJobs());
+		return runAsAdmin(() -> call(() -> client().findJobs()));
 	}
 
 	default void triggerAndWaitForAllJobs(JobStatus expectedStatus) {
@@ -334,7 +334,7 @@ public interface EventHelper extends BaseHelper {
 		// Now poll the migration status and check the response
 		final int MAX_WAIT = 120;
 		for (int i = 0; i < MAX_WAIT; i++) {
-			JobListResponse response = call(() -> client().findJobs(new PagingParametersImpl().setPerPage(200L)));
+			JobListResponse response = runAsAdmin(() -> call(() -> client().findJobs(new PagingParametersImpl().setPerPage(200L))));
 
 			boolean allDone = true;
 			for (JobResponse info : response.getData()) {
