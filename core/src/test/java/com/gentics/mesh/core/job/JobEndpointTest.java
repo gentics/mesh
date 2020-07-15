@@ -54,7 +54,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 			boot().jobRoot().enqueueBranchMigration(user(), initialBranch());
 		});
 
-		jobList = call(() -> client().findJobs());
+		jobList = runAsAdmin(() -> call(() -> client().findJobs()));
 		JobResponse job = jobList.getData().get(1);
 		assertThat(job.getProperties()).doesNotContainKey("microschemaUuid");
 		assertThat(job.getProperties()).doesNotContainKey("microschemaName");
@@ -204,7 +204,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 		assertNotNull(jobResonse.getErrorMessage());
 
 		// Change the job so that it will no longer fail
-		tx(()-> {
+		tx(() -> {
 			Branch branch = project().getBranchRoot().create("testBranch", user(), null, true, initialBranch(), createBatch());
 			job.setBranch(branch);
 		});

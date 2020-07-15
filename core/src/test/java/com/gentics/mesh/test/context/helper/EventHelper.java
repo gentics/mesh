@@ -158,7 +158,7 @@ public interface EventHelper extends BaseHelper {
 			grantAdmin();
 		}
 		T t = action.get();
-		if (isAdmin) {
+		if (!isAdmin) {
 			revokeAdmin();
 		}
 		return t;
@@ -171,7 +171,7 @@ public interface EventHelper extends BaseHelper {
 			grantAdmin();
 		}
 		action.run();
-		if (isAdmin) {
+		if (!isAdmin) {
 			revokeAdmin();
 		}
 	}
