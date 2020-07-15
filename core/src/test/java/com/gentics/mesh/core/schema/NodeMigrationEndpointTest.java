@@ -788,7 +788,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			"text2_value");
 
 		triggerAndWaitForAllJobs(COMPLETED);
-		JobListResponse status = call(() -> client().findJobs());
+		JobListResponse status = adminCall(() -> client().findJobs());
 		assertThat(status).listsAll(COMPLETED).hasInfos(1);
 
 		assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, draftResponse.getUuid()))).hasStringField("text", "text2_value").hasVersion("2.1")
@@ -874,7 +874,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, draftResponse.getUuid()))).hasVersion("2.0").hasStringField("text", "text_value")
 			.hasSchemaVersion("dummy", "2.0");
 
-		JobListResponse status = call(() -> client().findJobs());
+		JobListResponse status = adminCall(() -> client().findJobs());
 		assertThat(status).listsAll(COMPLETED).hasInfos(1);
 
 		// Assert that the draft and publish version both have version 2.0 since they share the same NGFC.
@@ -1109,7 +1109,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 				newFieldName).getString()).as("Migrated field value").isEqualTo("third content");
 		}
 
-		JobListResponse status = call(() -> client().findJobs());
+		JobListResponse status = adminCall(() -> client().findJobs());
 		assertThat(status).listsAll(COMPLETED).hasInfos(1);
 
 	}
@@ -1217,7 +1217,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 				"firstName").getString()).as("Not migrated field value").isEqualTo("Max");
 		}
 
-		JobListResponse status = call(() -> client().findJobs());
+		JobListResponse status = adminCall(() -> client().findJobs());
 		assertThat(status).listsAll(COMPLETED).hasInfos(1);
 
 	}
