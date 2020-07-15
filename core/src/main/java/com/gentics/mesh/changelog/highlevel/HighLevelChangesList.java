@@ -9,6 +9,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.changelog.highlevel.change.ExtractPlainText;
 import com.gentics.mesh.changelog.highlevel.change.FixNodeVersionOrder;
 import com.gentics.mesh.changelog.highlevel.change.RestructureWebrootIndex;
+import com.gentics.mesh.changelog.highlevel.change.SetAdminUserFlag;
 import com.gentics.mesh.core.data.changelog.HighLevelChange;
 
 /**
@@ -27,6 +28,9 @@ public class HighLevelChangesList {
 	public FixNodeVersionOrder fixNodeVersionOrder;
 
 	@Inject
+	public SetAdminUserFlag setAdminUserFlag;
+
+	@Inject
 	public HighLevelChangesList() {
 	}
 
@@ -34,7 +38,8 @@ public class HighLevelChangesList {
 		return Arrays.asList(
 			restructureWebroot,
 			plainText,
-			fixNodeVersionOrder
+			fixNodeVersionOrder,
+			setAdminUserFlag
 		// ADD NEW CHANGES HERE!
 		);
 	}
