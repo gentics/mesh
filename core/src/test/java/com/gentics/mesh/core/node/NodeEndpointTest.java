@@ -27,6 +27,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
@@ -42,7 +43,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -95,11 +95,6 @@ import io.vertx.core.logging.LoggerFactory;
 
 @MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true)
 public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
-	@Before
-	public void addAdminPerms() {
-		// Grant admin perms. Otherwise we can't check the jobs
-		grantAdminRole();
-	}
 
 	@Test
 	public void testCreateNodeWithNoLanguageCode() {

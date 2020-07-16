@@ -20,7 +20,10 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
+import com.gentics.mesh.rest.client.MeshRestClientMessageException;
+import com.gentics.mesh.test.context.ClientHandler;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -137,6 +140,19 @@ public interface ClientHelper extends EventHelper {
 		request.setSchemaName("binary_content");
 		request.setParentNodeUuid(parentUuid);
 		return client().createNode(uuid, PROJECT_NAME, request).toSingle();
+	}
+
+	default <T> MeshRestClientMessageException adminCall(ClientHandler<T> handler, HttpResponseStatus status, String bodyMessageI18nKey,
+		String... i18nParams) {
+		return runAsAdmin(() -> {
+			return com.gentics.mesh.test.ClientHelper.call(handler, status, bodyMessageI18nKey, i18nParams);
+		});
+	}
+
+	default <T> T adminCall(ClientHandler<T> handler) {
+		return runAsAdmin(() -> {
+			return com.gentics.mesh.test.ClientHelper.call(handler);
+		});
 	}
 
 }

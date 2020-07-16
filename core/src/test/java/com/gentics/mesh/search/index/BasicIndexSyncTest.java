@@ -52,7 +52,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 	@Test
 	@Ignore("Fails on CI pipeline. See https://github.com/gentics/mesh/issues/608")
 	public void testIndexSyncLock() throws Exception {
-		grantAdminRole();
+		grantAdmin();
 		tx(() -> {
 			for (int i = 0; i < 900; i++) {
 				boot().groupRoot().create("group_" + i, user(), null);
@@ -66,14 +66,14 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 	@Test
 	public void testNoPermSync() {
-		revokeAdminRole();
+		revokeAdmin();
 		call(() -> client().invokeIndexSync(), FORBIDDEN, "error_admin_permission_required");
 	}
 
 	@Test
 	public void testResync() throws Exception {
 		// Add the user to the admin group - this way the user is in fact an admin.
-		grantAdminRole();
+		grantAdmin();
 		searchProvider().refreshIndex().blockingAwait();
 
 		waitForEvent(INDEX_SYNC_FINISHED, () -> {

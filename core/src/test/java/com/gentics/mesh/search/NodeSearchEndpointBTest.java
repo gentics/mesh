@@ -132,7 +132,7 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchDraftInBranch() throws Exception {
-		grantAdminRole();
+		grantAdmin();
 		recreateIndices();
 
 		NodeResponse concorde = call(() -> client().findNodeByUuid(PROJECT_NAME, db().tx(() -> content("concorde").getUuid()),

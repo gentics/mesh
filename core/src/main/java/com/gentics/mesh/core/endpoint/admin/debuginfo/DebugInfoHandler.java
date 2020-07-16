@@ -42,7 +42,7 @@ public class DebugInfoHandler {
 
 	public void handle(RoutingContext ac) {
 		InternalRoutingActionContextImpl iac = new InternalRoutingActionContextImpl(ac);
-		if (db.tx(() -> !iac.getUser().hasAdminRole())) {
+		if (db.tx(() -> !iac.getUser().isAdmin())) {
 			throw error(FORBIDDEN, "error_admin_permission_required");
 		}
 		setHeaders(ac);

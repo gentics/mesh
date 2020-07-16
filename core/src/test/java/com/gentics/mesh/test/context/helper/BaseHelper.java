@@ -8,6 +8,7 @@ import com.gentics.madl.tx.TxAction2;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
@@ -39,6 +40,18 @@ public interface BaseHelper {
 
 	default TestDataProvider data() {
 		return getTestContext().getData();
+	}
+
+	default User user() {
+		return data().user();
+	}
+
+	default void grantAdmin() {
+		tx(() -> user().setAdmin(true));
+	}
+
+	default void revokeAdmin() {
+		tx(() -> user().setAdmin(false));
 	}
 
 	/**

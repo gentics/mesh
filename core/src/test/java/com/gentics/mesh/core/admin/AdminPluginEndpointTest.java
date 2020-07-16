@@ -39,23 +39,23 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 
 	@Test
 	public void testDeployPluginMissingPermission() throws IOException {
-		revokeAdminRole();
+		revokeAdmin();
 		copyAndDeploy(BASIC_PATH, "plugin.jar", FORBIDDEN, "error_admin_permission_required");
 	}
 
 	@Test
 	public void testReadPluginMissingPermission() throws IOException {
-		grantAdminRole();
+		grantAdmin();
 		PluginResponse deployment = copyAndDeploy(BASIC_PATH, "plugin.jar");
 
-		revokeAdminRole();
+		revokeAdmin();
 		String id = deployment.getId();
 		call(() -> client().findPlugin(id), FORBIDDEN, "error_admin_permission_required");
 	}
 
 	@Test
 	public void testNonPluginDeployment() throws IOException {
-		grantAdminRole();
+		grantAdmin();
 		String name = "non-mesh.jar";
 
 		int before = meshApi().pluginIds().size();
@@ -67,24 +67,24 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 
 	@Test
 	public void testUndeployPluginMissingPermission() throws IOException {
-		grantAdminRole();
+		grantAdmin();
 		PluginResponse deployment = copyAndDeploy(BASIC_PATH, "plugin.jar");
 
-		revokeAdminRole();
+		revokeAdmin();
 		String id = deployment.getId();
 		call(() -> client().undeployPlugin(id), FORBIDDEN, "error_admin_permission_required");
 	}
 
 	@Test
 	public void testUndeployBogusPlugin() {
-		grantAdminRole();
+		grantAdmin();
 		String id = "bogus";
 		call(() -> client().undeployPlugin(id), NOT_FOUND, "object_not_found_for_uuid", id);
 	}
 
 	@Test
 	public void testReadPluginListMissingPermission() {
-		revokeAdminRole();
+		revokeAdmin();
 		call(() -> client().findPlugins(), FORBIDDEN, "error_admin_permission_required");
 	}
 
@@ -95,7 +95,7 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 	 */
 	@Test
 	public void testDeployPlugin() throws IOException {
-		grantAdminRole();
+		grantAdmin();
 
 		PluginResponse deployment = copyAndDeploy(BASIC_PATH, "basic-plugin.jar");
 		assertEquals("basic", deployment.getId());
@@ -122,7 +122,7 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 
 	@Test
 	public void testPluginList() throws IOException {
-		grantAdminRole();
+		grantAdmin();
 		PluginResponse response = copyAndDeploy(BASIC_PATH, "plugin.jar");
 		assertEquals(1, pluginManager().getPluginIds().size());
 
@@ -161,7 +161,7 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 
 	@Test
 	public void testStaticHandler() throws IOException {
-		grantAdminRole();
+		grantAdmin();
 
 		copyAndDeploy(BASIC_PATH, "plugin.jar");
 		copyAndDeploy(BASIC2_PATH, "plugin2.jar");
@@ -175,7 +175,7 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 
 	@Test
 	public void testClassLoaderHandling() throws IOException {
-		grantAdminRole();
+		grantAdmin();
 
 		copyAndDeploy(CLASSLOADER_PATH, "plugin.jar");
 		waitForPluginRegistration();
@@ -196,7 +196,7 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 			.setVersion(null);
 		ManifestInjectorPlugin.apiName = "api";
 
-		grantAdminRole();
+		grantAdmin();
 		deployPlugin(ManifestInjectorPlugin.class, "inject", BAD_REQUEST, "admin_plugin_error_validation_failed_field_missing", "version");
 	}
 
@@ -212,7 +212,7 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 			.setVersion("1.0");
 		ManifestInjectorPlugin.apiName = "api with spaces";
 
-		grantAdminRole();
+		grantAdmin();
 
 		deployPlugin(ManifestInjectorPlugin.class, "injector", BAD_REQUEST, "admin_plugin_error_validation_failed_apiname_invalid", "injector");
 
@@ -225,7 +225,7 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 
 	@Test
 	public void testMultipleDeployments() throws IOException {
-		grantAdminRole();
+		grantAdmin();
 
 		for (int i = 1; i <= 100; i++) {
 			deployPlugin(ClonePlugin.class, "clone" + i);
@@ -247,7 +247,7 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 
 	@Test
 	public void testDuplicateDeployment() throws IOException {
-		grantAdminRole();
+		grantAdmin();
 
 		copyAndDeploy(BASIC_PATH, "plugin.jar");
 		assertEquals(1, pluginManager().getPluginIds().size());
@@ -260,7 +260,7 @@ public class AdminPluginEndpointTest extends AbstractPluginTest {
 
 	@Test
 	public void testExtensionHandling() throws IOException {
-		grantAdminRole();
+		grantAdmin();
 
 		copyAndDeploy(EXTENSION_CONSUMER_PATH, "extension-consumer.jar");
 		copyAndDeploy(EXTENSION_PROVIDER_PATH, "extension-provider.jar");

@@ -39,6 +39,9 @@ public class UserUpdateRequest implements RestModel {
 	@JsonPropertyDescription("When true, the user needs to change their password on the next login.")
 	private Boolean forcedPasswordChange;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Flag which indicates whether the user is an admin.")
+	private Boolean admin;
 
 	public UserUpdateRequest() {
 	}
@@ -204,6 +207,24 @@ public class UserUpdateRequest implements RestModel {
 	public UserUpdateRequest setForcedPasswordChange(Boolean forcedPasswordChange) {
 		this.forcedPasswordChange = forcedPasswordChange;
 		return this;
+	}
+
+	/**
+	 * Return the admin flag.
+	 * 
+	 * @return
+	 */
+	public Boolean getAdmin() {
+		return admin;
+	}
+
+	/**
+	 * Set the user update flag. Note that only admins can alter the flag.
+	 * 
+	 * @param flag
+	 */
+	public void setAdmin(Boolean flag) {
+		this.admin = flag;
 	}
 
 }

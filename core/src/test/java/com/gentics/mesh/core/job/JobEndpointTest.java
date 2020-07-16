@@ -37,24 +37,22 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 		call(() -> client().findJobs(), FORBIDDEN, "error_admin_permission_required");
 
-		tx(() -> group().addRole(roles().get("admin")));
-
-		JobListResponse jobList = call(() -> client().findJobs());
+		JobListResponse jobList = adminCall(() -> client().findJobs());
 		assertThat(jobList.getData()).isEmpty();
 
 		String json = tx(() -> schemaContainer("folder").getLatestVersion().getJson());
 		String uuid = tx(() -> schemaContainer("folder").getUuid());
-		waitForJobs(() -> {
+		waitForJob(() -> {
 			SchemaUpdateRequest schema = JsonUtil.readValue(json, SchemaUpdateRequest.class);
 			schema.setName("folder2");
 			call(() -> client().updateSchema(uuid, schema));
-		}, COMPLETED, 1);
+		});
 
 		tx((tx) -> {
 			boot().jobRoot().enqueueBranchMigration(user(), initialBranch());
 		});
 
-		jobList = call(() -> client().findJobs());
+		jobList = adminCall(() -> client().findJobs());
 		JobResponse job = jobList.getData().get(1);
 		assertThat(job.getProperties()).doesNotContainKey("microschemaUuid");
 		assertThat(job.getProperties()).doesNotContainKey("microschemaName");
@@ -70,15 +68,13 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 		call(() -> client().deleteJob(jobUuid), FORBIDDEN, "error_admin_permission_required");
 
-		tx(() -> group().addRole(roles().get("admin")));
-
-		call(() -> client().deleteJob(jobUuid), BAD_REQUEST, "job_error_invalid_state", jobUuid);
+		adminCall(() -> client().deleteJob(jobUuid), BAD_REQUEST, "job_error_invalid_state", jobUuid);
 
 		triggerAndWaitForJob(jobUuid, FAILED);
 
-		call(() -> client().deleteJob(jobUuid));
+		adminCall(() -> client().deleteJob(jobUuid));
 
-		JobListResponse jobList = call(() -> client().findJobs());
+		JobListResponse jobList = adminCall(() -> client().findJobs());
 		assertThat(jobList.getData()).isEmpty();
 
 	}
@@ -94,7 +90,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 			return job.getUuid();
 		});
 
-		tx(() -> group().addRole(roles().get("admin")));
+		grantAdmin();
 
 		waitForJob(() -> {
 			GenericMessageResponse msg = call(() -> client().invokeJobProcessing());
@@ -111,8 +107,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testLoadBogusJob() {
-		tx(() -> group().addRole(roles().get("admin")));
-
+		grantAdmin();
 		call(() -> client().findJobByUuid("bogus"), NOT_FOUND, "object_not_found_for_uuid", "bogus");
 	}
 
@@ -122,8 +117,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 		call(() -> client().invokeJobProcessing(), FORBIDDEN, "error_admin_permission_required");
 
-		tx(() -> group().addRole(roles().get("admin")));
-
+		grantAdmin();
 		JobResponse response = waitForJob(() -> {
 			GenericMessageResponse message = call(() -> client().invokeJobProcessing());
 			assertThat(message).matches("job_processing_invoked");
@@ -151,7 +145,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 			return job.getUuid();
 		});
 
-		tx(() -> group().addRole(roles().get("admin")));
+		grantAdmin();
 
 		JobResponse jobResponse = call(() -> client().findJobByUuid(job3Uuid));
 		try (Tx tx = tx()) {
@@ -177,7 +171,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 		call(() -> client().resetJob(jobUuid), FORBIDDEN, "error_admin_permission_required");
 
-		grantAdminRole();
+		grantAdmin();
 
 		triggerAndWaitForJob(jobUuid, FAILED);
 
@@ -198,7 +192,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 		call(() -> client().processJob(jobUuid), FORBIDDEN, "error_admin_permission_required");
 
-		grantAdminRole();
+		grantAdmin();
 
 		triggerAndWaitForJob(jobUuid, FAILED);
 
@@ -206,7 +200,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 		assertNotNull(jobResonse.getErrorMessage());
 
 		// Change the job so that it will no longer fail
-		tx(()-> {
+		tx(() -> {
 			Branch branch = project().getBranchRoot().create("testBranch", user(), null, true, initialBranch(), createBatch());
 			job.setBranch(branch);
 		});
@@ -222,7 +216,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testJobStatusWithNoMigrationRunning() {
-		tx(() -> group().addRole(roles().get("admin")));
+		grantAdmin();
 		JobListResponse status = call(() -> client().findJobs());
 		assertEquals(0, status.getMetainfo().getTotalCount());
 	}

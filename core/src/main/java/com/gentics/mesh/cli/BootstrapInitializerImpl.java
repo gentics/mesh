@@ -127,6 +127,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	private static Logger log = LoggerFactory.getLogger(BootstrapInitializer.class);
 
+	private static final String ADMIN_USERNAME = "admin";
+
 	@Inject
 	public ServerSchemaStorage schemaStorage;
 
@@ -584,9 +586,20 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		String password = configuration.getAdminPassword();
 		if (password != null) {
 			db.tx(tx -> {
-				User adminUser = userRoot().findByName("admin");
+				User adminUser = userRoot().findByName(ADMIN_USERNAME);
 				if (adminUser != null) {
 					adminUser.setPassword(password);
+					adminUser.setAdmin(true);
+				} else {
+					// Recreate the user if it can't be found.
+					UserRoot userRoot = meshRoot.getUserRoot();
+					adminUser = userRoot.create(ADMIN_USERNAME, null);
+					adminUser.setCreator(adminUser);
+					adminUser.setCreationTimestamp();
+					adminUser.setEditor(adminUser);
+					adminUser.setLastEditedTimestamp();
+					adminUser.setPassword(password);
+					adminUser.setAdmin(true);
 				}
 				tx.success();
 			});
@@ -844,10 +857,10 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			SchemaContainerRoot schemaContainerRoot = meshRoot.getSchemaContainerRoot();
 
 			// Verify that an admin user exists
-			User adminUser = userRoot.findByUsername("admin");
+			User adminUser = userRoot.findByUsername(ADMIN_USERNAME);
 			if (adminUser == null) {
-				adminUser = userRoot.create("admin", adminUser);
-
+				adminUser = userRoot.create(ADMIN_USERNAME, adminUser);
+				adminUser.setAdmin(true);
 				adminUser.setCreator(adminUser);
 				adminUser.setCreationTimestamp();
 				adminUser.setEditor(adminUser);

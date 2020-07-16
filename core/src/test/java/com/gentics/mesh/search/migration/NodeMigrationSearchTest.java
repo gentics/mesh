@@ -93,7 +93,7 @@ public class NodeMigrationSearchTest extends AbstractNodeSearchEndpointTest {
 		schemaUpdateRequest.setName(SCHEMA_NAME);
 		schemaUpdateRequest.getFields().add(FieldUtil.createStringFieldSchema("name").setElasticsearch(IndexOptionHelper.getRawFieldOption()));
 		schemaUpdateRequest.setSegmentField("name");
-		grantAdminRole();
+		grantAdmin();
 
 		waitForJobs(() -> {
 			call(() -> client().updateSchema(schemaResponse.getUuid(), schemaUpdateRequest));
@@ -139,7 +139,7 @@ public class NodeMigrationSearchTest extends AbstractNodeSearchEndpointTest {
 		fields.add(new StringFieldSchemaImpl().setName("test").setLabel("Test"));
 
 		// Grant admin perms. Otherwise we can't check the jobs
-		tx(() -> group().addRole(roles().get("admin")));
+		grantAdmin();
 
 		// Wait for migration to complete
 		waitForJobs(() -> {
@@ -158,7 +158,6 @@ public class NodeMigrationSearchTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	@Category({FailingTests.class})
 	public void searchDuringMigration() throws Exception {
-		grantAdminRole();
 		String query = getSimpleTermQuery("schema.name.raw", "folder");
 
 		recreateIndices();
@@ -174,11 +173,7 @@ public class NodeMigrationSearchTest extends AbstractNodeSearchEndpointTest {
 		waitForLatestJob(() -> {
 			migrateSchema("folder", false).blockingAwait();
 
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+			sleep(1000);
 
 			NodeListResponse duringMigration = client().searchNodes(query, new SearchParametersImpl().setWait(false)).blockingGet();
 

@@ -35,6 +35,7 @@ public class UserExamples extends AbstractExamples {
 		user2.setEdited(createNewTimestamp());
 		user2.setCreated(createOldTimestamp());
 		user2.setEmailAddress("j.roe@nowhere.com");
+		user2.setAdmin(true);
 		user2.getGroups().add(new GroupReference().setName("webclient").setUuid(USER_WEBCLIENT_UUID));
 		user2.getGroups().add(new GroupReference().setName("editors").setUuid(USER_EDITOR_UUID));
 		user2.setEnabled(true);

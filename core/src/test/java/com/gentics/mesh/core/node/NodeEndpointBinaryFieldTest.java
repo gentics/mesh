@@ -57,7 +57,7 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 
 	@Before
 	public void setupPerm() {
-		grantAdminRole();
+		grantAdmin();
 	}
 
 	@Test
@@ -94,6 +94,7 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 		Node node = prepareSchema();
 
 		// Only grant read_published perm
+		revokeAdmin();
 		try (Tx tx = tx()) {
 			role().revokePermissions(node, READ_PERM);
 			role().grantPermissions(node, READ_PUBLISHED_PERM);
@@ -188,7 +189,7 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 			SchemaUpdateRequest.class);
 		schemaRequest.getFields().add(FieldUtil.createBinaryFieldSchema("binary"));
 
-		tx(() -> group().addRole(roles().get("admin")));
+		grantAdmin();
 		waitForJobs(() -> {
 			call(() -> client().updateSchema(schemaUuid, schemaRequest));
 		}, COMPLETED, 1);

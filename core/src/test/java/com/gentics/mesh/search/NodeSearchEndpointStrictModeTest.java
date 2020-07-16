@@ -46,11 +46,11 @@ public class NodeSearchEndpointStrictModeTest extends AbstractNodeSearchEndpoint
 		JsonObject keywordMapping = new JsonObject().put("index", true).put("type", "keyword");
 		request.getField("teaser").setElasticsearch(keywordMapping);
 
-		grantAdminRole();
+		grantAdmin();
 		waitForJob(() -> {
 			call(() -> client().updateSchema(schemaUuid, request));
 		});
-		revokeAdminRole();
+		revokeAdmin();
 
 	}
 

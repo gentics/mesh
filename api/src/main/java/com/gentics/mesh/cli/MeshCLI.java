@@ -59,7 +59,7 @@ public final class MeshCLI {
 
 		// TODO remove this and replace it by an option which will read a new password from stdin
 		Option resetAdminPassword = new Option(RESET_ADMIN_PASSWORD, true,
-			"Reset the admin password. It is advised to change the password once again after the reset has been performed.");
+			"Reset the admin password. It is advised to change the password once again after the reset has been performed. The command will also recreate the admin user if it can't be found in the system.");
 		resetAdminPassword.setArgName("password");
 		options.addOption(resetAdminPassword);
 

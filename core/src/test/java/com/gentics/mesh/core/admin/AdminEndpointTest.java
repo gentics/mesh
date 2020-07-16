@@ -27,7 +27,7 @@ public class AdminEndpointTest extends AbstractMeshTest {
 	public void testClusterStatusInNoClusterMode() {
 		call(() -> client().clusterStatus(), FORBIDDEN, "error_admin_permission_required");
 
-		tx(() -> group().addRole(roles().get("admin")));
+		grantAdmin();
 
 		call(() -> client().clusterStatus(), BAD_REQUEST, "error_cluster_status_only_available_in_cluster_mode");
 	}

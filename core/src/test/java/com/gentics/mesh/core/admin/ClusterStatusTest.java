@@ -8,7 +8,6 @@ import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterInstanceInfo;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -19,10 +18,7 @@ public class ClusterStatusTest extends AbstractMeshTest {
 
 	@Test
 	public void testLoadStatus() {
-		try (Tx tx = tx()) {
-			group().addRole(roles().get("admin"));
-			tx.success();
-		}
+		grantAdmin();
 
 		ClusterStatusResponse response = call(() -> client().clusterStatus());
 		assertThat(response.getInstances()).hasSize(1);

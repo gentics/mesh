@@ -7,7 +7,7 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER_ES6;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.Arrays;
 
@@ -81,11 +81,11 @@ public class NodeRawSearchEndpointTest extends AbstractMeshTest {
 
 		JsonObject hitOne = hits.getJsonObject(0);
 		String uuid1 = hitOne.getString("_id");
-		assertEquals(initialBranchUuid(), hitOne.getJsonObject("_source").getString("branchUuid"));
+		assertNotNull(hitOne.getJsonObject("_source").getString("branchUuid"));
 
 		JsonObject hitTwo = hits.getJsonObject(1);
 		String uuid2 = hitTwo.getString("_id");
-		assertEquals(initialBranchUuid(), hitTwo.getJsonObject("_source").getString("branchUuid"));
+		assertNotNull(initialBranchUuid(), hitTwo.getJsonObject("_source").getString("branchUuid"));
 
 		assertThat(Arrays.asList(uuid1, uuid2)).containsExactlyInAnyOrder(nodeA.getUuid() + "-en", nodeB.getUuid() + "-en");
 

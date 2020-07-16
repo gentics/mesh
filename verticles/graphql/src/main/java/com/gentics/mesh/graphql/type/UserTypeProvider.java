@@ -79,6 +79,15 @@ public class UserTypeProvider extends AbstractTypeProvider {
 			return user.isForcedPasswordChange();
 		}));
 
+		// .admin
+		root.field(newFieldDefinition()
+		.name("admin")
+		.description("Flag which indicates whether the user has admin privileges.")
+		.type(GraphQLBoolean).dataFetcher((env) -> {
+			User user = env.getSource();
+			return user.isAdmin();
+		}));
+
 		// .groups
 		root.field(newPagingFieldWithFetcher("groups", "Groups to which the user belongs.", (env) -> {
 			User user = env.getSource();

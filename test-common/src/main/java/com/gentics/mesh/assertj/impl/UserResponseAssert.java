@@ -9,6 +9,8 @@ import org.assertj.core.api.AbstractAssert;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class UserResponseAssert extends AbstractAssert<UserResponseAssert, UserResponse> {
 
@@ -88,6 +90,20 @@ public class UserResponseAssert extends AbstractAssert<UserResponseAssert, UserR
 
 	public UserResponseAssert hasName(String name) {
 		assertThat(actual.getUsername()).as(String.format("User has name %s", name)).isEqualTo(name);
+		return this;
+	}
+
+	public UserResponseAssert isNotAdmin() {
+		Boolean flag = actual.getAdmin();
+		if (flag != null && flag == true) {
+			fail("The user should not have the admin flag set.");
+		}
+		return this;
+	}
+
+	public UserResponseAssert isAdmin() {
+		assertNotNull(actual.getAdmin());
+		assertTrue(actual.getAdmin());
 		return this;
 	}
 }

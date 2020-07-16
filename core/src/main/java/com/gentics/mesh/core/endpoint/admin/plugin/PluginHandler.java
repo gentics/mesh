@@ -54,7 +54,7 @@ public class PluginHandler extends AbstractHandler {
 
 	public void handleRead(InternalActionContext ac, String id) {
 		utils.syncTx(ac, tx -> {
-			if (!ac.getUser().hasAdminRole()) {
+			if (!ac.getUser().isAdmin()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
 			PluginWrapper pluginWrapper = manager.getPlugin(id);
@@ -71,7 +71,7 @@ public class PluginHandler extends AbstractHandler {
 
 	public void handleDeploy(InternalActionContext ac) {
 		utils.syncTx(ac, tx -> {
-			if (!ac.getUser().hasAdminRole()) {
+			if (!ac.getUser().isAdmin()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
 			PluginDeploymentRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), PluginDeploymentRequest.class);
@@ -95,7 +95,7 @@ public class PluginHandler extends AbstractHandler {
 
 	public void handleUndeploy(InternalActionContext ac, String pluginId) {
 		utils.syncTx(ac, tx -> {
-			if (!ac.getUser().hasAdminRole()) {
+			if (!ac.getUser().isAdmin()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
 			if (StringUtils.isEmpty(pluginId)) {
@@ -112,7 +112,7 @@ public class PluginHandler extends AbstractHandler {
 
 	public void handleReadList(InternalActionContext ac) {
 		utils.syncTx(ac, tx -> {
-			if (!ac.getUser().hasAdminRole()) {
+			if (!ac.getUser().isAdmin()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
 			List<MeshPlugin> startedPlugins = manager.getStartedMeshPlugins();

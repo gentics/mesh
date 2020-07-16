@@ -12,7 +12,6 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.BinaryCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.BranchCheck;
@@ -106,7 +105,7 @@ public class ConsistencyCheckHandler extends AbstractHandler {
 
 	private void invokeAction(InternalActionContext ac, boolean attemptRepair) {
 		utils.syncTx(ac, tx -> {
-			if (!ac.getUser().hasAdminRole()) {
+			if (!ac.getUser().isAdmin()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
 			return checkConsistency(attemptRepair).runInExistingTx(tx);

@@ -136,7 +136,7 @@ public class SchemaAutoPurgeEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAutoPurgeForSchemaMigration() {
-		grantAdminRole();
+		grantAdmin();
 		enableAutoPurgeOnSchema();
 		String contentSchemaUuid = tx(() -> schemaContainer("content").getUuid());
 		String nodeUuid = contentUuid();
@@ -175,7 +175,7 @@ public class SchemaAutoPurgeEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAutoPurgeForMicroschemaMigration() {
-		grantAdminRole();
+		grantAdmin();
 		String microschemaUuid = tx(() -> microschemaContainer("vcard").getUuid());
 		String contentSchemaUuid = tx(() -> schemaContainer("content").getUuid());
 		String nodeUuid = contentUuid();
@@ -210,7 +210,7 @@ public class SchemaAutoPurgeEndpointTest extends AbstractMeshTest {
 	}
 
 	private void enableAutoPurgeOnSchema() {
-		grantAdminRole();
+		grantAdmin();
 		String contentSchemaUuid = tx(() -> schemaContainer("content").getUuid());
 		assertThat(call(() -> client().findSchemaByUuid(contentSchemaUuid))).autoPurgeIsNotSet();
 		waitForJob(() -> {

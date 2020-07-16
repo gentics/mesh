@@ -47,7 +47,7 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 		DeploymentOptions options = new DeploymentOptions();
 		options.setWorker(true);
 		vertx().deployVerticle(meshDagger().jobWorkerVerticle(), options);
-		tx(() -> group().addRole(roles().get("admin")));
+		grantAdmin();
 	}
 
 	@Test
@@ -186,7 +186,7 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 			call(() -> client().publishNode(PROJECT_NAME, node.getUuid()));
 		}
 
-		grantAdminRole();
+		grantAdmin();
 		waitForJobs(() -> {
 			call(() -> client().createBranch(PROJECT_NAME, new BranchCreateRequest().setName("branch1")));
 		}, COMPLETED, 1);

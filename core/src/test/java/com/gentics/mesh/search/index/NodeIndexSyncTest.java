@@ -45,11 +45,7 @@ public class NodeIndexSyncTest extends AbstractMeshTest {
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("fields.content", oldContent)));
 		assertThat(response.getData()).as("Published search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 
-		// Add the user to the admin group - this way the user is in fact an admin.
-		try (Tx tx = tx()) {
-			user().addGroup(data().getGroups().get("admin"));
-			tx.success();
-		}
+		grantAdmin();
 
 		// Now clear all data
 		searchProvider().clear().blockingAwait();

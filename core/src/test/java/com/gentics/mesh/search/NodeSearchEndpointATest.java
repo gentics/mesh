@@ -100,7 +100,7 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testSearchWithBranchUuid() throws Exception {
 		recreateIndices();
-		grantAdminRole();
+		grantAdmin();
 
 		String query = getSimpleTermQuery("branchUuid", initialBranchUuid());
 		long initialCount = call(() -> client().searchNodes(PROJECT_NAME, query)).getMetainfo().getTotalCount();
@@ -132,7 +132,7 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 		fields.add(new StringFieldSchemaImpl().setName("test").setLabel("Test"));
 
 		// Grant admin perms. Otherwise we can't check the jobs
-		tx(() -> group().addRole(roles().get("admin")));
+		grantAdmin();
 
 		// Wait for migration to complete
 		waitForJobs(() -> {

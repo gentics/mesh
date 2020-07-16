@@ -25,7 +25,7 @@ public class MicronodeMigrationEndpointTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testUpdate() {
-		grantAdminRole();
+		grantAdmin();
 		String uuid = tx(() -> microschemaContainer("vcard").getUuid());
 		MicroschemaResponse microschema = call(() -> client().findMicroschemaByUuid(uuid));
 

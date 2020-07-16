@@ -343,7 +343,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 	private NodeResponse createBinaryNode() {
 		String parentUuid = tx(() -> folder("2015").getUuid());
 
-		tx(() -> group().addRole(roles().get("admin")));
+		grantAdmin();
 
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 		nodeCreateRequest.setLanguage("en").setParentNodeUuid(parentUuid).setSchemaName("binary_content");

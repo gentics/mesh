@@ -41,6 +41,10 @@ public class UserCreateRequest implements RestModel {
 	@JsonPropertyDescription("When true, the user needs to change their password on the next login.")
 	private Boolean forcedPasswordChange;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Flag which indicates whether the user is an admin.")
+	private Boolean admin;
+
 	public UserCreateRequest() {
 	}
 
@@ -205,5 +209,23 @@ public class UserCreateRequest implements RestModel {
 	 */
 	public Boolean getForcedPasswordChange() {
 		return forcedPasswordChange;
+	}
+
+	/**
+	 * Return the admin flag for the user.
+	 * 
+	 * @return
+	 */
+	public Boolean getAdmin() {
+		return admin;
+	}
+
+	/**
+	 * Set the admin flag on the user. Note that only admins can create admin users.
+	 * 
+	 * @param flag
+	 */
+	public void setAdmin(Boolean flag) {
+		this.admin = flag;
 	}
 }

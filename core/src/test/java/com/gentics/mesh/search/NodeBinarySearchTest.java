@@ -52,7 +52,7 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testBinarySearchMapping() throws Exception {
-		grantAdminRole();
+		grantAdmin();
 		Node nodeA = content("concorde");
 		String nodeUuid = tx(() -> nodeA.getUuid());
 		String contentSchemaUuid = tx(() -> schemaContainer("content").getUuid());
@@ -146,7 +146,7 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testDocumentSearch() throws Exception {
-		grantAdminRole();
+		grantAdmin();
 		Node nodeA = content("concorde");
 		String nodeUuid = tx(() -> nodeA.getUuid());
 		String contentSchemaUuid = tx(() -> schemaContainer("content").getUuid());
@@ -189,7 +189,7 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testImageSearch() throws IOException {
-		grantAdminRole();
+		grantAdmin();
 		Node nodeA = content("concorde");
 		String nodeUuid = tx(() -> nodeA.getUuid());
 		String contentSchemaUuid = tx(() -> schemaContainer("content").getUuid());

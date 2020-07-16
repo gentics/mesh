@@ -27,6 +27,7 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
@@ -44,6 +45,7 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
+import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
@@ -103,10 +105,6 @@ public interface TestHelper extends EventHelper, ClientHelper {
 
 	default MeshAuthUser getRequestUser() {
 		return data().getUserInfo().getUser().reframe(MeshAuthUserImpl.class);
-	}
-
-	default User user() {
-		return data().user();
 	}
 
 	default Role anonymousRole() {
@@ -679,14 +677,6 @@ public interface TestHelper extends EventHelper, ClientHelper {
 
 	default void disableAnonymousAccess() {
 		meshApi().getOptions().getAuthenticationOptions().setEnableAnonymousAccess(false);
-	}
-
-	default void grantAdminRole() {
-		tx(() -> group().addRole(roles().get("admin")));
-	}
-
-	default void revokeAdminRole() {
-		tx(() -> group().removeRole(roles().get("admin")));
 	}
 
 	default void assertFilesInDir(String path, long expectedCount) {

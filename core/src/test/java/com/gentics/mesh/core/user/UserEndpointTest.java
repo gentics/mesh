@@ -413,6 +413,41 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	}
 
 	@Test
+	public void testCreateAdmin() {
+		UserCreateRequest request = new UserCreateRequest();
+		request.setUsername("test1234");
+		request.setAdmin(true);
+		request.setPassword("finger");
+
+		UserResponse response = adminCall(() -> client().createUser(request));
+		assertThat(response).isAdmin();
+
+		// Test missing permission
+		request.setUsername("test4321");
+		call(() -> client().createUser(request), FORBIDDEN, "user_error_admin_privilege_needed_for_admin_flag");
+	}
+
+	@Test
+	public void testUpdateAdmin() {
+		UserCreateRequest createRequest = new UserCreateRequest();
+		createRequest.setUsername("test1234");
+		createRequest.setAdmin(false);
+		createRequest.setPassword("finger");
+
+		UserResponse response = adminCall(() -> client().createUser(createRequest));
+		assertThat(response).isNotAdmin();
+
+		UserUpdateRequest updateRequest = new UserUpdateRequest();
+		updateRequest.setAdmin(true);
+		UserResponse response2 = adminCall(() -> client().updateUser(response.getUuid(), updateRequest));
+		assertThat(response2).isAdmin();
+
+		// Test missing permission
+		updateRequest.setAdmin(false);
+		call(() -> client().updateUser(response.getUuid(),updateRequest), FORBIDDEN, "user_error_admin_privilege_needed_for_admin_flag");
+	}
+
+	@Test
 	@Override
 	public void testReadMultiple() throws Exception {
 		final int intialUserCount = users().size();
@@ -1388,7 +1423,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertNotNull("User should have been created.", user);
 			assertEquals(CREATED.code(), response.getStatusCode());
 			String location = response.getHeader(LOCATION.toString()).orElse(null);
-			assertEquals("Location header value did not match", "http://localhost:" + port() + CURRENT_API_BASE_PATH + "/users/" + user.getUuid(), location);
+			assertEquals("Location header value did not match", "http://localhost:" + port() + CURRENT_API_BASE_PATH + "/users/" + user.getUuid(),
+				location);
 		}
 	}
 
@@ -1408,7 +1444,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertNotNull("User should have been created.", user);
 			assertEquals(CREATED.code(), response.getStatusCode());
 			String location = response.getHeader(LOCATION.toString()).orElse(null);
-			assertEquals("Location header value did not match", "http://jotschi.de:" + port() + CURRENT_API_BASE_PATH + "/users/" + user.getUuid(), location);
+			assertEquals("Location header value did not match", "http://jotschi.de:" + port() + CURRENT_API_BASE_PATH + "/users/" + user.getUuid(),
+				location);
 		}
 	}
 

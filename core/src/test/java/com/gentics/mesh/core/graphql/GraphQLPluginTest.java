@@ -22,7 +22,7 @@ public class GraphQLPluginTest extends AbstractPluginTest {
 
 	@Test
 	public void testGraphQL() throws IOException {
-		grantAdminRole();
+		grantAdmin();
 
 		for (int i = 1; i <= 100; i++) {
 			deployPlugin(ClonePlugin.class, "clone" + i);
@@ -38,7 +38,7 @@ public class GraphQLPluginTest extends AbstractPluginTest {
 
 	@Test
 	public void testGraphQLPlugin() throws IOException {
-		grantAdminRole();
+		grantAdmin();
 
 		copyAndDeploy(GRAPHQL_PATH, "graphql.jar");
 		waitForPluginRegistration();
@@ -51,7 +51,7 @@ public class GraphQLPluginTest extends AbstractPluginTest {
 
 	@Test
 	public void testInvalidGraphQLPlugin() throws IOException {
-		grantAdminRole();
+		grantAdmin();
 
 		copyAndDeploy(INVALID_GRAPHQL_PATH, "graphql.jar", BAD_REQUEST, "admin_plugin_error_invalid_gql_name", "invalid-plugin");
 

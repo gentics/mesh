@@ -94,7 +94,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 	@After
 	public void waitForJobs() {
-		tx(() -> group().addRole(roles().get("admin")));
+		grantAdmin();
 		triggerAndWaitForAllJobs(COMPLETED);
 	}
 
@@ -308,11 +308,11 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		request.setDescription("New description");
 		request.addField(FieldUtil.createHtmlFieldSchema("someHtml"));
 
-		tx(() -> group().addRole(roles().get("admin")));
+		grantAdmin();
 		waitForJobs(() -> {
 			call(() -> client().updateSchema(uuid, request));
 		}, JobStatus.COMPLETED, 1);
-		tx(() -> group().removeRole(roles().get("admin")));
+		revokeAdmin();
 
 		// Load the previous version
 		restSchema = call(() -> client().findSchemaByUuid(uuid, new VersioningParametersImpl().setVersion(latestVersion)));
@@ -395,7 +395,6 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		SchemaUpdateRequest request = JsonUtil.readValue(json, SchemaUpdateRequest.class);
 		request.setUrlFields("slug");
 
-		grantAdminRole();
 		waitForJob(() -> {
 			call(() -> client().updateSchema(uuid, request));
 		});
@@ -403,7 +402,6 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 	@Test
 	public void testSetAutoPurgeToNull() {
-		grantAdminRole();
 		String schemaUuid = tx(() -> schemaContainer("folder").getUuid());
 		SchemaResponse response = call(() -> client().findSchemaByUuid(schemaUuid));
 		assertNull(response.getAutoPurge());
@@ -510,11 +508,11 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			assertMigrationEvent(event, schemaVersion, schemaUuid);
 		});
 
-		grantAdminRole();
+		grantAdmin();
 		waitForJob(() -> {
 			call(() -> client().updateSchema(schemaUuid, schemaUpdate));
 		});
-		revokeAdminRole();
+		revokeAdmin();
 
 		awaitEvents();
 
@@ -593,7 +591,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 		call(() -> client().deleteSchema(uuid), BAD_REQUEST, "schema_delete_still_in_use", uuid);
 
-		tx(() -> group().addRole(roles().get("admin")));
+		grantAdmin();
 		waitForJobs(() -> {
 			SchemaResponse schemaResponse = call(() -> client().findSchemaByUuid(uuid));
 			SchemaUpdateRequest request = JsonUtil.readValue(schemaResponse.toJson(), SchemaUpdateRequest.class);

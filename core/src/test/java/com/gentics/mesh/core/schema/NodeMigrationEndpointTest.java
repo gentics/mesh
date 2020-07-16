@@ -10,6 +10,7 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -21,7 +22,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.madl.tx.Tx;
@@ -83,12 +83,6 @@ import io.vertx.core.json.JsonObject;
 @MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true, clusterMode = false)
 public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
-	@Before
-	public void setup() {
-		// Grant admin perms. Otherwise we can't check the jobs
-		grantAdminRole();
-	}
-
 	/**
 	 * Create a schema model and assign it to the project/branch. Assert that an index has been created.
 	 * 
@@ -120,7 +114,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertNull(edge1.getJobUuid());
 			assertTrue("The assignment should be active.", edge1.isActive());
 		}
-		assertThat(call(() -> client().findJobs())).isEmpty();
+		assertThat(adminCall(() -> client().findJobs())).isEmpty();
 
 		waitForSearchIdleEvent();
 		assertThat(trackingSearchProvider()).hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(), versionUuid,
@@ -162,7 +156,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 				DRAFT)).hasNoDropEvents();
 			assertThat(trackingSearchProvider()).hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(), versionBUuid,
 				PUBLISHED)).hasNoDropEvents();
-			assertThat(call(() -> client().findJobs())).hasInfos(1);
+			assertThat(adminCall(() -> client().findJobs())).hasInfos(1);
 		}
 
 		/**
@@ -230,7 +224,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 				DRAFT)).hasNoDropEvents();
 			assertThat(trackingSearchProvider()).hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(), versionCUuid,
 				PUBLISHED)).hasNoDropEvents();
-			assertThat(call(() -> client().findJobs())).hasInfos(2);
+			assertThat(adminCall(() -> client().findJobs())).hasInfos(2);
 		}
 
 		// Now start the worker again
@@ -455,7 +449,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertThat(trackingSearchProvider()).hasEvents(store, update, delete, indexDrop, indexCreate);
 		}
 
-		JobListResponse status = call(() -> client().findJobs());
+		JobListResponse status = adminCall(() -> client().findJobs());
 		assertThat(status).listsAll(COMPLETED).hasInfos(1).containsJobs(jobUuid);
 	}
 
@@ -488,7 +482,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			call(() -> client().updateSchema(schemaUuid, request));
 		});
 
-		JobListResponse status = call(() -> client().findJobs());
+		JobListResponse status = adminCall(() -> client().findJobs());
 		assertThat(status).listsAll(COMPLETED).hasInfos(1);
 		waitForSearchIdleEvent();
 
@@ -566,7 +560,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 				"first content");
 		}
 
-		JobListResponse status = call(() -> client().findJobs());
+		JobListResponse status = adminCall(() -> client().findJobs());
 		assertThat(status).listsAll(COMPLETED).hasInfos(2);
 		assertThat(status).containsJobs(jobAUuid);
 	}
@@ -608,7 +602,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 				.isOf(versionB).hasVersion("2.0");
 		}
 
-		JobListResponse status = call(() -> client().findJobs());
+		JobListResponse status = adminCall(() -> client().findJobs());
 		assertThat(status).listsAll(COMPLETED);
 	}
 
@@ -692,7 +686,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		assertThat(migratedNode2.getFields().getMicronodeFieldList("micronode").getItems()).isNotEmpty();
 		assertNotEquals("The node should have been migrated due to the schema update.", migratedNode.getVersion(), migratedNode2.getVersion());
 
-		JobListResponse status = call(() -> client().findJobs());
+		JobListResponse status = adminCall(() -> client().findJobs());
 		assertThat(status).listsAll(COMPLETED).hasInfos(4);
 
 	}
@@ -713,7 +707,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		client().deleteProject(projectUuid()).blockingAwait();
 		triggerAndWaitForJob(jobUuid, FAILED);
 
-		JobListResponse status = call(() -> client().findJobs());
+		JobListResponse status = adminCall(() -> client().findJobs());
 		assertThat(status).listsAll(FAILED).hasInfos(1);
 		assertNotNull("An error should be stored along with the info.", status.getData().get(0).getErrorDetail());
 	}
@@ -735,7 +729,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		triggerAndWaitForAllJobs(COMPLETED);
 
 		// Verify that the expected amount of jobs is listed
-		JobListResponse status = call(() -> client().findJobs());
+		JobListResponse status = adminCall(() -> client().findJobs());
 		assertThat(status).listsAll(COMPLETED).hasInfos(10);
 
 	}
@@ -794,7 +788,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			"text2_value");
 
 		triggerAndWaitForAllJobs(COMPLETED);
-		JobListResponse status = call(() -> client().findJobs());
+		JobListResponse status = adminCall(() -> client().findJobs());
 		assertThat(status).listsAll(COMPLETED).hasInfos(1);
 
 		assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, draftResponse.getUuid()))).hasStringField("text", "text2_value").hasVersion("2.1")
@@ -880,7 +874,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, draftResponse.getUuid()))).hasVersion("2.0").hasStringField("text", "text_value")
 			.hasSchemaVersion("dummy", "2.0");
 
-		JobListResponse status = call(() -> client().findJobs());
+		JobListResponse status = adminCall(() -> client().findJobs());
 		assertThat(status).listsAll(COMPLETED).hasInfos(1);
 
 		// Assert that the draft and publish version both have version 2.0 since they share the same NGFC.
@@ -993,7 +987,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 				.isEqualTo("second content");
 		}
 
-		JobListResponse status = call(() -> client().findJobs());
+		JobListResponse status = adminCall(() -> client().findJobs());
 		assertThat(status).listsAll(COMPLETED).hasInfos(1);
 
 	}
@@ -1115,7 +1109,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 				newFieldName).getString()).as("Migrated field value").isEqualTo("third content");
 		}
 
-		JobListResponse status = call(() -> client().findJobs());
+		JobListResponse status = adminCall(() -> client().findJobs());
 		assertThat(status).listsAll(COMPLETED).hasInfos(1);
 
 	}
@@ -1223,7 +1217,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 				"firstName").getString()).as("Not migrated field value").isEqualTo("Max");
 		}
 
-		JobListResponse status = call(() -> client().findJobs());
+		JobListResponse status = adminCall(() -> client().findJobs());
 		assertThat(status).listsAll(COMPLETED).hasInfos(1);
 
 	}

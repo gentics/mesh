@@ -507,7 +507,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		String newsUuid = tx(() -> folder("news").getUuid());
 
 		// 1. create new branch and migrate node
-		grantAdminRole();
+		grantAdmin();
 		waitForJobs(() -> {
 			BranchCreateRequest branchCreateRequest = new BranchCreateRequest();
 			branchCreateRequest.setName(newBranchName);

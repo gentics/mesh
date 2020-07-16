@@ -568,7 +568,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			String hash = oldUser.getRolesHash();
 
 			// Add another role to the groups only oldUser is in.
-			grantAdminRole();
+			grantAdmin();
 
 			// The roles have changed for oldUser ...
 			assertNotEquals(hash, oldUser.getRolesHash());

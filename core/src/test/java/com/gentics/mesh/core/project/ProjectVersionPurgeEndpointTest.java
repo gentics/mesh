@@ -36,17 +36,15 @@ public class ProjectVersionPurgeEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testBogusProject() {
-		grantAdminRole();
-		call(() -> client().purgeProject(userUuid()), NOT_FOUND, "object_not_found_for_uuid", userUuid());
+		adminCall(() -> client().purgeProject(userUuid()), NOT_FOUND, "object_not_found_for_uuid", userUuid());
 	}
 
 	@Test
 	public void testPurge() {
-		grantAdminRole();
 		disableAutoPurge();
 		String nodeUuid = contentUuid();
 		waitForJob(() -> {
-			call(() -> client().purgeProject(projectUuid()));
+			adminCall(() -> client().purgeProject(projectUuid()));
 		});
 		assertVersions(nodeUuid, "en", "PD(1.0)=>I(0.1)");
 
@@ -61,14 +59,15 @@ public class ProjectVersionPurgeEndpointTest extends AbstractMeshTest {
 
 		// Now only D I and P must remain.
 		waitForJob(() -> {
-			call(() -> client().purgeProject(projectUuid()));
+			runAsAdmin(() -> {
+				call(() -> client().purgeProject(projectUuid()));
+			});
 		});
 		assertVersions(nodeUuid, "en", "D(1.5)=>P(1.0)=>I(0.1)");
 	}
 
 	@Test
 	public void testPurgeWithBefore() throws InterruptedException, ExecutionException {
-		grantAdminRole();
 		disableAutoPurge();
 		String nodeUuid = contentUuid();
 		String middle = null;
@@ -95,7 +94,7 @@ public class ProjectVersionPurgeEndpointTest extends AbstractMeshTest {
 		waitForJob(() -> {
 			ProjectPurgeParameters purgeParams = new ProjectPurgeParametersImpl();
 			purgeParams.setBefore(middleDate);
-			call(() -> client().purgeProject(projectUuid(), purgeParams));
+			adminCall(() -> client().purgeProject(projectUuid(), purgeParams));
 		});
 
 		assertVersions(nodeUuid, "en", "D(1.12)=>(1.11)=>(1.10)=>(1.9)=>(1.8)=>(1.7)=>(1.6)=>PI(1.0)=>I(0.1)");

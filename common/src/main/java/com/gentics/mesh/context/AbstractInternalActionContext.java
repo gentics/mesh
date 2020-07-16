@@ -86,8 +86,7 @@ public abstract class AbstractInternalActionContext extends AbstractActionContex
 		if (user == null) {
 			return false;
 		}
-
-		return user.hasAdminRole();
+		return user.isAdmin();
 	}
 
 }

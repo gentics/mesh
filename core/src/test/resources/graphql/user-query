@@ -6,6 +6,10 @@
 	user(name: "admin") {
 		# [$.data.user.username=admin]
 		username
+
+		# [$.data.user.admin=true]
+		admin
+
 		emailAddress
 		# [$.data.user.forcedPasswordChange=false]
 		forcedPasswordChange

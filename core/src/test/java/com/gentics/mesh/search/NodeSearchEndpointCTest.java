@@ -120,8 +120,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		addRawToSchemaField();
 		recreateIndices();
 
-		// Add the user to the admin group - this way the user is in fact an admin.
-		tx(() -> user().addGroup(groups().get("admin")));
+		grantAdmin();
 
 		waitForEvent(INDEX_SYNC_FINISHED, () -> {
 			GenericMessageResponse message = call(() -> client().invokeIndexSync());

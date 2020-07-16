@@ -17,7 +17,7 @@ public class AdminEndpointBackupMemoryTest extends AbstractMeshTest {
 
 	@Test
 	public void testBackup() throws IOException {
-		grantAdminRole();
+		grantAdmin();
 		call(() -> client().invokeBackup(), SERVICE_UNAVAILABLE, "backup_error_not_supported_in_memory_mode");
 	}
 

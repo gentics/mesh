@@ -86,7 +86,7 @@ public class BranchLinkRendererTest extends AbstractMeshTest {
 		latestBranchUuid = call(() -> client().findBranches(PROJECT_NAME)).getData().get(0).getUuid();
 
 		// Grant admin perms. Otherwise we can't check the jobs
-		tx(() -> group().addRole(roles().get("admin")));
+		grantAdmin();
 
 		contentUuid = tx(() -> content("news overview").getUuid());
 

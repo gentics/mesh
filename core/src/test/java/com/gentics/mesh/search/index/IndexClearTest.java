@@ -25,7 +25,7 @@ public class IndexClearTest extends AbstractMeshTest {
 		waitForEvent(INDEX_SYNC_FINISHED, () -> SyncEventHandler.invokeSync(vertx()));
 
 		call(() -> client().invokeIndexClear(), FORBIDDEN, "error_admin_permission_required");
-		tx(() -> group().addRole(roles().get("admin")));
+		grantAdmin();
 
 		GenericMessageResponse message = call(() -> client().invokeIndexClear());
 		assertThat(message).matches("search_admin_index_clear");
