@@ -50,6 +50,7 @@ public class MeshAuthUserImpl extends UserImpl implements MeshAuthUser {
 			user.put("firstname", getFirstname());
 			user.put("lastname", getLastname());
 			user.put("emailAddress", getEmailAddress());
+			user.put("admin", isAdmin());
 
 			JsonArray rolesArray = new JsonArray();
 			user.put("roles", rolesArray);

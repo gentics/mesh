@@ -593,7 +593,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				} else {
 					// Recreate the user if it can't be found.
 					UserRoot userRoot = meshRoot.getUserRoot();
-					adminUser = userRoot.create(ADMIN_USERNAME, adminUser);
+					adminUser = userRoot.create(ADMIN_USERNAME, null);
 					adminUser.setCreator(adminUser);
 					adminUser.setCreationTimestamp();
 					adminUser.setEditor(adminUser);

@@ -363,7 +363,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 			@Override
 			public boolean isAdmin() {
-				return true;
+				return false;
 			}
 
 			@Override

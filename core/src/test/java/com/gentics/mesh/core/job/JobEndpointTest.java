@@ -37,24 +37,22 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 		call(() -> client().findJobs(), FORBIDDEN, "error_admin_permission_required");
 
-		grantAdmin();
-
-		JobListResponse jobList = call(() -> client().findJobs());
+		JobListResponse jobList = adminCall(() -> client().findJobs());
 		assertThat(jobList.getData()).isEmpty();
 
 		String json = tx(() -> schemaContainer("folder").getLatestVersion().getJson());
 		String uuid = tx(() -> schemaContainer("folder").getUuid());
-		waitForJobs(() -> {
+		waitForJob(() -> {
 			SchemaUpdateRequest schema = JsonUtil.readValue(json, SchemaUpdateRequest.class);
 			schema.setName("folder2");
 			call(() -> client().updateSchema(uuid, schema));
-		}, COMPLETED, 1);
+		});
 
 		tx((tx) -> {
 			boot().jobRoot().enqueueBranchMigration(user(), initialBranch());
 		});
 
-		jobList = runAsAdmin(() -> call(() -> client().findJobs()));
+		jobList = adminCall(() -> client().findJobs());
 		JobResponse job = jobList.getData().get(1);
 		assertThat(job.getProperties()).doesNotContainKey("microschemaUuid");
 		assertThat(job.getProperties()).doesNotContainKey("microschemaName");
@@ -70,15 +68,13 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 		call(() -> client().deleteJob(jobUuid), FORBIDDEN, "error_admin_permission_required");
 
-		grantAdmin();
-
-		call(() -> client().deleteJob(jobUuid), BAD_REQUEST, "job_error_invalid_state", jobUuid);
+		adminCall(() -> client().deleteJob(jobUuid), BAD_REQUEST, "job_error_invalid_state", jobUuid);
 
 		triggerAndWaitForJob(jobUuid, FAILED);
 
-		call(() -> client().deleteJob(jobUuid));
+		adminCall(() -> client().deleteJob(jobUuid));
 
-		JobListResponse jobList = call(() -> client().findJobs());
+		JobListResponse jobList = adminCall(() -> client().findJobs());
 		assertThat(jobList.getData()).isEmpty();
 
 	}

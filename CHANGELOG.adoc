@@ -34,7 +34,8 @@ icon:check[] Permissions: Various flaws in the admin permission handling have be
 ____
 
 * The `resetAdminPassword` command line operation will now also re-create the admin user if it can't be found.
-* The admin permission is no longer bound to the `admin` role. Instead a dedicated `admin` flag can be set for users in order to grant admin privileges on a per-user basis. Mesh will automatically set the user admin flag for all users which have access to the role with the name `admin`. The permissions of the `admin` role will not be changed.
+* The admin permission is no longer bound to the `admin` role. Instead a dedicated `admin` flag can be set for users in order to grant admin privileges on a per-user basis. Mesh will automatically set the user admin flag for all users which have access to the role with the name `admin`. The permissions of the `admin` role will not be changed. It is advised to remove the admin group and admin role since those are no longer needed to cover admin privileges.
+* The admin user flag is also part of the user principal and can be used by plugins to check for admin privileges.
 * Admin endpoints will now check for the `admin` user flag and disregard any role that has been assigned to the user.
 ____
 

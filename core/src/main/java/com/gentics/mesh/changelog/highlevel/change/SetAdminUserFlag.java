@@ -42,6 +42,9 @@ public class SetAdminUserFlag extends AbstractHighLevelChange {
 	public void apply() {
 		log.info("Applying change: " + getName());
 		for (Role role : boot.get().roleRoot().findAll()) {
+			if (!"admin".equals(role.getName())) {
+				continue;
+			}
 			for (Group group : role.getGroups()) {
 				for (User user : group.getUsers()) {
 					log.info("Setting admin flag for user " + user.getUsername());

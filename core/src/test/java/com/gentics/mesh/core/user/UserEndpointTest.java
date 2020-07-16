@@ -419,12 +419,10 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.setAdmin(true);
 		request.setPassword("finger");
 
-		grantAdmin();
-		UserResponse response = call(() -> client().createUser(request));
+		UserResponse response = adminCall(() -> client().createUser(request));
 		assertThat(response).isAdmin();
 
 		// Test missing permission
-		revokeAdmin();
 		request.setUsername("test4321");
 		call(() -> client().createUser(request), FORBIDDEN, "user_error_admin_privilege_needed_for_admin_flag");
 	}
@@ -436,17 +434,15 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		createRequest.setAdmin(false);
 		createRequest.setPassword("finger");
 
-		grantAdmin();
-		UserResponse response = call(() -> client().createUser(createRequest));
+		UserResponse response = adminCall(() -> client().createUser(createRequest));
 		assertThat(response).isNotAdmin();
 
 		UserUpdateRequest updateRequest = new UserUpdateRequest();
 		updateRequest.setAdmin(true);
-		UserResponse response2 = call(() -> client().updateUser(response.getUuid(), updateRequest));
+		UserResponse response2 = adminCall(() -> client().updateUser(response.getUuid(), updateRequest));
 		assertThat(response2).isAdmin();
 
 		// Test missing permission
-		revokeAdmin();
 		updateRequest.setAdmin(false);
 		call(() -> client().updateUser(response.getUuid(),updateRequest), FORBIDDEN, "user_error_admin_privilege_needed_for_admin_flag");
 	}
