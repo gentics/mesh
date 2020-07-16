@@ -98,19 +98,20 @@ include::content/docs/examples/models/mesh-cli-help.txt[]
 On first startup, Gentics Mesh will create all files and folders.
 
  data
-    binaryFiles
-    binaryImageCache
-    graphdb
-    tmp
+    binaryFiles                # Folder for uploads
+    binaryImageCache           # Folder for resized and cached images
+    graphdb                    # Main Graph Database storage which contains all contents
+    tmp                        # Temporary directory
  config
-    keystore.jceks
-    default-distributed-db-config.json
-    orientdb-server-config.xml
-    security.json
-    hazelcast.xml
-    mesh-ui-config.js
-    mesh.yml
-elasticsearch
+    mesh.yml                   # Main Gentics Mesh configuration
+    automatic-backup.json      # OrientDB Automatic Backup configuration 
+    default-distributed-db-config.json # Default configuration for new Cluster Nodes
+    hazelcast.xml              # Hazelcast cluster configuration
+    keystore.jceks             # Gentics Mesh keystore used to generate and validate JWT's
+    logback.xml                # Logging configuration file
+    orientdb-server-config.xml # OrientDB Cluster Server configuration
+    security.json              # OrientDB security configuration
+    mesh-ui-config.js          # Configuration of the Mesh UI
 
 Gentics Mesh ships with two configuration files:
 
@@ -323,6 +324,17 @@ The following numbers serve the purpose to roughly estimate the memory requireme
 | 10_000 to 100_000    | `-Xms1250m -Xmx1250m -XX:MaxDirectMemorySize=512m  -Dstorage.diskCache.bufferSize=512`
 | 100_000 to 1_000_000 | `-Xms2500m -Xmx2500m -XX:MaxDirectMemorySize=1024m -Dstorage.diskCache.bufferSize=1024`
 |======
+
+== Admin Access
+
+By default an `admin` user will be created during initial startup. The password of this user will be printed in the log. 
+It is mandatory to update the admin password during the first login.
+
+NOTE: For demo installations the password is `admin`.
+
+Additional admin users can be created by setting the `admin` flag the users.
+
+NOTE: The admin access can be restored via the use of the `resetAdminPassword` link:#cli[mesh server argument].
 
 == Backup & Recovery
 
