@@ -10,7 +10,7 @@
 
 = Mesh Commercial Plugin Commons Changelog
 
-[[v1.4.910]
+[[v1.4.10]
 == 1.4.10 (2020-07-14)
 
 icon:check[] Common: Error handling in handlers created by `HandlerUtil` will now optionally send a response with the respective status code and no body, or a JSON representation of the error.
