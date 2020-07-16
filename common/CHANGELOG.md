@@ -10,12 +10,22 @@
 
 = Mesh Commercial Plugin Commons Changelog
 
+[[v1.5.3]]
+== 1.5.3 (2020-07-14)
+
+icon:check[] Common: Error handling in handlers created by `HandlerUtil` will now optionally send a response with the respective status code and no body, or a JSON representation of the error.
+
 [[v1.5.2]]
 == 1.5.2 (2020-07-02)
 
 icon:check[] MeshPluginService: Make sure project initialization via `prepareProjects()` does not initialize multiple projects in parallel.
 
 icon:check[] MeshPluginService: Fix Vert.x event bus usage which caused problems during initialization in clustered setups.
+
+[[v1.4.10]
+== 1.4.10 (2020-07-14)
+
+icon:check[] Common: Error handling in handlers created by `HandlerUtil` will now optionally send a response with the respective status code and no body, or a JSON representation of the error.
 
 [[v1.4.9]]
 == 1.4.9 (2020-07-02)
@@ -24,8 +34,13 @@ icon:check[] MeshPluginService: Make sure project initialization via `preparePro
 
 icon:check[] MeshPluginService: Fix Vert.x event bus usage which caused problems during initialization in clustered setups.
 
+[[v1.3.12]]
+== 1.3.12 (2020-07-14)
+
+icon:check[] Common: Error handling in handlers created by `HandlerUtil` will now optionally send a response with the respective status code and no body, or a JSON representation of the error.
+
 [[v1.3.11]]
-== 1.3.10 (2020-07-02)
+== 1.3.11 (2020-07-02)
 
 icon:check[] MeshPluginService: Make sure project initialization via `prepareProjects()` does not initialize multiple projects in parallel.
 
