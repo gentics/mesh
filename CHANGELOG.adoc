@@ -25,8 +25,8 @@ include::content/docs/variables.adoc-include[]
 
 * The Mesh Server will require Java 11 with the release of 2.0.0. The runtime support for Java 8 will be dropped. The Mesh Java REST client will still be usable with Java 8.
 
-[[pending]]
-== Pending
+[[v1.5.3]]
+== 1.5.3 (16.07.2020)
 
 icon:check[] Permissions: Various flaws in the admin permission handling have been fixed.
 
@@ -42,6 +42,8 @@ ____
 icon:plus[] Elasticsearch: The `branchUuid` property was added to documents in the search index.
 
 icon:check[] Security: A minor security issue has been fixed.
+
+icon:check[] UI: The Gentics Mesh UI has been updated to version link:https://github.com/gentics/mesh-ui/blob/1.1.2/CHANGELOG.md#112---2020-07-16[1.1.2]
 
 [[v1.5.2]]
 == 1.5.2 (22.06.2020)

@@ -15,7 +15,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<projectRoot>${project.basedir}</projectRoot>
 		<mesh.admin-ui.version>0.9.2</mesh.admin-ui.version>
-		<mesh.admin-ui2.version>1.1.1</mesh.admin-ui2.version>
+		<mesh.admin-ui2.version>1.1.2</mesh.admin-ui2.version>
 
 		<dagger.version>2.24</dagger.version>
 
