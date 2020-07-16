@@ -10,8 +10,13 @@
 
 = Mesh Commercial Plugin Commons Changelog
 
+[[v1.3.12]]
+== 1.3.12 (2020-07-14)
+
+icon:check[] Common: Error handling in handlers created by `HandlerUtil` will now optionally send a response with the respective status code and no body, or a JSON representation of the error.
+
 [[v1.3.11]]
-== 1.3.10 (2020-07-02)
+== 1.3.11 (2020-07-02)
 
 icon:check[] MeshPluginService: Make sure project initialization via `prepareProjects()` does not initialize multiple projects in parallel.
 
