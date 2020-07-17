@@ -1,23 +1,5 @@
 package com.gentics.mesh.plugin.search.handler;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.function.BinaryOperator;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-import javax.inject.Inject;
-import javax.inject.Provider;
-import javax.inject.Singleton;
-
-import org.apache.commons.lang.StringUtils;
-
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
@@ -37,7 +19,6 @@ import com.gentics.mesh.plugin.search.util.RequestUtils;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.util.NumberUtils;
 import com.gentics.vertx.http.HttpResponseStatus;
-
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -45,6 +26,22 @@ import io.reactivex.functions.BiConsumer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.apache.commons.lang.StringUtils;
+
+import javax.annotation.Nullable;
+import javax.inject.Inject;
+import javax.inject.Provider;
+import javax.inject.Singleton;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Handler for normal search reqests.
@@ -125,6 +122,11 @@ public class SearchHandler extends AbstractQueryHandler {
 	private static final String RS_HITS_FIELD = "results";
 	private static final String RS_PAGE_HITCOUNT_FIELD = "pageHitCount";
 	private static final String ES_HITS_FIELD = "hits";
+	private static final String ES_SOURCE_FIELD = "_source";
+	private static final String ES_BRANCH_UUID_FIELD = "branchUuid";
+	private static final String ES_BRANCH_UUID_PATH = ES_SOURCE_FIELD + "/" + ES_BRANCH_UUID_FIELD;
+	private static final String ES_PROJECT_NAME_PATH = ES_SOURCE_FIELD + "/project/name";
+
 
 	private final QueryService queryService;
 	private final BranchService branchService;
@@ -181,6 +183,7 @@ public class SearchHandler extends AbstractQueryHandler {
 		}
 
 		return querySupplier.get()
+			.doOnSuccess(this::injectBranchUuidSource)
 			.doOnSuccess(this::traceQuery)
 			.flatMap(query -> RequestUtils.getSearchRequest(context, query.encode(), config.isMultiProjectSearch(project)).toSingle())
 			.map(JsonUtils::jsonObjectOf)
@@ -190,6 +193,22 @@ public class SearchHandler extends AbstractQueryHandler {
 			.flatMap(this::addDidYouMean)
 			.flatMapCompletable(resultMapper)
 			.doOnError(context::fail);
+	}
+
+	/**
+	 * Add the {@code branchUuid} to the {@code _source} array if the array is
+	 * present.
+	 *
+	 * @param query The original Elasticsearch query
+	 */
+	private void injectBranchUuidSource(JsonObject query) {
+		JsonArray source = query.getJsonArray(ES_SOURCE_FIELD);
+
+		if (source != null && !source.contains(ES_BRANCH_UUID_FIELD)) {
+			log.trace("Injecting \"branchUuid\" into \"_source\"");
+
+			source.add(ES_BRANCH_UUID_FIELD);
+		}
 	}
 
 	/**
@@ -348,7 +367,7 @@ public class SearchHandler extends AbstractQueryHandler {
 
 		hits.stream()
 			.map(o -> (JsonObject) o)
-			.collect(Collectors.groupingBy(SearchHandler::getBranchUuid))
+			.collect(Collectors.groupingBy(this::getBranchUuid))
 			.forEach((key, val) -> queryResults.add(loadResultItems(key, val)));
 
 		return Observable.merge(queryResults)
@@ -381,7 +400,7 @@ public class SearchHandler extends AbstractQueryHandler {
 	 * 		Elasticsearch hit
 	 * @return The key for identifying an Elasticsearch hit
 	 */
-	private static String createHitKey(JsonObject hit, String branch) {
+	private String createHitKey(JsonObject hit, String branch) {
 		if (branch == null) {
 			// When no branch is provided we assume it is an Elasticsearch hit.
 			return getBranchUuid(hit) + "-" + hit.getString("_id");
@@ -396,11 +415,37 @@ public class SearchHandler extends AbstractQueryHandler {
 	 * @param hit The Elasticsearch hit
 	 * @return The UUID of the hits branch
 	 */
-	private static String getBranchUuid(JsonObject hit) {
-		// index name schema looks like: [:indexPrefixnode-:projectUuid-:branchUuid-:schemaVersionUuid-:versionType]
+	private String getBranchUuid(JsonObject hit) {
+		String branchUuid = JsonUtils.getValue(hit, ES_BRANCH_UUID_PATH, null);
+
+		if (StringUtils.isNotBlank(branchUuid)) {
+			log.trace("Found branch UUID in search hit");
+
+			return branchUuid;
+		}
+
+		log.trace("Extracting branch UUID from index name");
+
+		/*
+		 * The index name schema looks like:
+		 * :indexPrefix-:projectUuid-:branchUuid-:schemaVersionUuid-:versionType[-:language]
+		 *
+		 * The -:language part at the end is optional, and only present, when
+		 * there are language specific elasticsearch settings. The index prefix
+		 * can change, so just counting the number of '-' is not very stable.
+		 *
+		 * Ideally we could get the branch UUID from something else than the
+		 * index name, but this requires additional changes how Mesh indices
+		 * data.
+		 */
 		String[] idxParts = hit.getString("_index").split("-");
 
-		return idxParts[idxParts.length - 3];
+		// Version type is either "draft" or "published" and is last when there
+		// are no language specific settings.
+		String last = idxParts[idxParts.length - 1];
+		int offset = last.equals("published") || last.equals("draft") ? 3 : 4;
+
+		return idxParts[idxParts.length - offset];
 	}
 
 	/**
@@ -427,7 +472,7 @@ public class SearchHandler extends AbstractQueryHandler {
 			return Observable.empty();
 		}
 
-		String projectName = JsonUtils.getValue(hits.get(0), "_source/project/name", "");
+		String projectName = JsonUtils.getValue(hits.get(0), ES_PROJECT_NAME_PATH, "");
 		Map<String, JsonObject> rawHits = hits.stream().collect(
 			// The ID of a search hit has the form "[Node UUID]-[Language code]".
 			Collectors.toMap(h -> createHitKey(h, null), Function.identity()));

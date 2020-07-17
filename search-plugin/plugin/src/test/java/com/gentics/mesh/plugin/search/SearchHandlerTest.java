@@ -4,10 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
+import com.gentics.mesh.http.HttpConstants;
 import com.gentics.mesh.plugin.PluginContext;
+import com.gentics.mesh.plugin.search.config.CustomQueryOptions;
 import com.gentics.mesh.plugin.search.config.SearchConfiguration;
 import com.gentics.mesh.plugin.search.extension.CustomHandler;
 import com.gentics.mesh.plugin.search.handler.SearchHandler;
+import com.gentics.mesh.plugin.search.handler.custom.CustomQueryHandler;
 import com.gentics.mesh.plugin.search.service.BranchService;
 import com.gentics.mesh.plugin.search.service.QueryService;
 import com.gentics.mesh.plugin.search.transformer.BasicHitTransformer;
@@ -15,6 +18,7 @@ import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.vertx.http.HttpResponseStatus;
 import io.reactivex.Completable;
 import io.reactivex.Single;
+import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.io.IOUtils;
@@ -283,6 +287,25 @@ public class SearchHandlerTest {
 	}
 
 	/**
+	 * Test that the handler works with the new language specific indices.
+	 */
+	@Test
+	public void testSearchResultLanguageSpecificIndices() throws IOException {
+		searchResult = mockRequest(new ObjectMapper().readValue(getClass().getResource("/results/searchResultLanguageSpecificIndex.json"), ObjectNode.class));
+
+		// The did you mean queries would mess up the count of the searchNodesRaw() invocations.
+		config.setDidYouMeanThreshold(0);
+		config.setResultQuery("searchResultItem");
+
+		PluginContext pc = mockContext(DEFAULT_PROJECT, "/search", "q=test");
+
+		makeSearchRequest(pc, null);
+
+		verify(pc.client(), times(1)).searchNodesRaw(anyString(), anyString(), anyVararg());
+		verify(pc.response()).end(contains("\"totalHits\":1"));
+	}
+
+	/**
 	 * Test that branch and node UUIDs as well as the node language are added to all search results.
 	 */
 	@Test
@@ -366,6 +389,33 @@ public class SearchHandlerTest {
 		verify(queryServiceMock).getSearchResultQuery(DEFAULT_PROJECT, customHandler.getResultQueryName());
 	}
 
+	/**
+	 * Test that configured custom queries are handled correctly.
+	 */
+	@Test
+	public void testCustomQueryHandler() throws IOException {
+		String customQuery = "customQuery";
+
+		searchResult = mockRequest(new ObjectMapper().readValue(getClass().getResource("/results/searchResultOneBranch.json"), ObjectNode.class));
+		config.setDidYouMeanThreshold(0);
+
+		JsonObject expectedQuery = new JsonObject().put("query", "custom query");
+
+		when(queryServiceMock.getCustomQuery(any(), anyString())).thenReturn(Single.just(expectedQuery));
+
+		String expectedResult = new JsonObject().put("result", "custom handler result").encode();
+		PluginContext pc = mockContext(DEFAULT_PROJECT, "/search/custom/" + customQuery, "q=test");
+		CustomHandler customHandler = new CustomQueryHandler(queryServiceMock, new CustomQueryOptions(customQuery)) ;
+
+		makeSearchRequest(pc, customHandler);
+
+		verify(pc.client(), times(1)).searchNodesRaw(eq(DEFAULT_PROJECT), eq(expectedQuery.encode()), anyVararg());
+		verify(pc.response()).putHeader(HttpHeaders.CONTENT_TYPE, HttpConstants.APPLICATION_JSON_UTF8);
+		verify(pc.response()).end(anyString());
+		verify(queryServiceMock, never()).getSearchResultQuery(anyString());
+		verify(queryServiceMock, never()).getSearchResultQuery(anyString(), anyString());
+		verify(queryServiceMock, times(1)).getCustomQuery(any(), eq(customQuery));
+	}
 
 	/**
 	 * Mock the necessary methods of the client, initialize and call the handler.
