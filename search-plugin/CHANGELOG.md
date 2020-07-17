@@ -10,8 +10,8 @@
 
 = Mesh Search Plugin Changelog
 
-[[v1.5.2]]
-== 1.5.2 (TBD)
+[[v1.5.4]]
+== 1.5.4 (2020-07-17)
 
 icon:check[] SearchHandler: Fix branch UUID detection for language specific indices introduced by Mesh 1.5.0.
 
