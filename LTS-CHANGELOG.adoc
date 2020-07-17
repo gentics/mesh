@@ -17,9 +17,10 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
-[[Unreleased]]
+[[v1.4.12]]
+== 1.4.12 (17.07.2020)
 
-icon:check[] Clustering: The cluster coordinator will now detect changes caused by the OAuth token mapping and will redirect the request if necessary.
+icon:check[] Clustering: The link:{{< relref "clustering.asciidoc" >}#_cluster_coordination[cluster coordinator] will now detect changes caused by the OAuth token mapping and will redirect the request if necessary. Thus this change allows the use of the `CUD` mode when using request coordination in combination with authentication plugins.
 
 icon:plus[] Clustering: When using the cluster coordinator, forwarded requests will now contain the link:{{< relref "image-manipulation.asciidoc" >}}#_headers[`X-Mesh-Forwarded-From` header].
 
