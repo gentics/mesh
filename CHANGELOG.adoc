@@ -25,6 +25,12 @@ include::content/docs/variables.adoc-include[]
 
 * The Mesh Server will require Java 11 with the release of 2.0.0. The runtime support for Java 8 will be dropped. The Mesh Java REST client will still be usable with Java 8.
 
+
+[[v1.4.10]]
+==  1.4.10 (17.07.2020)
+
+icon:check[] Clustering: Authentication token mapping operations for any type of request will now be delegated to the link:{{< relref "clustering.asciidoc" >}#_cluster_coordination[cluster coordination master]. Thus this change allows the use of the `CUD` mode when using request coordination in combination with authentication plugins.
+
 [[v1.4.9]]
 == 1.4.9 (07.04.2020)
 
