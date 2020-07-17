@@ -107,7 +107,7 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 
 	private boolean startEmbeddedES = false;
 
-	private boolean coordinatorPlane = false;
+	private CoordinatorMode coordinatorMode = null;
 
 	private String coordinatorPlaneRegex;
 
@@ -194,8 +194,8 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 			addEnv(GraphStorageOptions.MESH_GRAPH_DB_DIRECTORY_ENV, "null");
 		}
 
-		if (coordinatorPlane) {
-			addEnv(ClusterOptions.MESH_CLUSTER_COORDINATOR_MODE_ENV, CoordinatorMode.ALL.name());
+		if (coordinatorMode != null) {
+			addEnv(ClusterOptions.MESH_CLUSTER_COORDINATOR_MODE_ENV, coordinatorMode.name());
 		}
 
 		if (coordinatorPlaneRegex != null) {
@@ -574,7 +574,11 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 	}
 
 	public MeshContainer withCoordinatorPlane() {
-		this.coordinatorPlane = true;
+		return withCoordinatorPlane(CoordinatorMode.ALL);
+	}
+
+	public MeshContainer withCoordinatorPlane(CoordinatorMode coordinatorMode) {
+		this.coordinatorMode = coordinatorMode;
 		return this;
 	}
 
@@ -655,6 +659,11 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 
 	public MeshContainer withPluginTimeout(int timeoutInSeconds) {
 		addEnv(MeshOptions.MESH_PLUGIN_TIMEOUT_ENV, String.valueOf(timeoutInSeconds));
+		return this;
+	}
+
+	public MeshContainer withPublicKeys(File file) {
+		addFileSystemBind(file.getAbsolutePath(), "/config/public-keys.json", BindMode.READ_ONLY);
 		return this;
 	}
 

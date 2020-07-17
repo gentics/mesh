@@ -168,4 +168,10 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	 * @return
 	 */
 	JWTAuthentication getAuthentication();
+
+	/**
+	 * Return the config that was used to create this client.
+	 * @return
+	 */
+	MeshRestClientConfig getConfig();
 }
