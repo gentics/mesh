@@ -25,6 +25,11 @@ include::content/docs/variables.adoc-include[]
 
 * The Mesh Server will require Java 11 with the release of 2.0.0. The runtime support for Java 8 will be dropped. The Mesh Java REST client will still be usable with Java 8.
 
+[[next]]
+== Next
+
+icon:plus[] Monitoring: The readiness probe will now also check for plugin status. Failed plugin deployments will let the readiness probe fail.
+
 [[v1.5.3]]
 == 1.5.3 (16.07.2020)
 
