@@ -17,6 +17,11 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.4.13]]
+== 1.4.13 (25.08.2020)
+
+icon:plus[] Monitoring: The readiness probe will now also check for plugin status. Failed plugin deployments will let the readiness probe fail.
+
 [[v1.4.12]]
 == 1.4.12 (17.07.2020)
 

@@ -8,6 +8,8 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.rest.plugin.PluginStatus;
+import com.gentics.mesh.plugin.manager.MeshPluginManager;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -19,9 +21,12 @@ public class MonitoringCrudHandler {
 
 	private final BootstrapInitializer boot;
 
+	private final MeshPluginManager pluginManager;
+
 	@Inject
-	public MonitoringCrudHandler(BootstrapInitializer boot) {
+	public MonitoringCrudHandler(BootstrapInitializer boot, MeshPluginManager pluginManager) {
 		this.boot = boot;
+		this.pluginManager = pluginManager;
 	}
 
 	public void handleLive(RoutingContext rc) {
@@ -30,6 +35,16 @@ public class MonitoringCrudHandler {
 	}
 
 	public void handleReady(RoutingContext rc) {
+		for (String id : pluginManager.getPluginIds()) {
+			PluginStatus status = pluginManager.getStatus(id);
+			if (status != PluginStatus.REGISTERED) {
+				if (log.isDebugEnabled()) {
+					log.debug("Plugin {" + id + "} is not ready. Got status {" + status + "}");
+				}
+				throw error(SERVICE_UNAVAILABLE, "error_internal");
+			}
+		}
+
 		MeshStatus status = boot.mesh().getStatus();
 		if (status.equals(MeshStatus.READY)) {
 			rc.response().end();
