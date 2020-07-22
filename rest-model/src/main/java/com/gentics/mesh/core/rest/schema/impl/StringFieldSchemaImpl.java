@@ -2,6 +2,7 @@ package com.gentics.mesh.core.rest.schema.impl;
 
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.ALLOW_KEY;
 
+import java.util.Arrays;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -42,7 +43,9 @@ public class StringFieldSchemaImpl extends AbstractFieldSchema implements String
 	public void apply(Map<String, Object> fieldProperties) {
 		super.apply(fieldProperties);
 		if (fieldProperties.get(ALLOW_KEY) != null) {
-			setAllowedValues((String[]) fieldProperties.get(ALLOW_KEY));
+			Object[] objectArray = (Object[]) fieldProperties.get(ALLOW_KEY);
+			String[] stringArray = Arrays.copyOf(objectArray, objectArray.length, String[].class);
+			setAllowedValues(stringArray);
 		}
 	}
 

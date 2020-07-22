@@ -20,7 +20,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.util.Objects;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -46,9 +45,13 @@ import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
@@ -93,6 +96,34 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			assertEquals("The name should have been updated", name, reloaded.getName());
 		}
 
+	}
+
+	@Test
+	public void diffTest() {
+		// 1. Create Schema
+		SchemaCreateRequest createRequest = new SchemaCreateRequest();
+		createRequest.setName("test");
+		createRequest.addField(FieldUtil.createStringFieldSchema("text"));
+		createRequest.addField(FieldUtil.createStringFieldSchema("text2"));
+		SchemaResponse createResponse = call(() -> client().createSchema(createRequest));
+
+		// 2. Change allow and diff
+		Schema diffRequest = new SchemaModelImpl();
+		diffRequest.setName("test");
+		diffRequest.addField(FieldUtil.createStringFieldSchema("text"));
+		diffRequest.addField(FieldUtil.createStringFieldSchema("text2").setAllowedValues("A", "B", "C"));
+		SchemaChangesListModel changes = call(() -> client().diffSchema(createResponse.getUuid(), diffRequest));
+
+		// validate diff
+		assertEquals(SchemaChangeOperation.UPDATEFIELD, changes.getChanges().get(0).getOperation());
+
+		// 3. Apply changes
+		call(() -> client().applyChangesToSchema(createResponse.getUuid(), changes));
+
+		// Validate update via apply
+		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(createResponse.getUuid()));
+		StringFieldSchema stringFieldSchema = (StringFieldSchema) updatedSchema.getField("text2");
+		assertEquals(3, stringFieldSchema.getAllowedValues().length);
 	}
 
 	@Test
@@ -606,7 +637,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 	}
 
 	@Test
-	@Category({FailingTests.class})
+	@Category({ FailingTests.class })
 	public void testUpdateFieldName() throws Exception {
 		// 1. Verify test data
 		Node node = content();

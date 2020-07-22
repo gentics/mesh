@@ -28,6 +28,8 @@ include::content/docs/variables.adoc-include[]
 [[next]]
 == Next
 
+icon:check[] Core: Fixed internal server errors that happend when applying schema diffs that contained multiple `allow` property values.
+
 icon:plus[] Monitoring: The readiness probe will now also check for plugin status. Failed plugin deployments will let the readiness probe fail.
 
 [[v1.5.3]]

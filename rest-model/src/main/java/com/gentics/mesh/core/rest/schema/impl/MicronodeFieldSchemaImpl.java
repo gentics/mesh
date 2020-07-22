@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.ALLOW_KEY;
+
+import java.util.Arrays;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -42,7 +45,9 @@ public class MicronodeFieldSchemaImpl extends AbstractFieldSchema implements Mic
 	public void apply(Map<String, Object> fieldProperties) {
 		super.apply(fieldProperties);
 		if (fieldProperties.get(SchemaChangeModel.ALLOW_KEY) != null) {
-			setAllowedMicroSchemas((String[]) fieldProperties.get(SchemaChangeModel.ALLOW_KEY));
+			Object[] objectArray = (Object[]) fieldProperties.get(ALLOW_KEY);
+			String[] stringArray = Arrays.copyOf(objectArray, objectArray.length, String[].class);
+			setAllowedMicroSchemas(stringArray);
 		}
 	}
 }
