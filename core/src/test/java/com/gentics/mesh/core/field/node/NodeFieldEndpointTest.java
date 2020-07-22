@@ -32,7 +32,9 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.field.AbstractFieldEndpointTest;
+import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaList;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
+import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
@@ -40,9 +42,15 @@ import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
+import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.client.DeleteParametersImpl;
 import com.gentics.mesh.parameter.client.PublishParametersImpl;
@@ -104,6 +112,49 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			NodeResponse secondResponse = updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(target.getUuid()));
 			assertThat(secondResponse.getVersion()).as("New version number").isEqualTo(oldNumber);
 		}
+	}
+
+	@Test
+	public void testNodeFieldReference() {
+		// 1. Create Schema
+		SchemaCreateRequest createRequest = new SchemaCreateRequest();
+		createRequest.setName("test");
+		createRequest.addField(FieldUtil.createStringFieldSchema("text"));
+		SchemaResponse createResponse = call(() -> client().createSchema(createRequest));
+		// 2. Add schema to project
+		call(() -> client().assignSchemaToProject(PROJECT_NAME, createResponse.getUuid()));
+
+		// 3. Add the ref field
+		Schema diffRequest = new SchemaModelImpl();
+		diffRequest.setName("test");
+		diffRequest.addField(FieldUtil.createStringFieldSchema("text"));
+		diffRequest.addField(FieldUtil.createNodeFieldSchema("ref").setAllowedSchemas("content"));
+		SchemaChangesListModel changes = call(() -> client().diffSchema(createResponse.getUuid(), diffRequest));
+
+		// validate diff
+		assertEquals(SchemaChangeOperation.ADDFIELD, changes.getChanges().get(0).getOperation());
+
+		// 4. Apply changes
+		call(() -> client().applyChangesToSchema(createResponse.getUuid(), changes));
+
+		// 5. Assign version to branch
+		BranchInfoSchemaList schemaVersionReferences = new BranchInfoSchemaList();
+		schemaVersionReferences.add(new SchemaReferenceImpl().setName("test"));
+		schemaVersionReferences.add(new SchemaReferenceImpl().setName("folder"));
+		schemaVersionReferences.add(new SchemaReferenceImpl().setName("content"));
+		call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, initialBranchUuid(), schemaVersionReferences));
+
+		// 6. Create the node
+		String rootNodeUuid = tx(() -> project().getBaseNode().getUuid());
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		nodeCreateRequest.setParentNodeUuid(rootNodeUuid);
+		nodeCreateRequest.setLanguage("en");
+		nodeCreateRequest.setSchemaName("test");
+		FieldMap fields = nodeCreateRequest.getFields();
+		fields.put("text", FieldUtil.createStringField("test"));
+		fields.put("ref", FieldUtil.createNodeField(contentUuid()));
+		System.out.println(nodeCreateRequest.toJson());
+		call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
 	}
 
 	@Test
