@@ -90,7 +90,7 @@ public class TemplateSearchQueryBuilder implements CachingSearchQueryBuilder {
 			return null;
 		}
 
-		return buildQuery(context, name.equals("search"), template);
+		return buildQuery(context, template);
 	}
 
 	@Override
@@ -152,13 +152,12 @@ public class TemplateSearchQueryBuilder implements CachingSearchQueryBuilder {
 	 * </p>
 	 *
 	 * @param context The current plugin context
-	 * @param isSearchQuery Whether the build query is a search query which needs the "from" and "size" parameters
 	 * @param template The Handlebars template for the query
 	 * @return The final query
 	 * @throws RuntimeException When the template could not be generated or applied to the search parameters
 	 */
-	private JsonObject buildQuery(PluginContext context, boolean isSearchQuery, Object template) {
-		Map<String, Object> params = getParameters(context.request(), isSearchQuery, context.projectName());
+	private JsonObject buildQuery(PluginContext context, Object template) {
+		Map<String, Object> params = getParameters(context.request(), context.projectName());
 
 		if (template instanceof RuntimeException) {
 			throw (RuntimeException) template;
@@ -175,11 +174,10 @@ public class TemplateSearchQueryBuilder implements CachingSearchQueryBuilder {
 	 * Extract the "query", "lang", "projects" and if needed the "tags" parameters from the search request.
 	 *
 	 * @param request The current search request
-	 * @param isSearchQuery Whether the parameters are for a search query which needs the "tags" parameter
 	 * @param projectName The project that received the search request
 	 * @return A map containing the extracted query parameters
 	 */
-	private Map<String, Object> getParameters(HttpServerRequest request, boolean isSearchQuery, String projectName) {
+	private Map<String, Object> getParameters(HttpServerRequest request, String projectName) {
 		Map<String, Object> params = new HashMap<>();
 		String param = request.getParam("l");
 
@@ -190,10 +188,7 @@ public class TemplateSearchQueryBuilder implements CachingSearchQueryBuilder {
 		params.put("lang", StringEscapeUtils.escapeJson(param));
 		params.put("query", QueryBuilderUtils.getEscapedSearchTerm(request));
 		params.put("projects", QueryBuilderUtils.getProjectsRegexp(config.getSearchedProjects(projectName)));
-
-		if (isSearchQuery) {
-			params.put("tags", String.join(" ", QueryBuilderUtils.getTags(request)));
-		}
+		params.put("tags", String.join(" ", QueryBuilderUtils.getTags(request)));
 
 		return params;
 	}

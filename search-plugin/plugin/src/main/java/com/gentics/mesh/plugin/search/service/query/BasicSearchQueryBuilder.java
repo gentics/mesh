@@ -81,15 +81,14 @@ public class BasicSearchQueryBuilder implements SearchQueryBuilder {
 
 		setCommonFields(query, params, config.getSearchedProjects(context.projectName()), context);
 
+		HttpServerRequest request = context.request();
+		setParam(
+			query,
+			params,
+			"tags",
+			String.join(" ", QueryBuilderUtils.getTags(request)));
+
 		if (name.equals("search")) {
-			HttpServerRequest request = context.request();
-
-			setParam(
-				query,
-				params,
-				"tags",
-				String.join(" ", QueryBuilderUtils.getTags(request)));
-
 			int page = NumberUtils.toInt(request.getParam("p"), 0);
 			int pageSize = config.getPageSize();
 
