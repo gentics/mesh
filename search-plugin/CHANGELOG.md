@@ -10,6 +10,11 @@
 
 = Mesh Search Plugin Changelog
 
+[[v1.5.5]]
+== 1.5.5 (TBD)
+
+icon:check[] The `t` parameter can now also be used in custom queries in order to specify the `tags` render context parameter for handlebars templates.
+
 [[v1.5.4]]
 == 1.5.4 (2020-07-17)
 
