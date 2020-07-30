@@ -11,7 +11,6 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.tx.Tx;
 import com.gentics.madl.tx.TxAction0;
 import com.gentics.madl.tx.TxAction1;
-import com.gentics.madl.tx.TxFactory;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
@@ -40,7 +39,7 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * Main description of a graph database.
  */
-public interface Database extends TxFactory {
+public interface Database extends ATxFactory {
 
 	Logger log = LoggerFactory.getLogger(Database.class);
 

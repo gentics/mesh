@@ -20,9 +20,9 @@ import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import com.gentics.madl.tx.Tx;
-import com.gentics.madl.tx.TxAction;
 import com.gentics.madl.tx.TxAction0;
 import com.gentics.madl.tx.TxAction1;
+import com.gentics.mda.ATxAction;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
@@ -228,7 +228,7 @@ public class HandlerUtilities {
 		}, m -> ac.send(m, OK));
 	}
 
-	public <RM> void syncTx(InternalActionContext ac, TxAction<RM> handler, Consumer<RM> action) {
+	public <RM> void syncTx(InternalActionContext ac, ATxAction<RM> handler, Consumer<RM> action) {
 		try {
 			RM model = database.tx(handler);
 			action.accept(model);

@@ -56,6 +56,7 @@ public interface BootstrapInitializer {
 	 * 
 	 * @return
 	 */
+	@Deprecated
 	UserRoot userRoot();
 
 	/**

@@ -8,11 +8,14 @@ import com.gentics.madl.traversal.RawTraversalResult;
 import com.gentics.madl.traversal.RawTraversalResultImpl;
 import com.gentics.madl.tx.AbstractTx;
 import com.gentics.madl.tx.Tx;
+import com.gentics.mda.ATx;
+import com.gentics.mda.entitycollection.UserDao;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.graphdb.cluster.TxCleanupTask;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.tx.OrientStorage;
+import com.gentics.mesh.graphdb.wrapper.UserRootWrapper;
 import com.gentics.mesh.madl.tp3.mock.Element;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversalSource;
@@ -26,7 +29,7 @@ import io.micrometer.core.instrument.Timer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
+public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> implements ATx {
 
 	private static final Logger log = LoggerFactory.getLogger(OrientDBTx.class);
 
@@ -126,5 +129,10 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 			log.error("Could not set mesh component attribute. Followup errors may happen.");
 		}
 		super.init(transactionalGraph);
+	}
+
+	@Override
+	public UserDao users() {
+		return new UserRootWrapper(boot.userRoot());
 	}
 }

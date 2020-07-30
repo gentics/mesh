@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -47,6 +48,10 @@ public class TraversalResult<T> implements Iterable<T> {
 			Spliterators.spliteratorUnknownSize(it.iterator(), Spliterator.ORDERED),
 			false);
 		return stream;
+	}
+
+	public <R> TraversalResult<R> map(Function<? super T, ? extends R> mapper) {
+		return new TraversalResult<>(stream().map(mapper));
 	}
 
 	public List<? extends T> list() {

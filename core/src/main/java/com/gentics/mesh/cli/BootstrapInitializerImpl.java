@@ -36,6 +36,8 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.madl.tx.Tx;
+import com.gentics.mda.entity.AUser;
+import com.gentics.mda.entitycollection.UserDao;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.cache.CacheRegistryImpl;
@@ -586,13 +588,13 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		String password = configuration.getAdminPassword();
 		if (password != null) {
 			db.tx(tx -> {
-				User adminUser = userRoot().findByName(ADMIN_USERNAME);
+				AUser adminUser = tx.users().findByName(ADMIN_USERNAME);
 				if (adminUser != null) {
 					adminUser.setPassword(password);
 					adminUser.setAdmin(true);
 				} else {
 					// Recreate the user if it can't be found.
-					UserRoot userRoot = meshRoot.getUserRoot();
+					UserDao userRoot = tx.users();
 					adminUser = userRoot.create(ADMIN_USERNAME, null);
 					adminUser.setCreator(adminUser);
 					adminUser.setCreationTimestamp();

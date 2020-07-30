@@ -1,10 +1,10 @@
 package com.gentics.mesh.test.context.helper;
 
-import com.gentics.madl.tx.Tx;
-import com.gentics.madl.tx.TxAction;
 import com.gentics.madl.tx.TxAction0;
 import com.gentics.madl.tx.TxAction1;
-import com.gentics.madl.tx.TxAction2;
+import com.gentics.mda.ATx;
+import com.gentics.mda.ATxAction;
+import com.gentics.mda.ATxAction2;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Project;
@@ -67,7 +67,7 @@ public interface BaseHelper {
 		return mesh().database();
 	}
 
-	default Tx tx() {
+	default ATx tx() {
 		return db().tx();
 	}
 
@@ -79,11 +79,11 @@ public interface BaseHelper {
 		return db().tx(handler);
 	}
 
-	default void tx(TxAction2 handler) {
+	default void tx(ATxAction2 handler) {
 		db().tx(handler);
 	}
 
-	default <T> T tx(TxAction<T> handler) {
+	default <T> T tx(ATxAction<T> handler) {
 		return db().tx(handler);
 	}
 

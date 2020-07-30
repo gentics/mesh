@@ -20,8 +20,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.madl.tx.Tx;
-import com.gentics.madl.tx.TxAction;
 import com.gentics.madl.tx.TxAction0;
+import com.gentics.mda.ATx;
+import com.gentics.mda.ATxAction;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.changelog.changes.ChangesList;
@@ -366,7 +367,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	 */
 	@Override
 	@Deprecated
-	public Tx tx() {
+	public ATx tx() {
 		return new OrientDBTx(this, boot.get(), txProvider, resolver, commitTimer);
 	}
 
@@ -401,7 +402,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public <T> T tx(TxAction<T> txHandler) {
+	public <T> T tx(ATxAction<T> txHandler) {
 		/**
 		 * OrientDB uses the MVCC pattern which requires a retry of the code that manipulates the graph in cases where for example an
 		 * {@link OConcurrentModificationException} is thrown.
@@ -413,7 +414,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 			Timer.Sample sample = Timer.start();
 			// Check the status to prevent transactions during shutdown
 			checkStatus();
-			try (Tx tx = tx()) {
+			try (ATx tx = tx()) {
 				handlerResult = txHandler.handle(tx);
 				handlerFinished = true;
 				tx.success();

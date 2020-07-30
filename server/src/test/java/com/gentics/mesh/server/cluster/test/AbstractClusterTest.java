@@ -4,7 +4,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import com.gentics.madl.tx.TxAction;
+import com.gentics.mda.ATxAction;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.dagger.MeshComponent;
@@ -40,7 +40,7 @@ public abstract class AbstractClusterTest extends ClusterServer {
 		internal = (MeshComponent) mesh.internal();
 	}
 
-	public <T> T tx(TxAction<T> action) {
+	public <T> T tx(ATxAction<T> action) {
 		return internal.database().tx(action);
 	}
 

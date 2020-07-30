@@ -1,14 +1,11 @@
-package com.gentics.mesh.core.data.page;
+package com.gentics.mda.page;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 
 import com.gentics.mda.entity.ATransformableElement;
-import com.gentics.mda.page.ATransformablePage;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.TransformableElement;
-import com.gentics.mesh.core.data.page.impl.MappingTransformablePage;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.util.ETag;
@@ -16,18 +13,11 @@ import com.gentics.mesh.util.ETag;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 
-/**
- * A transformable page is a page which contains {@link TransformableElement}. Thus it is possible to compute the etag for the page and transform the page into
- * a rest list model.
- * 
- * @param <T>
- *            Type of the page element
- */
-public interface TransformablePage<T extends TransformableElement<? extends RestModel>> extends Page<T> {
+public interface ATransformablePage<T extends ATransformableElement<? extends RestModel>> extends Page<T> {
 
 	/**
 	 * Transform the page into a list response.
-	 * 
+	 *
 	 * @param ac
 	 * @param level
 	 *            Level of transformation
@@ -68,7 +58,7 @@ public interface TransformablePage<T extends TransformableElement<? extends Rest
 	 * <li>All etags for all found elements</li>
 	 * <li>Number of the current page</li>
 	 * </ul>
-	 * 
+	 *
 	 * @param ac
 	 * @return
 	 */
@@ -82,9 +72,5 @@ public interface TransformablePage<T extends TransformableElement<? extends Rest
 			builder.append(element.getETag(ac));
 		}
 		return ETag.hash(builder.toString());
-	}
-
-	default <R extends ATransformableElement<? extends RestModel>> ATransformablePage<R> map(Function<? super T, ? extends R> mapper) {
-		return new MappingTransformablePage<>(this, mapper);
 	}
 }

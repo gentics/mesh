@@ -1,0 +1,111 @@
+package com.gentics.mda.entity;
+
+import java.util.Set;
+
+import com.gentics.mesh.context.BulkActionContext;
+import com.gentics.mesh.context.impl.DummyBulkActionContext;
+import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.graphdb.spi.Database;
+import com.tinkerpop.blueprints.Vertex;
+
+import io.vertx.core.Vertx;
+
+public interface AMeshElement {
+
+	/**
+	 * Set the uuid of the element.
+	 *
+	 * @param uuid
+	 *            Uuid of the element
+	 */
+	void setUuid(String uuid);
+
+	/**
+	 * Return the uuid of the element.
+	 *
+	 * @return Uuid of the element
+	 */
+	String getUuid();
+
+	/**
+	 * Return the internal element version.
+	 *
+	 * @return
+	 */
+	String getElementVersion();
+
+	/**
+	 * Return the db reference.
+	 *
+	 * @return
+	 */
+	Database db();
+
+	/**
+	 * Return the used Vert.x instance.
+	 *
+	 * @return
+	 */
+	Vertx vertx();
+
+	/**
+	 * Return the mesh options.
+	 *
+	 * @return
+	 */
+	MeshOptions options();
+
+
+	String UUID_KEY = "uuid";
+
+	/**
+	 * Return the tinkerpop blueprint vertex of this mesh vertex.
+	 *
+	 * @return Underlying vertex
+	 */
+	Vertex getVertex();
+
+	/**
+	 * Delete the element. Additional entries will be added to the batch to keep the search index in sync.
+	 *
+	 * @param bac
+	 *            Deletion context which keeps track of the deletion process
+	 */
+	void delete(BulkActionContext bac);
+
+	/**
+	 * Invoke deletion without any given bulk action context.
+	 */
+	default void delete() {
+		delete(new DummyBulkActionContext());
+	}
+
+	/**
+	 * Grant the set of permissions and revoke the other set of permissions to this element using the role.
+	 *
+	 * @param batch
+	 * @param role
+	 * @param recursive
+	 * @param permissionsToGrant
+	 * @param permissionsToRevoke
+	 */
+	void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
+		Set<GraphPermission> permissionsToRevoke);
+
+	/**
+	 * Tests if the {@link GraphPermission}s READ_PUBLISHED_PERM and READ_PUBLISHED can be set for this element.
+	 * @return
+	 */
+	default boolean hasPublishPermissions() {
+		return false;
+	}
+
+	/**
+	 * Sets the cached uuid for the vertex.
+	 * @param uuid
+	 */
+	void setCachedUuid(String uuid);
+}
