@@ -21,32 +21,33 @@ import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModelImpl;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
-import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
 
-import io.vertx.core.Vertx;
+public class UserWrapper extends MeshElementWrapper<User> implements AUser {
 
-public class UserWrapper implements AUser {
-	private final User user;
+	private UserWrapper(User delegate) {
+		super(delegate);
+	}
 
-	public UserWrapper(User user) {
-		this.user = user;
+	public static UserWrapper of(User delegate) {
+		if (delegate == null) {
+			return null;
+		}
+		return new UserWrapper(delegate);
 	}
 
 	@Override
 	public User getDelegate() {
-		return user;
+		return delegate;
 	}
 
 	@Override
 	public TypeInfo getTypeInfo() {
-		return user.getTypeInfo();
+		return delegate.getTypeInfo();
 	}
 
 	public static String composeIndexName() {
@@ -59,482 +60,434 @@ public class UserWrapper implements AUser {
 
 	@Override
 	public String getUsername() {
-		return user.getUsername();
+		return delegate.getUsername();
 	}
 
 	@Override
 	public AUser setUsername(String string) {
-		user.setUsername(string);
+		delegate.setUsername(string);
 		return this;
 	}
 
 	@Override
 	public String getEmailAddress() {
-		return user.getEmailAddress();
+		return delegate.getEmailAddress();
 	}
 
 	@Override
 	public AUser setEmailAddress(String email) {
-		user.setEmailAddress(email);
+		delegate.setEmailAddress(email);
 		return this;
 	}
 
 	@Override
 	public String getLastname() {
-		return user.getLastname();
+		return delegate.getLastname();
 	}
 
 	@Override
 	public AUser setLastname(String lastname) {
-		user.setLastname(lastname);
+		delegate.setLastname(lastname);
 		return this;
 	}
 
 	@Override
 	public String getFirstname() {
-		return user.getFirstname();
+		return delegate.getFirstname();
 	}
 
 	@Override
 	public AUser setFirstname(String firstname) {
-		user.setFirstname(firstname);
+		delegate.setFirstname(firstname);
 		return this;
 	}
 
 	@Override
 	public String getPasswordHash() {
-		return user.getPasswordHash();
+		return delegate.getPasswordHash();
 	}
 
 	@Override
 	public AUser setPasswordHash(String hash) {
-		user.setPasswordHash(hash);
+		delegate.setPasswordHash(hash);
 		return this;
 	}
 
 	@Override
 	public AUser setPassword(String password) {
-		user.setPassword(password);
+		delegate.setPassword(password);
 		return this;
 	}
 
 	@Override
 	public Node getReferencedNode() {
-		return user.getReferencedNode();
+		return delegate.getReferencedNode();
 	}
 
 	@Override
 	public AUser setReferencedNode(Node node) {
-		user.setReferencedNode(node);
+		delegate.setReferencedNode(node);
 		return this;
 	}
 
 	@Override
 	public PermissionInfo getPermissionInfo(MeshVertex vertex) {
-		return user.getPermissionInfo(vertex);
+		return delegate.getPermissionInfo(vertex);
 	}
 
 	@Override
 	public Set<GraphPermission> getPermissions(MeshVertex vertex) {
-		return user.getPermissions(vertex);
+		return delegate.getPermissions(vertex);
 	}
 
 	@Override
 	public AUser addCRUDPermissionOnRole(HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode) {
-		user.addCRUDPermissionOnRole(sourceNode, permission, targetNode);
+		delegate.addCRUDPermissionOnRole(sourceNode, permission, targetNode);
 		return this;
 	}
 
 	@Override
 	public AUser addPermissionsOnRole(HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode, GraphPermission... toGrant) {
-		user.addPermissionsOnRole(sourceNode, permission, targetNode, toGrant);
+		delegate.addPermissionsOnRole(sourceNode, permission, targetNode, toGrant);
 		return this;
 	}
 
 	@Override
 	public AUser inheritRolePermissions(MeshVertex sourceNode, MeshVertex targetNode) {
-		user.inheritRolePermissions(sourceNode, targetNode);
+		delegate.inheritRolePermissions(sourceNode, targetNode);
 		return this;
 	}
 
 	@Override
 	public boolean updateDry(InternalActionContext ac) {
-		return user.updateDry(ac);
+		return delegate.updateDry(ac);
 	}
 
 	@Override
 	public Page<? extends Group> getGroups(User user, PagingParameters params) {
-		return this.user.getGroups(user, params);
+		return this.delegate.getGroups(user, params);
 	}
 
 	@Override
 	public TraversalResult<? extends Group> getGroups() {
-		return user.getGroups();
+		return delegate.getGroups();
 	}
 
 	@Override
 	public AUser addGroup(Group group) {
-		user.addGroup(group);
+		delegate.addGroup(group);
 		return this;
 	}
 
 	@Override
 	public String getRolesHash() {
-		return user.getRolesHash();
+		return delegate.getRolesHash();
 	}
 
 	@Override
 	public Iterable<? extends Role> getRoles() {
-		return user.getRoles();
+		return delegate.getRoles();
 	}
 
 	@Override
 	public Iterable<? extends Role> getRolesViaShortcut() {
-		return user.getRolesViaShortcut();
+		return delegate.getRolesViaShortcut();
 	}
 
 	@Override
 	public Page<? extends Role> getRolesViaShortcut(User user, PagingParameters params) {
-		return this.user.getRolesViaShortcut(user, params);
+		return this.delegate.getRolesViaShortcut(user, params);
 	}
 
 	@Override
 	public void updateShortcutEdges() {
-		user.updateShortcutEdges();
+		delegate.updateShortcutEdges();
 	}
 
 	@Override
 	public AUser disable() {
-		user.disable();
+		delegate.disable();
 		return this;
 	}
 
 	@Override
 	public boolean isEnabled() {
-		return user.isEnabled();
+		return delegate.isEnabled();
 	}
 
 	@Override
 	public AUser enable() {
-		user.enable();
+		delegate.enable();
 		return this;
 	}
 
 	@Override
 	public AUser deactivate() {
-		user.deactivate();
+		delegate.deactivate();
 		return this;
 	}
 
 	@Override
 	public boolean hasPermission(MeshVertex element, GraphPermission permission) {
-		return user.hasPermission(element, permission);
+		return delegate.hasPermission(element, permission);
 	}
 
 	@Override
 	public boolean hasPermissionForId(Object elementId, GraphPermission permission) {
-		return user.hasPermissionForId(elementId, permission);
+		return delegate.hasPermissionForId(elementId, permission);
 	}
 
 	@Override
 	public boolean hasReadPermission(NodeGraphFieldContainer container, String branchUuid, String requestedVersion) {
-		return user.hasReadPermission(container, branchUuid, requestedVersion);
+		return delegate.hasReadPermission(container, branchUuid, requestedVersion);
 	}
 
 	@Override
 	public void failOnNoReadPermission(NodeGraphFieldContainer container, String branchUuid, String requestedVersion) {
-		user.failOnNoReadPermission(container, branchUuid, requestedVersion);
+		delegate.failOnNoReadPermission(container, branchUuid, requestedVersion);
 	}
 
 	@Override
 	public boolean canReadNode(InternalActionContext ac, Node node) {
-		return user.canReadNode(ac, node);
+		return delegate.canReadNode(ac, node);
 	}
 
 	@Override
 	public AUser setResetToken(String token) {
-		user.setResetToken(token);
+		delegate.setResetToken(token);
 		return this;
 	}
 
 	@Override
 	public String getResetToken() {
-		return user.getResetToken();
+		return delegate.getResetToken();
 	}
 
 	@Override
 	public boolean isForcedPasswordChange() {
-		return user.isForcedPasswordChange();
+		return delegate.isForcedPasswordChange();
 	}
 
 	@Override
 	public AUser setForcedPasswordChange(boolean force) {
-		user.setForcedPasswordChange(force);
+		delegate.setForcedPasswordChange(force);
 		return this;
 	}
 
 	@Override
 	public Long getResetTokenIssueTimestamp() {
-		return user.getResetTokenIssueTimestamp();
+		return delegate.getResetTokenIssueTimestamp();
 	}
 
 	@Override
 	public AUser setResetTokenIssueTimestamp(Long timestamp) {
-		user.setResetTokenIssueTimestamp(timestamp);
+		delegate.setResetTokenIssueTimestamp(timestamp);
 		return this;
 	}
 
 	@Override
 	public AUser invalidateResetToken() {
-		user.invalidateResetToken();
+		delegate.invalidateResetToken();
 		return this;
 	}
 
 	@Override
 	public boolean isResetTokenValid(String token, int maxTokenAgeMins) {
-		return user.isResetTokenValid(token, maxTokenAgeMins);
+		return delegate.isResetTokenValid(token, maxTokenAgeMins);
 	}
 
 	@Override
 	public String getAPIKeyTokenCode() {
-		return user.getAPIKeyTokenCode();
+		return delegate.getAPIKeyTokenCode();
 	}
 
 	@Override
 	public AUser setAPITokenId(String code) {
-		user.setAPITokenId(code);
+		delegate.setAPITokenId(code);
 		return this;
 	}
 
 	@Override
 	public Long getAPITokenIssueTimestamp() {
-		return user.getAPITokenIssueTimestamp();
+		return delegate.getAPITokenIssueTimestamp();
 	}
 
 	@Override
 	public AUser setAPITokenIssueTimestamp() {
-		user.setAPITokenIssueTimestamp();
+		delegate.setAPITokenIssueTimestamp();
 		return this;
 	}
 
 	@Override
 	public AUser setAPITokenIssueTimestamp(Long timestamp) {
-		user.setAPITokenIssueTimestamp(timestamp);
+		delegate.setAPITokenIssueTimestamp(timestamp);
 		return this;
 	}
 
 	@Override
 	public String getAPITokenIssueDate() {
-		return user.getAPITokenIssueDate();
+		return delegate.getAPITokenIssueDate();
 	}
 
 	@Override
 	public void resetAPIToken() {
-		user.resetAPIToken();
+		delegate.resetAPIToken();
 	}
 
 	@Override
 	public MeshAuthUser toAuthUser() {
-		return user.toAuthUser();
+		return delegate.toAuthUser();
 	}
 
 	@Override
 	public boolean isAdmin() {
-		return user.isAdmin();
+		return delegate.isAdmin();
 	}
 
 	@Override
 	public void setAdmin(boolean flag) {
-		user.setAdmin(flag);
+		delegate.setAdmin(flag);
 	}
 
 	@Override
 	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
-		return user.update(ac, batch);
+		return delegate.update(ac, batch);
 	}
 
 	@Override
 	public void fillCommonRestFields(InternalActionContext ac, FieldsSet fields, GenericRestResponse model) {
-		user.fillCommonRestFields(ac, fields, model);
+		delegate.fillCommonRestFields(ac, fields, model);
 	}
 
 	@Override
 	public MeshElementEventModel onCreated() {
-		return user.onCreated();
+		return delegate.onCreated();
 	}
 
 	@Override
 	public MeshElementEventModel onUpdated() {
-		return user.onUpdated();
+		return delegate.onUpdated();
 	}
 
 	@Override
 	public MeshElementEventModel onDeleted() {
-		return user.onDeleted();
+		return delegate.onDeleted();
 	}
 
 	@Override
 	public PermissionChangedEventModelImpl onPermissionChanged(Role role) {
-		return user.onPermissionChanged(role);
+		return delegate.onPermissionChanged(role);
 	}
 
 	@Override
 	public void fillPermissionChanged(PermissionChangedEventModelImpl model, Role role) {
-		user.fillPermissionChanged(model, role);
+		delegate.fillPermissionChanged(model, role);
 	}
 
 	@Override
 	public Vertex getVertex() {
-		return user.getVertex();
+		return delegate.getVertex();
 	}
 
 	@Override
 	public void delete(BulkActionContext bac) {
-		user.delete(bac);
+		delegate.delete(bac);
 	}
 
 	@Override
 	public void delete() {
-		user.delete();
+		delegate.delete();
 	}
 
 	@Override
 	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
-		user.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
+		delegate.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
 	}
 
 	@Override
 	public boolean hasPublishPermissions() {
-		return user.hasPublishPermissions();
+		return delegate.hasPublishPermissions();
 	}
 
 	@Override
 	public void setCachedUuid(String uuid) {
-		user.setCachedUuid(uuid);
-	}
-
-	@Override
-	public void setUuid(String uuid) {
-		user.setUuid(uuid);
-	}
-
-	@Override
-	public String getUuid() {
-		return user.getUuid();
-	}
-
-	public Element getElement() {
-		return user.getElement();
-	}
-
-	@Override
-	public String getElementVersion() {
-		return user.getElementVersion();
-	}
-
-	public <T> T property(String name) {
-		return user.property(name);
-	}
-
-	public void addToStringSetProperty(String propertyKey, String value) {
-		user.addToStringSetProperty(propertyKey, value);
-	}
-
-	public <R> void property(String key, R value) {
-		user.property(key, value);
-	}
-
-	public void removeProperty(String key) {
-		user.removeProperty(key);
-	}
-
-	@Override
-	public Database db() {
-		return user.db();
-	}
-
-	@Override
-	public Vertx vertx() {
-		return user.vertx();
-	}
-
-	@Override
-	public MeshOptions options() {
-		return user.options();
+		delegate.setCachedUuid(uuid);
 	}
 
 	@Override
 	public String getAPIPath(InternalActionContext ac) {
-		return user.getAPIPath(ac);
+		return delegate.getAPIPath(ac);
 	}
 
 	@Override
 	public UserResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		return user.transformToRestSync(ac, level, languageTags);
+		return delegate.transformToRestSync(ac, level, languageTags);
 	}
 
 	@Override
 	public String getETag(InternalActionContext ac) {
-		return user.getAPIPath(ac);
+		return delegate.getAPIPath(ac);
 	}
 
 	@Override
 	public AUser getCreator() {
-		return new UserWrapper(user.getCreator());
+		return new UserWrapper(delegate.getCreator());
 	}
 
 	@Override
 	public Long getCreationTimestamp() {
-		return user.getCreationTimestamp();
+		return delegate.getCreationTimestamp();
 	}
 
 	@Override
 	public String getCreationDate() {
-		return user.getCreationDate();
+		return delegate.getCreationDate();
 	}
 
 	@Override
 	public void setCreationTimestamp(long timestamp) {
-		user.setCreationTimestamp(timestamp);
+		delegate.setCreationTimestamp(timestamp);
 	}
 
 	@Override
 	public void setCreationTimestamp() {
-		user.setCreationTimestamp();
+		delegate.setCreationTimestamp();
 	}
 
 	@Override
 	public User getEditor() {
-		return user.getEditor();
+		return delegate.getEditor();
 	}
 
 	@Override
 	public Long getLastEditedTimestamp() {
-		return user.getLastEditedTimestamp();
+		return delegate.getLastEditedTimestamp();
 	}
 
 	@Override
 	public void setLastEditedTimestamp(long timestamp) {
-		user.setLastEditedTimestamp(timestamp);
+		delegate.setLastEditedTimestamp(timestamp);
 	}
 
 	@Override
 	public void setLastEditedTimestamp() {
-		user.setLastEditedTimestamp();
+		delegate.setLastEditedTimestamp();
 	}
 
 	@Override
 	public String getLastEditedDate() {
-		return user.getLastEditedDate();
+		return delegate.getLastEditedDate();
 	}
 
 	@Override
 	public void setCreator(AUser user) {
-		this.user.setCreator(user.getDelegate());
+		this.delegate.setCreator(AUser.getDelegate(user));
 	}
 
 	@Override
 	public void setEditor(AUser user) {
-		this.user.setEditor(user.getDelegate());
+		this.delegate.setEditor(AUser.getDelegate(user));
 	}
+
+
 }

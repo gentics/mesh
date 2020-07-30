@@ -309,7 +309,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			newUser.addGroup(group());
 			assertEquals(user().getUuid(), node.getCreator().getUuid());
 			System.out.println(newUser.getUuid());
-			node.setCreator(newUser.getDelegate());
+			node.setCreator(AUser.getDelegate(newUser));
 			System.out.println(node.getCreator().getUuid());
 
 			assertEquals(newUser.getUuid(), node.getCreator().getUuid());

@@ -55,9 +55,9 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 
 			Group group = groupRoot.create("test group", user());
 			AUser user = userRoot.create("testuser", auser());
-			group.addUser(user.getDelegate());
-			group.addUser(user.getDelegate());
-			group.addUser(user.getDelegate());
+			group.addUser(AUser.getDelegate(user));
+			group.addUser(AUser.getDelegate(user));
+			group.addUser(AUser.getDelegate(user));
 
 			assertEquals("The group should contain one member.", 1, group.getUsers().count());
 

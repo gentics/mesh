@@ -64,8 +64,8 @@ public class DemoDumpGeneratorTest {
 			Role role = group.getRoles().iterator().next();
 			assertNotNull("The webclient group should also have a role assigned to it", role);
 
-			assertTrue("The webclient role has not read permission on the user.", role.hasPermission(GraphPermission.READ_PERM, user.getDelegate()));
-			assertTrue("The webclient user has no permission on itself.", user.hasPermission(user.getDelegate(), GraphPermission.READ_PERM));
+			assertTrue("The webclient role has not read permission on the user.", role.hasPermission(GraphPermission.READ_PERM, AUser.getDelegate(user)));
+			assertTrue("The webclient user has no permission on itself.", user.hasPermission(AUser.getDelegate(user), GraphPermission.READ_PERM));
 			assertTrue("The webclient user has no read permission on the user root node..", user.hasPermission(boot.meshRoot().getUserRoot(),
 				GraphPermission.READ_PERM));
 

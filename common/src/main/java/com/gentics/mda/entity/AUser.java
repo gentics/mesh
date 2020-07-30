@@ -544,5 +544,17 @@ public interface AUser extends AMeshCoreElement<UserResponse>, AUserTrackingVert
 	 */
 	void setAdmin(boolean flag);
 
+	static User getDelegate(AUser user) {
+		if (user == null) {
+			return null;
+		}
+		return user.getDelegate();
+	}
+
+	/**
+	 * Use {@link #getDelegate(AUser)} instead to prevent NPEs
+	 * @return
+	 */
+	@Deprecated
 	User getDelegate();
 }

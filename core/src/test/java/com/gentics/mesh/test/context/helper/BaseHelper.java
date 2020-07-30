@@ -49,7 +49,7 @@ public interface BaseHelper {
 	}
 
 	default AUser auser() {
-		return new UserWrapper(data().user());
+		return UserWrapper.of(data().user());
 	}
 
 	default void grantAdmin() {

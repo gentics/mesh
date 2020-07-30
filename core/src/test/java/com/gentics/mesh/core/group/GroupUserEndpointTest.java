@@ -49,9 +49,9 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 		try (ATx tx = tx()) {
 			UserDao userRoot = tx.users();
 			AUser extraUser = userRoot.create("extraUser", auser());
-			group().addUser(extraUser.getDelegate());
+			group().addUser(AUser.getDelegate(extraUser));
 			extraUserUuid = extraUser.getUuid();
-			role().grantPermissions(extraUser.getDelegate(), READ_PERM);
+			role().grantPermissions(AUser.getDelegate(extraUser), READ_PERM);
 			tx.success();
 		}
 
@@ -77,7 +77,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 			UserDao userRoot = tx.users();
 			AUser extraUser = userRoot.create("extraUser", auser());
 			userUuid = extraUser.getUuid();
-			role().grantPermissions(extraUser.getDelegate(), READ_PERM);
+			role().grantPermissions(AUser.getDelegate(extraUser), READ_PERM);
 			tx.success();
 		}
 
@@ -96,8 +96,8 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 			AUser user = userRoot.create("extraUser", auser());
 			user.setFirstname(userFirstname);
 			user.setLastname(userLastname);
-			role().grantPermissions(user.getDelegate(), READ_PERM);
-			assertFalse("User should not be member of the group.", group().hasUser(user.getDelegate()));
+			role().grantPermissions(AUser.getDelegate(user), READ_PERM);
+			assertFalse("User should not be member of the group.", group().hasUser(AUser.getDelegate(user)));
 			return user;
 		});
 
@@ -124,7 +124,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 			assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), extraUserUuid);
 			assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 			trackingSearchProvider().reset();
-			assertTrue("User should be member of the group.", group().hasUser(extraUser.getDelegate()));
+			assertTrue("User should be member of the group.", group().hasUser(AUser.getDelegate(extraUser)));
 		}
 		// Test for idempotency
 		expect(GROUP_USER_ASSIGNED).none();
@@ -139,7 +139,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 			Group group = group();
 			UserDao userRoot = tx.users();
 			extraUser = userRoot.create("extraUser", auser());
-			role().grantPermissions(extraUser.getDelegate(), READ_PERM);
+			role().grantPermissions(AUser.getDelegate(extraUser), READ_PERM);
 			role().revokePermissions(group, UPDATE_PERM);
 			tx.success();
 		}
@@ -147,7 +147,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			call(() -> client().addUserToGroup(groupUuid(), extraUser.getUuid()), FORBIDDEN, "error_missing_perm", groupUuid(),
 				UPDATE_PERM.getRestPerm().getName());
-			assertFalse("User should not be member of the group.", group().hasUser(extraUser.getDelegate()));
+			assertFalse("User should not be member of the group.", group().hasUser(AUser.getDelegate(extraUser)));
 		}
 
 	}
@@ -158,14 +158,14 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 		try (ATx tx = tx()) {
 			UserDao userRoot = tx.users();
 			extraUser = userRoot.create("extraUser", auser());
-			role().grantPermissions(extraUser.getDelegate(), DELETE_PERM);
+			role().grantPermissions(AUser.getDelegate(extraUser), DELETE_PERM);
 			tx.success();
 		}
 
 		try (Tx tx = tx()) {
 			call(() -> client().addUserToGroup(group().getUuid(), extraUser.getUuid()), FORBIDDEN, "error_missing_perm", extraUser.getUuid(),
 				READ_PERM.getRestPerm().getName());
-			assertFalse("User should not be member of the group.", group().hasUser(extraUser.getDelegate()));
+			assertFalse("User should not be member of the group.", group().hasUser(AUser.getDelegate(extraUser)));
 		}
 	}
 
@@ -196,8 +196,8 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 			AUser user = userRoot.create("extraUser", auser());
 			user.setFirstname(userFirstname);
 			user.setLastname(userLastname);
-			role().grantPermissions(user.getDelegate(), READ_PERM);
-			group().addUser(user.getDelegate());
+			role().grantPermissions(AUser.getDelegate(user), READ_PERM);
+			group().addUser(AUser.getDelegate(user));
 			return user;
 		});
 		final String extraUserUuid = tx(() -> extraUser.getUuid());
@@ -222,7 +222,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), extraUserUuid);
 			assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
-			assertFalse("User should not be member of the group.", group().hasUser(extraUser.getDelegate()));
+			assertFalse("User should not be member of the group.", group().hasUser(AUser.getDelegate(extraUser)));
 		}
 
 		// Test for idempotency

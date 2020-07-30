@@ -34,9 +34,9 @@ public class AtomicTagTest extends AbstractMeshTest {
 
 			Project project = project();
 			TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();
-			TagFamily tagFamily = tagFamilyRoot.create("basic", user.getDelegate());
+			TagFamily tagFamily = tagFamilyRoot.create("basic", AUser.getDelegate(user));
 
-			Tag tag = tagFamily.create("dummyName", project, user.getDelegate());
+			Tag tag = tagFamily.create("dummyName", project, AUser.getDelegate(user));
 			String uuid = tag.getUuid();
 			assertNotNull(tag);
 			assertEquals("dummyName", tag.getName());
