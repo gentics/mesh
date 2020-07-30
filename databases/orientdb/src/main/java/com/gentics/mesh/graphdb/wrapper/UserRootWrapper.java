@@ -30,6 +30,11 @@ public class UserRootWrapper implements UserDao {
 	}
 
 	@Override
+	public UserRoot getDelegate() {
+		return userRoot;
+	}
+
+	@Override
 	public MeshAuthUser findMeshAuthUserByUsername(String username) {
 		return userRoot.findMeshAuthUserByUsername(username);
 	}
