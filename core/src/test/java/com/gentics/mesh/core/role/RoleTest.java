@@ -12,22 +12,20 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.Iterator;
 import java.util.Set;
 
 import org.junit.Test;
 
 import com.gentics.madl.tx.Tx;
+import com.gentics.mda.ATx;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
@@ -40,8 +38,6 @@ import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.google.common.collect.Iterators;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
 
 import io.vertx.ext.web.RoutingContext;
 
@@ -315,12 +311,12 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		try (Tx tx = tx()) {
+		try (ATx tx = tx()) {
 			MeshRoot root = meshRoot();
 			InternalActionContext ac = mockActionContext();
 			Role role = root.getRoleRoot().create("SuperUser", user());
 			assertFalse(user().hasPermission(role, GraphPermission.CREATE_PERM));
-			user().inheritRolePermissions(root.getUserRoot(), role);
+			user().inheritRolePermissions(tx.users().getDelegate(), role);
 			ac.data().clear();
 			assertTrue(user().hasPermission(role, GraphPermission.CREATE_PERM));
 		}

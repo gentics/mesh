@@ -5,6 +5,7 @@ import com.gentics.madl.tx.TxAction1;
 import com.gentics.mda.ATx;
 import com.gentics.mda.ATxAction;
 import com.gentics.mda.ATxAction2;
+import com.gentics.mda.entity.AUser;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Project;
@@ -13,6 +14,7 @@ import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.wrapper.UserWrapper;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -44,6 +46,10 @@ public interface BaseHelper {
 
 	default User user() {
 		return data().user();
+	}
+
+	default AUser auser() {
+		return new UserWrapper(data().user());
 	}
 
 	default void grantAdmin() {

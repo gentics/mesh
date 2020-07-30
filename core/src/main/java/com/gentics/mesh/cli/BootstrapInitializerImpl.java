@@ -49,7 +49,6 @@ import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
@@ -854,12 +853,12 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			meshRoot.getChangelogRoot();
 
 			GroupRoot groupRoot = meshRoot.getGroupRoot();
-			UserRoot userRoot = meshRoot.getUserRoot();
+			UserDao userRoot = tx.users();
 			RoleRoot roleRoot = meshRoot.getRoleRoot();
 			SchemaContainerRoot schemaContainerRoot = meshRoot.getSchemaContainerRoot();
 
 			// Verify that an admin user exists
-			User adminUser = userRoot.findByUsername(ADMIN_USERNAME);
+			AUser adminUser = userRoot.findByUsername(ADMIN_USERNAME);
 			if (adminUser == null) {
 				adminUser = userRoot.create(ADMIN_USERNAME, adminUser);
 				adminUser.setAdmin(true);
@@ -924,7 +923,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				schema.addField(contentFieldSchema);
 
 				schema.setContainer(false);
-				contentSchemaContainer = schemaContainerRoot.create(schema, adminUser, null, false);
+				contentSchemaContainer = schemaContainerRoot.create(schema, adminUser.getDelegate(), null, false);
 				log.debug("Created schema container {" + schema.getName() + "} uuid: {" + contentSchemaContainer.getUuid() + "}");
 			}
 
@@ -948,7 +947,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				schema.addField(nameFieldSchema);
 
 				schema.setContainer(true);
-				folderSchemaContainer = schemaContainerRoot.create(schema, adminUser, null, false);
+				folderSchemaContainer = schemaContainerRoot.create(schema, adminUser.getDelegate(), null, false);
 				log.debug("Created schema container {" + schema.getName() + "} uuid: {" + folderSchemaContainer.getUuid() + "}");
 			}
 
@@ -973,20 +972,20 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				schema.addField(binaryFieldSchema);
 
 				schema.setContainer(false);
-				binarySchemaContainer = schemaContainerRoot.create(schema, adminUser, null, false);
+				binarySchemaContainer = schemaContainerRoot.create(schema, adminUser.getDelegate(), null, false);
 				log.debug("Created schema container {" + schema.getName() + "} uuid: {" + binarySchemaContainer.getUuid() + "}");
 			}
 
 			Group adminGroup = groupRoot.findByName("admin");
 			if (adminGroup == null) {
-				adminGroup = groupRoot.create("admin", adminUser);
-				adminGroup.addUser(adminUser);
+				adminGroup = groupRoot.create("admin", adminUser.getDelegate());
+				adminGroup.addUser(adminUser.getDelegate());
 				log.debug("Created admin group {" + adminGroup.getUuid() + "}");
 			}
 
 			Role adminRole = roleRoot.findByName("admin");
 			if (adminRole == null) {
-				adminRole = roleRoot.create("admin", adminUser);
+				adminRole = roleRoot.create("admin", adminUser.getDelegate());
 				adminGroup.addRole(adminRole);
 				log.debug("Created admin role {" + adminRole.getUuid() + "}");
 			}
@@ -1008,9 +1007,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			db.tx(tx -> {
 				meshRoot = meshRoot();
 
-				UserRoot userRoot = meshRoot().getUserRoot();
+				UserDao userRoot = tx.users();
 				// Verify that an anonymous user exists
-				User anonymousUser = userRoot.findByUsername("anonymous");
+				AUser anonymousUser = userRoot.findByUsername("anonymous");
 				if (anonymousUser == null) {
 					anonymousUser = userRoot.create("anonymous", anonymousUser);
 					anonymousUser.setCreator(anonymousUser);
@@ -1024,15 +1023,15 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				GroupRoot groupRoot = meshRoot.getGroupRoot();
 				Group anonymousGroup = groupRoot.findByName("anonymous");
 				if (anonymousGroup == null) {
-					anonymousGroup = groupRoot.create("anonymous", anonymousUser);
-					anonymousGroup.addUser(anonymousUser);
+					anonymousGroup = groupRoot.create("anonymous", anonymousUser.getDelegate());
+					anonymousGroup.addUser(anonymousUser.getDelegate());
 					log.debug("Created anonymous group {" + anonymousGroup.getUuid() + "}");
 				}
 
 				RoleRoot roleRoot = meshRoot.getRoleRoot();
 				anonymousRole = roleRoot.findByName("anonymous");
 				if (anonymousRole == null) {
-					anonymousRole = roleRoot.create("anonymous", anonymousUser);
+					anonymousRole = roleRoot.create("anonymous", anonymousUser.getDelegate());
 					anonymousGroup.addRole(anonymousRole);
 					log.debug("Created anonymous role {" + anonymousRole.getUuid() + "}");
 				}

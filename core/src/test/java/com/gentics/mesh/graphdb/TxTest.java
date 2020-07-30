@@ -19,6 +19,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.madl.tx.Tx;
+import com.gentics.mda.ATx;
+import com.gentics.mda.entitycollection.UserDao;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
@@ -28,7 +30,6 @@ import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.util.TestUtils;
@@ -42,13 +43,13 @@ public class TxTest extends AbstractMeshTest {
 	public void testTransaction() throws InterruptedException {
 		AtomicInteger i = new AtomicInteger(0);
 
-		UserRoot root;
-		try (Tx tx = tx()) {
-			root = meshRoot().getUserRoot();
+		UserDao root;
+		try (ATx tx = tx()) {
+			root = tx.users();
 		}
 		int e = i.incrementAndGet();
 		try (Tx tx = tx()) {
-			assertNotNull(root.create("testuser" + e, user()));
+			assertNotNull(root.create("testuser" + e, auser()));
 			assertNotNull(boot().userRoot().findByUsername("testuser" + e));
 			tx.success();
 		}
@@ -58,7 +59,7 @@ public class TxTest extends AbstractMeshTest {
 		int u = i.incrementAndGet();
 		Runnable task = () -> {
 			try (Tx tx = tx()) {
-				assertNotNull(root.create("testuser" + u, user()));
+				assertNotNull(root.create("testuser" + u, auser()));
 				assertNotNull(boot().userRoot().findByUsername("testuser" + u));
 				tx.failure();
 			}

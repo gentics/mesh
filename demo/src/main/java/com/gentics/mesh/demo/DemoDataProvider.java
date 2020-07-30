@@ -92,8 +92,8 @@ public class DemoDataProvider {
 	}
 
 	public void setup(boolean syncIndex) throws JsonParseException, JsonMappingException, IOException, MeshSchemaException, InterruptedException {
-		MeshAuthUser user = db.tx(() -> {
-			return boot.meshRoot().getUserRoot().findMeshAuthUserByUsername("admin");
+		MeshAuthUser user = db.tx(tx -> {
+			return tx.users().findMeshAuthUserByUsername("admin");
 		});
 		client.setUser(user);
 

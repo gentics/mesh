@@ -11,13 +11,13 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.gentics.mda.entity.AUser;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -57,15 +57,15 @@ public class DemoDumpGeneratorTest {
 		db.tx(tx -> {
 			Project project = boot.meshRoot().getProjectRoot().findByName("demo");
 			assertTrue(project.getNodeRoot().computeCount() > 0);
-			User user = boot.meshRoot().getUserRoot().findByUsername("webclient");
+			AUser user = tx.users().findByUsername("webclient");
 			assertNotNull("The webclient user should have been created but could not be found.", user);
 			assertFalse("The webclient user should also have at least one group assigned to it.", !user.getGroups().iterator().hasNext());
 			Group group = user.getGroups().iterator().next();
 			Role role = group.getRoles().iterator().next();
 			assertNotNull("The webclient group should also have a role assigned to it", role);
 
-			assertTrue("The webclient role has not read permission on the user.", role.hasPermission(GraphPermission.READ_PERM, user));
-			assertTrue("The webclient user has no permission on itself.", user.hasPermission(user, GraphPermission.READ_PERM));
+			assertTrue("The webclient role has not read permission on the user.", role.hasPermission(GraphPermission.READ_PERM, user.getDelegate()));
+			assertTrue("The webclient user has no permission on itself.", user.hasPermission(user.getDelegate(), GraphPermission.READ_PERM));
 			assertTrue("The webclient user has no read permission on the user root node..", user.hasPermission(boot.meshRoot().getUserRoot(),
 				GraphPermission.READ_PERM));
 

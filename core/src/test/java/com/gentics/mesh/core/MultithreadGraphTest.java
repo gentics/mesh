@@ -1,15 +1,15 @@
 package com.gentics.mesh.core;
 
+import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
-import com.gentics.madl.tx.Tx;
-import com.gentics.mesh.core.data.User;
+import com.gentics.mda.ATx;
+import com.gentics.mda.entity.AUser;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(testSize = FULL, startServer = false)
 public class MultithreadGraphTest extends AbstractMeshTest {
@@ -18,10 +18,10 @@ public class MultithreadGraphTest extends AbstractMeshTest {
 	public void testMultithreading() throws InterruptedException {
 
 		runAndWait(() -> {
-			try (Tx tx = tx()) {
+			try (ATx tx = tx()) {
 				MeshRoot meshRoot = boot().meshRoot();
-				User user = meshRoot.getUserRoot().create("test", null);
-				user.setCreated(user());
+				AUser user = tx.users().create("test", null);
+				user.setCreated(auser());
 				assertNotNull(user);
 				tx.success();
 			}
@@ -29,21 +29,21 @@ public class MultithreadGraphTest extends AbstractMeshTest {
 		});
 
 		runAndWait(() -> {
-			try (Tx tx = tx()) {
+			try (ATx tx = tx()) {
 				// fg.getEdges();
 				runAndWait(() -> {
-					User user = boot().meshRoot().getUserRoot().findByUsername("test");
+					AUser user = tx.users().findByUsername("test");
 					assertNotNull(user);
 				});
-				User user = boot().meshRoot().getUserRoot().findByUsername("test");
+				AUser user = tx.users().findByUsername("test");
 				assertNotNull(user);
 				System.out.println("Read user");
 
 			}
 		});
 
-		try (Tx tx = tx()) {
-			User user = boot().meshRoot().getUserRoot().findByUsername("test");
+		try (ATx tx = tx()) {
+			AUser user = tx.users().findByUsername("test");
 			assertNotNull(user);
 		}
 	}

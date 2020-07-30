@@ -32,8 +32,8 @@ public class RoleCRUDGlobalLockInserterTask extends AbstractLoadTask {
 		try {
 			MeshComponent comp = test.getMesh().internal();
 			RoleCrudHandler crudHandler = comp.roleCrudHandler();
-			MeshAuthUser user = comp.database().tx(() -> {
-				return comp.boot().meshRoot().getUserRoot().findMeshAuthUserByUsername("admin");
+			MeshAuthUser user = comp.database().tx(tx -> {
+				return tx.users().findMeshAuthUserByUsername("admin");
 			});
 			String roleUuid = UUIDUtil.randomUUID();
 			LocalActionContextImpl<RoleResponse> ac = new LocalActionContextImpl<>(user, RoleResponse.class);

@@ -20,6 +20,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.madl.tx.Tx;
+import com.gentics.mda.ATx;
+import com.gentics.mda.entity.AUser;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
@@ -301,19 +303,17 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testUpdate() {
-		try (Tx tx = tx()) {
+		try (ATx tx = tx()) {
 			Node node = content();
-			try (Tx tx2 = tx()) {
-				User newUser = meshRoot().getUserRoot().create("newUser", user());
-				newUser.addGroup(group());
-				assertEquals(user().getUuid(), node.getCreator().getUuid());
-				System.out.println(newUser.getUuid());
-				node.setCreator(newUser);
-				System.out.println(node.getCreator().getUuid());
+			AUser newUser = tx.users().create("newUser", auser());
+			newUser.addGroup(group());
+			assertEquals(user().getUuid(), node.getCreator().getUuid());
+			System.out.println(newUser.getUuid());
+			node.setCreator(newUser.getDelegate());
+			System.out.println(node.getCreator().getUuid());
 
-				assertEquals(newUser.getUuid(), node.getCreator().getUuid());
-				// TODO update other fields
-			}
+			assertEquals(newUser.getUuid(), node.getCreator().getUuid());
+			// TODO update other fields
 		}
 	}
 

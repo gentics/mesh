@@ -11,6 +11,9 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.gentics.madl.tx.Tx;
+import com.gentics.mda.ATx;
+import com.gentics.mda.entity.AUser;
+import com.gentics.mda.entitycollection.UserDao;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
@@ -20,7 +23,6 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -47,15 +49,15 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 
 	@Test
 	public void testUserGroup() {
-		try (Tx tx = tx()) {
-			UserRoot userRoot = meshRoot().getUserRoot();
+		try (ATx tx = tx()) {
+			UserDao userRoot = tx.users();
 			GroupRoot groupRoot = meshRoot().getGroupRoot();
 
 			Group group = groupRoot.create("test group", user());
-			User user = userRoot.create("testuser", user());
-			group.addUser(user);
-			group.addUser(user);
-			group.addUser(user);
+			AUser user = userRoot.create("testuser", auser());
+			group.addUser(user.getDelegate());
+			group.addUser(user.getDelegate());
+			group.addUser(user.getDelegate());
 
 			assertEquals("The group should contain one member.", 1, group.getUsers().count());
 
@@ -190,7 +192,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Test
 	@Override
 	public void testDelete() throws Exception {
-		try (Tx tx = tx()) {
+		try (ATx tx = tx()) {
 			Group group = meshRoot().getGroupRoot().create("newGroup", user());
 
 			assertNotNull(group);
@@ -203,7 +205,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 			BulkActionContext bac = createBulkContext();
 			group.delete(bac);
 			assertElement(meshRoot().getGroupRoot(), uuid, false);
-			assertElement(meshRoot().getUserRoot(), userUuid, true);
+			assertElement(tx.users().getDelegate(), userUuid, true);
 			assertEquals(1, bac.batch().getEntries().size());
 		}
 

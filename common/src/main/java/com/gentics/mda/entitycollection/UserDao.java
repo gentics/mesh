@@ -2,6 +2,7 @@ package com.gentics.mda.entitycollection;
 
 import com.gentics.mda.entity.AUser;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.root.UserRoot;
 
 public interface UserDao extends MeshDao<AUser> {
 	/**
@@ -60,4 +61,6 @@ public interface UserDao extends MeshDao<AUser> {
 	 * @param user
 	 */
 	void removeUser(AUser user);
+
+	UserRoot getDelegate();
 }
