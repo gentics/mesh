@@ -72,4 +72,8 @@ public abstract class MeshElementWrapper<T extends MeshElement> {
 	public MeshOptions options() {
 		return delegate.options();
 	}
+
+	public T getDelegate() {
+		return delegate;
+	}
 }

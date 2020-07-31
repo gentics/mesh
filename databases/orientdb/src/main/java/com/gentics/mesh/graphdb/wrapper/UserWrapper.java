@@ -41,11 +41,6 @@ public class UserWrapper extends MeshElementWrapper<User> implements AUser {
 	}
 
 	@Override
-	public User getDelegate() {
-		return delegate;
-	}
-
-	@Override
 	public TypeInfo getTypeInfo() {
 		return delegate.getTypeInfo();
 	}

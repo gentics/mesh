@@ -25,16 +25,6 @@ public class UserRootWrapper extends MeshElementWrapper<UserRoot> implements Use
 	}
 
 	@Override
-	public UserRoot getDelegate() {
-		return delegate;
-	}
-
-	@Override
-	public UserRoot getDelegate() {
-		return userRoot;
-	}
-
-	@Override
 	public MeshAuthUser findMeshAuthUserByUsername(String username) {
 		return delegate.findMeshAuthUserByUsername(username);
 	}
