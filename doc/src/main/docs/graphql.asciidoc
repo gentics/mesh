@@ -167,6 +167,7 @@ When loading a single node and selecting a non-existing language the node will b
 
 For collections the `lang` parameter acts as a filter and the result will only contain the nodes with contents that match the lang parameter.
 
+[[typehandling]]
 == Content Type Handling
 
 The `nodeType` parameter on node fields can be used to control whether to return draft or published contents.
@@ -174,6 +175,8 @@ The `nodeType` parameter on node fields can be used to control whether to return
 Loading single nodes may result in the content being omitted whenever the requested content could not be found or when the permission to read the content is not sufficent.
 
 When loading collections the `nodeType` parameter acts as a filter and the result will only contain nodes which also have the requested content type.
+
+The selected type argument value will be inherited from the parent element.
 
 [[limitations]]
 == Limitations
