@@ -1,7 +1,6 @@
 package com.gentics.mesh.graphql.type;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.graphql.type.NodeTypeProvider.NODE_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.TagFamilyTypeProvider.TAG_FAMILY_TYPE_NAME;
 import static graphql.Scalars.GraphQLString;
@@ -78,7 +77,7 @@ public class TagTypeProvider extends AbstractTypeProvider {
 
 					Stream<NodeContent> contents = tag.findTaggedNodes(gc).stream()
 						// Now lets try to load the containers for those found nodes - apply the language fallback
-						.map(node -> new NodeContent(node, node.findVersion(gc, languageTags, type), languageTags))
+						.map(node -> new NodeContent(node, node.findVersion(gc, languageTags, type), languageTags, type))
 						// Filter nodes without a container
 						.filter(content -> content.getContainer() != null)
 						.filter(gc::hasReadPerm);

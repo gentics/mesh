@@ -151,7 +151,7 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 					// Locate the matching container and add it to the list of found containers
 					NodeGraphFieldContainer container = element.getGraphFieldContainer(languageTag, ac.getBranch(), type);
 					if (container != null) {
-						elementList.add(new NodeContent(element, container, Arrays.asList(languageTag)));
+						elementList.add(new NodeContent(element, container, Arrays.asList(languageTag), type));
 					} else {
 						totalCount--;
 						continue;

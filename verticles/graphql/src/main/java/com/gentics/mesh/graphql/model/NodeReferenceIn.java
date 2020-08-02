@@ -8,10 +8,8 @@ import java.util.stream.Stream;
 
 import com.gentics.graphqlfilter.util.Lazy;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 
@@ -56,7 +54,7 @@ public class NodeReferenceIn {
 				.filter(context::hasReadPerm)
 				.findAny())
 					.map(referencingContent -> new NodeReferenceIn(
-						new NodeContent(null, referencingContent, content.getLanguageFallback()),
+						new NodeContent(null, referencingContent, content.getLanguageFallback(), type),
 						ref)));
 	}
 

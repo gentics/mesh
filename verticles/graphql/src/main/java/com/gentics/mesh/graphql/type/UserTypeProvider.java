@@ -134,7 +134,7 @@ public class UserTypeProvider extends AbstractTypeProvider {
 
 				NodeGraphFieldContainer container = node.findVersion(gc, languageTags, type);
 				container = gc.requiresReadPermSoft(container, env);
-				return new NodeContent(node, container, languageTags);
+				return new NodeContent(node, container, languageTags, type);
 			}));
 
 		return root.build();

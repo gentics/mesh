@@ -234,7 +234,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			.filter(Objects::nonNull)
 			.map(node -> {
 				NodeGraphFieldContainer container = node.findVersion(gc, languageTags, type);
-				return new NodeContent(node, container, languageTags);
+				return new NodeContent(node, container, languageTags, type);
 			})
 			.filter(content -> content.getContainer() != null)
 			.filter(gc::hasReadPerm);
@@ -265,7 +265,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			if (container != null) {
 				container = gc.requiresReadPermSoft(container, env);
 			}
-			return new NodeContent(node, container, languageTags);
+			return new NodeContent(node, container, languageTags, type);
 		}
 		String path = env.getArgument("path");
 		if (path != null) {
@@ -287,7 +287,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			if (container != null) {
 				langs.add(container.getLanguageTag());
 			}
-			return new NodeContent(nodeOfContainer, container, langs);
+			return new NodeContent(nodeOfContainer, container, langs, type);
 		}
 		return null;
 	}
@@ -345,7 +345,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			ContainerType type = getNodeContainerType(env);
 			NodeGraphFieldContainer container = node.findVersion(gc, languageTags, type);
 			container = gc.requiresReadPermSoft(container, env);
-			return new NodeContent(node, container, languageTags);
+			return new NodeContent(node, container, languageTags, type);
 		}
 		return null;
 	}

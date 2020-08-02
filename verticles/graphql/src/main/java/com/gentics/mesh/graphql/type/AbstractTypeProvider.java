@@ -23,7 +23,6 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
@@ -283,7 +282,6 @@ public abstract class AbstractTypeProvider {
 	 */
 	public ContainerType getNodeContainerType(DataFetchingEnvironment env) {
 		GraphQLContext context = env.getContext();
-
 		ContainerType type = env.getArgument("nodeType");
 		if (type == null) {
 			Object source = env.getSource();
@@ -292,15 +290,9 @@ public abstract class AbstractTypeProvider {
 			} else {
 				if (source instanceof NodeContent) {
 					NodeContent content = (NodeContent) source;
-					NodeGraphFieldContainer container = content.getContainer();
-					if (container != null) {
-						// TODO this may not work since a container 
-						// can be published and draft at the same time
-						if (container.isPublished()) {
-							return ContainerType.PUBLISHED;
-						} else {
-							return ContainerType.DRAFT;
-						}
+					ContainerType contentType = content.getType();
+					if (contentType != null) {
+						return contentType;
 					}
 				}
 				return getDefaultContainerType(context);
@@ -564,7 +556,7 @@ public abstract class AbstractTypeProvider {
 
 		Stream<NodeContent> contents = nodeRoot.findAllStream(gc, READ_PUBLISHED_PERM)
 			// Now lets try to load the containers for those found nodes - apply the language fallback
-			.map(node -> new NodeContent(node, node.findVersion(gc, languageTags, type), languageTags))
+			.map(node -> new NodeContent(node, node.findVersion(gc, languageTags, type), languageTags, type))
 			// Filter nodes without a container
 			.filter(content -> content.getContainer() != null)
 			.filter(gc::hasReadPerm);

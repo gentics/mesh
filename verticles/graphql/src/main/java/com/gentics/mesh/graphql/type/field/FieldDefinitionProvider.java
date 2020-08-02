@@ -330,7 +330,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 					}
 					// TODO we need to add more assertions and check what happens if the itemContainer is null
 					NodeGraphFieldContainer itemContainer = node.findVersion(gc, languageTags, nodeType);
-					return new NodeContent(node, itemContainer, languageTags);
+					return new NodeContent(node, itemContainer, languageTags, nodeType);
 				});
 				if (filterArgument != null) {
 					nodes = nodes.filter(nodeFilter.createPredicate(filterArgument));
@@ -419,7 +419,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 						gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 						NodeGraphFieldContainer container = node.findVersion(gc, languageTags, type);
 						container = gc.requiresReadPermSoft(container, env);
-						return new NodeContent(node, container, languageTags);
+						return new NodeContent(node, container, languageTags, type);
 					}
 				}
 				return null;

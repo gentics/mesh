@@ -130,7 +130,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		NodeGraphFieldContainer container = parentNode.findVersion(gc, languageTags, type);
 		container = gc.requiresReadPermSoft(container, env);
 
-		return new NodeContent(parentNode, container, languageTags);
+		return new NodeContent(parentNode, container, languageTags, type);
 	}
 
 	public Object nodeLanguageFetcher(DataFetchingEnvironment env) {
@@ -145,7 +145,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		ContainerType type = getNodeContainerType(env);
 		NodeGraphFieldContainer container = node.findVersion(gc, languageTags, type);
 		container = gc.requiresReadPermSoft(container, env);
-		return new NodeContent(node, container, languageTags);
+		return new NodeContent(node, container, languageTags, type);
 	}
 
 	public Object breadcrumbFetcher(DataFetchingEnvironment env) {
@@ -159,7 +159,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		return content.getNode().getBreadcrumbNodes(gc).stream().map(node -> {
 			List<String> languageTags = getLanguageArgument(env, content);
 			NodeGraphFieldContainer container = node.findVersion(gc, languageTags, type);
-			return new NodeContent(node, container, languageTags);
+			return new NodeContent(node, container, languageTags, type);
 		})
 			.filter(item -> item.getContainer() != null)
 			.filter(gc::hasReadPerm)
@@ -180,7 +180,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		return stream
 			.filter(gc::hasReadPerm)
 			.map(container -> {
-				return new NodeContent(content.getNode(), container, content.getLanguageFallback());
+				return new NodeContent(content.getNode(), container, content.getLanguageFallback(), type);
 			}).collect(Collectors.toList());
 	}
 
@@ -307,7 +307,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 						if(containerFromPath!=null ) {
 							langs = Arrays.asList(containerFromPath.getLanguageTag());
 						}
-						return new NodeContent(nodeFromPath, containerFromPath, langs);
+						return new NodeContent(nodeFromPath, containerFromPath, langs, type);
 					}
 					return null;
 				}).build(),
@@ -324,7 +324,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				ContainerType type = getNodeContainerType(env);
 
 				Stream<NodeContent> nodes = content.getNode().getChildrenStream(gc)
-					.map(item -> new NodeContent(item, item.findVersion(gc, languageTags, type), languageTags))
+					.map(item -> new NodeContent(item, item.findVersion(gc, languageTags, type), languageTags, type))
 					.filter(item -> item.getContainer() != null)
 					.filter(item -> gc.hasReadPerm(item.getContainer()));
 
