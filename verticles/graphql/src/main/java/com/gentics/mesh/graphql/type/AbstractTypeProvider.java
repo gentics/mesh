@@ -23,6 +23,7 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
@@ -252,7 +253,6 @@ public abstract class AbstractTypeProvider {
 			.name("nodeType")
 			.type(new GraphQLTypeReference(NODE_CONTAINER_TYPE_NAME))
 			.description("The type of the content which can either be draft or published.")
-			.defaultValue(ContainerType.DRAFT)
 			.build();
 	}
 
@@ -283,20 +283,42 @@ public abstract class AbstractTypeProvider {
 	 */
 	public ContainerType getNodeContainerType(DataFetchingEnvironment env) {
 		GraphQLContext context = env.getContext();
+
+		ContainerType type = env.getArgument("nodeType");
+		if (type == null) {
+			Object source = env.getSource();
+			if (source == null) {
+				return getDefaultContainerType(context);
+			} else {
+				if (source instanceof NodeContent) {
+					NodeContent content = (NodeContent) source;
+					NodeGraphFieldContainer container = content.getContainer();
+					if (container != null) {
+						// TODO this may not work since a container 
+						// can be published and draft at the same time
+						if (container.isPublished()) {
+							return ContainerType.PUBLISHED;
+						} else {
+							return ContainerType.DRAFT;
+						}
+					}
+				}
+				return getDefaultContainerType(context);
+			}
+		} else {
+			return type;
+		}
+	}
+
+	private ContainerType getDefaultContainerType(GraphQLContext context) {
 		// Utilize the query parameter value here to override the default.
 		// This is a fallback mechanism
-		// TODO maybe add graphql version check?
 		VersioningParameters params = context.getVersioningParameters();
 		if (params.hasVersion()) {
 			String version = params.getVersion();
 			return ContainerType.forVersion(version);
 		} else {
-			ContainerType type = env.getArgument("nodeType");
-			if (type == null) {
-				return ContainerType.DRAFT;
-			} else {
-				return type;
-			}
+			return ContainerType.DRAFT;
 		}
 	}
 
@@ -466,7 +488,7 @@ public abstract class AbstractTypeProvider {
 	 * @return
 	 */
 	protected GraphQLFieldDefinition newElementField(String name, String description, Function<GraphQLContext, RootVertex<?>> rootProvider,
-													 String elementType) {
+		String elementType) {
 		return newElementField(name, description, rootProvider, elementType, false);
 	}
 
@@ -482,7 +504,7 @@ public abstract class AbstractTypeProvider {
 	 * @param elementType
 	 *            Type name of the element which can be loaded
 	 * @param hidePermissionsErrors
-	 * 			  Does not show errors if the permission is missing. Useful for sensitive data (ex. fetching users by name)
+	 *            Does not show errors if the permission is missing. Useful for sensitive data (ex. fetching users by name)
 	 * @return
 	 */
 	protected GraphQLFieldDefinition newElementField(String name, String description, Function<GraphQLContext, RootVertex<?>> rootProvider,

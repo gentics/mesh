@@ -1,0 +1,36 @@
+{
+  draftRoot: rootNode(nodeType: draft) {
+    # [$.data.draftRoot.uuid=<is-uuid>]
+    uuid
+    # [$.data.draftRoot.version=1.1]
+    version
+    child(path: "level1B") {
+      uuid
+      # [$.data.draftRoot.child.version=1.1]
+      version
+      child(path: "level2-2", nodeType: published) {
+        uuid
+        # [$.data.draftRoot.child.child.version=1.0]
+        version
+      }
+    }
+  }
+
+  publishedRoot: rootNode(nodeType: published) {
+    # [$.data.publishedRoot.uuid=<is-uuid>]
+    uuid
+    # [$.data.publishedRoot.version=1.0]
+    version
+    child(path: "level1B") {
+      uuid
+      # [$.data.publishedRoot.child.version=1.0]
+      version
+      child(path: "level2-2", nodeType: draft) {
+        uuid
+        # [$.data.publishedRoot.child.child.version=1.1]
+        version
+      }
+    }
+  }
+}
+# [$.errors=<is-undefined>]
