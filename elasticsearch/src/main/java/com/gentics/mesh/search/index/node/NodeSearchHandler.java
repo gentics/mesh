@@ -68,13 +68,14 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 	 * @param query
 	 *            Elasticsearch query
 	 * @param pagingInfo
+	 * @param type
 	 * @return
 	 * @throws MeshConfigurationException
 	 * @throws TimeoutException
 	 * @throws ExecutionException
 	 * @throws InterruptedException
 	 */
-	public Page<? extends NodeContent> handleContainerSearch(InternalActionContext ac, String query, PagingParameters pagingInfo,
+	public Page<? extends NodeContent> handleContainerSearch(InternalActionContext ac, String query, PagingParameters pagingInfo, ContainerType type,
 		GraphPermission... permissions) throws MeshConfigurationException, InterruptedException, ExecutionException, TimeoutException {
 		ElasticsearchClient<JsonObject> client = searchProvider.getClient();
 		if (client == null) {
@@ -83,6 +84,7 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 		if (log.isDebugEnabled()) {
 			log.debug("Invoking search with query {" + query + "} for {Containers}");
 		}
+		// TODO !! pass along type parameter to reduce / correct selected indices
 		Set<String> indices = getIndexHandler().getIndicesForSearch(ac);
 
 		// Add permission checks to the query
@@ -139,7 +141,6 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 						continue;
 					}
 
-					ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
 					Language language = boot.languageRoot().findByLanguageTag(languageTag);
 					if (language == null) {
 						log.warn("Could not find language {" + languageTag + "}");

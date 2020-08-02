@@ -30,6 +30,7 @@ import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.PermissionException;
 import com.gentics.mesh.error.MeshConfigurationException;
@@ -38,6 +39,7 @@ import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.filter.NodeFilter;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.search.SearchHandler;
 
@@ -53,6 +55,7 @@ import graphql.schema.GraphQLTypeReference;
 public abstract class AbstractTypeProvider {
 
 	public static final String LINK_TYPE_NAME = "LinkType";
+	public static final String NODE_CONTAINER_TYPE_NAME = "NodeContainerType";
 
 	private final MeshOptions options;
 
@@ -244,6 +247,24 @@ public abstract class AbstractTypeProvider {
 			"Specify the resolve type").build();
 	}
 
+	public GraphQLArgument createNodeTypeArg() {
+		return newArgument()
+			.name("nodeType")
+			.type(new GraphQLTypeReference(NODE_CONTAINER_TYPE_NAME))
+			.description("The type of the content which can either be draft or published.")
+			.defaultValue(ContainerType.DRAFT)
+			.build();
+	}
+
+	public GraphQLEnumType createNodeEnumType() {
+		GraphQLEnumType nodeTypeEnum = newEnum().name(NODE_CONTAINER_TYPE_NAME)
+			.description("The type of a node which can either be published or draft.")
+			.value(ContainerType.DRAFT.getHumanCode(), ContainerType.DRAFT, "Draft nodes")
+			.value(ContainerType.PUBLISHED.getHumanCode(), ContainerType.PUBLISHED, "Published nodes")
+			.build();
+		return nodeTypeEnum;
+	}
+
 	/**
 	 * Returns the linkType argument value from the given environment.
 	 * 
@@ -252,6 +273,31 @@ public abstract class AbstractTypeProvider {
 	 */
 	public LinkType getLinkType(DataFetchingEnvironment env) {
 		return env.getArgument("linkType");
+	}
+
+	/**
+	 * Return the node container type argument value.
+	 * 
+	 * @param env
+	 * @return
+	 */
+	public ContainerType getNodeContainerType(DataFetchingEnvironment env) {
+		GraphQLContext context = env.getContext();
+		// Utilize the query parameter value here to override the default.
+		// This is a fallback mechanism
+		// TODO maybe add graphql version check?
+		VersioningParameters params = context.getVersioningParameters();
+		if (params.hasVersion()) {
+			String version = params.getVersion();
+			return ContainerType.forVersion(version);
+		} else {
+			ContainerType type = env.getArgument("nodeType");
+			if (type == null) {
+				return ContainerType.DRAFT;
+			} else {
+				return type;
+			}
+		}
 	}
 
 	/**
@@ -391,7 +437,10 @@ public abstract class AbstractTypeProvider {
 
 	protected graphql.schema.GraphQLFieldDefinition.Builder newPagingFieldWithFetcherBuilder(String name, String description,
 		DataFetcher<?> dataFetcher, String pageTypeName) {
-		return newFieldDefinition().name(name).description(description).argument(createPagingArgs()).type(new GraphQLTypeReference(pageTypeName))
+		return newFieldDefinition().name(name).description(description)
+			.argument(createPagingArgs())
+			.argument(createNodeTypeArg())
+			.type(new GraphQLTypeReference(pageTypeName))
 			.dataFetcher(dataFetcher);
 	}
 
@@ -489,12 +538,14 @@ public abstract class AbstractTypeProvider {
 		NodeRoot nodeRoot = gc.getProject().getNodeRoot();
 
 		List<String> languageTags = getLanguageArgument(env);
+		ContainerType type = getNodeContainerType(env);
 
 		Stream<NodeContent> contents = nodeRoot.findAllStream(gc, READ_PUBLISHED_PERM)
 			// Now lets try to load the containers for those found nodes - apply the language fallback
-			.map(node -> new NodeContent(node, node.findVersion(gc, languageTags), languageTags))
+			.map(node -> new NodeContent(node, node.findVersion(gc, languageTags, type), languageTags))
 			// Filter nodes without a container
-			.filter(content -> content.getContainer() != null);
+			.filter(content -> content.getContainer() != null)
+			.filter(gc::hasReadPerm);
 
 		return applyNodeFilter(env, contents);
 	}

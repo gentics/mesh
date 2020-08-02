@@ -34,6 +34,15 @@ public interface VersioningParameters extends ParameterProvider {
 	}
 
 	/**
+	 * Check whether a version was specified in the parameters.
+	 * 
+	 * @return
+	 */
+	default boolean hasVersion() {
+		return getParameter(VERSION_QUERY_PARAM_KEY) != null;
+	}
+
+	/**
 	 * Set the version. This can be either "draft", "published" or a version number
 	 *
 	 * @param version

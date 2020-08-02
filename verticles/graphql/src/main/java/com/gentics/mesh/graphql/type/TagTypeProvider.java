@@ -17,6 +17,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.NodeContent;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 
@@ -67,17 +68,20 @@ public class TagTypeProvider extends AbstractTypeProvider {
 				.type(new GraphQLTypeReference(NODE_PAGE_TYPE_NAME))
 				.argument(createPagingArgs())
 				.argument(createLanguageTagArg(true))
+				.argument(createNodeTypeArg())
 				.dataFetcher((env) -> {
 					GraphQLContext gc = env.getContext();
 					Tag tag = env.getSource();
 					
 					List<String> languageTags = getLanguageArgument(env);
+					ContainerType type = getNodeContainerType(env);
 
-					Stream<NodeContent> contents = tag.findTaggedNodes(gc, READ_PUBLISHED_PERM).stream()
+					Stream<NodeContent> contents = tag.findTaggedNodes(gc).stream()
 						// Now lets try to load the containers for those found nodes - apply the language fallback
-						.map(node -> new NodeContent(node, node.findVersion(gc, languageTags), languageTags))
+						.map(node -> new NodeContent(node, node.findVersion(gc, languageTags, type), languageTags))
 						// Filter nodes without a container
-						.filter(content -> content.getContainer() != null);
+						.filter(content -> content.getContainer() != null)
+						.filter(gc::hasReadPerm);
 
 					return applyNodeFilter(env, contents);
 

@@ -43,9 +43,8 @@ public class WebRootServiceImpl implements WebRootService {
 	}
 
 	@Override
-	public Path findByProjectPath(InternalActionContext ac, String path) {
+	public Path findByProjectPath(InternalActionContext ac, String path, ContainerType type) {
 		Project project = ac.getProject();
-		ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
 		Branch branch = ac.getBranch();
 
 		Path cachedPath = pathStore.getPath(project, branch, type, path);
@@ -106,8 +105,7 @@ public class WebRootServiceImpl implements WebRootService {
 		}
 
 		// Traverse the graph and buildup the result path while doing so
-		Path resolvedPath = baseNode.resolvePath(ac.getBranch().getUuid(), ContainerType.forVersion(ac.getVersioningParameters().getVersion()),
-			nodePath, stack);
+		Path resolvedPath = baseNode.resolvePath(ac.getBranch().getUuid(), type, nodePath, stack);
 		pathStore.store(project, branch, type, path, nodePath);
 		return resolvedPath;
 	}

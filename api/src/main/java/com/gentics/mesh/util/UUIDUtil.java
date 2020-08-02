@@ -14,6 +14,10 @@ public final class UUIDUtil {
 
 	}
 
+	public static void main(String[] args) {
+		System.out.println(UUIDUtil.randomUUID());
+	}
+
 	/**
 	 * Convert a shortened uuid into a uuid which includes dashes
 	 * 

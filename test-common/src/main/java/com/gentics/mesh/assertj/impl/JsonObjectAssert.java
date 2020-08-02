@@ -119,37 +119,64 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 
 	@NotNull
 	private JsonObjectAssert compliesToAssertions(InputStream ins) {
-		Scanner scanner = new Scanner(ins);
-		try {
-			int lineNr = 1;
-			// Parse the query and extract comments which include assertions. Directly evaluate these assertions.
-			while (scanner.hasNextLine()) {
-				String line = scanner.nextLine();
-				line = line.trim();
-				if (line.startsWith("# [")) {
-					int start = line.indexOf("# [") + 3;
-					int end = line.lastIndexOf("]");
-					String assertion = line.substring(start, end);
-					evaluteAssertion(assertion, lineNr);
-				}
-				lineNr++;
-			}
-		} finally {
-			scanner.close();
+		try (Scanner scanner = new Scanner(ins)) {
+			compliesToAssertions(scanner);
 		}
+		return this;
+	}
 
+	public JsonObjectAssert compliesToAssertionText(String lines) {
+		try (Scanner scanner = new Scanner(lines)) {
+			compliesToAssertions(scanner);
+		}
+		return this;
+	}
+
+	private JsonObjectAssert compliesToAssertions(Scanner scanner) {
+		int lineNr = 1;
+		// Parse the query and extract comments which include assertions. Directly evaluate these assertions.
+		while (scanner.hasNextLine()) {
+			String line = scanner.nextLine();
+			line = line.trim();
+			if (line.startsWith("# [")) {
+				int start = line.indexOf("# [") + 3;
+				int end = line.lastIndexOf("]");
+				String assertion = line.substring(start, end);
+				evaluteAssertion(assertion, lineNr);
+			}
+			lineNr++;
+		}
 		return this;
 	}
 
 	private void evaluteAssertion(String assertion, int lineNr) {
+		String msg = "Failure on line {" + lineNr + "}";
+		compliesTo(assertion, msg, lineNr);
+	}
+
+	public JsonObjectAssert compliesTo(String assertion) {
+		return compliesTo(assertion, null, null);
+	}
+
+	public JsonObjectAssert compliesTo(String assertion, String msg) {
+		return compliesTo(assertion, msg, null);
+	}
+
+	public JsonObjectAssert compliesTo(String assertion, String msg, Integer lineNr) {
 		String[] parts = assertion.split("=", 2);
 		if (parts.length <= 1) {
-			fail("Assertion on line {" + lineNr + "} is not complete {" + assertion + "}");
+			if (lineNr != null) {
+				fail("Assertion on line {" + lineNr + "} is not complete {" + assertion + "}");
+			} else {
+				fail("Assertion {" + assertion + "} is not complete.");
+			}
 		}
 		String path = parts[0];
 		String value = parts[1];
+		if (msg == null) {
+			msg = "Assertion error in path";
+		}
 
-		String msg = "Failure on line {" + lineNr + "}";
 		if ("<not-null>".equals(value) || "<is-not-null>".equals(value)) {
 			pathIsNotNull(path, msg);
 		} else if ("<is-null>".equals(value)) {
@@ -163,6 +190,7 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 		} else {
 			has(path, replaceVariables(value), msg);
 		}
+		return this;
 	}
 
 	private String replaceVariables(String value) {

@@ -16,13 +16,14 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLObjectType;
-import graphql.schema.GraphQLTypeReference;
 import graphql.schema.GraphQLObjectType.Builder;
+import graphql.schema.GraphQLTypeReference;
 
 @Singleton
 public class ProjectTypeProvider extends AbstractTypeProvider {
@@ -57,7 +58,10 @@ public class ProjectTypeProvider extends AbstractTypeProvider {
 		Node node = project.getBaseNode();
 		gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 		List<String> languageTags = getLanguageArgument(env);
-		NodeGraphFieldContainer container = node.findVersion(gc, languageTags);
+		ContainerType type = getNodeContainerType(env);
+
+		NodeGraphFieldContainer container = node.findVersion(gc, languageTags, type);
+		container = gc.requiresReadPermSoft(container, env);
 		return new NodeContent(node, container, languageTags);
 	}
 
@@ -76,6 +80,7 @@ public class ProjectTypeProvider extends AbstractTypeProvider {
 				.description("The root node of the project")
 				.type(new GraphQLTypeReference(NODE_TYPE_NAME))
 				.argument(createLanguageTagArg(true))
+				.argument(createNodeTypeArg())
 				.dataFetcher(this::baseNodeFetcher));
 
 		return root.build();

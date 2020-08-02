@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.rest.error.AbstractUnavailableException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphql.context.GraphQLContext;
@@ -146,21 +145,33 @@ public class GraphQLHandler {
 					jsonError.put("message", dataError.getMessage());
 					jsonError.put("type", dataError.getErrorType());
 				}
+				addLocation(dataError, jsonError);
 			} else {
 				jsonError.put("message", error.getMessage());
 				jsonError.put("type", error.getErrorType());
-				if (error.getLocations() != null && !error.getLocations().isEmpty()) {
-					JsonArray errorLocations = new JsonArray();
-					jsonError.put("locations", errorLocations);
-					for (SourceLocation location : error.getLocations()) {
-						JsonObject errorLocation = new JsonObject();
-						errorLocation.put("line", location.getLine());
-						errorLocation.put("column", location.getColumn());
-						errorLocations.add(errorLocation);
-					}
-				}
+				addLocation(error, jsonError);
 			}
 			jsonErrors.add(jsonError);
+		}
+	}
+
+	private void addLocation(GraphQLError error, JsonObject jsonError) {
+		if (error.getPath() != null && !error.getPath().isEmpty()) {
+			String path = error.getPath()
+					.stream()
+					.map(e -> e.toString())
+					.collect(Collectors.joining("."));
+			jsonError.put("path", path);
+		}
+		if (error.getLocations() != null && !error.getLocations().isEmpty()) {
+			JsonArray errorLocations = new JsonArray();
+			jsonError.put("locations", errorLocations);
+			for (SourceLocation location : error.getLocations()) {
+				JsonObject errorLocation = new JsonObject();
+				errorLocation.put("line", location.getLine());
+				errorLocation.put("column", location.getColumn());
+				errorLocations.add(errorLocation);
+			}
 		}
 	}
 }
