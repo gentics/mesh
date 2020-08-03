@@ -134,7 +134,7 @@ NOTE: The GraphiQL browser currently does not support the `branch` or `version` 
 [[permissions]]
 == Permission Handling
 
-Loading an element in GraphQL with lacking permissions will result in the field to be set to `null`. Additionally a permission error will be added to the GraphQL response.
+Generally loading an element in GraphQL with lacking permissions will result in the field to be set to `null`. Additionally, a permission error will be added to the GraphQL response.
 
 Collection fields will omit the entries to which the user lacks permissions. No errors will be logged in this case.
 
@@ -142,7 +142,7 @@ Collection fields will omit the entries to which the user lacks permissions. No 
 
 The `read_published` permission on nodes allows for a finer control on the returned data.
 
-A node will be partially returned (without content) when loading it with `nodeType: draft` and and only `readPublished` permission was granted on the node. The `readPublished` permission still grants access to the node data but not the content.
+A node will be partially returned (without content) when loading it with `nodeType: draft` and only `readPublished` permission was granted on the node. The `readPublished` permission still grants access to the node data but not the content.
 
 This concept applies differently for collections (`.nodes` / `.node.children` / …). In this case the node is completely omitted from the collection. The needed `nodeType` parameter acts as a filter for these cases. No permission errors will be logged for entries that lack permissions in collections.
  
@@ -157,6 +157,11 @@ This concept applies differently for collections (`.nodes` / `.node.children` / 
 | `none`             | `published`/`draft`      | Node can't be loaded. Permission error logged. | Entry excluded.
 |======
 
+The `node.child(path: "")` and `nodes(path: "")` will return `null` when the content does not match up. See link:#typehandling-exceptions[content type handling exceptions] for details.
+
+////
+// The behaviour is currently inconsistent. node.children does not exclude entries while nodes does.
+
 == Language Handling
 
 The `lang` parameter on node fields can be used to control what language specific content of the node should be loaded.
@@ -165,18 +170,24 @@ include::content/docs/examples/graphql/node-uuid-nolang-query[]
 
 When loading a single node and selecting a non-existing language the node will be returned without content.
 
-For collections the `lang` parameter acts as a filter and the result will only contain the nodes with contents that match the lang parameter.
+For collections the `lang` parameter acts as a filter, and the result will only contain the nodes with contents that match the lang parameter.
+////
 
 [[typehandling]]
 == Content Type Handling
 
 The `nodeType` parameter on node fields can be used to control whether to return draft or published contents.
 
-Loading single nodes may result in the content being omitted whenever the requested content could not be found or when the permission to read the content is not sufficent.
+Loading single nodes may result in the content being omitted whenever the requested content could not be found or when the permission to read the content is not sufficient. In this case a permission error will be logged in the response.
 
 When loading collections the `nodeType` parameter acts as a filter and the result will only contain nodes which also have the requested content type.
 
 The selected type argument value will be inherited from the parent element.
+
+[[typehandling-exceptions]]
+=== Exceptions ===
+
+The `node.child(path: "")` and `nodes(path: "")` are two fields which have a different behaviour since the path is used to directly load a specific content of a node. Whenever the found content does not match up with the specified `nodeType` parameter no node will be returned. The field will be set to `null` in those cases.
 
 [[limitations]]
 == Limitations

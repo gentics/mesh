@@ -173,8 +173,8 @@ public class GraphQLNodePermissionTest extends AbstractGraphQLNodeTest {
 		}
 	}
 
-	private void assertNodeList(TestField field, TestField subField) {
-		String subElementPath = (field == NODE_UUID_REFERENCED_BY || field == NODE_INVERTED_UUID_REFERENCED_BY) ? "[0].node" : "[0]";
+	private void assertNodeList(TestField field, TestField parentField) {
+		String parentElementPath = (field == NODE_UUID_REFERENCED_BY || field == NODE_INVERTED_UUID_REFERENCED_BY) ? "[0].node" : "[0]";
 		switch (perm) {
 		case NO_PERM:
 			switch (setup) {
@@ -182,7 +182,7 @@ public class GraphQLNodePermissionTest extends AbstractGraphQLNodeTest {
 				switch (field) {
 				case NODE_UUID_FIELDS_NODE:
 				case NODE_UUID_FIELDS_NODE_LIST:
-					expectNode(subField, null,
+					expectNode(parentField, null,
 						"For node fields the node which contains the fields should not contain any content since it was never published.");
 					break;
 				case NODE_INVERTED_UUID_FIELDS_NODE_LIST:
@@ -199,18 +199,18 @@ public class GraphQLNodePermissionTest extends AbstractGraphQLNodeTest {
 			case NO_PUBLISH_SELECT_DRAFT:
 				if (field.hasReadOnlyPerm) {
 					expectSize(field, 1, "We have read perm on the collection and thus should see the elements");
-					expectNode(field + subElementPath, "0.2", "The list should contain a draft element.");
+					expectNode(field + parentElementPath, "0.2", "The list should contain a draft element.");
 				} else {
 					switch (field) {
 					case NODE_INVERTED_UUID_FIELDS_NODE:
 					case NODE_INVERTED_UUID_FIELDS_NODE_LIST:
-						expectNode(subField, null,
+						expectNode(parentField, null,
 							"The type is inverted and thus we select the published content which can't be loaded since it was not created.");
 						break;
 					default:
 						if (field.listsTestNode()) {
 							expectSize(field, 1, "The collection field should list the node under test.");
-							expectNode(field + subElementPath, "0.2", "The list should contain the node under test as a draft.");
+							expectNode(field + parentElementPath, "0.2", "The list should contain the node under test as a draft.");
 						} else {
 							expectSize(field, 0, "The list should be empty since we have no permissions on the nodes.");
 						}
@@ -221,11 +221,11 @@ public class GraphQLNodePermissionTest extends AbstractGraphQLNodeTest {
 			case PUBLISH_SELECT_DRAFT:
 				if (field.hasReadOnlyPerm) {
 					expectSize(field, 1, "We have read perm on the collection and thus should see the elements");
-					expectNode(field + subElementPath, "1.1", "The entry should be a draft");
+					expectNode(field + parentElementPath, "1.1", "The entry should be a draft");
 				} else {
 					if (field.listsTestNode()) {
 						expectSize(field, 1, "The collection field should list the node under test.");
-						expectNode(field + subElementPath, "1.1", "The entry should be a draft");
+						expectNode(field + parentElementPath, "1.1", "The entry should be a draft");
 					} else {
 						expectSize(field, 0, "The list should be empty since we have no permissions on the nodes.");
 					}
@@ -234,11 +234,11 @@ public class GraphQLNodePermissionTest extends AbstractGraphQLNodeTest {
 			case PUBLISH_SELECT_PUBLISHED:
 				if (field.hasReadOnlyPerm) {
 					expectSize(field, 1, "We have read perm on the collection and thus should see the elements");
-					expectNode(field + subElementPath, "1.0", "The entry should be published");
+					expectNode(field + parentElementPath, "1.0", "The entry should be published");
 				} else {
 					if (field.listsTestNode()) {
 						expectSize(field, 1, "The collection field should list the node under test.");
-						expectNode(field + subElementPath, "1.0", "The entry should be published");
+						expectNode(field + parentElementPath, "1.0", "The entry should be published");
 					} else {
 						expectSize(field, 0, "The list should be empty since we have no permissions on the nodes.");
 					}
@@ -259,17 +259,17 @@ public class GraphQLNodePermissionTest extends AbstractGraphQLNodeTest {
 						"The second entry of the breadcrumb should be the node under test with draft version since we don't publish.");
 					break;
 				case NODE_INVERTED_UUID_FIELDS_NODE_LIST:
-					expectNode(subField, null, "The node should be loaded without content (due to inverted type). We thus can't check fields.");
+					expectNode(parentField, null, "The node should be loaded without content (due to inverted type). We thus can't check fields.");
 					break;
 				default:
-					expectNode(field + subElementPath, "0.2", "The element should be a draft node");
+					expectNode(field + parentElementPath, "0.2", "The element should be a draft node");
 					break;
 				}
 				break;
 			case NO_PUBLISH_SELECT_PUBLISHED:
 				switch (field) {
 				case NODE_UUID_FIELDS_NODE_LIST:
-					expectNode(subField, null,
+					expectNode(parentField, null,
 						"For node lists fields the whole fields should be null since we never publish the content of the node.");
 					break;
 				default:
@@ -278,10 +278,10 @@ public class GraphQLNodePermissionTest extends AbstractGraphQLNodeTest {
 				}
 				break;
 			case PUBLISH_SELECT_DRAFT:
-				expectNode(field + subElementPath, "1.1", "The element should be a draft node.");
+				expectNode(field + parentElementPath, "1.1", "The element should be a draft node.");
 				break;
 			case PUBLISH_SELECT_PUBLISHED:
-				expectNode(field + subElementPath, "1.0", "The element should be a published node.");
+				expectNode(field + parentElementPath, "1.0", "The element should be a published node.");
 				break;
 			}
 			break;
@@ -291,10 +291,10 @@ public class GraphQLNodePermissionTest extends AbstractGraphQLNodeTest {
 			case NO_PUBLISH_SELECT_DRAFT:
 				switch (field) {
 				case NODE_UUID_FIELDS_NODE_LIST:
-					expectSoftPermFailure(subField, "The user has no permission to read the node");
+					expectSoftPermFailure(parentField, "The user has no permission to read the node");
 					break;
 				case NODE_INVERTED_UUID_FIELDS_NODE_LIST:
-					expectNode(subField, null, "The node should be loaded without content since there is no published content");
+					expectNode(parentField, null, "The node should be loaded without content since there is no published content");
 					break;
 				default:
 					expectEmpty(field, "The list should be empty since we have no permissions to read drafts.");
@@ -304,10 +304,10 @@ public class GraphQLNodePermissionTest extends AbstractGraphQLNodeTest {
 			case NO_PUBLISH_SELECT_PUBLISHED:
 				switch (field) {
 				case NODE_UUID_FIELDS_NODE_LIST:
-					expectNode(subField, null, "The node which contains the fields was never published.");
+					expectNode(parentField, null, "The node which contains the fields was never published.");
 					break;
 				case NODE_INVERTED_UUID_FIELDS_NODE_LIST:
-					expectSoftPermFailure(subField, "The user has no permission to read the draft content of the node that contains the fields.");
+					expectSoftPermFailure(parentField, "The user has no permission to read the draft content of the node that contains the fields.");
 					break;
 				default:
 					expectEmpty(field, "The list should be empty since we are selecting published nodes without publishing");
@@ -317,7 +317,7 @@ public class GraphQLNodePermissionTest extends AbstractGraphQLNodeTest {
 			case PUBLISH_SELECT_DRAFT:
 				switch (field) {
 				case NODE_UUID_FIELDS_NODE_LIST:
-					expectSoftPermFailure(subField,
+					expectSoftPermFailure(parentField,
 						"The user has no permission to read the draft content of the node that contains the fields. The fields thus can't be asserted.");
 					break;
 				default:
@@ -328,11 +328,11 @@ public class GraphQLNodePermissionTest extends AbstractGraphQLNodeTest {
 			case PUBLISH_SELECT_PUBLISHED:
 				switch (field) {
 				case NODE_INVERTED_UUID_FIELDS_NODE_LIST:
-					expectSoftPermFailure(subField,
+					expectSoftPermFailure(parentField,
 						"The user has no permission to load the draft fields of the node that contains the fields. Fields thus can't be asserted");
 					break;
 				default:
-					expectNode(field + subElementPath, "1.0", "The entry should be published.");
+					expectNode(field + parentElementPath, "1.0", "The entry should be published.");
 					break;
 				}
 				break;
@@ -345,7 +345,7 @@ public class GraphQLNodePermissionTest extends AbstractGraphQLNodeTest {
 		expectNode(field, null, "The node should be loadable since we have the perms but it should not have any content.");
 	}
 
-	private void assertNode(TestField field, TestField subField) {
+	private void assertNode(TestField field, TestField parentField) {
 		boolean inverted = field.isInverted();
 		boolean hasPerm = field.hasReadOnlyPerm();
 		switch (perm) {
@@ -354,7 +354,7 @@ public class GraphQLNodePermissionTest extends AbstractGraphQLNodeTest {
 			case PUBLISH_SELECT_DRAFT:
 				if (hasPerm) {
 					String expected = inverted ? "1.0" : "1.1";
-					expectNode(field, expected, "The node should ");
+					expectNode(field, expected, "The node should be readable.");
 				} else {
 					expectHardPermFailure(field, "The user has no permission to read the node");
 				}
@@ -374,7 +374,7 @@ public class GraphQLNodePermissionTest extends AbstractGraphQLNodeTest {
 				} else {
 					switch (field) {
 					case NODE_INVERTED_UUID_FIELDS_NODE:
-						expectNode(subField, null,
+						expectNode(parentField, null,
 							"The node should be loaded without content since the type is inverted. We thus can't check fields.");
 						break;
 					default:
@@ -386,14 +386,15 @@ public class GraphQLNodePermissionTest extends AbstractGraphQLNodeTest {
 			case NO_PUBLISH_SELECT_PUBLISHED:
 				switch (field) {
 				case NODE_INVERTED_UUID_FIELDS_NODE:
-					expectNode(subField, "0.2", "The draft node should be loaded since the inverted selector was used.");
+					expectNode(parentField, "0.2", "The draft node should be loaded since the inverted selector was used.");
+					expectHardPermFailure(field, "The user has no permission to read the node reference.");
 					break;
 				case NODE_UUID_INVERTED:
 				case NODE_INVERTED_UUID:
 					expectNode(field, "0.2", "The draft node should be loaded since the inverted selector was used.");
 					break;
 				case NODE_UUID_FIELDS_NODE:
-					expectNode(subField, null, "The node should be loaded without content and thus we can't check the field.");
+					expectNode(parentField, null, "The node should be loaded without content and thus we can't check the field.");
 					break;
 				default:
 					if (inverted) {
@@ -431,7 +432,7 @@ public class GraphQLNodePermissionTest extends AbstractGraphQLNodeTest {
 				}
 				switch (field) {
 				case NODE_INVERTED_UUID_FIELDS_NODE:
-					expectNode(subField, null, "The node should be loaded without contents (due to inverted type). We thus can't check the fields.");
+					expectNode(parentField, null, "The node should be loaded without contents (due to inverted type). We thus can't check the fields.");
 					break;
 				default:
 					expectNode(field, expected2, "The node with should be loaded.");
@@ -439,11 +440,11 @@ public class GraphQLNodePermissionTest extends AbstractGraphQLNodeTest {
 				}
 				break;
 			case NO_PUBLISH_SELECT_PUBLISHED:
-				if (subField != null) {
+				if (parentField != null) {
 					if (inverted) {
 						expectNode(field, "0.2", "The draft of the field should be loaded due to inverted selection.");
 					} else {
-						if (subField.isInverted()) {
+						if (parentField.isInverted()) {
 							if (field.isInverted()) {
 								expectNode(field, "0.2", "The node should be loaded without content since the node was not published.");
 							} else {
@@ -455,7 +456,7 @@ public class GraphQLNodePermissionTest extends AbstractGraphQLNodeTest {
 								}
 							}
 						} else {
-							expectNode(subField, null, "The node should be loaded without content since the node was not published.");
+							expectNode(parentField, null, "The node should be loaded without content since the node was not published.");
 						}
 					}
 					if (field.isNullOnWrongType()) {
@@ -466,7 +467,7 @@ public class GraphQLNodePermissionTest extends AbstractGraphQLNodeTest {
 						} else {
 							switch (field) {
 							case NODE_UUID_FIELDS_NODE:
-								expectNode(subField, null,
+								expectNode(parentField, null,
 									"For node fields the node itself should not have content since it was never published. Thus we can't assert the fields since there are none.");
 								break;
 							default:
@@ -493,7 +494,7 @@ public class GraphQLNodePermissionTest extends AbstractGraphQLNodeTest {
 				} else {
 					switch (field) {
 					case NODE_UUID_FIELDS_NODE:
-						expectSoftPermFailure(subField, "The user has no permission to read the draft content");
+						expectSoftPermFailure(parentField, "The user has no permission to read the draft content");
 						break;
 					default:
 						expectSoftPermFailure(field, "The user has no permission to read the draft content");
@@ -502,14 +503,14 @@ public class GraphQLNodePermissionTest extends AbstractGraphQLNodeTest {
 				}
 				break;
 			case PUBLISH_SELECT_PUBLISHED:
-				if (inverted && subField != null) {
+				if (inverted && parentField != null) {
 					expectNode(field, null,
 						"The node should be loaded without content since the inverted type would select the draft content and the user is lacking perms to load drafts");
 					expectSoftPermFailure(field, "The user has no permission to read the draft content");
 				} else {
 					switch (field) {
 					case NODE_INVERTED_UUID_FIELDS_NODE:
-						expectSoftPermFailure(subField, "The user has no permission to read the draft content");
+						expectSoftPermFailure(parentField, "The user has no permission to read the draft content");
 						break;
 					default:
 						String expected = inverted ? "1.1" : "1.0";
@@ -525,10 +526,10 @@ public class GraphQLNodePermissionTest extends AbstractGraphQLNodeTest {
 				} else {
 					switch (field) {
 					case NODE_UUID_FIELDS_NODE:
-						expectSoftPermFailure(subField, "The user has no permission to read the draft content");
+						expectSoftPermFailure(parentField, "The user has no permission to read the draft content");
 						break;
 					case NODE_INVERTED_UUID_FIELDS_NODE:
-						expectNode(subField, null, "The node should be loaded with no content since there is no published content.");
+						expectNode(parentField, null, "The node should be loaded with no content since there is no published content.");
 						break;
 					default:
 						expectSoftPermFailure(field, "The user has no permission to read the draft content");
@@ -542,10 +543,10 @@ public class GraphQLNodePermissionTest extends AbstractGraphQLNodeTest {
 				} else {
 					switch (field) {
 					case NODE_UUID_FIELDS_NODE:
-						expectNode(subField, null, "The node should be loaded without content. We can't check the fields in this case.");
+						expectNode(parentField, null, "The node should be loaded without content. We can't check the fields in this case.");
 						break;
 					case NODE_INVERTED_UUID_FIELDS_NODE:
-						expectSoftPermFailure(subField, "The user has no permission to read the draft content.");
+						expectSoftPermFailure(parentField, "The user has no permission to read the draft content.");
 						break;
 					default:
 						expectNode(field, null, "The node should be loaded without content since we never published the node");
@@ -661,25 +662,23 @@ public class GraphQLNodePermissionTest extends AbstractGraphQLNodeTest {
 		// Apply permissions for test run
 		RolePermissionRequest permRequest = new RolePermissionRequest();
 		PermissionInfo permissionsInfo = permRequest.getPermissions();
-		if (perm != null) {
-			switch (perm) {
-			case ONLY_READ:
-				permissionsInfo.set(Permission.READ, true);
-				break;
-			case ONLY_READ_PUBLISHED:
-				permissionsInfo.set(Permission.READ_PUBLISHED, true);
-				break;
-			case NO_PERM:
-				// Not setting any perms
-			}
+		switch (perm) {
+		case ONLY_READ:
+			permissionsInfo.set(Permission.READ, true);
+			break;
+		case ONLY_READ_PUBLISHED:
+			permissionsInfo.set(Permission.READ_PUBLISHED, true);
+			break;
+		case NO_PERM:
+			// Not setting any perms
 		}
 		permissionsInfo.setOthers(false);
 		permRequest.setRecursive(true);
 		adminCall(
 			() -> client().updateRolePermissions(roleUuid(), "/projects/" + PROJECT_NAME + "/nodes", permRequest));
 
-		// We can't test the scenario without any permissions. We need to grant perm the
-		// node under test
+		// We can't test the scenario without any permissions. We need to grant perm for the node under test.
+		// The NODE_1B is used to access node.child or node.children fields. Withouts perms we could not access the fields in this perm scenario.
 		if (PermissionScenario.NO_PERM == perm) {
 			RolePermissionRequest permRequest2 = new RolePermissionRequest();
 			permRequest2.setRecursive(false);
