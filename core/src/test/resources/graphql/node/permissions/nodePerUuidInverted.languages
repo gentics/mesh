@@ -14,32 +14,49 @@ query Test($type: NodeContainerType, $invType: NodeContainerType) {
   }
 }
 
+# We only expect Node 1B to be listed. We have full read perm on this node
 # [NO_PERM,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuidInverted.languages.length()=1
+# [NO_PERM,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuidInverted.languages[0].uuid=02e3982b6ad14c1fa4a0b5998a02ff92
 # [NO_PERM,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuidInverted.languages[0].version=1.1
 # [NO_PERM,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuidInverted.languages[0].isPublished=false
 # [NO_PERM,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuidInverted.languages[0].isDraft=true
+
+# We only expect Node 1B to be listed. We have full read perm on this node
 # [NO_PERM,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuidInverted.languages.length()=1
+# [NO_PERM,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuidInverted.languages[0].uuid=02e3982b6ad14c1fa4a0b5998a02ff92
 # [NO_PERM,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuidInverted.languages[0].version=1.0
 # [NO_PERM,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuidInverted.languages[0].isPublished=true
 # [NO_PERM,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuidInverted.languages[0].isDraft=false
+
+# We only expect Node 1B to be listed. We have full read perm on this node
 # [NO_PERM,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuidInverted.languages.length()=1
+# [NO_PERM,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuidInverted.languages[0].uuid=02e3982b6ad14c1fa4a0b5998a02ff92
 # [NO_PERM,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuidInverted.languages[0].version=0.2
 # [NO_PERM,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuidInverted.languages[0].isPublished=false
 # [NO_PERM,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuidInverted.languages[0].isDraft=true
+
+# Without publishing we expect no entries
 # [NO_PERM,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuidInverted.languages.length()=0
+# [ONLY_READ,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuidInverted.languages.length()=0
+
+# User has no permission to load drafts
+# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuidInverted.languages.length()=0
+
 # [ONLY_READ,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuidInverted.languages[0].version=1.1
 # [ONLY_READ,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuidInverted.languages[0].isPublished=false
 # [ONLY_READ,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuidInverted.languages[0].isDraft=true
+
 # [ONLY_READ,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuidInverted.languages[0].version=1.0
 # [ONLY_READ,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuidInverted.languages[0].isPublished=true
 # [ONLY_READ,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuidInverted.languages[0].isDraft=false
+
 # [ONLY_READ,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuidInverted.languages[0].version=0.2
 # [ONLY_READ,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuidInverted.languages[0].isPublished=false
 # [ONLY_READ,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuidInverted.languages[0].isDraft=true
-# [ONLY_READ,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuidInverted.languages.length()=0
-# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuidInverted.languages.length()=0
+
 # [ONLY_READ_PUBLISHED,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuidInverted.languages[0].version=1.0
 # [ONLY_READ_PUBLISHED,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuidInverted.languages[0].isPublished=true
 # [ONLY_READ_PUBLISHED,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuidInverted.languages[0].isDraft=false
+
 # [ONLY_READ_PUBLISHED,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuidInverted.languages.length()=0
 # [ONLY_READ_PUBLISHED,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuidInverted.languages.length()=0
