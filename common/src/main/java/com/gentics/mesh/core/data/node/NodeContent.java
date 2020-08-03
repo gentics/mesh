@@ -10,10 +10,10 @@ import java.util.List;
  */
 public class NodeContent {
 
-	Node node;
-	NodeGraphFieldContainer container;
-	List<String> languageFallback;
-	ContainerType type;
+	private Node node;
+	private NodeGraphFieldContainer container;
+	private List<String> languageFallback;
+	private ContainerType type;
 
 	/**
 	 * Create a new node content.

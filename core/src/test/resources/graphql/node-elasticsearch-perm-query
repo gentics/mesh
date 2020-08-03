@@ -1,15 +1,37 @@
 {
-	# [$.data.nodes.elements.length()=1]
-	nodes(query: "{\"query\":{\"query_string\":{\"query\":\"supersonic\", \"type\": \"phrase\" }}}") {
+	# [$.data.p.elements.length()=1]
+	p: nodes(nodeType: published, query: "{\"query\":{\"query_string\":{\"query\":\"supersonic\", \"type\": \"phrase\" }}}") {
 		elements {
-			node {uuid}
+			node {
+				uuid
+			}
 			language
+			version
 		}
 	}
 
-	result: nodes(query: "{ \"query\": { \"match\": { \"fields.slug\": \"blaar\" } } }") {
+	presult: nodes(nodeType: published, query: "{ \"query\": { \"match\": { \"fields.slug\": \"blaar\" } } }") {
 		elements {
 			uuid
+			version
+		}
+	}
+	
+		# [$.data.d.elements.length()=1]
+	d: nodes(nodeType: draft, query: "{\"query\":{\"query_string\":{\"query\":\"supersonic\", \"type\": \"phrase\" }}}") {
+		elements {
+			node {
+				uuid
+			}
+			language
+			version
+		}
+	}
+
+	dresult: nodes(nodeType: draft, query: "{ \"query\": { \"match\": { \"fields.slug\": \"blaar\" } } }") {
+		elements {
+			uuid
+			version
 		}
 	}
 }

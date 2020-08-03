@@ -84,8 +84,7 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 		if (log.isDebugEnabled()) {
 			log.debug("Invoking search with query {" + query + "} for {Containers}");
 		}
-		// TODO !! pass along type parameter to reduce / correct selected indices
-		Set<String> indices = getIndexHandler().getIndicesForSearch(ac);
+		Set<String> indices = getIndexHandler().getIndicesForSearch(ac, type);
 
 		// Add permission checks to the query
 		JsonObject queryJson = prepareSearchQuery(ac, query, true);
@@ -180,6 +179,11 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 			throw mapToMeshError(e);
 		}
 
+	}
+
+	@Override
+	public NodeIndexHandler getIndexHandler() {
+		return (NodeIndexHandler) super.getIndexHandler();
 	}
 
 }
