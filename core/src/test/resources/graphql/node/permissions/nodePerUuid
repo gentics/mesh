@@ -10,8 +10,6 @@ query Test($type: NodeContainerType) {
   }
 }  
 
-
-
 # The node can't be read since perms are missing
 # [NO_PERM,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid=<is-null>
 # [NO_PERM,PUBLISH_SELECT_DRAFT]=checkperm:nodePerUuid

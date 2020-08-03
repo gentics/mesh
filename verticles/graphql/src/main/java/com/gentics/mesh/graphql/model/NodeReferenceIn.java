@@ -7,7 +7,6 @@ import static com.gentics.mesh.util.StreamUtil.toStream;
 import java.util.stream.Stream;
 
 import com.gentics.graphqlfilter.util.Lazy;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -37,16 +36,14 @@ public class NodeReferenceIn {
 	 */
 	public static Stream<NodeReferenceIn> fromContent(GraphQLContext context, NodeContent content, ContainerType type) {
 		String branchUuid = context.getBranch().getUuid();
-		MeshAuthUser user = context.getUser();
-		String version = context.getVersioningParameters().getVersion();
 		return content.getNode()
 			.getInboundReferences()
 			.flatMap(ref -> toStream(ref.getReferencingContents()
 				.filter(container -> {
-					if (type == DRAFT && container.isDraft()) {
+					if (type == DRAFT && container.isDraft(branchUuid)) {
 						return true;
 					}
-					if (type == PUBLISHED && container.isPublished()) {
+					if (type == PUBLISHED && container.isPublished(branchUuid)) {
 						return true;
 					}
 					return false;
