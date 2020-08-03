@@ -1,7 +1,7 @@
 query Test($type: NodeContainerType) {
   
-  # Via UUID
-  nodePerUuid: node(uuid: "02e3982b6ad14c1fa4a0b5998a02ff92", nodeType: $type) {
+  # Via UUID 1C
+  nodePerUuid: node(uuid: "13c5981c51994d54998dd88b0c484720", nodeType: $type) {
     uuid
     version
     isPublished
@@ -10,18 +10,20 @@ query Test($type: NodeContainerType) {
   }
 }  
 
-# [NO_PERM,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.version=1.1
-# [NO_PERM,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.isPublished=false
-# [NO_PERM,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.isDraft=true
-# [NO_PERM,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.version=1.0
-# [NO_PERM,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.isPublished=true
-# [NO_PERM,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.isDraft=false
-# [NO_PERM,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.version=0.2
-# [NO_PERM,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.isPublished=false
-# [NO_PERM,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.isDraft=true
-# [NO_PERM,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.version=<is-null>
-# [NO_PERM,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.isPublished=<is-null>
-# [NO_PERM,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.isDraft=<is-null>
+
+
+# The node can't be read since perms are missing
+# [NO_PERM,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid=<is-null>
+# [NO_PERM,PUBLISH_SELECT_DRAFT]=checkperm:nodePerUuid
+# [NO_PERM,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid=<is-null>
+# [NO_PERM,PUBLISH_SELECT_PUBLISHED]=checkperm:nodePerUuid
+# [NO_PERM,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid=<is-null>
+# [NO_PERM,NO_PUBLISH_SELECT_DRAFT]=checkperm:nodePerUuid
+
+# The node content can't be read since it was not published and there are no perms on the node
+# [NO_PERM,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid=<is-null>
+# [NO_PERM,NO_PUBLISH_SELECT_PUBLISHED]=checkperm:nodePerUuid
+
 # [ONLY_READ,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.version=1.1
 # [ONLY_READ,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.isPublished=false
 # [ONLY_READ,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.isDraft=true
