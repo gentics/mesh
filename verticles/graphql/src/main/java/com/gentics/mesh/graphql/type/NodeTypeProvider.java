@@ -237,13 +237,13 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			// .availableLanguages
 			newFieldDefinition().name("availableLanguages").description("List all available languages for the node").type(new GraphQLList(
 				GraphQLString)).dataFetcher(env -> {
-				NodeContent content = env.getSource();
-				if (content == null) {
-					return null;
-				}
-				// TODO handle branch!
-				return content.getNode().getAvailableLanguageNames();
-			}).build(),
+					NodeContent content = env.getSource();
+					if (content == null) {
+						return null;
+					}
+					// TODO handle branch!
+					return content.getNode().getAvailableLanguageNames();
+				}).build(),
 
 			// .languages
 			newFieldDefinition()
@@ -304,7 +304,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 							return null;
 						}
 						List<String> langs = new ArrayList<>();
-						if(containerFromPath!=null ) {
+						if (containerFromPath != null) {
 							langs = Arrays.asList(containerFromPath.getLanguageTag());
 						}
 						return new NodeContent(nodeFromPath, containerFromPath, langs, type);
@@ -498,7 +498,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 						String lang = c.getLanguageTag();
 						return lang.equals(languageTag);
 					}).findFirst().map(NodeGraphFieldContainer::versions).orElse(null);
-			}).build(),
+				}).build(),
 
 			// .language
 			newFieldDefinition().name("language").description("The language of this content.").type(GraphQLString).dataFetcher(env -> {
@@ -518,8 +518,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					return null;
 				}
 				return container.getDisplayFieldValue();
-			}).build()
-		);
+			}).build());
 
 		Supplier<List<GraphQLFieldDefinition>> withNodeFieldsSupplier = () -> {
 			List<GraphQLFieldDefinition> withNodeFields = new ArrayList<>(baseFields);
@@ -615,7 +614,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	 * @param gc
 	 * @param query
 	 * @param pagingInfo
-	 * @param type 
+	 * @param type
 	 * @return
 	 */
 	public Page<? extends NodeContent> handleContentSearch(GraphQLContext gc, String query, PagingParameters pagingInfo, ContainerType type) {
@@ -693,34 +692,34 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			for (FieldSchema fieldSchema : schema.getFields()) {
 				FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
 				switch (type) {
-					case STRING:
-						root.field(fields.createStringDef(fieldSchema));
-						break;
-					case HTML:
-						root.field(fields.createHtmlDef(fieldSchema));
-						break;
-					case NUMBER:
-						root.field(fields.createNumberDef(fieldSchema));
-						break;
-					case DATE:
-						root.field(fields.createDateDef(fieldSchema));
-						break;
-					case BOOLEAN:
-						root.field(fields.createBooleanDef(fieldSchema));
-						break;
-					case NODE:
-						root.field(fields.createNodeDef(fieldSchema));
-						break;
-					case BINARY:
-						root.field(fields.createBinaryDef(fieldSchema));
-						break;
-					case LIST:
-						ListFieldSchema listFieldSchema = ((ListFieldSchema) fieldSchema);
-						root.field(fields.createListDef(context, listFieldSchema));
-						break;
-					case MICRONODE:
-						root.field(fields.createMicronodeDef(fieldSchema, project));
-						break;
+				case STRING:
+					root.field(fields.createStringDef(fieldSchema));
+					break;
+				case HTML:
+					root.field(fields.createHtmlDef(fieldSchema));
+					break;
+				case NUMBER:
+					root.field(fields.createNumberDef(fieldSchema));
+					break;
+				case DATE:
+					root.field(fields.createDateDef(fieldSchema));
+					break;
+				case BOOLEAN:
+					root.field(fields.createBooleanDef(fieldSchema));
+					break;
+				case NODE:
+					root.field(fields.createNodeDef(fieldSchema));
+					break;
+				case BINARY:
+					root.field(fields.createBinaryDef(fieldSchema));
+					break;
+				case LIST:
+					ListFieldSchema listFieldSchema = ((ListFieldSchema) fieldSchema);
+					root.field(fields.createListDef(context, listFieldSchema));
+					break;
+				case MICRONODE:
+					root.field(fields.createMicronodeDef(fieldSchema, project));
+					break;
 				}
 			}
 			GraphQLObjectType type = root.build();
@@ -728,7 +727,6 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		}
 		return schemaTypes;
 	}
-
 
 	private List<GraphQLObjectType> generateSchemaFieldTypesV2(GraphQLContext context) {
 		Project project = context.getProject();
@@ -753,34 +751,34 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			for (FieldSchema fieldSchema : schema.getFields()) {
 				FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
 				switch (type) {
-					case STRING:
-						fieldsType.field(fields.createStringDef(fieldSchema));
-						break;
-					case HTML:
-						fieldsType.field(fields.createHtmlDef(fieldSchema));
-						break;
-					case NUMBER:
-						fieldsType.field(fields.createNumberDef(fieldSchema));
-						break;
-					case DATE:
-						fieldsType.field(fields.createDateDef(fieldSchema));
-						break;
-					case BOOLEAN:
-						fieldsType.field(fields.createBooleanDef(fieldSchema));
-						break;
-					case NODE:
-						fieldsType.field(fields.createNodeDef(fieldSchema));
-						break;
-					case BINARY:
-						fieldsType.field(fields.createBinaryDef(fieldSchema));
-						break;
-					case LIST:
-						ListFieldSchema listFieldSchema = ((ListFieldSchema) fieldSchema);
-						fieldsType.field(fields.createListDef(context, listFieldSchema));
-						break;
-					case MICRONODE:
-						fieldsType.field(fields.createMicronodeDef(fieldSchema, project));
-						break;
+				case STRING:
+					fieldsType.field(fields.createStringDef(fieldSchema));
+					break;
+				case HTML:
+					fieldsType.field(fields.createHtmlDef(fieldSchema));
+					break;
+				case NUMBER:
+					fieldsType.field(fields.createNumberDef(fieldSchema));
+					break;
+				case DATE:
+					fieldsType.field(fields.createDateDef(fieldSchema));
+					break;
+				case BOOLEAN:
+					fieldsType.field(fields.createBooleanDef(fieldSchema));
+					break;
+				case NODE:
+					fieldsType.field(fields.createNodeDef(fieldSchema));
+					break;
+				case BINARY:
+					fieldsType.field(fields.createBinaryDef(fieldSchema));
+					break;
+				case LIST:
+					ListFieldSchema listFieldSchema = ((ListFieldSchema) fieldSchema);
+					fieldsType.field(fields.createListDef(context, listFieldSchema));
+					break;
+				case MICRONODE:
+					fieldsType.field(fields.createMicronodeDef(fieldSchema, project));
+					break;
 				}
 			}
 			fieldsField.name("fields").type(fieldsType);

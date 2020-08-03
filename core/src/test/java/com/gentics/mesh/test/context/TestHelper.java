@@ -17,6 +17,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.apache.commons.io.IOUtils;
@@ -762,7 +763,9 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	 * @throws IOException
 	 */
 	default String getGraphQLQuery(String name) throws IOException {
-		return IOUtils.toString(getClass().getResourceAsStream("/graphql/" + name));
+		InputStream stream = getClass().getResourceAsStream("/graphql/" + name);
+		Objects.requireNonNull(stream, "Query {" + name + "}");
+		return IOUtils.toString(stream);
 	}
 
 	/**

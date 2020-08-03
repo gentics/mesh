@@ -1,0 +1,51 @@
+query Test($type: NodeContainerType) {
+
+  # Via Me
+  me {
+    username
+
+    # Via Node Reference
+    nodeReference(nodeType: $type) {
+      uuid
+      version
+      isPublished
+      isDraft
+    }
+  }
+}
+
+# [NO_PERM,PUBLISH_SELECT_DRAFT]=$.data.me.nodeReference.version=1.1
+# [NO_PERM,PUBLISH_SELECT_DRAFT]=$.data.me.nodeReference.isPublished=false
+# [NO_PERM,PUBLISH_SELECT_DRAFT]=$.data.me.nodeReference.isDraft=true
+# [NO_PERM,PUBLISH_SELECT_PUBLISHED]=$.data.me.nodeReference.version=1.0
+# [NO_PERM,PUBLISH_SELECT_PUBLISHED]=$.data.me.nodeReference.isPublished=true
+# [NO_PERM,PUBLISH_SELECT_PUBLISHED]=$.data.me.nodeReference.isDraft=false
+# [NO_PERM,NO_PUBLISH_SELECT_DRAFT]=$.data.me.nodeReference.version=0.2
+# [NO_PERM,NO_PUBLISH_SELECT_DRAFT]=$.data.me.nodeReference.isPublished=false
+# [NO_PERM,NO_PUBLISH_SELECT_DRAFT]=$.data.me.nodeReference.isDraft=true
+# [NO_PERM,NO_PUBLISH_SELECT_PUBLISHED]=$.data.me.nodeReference.version=<is-null>
+# [NO_PERM,NO_PUBLISH_SELECT_PUBLISHED]=$.data.me.nodeReference.isPublished=<is-null>
+# [NO_PERM,NO_PUBLISH_SELECT_PUBLISHED]=$.data.me.nodeReference.isDraft=<is-null>
+# [ONLY_READ,PUBLISH_SELECT_DRAFT]=$.data.me.nodeReference.version=1.1
+# [ONLY_READ,PUBLISH_SELECT_DRAFT]=$.data.me.nodeReference.isPublished=false
+# [ONLY_READ,PUBLISH_SELECT_DRAFT]=$.data.me.nodeReference.isDraft=true
+# [ONLY_READ,PUBLISH_SELECT_PUBLISHED]=$.data.me.nodeReference.version=1.0
+# [ONLY_READ,PUBLISH_SELECT_PUBLISHED]=$.data.me.nodeReference.isPublished=true
+# [ONLY_READ,PUBLISH_SELECT_PUBLISHED]=$.data.me.nodeReference.isDraft=false
+# [ONLY_READ,NO_PUBLISH_SELECT_DRAFT]=$.data.me.nodeReference.version=0.2
+# [ONLY_READ,NO_PUBLISH_SELECT_DRAFT]=$.data.me.nodeReference.isPublished=false
+# [ONLY_READ,NO_PUBLISH_SELECT_DRAFT]=$.data.me.nodeReference.isDraft=true
+# [ONLY_READ,NO_PUBLISH_SELECT_PUBLISHED]=$.data.me.nodeReference.version=<is-null>
+# [ONLY_READ,NO_PUBLISH_SELECT_PUBLISHED]=$.data.me.nodeReference.isPublished=<is-null>
+# [ONLY_READ,NO_PUBLISH_SELECT_PUBLISHED]=$.data.me.nodeReference.isDraft=<is-null>
+# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_DRAFT]=$.data.me.nodeReference.version=<is-null>
+# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_DRAFT]=checkperm:me.nodeReference
+# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_PUBLISHED]=$.data.me.nodeReference.version=1.0
+# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_PUBLISHED]=$.data.me.nodeReference.isPublished=true
+# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_PUBLISHED]=$.data.me.nodeReference.isDraft=false
+# [ONLY_READ_PUBLISHED,NO_PUBLISH_SELECT_DRAFT]=$.data.me.nodeReference.version=<is-null>
+# [ONLY_READ_PUBLISHED,NO_PUBLISH_SELECT_DRAFT]=checkperm:me.nodeReference
+# [ONLY_READ_PUBLISHED,NO_PUBLISH_SELECT_PUBLISHED]=$.data.me.nodeReference.version=<is-null>
+# [ONLY_READ_PUBLISHED,NO_PUBLISH_SELECT_PUBLISHED]=$.data.me.nodeReference.isPublished=<is-null>
+# [ONLY_READ_PUBLISHED,NO_PUBLISH_SELECT_PUBLISHED]=$.data.me.nodeReference.isDraft=<is-null>
+

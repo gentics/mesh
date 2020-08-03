@@ -1,0 +1,55 @@
+query Test($type: NodeContainerType) {
+
+  # Via UUID
+  nodePerUuid: node(uuid: "02e3982b6ad14c1fa4a0b5998a02ff92", nodeType: $type) {    
+    uuid
+    version
+    isPublished
+    isDraft
+    path
+
+    # NoLang
+    nolang: node (lang: "ru", nodeType: $type) {
+      uuid
+      version
+      isPublished
+      isDraft
+    }
+  }
+}
+# [NO_PERM,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.nolang.version=<is-null>
+# [NO_PERM,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.nolang.isPublished=<is-null>
+# [NO_PERM,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.nolang.isDraft=<is-null>
+# [NO_PERM,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.nolang.version=<is-null>
+# [NO_PERM,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.nolang.isPublished=<is-null>
+# [NO_PERM,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.nolang.isDraft=<is-null>
+# [NO_PERM,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.nolang.version=<is-null>
+# [NO_PERM,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.nolang.isPublished=<is-null>
+# [NO_PERM,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.nolang.isDraft=<is-null>
+# [NO_PERM,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.nolang.version=<is-null>
+# [NO_PERM,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.nolang.isPublished=<is-null>
+# [NO_PERM,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.nolang.isDraft=<is-null>
+# [ONLY_READ,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.nolang.version=<is-null>
+# [ONLY_READ,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.nolang.isPublished=<is-null>
+# [ONLY_READ,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.nolang.isDraft=<is-null>
+# [ONLY_READ,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.nolang.version=<is-null>
+# [ONLY_READ,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.nolang.isPublished=<is-null>
+# [ONLY_READ,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.nolang.isDraft=<is-null>
+# [ONLY_READ,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.nolang.version=<is-null>
+# [ONLY_READ,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.nolang.isPublished=<is-null>
+# [ONLY_READ,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.nolang.isDraft=<is-null>
+# [ONLY_READ,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.nolang.version=<is-null>
+# [ONLY_READ,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.nolang.isPublished=<is-null>
+# [ONLY_READ,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.nolang.isDraft=<is-null>
+# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.nolang.version=<is-null>
+# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.nolang.isPublished=<is-null>
+# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.nolang.isDraft=<is-null>
+# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.nolang.version=<is-null>
+# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.nolang.isPublished=<is-null>
+# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.nolang.isDraft=<is-null>
+# [ONLY_READ_PUBLISHED,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.nolang.version=<is-null>
+# [ONLY_READ_PUBLISHED,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.nolang.isPublished=<is-null>
+# [ONLY_READ_PUBLISHED,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.nolang.isDraft=<is-null>
+# [ONLY_READ_PUBLISHED,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.nolang.version=<is-null>
+# [ONLY_READ_PUBLISHED,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.nolang.isPublished=<is-null>
+# [ONLY_READ_PUBLISHED,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.nolang.isDraft=<is-null>
