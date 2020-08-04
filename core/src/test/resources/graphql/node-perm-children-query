@@ -3,13 +3,20 @@
 		# [$.data.noPermNode=<is-null>]
 		uuid
 	}
-	onlyDraftNode: node(path: "/Deals") {
-		# [$.data.onlyDraftNode=<is-null>]
+	onlyDraftNodeAsDraft: node(version: draft, path: "/Deals") {
+		# [$.data.onlyDraftNodeAsDraft.version=<is-null>]
 		uuid
+		version
+	}
+	onlyDraftNodeAsPublished: node(version: published, path: "/Deals") {
+		# [$.data.onlyDraftNodeAsPublished=<is-null>]
+		uuid
+		version
 	}
 	node(path:"/") {
 		# [$.data.node.uuid=<is-uuid>]
 		uuid
+		version
 		isPublished
 		isDraft
 		children(lang: ["en","de"]) {
