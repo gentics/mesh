@@ -100,7 +100,7 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 			.field(newPagingFieldWithFetcherBuilder("nodes", "Load nodes with this schema", env -> {
 			GraphQLContext gc = env.getContext();
 			List<String> languageTags = getLanguageArgument(env);
-			ContainerType type = getNodeContainerType(env);
+			ContainerType type = getNodeVersion(env);
 
 			Stream<? extends NodeContent> nodes = getSchemaContainerVersion(env).getNodes(
 					gc.getBranch().getUuid(),

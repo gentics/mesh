@@ -125,7 +125,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		gc.requiresPerm(parentNode, READ_PERM, READ_PUBLISHED_PERM);
 
 		List<String> languageTags = getLanguageArgument(env, content);
-		ContainerType type = getNodeContainerType(env);
+		ContainerType type = getNodeVersion(env);
 
 		NodeGraphFieldContainer container = parentNode.findVersion(gc, languageTags, type);
 		container = gc.requiresReadPermSoft(container, env);
@@ -142,7 +142,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		GraphQLContext gc = env.getContext();
 
 		Node node = content.getNode();
-		ContainerType type = getNodeContainerType(env);
+		ContainerType type = getNodeVersion(env);
 		NodeGraphFieldContainer container = node.findVersion(gc, languageTags, type);
 		container = gc.requiresReadPermSoft(container, env);
 		return new NodeContent(node, container, languageTags, type);
@@ -155,7 +155,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			return null;
 		}
 
-		ContainerType type = getNodeContainerType(env);
+		ContainerType type = getNodeVersion(env);
 		return content.getNode().getBreadcrumbNodes(gc).stream().map(node -> {
 			List<String> languageTags = getLanguageArgument(env, content);
 			NodeGraphFieldContainer container = node.findVersion(gc, languageTags, type);
@@ -174,7 +174,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		GraphQLContext gc = env.getContext();
 		Branch branch = gc.getBranch();
 
-		ContainerType type = getNodeContainerType(env);
+		ContainerType type = getNodeVersion(env);
 		Stream<? extends NodeGraphFieldContainer> stream = StreamSupport
 			.stream(content.getNode().getGraphFieldContainers(branch, type).spliterator(), false);
 		return stream
@@ -231,7 +231,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			newFieldDefinition().name("breadcrumb")
 				.description("Breadcrumb of the node")
 				.type(new GraphQLList(new GraphQLTypeReference(NODE_TYPE_NAME)))
-				.argument(createNodeTypeArg())
+				.argument(createNodeVersionArg())
 				.dataFetcher(this::breadcrumbFetcher).build(),
 
 			// .availableLanguages
@@ -249,7 +249,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			newFieldDefinition()
 				.name("languages")
 				.description("Load all languages of the node")
-				.argument(createNodeTypeArg())
+				.argument(createNodeVersionArg())
 				.type(new GraphQLList(new GraphQLTypeReference(NODE_TYPE_NAME)))
 				.dataFetcher(this::languagesFetcher)
 				.build(),
@@ -259,7 +259,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				.name("child")
 				.description("Resolve a webroot path to a specific child node.")
 				.argument(createPathArg())
-				.argument(createNodeTypeArg())
+				.argument(createNodeVersionArg())
 				.type(new GraphQLTypeReference(NODE_TYPE_NAME))
 				.dataFetcher(env -> {
 					String nodePath = env.getArgument("path");
@@ -274,7 +274,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 						// Resolve the given path and return the found container
 						Branch branch = gc.getBranch();
 						String branchUuid = branch.getUuid();
-						ContainerType type = getNodeContainerType(env);
+						ContainerType type = getNodeVersion(env);
 						Stack<String> pathStack = new Stack<>();
 						pathStack.add(nodePath);
 						Path path = new Path();
@@ -321,7 +321,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				}
 
 				List<String> languageTags = getLanguageArgument(env, content);
-				ContainerType type = getNodeContainerType(env);
+				ContainerType type = getNodeVersion(env);
 
 				Stream<NodeContent> nodes = content.getNode().getChildrenStream(gc)
 					.map(item -> new NodeContent(item, item.findVersion(gc, languageTags, type), languageTags, type))
@@ -340,7 +340,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				.description("Parent node")
 				.type(new GraphQLTypeReference(NODE_TYPE_NAME))
 				.argument(createLanguageTagArg(false))
-				.argument(createNodeTypeArg())
+				.argument(createNodeVersionArg())
 				.dataFetcher(this::parentNodeFetcher).build(),
 
 			// .tags
@@ -373,11 +373,11 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				.description("Loads nodes that reference this node.")
 				.argument(createPagingArgs())
 				.argument(nodeReferenceFilter(context).createFilterArgument())
-				.argument(createNodeTypeArg())
+				.argument(createNodeVersionArg())
 				.type(new GraphQLTypeReference(NODE_REFERENCE_PAGE_TYPE_NAME))
 				.dataFetcher(env -> {
 					NodeContent content = env.getSource();
-					ContainerType type = getNodeContainerType(env);
+					ContainerType type = getNodeVersion(env);
 					Stream<NodeReferenceIn> stream = NodeReferenceIn.fromContent(context, content, type);
 					Map<String, ?> filterInput = env.getArgument("filter");
 					if (filterInput != null) {
@@ -394,7 +394,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				.name("node")
 				.description("Load the node with a different language.")
 				.argument(createLanguageTagArg(false))
-				.argument(createNodeTypeArg())
+				.argument(createNodeVersionArg())
 				.dataFetcher(this::nodeLanguageFetcher)
 				.type(new GraphQLTypeReference(NODE_TYPE_NAME))
 				.build(),
@@ -410,7 +410,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				if (container == null) {
 					return null;
 				}
-				ContainerType containerType = getNodeContainerType(env);
+				ContainerType containerType = getNodeVersion(env);
 				String branchUuid = gc.getBranch().getUuid();
 				String languageTag = container.getLanguageTag();
 				return container.getParentNode().getPath(gc, branchUuid, containerType, languageTag);

@@ -53,11 +53,7 @@ public class GraphQLNodePermissionTest extends AbstractGraphQLNodeTest {
 	/**
 	 * permission: Permission to be granted on the nodes
 	 * 
-	 * published: Whether to publish the node under test
-	 * 
-	 * type: The type used to load the node in GraphQL
-	 * 
-	 * expected: The expected test result
+	 * content: The content setup for the test (e.g. whether to publish the node under test)
 	 * 
 	 * @return
 	 */
@@ -96,7 +92,7 @@ public class GraphQLNodePermissionTest extends AbstractGraphQLNodeTest {
 
 		request.setVariables(vars);
 
-		for (TestField field : TestField.values()) {
+		for (TestQuery field : TestQuery.values()) {
 			String queryName = "node/permissions/" + field.path();
 			request.setQuery(getGraphQLQuery(queryName));
 			GraphQLResponse response = call(() -> client().graphql(PROJECT_NAME, request));
@@ -169,7 +165,7 @@ public class GraphQLNodePermissionTest extends AbstractGraphQLNodeTest {
 		}
 	}
 
-	public static enum TestField {
+	public static enum TestQuery {
 
 		ME_NODE_REFERENCE("me.nodeReference"),
 
@@ -236,7 +232,7 @@ public class GraphQLNodePermissionTest extends AbstractGraphQLNodeTest {
 		 */
 		private String path;
 
-		TestField(String path) {
+		TestQuery(String path) {
 			this.path = path;
 		}
 

@@ -142,22 +142,22 @@ Collection fields will omit the entries to which the user lacks permissions. No 
 
 The `read_published` permission on nodes allows for a finer control on the returned data.
 
-A node will be partially returned (without content) when loading it with `nodeType: draft` and only `readPublished` permission was granted on the node. The `readPublished` permission still grants access to the node data but not the content.
+A node will be partially returned (without content) when loading it with `version: draft` and only `readPublished` permission was granted on the node. The `readPublished` permission still grants access to the node data but not the content.
 
-This concept applies differently for collections (`.nodes` / `.node.children` / …). In this case the node is completely omitted from the collection. The needed `nodeType` parameter acts as a filter for these cases. No permission errors will be logged for entries that lack permissions in collections.
+This concept applies differently for collections (`.nodes` / `.node.children` / …). In this case the node is completely omitted from the collection. The needed `version` parameter acts as a filter for these cases. No permission errors will be logged for entries that lack permissions in collections.
  
 [caption=]
 .Permission behaviour
 [options="header"]
 |======
-| Permission on node | Selected type of content | Single Node                | Node Collection
-| `read`             | `published`/`draft`      | Node loaded with content.  | Entry included.
-| `read_published`    | `published`              | Node loaded with content.  | Entry included.
-| `read_published`    | `draft`                  | Node loaded without content. Permission error logged. | Entry excluded.
-| `none`             | `published`/`draft`      | Node can't be loaded. Permission error logged. | Entry excluded.
+| Permission on node | Selected version of content | Single Node                | Node Collection
+| `read`             | `published`/`draft`           | Node loaded with content.  | Entry included.
+| `read_published`    | `published`                  | Node loaded with content.  | Entry included.
+| `read_published`    | `draft`                      | Node loaded without content. Permission error logged. | Entry excluded.
+| `none`             | `published`/`draft`           | Node can't be loaded. Permission error logged. | Entry excluded.
 |======
 
-The `node.child(path: "")` and `nodes(path: "")` will return `null` when the content does not match up. See link:#typehandling-exceptions[content type handling exceptions] for details.
+The `node.child(path: "")` and `nodes(path: "")` will return `null` when the content does not match up. See link:#versionhandling-exceptions[content version handling exceptions] for details.
 
 ////
 // The behaviour is currently inconsistent. node.children does not exclude entries while nodes does.
@@ -173,21 +173,23 @@ When loading a single node and selecting a non-existing language the node will b
 For collections the `lang` parameter acts as a filter, and the result will only contain the nodes with contents that match the lang parameter.
 ////
 
-[[typehandling]]
-== Content Type Handling
+[[versionhandling]]
+== Version Handling
 
-The `nodeType` parameter on node fields can be used to control whether to return draft or published contents.
+The `version` parameter on node fields can be used to control whether to return draft or published contents.
 
 Loading single nodes may result in the content being omitted whenever the requested content could not be found or when the permission to read the content is not sufficient. In this case a permission error will be logged in the response.
 
-When loading collections the `nodeType` parameter acts as a filter and the result will only contain nodes which also have the requested content type.
+When loading collections the `version` parameter acts as a filter and the result will only contain nodes which also have the requested content version.
 
-The selected type argument value will be inherited from the parent element.
+The selected version argument value will be inherited from the parent element.
 
-[[typehandling-exceptions]]
+Please note that the version parameter can currently not be used to load over content revisions.
+
+[[versionhandling-exceptions]]
 === Exceptions ===
 
-The `node.child(path: "")` and `nodes(path: "")` are two fields which have a different behaviour since the path is used to directly load a specific content of a node. Whenever the found content does not match up with the specified `nodeType` parameter no node will be returned. The field will be set to `null` in those cases.
+The `node.child(path: "")` and `nodes(path: "")` are two fields which have a different behaviour since the path is used to directly load a specific content of a node. Whenever the found content does not match up with the specified `version` parameter no node will be returned. The field will be set to `null` in those cases.
 
 [[limitations]]
 == Limitations

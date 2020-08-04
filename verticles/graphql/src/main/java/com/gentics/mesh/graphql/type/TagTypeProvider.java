@@ -67,13 +67,13 @@ public class TagTypeProvider extends AbstractTypeProvider {
 				.type(new GraphQLTypeReference(NODE_PAGE_TYPE_NAME))
 				.argument(createPagingArgs())
 				.argument(createLanguageTagArg(true))
-				.argument(createNodeTypeArg())
+				.argument(createNodeVersionArg())
 				.dataFetcher((env) -> {
 					GraphQLContext gc = env.getContext();
 					Tag tag = env.getSource();
 					
 					List<String> languageTags = getLanguageArgument(env);
-					ContainerType type = getNodeContainerType(env);
+					ContainerType type = getNodeVersion(env);
 
 					Stream<NodeContent> contents = tag.findTaggedNodes(gc).stream()
 						// Now lets try to load the containers for those found nodes - apply the language fallback

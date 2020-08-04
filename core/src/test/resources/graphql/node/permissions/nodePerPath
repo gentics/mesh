@@ -1,7 +1,7 @@
-query Test($type: NodeContainerType) {
+query Test($type: NodeVersion) {
 
   # Via Path
-  nodePerPath: node(path: "/level1A", nodeType: $type)  {
+  nodePerPath: node(path: "/level1A", version: $type)  {
     uuid
     version
     isPublished

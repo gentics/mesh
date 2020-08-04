@@ -58,7 +58,7 @@ public class ProjectTypeProvider extends AbstractTypeProvider {
 		Node node = project.getBaseNode();
 		gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 		List<String> languageTags = getLanguageArgument(env);
-		ContainerType type = getNodeContainerType(env);
+		ContainerType type = getNodeVersion(env);
 
 		NodeGraphFieldContainer container = node.findVersion(gc, languageTags, type);
 		container = gc.requiresReadPermSoft(container, env);
@@ -80,7 +80,7 @@ public class ProjectTypeProvider extends AbstractTypeProvider {
 				.description("The root node of the project")
 				.type(new GraphQLTypeReference(NODE_TYPE_NAME))
 				.argument(createLanguageTagArg(true))
-				.argument(createNodeTypeArg())
+				.argument(createNodeVersionArg())
 				.dataFetcher(this::baseNodeFetcher));
 
 		return root.build();

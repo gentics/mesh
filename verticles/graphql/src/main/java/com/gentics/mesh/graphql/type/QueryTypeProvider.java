@@ -208,7 +208,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		NodeRoot root = gc.getProject().getNodeRoot();
 		ExecutionContext ec = env.getExecutionContext();
 		List<String> languageTags = getLanguageArgument(env);
-		ContainerType type = getNodeContainerType(env);
+		ContainerType type = getNodeVersion(env);
 
 		Stream<NodeContent> contents = uuids.stream()
 			// When a node cannot be found, we still need the UUID for the error message.
@@ -258,7 +258,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 				return null;
 			}
 			List<String> languageTags = getLanguageArgument(env);
-			ContainerType type = getNodeContainerType(env);
+			ContainerType type = getNodeVersion(env);
 
 			node = gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 			NodeGraphFieldContainer container = node.findVersion(gc, languageTags, type);
@@ -270,7 +270,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		String path = env.getArgument("path");
 		if (path != null) {
 			GraphQLContext gc = env.getContext();
-			ContainerType type = getNodeContainerType(env);
+			ContainerType type = getNodeVersion(env);
 
 			Path pathResult = webrootService.findByProjectPath(gc, path, type);
 
@@ -342,7 +342,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			Node node = project.getBaseNode();
 			gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 			List<String> languageTags = getLanguageArgument(env);
-			ContainerType type = getNodeContainerType(env);
+			ContainerType type = getNodeVersion(env);
 			NodeGraphFieldContainer container = node.findVersion(gc, languageTags, type);
 			container = gc.requiresReadPermSoft(container, env);
 			return new NodeContent(node, container, languageTags, type);
@@ -381,7 +381,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			.argument(createUuidArg("Node uuid"))
 			.argument(createLanguageTagArg(true))
 			.argument(createPathArg())
-			.argument(createNodeTypeArg())
+			.argument(createNodeVersionArg())
 			.dataFetcher(this::nodeFetcher)
 			.type(new GraphQLTypeReference(NODE_TYPE_NAME)).build());
 
@@ -392,7 +392,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			.argument(createQueryArg())
 			.argument(createUuidsArg("Node uuids"))
 			.argument(createLanguageTagArg(true))
-			.argument(createNodeTypeArg())
+			.argument(createNodeVersionArg())
 			.argument(NodeFilter.filter(context).createFilterArgument())
 			.type(new GraphQLTypeReference(NODE_PAGE_TYPE_NAME))
 			.dataFetcher((env) -> {
@@ -402,7 +402,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 				if (query != null) {
 					GraphQLContext gc = env.getContext();
 					// TODO add filtering for query nodes
-					ContainerType type = getNodeContainerType(env);
+					ContainerType type = getNodeVersion(env);
 					gc.getNodeParameters().setLanguages(getLanguageArgument(env).stream().toArray(String[]::new));
 					return nodeTypeProvider.handleContentSearch(gc, query, getPagingInfo(env), type);
 				}
@@ -419,7 +419,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			.name("rootNode")
 			.description("Return the project root node.")
 			.argument(createLanguageTagArg(true))
-			.argument(createNodeTypeArg())
+			.argument(createNodeVersionArg())
 			.type(new GraphQLTypeReference(NODE_TYPE_NAME))
 			.dataFetcher(this::rootNodeFetcher).build());
 

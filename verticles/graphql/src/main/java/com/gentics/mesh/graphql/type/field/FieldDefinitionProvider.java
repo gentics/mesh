@@ -259,7 +259,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 			fieldType.argument(createLinkTypeArg());
 			break;
 		case "node":
-			fieldType.argument(createNodeTypeArg());
+			fieldType.argument(createNodeVersionArg());
 			fieldType.argument(nodeFilter.createFilterArgument());
 			break;
 		}
@@ -315,7 +315,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 					return null;
 				}
 				Map<String, ?> filterArgument = env.getArgument("filter");
-				ContainerType nodeType = getNodeContainerType(env);
+				ContainerType nodeType = getNodeVersion(env);
 
 				Stream<NodeContent> nodes = nodeList.getList().stream().map(item -> {
 					Node node = item.getNode();
@@ -401,12 +401,12 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		return newFieldDefinition()
 			.name(schema.getName())
 			.argument(createLanguageTagArg(false))
-			.argument(createNodeTypeArg())
+			.argument(createNodeVersionArg())
 			.description(schema.getLabel())
 			.type(new GraphQLTypeReference(NODE_TYPE_NAME)).dataFetcher(env -> {
 				GraphQLContext gc = env.getContext();
 				GraphFieldContainer source = env.getSource();
-				ContainerType type = getNodeContainerType(env);
+				ContainerType type = getNodeVersion(env);
 
 				// TODO decide whether we want to reference the default content by default
 				NodeGraphField nodeField = source.getNode(schema.getName());

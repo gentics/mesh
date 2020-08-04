@@ -1,6 +1,6 @@
-query Test($type: NodeContainerType) {
+query Test($type: NodeVersion) {
   # Via Nodes
-  nodes(filter: { schema: { is: test } }, nodeType: $type, perPage: 2) {
+  nodes(filter: { schema: { is: test } }, version: $type, perPage: 2) {
     elements {
       uuid
       version

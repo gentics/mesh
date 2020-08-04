@@ -113,7 +113,7 @@ public class UserTypeProvider extends AbstractTypeProvider {
 		root.field(newFieldDefinition()
 			.name("nodeReference")
 			.description("User node reference")
-			.argument(createNodeTypeArg())
+			.argument(createNodeVersionArg())
 			.type(new GraphQLTypeReference("Node"))
 			.dataFetcher((env) -> {
 				GraphQLContext gc = env.getContext();
@@ -130,7 +130,7 @@ public class UserTypeProvider extends AbstractTypeProvider {
 
 				node = gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 				List<String> languageTags = getLanguageArgument(env);
-				ContainerType type = getNodeContainerType(env);
+				ContainerType type = getNodeVersion(env);
 
 				NodeGraphFieldContainer container = node.findVersion(gc, languageTags, type);
 				container = gc.requiresReadPermSoft(container, env);

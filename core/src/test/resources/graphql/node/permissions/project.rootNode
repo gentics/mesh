@@ -1,7 +1,7 @@
-query Test($type: NodeContainerType) {
+query Test($type: NodeVersion) {
   # Via rootNode
   project {
-    rootNode(nodeType: $type) {
+    rootNode(version: $type) {
       uuid
       version
       isPublished

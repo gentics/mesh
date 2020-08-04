@@ -1,10 +1,10 @@
-query Test($type: NodeContainerType) {
+query Test($type: NodeVersion) {
 
   # Via UUID
-  nodePerUuid: node(uuid: "02e3982b6ad14c1fa4a0b5998a02ff92", nodeType: $type) {
+  nodePerUuid: node(uuid: "02e3982b6ad14c1fa4a0b5998a02ff92", version: $type) {
 
     # Via Children
-    children(nodeType: $type, perPage: 1) {
+    children(version: $type, perPage: 1) {
       elements {
         uuid
         version

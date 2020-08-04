@@ -1,11 +1,11 @@
-query Test($type: NodeContainerType) {
+query Test($type: NodeVersion) {
 
   # Via tag
   tag(name: "blue") {
     name
 
     # Tagged Nodes
-    nodes(nodeType: $type, perPage: 1) {
+    nodes(version: $type, perPage: 1) {
       elements {
         uuid
         version

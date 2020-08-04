@@ -1,5 +1,5 @@
 {
-  draftRoot: rootNode(nodeType: draft) {
+  draftRoot: rootNode(version: draft) {
     # [$.data.draftRoot.uuid=<is-uuid>]
     uuid
     # [$.data.draftRoot.version=1.1]
@@ -8,7 +8,7 @@
       uuid
       # [$.data.draftRoot.child.version=1.1]
       version
-      child(path: "level2-2", nodeType: published) {
+      child(path: "level2-2", version: published) {
         uuid
         # [$.data.draftRoot.child.child.version=1.0]
         version
@@ -16,7 +16,7 @@
     }
   }
 
-  publishedRoot: rootNode(nodeType: published) {
+  publishedRoot: rootNode(version: published) {
     # [$.data.publishedRoot.uuid=<is-uuid>]
     uuid
     # [$.data.publishedRoot.version=1.0]
@@ -25,7 +25,7 @@
       uuid
       # [$.data.publishedRoot.child.version=1.0]
       version
-      child(path: "level2-2", nodeType: draft) {
+      child(path: "level2-2", version: draft) {
         uuid
         # [$.data.publishedRoot.child.child.version=1.1]
         version

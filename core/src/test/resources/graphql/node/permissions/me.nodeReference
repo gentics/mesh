@@ -1,11 +1,11 @@
-query Test($type: NodeContainerType) {
+query Test($type: NodeVersion) {
 
   # Via Me
   me {
     username
 
     # Via Node Reference
-    nodeReference(nodeType: $type) {
+    nodeReference(version: $type) {
       uuid
       version
       isPublished

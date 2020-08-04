@@ -55,7 +55,7 @@ import graphql.schema.GraphQLTypeReference;
 public abstract class AbstractTypeProvider {
 
 	public static final String LINK_TYPE_NAME = "LinkType";
-	public static final String NODE_CONTAINER_TYPE_NAME = "NodeContainerType";
+	public static final String NODE_CONTAINER_VERSION_NAME = "NodeVersion";
 
 	private final MeshOptions options;
 
@@ -242,26 +242,25 @@ public abstract class AbstractTypeProvider {
 	}
 
 	public GraphQLArgument createLinkTypeArg() {
-
 		return newArgument().name("linkType").type(new GraphQLTypeReference(LINK_TYPE_NAME)).defaultValue(LinkType.OFF).description(
 			"Specify the resolve type").build();
 	}
 
-	public GraphQLArgument createNodeTypeArg() {
+	public GraphQLArgument createNodeVersionArg() {
 		return newArgument()
-			.name("nodeType")
-			.type(new GraphQLTypeReference(NODE_CONTAINER_TYPE_NAME))
-			.description("The type of the content which can either be draft or published.")
+			.name("version")
+			.type(new GraphQLTypeReference(NODE_CONTAINER_VERSION_NAME))
+			.description("The version of the content which can either be draft or published.")
 			.build();
 	}
 
 	public GraphQLEnumType createNodeEnumType() {
-		GraphQLEnumType nodeTypeEnum = newEnum().name(NODE_CONTAINER_TYPE_NAME)
-			.description("The type of a node which can either be published or draft.")
+		GraphQLEnumType nodeVersionEnum = newEnum().name(NODE_CONTAINER_VERSION_NAME)
+			.description("The version of a node which can either be published or draft.")
 			.value(ContainerType.DRAFT.getHumanCode(), ContainerType.DRAFT, "Draft nodes")
 			.value(ContainerType.PUBLISHED.getHumanCode(), ContainerType.PUBLISHED, "Published nodes")
 			.build();
-		return nodeTypeEnum;
+		return nodeVersionEnum;
 	}
 
 	/**
@@ -275,18 +274,18 @@ public abstract class AbstractTypeProvider {
 	}
 
 	/**
-	 * Return the node container type argument value.
+	 * Return the node version argument value.
 	 * 
 	 * @param env
 	 * @return
 	 */
-	public ContainerType getNodeContainerType(DataFetchingEnvironment env) {
+	public ContainerType getNodeVersion(DataFetchingEnvironment env) {
 		GraphQLContext context = env.getContext();
-		ContainerType type = env.getArgument("nodeType");
+		ContainerType type = env.getArgument("version");
 		if (type == null) {
 			Object source = env.getSource();
 			if (source == null) {
-				return getDefaultContainerType(context);
+				return getDefaultNodeVersion(context);
 			} else {
 				if (source instanceof NodeContent) {
 					NodeContent content = (NodeContent) source;
@@ -295,14 +294,14 @@ public abstract class AbstractTypeProvider {
 						return contentType;
 					}
 				}
-				return getDefaultContainerType(context);
+				return getDefaultNodeVersion(context);
 			}
 		} else {
 			return type;
 		}
 	}
 
-	private ContainerType getDefaultContainerType(GraphQLContext context) {
+	private ContainerType getDefaultNodeVersion(GraphQLContext context) {
 		// Utilize the query parameter value here to override the default.
 		// This is a fallback mechanism
 		VersioningParameters params = context.getVersioningParameters();
@@ -453,7 +452,7 @@ public abstract class AbstractTypeProvider {
 		DataFetcher<?> dataFetcher, String pageTypeName) {
 		return newFieldDefinition().name(name).description(description)
 			.argument(createPagingArgs())
-			.argument(createNodeTypeArg())
+			.argument(createNodeVersionArg())
 			.type(new GraphQLTypeReference(pageTypeName))
 			.dataFetcher(dataFetcher);
 	}
@@ -552,7 +551,7 @@ public abstract class AbstractTypeProvider {
 		NodeRoot nodeRoot = gc.getProject().getNodeRoot();
 
 		List<String> languageTags = getLanguageArgument(env);
-		ContainerType type = getNodeContainerType(env);
+		ContainerType type = getNodeVersion(env);
 
 		Stream<NodeContent> contents = nodeRoot.findAllStream(gc, READ_PUBLISHED_PERM)
 			// Now lets try to load the containers for those found nodes - apply the language fallback

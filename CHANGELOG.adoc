@@ -28,11 +28,11 @@ include::content/docs/variables.adoc-include[]
 [[v1.6.0]]
 == 1.6.0 (TBD)
 
-CAUTION: GraphQL: Various issues with the permission handling in GraphQL have been adressed. Please note that this change may affect your GraphQL query results. It is thus advised to check whether your query returns the data you need with the current set of active permissions. Details on the behaviour of the permission system can be found in the link:{{< relref "graphql.asciidoc" >}}#permissions[graphql documentation].
+CAUTION: GraphQL: Various issues with the permission handling in GraphQL have been addressed. Please note that this change may affect your GraphQL query results. It is thus advised to check whether your query returns the data you need with the current set of active permissions. Details on the behaviour of the permission system can be found in the link:{{< relref "graphql.asciidoc" >}}#permissions[graphql documentation].
 
 icon:plus[] GraphQL: Permission errors will now also contain information about the location of the error within the query.
 
-icon:plus[] GraphQL: The `nodeType` argument has been added to all locations where it is possible to load nodes. This argument can be used to select whether `draft` or `published` nodes should be returned. See link:{{< relref "graphql.asciidoc" >}}#typehandling[graphql documentation] for details.
+icon:plus[] GraphQL: The `version` argument has been added to all locations where it is possible to load nodes. This argument can be used to select whether `draft` or `published` nodes should be returned. See link:{{< relref "graphql.asciidoc" >}}#versionhandling[graphql documentation] for details.
 
 icon:plus[] Monitoring: The readiness probe will now also check for plugin status. Failed plugin deployments will let the readiness probe fail.
 

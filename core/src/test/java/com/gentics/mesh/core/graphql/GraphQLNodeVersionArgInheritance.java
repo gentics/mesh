@@ -20,7 +20,7 @@ import io.vertx.core.json.JsonObject;
  * This test will verify that the inheritance mechanism for the node type argument works as expected.
  */
 @MeshTestSetting(testSize = TestSize.FULL, startServer = true)
-public class GraphQLNodeTypeArgInheritance extends AbstractGraphQLNodeTest {
+public class GraphQLNodeVersionArgInheritance extends AbstractGraphQLNodeTest {
 
 	@Before
 	public void setupContent() {
@@ -29,7 +29,7 @@ public class GraphQLNodeTypeArgInheritance extends AbstractGraphQLNodeTest {
 
 	@Test
 	public void testPermissions() throws IOException {
-		String queryName ="node/node-type";
+		String queryName ="node/version-arg";
 		GraphQLRequest request = new GraphQLRequest();
 		request.setQuery(getGraphQLQuery(queryName));
 		GraphQLResponse response = call(() -> client().graphql(PROJECT_NAME, request));

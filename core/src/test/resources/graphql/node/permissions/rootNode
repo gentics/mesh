@@ -1,6 +1,6 @@
-query Test($type: NodeContainerType) {
+query Test($type: NodeVersion) {
   # Via RootNode
-  rootNode(nodeType: $type) {
+  rootNode(version: $type) {
     uuid
     version
     isPublished

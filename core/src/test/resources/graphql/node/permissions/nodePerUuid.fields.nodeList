@@ -1,7 +1,7 @@
-query Test($type: NodeContainerType) {
+query Test($type: NodeVersion) {
 
   # Via UUID
-  nodePerUuid: node(uuid: "02e3982b6ad14c1fa4a0b5998a02ff92", nodeType: $type) {
+  nodePerUuid: node(uuid: "02e3982b6ad14c1fa4a0b5998a02ff92", version: $type) {
     uuid
     version
     isPublished
@@ -13,7 +13,7 @@ query Test($type: NodeContainerType) {
         name
         extra
         # Via Node Reference List
-        nodeList(nodeType: $type) {
+        nodeList(version: $type) {
           uuid
           version
           isPublished

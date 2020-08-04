@@ -1,10 +1,10 @@
-query Test($type: NodeContainerType) {
+query Test($type: NodeVersion) {
 
   schema(name: "test") {
     uuid
 
     # Via schema nodes
-    nodes(nodeType: $type, perPage: 1) {
+    nodes(version: $type, perPage: 1) {
       elements {
         uuid
         version
