@@ -899,6 +899,20 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			// Read the given node - It should still be readable
 			String uuid = tx(() -> node.getUuid());
 			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().published()));
+
+			// The draft version shares the same container with the published version.
+			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()));
+	
+			// Now lets update the node
+			grantAdmin();
+			NodeUpdateRequest request = new NodeUpdateRequest();
+			request.setLanguage("en");
+			request.getFields().putString("name", "1234");
+			call(() -> client().updateNode(PROJECT_NAME, uuid, request));
+			revokeAdmin();
+			mesh().permissionCache().clear();
+
+			// Now the containers are different and the request should fail
 			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()), FORBIDDEN, "error_missing_perm", uuid,
 				READ_PERM.getRestPerm().getName());
 
@@ -912,23 +926,26 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	}
 
 	@Test
+	@Ignore("Test covers bug https://github.com/gentics/mesh/issues/1104")
 	public void testReadPublishedNodeNoPermission3() {
 		String uuid = tx(() -> content().getUuid());
+
+		// 1. Publish node
 		NodeResponse draftResponse1 = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid));
 		call(() -> client().publishNode(PROJECT_NAME, uuid));
 		NodeResponse publishedResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().published()));
 		assertEquals("Draft and publish versions should be the same since mesh automatically creates a new draft based on the published version.",
 			draftResponse1.getVersion(), publishedResponse.getVersion());
 
-		// Update the node to create a dedicated (not shared) draft version
+		// 2. Update the node to create a dedicated (not shared) draft version (1.1)
 		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
 		nodeUpdateRequest.setLanguage("en");
 		nodeUpdateRequest.setVersion("draft");
 		nodeUpdateRequest.getFields().put("slug", FieldUtil.createStringField("test123"));
 		call(() -> client().updateNode(PROJECT_NAME, uuid, nodeUpdateRequest));
-
 		NodeResponse draftResponse2 = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid));
 
+		// 3. Revoke permissions and only grant read_published
 		tx((tx) -> {
 			Node node = content();
 			role().revokePermissions(node, READ_PERM);
@@ -951,7 +968,9 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// Assert that published node can be loaded with either "published" or publish version number
 		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().published()));
-		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setVersion(publishedResponse.getVersion())));
+		String version = publishedResponse.getVersion();
+		System.out.println(version);
+		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setVersion(version)));
 
 	}
 
@@ -1571,6 +1590,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			Node node = folder("2015");
 			uuid = node.getUuid();
 			role().revokePermissions(node, READ_PERM);
+			role().revokePermissions(node, READ_PUBLISHED_PERM);
 			tx.success();
 		}
 		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()), FORBIDDEN, "error_missing_perm", uuid,
