@@ -33,11 +33,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
-			<artifactId>madl-ferma</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-mdm-api</artifactId>
+			<artifactId>mesh-mdm-orientdb-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
@@ -46,14 +42,6 @@
 		<dependency>
 			<groupId>com.google.dagger</groupId>
 			<artifactId>dagger</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.vertx</groupId>
-			<artifactId>vertx-web</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>io.vertx</groupId>
@@ -88,19 +76,6 @@
 			<artifactId>log4j-over-slf4j</artifactId>
 		</dependency>
 
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-rest-model</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-lang3</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-auth-common</artifactId>
@@ -153,12 +128,6 @@
 			</exclusions>
 		</dependency>
 
-		<!-- Hazelcast -->
-		<dependency>
-			<groupId>com.hazelcast</groupId>
-			<artifactId>hazelcast</artifactId>
-		</dependency>
-
 		<!-- Test -->
 		<dependency>
 			<groupId>org.assertj</groupId>
@@ -188,16 +157,6 @@
 			<groupId>com.github.stefanbirkner</groupId>
 			<artifactId>system-rules</artifactId>
 			<scope>test</scope>
-		</dependency>
-
-		<!-- Metrics -->
-		<dependency>
-			<groupId>io.vertx</groupId>
-			<artifactId>vertx-micrometer-metrics</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.micrometer</groupId>
-			<artifactId>micrometer-registry-prometheus</artifactId>
 		</dependency>
 	</dependencies>
 

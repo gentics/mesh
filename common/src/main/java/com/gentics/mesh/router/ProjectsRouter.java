@@ -12,6 +12,7 @@ import javax.naming.InvalidNameException;
 
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.shared.SharedKeys;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
@@ -27,8 +28,6 @@ public class ProjectsRouter {
 	private static final Logger log = LoggerFactory.getLogger(ProjectsRouter.class);
 
 	private ProjectRouter projectRouter;
-
-	public static final String PROJECT_CONTEXT_KEY = "mesh-project";
 
 	/**
 	 * Project routers are routers that handle project rest api endpoints. E.g: :apibase:/dummy, :apibase:/yourprojectname
@@ -92,7 +91,7 @@ public class ProjectsRouter {
 					ctx.fail(error(NOT_FOUND, "project_not_found", name));
 					return;
 				}
-				ctx.data().put(ProjectsRouter.PROJECT_CONTEXT_KEY, project);
+				ctx.data().put(SharedKeys.PROJECT_CONTEXT_KEY, project);
 				ctx.next();
 			});
 			router.mountSubRouter("/" + encodedName, projectRouter);

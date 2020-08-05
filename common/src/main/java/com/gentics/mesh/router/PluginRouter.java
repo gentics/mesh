@@ -6,6 +6,7 @@ import java.util.Map;
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.shared.SharedKeys;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -44,7 +45,7 @@ public class PluginRouter {
 		chain.secure(router.route());
 
 		router.route().handler(rc -> {
-			Project project = (Project) rc.data().get(ProjectsRouter.PROJECT_CONTEXT_KEY);
+			Project project = (Project) rc.data().get(SharedKeys.PROJECT_CONTEXT_KEY);
 			if (project != null) {
 				db.tx(() -> {
 					JsonObject projectInfo = new JsonObject();

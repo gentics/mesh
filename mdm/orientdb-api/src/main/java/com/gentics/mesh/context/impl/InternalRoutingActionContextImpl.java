@@ -10,14 +10,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.context.AbstractInternalActionContext;
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.http.MeshHeaders;
-import com.gentics.mesh.router.ProjectsRouter;
+import com.gentics.mesh.shared.SharedKeys;
 import com.gentics.mesh.util.ETag;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -167,7 +165,7 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 		if (session != null) {
 			session.destroy();
 		}
-		rc.addCookie(Cookie.cookie(MeshJWTAuthProvider.TOKEN_COOKIE_KEY, "deleted").setMaxAge(0).setPath("/"));
+		rc.addCookie(Cookie.cookie(SharedKeys.TOKEN_COOKIE_KEY, "deleted").setMaxAge(0).setPath("/"));
 		rc.clearUser();
 	}
 
@@ -198,7 +196,7 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 	@Override
 	public Project getProject() {
 		if (project == null) {
-			project = get(ProjectsRouter.PROJECT_CONTEXT_KEY);
+			project = get(SharedKeys.PROJECT_CONTEXT_KEY);
 		}
 		return project;
 	}

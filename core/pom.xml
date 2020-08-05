@@ -42,7 +42,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-mdm-orientdb-wrapper</artifactId>
+			<artifactId>mesh-common</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>

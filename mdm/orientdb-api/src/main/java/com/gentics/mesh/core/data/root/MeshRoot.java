@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data.root;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
 import com.gentics.mesh.core.data.job.JobRoot;

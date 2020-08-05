@@ -29,7 +29,7 @@ import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
-import com.gentics.mesh.router.ProjectsRouter;
+import com.gentics.mesh.shared.SharedKeys;
 import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.test.context.event.EventAsserter;
 import com.gentics.mesh.test.docker.ElasticsearchContainer;
@@ -109,7 +109,7 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 
 	public String getJson(Node node) throws Exception {
 		InternalActionContext ac = mockActionContext("lang=en&version=draft");
-		ac.data().put(ProjectsRouter.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
+		ac.data().put(SharedKeys.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
 		return node.transformToRestSync(ac, 0).toJson();
 	}
 

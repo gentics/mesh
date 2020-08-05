@@ -17,7 +17,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.router.ProjectsRouter;
+import com.gentics.mesh.shared.SharedKeys;
 import com.gentics.mesh.util.HttpQueryUtils;
 
 import io.vertx.core.MultiMap;
@@ -33,7 +33,7 @@ public final class Mocks {
 
 	public static InternalActionContext getMockedInternalActionContext(String query, User user, Project project) {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(getMockedRoutingContext(query, false, user, null));
-		ac.data().put(ProjectsRouter.PROJECT_CONTEXT_KEY, project);
+		ac.data().put(SharedKeys.PROJECT_CONTEXT_KEY, project);
 		ac.put(API_VERSION_CONTEXT_KEY, CURRENT_API_VERSION);
 		return ac;
 	}
@@ -72,7 +72,7 @@ public final class Mocks {
 		when(rc.session()).thenReturn(session);
 
 		if (project != null) {
-			when(rc.get(ProjectsRouter.PROJECT_CONTEXT_KEY)).thenReturn(project);
+			when(rc.get(SharedKeys.PROJECT_CONTEXT_KEY)).thenReturn(project);
 		}
 		return rc;
 

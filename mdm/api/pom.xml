@@ -15,4 +15,16 @@
 
 	<description>MDM API</description>
 
+	<dependencies>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-api</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-common-api</artifactId>
+		</dependency>
+	</dependencies>
+
 </project>

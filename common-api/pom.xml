@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>mesh-common-api</artifactId>
+	<packaging>jar</packaging>
+	<name>Mesh - Common API</name>
+
+	<parent>
+		<groupId>com.gentics.mesh</groupId>
+		<artifactId>mesh</artifactId>
+		<version>1.6.1-SNAPSHOT</version>
+	</parent>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-bom</artifactId>
+				<type>pom</type>
+				<scope>import</scope>
+				<version>${project.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<dependencies>
+		<!-- Internal API deps -->
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-rest-model</artifactId>
+		</dependency>
+
+		<!-- External API deps -->
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+		</dependency>
+		<!-- Metrics -->
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-micrometer-metrics</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-registry-prometheus</artifactId>
+		</dependency>
+	</dependencies>
+
+</project>

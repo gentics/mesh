@@ -16,24 +16,37 @@
 	<description>MDM OrientDB API</description>
 
 	<dependencies>
+		<!-- Internal API deps -->
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-mdm-api</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-common</artifactId>
-		</dependency>
-
-		<!-- Needed for OrientDB API -->
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>madl-ferma</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
+			<artifactId>madl-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-mdm-api</artifactId>
 		</dependency>
 
+		<!-- External API deps -->
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.google.dagger</groupId>
+			<artifactId>dagger</artifactId>
+		</dependency>
+		<!-- Hazelcast -->
+		<dependency>
+			<groupId>com.hazelcast</groupId>
+			<artifactId>hazelcast</artifactId>
+		</dependency>
 	</dependencies>
 </project>

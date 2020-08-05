@@ -11,6 +11,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.auth.AuthenticationResult;
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.shared.SharedKeys;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -111,7 +112,7 @@ public class MeshJWTAuthHandler extends AuthHandlerImpl implements JWTAuthHandle
 		// Mesh accepts JWT tokens via the cookie as well in order to handle JWT even for regular HTTP Download requests (eg. non ajax requests (static file
 		// downloads)).
 		// Store the found token value into the authentication header value. This will effectively overwrite the AUTHORIZATION header value.
-		Cookie tokenCookie = context.getCookie(MeshJWTAuthProvider.TOKEN_COOKIE_KEY);
+		Cookie tokenCookie = context.getCookie(SharedKeys.TOKEN_COOKIE_KEY);
 		if (tokenCookie != null) {
 			context.request().headers().set(AUTHORIZATION, "Bearer " + tokenCookie.getValue());
 		}
@@ -161,8 +162,8 @@ public class MeshJWTAuthHandler extends AuthHandlerImpl implements JWTAuthHandle
 				if (!result.isUsingAPIKey()) {
 					String jwtToken = authProvider.generateToken(authenticatedUser);
 					// Remove the original cookie and set the new one
-					context.removeCookie(MeshJWTAuthProvider.TOKEN_COOKIE_KEY);
-					context.addCookie(Cookie.cookie(MeshJWTAuthProvider.TOKEN_COOKIE_KEY, jwtToken)
+					context.removeCookie(SharedKeys.TOKEN_COOKIE_KEY);
+					context.addCookie(Cookie.cookie(SharedKeys.TOKEN_COOKIE_KEY, jwtToken)
 						.setMaxAge(meshOptions.getAuthenticationOptions().getTokenExpirationTime()).setPath("/"));
 				}
 				authorizeUser(authenticatedUser, context);

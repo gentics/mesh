@@ -20,6 +20,7 @@ import com.gentics.mesh.core.rest.auth.TokenResponse;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.shared.SharedKeys;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -46,7 +47,6 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 
 	private JWTAuth jwtProvider;
 
-	public static final String TOKEN_COOKIE_KEY = "mesh.token";
 
 	private static final String USERID_FIELD_NAME = "userUuid";
 
@@ -312,7 +312,7 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 			if (rh.failed()) {
 				throw (RuntimeException) rh.cause();
 			} else {
-				ac.addCookie(Cookie.cookie(MeshJWTAuthProvider.TOKEN_COOKIE_KEY, rh.result())
+				ac.addCookie(Cookie.cookie(SharedKeys.TOKEN_COOKIE_KEY, rh.result())
 					.setMaxAge(meshOptions.getAuthenticationOptions().getTokenExpirationTime()).setPath("/"));
 				ac.send(new TokenResponse(rh.result()).toJson());
 			}
