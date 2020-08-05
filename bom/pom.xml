@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
@@ -113,7 +114,7 @@
 				<artifactId>okhttp</artifactId>
 				<version>3.12.1</version>
 			</dependency>
-			
+
 			<!-- SSL -->
 			<dependency>
 				<groupId>org.bouncycastle</groupId>
@@ -389,6 +390,18 @@
 			<dependency>
 				<groupId>com.gentics.mesh</groupId>
 				<artifactId>mesh-service-jwt-auth</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<!-- MDM -->
+			<dependency>
+				<artifactId>mesh-mdm-api</artifactId>
+				<groupId>com.gentics.mesh</groupId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<artifactId>mesh-mdm-orientdb-wrapper</artifactId>
+				<groupId>com.gentics.mesh</groupId>
 				<version>${project.version}</version>
 			</dependency>
 
