@@ -3,9 +3,11 @@
     # [$.data.me.username=anonymous]
     username
   }
-  # [$.data.node=<is-null>]
+  # The anonymous role has read published perm and thus is allowed to read the node but not the content
   node(path:"/Neuigkeiten/2015") {
     uuid
+  	# [$.data.node.version=<is-null>]
+    version
   }
   tag(name: "red") {
     nodes {
@@ -34,5 +36,6 @@
 # [$.errors.length()=1]
 # [$.errors[0].message=graphql_error_missing_perm]
 # [$.errors[0].type=missing_perm]
+# [$.errors[0].path=node]
 # [$.errors[0].elementId=<is-uuid>]
 # [$.errors[0].elementType=node]

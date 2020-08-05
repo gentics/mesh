@@ -50,6 +50,7 @@ public class GraphQLAnonymousPermissionTest extends AbstractMeshTest {
 		GraphQLResponse response = call(
 			() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(QUERY_NAME)));
 		JsonObject jsonResponse = new JsonObject(response.toJson());
+		System.out.println(jsonResponse.encodePrettily());
 		assertThat(jsonResponse).compliesToAssertions(QUERY_NAME);
 	}
 
