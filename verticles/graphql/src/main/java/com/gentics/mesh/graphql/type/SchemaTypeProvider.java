@@ -100,6 +100,7 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 			.field(newPagingFieldWithFetcherBuilder("nodes", "Load nodes with this schema", env -> {
 			GraphQLContext gc = env.getContext();
 			List<String> languageTags = getLanguageArgument(env);
+			ContainerType type = getNodeVersion(env);
 
 			Stream<? extends NodeContent> nodes = getSchemaContainerVersion(env).getNodes(
 					gc.getBranch().getUuid(),
@@ -107,15 +108,16 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 					ContainerType.forVersion(gc.getVersioningParameters().getVersion())
 			).stream()
 			.map(node -> {
-				NodeGraphFieldContainer container = node.findVersion(gc, languageTags);
-				return new NodeContent(node, container, languageTags);
-			}).filter(content -> content.getContainer() != null);
+				NodeGraphFieldContainer container = node.findVersion(gc, languageTags, type);
+				return new NodeContent(node, container, languageTags, type);
+			})
+			.filter(content -> content.getContainer() != null)
+			.filter(gc::hasReadPerm);
 
 			return applyNodeFilter(env, nodes);
 		}, NODE_PAGE_TYPE_NAME)
 			.argument(NodeFilter.filter(context).createFilterArgument())
-			.argument(createLanguageTagArg(true))
-		);
+			.argument(createLanguageTagArg(true)));
 
 		Builder fieldListBuilder = newObject().name(SCHEMA_FIELD_TYPE).description("List of schema fields");
 

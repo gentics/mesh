@@ -23,6 +23,7 @@ import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
@@ -244,8 +245,11 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	 */
 	public GraphQLFieldDefinition createListDef(GraphQLContext context, ListFieldSchema schema) {
 		GraphQLType type = getElementTypeOfList(schema);
-		graphql.schema.GraphQLFieldDefinition.Builder fieldType = newFieldDefinition().name(schema.getName()).description(schema.getLabel())
-			.type(new GraphQLList(type)).argument(createPagingArgs());
+		graphql.schema.GraphQLFieldDefinition.Builder fieldType = newFieldDefinition()
+			.name(schema.getName())
+			.description(schema.getLabel())
+			.type(new GraphQLList(type))
+			.argument(createPagingArgs());
 		NodeFilter nodeFilter = NodeFilter.filter(context);
 
 		// Add link resolving arg to html and string lists
@@ -255,6 +259,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 			fieldType.argument(createLinkTypeArg());
 			break;
 		case "node":
+			fieldType.argument(createNodeVersionArg());
 			fieldType.argument(nodeFilter.createFilterArgument());
 			break;
 		}
@@ -278,7 +283,8 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				return htmlList.getList().stream().map(item -> {
 					String content = item.getHTML();
 					LinkType linkType = getLinkType(env);
-					return linkReplacer.replace(gc, null, null, content, linkType, gc.getProject().getName(), Arrays.asList(container.getLanguageTag()));
+					return linkReplacer.replace(gc, null, null, content, linkType, gc.getProject().getName(),
+						Arrays.asList(container.getLanguageTag()));
 				}).collect(Collectors.toList());
 			case "string":
 				StringGraphFieldList stringList = container.getStringList(schema.getName());
@@ -288,7 +294,8 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				return stringList.getList().stream().map(item -> {
 					String content = item.getString();
 					LinkType linkType = getLinkType(env);
-					return linkReplacer.replace(gc, null, null, content, linkType, gc.getProject().getName(), Arrays.asList(container.getLanguageTag()));
+					return linkReplacer.replace(gc, null, null, content, linkType, gc.getProject().getName(),
+						Arrays.asList(container.getLanguageTag()));
 				}).collect(Collectors.toList());
 			case "number":
 				NumberGraphFieldList numberList = container.getNumberList(schema.getName());
@@ -308,25 +315,30 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 					return null;
 				}
 				Map<String, ?> filterArgument = env.getArgument("filter");
+				ContainerType nodeType = getNodeVersion(env);
+
 				Stream<NodeContent> nodes = nodeList.getList().stream().map(item -> {
 					Node node = item.getNode();
 					List<String> languageTags;
 					if (container instanceof NodeGraphFieldContainer) {
 						languageTags = Arrays.asList(container.getLanguageTag());
 					} else if (container instanceof Micronode) {
-						Micronode micronode = (Micronode)container;
+						Micronode micronode = (Micronode) container;
 						languageTags = Arrays.asList(micronode.getContainer().getLanguageTag());
 					} else {
 						throw error(HttpResponseStatus.INTERNAL_SERVER_ERROR, "container can only be NodeGraphFieldContainer or Micronode");
 					}
 					// TODO we need to add more assertions and check what happens if the itemContainer is null
-					NodeGraphFieldContainer itemContainer = node.findVersion(gc, languageTags);
-					return new NodeContent(node, itemContainer, languageTags);
+					NodeGraphFieldContainer itemContainer = node.findVersion(gc, languageTags, nodeType);
+					return new NodeContent(node, itemContainer, languageTags, nodeType);
 				});
 				if (filterArgument != null) {
 					nodes = nodes.filter(nodeFilter.createPredicate(filterArgument));
 				}
-				return nodes.collect(Collectors.toList());
+				return nodes
+					.filter(content -> content.getContainer() != null)
+					.filter(gc::hasReadPerm)
+					.collect(Collectors.toList());
 			case "micronode":
 				MicronodeGraphFieldList micronodeList = container.getMicronodeList(schema.getName());
 				if (micronodeList == null) {
@@ -386,10 +398,16 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	 * @return
 	 */
 	public GraphQLFieldDefinition createNodeDef(FieldSchema schema) {
-		return newFieldDefinition().name(schema.getName()).argument(createLanguageTagArg(false)).description(schema.getLabel())
+		return newFieldDefinition()
+			.name(schema.getName())
+			.argument(createLanguageTagArg(false))
+			.argument(createNodeVersionArg())
+			.description(schema.getLabel())
 			.type(new GraphQLTypeReference(NODE_TYPE_NAME)).dataFetcher(env -> {
 				GraphQLContext gc = env.getContext();
 				GraphFieldContainer source = env.getSource();
+				ContainerType type = getNodeVersion(env);
+
 				// TODO decide whether we want to reference the default content by default
 				NodeGraphField nodeField = source.getNode(schema.getName());
 				if (nodeField != null) {
@@ -399,8 +417,9 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 						List<String> languageTags = getLanguageArgument(env, source);
 						// Check permissions for the linked node
 						gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
-						NodeGraphFieldContainer container = node.findVersion(gc, languageTags);
-						return new NodeContent(node, container, languageTags);
+						NodeGraphFieldContainer container = node.findVersion(gc, languageTags, type);
+						container = gc.requiresReadPermSoft(container, env);
+						return new NodeContent(node, container, languageTags, type);
 					}
 				}
 				return null;

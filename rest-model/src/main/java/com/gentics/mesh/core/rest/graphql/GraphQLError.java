@@ -28,6 +28,10 @@ public class GraphQLError implements RestModel {
 	@JsonPropertyDescription("List of locations which are related to the error.")
 	private List<ErrorLocation> locations;
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Path of the error.")
+	private String path;
+
 	/**
 	 * Return the error message.
 	 * 
@@ -127,5 +131,26 @@ public class GraphQLError implements RestModel {
 		this.locations = locations;
 		return this;
 	}
+
+	/**
+	 * Return the path of the error.
+	 * 
+	 * @return
+	 */
+	public String getPath() {
+		return path;
+	}
+
+	/**
+	 * Set the path of the error.
+	 * 
+	 * @param path
+	 * @return Fluent API
+	 */
+	public GraphQLError setPath(String path) {
+		this.path = path;
+		return this;
+	}
+
 
 }

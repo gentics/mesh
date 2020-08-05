@@ -1,0 +1,49 @@
+query Test($type: NodeVersion) {
+
+  # Via UUID
+  nodePerUuid: node(uuid: "02e3982b6ad14c1fa4a0b5998a02ff92", version: $type) {    
+    uuid
+    version
+    isPublished
+    isDraft
+    path
+
+    # Via languages
+    languages(version: $type) {
+      uuid
+      version
+      isPublished
+      isDraft
+    }
+  }
+}
+
+# [NO_PERM,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.languages.length()=1
+# [NO_PERM,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.languages[0].version=1.1
+# [NO_PERM,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.languages[0].isPublished=false
+# [NO_PERM,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.languages[0].isDraft=true
+# [NO_PERM,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.languages.length()=1
+# [NO_PERM,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.languages[0].version=1.0
+# [NO_PERM,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.languages[0].isPublished=true
+# [NO_PERM,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.languages[0].isDraft=false
+# [NO_PERM,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.languages.length()=1
+# [NO_PERM,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.languages[0].version=0.2
+# [NO_PERM,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.languages[0].isPublished=false
+# [NO_PERM,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.languages[0].isDraft=true
+# [NO_PERM,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.languages.length()=0
+# [ONLY_READ,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.languages[0].version=1.1
+# [ONLY_READ,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.languages[0].isPublished=false
+# [ONLY_READ,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.languages[0].isDraft=true
+# [ONLY_READ,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.languages[0].version=1.0
+# [ONLY_READ,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.languages[0].isPublished=true
+# [ONLY_READ,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.languages[0].isDraft=false
+# [ONLY_READ,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.languages[0].version=0.2
+# [ONLY_READ,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.languages[0].isPublished=false
+# [ONLY_READ,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.languages[0].isDraft=true
+# [ONLY_READ,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.languages.length()=0
+# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.languages.length()=0
+# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.languages[0].version=1.0
+# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.languages[0].isPublished=true
+# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.languages[0].isDraft=false
+# [ONLY_READ_PUBLISHED,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.languages.length()=0
+# [ONLY_READ_PUBLISHED,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.languages.length()=0

@@ -328,6 +328,21 @@ ul.doc-toc h2 {
                         </ul>
                     </li>
 
+                    <li class="section">
+                        <h2><a href="plugin-system">Plugin System</a></h2>
+                        <ul>
+                            <li>
+                                <a href="plugin-development">Plugin Development</a>
+                            </li>
+                            <li>
+                                <a href="plugin-development#_plugin_types">Plugin Types</a>
+                            </li>
+                            <li>
+                                <a href="plugin-migration">Plugin Migration</a>
+                            </li>
+                        </ul>
+                    </li>
+
                 </ul>
             </div>
             <div class="col-md-4">
@@ -335,17 +350,6 @@ ul.doc-toc h2 {
                     <li class="section">
                         <h2><a href="references">References</a></h2>
                         <ul>
-                            <li>
-                                <a href="graphql">GraphQL</a>
-                                <ul>
-                                    <li>
-                                        <a href="graphql#_filtering">Filtering</a>
-                                    </li>
-                                    <li>
-                                        <a href="graphql#_limitations">Limitations</a>
-                                    </li>
-                                </ul>
-                            </li>
                             <li>
                                 <a href="references#_rest_api">REST API</a>
                                 <ul>
@@ -487,17 +491,17 @@ ul.doc-toc h2 {
                         </ul>
                     </li>
 
-                    <li class="section">
-                        <h2><a href="plugin-system">Plugin System</a></h2>
+                   <li class="section">
+                        <h2><a href="graphql">GraphQL</a></h2>
                         <ul>
                             <li>
-                                <a href="plugin-development">Plugin Development</a>
+                                <a href="graphql#_filtering">Filtering</a>
                             </li>
                             <li>
-                                <a href="plugin-development#_plugin_types">Plugin Types</a>
+                                <a href="graphql#permissions">Permissions</a>
                             </li>
                             <li>
-                                <a href="plugin-migration">Plugin Migration</a>
+                                <a href="graphql#limitations">Limitations</a>
                             </li>
                         </ul>
                     </li>

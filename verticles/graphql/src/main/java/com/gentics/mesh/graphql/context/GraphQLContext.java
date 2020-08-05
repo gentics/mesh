@@ -4,9 +4,13 @@ import java.util.function.Supplier;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.error.PermissionException;
 import com.gentics.mesh.plugin.graphql.GraphQLPluginContext;
+
+import graphql.schema.DataFetchingEnvironment;
 
 /**
  * Extended context for GraphQL handling.
@@ -23,6 +27,32 @@ public interface GraphQLContext extends InternalActionContext, GraphQLPluginCont
 	 * @throws PermissionException
 	 */
 	<T extends MeshCoreVertex<?, ?>> T requiresPerm(T vertex, GraphPermission... permission);
+
+	/**
+	 * Check whether the current user of the context has read permission on the container (via type and parent node).
+	 * 
+	 * @param container
+	 * @return
+	 */
+	boolean hasReadPerm(NodeGraphFieldContainer container);
+
+	/**
+	 * Check whether the current user of the context has read permission on the container (via type and parent node).
+	 * This method will not fail with an exception. Instead the perm error will be logged in the error list. Null will be returned in this case.
+	 * 
+	 * @param container
+	 * @param env Environment used to add perm errors
+	 * @return Provided container or null if permissions are lacking.
+	 */
+	NodeGraphFieldContainer requiresReadPermSoft(NodeGraphFieldContainer container, DataFetchingEnvironment env);
+
+	/**
+	 * Check whether the content can be read by the current user. Please note that this method will not check READ perms on the node. It is only checking the content container of the node. 
+	 * 
+	 * @param content
+	 * @return
+	 */
+	boolean hasReadPerm(NodeContent content);
 
 	/**
 	 * Gets a value from the context. If the value does not exist yet, the supplier will be called.

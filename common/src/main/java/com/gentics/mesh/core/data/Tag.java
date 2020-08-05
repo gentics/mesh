@@ -110,6 +110,6 @@ public interface Tag extends MeshCoreVertex<TagResponse, Tag>, ReferenceableElem
 	 */
 	Project getProject();
 
-	TraversalResult<? extends Node> findTaggedNodes(InternalActionContext ac, GraphPermission permission);
+	TraversalResult<? extends Node> findTaggedNodes(InternalActionContext ac);
 
 }

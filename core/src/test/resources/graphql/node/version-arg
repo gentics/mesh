@@ -1,0 +1,52 @@
+{
+
+  # Don't define a version and thus the default should be used
+  noType: rootNode {
+    # [$.data.noType.uuid=<is-uuid>]
+    uuid
+    version
+    child(path: "level1B") {
+      uuid
+      version
+      child(path: "level2-2", version: draft) {
+        uuid
+        version
+      }
+    }
+  }
+
+  draftRoot: rootNode(version: draft) {
+    # [$.data.draftRoot.uuid=<is-uuid>]
+    uuid
+    # [$.data.draftRoot.version=1.1]
+    version
+    child(path: "level1B") {
+      uuid
+      # [$.data.draftRoot.child.version=1.1]
+      version
+      child(path: "level2-2", version: published) {
+        uuid
+        # [$.data.draftRoot.child.child.version=1.0]
+        version
+      }
+    }
+  }
+
+  publishedRoot: rootNode(version: published) {
+    # [$.data.publishedRoot.uuid=<is-uuid>]
+    uuid
+    # [$.data.publishedRoot.version=1.0]
+    version
+    child(path: "level1B") {
+      uuid
+      # [$.data.publishedRoot.child.version=1.0]
+      version
+      child(path: "level2-2", version: draft) {
+        uuid
+        # [$.data.publishedRoot.child.child.version=1.1]
+        version
+      }
+    }
+  }
+}
+# [$.errors=<is-undefined>]

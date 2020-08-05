@@ -18,6 +18,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 
@@ -109,7 +110,11 @@ public class UserTypeProvider extends AbstractTypeProvider {
 		}));
 
 		// .nodeReference
-		root.field(newFieldDefinition().name("nodeReference").description("User node reference").type(new GraphQLTypeReference("Node"))
+		root.field(newFieldDefinition()
+			.name("nodeReference")
+			.description("User node reference")
+			.argument(createNodeVersionArg())
+			.type(new GraphQLTypeReference("Node"))
 			.dataFetcher((env) -> {
 				GraphQLContext gc = env.getContext();
 				User user = env.getSource();
@@ -125,8 +130,11 @@ public class UserTypeProvider extends AbstractTypeProvider {
 
 				node = gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 				List<String> languageTags = getLanguageArgument(env);
-				NodeGraphFieldContainer container = node.findVersion(gc, languageTags);
-				return new NodeContent(node, container, languageTags);
+				ContainerType type = getNodeVersion(env);
+
+				NodeGraphFieldContainer container = node.findVersion(gc, languageTags, type);
+				container = gc.requiresReadPermSoft(container, env);
+				return new NodeContent(node, container, languageTags, type);
 			}));
 
 		return root.build();

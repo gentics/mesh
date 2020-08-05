@@ -414,8 +414,20 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param languageTags
 	 * @return Next matching field container or null when no language matches
 	 */
-	default NodeGraphFieldContainer findVersion(InternalActionContext ac, List<String> languageTags) {
-		return findVersion(languageTags, ac.getBranch().getUuid(), ac.getVersioningParameters().getVersion());
+	default NodeGraphFieldContainer findVersion(InternalActionContext ac, List<String> languageTags, String version) {
+		return findVersion(languageTags, ac.getBranch().getUuid(), version);
+	}
+
+	/**
+	 * Find the content that matches the given parameters (languages, type).
+	 * 
+	 * @param ac
+	 * @param languageTags
+	 * @param type
+	 * @return
+	 */
+	default NodeGraphFieldContainer findVersion(InternalActionContext ac, List<String> languageTags, ContainerType type) {
+		return findVersion(ac, languageTags, type.getHumanCode());
 	}
 
 	/**

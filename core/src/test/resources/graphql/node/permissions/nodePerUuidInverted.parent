@@ -1,0 +1,48 @@
+query Test($type: NodeVersion, $invType: NodeVersion) {
+
+  # Via UUID
+  nodePerUuidInverted: node(uuid: "02e3982b6ad14c1fa4a0b5998a02ff92", version: $invType) {
+
+    # Via Parent
+    parent(version: $type) {
+      uuid
+      version
+      isPublished
+      isDraft
+    }
+  }
+}
+
+# [NO_PERM,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuidInverted.parent=<is-null>
+# [NO_PERM,PUBLISH_SELECT_DRAFT]=checkperm:nodePerUuidInverted.parent
+# [NO_PERM,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuidInverted.parent=<is-null>
+# [NO_PERM,PUBLISH_SELECT_PUBLISHED]=checkperm:nodePerUuidInverted.parent
+# [NO_PERM,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuidInverted.parent=<is-null>
+# [NO_PERM,NO_PUBLISH_SELECT_DRAFT]=checkperm:nodePerUuidInverted.parent
+# [NO_PERM,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuidInverted.parent=<is-null>
+# [NO_PERM,NO_PUBLISH_SELECT_PUBLISHED]=checkperm:nodePerUuidInverted.parent
+# [ONLY_READ,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuidInverted.parent.version=1.1
+# [ONLY_READ,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuidInverted.parent.isPublished=false
+# [ONLY_READ,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuidInverted.parent.isDraft=true
+# [ONLY_READ,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuidInverted.parent.version=1.0
+# [ONLY_READ,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuidInverted.parent.isPublished=true
+# [ONLY_READ,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuidInverted.parent.isDraft=false
+# [ONLY_READ,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuidInverted.parent.version=1.1
+# [ONLY_READ,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuidInverted.parent.isPublished=false
+# [ONLY_READ,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuidInverted.parent.isDraft=true
+# [ONLY_READ,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuidInverted.parent.version=<is-null>
+# [ONLY_READ,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuidInverted.parent.isPublished=<is-null>
+# [ONLY_READ,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuidInverted.parent.isDraft=<is-null>
+# [ONLY_READ,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuidInverted.parent.version=<is-null>
+# [ONLY_READ,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuidInverted.parent.isPublished=<is-null>
+# [ONLY_READ,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuidInverted.parent.isDraft=<is-null>
+# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuidInverted.parent.version=<is-null>
+# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_DRAFT]=checkperm:nodePerUuidInverted.parent
+# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuidInverted.parent.version=1.0
+# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuidInverted.parent.isPublished=true
+# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuidInverted.parent.isDraft=false
+# [ONLY_READ_PUBLISHED,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuidInverted.parent.version=<is-null>
+# [ONLY_READ_PUBLISHED,NO_PUBLISH_SELECT_DRAFT]=checkperm:nodePerUuidInverted.parent
+# [ONLY_READ_PUBLISHED,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuidInverted.parent.version=<is-null>
+# [ONLY_READ_PUBLISHED,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuidInverted.parent.isPublished=<is-null>
+# [ONLY_READ_PUBLISHED,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuidInverted.parent.isDraft=<is-null>

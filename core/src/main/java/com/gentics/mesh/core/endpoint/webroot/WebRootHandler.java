@@ -27,6 +27,7 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.service.WebRootServiceImpl;
 import com.gentics.mesh.core.endpoint.node.BinaryFieldResponseHandler;
 import com.gentics.mesh.core.endpoint.node.NodeCrudHandler;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
@@ -100,7 +101,8 @@ public class WebRootHandler {
 
 				String branchUuid = ac.getBranch().getUuid();
 				// Load all nodes for the given path
-				Path nodePath = webrootService.findByProjectPath(ac, path);
+				ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
+				Path nodePath = webrootService.findByProjectPath(ac, path, type);
 				if (!nodePath.isFullyResolved()) {
 					throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(nodePath.getTargetPath()));
 				}
@@ -211,7 +213,8 @@ public class WebRootHandler {
 			uuid = db.tx(() -> {
 
 				// Load all nodes for the given path
-				Path nodePath = webrootService.findByProjectPath(ac, path);
+				ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
+				Path nodePath = webrootService.findByProjectPath(ac, path, type);
 				if (nodePath.isPrefixMismatch()) {
 					throw error(NOT_FOUND, "webroot_error_prefix_invalid", decodeSegment(path), ac.getBranch().getPathPrefix());
 				}

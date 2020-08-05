@@ -7,11 +7,9 @@ import static com.gentics.mesh.util.StreamUtil.toStream;
 import java.util.stream.Stream;
 
 import com.gentics.graphqlfilter.util.Lazy;
-import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 
 /**
@@ -33,25 +31,28 @@ public class NodeReferenceIn {
 	 * Creates a stream of incoming node references for the given content.
 	 * @param context
 	 * @param content
+	 * @param type
 	 * @return
 	 */
-	public static Stream<NodeReferenceIn> fromContent(GraphQLContext context, NodeContent content) {
+	public static Stream<NodeReferenceIn> fromContent(GraphQLContext context, NodeContent content, ContainerType type) {
 		String branchUuid = context.getBranch().getUuid();
-		MeshAuthUser user = context.getUser();
-		String version = context.getVersioningParameters().getVersion();
 		return content.getNode()
 			.getInboundReferences()
 			.flatMap(ref -> toStream(ref.getReferencingContents()
-			.filter(container -> {
-				Node node = container.getParentNode();
-				// TODO extract this common behaviour, see https://github.com/gentics/mesh/issues/698
-				return version.equals("draft") && container.isType(DRAFT, branchUuid) && user.hasPermission(node, GraphPermission.READ_PERM) ||
-					version.equals("published") && container.isType(PUBLISHED, branchUuid) && user.hasPermission(node, GraphPermission.READ_PUBLISHED_PERM);
-			}).findAny())
-			.map(referencingContent -> new NodeReferenceIn(
-				new NodeContent(null, referencingContent, content.getLanguageFallback()),
-				ref
-			)));
+				.filter(container -> {
+					if (type == DRAFT && container.isDraft(branchUuid)) {
+						return true;
+					}
+					if (type == PUBLISHED && container.isPublished(branchUuid)) {
+						return true;
+					}
+					return false;
+				})
+				.filter(context::hasReadPerm)
+				.findAny())
+					.map(referencingContent -> new NodeReferenceIn(
+						new NodeContent(null, referencingContent, content.getLanguageFallback(), type),
+						ref)));
 	}
 
 	/**

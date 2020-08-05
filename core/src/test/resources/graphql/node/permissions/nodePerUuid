@@ -1,0 +1,46 @@
+query Test($type: NodeVersion) {
+  
+  # Via UUID 1C
+  nodePerUuid: node(uuid: "13c5981c51994d54998dd88b0c484720", version: $type) {
+    uuid
+    version
+    isPublished
+    isDraft
+    path
+  }
+}  
+
+# The node can't be read since perms are missing
+# [NO_PERM,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid=<is-null>
+# [NO_PERM,PUBLISH_SELECT_DRAFT]=checkperm:nodePerUuid
+# [NO_PERM,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid=<is-null>
+# [NO_PERM,PUBLISH_SELECT_PUBLISHED]=checkperm:nodePerUuid
+# [NO_PERM,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid=<is-null>
+# [NO_PERM,NO_PUBLISH_SELECT_DRAFT]=checkperm:nodePerUuid
+
+# The node content can't be read since it was not published and there are no perms on the node
+# [NO_PERM,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid=<is-null>
+# [NO_PERM,NO_PUBLISH_SELECT_PUBLISHED]=checkperm:nodePerUuid
+
+# [ONLY_READ,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.version=1.1
+# [ONLY_READ,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.isPublished=false
+# [ONLY_READ,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.isDraft=true
+# [ONLY_READ,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.version=1.0
+# [ONLY_READ,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.isPublished=true
+# [ONLY_READ,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.isDraft=false
+# [ONLY_READ,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.version=0.2
+# [ONLY_READ,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.isPublished=false
+# [ONLY_READ,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.isDraft=true
+# [ONLY_READ,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.version=<is-null>
+# [ONLY_READ,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.isPublished=<is-null>
+# [ONLY_READ,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.isDraft=<is-null>
+# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.version=<is-null>
+# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_DRAFT]=checkperm:nodePerUuid
+# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.version=1.0
+# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.isPublished=true
+# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.isDraft=false
+# [ONLY_READ_PUBLISHED,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.version=<is-null>
+# [ONLY_READ_PUBLISHED,NO_PUBLISH_SELECT_DRAFT]=checkperm:nodePerUuid
+# [ONLY_READ_PUBLISHED,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.version=<is-null>
+# [ONLY_READ_PUBLISHED,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.isPublished=<is-null>
+# [ONLY_READ_PUBLISHED,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.isDraft=<is-null>

@@ -1,0 +1,51 @@
+query Test($type: NodeVersion) {
+  # Via RootNode
+  rootNode(version: $type) {
+    uuid
+    version
+    isPublished
+    isDraft
+  }
+}
+
+# [NO_PERM,PUBLISH_SELECT_DRAFT]=$.data.rootNode=<is-null>
+# [NO_PERM,PUBLISH_SELECT_DRAFT]=checkperm:rootNode
+
+# [NO_PERM,PUBLISH_SELECT_PUBLISHED]=$.data.rootNode=<is-null>
+# [NO_PERM,PUBLISH_SELECT_PUBLISHED]=checkperm:rootNode
+
+# [NO_PERM,NO_PUBLISH_SELECT_DRAFT]=$.data.rootNode=<is-null>
+# [NO_PERM,NO_PUBLISH_SELECT_DRAFT]=checkperm:rootNode
+
+# [NO_PERM,NO_PUBLISH_SELECT_PUBLISHED]=$.data.rootNode=<is-null>
+# [NO_PERM,NO_PUBLISH_SELECT_PUBLISHED]=checkperm:rootNode
+
+# [ONLY_READ,PUBLISH_SELECT_DRAFT]=$.data.rootNode.version=1.1
+# [ONLY_READ,PUBLISH_SELECT_DRAFT]=$.data.rootNode.isPublished=false
+# [ONLY_READ,PUBLISH_SELECT_DRAFT]=$.data.rootNode.isDraft=true
+
+# [ONLY_READ,PUBLISH_SELECT_PUBLISHED]=$.data.rootNode.version=1.0
+# [ONLY_READ,PUBLISH_SELECT_PUBLISHED]=$.data.rootNode.isPublished=true
+# [ONLY_READ,PUBLISH_SELECT_PUBLISHED]=$.data.rootNode.isDraft=false
+
+# [ONLY_READ,NO_PUBLISH_SELECT_DRAFT]=$.data.rootNode.version=1.1
+# [ONLY_READ,NO_PUBLISH_SELECT_DRAFT]=$.data.rootNode.isPublished=false
+# [ONLY_READ,NO_PUBLISH_SELECT_DRAFT]=$.data.rootNode.isDraft=true
+
+# [ONLY_READ,NO_PUBLISH_SELECT_PUBLISHED]=$.data.rootNode.version=<is-null>
+# [ONLY_READ,NO_PUBLISH_SELECT_PUBLISHED]=$.data.rootNode.isPublished=<is-null>
+# [ONLY_READ,NO_PUBLISH_SELECT_PUBLISHED]=$.data.rootNode.isDraft=<is-null>
+
+# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_DRAFT]=$.data.rootNode.version=<is-null>
+# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_DRAFT]=checkperm:rootNode
+
+# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_PUBLISHED]=$.data.rootNode.version=1.0
+# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_PUBLISHED]=$.data.rootNode.isPublished=true
+# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_PUBLISHED]=$.data.rootNode.isDraft=false
+
+# [ONLY_READ_PUBLISHED,NO_PUBLISH_SELECT_DRAFT]=$.data.rootNode.version=<is-null>
+# [ONLY_READ_PUBLISHED,NO_PUBLISH_SELECT_DRAFT]=checkperm:rootNode
+
+# [ONLY_READ_PUBLISHED,NO_PUBLISH_SELECT_PUBLISHED]=$.data.rootNode.version=<is-null>
+# [ONLY_READ_PUBLISHED,NO_PUBLISH_SELECT_PUBLISHED]=$.data.rootNode.isPublished=<is-null>
+# [ONLY_READ_PUBLISHED,NO_PUBLISH_SELECT_PUBLISHED]=$.data.rootNode.isDraft=<is-null>

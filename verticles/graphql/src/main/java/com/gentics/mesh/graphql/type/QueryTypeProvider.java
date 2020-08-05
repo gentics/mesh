@@ -32,7 +32,7 @@ import static graphql.Scalars.GraphQLLong;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -55,6 +55,7 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.service.WebRootService;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.PermissionException;
 import com.gentics.mesh.core.rest.error.UuidNotFoundException;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -207,6 +208,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		NodeRoot root = gc.getProject().getNodeRoot();
 		ExecutionContext ec = env.getExecutionContext();
 		List<String> languageTags = getLanguageArgument(env);
+		ContainerType type = getNodeVersion(env);
 
 		Stream<NodeContent> contents = uuids.stream()
 			// When a node cannot be found, we still need the UUID for the error message.
@@ -231,10 +233,11 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			})
 			.filter(Objects::nonNull)
 			.map(node -> {
-				NodeGraphFieldContainer container = node.findVersion(gc, languageTags);
-
-				return new NodeContent(node, container, languageTags);
-			});
+				NodeGraphFieldContainer container = node.findVersion(gc, languageTags, type);
+				return new NodeContent(node, container, languageTags, type);
+			})
+			.filter(content -> content.getContainer() != null)
+			.filter(gc::hasReadPerm);
 
 		return applyNodeFilter(env, contents);
 	}
@@ -255,16 +258,21 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 				return null;
 			}
 			List<String> languageTags = getLanguageArgument(env);
-			NodeGraphFieldContainer container = node.findVersion(gc, languageTags);
-			if (container != null && !gc.getUser().hasReadPermission(container, gc.getBranch().getUuid(), gc.getVersioningParameters().getVersion())) {
-				throw new PermissionException("node", uuid);
+			ContainerType type = getNodeVersion(env);
+
+			node = gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
+			NodeGraphFieldContainer container = node.findVersion(gc, languageTags, type);
+			if (container != null) {
+				container = gc.requiresReadPermSoft(container, env);
 			}
-			return new NodeContent(node, container, languageTags);
+			return new NodeContent(node, container, languageTags, type);
 		}
 		String path = env.getArgument("path");
 		if (path != null) {
 			GraphQLContext gc = env.getContext();
-			Path pathResult = webrootService.findByProjectPath(gc, path);
+			ContainerType type = getNodeVersion(env);
+
+			Path pathResult = webrootService.findByProjectPath(gc, path, type);
 
 			if (pathResult.getLast() == null || !pathResult.isFullyResolved()) {
 				return null;
@@ -272,11 +280,14 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 
 			NodeGraphFieldContainer container = pathResult.getLast().getContainer();
 			Node nodeOfContainer = container.getParentNode();
-			if (!gc.getUser().hasReadPermission(container, gc.getBranch().getUuid(), gc.getVersioningParameters().getVersion())) {
-				throw new PermissionException("node", nodeOfContainer.getUuid());
-			}
+
 			nodeOfContainer = gc.requiresPerm(nodeOfContainer, READ_PERM, READ_PUBLISHED_PERM);
-			return new NodeContent(nodeOfContainer, container, Arrays.asList(container.getLanguageTag()));
+			container = gc.requiresReadPermSoft(container, env);
+			List<String> langs = new ArrayList<>();
+			if (container != null) {
+				langs.add(container.getLanguageTag());
+			}
+			return new NodeContent(nodeOfContainer, container, langs, type);
 		}
 		return null;
 	}
@@ -331,8 +342,10 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			Node node = project.getBaseNode();
 			gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 			List<String> languageTags = getLanguageArgument(env);
-			NodeGraphFieldContainer container = node.findVersion(gc, languageTags);
-			return new NodeContent(node, container, languageTags);
+			ContainerType type = getNodeVersion(env);
+			NodeGraphFieldContainer container = node.findVersion(gc, languageTags, type);
+			container = gc.requiresReadPermSoft(container, env);
+			return new NodeContent(node, container, languageTags, type);
 		}
 		return null;
 	}
@@ -368,6 +381,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			.argument(createUuidArg("Node uuid"))
 			.argument(createLanguageTagArg(true))
 			.argument(createPathArg())
+			.argument(createNodeVersionArg())
 			.dataFetcher(this::nodeFetcher)
 			.type(new GraphQLTypeReference(NODE_TYPE_NAME)).build());
 
@@ -378,6 +392,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			.argument(createQueryArg())
 			.argument(createUuidsArg("Node uuids"))
 			.argument(createLanguageTagArg(true))
+			.argument(createNodeVersionArg())
 			.argument(NodeFilter.filter(context).createFilterArgument())
 			.type(new GraphQLTypeReference(NODE_PAGE_TYPE_NAME))
 			.dataFetcher((env) -> {
@@ -387,8 +402,9 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 				if (query != null) {
 					GraphQLContext gc = env.getContext();
 					// TODO add filtering for query nodes
+					ContainerType type = getNodeVersion(env);
 					gc.getNodeParameters().setLanguages(getLanguageArgument(env).stream().toArray(String[]::new));
-					return nodeTypeProvider.handleContentSearch(gc, query, getPagingInfo(env));
+					return nodeTypeProvider.handleContentSearch(gc, query, getPagingInfo(env), type);
 				}
 
 				if (env.containsArgument("uuids")) {
@@ -398,11 +414,12 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 				return fetchFilteredNodes(env);
 			}));
 
-		// .baseNode
+		// .rootNode
 		root.field(newFieldDefinition()
 			.name("rootNode")
 			.description("Return the project root node.")
 			.argument(createLanguageTagArg(true))
+			.argument(createNodeVersionArg())
 			.type(new GraphQLTypeReference(NODE_TYPE_NAME))
 			.dataFetcher(this::rootNodeFetcher).build());
 
@@ -592,7 +609,9 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		additionalTypes.add(interfaceTypeProvider.createPermInfoType());
 		additionalTypes.add(fieldDefProvider.createBinaryFieldType());
 
+		// Shared argument types
 		additionalTypes.add(createLinkEnumType());
+		additionalTypes.add(createNodeEnumType());
 
 		Versioned.doSince(2, context, () -> {
 			additionalTypes.addAll(nodeTypeProvider.generateSchemaFieldTypes(context).forVersion(context));

@@ -1,0 +1,60 @@
+query Test($type: NodeVersion) {
+ 
+  # Via UUID
+  nodePerUuid: node(uuid: "02e3982b6ad14c1fa4a0b5998a02ff92", version: $type) {
+    uuid
+    version
+    isPublished
+    isDraft
+    path
+  
+    ... on test {
+      fields {
+        name
+        extra
+        # Via Node Reference
+        node(version: $type) {
+          uuid
+          version
+          isPublished
+          isDraft
+        }
+      }
+    }
+  }
+}
+
+# [NO_PERM,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.fields.node=<is-null>
+# [NO_PERM,PUBLISH_SELECT_DRAFT]=checkperm:nodePerUuid.fields.node
+# [NO_PERM,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.fields.node=<is-null>
+# [NO_PERM,PUBLISH_SELECT_PUBLISHED]=checkperm:nodePerUuid.fields.node
+# [NO_PERM,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.fields.node=<is-null>
+# [NO_PERM,NO_PUBLISH_SELECT_DRAFT]=checkperm:nodePerUuid.fields.node
+# [NO_PERM,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.version=<is-null>
+# [NO_PERM,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.isPublished=<is-null>
+# [NO_PERM,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.isDraft=<is-null>
+# [ONLY_READ,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.fields.node.version=1.1
+# [ONLY_READ,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.fields.node.isPublished=false
+# [ONLY_READ,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.fields.node.isDraft=true
+# [ONLY_READ,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.fields.node.version=1.0
+# [ONLY_READ,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.fields.node.isPublished=true
+# [ONLY_READ,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.fields.node.isDraft=false
+# [ONLY_READ,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.fields.node.version=0.2
+# [ONLY_READ,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.fields.node.isPublished=false
+# [ONLY_READ,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.fields.node.isDraft=true
+# [ONLY_READ,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.version=<is-null>
+# [ONLY_READ,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.isPublished=<is-null>
+# [ONLY_READ,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.isDraft=<is-null>
+# [ONLY_READ,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.version=<is-null>
+# [ONLY_READ,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.isPublished=<is-null>
+# [ONLY_READ,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.isDraft=<is-null>
+# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.version=<is-null>
+# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_DRAFT]=checkperm:nodePerUuid
+# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.fields.node.version=1.0
+# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.fields.node.isPublished=true
+# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.fields.node.isDraft=false
+# [ONLY_READ_PUBLISHED,NO_PUBLISH_SELECT_DRAFT]=$.data.nodePerUuid.version=<is-null>
+# [ONLY_READ_PUBLISHED,NO_PUBLISH_SELECT_DRAFT]=checkperm:nodePerUuid
+# [ONLY_READ_PUBLISHED,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.version=<is-null>
+# [ONLY_READ_PUBLISHED,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.isPublished=<is-null>
+# [ONLY_READ_PUBLISHED,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodePerUuid.isDraft=<is-null>

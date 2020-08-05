@@ -31,7 +31,7 @@ public class GraphQLPermissionTest extends AbstractMeshTest {
 		String baseNodeUuid = tx(() -> project().getBaseNode().getUuid());
 		call(() -> client().publishNode(PROJECT_NAME, baseNodeUuid, new PublishParametersImpl().setRecursive(true)));
 
-		// 2. Publish
+		// 2. Take deals node offline
 		String dealsUuid = tx(() -> folder("deals").getUuid());
 		call(() -> client().takeNodeOffline(PROJECT_NAME, dealsUuid, new PublishParametersImpl().setRecursive(true)));
 

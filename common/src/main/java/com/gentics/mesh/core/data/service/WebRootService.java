@@ -14,9 +14,11 @@ public interface WebRootService {
 	 *            Action context
 	 * @param path
 	 *            Path string
+	 * @param type 
+	 *            Selected type of the node content
 	 * @return Resolved path object
 	 */
-	Path findByProjectPath(InternalActionContext ac, String path);
+	Path findByProjectPath(InternalActionContext ac, String path, ContainerType type);
 
 	/**
 	 * Find the graph field container within the given branch with the given path.

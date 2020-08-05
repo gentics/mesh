@@ -4,6 +4,8 @@ import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.UUIDUtil;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
+
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.assertj.core.api.AbstractAssert;
 import org.jetbrains.annotations.NotNull;
@@ -33,8 +35,8 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 	protected String key;
 
 	private static Map<String, String> staticVariables = Stream.of(
-		new SimpleImmutableEntry<>("CURRENT_API_BASE_PATH", CURRENT_API_BASE_PATH)
-	).collect(Collectors.toMap(SimpleImmutableEntry::getKey, SimpleImmutableEntry::getValue));
+		new SimpleImmutableEntry<>("CURRENT_API_BASE_PATH", CURRENT_API_BASE_PATH))
+		.collect(Collectors.toMap(SimpleImmutableEntry::getKey, SimpleImmutableEntry::getValue));
 
 	public JsonObjectAssert(JsonObject actual) {
 		super(actual, JsonObjectAssert.class);
@@ -119,37 +121,64 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 
 	@NotNull
 	private JsonObjectAssert compliesToAssertions(InputStream ins) {
-		Scanner scanner = new Scanner(ins);
-		try {
-			int lineNr = 1;
-			// Parse the query and extract comments which include assertions. Directly evaluate these assertions.
-			while (scanner.hasNextLine()) {
-				String line = scanner.nextLine();
-				line = line.trim();
-				if (line.startsWith("# [")) {
-					int start = line.indexOf("# [") + 3;
-					int end = line.lastIndexOf("]");
-					String assertion = line.substring(start, end);
-					evaluteAssertion(assertion, lineNr);
-				}
-				lineNr++;
-			}
-		} finally {
-			scanner.close();
+		try (Scanner scanner = new Scanner(ins)) {
+			compliesToAssertions(scanner);
 		}
+		return this;
+	}
 
+	public JsonObjectAssert compliesToAssertionText(String lines) {
+		try (Scanner scanner = new Scanner(lines)) {
+			compliesToAssertions(scanner);
+		}
+		return this;
+	}
+
+	private JsonObjectAssert compliesToAssertions(Scanner scanner) {
+		int lineNr = 1;
+		// Parse the query and extract comments which include assertions. Directly evaluate these assertions.
+		while (scanner.hasNextLine()) {
+			String line = scanner.nextLine();
+			line = line.trim();
+			if (line.startsWith("# [")) {
+				int start = line.indexOf("# [") + 3;
+				int end = line.lastIndexOf("]");
+				String assertion = line.substring(start, end);
+				evaluteAssertion(assertion, lineNr);
+			}
+			lineNr++;
+		}
 		return this;
 	}
 
 	private void evaluteAssertion(String assertion, int lineNr) {
+		String msg = "Failure on line {" + lineNr + "}";
+		compliesTo(assertion, msg, lineNr);
+	}
+
+	public JsonObjectAssert compliesTo(String assertion) {
+		return compliesTo(assertion, null, null);
+	}
+
+	public JsonObjectAssert compliesTo(String assertion, String msg) {
+		return compliesTo(assertion, msg, null);
+	}
+
+	public JsonObjectAssert compliesTo(String assertion, String msg, Integer lineNr) {
 		String[] parts = assertion.split("=", 2);
 		if (parts.length <= 1) {
-			fail("Assertion on line {" + lineNr + "} is not complete {" + assertion + "}");
+			if (lineNr != null) {
+				fail("Assertion on line {" + lineNr + "} is not complete {" + assertion + "}");
+			} else {
+				fail("Assertion {" + assertion + "} is not complete.");
+			}
 		}
 		String path = parts[0];
 		String value = parts[1];
+		if (msg == null) {
+			msg = "Assertion error in path";
+		}
 
-		String msg = "Failure on line {" + lineNr + "}";
 		if ("<not-null>".equals(value) || "<is-not-null>".equals(value)) {
 			pathIsNotNull(path, msg);
 		} else if ("<is-null>".equals(value)) {
@@ -163,6 +192,7 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 		} else {
 			has(path, replaceVariables(value), msg);
 		}
+		return this;
 	}
 
 	private String replaceVariables(String value) {
@@ -247,6 +277,41 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 		}
 		Object value = JsonPath.read(actual.toString(), path);
 		assertNull("Value on the path {" + path + "} was expected to be null but was {" + value + "}: " + msg, value);
+		return this;
+	}
+
+	public JsonObjectAssert hasPermFailure(String path) {
+		JsonArray errors = actual.getJsonArray("errors");
+		for (int i = 0; i < errors.size(); i++) {
+			JsonObject error = errors.getJsonObject(i);
+			if (path.equalsIgnoreCase(error.getString("path"))) {
+				assertTrue("The error for path {" + path + "} did not contain location information.", error.containsKey("locations"));
+
+				assertEquals("The message of the found error \n{" + error.encodePrettily() + "}", "graphql_error_missing_perm",
+					error.getString("message"));
+				assertEquals("The type of the found error \n{" + error.encodePrettily() + "} did not match.", "missing_perm",
+					error.getString("type"));
+				// assertEquals(uuid, error.getString("elementId"))
+				assertEquals("The type within the found error \n{" + error.encodePrettily() + "} did not match.", "node",
+					error.getString("elementType"));
+				return this;
+			}
+		}
+		fail("Perm error for path {" + path + "} could not be found.");
+		return this;
+	}
+
+	public JsonObjectAssert hasNoGraphQLSyntaxError() {
+		JsonArray errors = actual.getJsonArray("errors");
+		if (errors == null) {
+			return this;
+		}
+		for (int i = 0; i < errors.size(); i++) {
+			JsonObject error = errors.getJsonObject(i);
+			if ("InvalidSyntax".equalsIgnoreCase(error.getString("type"))) {
+				fail("Found syntax error {\n" + error.encodePrettily() + "}\n");
+			}
+		}
 		return this;
 	}
 }

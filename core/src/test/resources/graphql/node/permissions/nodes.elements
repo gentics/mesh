@@ -1,0 +1,52 @@
+query Test($type: NodeVersion) {
+  # Via Nodes
+  nodes(filter: { schema: { is: test } }, version: $type, perPage: 2) {
+    elements {
+      uuid
+      version
+      isPublished
+      isDraft
+    }
+  }
+}
+
+# [NO_PERM,PUBLISH_SELECT_DRAFT]=$.data.nodes.elements.length()=1
+# [NO_PERM,PUBLISH_SELECT_DRAFT]=$.data.nodes.elements[0].version=1.1
+# [NO_PERM,PUBLISH_SELECT_DRAFT]=$.data.nodes.elements[0].isPublished=false
+# [NO_PERM,PUBLISH_SELECT_DRAFT]=$.data.nodes.elements[0].isDraft=true
+
+# [NO_PERM,PUBLISH_SELECT_PUBLISHED]=$.data.nodes.elements.length()=1
+# [NO_PERM,PUBLISH_SELECT_PUBLISHED]=$.data.nodes.elements[0].version=1.0
+# [NO_PERM,PUBLISH_SELECT_PUBLISHED]=$.data.nodes.elements[0].isPublished=true
+# [NO_PERM,PUBLISH_SELECT_PUBLISHED]=$.data.nodes.elements[0].isDraft=false
+
+# [NO_PERM,NO_PUBLISH_SELECT_DRAFT]=$.data.nodes.elements.length()=1
+# [NO_PERM,NO_PUBLISH_SELECT_DRAFT]=$.data.nodes.elements[0].version=0.2
+# [NO_PERM,NO_PUBLISH_SELECT_DRAFT]=$.data.nodes.elements[0].isPublished=false
+# [NO_PERM,NO_PUBLISH_SELECT_DRAFT]=$.data.nodes.elements[0].isDraft=true
+
+# [ONLY_READ,PUBLISH_SELECT_DRAFT]=$.data.nodes.elements[0].version=1.1
+# [ONLY_READ,PUBLISH_SELECT_DRAFT]=$.data.nodes.elements[0].isPublished=false
+# [ONLY_READ,PUBLISH_SELECT_DRAFT]=$.data.nodes.elements[0].isDraft=true
+
+# [ONLY_READ,PUBLISH_SELECT_PUBLISHED]=$.data.nodes.elements[0].version=1.0
+# [ONLY_READ,PUBLISH_SELECT_PUBLISHED]=$.data.nodes.elements[0].isPublished=true
+# [ONLY_READ,PUBLISH_SELECT_PUBLISHED]=$.data.nodes.elements[0].isDraft=false
+
+# [ONLY_READ,NO_PUBLISH_SELECT_DRAFT]=$.data.nodes.elements[0].version=0.2
+# [ONLY_READ,NO_PUBLISH_SELECT_DRAFT]=$.data.nodes.elements[0].isPublished=false
+# [ONLY_READ,NO_PUBLISH_SELECT_DRAFT]=$.data.nodes.elements[0].isDraft=true
+
+# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_PUBLISHED]=$.data.nodes.elements[0].version=1.0
+# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_PUBLISHED]=$.data.nodes.elements[0].isPublished=true
+# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_PUBLISHED]=$.data.nodes.elements[0].isDraft=false
+
+# [ONLY_READ_PUBLISHED,NO_PUBLISH_SELECT_DRAFT]=$.data.nodes.elements.length()=0
+# [ONLY_READ_PUBLISHED,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodes.elements.length()=0
+
+# User has no permission to read draft content
+# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_DRAFT]=$.data.nodes.elements.length()=0
+
+# Can't read published content without publishing
+# [NO_PERM,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodes.elements.length()=0
+# [ONLY_READ,NO_PUBLISH_SELECT_PUBLISHED]=$.data.nodes.elements.length()=0

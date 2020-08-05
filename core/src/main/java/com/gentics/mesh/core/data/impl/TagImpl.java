@@ -35,7 +35,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.role.TagPermissionChangedEventModel;
@@ -54,7 +53,6 @@ import com.gentics.mesh.parameter.value.FieldsSet;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
-import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -175,7 +173,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 	}
 
 	@Override
-	public TraversalResult<? extends Node> findTaggedNodes(InternalActionContext ac, GraphPermission permission) {
+	public TraversalResult<? extends Node> findTaggedNodes(InternalActionContext ac) {
 		MeshAuthUser user = ac.getUser();
 		Branch branch = ac.getBranch();
 		String branchUuid = branch.getUuid();

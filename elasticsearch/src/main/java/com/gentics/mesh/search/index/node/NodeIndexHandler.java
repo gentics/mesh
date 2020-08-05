@@ -349,8 +349,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		});
 	}
 
-	@Override
-	public Set<String> getIndicesForSearch(InternalActionContext ac) {
+	public Set<String> getIndicesForSearch(InternalActionContext ac, ContainerType type) {
 		return db.tx(() -> {
 			Project project = ac.getProject();
 			if (project != null) {
@@ -358,14 +357,17 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				return Collections.singleton(NodeGraphFieldContainer.composeIndexPattern(
 					project.getUuid(),
 					branch.getUuid(),
-					ContainerType.forVersion(ac.getVersioningParameters().getVersion())
+					type
 				));
 			} else {
-				return Collections.singleton(NodeGraphFieldContainer.composeIndexPattern(
-					ContainerType.forVersion(ac.getVersioningParameters().getVersion())
-				));
+				return Collections.singleton(NodeGraphFieldContainer.composeIndexPattern(type));
 			}
 		});
+	}
+
+	@Override
+	public Set<String> getIndicesForSearch(InternalActionContext ac) {
+		return getIndicesForSearch(ac, ContainerType.forVersion(ac.getVersioningParameters().getVersion()));
 	}
 
 	@Override
@@ -722,4 +724,5 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	public Stream<? extends Node> loadAllElements() {
 		return db.type().findAll(Node.class);
 	}
+
 }

@@ -15,6 +15,7 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.service.WebRootServiceImpl;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
@@ -44,7 +45,8 @@ public class NavRootHandler {
 		MeshAuthUser requestUser = ac.getUser();
 
 		utils.syncTx(ac, tx -> {
-			Path nodePath = webrootService.findByProjectPath(ac, path);
+			ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
+			Path nodePath = webrootService.findByProjectPath(ac, path, type);
 			PathSegment lastSegment = nodePath.getLast();
 
 			if (lastSegment == null) {
