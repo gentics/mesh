@@ -9,12 +9,12 @@ import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.MEDIUM;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.impl.BranchImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.root.impl.BranchRootImpl;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.consistency.AbstractConsistencyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
 import com.gentics.mesh.graphdb.spi.Database;

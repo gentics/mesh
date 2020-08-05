@@ -27,6 +27,7 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
+import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.event.EventQueueBatch;
 
@@ -110,6 +111,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 	@Override
 	public TagFamily create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		MeshAuthUser requestUser = ac.getUser();
+		UserRoot userRoot = mesh().boot().userRoot();
 		TagFamilyCreateRequest requestModel = ac.fromJson(TagFamilyCreateRequest.class);
 
 		String name = requestModel.getName();
@@ -123,7 +125,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 			throw conflict(conflictingTagFamily.getUuid(), name, "tagfamily_conflicting_name", name);
 		}
 
-		if (!requestUser.hasPermission(this, CREATE_PERM)) {
+		if (!userRoot.hasPermission(requestUser, this, CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", this.getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
 		TagFamily tagFamily = create(name, requestUser, uuid);

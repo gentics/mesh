@@ -19,10 +19,6 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
-import com.gentics.madl.tx.Tx;
-import com.gentics.madl.tx.TxAction;
-import com.gentics.madl.tx.TxAction0;
-import com.gentics.madl.tx.TxAction1;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
@@ -30,6 +26,11 @@ import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.db.TxAction;
+import com.gentics.mesh.core.db.TxAction0;
+import com.gentics.mesh.core.db.TxAction1;
+import com.gentics.mesh.core.db.TxAction2;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -245,6 +246,22 @@ public class HandlerUtilities {
 	 * @param action
 	 */
 	public <RM extends RestModel> void syncTx(InternalActionContext ac, TxAction0 handler, Runnable action) {
+		try {
+			database.tx(handler);
+			action.run();
+		} catch (Throwable t) {
+			ac.fail(t);
+		}
+	}
+
+	/**
+	 * Invoke sync action in a tx.
+	 *
+	 * @param ac
+	 * @param handler
+	 * @param action
+	 */
+	public <RM extends RestModel> void syncTx(InternalActionContext ac, TxAction2 handler, Runnable action) {
 		try {
 			database.tx(handler);
 			action.run();

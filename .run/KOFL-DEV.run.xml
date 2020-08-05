@@ -1,0 +1,22 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="KOFL-DEV" type="Application" factoryName="Application">
+    <envs>
+      <env name="MESH_ELASTICSEARCH_URL" value="null" />
+      <env name="MESH_ELASTICSEARCH_START_EMBEDDED" value="false" />
+    </envs>
+    <option name="MAIN_CLASS_NAME" value="com.gentics.mesh.server.ServerRunner" />
+    <module name="mesh-server" />
+    <option name="PROGRAM_PARAMETERS" value="-resetAdminPassword admin" />
+    <option name="VM_PARAMETERS" value="-Xmx512m" />
+    <option name="WORKING_DIRECTORY" value="$USER_HOME$/meshdumps/kofl-dev" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="com.gentics.mesh.server.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

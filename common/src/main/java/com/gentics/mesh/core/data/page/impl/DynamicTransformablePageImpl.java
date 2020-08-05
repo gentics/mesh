@@ -1,18 +1,6 @@
 package com.gentics.mesh.core.data.page.impl;
 
-import com.gentics.madl.tx.Tx;
-import com.gentics.mesh.core.data.TransformableElement;
-import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.page.TransformablePage;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.parameter.PagingParameters;
-import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.traversals.VertexTraversal;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Vertex;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 
 import java.util.Spliterator;
 import java.util.concurrent.atomic.AtomicLong;
@@ -20,7 +8,20 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import com.gentics.mesh.core.data.TransformableElement;
+import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.parameter.PagingParameters;
+import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.traversals.VertexTraversal;
+import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Vertex;
 
 /**
  * This page implementation will handle paging internally and on-demand. The internal paging will only iterate over as many items as the needed operation
@@ -149,9 +150,11 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 		AtomicLong pageCounter = new AtomicLong();
 		FramedGraph graph = Tx.getActive().getGraph();
 
+		UserRoot userRoot = Tx.get().data().userDao();
+
 		// Only handle elements which are visible to the user
 		if (perm != null) {
-			stream = stream.filter(item -> requestUser.hasPermissionForId(item.getId(), perm));
+			stream = stream.filter(item -> userRoot.hasPermissionForId(requestUser, item.getId(), perm));
 		}
 
 		Stream<T> framedStream;

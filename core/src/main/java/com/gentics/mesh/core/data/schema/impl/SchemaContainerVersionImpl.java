@@ -28,6 +28,7 @@ import com.gentics.mesh.core.data.impl.BranchImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -85,8 +86,9 @@ public class SchemaContainerVersionImpl extends
 
 	@Override
 	public TraversalResult<? extends Node> getNodes(String branchUuid, User user, ContainerType type) {
+		UserRoot userRoot = mesh().boot().userRoot();
 		return new TraversalResult<>(getSchemaContainer().getNodes().stream()
-			.filter(node -> GraphFieldContainerEdgeImpl.matchesBranchAndType(node.getId(), branchUuid, type) && user.hasPermissionForId(node.getId(), READ_PUBLISHED_PERM)));
+			.filter(node -> GraphFieldContainerEdgeImpl.matchesBranchAndType(node.getId(), branchUuid, type) && userRoot.hasPermissionForId(user, node.getId(), READ_PUBLISHED_PERM)));
 	}
 
 	@Override

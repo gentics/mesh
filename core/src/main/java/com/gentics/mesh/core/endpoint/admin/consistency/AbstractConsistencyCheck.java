@@ -3,8 +3,8 @@ package com.gentics.mesh.core.endpoint.admin.consistency;
 import java.util.Iterator;
 import java.util.function.BiConsumer;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.logging.Logger;

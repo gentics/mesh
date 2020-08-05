@@ -1,12 +1,12 @@
 package com.gentics.mesh.core.project;
 
-import static com.gentics.mesh.test.TestSize.PROJECT;
 import static com.gentics.mesh.test.ClientHelper.callETag;
+import static com.gentics.mesh.test.TestSize.PROJECT;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import com.gentics.madl.tx.Tx;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.parameter.client.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;

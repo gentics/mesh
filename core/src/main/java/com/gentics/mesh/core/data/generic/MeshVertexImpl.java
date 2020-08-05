@@ -9,9 +9,9 @@ import java.util.Set;
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.madl.annotations.GraphElement;
-import com.gentics.madl.frame.AbstractVertexFrame;
+import com.gentics.mesh.core.db.AbstractVertexFrame;
 import com.gentics.madl.index.IndexHandler;
-import com.gentics.madl.tx.Tx;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.BulkActionContext;

@@ -12,7 +12,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import com.gentics.madl.tx.Tx;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;

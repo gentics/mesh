@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import com.gentics.madl.index.IndexHandler;
-import com.gentics.madl.tx.Tx;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;

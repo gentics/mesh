@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -55,6 +56,7 @@ public class DemoDumpGeneratorTest {
 	public void testSetup() throws Exception {
 		generator.dump();
 		db.tx(tx -> {
+			UserRoot userRoot = tx.data().userDao();
 			Project project = boot.meshRoot().getProjectRoot().findByName("demo");
 			assertTrue(project.getNodeRoot().computeCount() > 0);
 			User user = boot.meshRoot().getUserRoot().findByUsername("webclient");
@@ -65,9 +67,8 @@ public class DemoDumpGeneratorTest {
 			assertNotNull("The webclient group should also have a role assigned to it", role);
 
 			assertTrue("The webclient role has not read permission on the user.", role.hasPermission(GraphPermission.READ_PERM, user));
-			assertTrue("The webclient user has no permission on itself.", user.hasPermission(user, GraphPermission.READ_PERM));
-			assertTrue("The webclient user has no read permission on the user root node..", user.hasPermission(boot.meshRoot().getUserRoot(),
-				GraphPermission.READ_PERM));
+			assertTrue("The webclient user has no permission on itself.", userRoot.hasPermission(user, user, GraphPermission.READ_PERM));
+			assertTrue("The webclient user has no read permission on the user root node..", userRoot.hasPermission(user, boot.meshRoot().getUserRoot(), GraphPermission.READ_PERM));
 
 			assertTrue("We expected to find at least 5 nodes.", project.getNodeRoot().computeCount() > 5);
 

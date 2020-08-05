@@ -11,8 +11,8 @@ import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;

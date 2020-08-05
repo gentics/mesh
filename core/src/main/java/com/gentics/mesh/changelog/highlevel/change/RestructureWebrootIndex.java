@@ -7,7 +7,7 @@ import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.madl.tx.Tx;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.changelog.highlevel.AbstractHighLevelChange;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;

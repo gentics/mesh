@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.field.binary;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.FieldFetcher;
 import com.gentics.mesh.core.graph.GraphAttribute;

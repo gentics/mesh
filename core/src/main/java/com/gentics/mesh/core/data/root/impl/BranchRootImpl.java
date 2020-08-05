@@ -30,10 +30,12 @@ import com.gentics.mesh.core.data.impl.BranchImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.BranchRoot;
+import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -124,7 +126,9 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 		String projectName = project.getName();
 		String projectUuid = project.getUuid();
 
-		if (!requestUser.hasPermission(project, GraphPermission.UPDATE_PERM)) {
+		UserRoot userRoot = Tx.get().data().userDao();
+
+		if (!userRoot.hasPermission(requestUser, project, GraphPermission.UPDATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", projectUuid + "/" + projectName, UPDATE_PERM.getRestPerm().getName());
 		}
 
@@ -136,7 +140,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 		}
 
 		Branch baseBranch = fromReference(request.getBaseBranch());
-		if (baseBranch != null && !requestUser.hasPermission(baseBranch, READ_PERM)) {
+		if (baseBranch != null && !userRoot.hasPermission(requestUser, baseBranch, READ_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", baseBranch.getUuid(), READ_PERM.getRestPerm().getName());
 		}
 

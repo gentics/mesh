@@ -10,12 +10,12 @@ import static org.junit.Assert.fail;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;

@@ -11,7 +11,6 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.node.Node;
@@ -22,6 +21,7 @@ import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;

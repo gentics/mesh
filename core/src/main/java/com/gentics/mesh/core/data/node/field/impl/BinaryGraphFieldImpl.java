@@ -15,7 +15,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.gentics.madl.index.IndexHandler;
-import com.gentics.madl.tx.Tx;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
@@ -27,6 +26,7 @@ import com.gentics.mesh.core.data.node.field.FieldGetter;
 import com.gentics.mesh.core.data.node.field.FieldTransformer;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;

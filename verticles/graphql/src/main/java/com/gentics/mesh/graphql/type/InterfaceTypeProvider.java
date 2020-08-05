@@ -1,31 +1,34 @@
 package com.gentics.mesh.graphql.type;
 
-import com.gentics.mesh.core.data.CreatorTrackingVertex;
-import com.gentics.mesh.core.data.EditorTrackingVertex;
-import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.TransformableElement;
-import com.gentics.mesh.core.data.node.NodeContent;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.model.MeshElement;
-import com.gentics.mesh.graphql.context.GraphQLContext;
-import dagger.Lazy;
-import graphql.schema.GraphQLArgument;
-import graphql.schema.GraphQLFieldDefinition;
-import graphql.schema.GraphQLNonNull;
-import graphql.schema.GraphQLObjectType;
-import graphql.schema.GraphQLTypeReference;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.util.function.Consumer;
-
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static graphql.Scalars.GraphQLBoolean;
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLNonNull.nonNull;
 import static graphql.schema.GraphQLObjectType.newObject;
+
+import java.util.function.Consumer;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import com.gentics.mesh.core.data.CreatorTrackingVertex;
+import com.gentics.mesh.core.data.EditorTrackingVertex;
+import com.gentics.mesh.core.data.MeshCoreVertex;
+import com.gentics.mesh.core.data.TransformableElement;
+import com.gentics.mesh.core.data.node.NodeContent;
+import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.graphdb.model.MeshElement;
+import com.gentics.mesh.graphql.context.GraphQLContext;
+
+import dagger.Lazy;
+import graphql.schema.GraphQLArgument;
+import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLTypeReference;
 
 @Singleton
 public class InterfaceTypeProvider extends AbstractTypeProvider {
@@ -164,7 +167,9 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 				GraphQLContext gc = env.getContext();
 				MeshCoreVertex<?, ?> vertex = getMeshCoreVertex(env.getSource());
 
-				return gc.getUser().getPermissionInfo(vertex);
+				UserRoot userRoot = Tx.get().data().userDao();
+
+				return userRoot.getPermissionInfo(gc.getUser(), vertex);
 			})
 		);
 
@@ -179,7 +184,9 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 				GraphQLContext gc = env.getContext();
 				MeshCoreVertex<?, ?> vertex = getMeshCoreVertex(env.getSource());
 
-				gc.getUser().getPermissionInfo(vertex);
+				UserRoot userRoot = Tx.get().data().userDao();
+
+				userRoot.getPermissionInfo(gc.getUser(), vertex);
 				return vertex.getRolePermissions(gc, env.getArgument("role"));
 			})
 		);

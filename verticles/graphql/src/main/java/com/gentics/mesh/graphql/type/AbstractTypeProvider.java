@@ -28,8 +28,10 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.PermissionException;
@@ -275,7 +277,7 @@ public abstract class AbstractTypeProvider {
 
 	/**
 	 * Return the node version argument value.
-	 * 
+	 *
 	 * @param env
 	 * @return
 	 */
@@ -360,20 +362,23 @@ public abstract class AbstractTypeProvider {
 		GraphQLContext gc = env.getContext();
 		Branch branch = env.getSource();
 		Stream<? extends SchemaContainerVersion> schemas = StreamSupport.stream(branch.findActiveSchemaVersions().spliterator(), false);
+		UserRoot userRoot = Tx.get().data().userDao();
 
 		// We need to handle permissions dedicately since we check the schema container perm and not the schema container version perm.
 		return handleUuidNameArgsNoPerm(env, uuid -> schemas.filter(schema -> {
 			SchemaContainer container = schema.getSchemaContainer();
-			return container.getUuid().equals(uuid) && gc.getUser().hasPermission(container, READ_PERM);
-		}).findFirst().get(), name -> schemas.filter(schema -> schema.getName().equals(name) && gc.getUser().hasPermission(schema
+			return container.getUuid().equals(uuid) && userRoot.hasPermission(gc.getUser(), container, READ_PERM);
+		}).findFirst().get(), name -> schemas.filter(schema -> schema.getName().equals(name) && userRoot.hasPermission(gc.getUser(), schema
 			.getSchemaContainer(), READ_PERM)).findFirst().get());
 	}
 
 	protected Page<SchemaContainerVersion> handleBranchSchemas(DataFetchingEnvironment env) {
 		GraphQLContext gc = env.getContext();
 		Branch branch = env.getSource();
+		UserRoot userRoot = Tx.get().data().userDao();
+
 		Stream<? extends SchemaContainerVersion> schemas = StreamSupport.stream(branch.findActiveSchemaVersions().spliterator(), false).filter(
-			schema -> gc.getUser().hasPermission(schema.getSchemaContainer(), READ_PERM));
+			schema -> userRoot.hasPermission(gc.getUser(), schema.getSchemaContainer(), READ_PERM));
 		return new DynamicStreamPageImpl<>(schemas, getPagingInfo(env));
 	}
 
@@ -388,9 +393,9 @@ public abstract class AbstractTypeProvider {
 	 *            Provider of the root element (will only be used when no query was specified)
 	 * @param pageTypeName
 	 *            Name of the page type
-	 * @param indexHandler
+	 * @param searchHandler
 	 *            Handler which will be used to invoke the query
-	 * @param filterArgument
+	 * @param filterProvider
 	 * @return
 	 */
 	protected <T extends MeshCoreVertex<? extends RestModel, T>> GraphQLFieldDefinition newPagingSearchField(String name, String description,

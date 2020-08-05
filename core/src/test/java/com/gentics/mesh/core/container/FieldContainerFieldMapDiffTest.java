@@ -1,19 +1,20 @@
 package com.gentics.mesh.core.container;
 
+import static com.gentics.mesh.test.TestSize.FULL;
+
 import java.util.List;
 
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(testSize = FULL, startServer = false)
 public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTest implements FieldDiffTestcases {

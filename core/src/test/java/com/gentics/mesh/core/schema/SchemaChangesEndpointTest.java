@@ -20,7 +20,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.util.Objects;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -29,13 +28,14 @@ import org.testcontainers.shaded.com.google.common.collect.Iterators;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -441,6 +441,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 		// Validate schema changes and versions
 		try (Tx tx = tx()) {
+			UserRoot userRoot = tx.data().userDao();
 			assertEquals("We invoked 10 migration. Thus we expect 11 versions.", 11, Iterators.size(container.findAll().iterator()));
 			assertNull("The last version should not have any changes", container.getLatestVersion().getNextChange());
 			assertNull("The last version should not have any futher versions", container.getLatestVersion().getNextVersion());
@@ -460,7 +461,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			}
 
 			assertEquals("The latest version should have exactly 10 previous versions.", nVersions, 10);
-			assertTrue("The user should still have update permissions on the schema", user().hasPermission(container, UPDATE_PERM));
+			assertTrue("The user should still have update permissions on the schema", userRoot.hasPermission(user(), container, UPDATE_PERM));
 		}
 
 	}

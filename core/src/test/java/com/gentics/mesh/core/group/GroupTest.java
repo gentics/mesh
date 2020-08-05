@@ -10,7 +10,6 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
@@ -22,6 +21,7 @@ import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.error.InvalidArgumentException;
@@ -155,13 +155,14 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	public void testCRUDPermissions() {
 		try (Tx tx = tx()) {
 			MeshRoot root = meshRoot();
+			UserRoot userRoot = tx.data().userDao();
 			User user = user();
 			InternalActionContext ac = mockActionContext();
 			Group group = root.getGroupRoot().create("newGroup", user);
-			assertFalse(user.hasPermission(group, GraphPermission.CREATE_PERM));
+			assertFalse(userRoot.hasPermission(user, group, GraphPermission.CREATE_PERM));
 			user.inheritRolePermissions(root.getGroupRoot(), group);
 			ac.data().clear();
-			assertTrue(user.hasPermission(group, GraphPermission.CREATE_PERM));
+			assertTrue(userRoot.hasPermission(user, group, GraphPermission.CREATE_PERM));
 		}
 	}
 

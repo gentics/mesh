@@ -12,7 +12,6 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HasPermissions;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -21,6 +20,7 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.madl.traversal.TraversalResult;
@@ -61,12 +61,13 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	default Stream<? extends T> findAllStream(InternalActionContext ac, GraphPermission permission) {
 		MeshAuthUser user = ac.getUser();
 		FramedTransactionalGraph graph = Tx.get().getGraph();
+		UserRoot userRoot = Tx.get().data().userDao();
 
 		String idx = "e." + getRootLabel().toLowerCase() + "_out";
 		Spliterator<Edge> itemEdges = graph.getEdges(idx.toLowerCase(), id()).spliterator();
 		return StreamSupport.stream(itemEdges, false)
 			.map(edge -> edge.getVertex(Direction.IN))
-			.filter(vertex -> user.hasPermissionForId(vertex.getId(), permission))
+			.filter(vertex -> userRoot.hasPermissionForId(user, vertex.getId(), permission))
 			.map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
 	}
 
@@ -151,7 +152,8 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 
 		MeshAuthUser requestUser = ac.getUser();
 		String elementUuid = element.getUuid();
-		if (requestUser != null && requestUser.hasPermission(element, perm)) {
+		UserRoot userRoot = Tx.get().data().userDao();
+		if (requestUser != null && userRoot.hasPermission(requestUser, element, perm)) {
 			return element;
 		} else {
 			throw error(FORBIDDEN, "error_missing_perm", elementUuid, perm.getRestPerm().getName());
@@ -221,7 +223,8 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 
 		MeshAuthUser requestUser = ac.getUser();
 		String elementUuid = element.getUuid();
-		if (requestUser.hasPermission(element, perm)) {
+		UserRoot userRoot = Tx.get().data().userDao();
+		if (userRoot.hasPermission(requestUser, element, perm)) {
 			return element;
 		} else {
 			throw error(FORBIDDEN, "error_missing_perm", elementUuid, perm.getRestPerm().getName());

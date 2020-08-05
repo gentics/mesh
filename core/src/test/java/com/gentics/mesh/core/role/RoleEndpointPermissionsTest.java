@@ -25,14 +25,15 @@ import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModelImpl;
@@ -371,7 +372,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 			Group testGroup = boot().groupRoot().create("testGroup", user());
 			Role testRole = boot().roleRoot().create("testRole", user());
 			User testUser = boot().userRoot().create("test", user());
-			testUser.setPassword("dummy");
+			boot().userRoot().setPassword(testUser, "dummy");
 
 			testGroup.addRole(testRole);
 			testGroup.addUser(testUser);
@@ -411,10 +412,11 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 	@Test
 	public void testAddPermissionToNode() {
 		try (Tx tx = tx()) {
+			UserRoot userRoot = tx.data().userDao();
 			Node node = folder("2015");
 			role().revokePermissions(node, GraphPermission.UPDATE_PERM);
 			assertFalse(role().hasPermission(GraphPermission.UPDATE_PERM, node));
-			assertTrue(user().hasPermission(role(), GraphPermission.UPDATE_PERM));
+			assertTrue(userRoot.hasPermission(user(), role(), GraphPermission.UPDATE_PERM));
 			tx.success();
 		}
 

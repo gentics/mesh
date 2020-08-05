@@ -35,6 +35,9 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.role.TagPermissionChangedEventModel;
@@ -177,6 +180,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 		MeshAuthUser user = ac.getUser();
 		Branch branch = ac.getBranch();
 		String branchUuid = branch.getUuid();
+		UserRoot userRoot = Tx.get().data().userDao();
 		TraversalResult<? extends Node> nodes = new TraversalResult<>(inE(HAS_TAG).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branch.getUuid()).outV().frameExplicit(NodeImpl.class));
 		Stream<? extends Node> s = nodes.stream()
 			.filter(item -> {
@@ -184,14 +188,14 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 				return GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, DRAFT);
 			})
 			.filter(item -> {
-				boolean hasRead = user.hasPermissionForId(item.getId(), READ_PERM);
+				boolean hasRead = userRoot.hasPermissionForId(user, item.getId(), READ_PERM);
 				if (hasRead) {
 					return true;
 				} else {
 					// Check whether the node is published. In this case we need to check the read publish perm.
 					boolean isPublishedForBranch = GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, PUBLISHED);
 					if (isPublishedForBranch) {
-						return user.hasPermissionForId(item.getId(), READ_PUBLISHED_PERM);
+						return userRoot.hasPermissionForId(user, item.getId(), READ_PUBLISHED_PERM);
 					}
 				}
 				return false;

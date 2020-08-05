@@ -13,21 +13,22 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import com.gentics.mesh.core.rest.node.FieldMap;
-import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import io.reactivex.Completable;
 import org.junit.Test;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.impl.NumberGraphFieldListImpl;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractListFieldEndpointTest;
+import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
+
+import io.reactivex.Completable;
 
 @MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {

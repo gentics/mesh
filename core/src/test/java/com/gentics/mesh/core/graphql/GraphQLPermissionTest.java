@@ -8,9 +8,9 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.parameter.client.VersioningParametersImpl;

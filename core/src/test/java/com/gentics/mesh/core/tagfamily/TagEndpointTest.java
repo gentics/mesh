@@ -13,7 +13,6 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
@@ -21,7 +20,9 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
+import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.error.InvalidArgumentException;
@@ -240,11 +241,12 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Override
 	public void testCRUDPermissions() {
 		try (Tx tx = tx()) {
+			UserRoot userRoot = tx.data().userDao();
 			TagFamilyRoot root = project().getTagFamilyRoot();
 			TagFamily tagFamily = root.create("test123", user());
-			assertFalse(user().hasPermission(tagFamily, GraphPermission.CREATE_PERM));
+			assertFalse(userRoot.hasPermission(user(), tagFamily, GraphPermission.CREATE_PERM));
 			user().inheritRolePermissions(root, tagFamily);
-			assertTrue(user().hasPermission(tagFamily, GraphPermission.CREATE_PERM));
+			assertTrue(userRoot.hasPermission(user(), tagFamily, GraphPermission.CREATE_PERM));
 		}
 	}
 

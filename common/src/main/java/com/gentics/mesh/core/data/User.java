@@ -9,7 +9,6 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 
 import java.util.Objects;
-import java.util.Set;
 
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.context.InternalActionContext;
@@ -17,7 +16,6 @@ import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -155,18 +153,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 *            Password hash
 	 * @return Fluent API
 	 */
-	// TODO change this to an async call since hashing of the password is
-	// blocking
 	User setPasswordHash(String hash);
-
-	/**
-	 * Set the plaintext password. Internally the password string will be hashed and the password hash will be set. This will also set
-	 * {@link #setForcedPasswordChange(boolean)} to false.
-	 *
-	 * @param password
-	 * @return Fluent API
-	 */
-	User setPassword(String password);
 
 	/**
 	 * Return the referenced node which was assigned to the user.
@@ -182,22 +169,6 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @return Fluent API
 	 */
 	User setReferencedNode(Node node);
-
-	/**
-	 * Return the permission info object for the given vertex.
-	 *
-	 * @param vertex
-	 * @return
-	 */
-	PermissionInfo getPermissionInfo(MeshVertex vertex);
-
-	/**
-	 * Return a set of permissions which the user got for the given vertex.
-	 *
-	 * @param vertex
-	 * @return
-	 */
-	Set<GraphPermission> getPermissions(MeshVertex vertex);
 
 	/**
 	 * This method will set CRUD permissions to the target node for all roles that would grant the given permission on the node. The method is most often used
@@ -335,24 +306,6 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @return
 	 */
 	User deactivate();
-
-	/**
-	 * Check whether the user has the given permission on the given element.
-	 *
-	 * @param element
-	 * @param permission
-	 * @return
-	 */
-	boolean hasPermission(MeshVertex element, GraphPermission permission);
-
-	/**
-	 * Check whether the user has the given permission on the element with the given id.
-	 *
-	 * @param elementId
-	 * @param permission
-	 * @return
-	 */
-	boolean hasPermissionForId(Object elementId, GraphPermission permission);
 
 	/**
 	 * Check the read permission on the given container and return false if the needed permission to read the container is not set.

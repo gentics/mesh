@@ -1,18 +1,5 @@
 package com.gentics.mesh.core.schema;
 
-import com.gentics.madl.tx.Tx;
-import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
-import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
-import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
-import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
-import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
-import org.junit.Test;
-
-import java.util.Arrays;
-
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_CREATED;
 import static com.gentics.mesh.core.rest.common.Permission.CREATE;
@@ -24,6 +11,20 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.UNREACHABLE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+
+import java.util.Arrays;
+
+import org.junit.Test;
+
+import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MeshTestSetting(elasticsearch = UNREACHABLE, testSize = FULL, startServer = true)
 public class SchemaEndpointNoEsTest extends AbstractMeshTest {

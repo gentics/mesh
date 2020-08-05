@@ -19,7 +19,6 @@ import java.util.List;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
@@ -32,8 +31,10 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -219,12 +220,13 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testCRUDPermissions() {
 		try (Tx tx = tx()) {
+			UserRoot userRoot = tx.data().userDao();
 			Node node = folder("2015").create(user(), getSchemaContainer().getLatestVersion(), project());
 			InternalActionContext ac = mockActionContext("");
-			assertFalse(user().hasPermission(node, GraphPermission.CREATE_PERM));
+			assertFalse(userRoot.hasPermission(user(), node, GraphPermission.CREATE_PERM));
 			user().inheritRolePermissions(folder("2015"), node);
 			ac.data().clear();
-			assertTrue(user().hasPermission(node, GraphPermission.CREATE_PERM));
+			assertTrue(userRoot.hasPermission(user(), node, GraphPermission.CREATE_PERM));
 		}
 	}
 

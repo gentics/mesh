@@ -1,15 +1,16 @@
 package com.gentics.mesh.core.graphql;
 
-import com.gentics.madl.tx.Tx;
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+
+import org.junit.Test;
+
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 
 import io.vertx.core.json.JsonObject;
-import org.junit.Test;
-
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 
 
 public abstract class AbstractGraphQLSearchEndpointTest extends AbstractMeshTest {

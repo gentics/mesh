@@ -13,8 +13,6 @@ import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_SCHEMA_UNASSIGNED;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_UPDATED;
 import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_DELETED;
-import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
-import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
@@ -48,7 +46,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -56,6 +53,8 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
@@ -169,13 +168,14 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 		assertThat(restProject).matches(request);
 		try (Tx tx = tx()) {
+			UserRoot userRoot = tx.data().userDao();
 			assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name));
 			Project project = meshRoot().getProjectRoot().findByUuid(restProject.getUuid());
 			assertNotNull(project);
-			assertTrue(user().hasPermission(project, CREATE_PERM));
-			assertTrue(user().hasPermission(project.getBaseNode(), CREATE_PERM));
-			assertTrue(user().hasPermission(project.getTagFamilyRoot(), CREATE_PERM));
-			assertTrue(user().hasPermission(project.getNodeRoot(), CREATE_PERM));
+			assertTrue(userRoot.hasPermission(user(), project, CREATE_PERM));
+			assertTrue(userRoot.hasPermission(user(), project.getBaseNode(), CREATE_PERM));
+			assertTrue(userRoot.hasPermission(user(), project.getTagFamilyRoot(), CREATE_PERM));
+			assertTrue(userRoot.hasPermission(user(), project.getNodeRoot(), CREATE_PERM));
 
 			assertEquals("folder", project.getBaseNode().getSchemaContainer().getLatestVersion().getName());
 		}

@@ -6,7 +6,6 @@ import static org.junit.Assert.assertNotNull;
 
 import java.util.List;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
@@ -14,6 +13,7 @@ import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;

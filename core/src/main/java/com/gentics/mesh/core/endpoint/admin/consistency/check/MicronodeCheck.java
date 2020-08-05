@@ -2,9 +2,9 @@ package com.gentics.mesh.core.endpoint.admin.consistency.check;
 
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.LOW;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.consistency.AbstractConsistencyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
 import com.gentics.mesh.core.rest.admin.consistency.InconsistencyInfo;

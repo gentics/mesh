@@ -11,11 +11,11 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.BuildInfo;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 

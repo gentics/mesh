@@ -8,12 +8,12 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.gentics.madl.index.IndexHandler;
-import com.gentics.madl.tx.Tx;
-import com.gentics.madl.tx.TxAction0;
-import com.gentics.madl.tx.TxAction1;
-import com.gentics.madl.tx.TxFactory;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.db.TxAction0;
+import com.gentics.mesh.core.db.TxAction1;
+import com.gentics.mesh.core.db.TxFactory;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
 import com.gentics.mesh.core.verticle.handler.WriteLock;

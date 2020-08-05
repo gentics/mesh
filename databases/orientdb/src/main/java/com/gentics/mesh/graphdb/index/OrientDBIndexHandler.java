@@ -13,7 +13,7 @@ import javax.inject.Singleton;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.madl.index.IndexHandler;
-import com.gentics.madl.tx.Tx;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.data.PersistenceClassMap;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.madl.field.FieldMap;

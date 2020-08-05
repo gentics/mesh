@@ -33,10 +33,11 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RoleRoot;
+import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -51,6 +52,7 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
 import com.gentics.mesh.util.UUIDUtil;
+
 import io.reactivex.Single;
 
 @MeshTestSetting(elasticsearch = TRACKING, testSize = PROJECT, startServer = true)
@@ -76,11 +78,12 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 
 		try (Tx tx = tx()) {
+			UserRoot userRoot = tx.data().userDao();
 			Role createdRole = meshRoot().getRoleRoot().findByUuid(restRole.getUuid());
-			assertTrue(user().hasPermission(createdRole, UPDATE_PERM));
-			assertTrue(user().hasPermission(createdRole, READ_PERM));
-			assertTrue(user().hasPermission(createdRole, DELETE_PERM));
-			assertTrue(user().hasPermission(createdRole, CREATE_PERM));
+			assertTrue(userRoot.hasPermission(user(), createdRole, UPDATE_PERM));
+			assertTrue(userRoot.hasPermission(user(), createdRole, READ_PERM));
+			assertTrue(userRoot.hasPermission(user(), createdRole, DELETE_PERM));
+			assertTrue(userRoot.hasPermission(user(), createdRole, CREATE_PERM));
 
 			String roleUuid = restRole.getUuid();
 			restRole = call(() -> client().findRoleByUuid(roleUuid));

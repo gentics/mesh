@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.schema.field;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.lang.annotation.ElementType;
@@ -15,7 +14,6 @@ import java.util.concurrent.TimeoutException;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.context.impl.MicronodeMigrationContextImpl;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -37,6 +35,7 @@ import com.gentics.mesh.core.data.schema.impl.RemoveFieldChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.migration.micronode.MicronodeMigrationHandler;
 import com.gentics.mesh.core.endpoint.migration.node.NodeMigrationHandler;
 import com.gentics.mesh.core.field.DataAsserter;

@@ -18,8 +18,8 @@ import java.util.List;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;

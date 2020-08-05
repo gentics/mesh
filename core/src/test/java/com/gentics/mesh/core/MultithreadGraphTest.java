@@ -1,15 +1,15 @@
 package com.gentics.mesh.core;
 
+import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.MeshRoot;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(testSize = FULL, startServer = false)
 public class MultithreadGraphTest extends AbstractMeshTest {

@@ -24,6 +24,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
+import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -156,10 +157,11 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	@Override
 	public SchemaContainer create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		MeshAuthUser requestUser = ac.getUser();
+		UserRoot userRoot = mesh().boot().userRoot();
 		SchemaModel requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModelImpl.class);
 		requestModel.validate();
 
-		if (!requestUser.hasPermission(this, CREATE_PERM)) {
+		if (!userRoot.hasPermission(requestUser, this, CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
 		SchemaContainer container = create(requestModel, requestUser, uuid, ac.getSchemaUpdateParameters().isStrictValidation());

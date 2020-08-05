@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.user;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-
 import static com.gentics.mesh.core.data.User.composeIndexName;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
@@ -49,13 +48,13 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -710,9 +709,10 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testCreateUserWithNodeReference() {
 		String nodeUuid;
 		try (Tx tx = tx()) {
+			UserRoot userRoot = tx.data().userDao();
 			Node node = folder("news");
 			nodeUuid = node.getUuid();
-			assertTrue(user().hasPermission(node, READ_PERM));
+			assertTrue(userRoot.hasPermission(user(), node, READ_PERM));
 			tx.success();
 		}
 

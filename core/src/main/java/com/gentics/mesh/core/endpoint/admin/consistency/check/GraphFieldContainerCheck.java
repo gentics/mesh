@@ -5,11 +5,11 @@ import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.MEDIUM;
 import static com.gentics.mesh.core.rest.admin.consistency.RepairAction.DELETE;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.consistency.AbstractConsistencyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
 import com.gentics.mesh.core.endpoint.admin.consistency.repair.NodeDeletionGraphFieldContainerFix;

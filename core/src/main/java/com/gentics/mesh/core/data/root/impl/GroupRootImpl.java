@@ -23,6 +23,7 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GroupImpl;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
+import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.event.EventQueueBatch;
 
@@ -78,12 +79,13 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 	@Override
 	public Group create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		MeshAuthUser requestUser = ac.getUser();
+		UserRoot userRoot = mesh().boot().userRoot();
 		GroupCreateRequest requestModel = ac.fromJson(GroupCreateRequest.class);
 
 		if (StringUtils.isEmpty(requestModel.getName())) {
 			throw error(BAD_REQUEST, "error_name_must_be_set");
 		}
-		if (!requestUser.hasPermission(this, CREATE_PERM)) {
+		if (!userRoot.hasPermission(requestUser, this, CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", this.getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
 		MeshRoot root = mesh().boot().meshRoot();

@@ -24,6 +24,7 @@ import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
+import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
@@ -104,10 +105,11 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 
 	@Override
 	public MicroschemaContainer create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
+		UserRoot userRoot = mesh().boot().userRoot();
 		MeshAuthUser requestUser = ac.getUser();
 		MicroschemaModel microschema = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModelImpl.class);
 		microschema.validate();
-		if (!requestUser.hasPermission(this, GraphPermission.CREATE_PERM)) {
+		if (!userRoot.hasPermission(requestUser, this, GraphPermission.CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
 		MicroschemaContainer container = create(microschema, requestUser, uuid, batch);

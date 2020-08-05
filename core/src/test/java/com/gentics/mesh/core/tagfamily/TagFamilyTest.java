@@ -7,9 +7,9 @@ import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 

@@ -4,9 +4,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import com.gentics.madl.tx.TxAction;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
+import com.gentics.mesh.core.db.TxAction;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;

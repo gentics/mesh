@@ -23,7 +23,7 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.madl.index.IndexHandler;
-import com.gentics.madl.tx.Tx;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
@@ -44,6 +44,7 @@ import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformableStreamPageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.NodeRoot;
+import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -101,17 +102,18 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	public Stream<? extends Node> findAllStream(InternalActionContext ac, GraphPermission perm) {
 		MeshAuthUser user = ac.getUser();
 		String branchUuid = ac.getBranch().getUuid();
+		UserRoot userRoot = mesh().boot().userRoot();
 
 		return findAll(ac.getProject().getUuid())
 			.filter(item -> {
-				boolean hasRead = user.hasPermissionForId(item.getId(), READ_PERM);
+				boolean hasRead = userRoot.hasPermissionForId(user, item.getId(), READ_PERM);
 				if (hasRead) {
 					return true;
 				} else {
 					// Check whether the node is published. In this case we need to check the read publish perm.
 					boolean isPublishedForBranch = GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, PUBLISHED);
 					if (isPublishedForBranch) {
-						return user.hasPermissionForId(item.getId(), READ_PUBLISHED_PERM);
+						return userRoot.hasPermissionForId(user, item.getId(), READ_PUBLISHED_PERM);
 					}
 				}
 				return false;
@@ -138,19 +140,20 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 		Branch branch = ac.getBranch();
 		String branchUuid = branch.getUuid();
+		UserRoot userRoot = mesh().boot().userRoot();
 
 		return findAll(ac.getProject().getUuid()).filter(item -> {
 			// Check whether the node has at least one content of the type in the selected branch - Otherwise the node should be skipped
 			return GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, type);
 		}).filter(item -> {
-			boolean hasRead = user.hasPermissionForId(item.getId(), READ_PERM);
+			boolean hasRead = userRoot.hasPermissionForId(user, item.getId(), READ_PERM);
 			if (hasRead) {
 				return true;
 			} else if (type == PUBLISHED) {
 				// Check whether the node is published. In this case we need to check the read publish perm.
 				boolean isPublishedForBranch = GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, PUBLISHED);
 				if (isPublishedForBranch) {
-					return user.hasPermissionForId(item.getId(), READ_PUBLISHED_PERM);
+					return userRoot.hasPermissionForId(user, item.getId(), READ_PUBLISHED_PERM);
 				}
 			}
 			return false;
@@ -166,6 +169,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	@Override
 	public Node loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
 		Node element = findByUuid(uuid);
+		UserRoot userRoot = mesh().boot().userRoot();
 		if (element == null) {
 			throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);
 		}
@@ -185,15 +189,15 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 			// Additionally check whether the read published permission could grant read
 			// perm for published nodes
 			boolean isPublished = fieldContainer.isPublished(branch.getUuid());
-			if (isPublished && requestUser.hasPermission(element, READ_PUBLISHED_PERM)) {
+			if (isPublished && userRoot.hasPermission(requestUser, element, READ_PUBLISHED_PERM)) {
 				return element;
 				// The container could be a draft. Check whether READ perm is granted.
-			} else if (!isPublished && requestUser.hasPermission(element, READ_PERM)) {
+			} else if (!isPublished && userRoot.hasPermission(requestUser, element, READ_PERM)) {
 				return element;
 			} else {
 				throw error(FORBIDDEN, "error_missing_perm", uuid, READ_PUBLISHED_PERM.getRestPerm().getName());
 			}
-		} else if (requestUser.hasPermission(element, perm)) {
+		} else if (userRoot.hasPermission(requestUser, element, perm)) {
 			return element;
 		}
 		throw error(FORBIDDEN, "error_missing_perm", uuid, perm.getRestPerm().getName());
@@ -293,6 +297,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		Project project = ac.getProject();
 		MeshAuthUser requestUser = ac.getUser();
 		Branch branch = ac.getBranch();
+		UserRoot userRoot = mesh().boot().userRoot();
 
 		String body = ac.getBodyAsString();
 
@@ -323,7 +328,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 			if (schemaByName != null) {
 				String schemaName = schemaByName.getName();
 				String schemaUuid = schemaByName.getUuid();
-				if (requestUser.hasPermission(schemaByName, READ_PERM)) {
+				if (userRoot.hasPermission(requestUser, schemaByName, READ_PERM)) {
 					SchemaContainerVersion schemaVersion = branch.findLatestSchemaVersion(schemaByName);
 					if (schemaVersion == null) {
 						throw error(BAD_REQUEST, "schema_error_schema_not_linked_to_branch", schemaByName.getName(), branch.getName(), project.getName());

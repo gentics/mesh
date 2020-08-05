@@ -1,6 +1,5 @@
 package com.gentics.mesh.context.impl;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -253,11 +252,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public User setPassword(String password) {
-				return this;
-			}
-
-			@Override
 			public User setLastname(String lastname) {
 				return this;
 			}
@@ -280,16 +274,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			@Override
 			public User inheritRolePermissions(MeshVertex sourceNode, MeshVertex targetNode) {
 				return this;
-			}
-
-			@Override
-			public boolean hasPermissionForId(Object elementId, GraphPermission permission) {
-				return true;
-			}
-
-			@Override
-			public boolean hasPermission(MeshVertex element, GraphPermission permission) {
-				return true;
 			}
 
 			@Override
@@ -329,11 +313,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			@Override
 			public Node getReferencedNode() {
 				return null;
-			}
-
-			@Override
-			public Set<GraphPermission> getPermissions(MeshVertex vertex) {
-				return new HashSet<GraphPermission>(Arrays.asList(GraphPermission.values()));
 			}
 
 			@Override
@@ -700,11 +679,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 			@Override
 			public PermissionInfo getRolePermissions(InternalActionContext ac, String roleUuid) {
-				return null;
-			}
-
-			@Override
-			public PermissionInfo getPermissionInfo(MeshVertex vertex) {
 				return null;
 			}
 

@@ -35,7 +35,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gentics.madl.tx.Tx;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.cache.CacheRegistryImpl;
@@ -588,7 +588,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			db.tx(tx -> {
 				User adminUser = userRoot().findByName(ADMIN_USERNAME);
 				if (adminUser != null) {
-					adminUser.setPassword(password);
+					userRoot().setPassword(adminUser, password);
 					adminUser.setAdmin(true);
 				} else {
 					// Recreate the user if it can't be found.
@@ -598,7 +598,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 					adminUser.setCreationTimestamp();
 					adminUser.setEditor(adminUser);
 					adminUser.setLastEditedTimestamp();
-					adminUser.setPassword(password);
+					userRoot().setPassword(adminUser, password);
 					adminUser.setAdmin(true);
 				}
 				tx.success();

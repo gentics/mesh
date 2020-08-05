@@ -12,7 +12,7 @@ import java.util.List;
 
 import com.gentics.madl.annotations.GraphElement;
 import com.gentics.madl.index.IndexHandler;
-import com.gentics.madl.tx.Tx;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.data.BasicFieldContainer;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;

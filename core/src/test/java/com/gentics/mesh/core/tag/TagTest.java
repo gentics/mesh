@@ -16,7 +16,6 @@ import java.util.concurrent.CountDownLatch;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
@@ -29,7 +28,9 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagRoot;
+import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.migration.branch.BranchMigrationHandler;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
@@ -453,12 +454,13 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testCRUDPermissions() {
 		try (Tx tx = tx()) {
+			UserRoot userRoot = tx.data().userDao();
 			TagFamily tagFamily = tagFamily("basic");
 			Tag tag = tagFamily.create("someTag", project(), user());
-			assertTrue(user().hasPermission(tagFamily, GraphPermission.READ_PERM));
-			assertFalse(user().hasPermission(tag, GraphPermission.READ_PERM));
+			assertTrue(userRoot.hasPermission(user(), tagFamily, GraphPermission.READ_PERM));
+			assertFalse(userRoot.hasPermission(user(), tag, GraphPermission.READ_PERM));
 			getRequestUser().inheritRolePermissions(tagFamily, tag);
-			assertTrue(user().hasPermission(tag, GraphPermission.READ_PERM));
+			assertTrue(userRoot.hasPermission(user(), tag, GraphPermission.READ_PERM));
 		}
 	}
 

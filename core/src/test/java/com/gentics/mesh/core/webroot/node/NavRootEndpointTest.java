@@ -8,15 +8,16 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
 
-import io.reactivex.Observable;
 import org.junit.Test;
 
-import com.gentics.madl.tx.Tx;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+
+import io.reactivex.Observable;
 
 @MeshTestSetting(testSize = FULL, startServer = true)
 public class NavRootEndpointTest extends AbstractMeshTest {

@@ -19,6 +19,7 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
@@ -75,9 +76,11 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
+				UserRoot userRoot = boot.userRoot();
+
 				// 1. Load the user that should be used - read perm implies that the
 				// user is able to read the attached permissions
-				User user = boot.userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
+				User user = userRoot.loadObjectByUuid(ac, userUuid, READ_PERM);
 
 				// 2. Resolve the path to element that is targeted
 				MeshVertex targetElement = boot.meshRoot().resolvePathToElement(pathToElement);
@@ -87,7 +90,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 				UserPermissionResponse response = new UserPermissionResponse();
 
 				// 1. Add granted permissions
-				for (GraphPermission perm : user.getPermissions(targetElement)) {
+				for (GraphPermission perm : userRoot.getPermissions(user, targetElement)) {
 					response.set(perm.getRestPerm(), true);
 				}
 

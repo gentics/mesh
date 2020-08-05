@@ -19,6 +19,8 @@ import com.gentics.mesh.core.data.ProjectElement;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
@@ -104,7 +106,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 		if (fields.has("perms")) {
 			// When this is a node migration, do not set user permissions
 			if (!(ac instanceof NodeMigrationActionContextImpl)) {
-				PermissionInfo permissionInfo = ac.getUser().getPermissionInfo(this);
+				PermissionInfo permissionInfo = mesh().boot().userRoot().getPermissionInfo(ac.getUser(), this);
 				model.setPermissions(permissionInfo);
 			}
 		}
@@ -155,10 +157,12 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 
 	@Override
 	public final String getETag(InternalActionContext ac) {
+		UserRoot userRoot = Tx.get().data().userDao();
+
 		StringBuilder keyBuilder = new StringBuilder();
 		keyBuilder.append(getUuid());
 		keyBuilder.append("-");
-		keyBuilder.append(ac.getUser().getPermissionInfo(this).getHash());
+		keyBuilder.append(userRoot.getPermissionInfo(ac.getUser(), this).getHash());
 
 		keyBuilder.append("fields:");
 		GenericParameters generic = ac.getGenericParameters();

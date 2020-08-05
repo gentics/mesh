@@ -11,8 +11,8 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;

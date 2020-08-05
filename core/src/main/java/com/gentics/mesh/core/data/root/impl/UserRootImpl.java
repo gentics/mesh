@@ -1,7 +1,10 @@
 package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
@@ -10,27 +13,40 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
+import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.user.ExpandableNode;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
+import com.syncleus.ferma.FramedGraph;
+import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Vertex;
 
 /**
  * @see UserRoot
@@ -138,7 +154,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 		if (isEmpty(requestModel.getUsername())) {
 			throw error(BAD_REQUEST, "user_missing_username");
 		}
-		if (!requestUser.hasPermission(this, CREATE_PERM)) {
+		if (!hasPermission(requestUser, this, CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", this.getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
 		String groupUuid = requestModel.getGroupUuid();
@@ -201,4 +217,94 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 		}
 		return user;
 	}
+
+	/**
+	 * Encode the given password and set the generated hash.
+	 *
+	 * @param password
+	 *            Plain password to be hashed and set
+	 * @return Fluent API
+	 */
+	@Override
+	public User setPassword(User user, String password) {
+		user.setPasswordHash(mesh().passwordEncoder().encode(password));
+		return user;
+	}
+
+	@Override
+	public PermissionInfo getPermissionInfo(User user, MeshVertex vertex) {
+		PermissionInfo info = new PermissionInfo();
+		Set<GraphPermission> permissions = getPermissions(user, vertex);
+		for (GraphPermission perm : permissions) {
+			info.set(perm.getRestPerm(), true);
+		}
+		info.setOthers(false, vertex.hasPublishPermissions());
+
+		return info;
+	}
+
+	@Override
+	public Set<GraphPermission> getPermissions(User user, MeshVertex vertex) {
+		Predicate<? super GraphPermission> isValidPermission = perm -> perm != READ_PUBLISHED_PERM && perm != PUBLISH_PERM
+			|| vertex.hasPublishPermissions();
+
+		return Stream.of(GraphPermission.values())
+			// Don't check for publish perms if it does not make sense for the vertex type
+			.filter(isValidPermission)
+			.filter(perm -> hasPermission(user, vertex, perm))
+			.collect(Collectors.toSet());
+	}
+
+	@Override
+	public boolean hasPermissionForId(User user, Object elementId, GraphPermission permission) {
+		PermissionCache permissionCache = mesh().permissionCache();
+		if (permissionCache.hasPermission(id(), permission, elementId)) {
+			return true;
+		} else {
+			// Admin users have all permissions
+			if (user.isAdmin()) {
+				for (GraphPermission perm : GraphPermission.values()) {
+					permissionCache.store(id(), perm, elementId);
+				}
+				return true;
+			}
+
+			FramedGraph graph = getGraph();
+			// Find all roles that are assigned to the user by checking the
+			// shortcut edge from the index
+			String idxKey = "e." + ASSIGNED_TO_ROLE + "_out";
+			Iterable<Edge> roleEdges = graph.getEdges(idxKey.toLowerCase(), this.id());
+			Vertex vertex = graph.getVertex(elementId);
+			for (Edge roleEdge : roleEdges) {
+				Vertex role = roleEdge.getVertex(Direction.IN);
+
+				Set<String> allowedRoles = vertex.getProperty(permission.propertyKey());
+				boolean hasPermission = allowedRoles != null && allowedRoles.contains(role.<String>getProperty("uuid"));
+				if (hasPermission) {
+					// We only store granting permissions in the store in order
+					// reduce the invalidation calls.
+					// This way we do not need to invalidate the cache if a role
+					// is removed from a group or a role is deleted.
+					permissionCache.store(id(), permission, elementId);
+					return true;
+				}
+			}
+			// Fall back to read and check whether the user has read perm. Read permission also includes read published.
+			if (permission == READ_PUBLISHED_PERM) {
+				return hasPermissionForId(user, elementId, READ_PERM);
+			} else {
+				return false;
+			}
+		}
+
+	}
+
+	@Override
+	public boolean hasPermission(User user, MeshVertex vertex, GraphPermission permission) {
+		if (log.isTraceEnabled()) {
+			log.debug("Checking permissions for vertex {" + vertex.getUuid() + "}");
+		}
+		return hasPermissionForId(user, vertex.id(), permission);
+	}
+
 }

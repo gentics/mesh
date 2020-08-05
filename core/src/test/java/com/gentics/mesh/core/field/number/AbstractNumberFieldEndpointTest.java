@@ -1,14 +1,14 @@
 package com.gentics.mesh.core.field.number;
 
-import com.gentics.madl.tx.Tx;
+import java.io.IOException;
+
+import org.junit.Before;
+
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldEndpointTest;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
-
-import org.junit.Before;
-
-import java.io.IOException;
 
 /**
  * Created by sebastian on 04.12.17.

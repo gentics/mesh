@@ -1,14 +1,14 @@
 package com.gentics.mesh.test.context.helper;
 
-import com.gentics.madl.tx.Tx;
-import com.gentics.madl.tx.TxAction;
-import com.gentics.madl.tx.TxAction0;
-import com.gentics.madl.tx.TxAction1;
-import com.gentics.madl.tx.TxAction2;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.db.TxAction;
+import com.gentics.mesh.core.db.TxAction0;
+import com.gentics.mesh.core.db.TxAction1;
+import com.gentics.mesh.core.db.TxAction2;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;

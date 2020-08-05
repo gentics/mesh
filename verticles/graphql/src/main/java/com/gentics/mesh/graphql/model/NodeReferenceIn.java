@@ -10,6 +10,8 @@ import com.gentics.graphqlfilter.util.Lazy;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 
 /**

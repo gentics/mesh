@@ -12,7 +12,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.madl.tx.Tx;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.graphdb.orientdb.graph.Person;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.orientechnologies.orient.core.exception.OConcurrentModificationException;

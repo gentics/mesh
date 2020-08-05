@@ -1,11 +1,11 @@
 package com.gentics.mesh.cli;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.TestSize.PROJECT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,8 +15,8 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;

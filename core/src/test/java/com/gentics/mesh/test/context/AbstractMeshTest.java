@@ -19,12 +19,12 @@ import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Rule;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
@@ -125,7 +125,7 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 			assertTrue("The role {" + role().getName() + "} does not grant permission on element {" + element.getUuid()
 				+ "} although we granted those permissions.", role().hasPermission(perm, element));
 			assertTrue("The user has no {" + perm.getRestPerm().getName() + "} permission on node {" + element.getUuid() + "/" + element.getClass()
-				.getSimpleName() + "}", getRequestUser().hasPermission(element, perm));
+				.getSimpleName() + "}", tx.data().userDao().hasPermission(getRequestUser(), element, perm));
 		}
 
 		try (Tx tx = tx()) {
@@ -139,7 +139,7 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 			assertFalse("The user's role {" + role().getName() + "} still got {" + perm.getRestPerm().getName() + "} permission on node {" + element
 				.getUuid() + "/" + element.getClass().getSimpleName() + "} although we revoked it.", hasPerm);
 
-			hasPerm = getRequestUser().hasPermission(element, perm);
+			hasPerm = tx.data().userDao().hasPermission(getRequestUser(), element, perm);
 			assertFalse("The user {" + getRequestUser().getUsername() + "} still got {" + perm.getRestPerm().getName() + "} permission on node {"
 				+ element.getUuid() + "/" + element.getClass().getSimpleName() + "} although we revoked it.", hasPerm);
 		}

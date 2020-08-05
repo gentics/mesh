@@ -21,10 +21,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.binary.BinaryFieldTestHelper;
 import com.gentics.mesh.storage.BinaryStorage;

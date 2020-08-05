@@ -1,6 +1,7 @@
 package com.gentics.mesh.graphdb.spi;
 
-import com.gentics.madl.tx.Tx;
+
+import com.gentics.mesh.core.db.Tx;
 
 import io.reactivex.functions.BiFunction;
 import io.reactivex.functions.Function;

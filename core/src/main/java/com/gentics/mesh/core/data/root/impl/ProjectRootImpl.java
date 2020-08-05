@@ -33,6 +33,7 @@ import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
+import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.error.NameConflictException;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
@@ -172,6 +173,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 	@Override
 	public Project create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		BootstrapInitializer boot = mesh().boot();
+		UserRoot userRoot = boot.userRoot();
 
 		// TODO also create a default object schema for the project. Move this
 		// into service class
@@ -184,7 +186,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		if (StringUtils.isEmpty(requestModel.getName())) {
 			throw error(BAD_REQUEST, "project_missing_name");
 		}
-		if (!creator.hasPermission(boot.projectRoot(), CREATE_PERM)) {
+		if (!userRoot.hasPermission(creator, boot.projectRoot(), CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", boot.projectRoot().getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
 		// TODO instead of this check, a constraint in the db should be added

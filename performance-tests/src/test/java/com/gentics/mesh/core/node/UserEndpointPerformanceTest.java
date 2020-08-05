@@ -7,10 +7,11 @@ import static com.gentics.mesh.test.performance.StopWatch.loggingStopWatch;
 
 import org.junit.Test;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -34,7 +35,8 @@ public class UserEndpointPerformanceTest extends AbstractMeshTest {
 	public void testPermissionPerformance() {
 		loggingStopWatch(logger, "user.hasPermission", 100000, (step) -> {
 			try (Tx tx = tx()) {
-				user().hasPermission(content(), GraphPermission.READ_PERM);
+				UserRoot userRoot = tx.data().userDao();
+				userRoot.hasPermission(user(), content(), GraphPermission.READ_PERM);
 			}
 		});
 	}
@@ -45,7 +47,8 @@ public class UserEndpointPerformanceTest extends AbstractMeshTest {
 		Node content = tx(() -> content());
 		loggingStopWatch(logger, "user.getPermissionInfo", 70000, (step) -> {
 			try (Tx tx = tx()) {
-				user.getPermissionInfo(content);
+				UserRoot userRoot = tx.data().userDao();
+				userRoot.getPermissionInfo(user, content);
 			}
 		});
 

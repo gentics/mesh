@@ -19,14 +19,13 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.madl.tx.Tx;
-import com.gentics.madl.tx.TxAction;
-import com.gentics.madl.tx.TxAction0;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.db.TxAction;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterServerConfig;

@@ -9,7 +9,7 @@ import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
-import com.gentics.madl.tx.Tx;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.data.branch.BranchVersionEdge;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;

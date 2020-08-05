@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
@@ -193,7 +194,8 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 
 		utils.syncTx(ac, tx -> {
 			Project project = ac.getProject();
-			if (!ac.getUser().hasPermission(project, UPDATE_PERM)) {
+			UserRoot userRoot = tx.data().userDao();
+			if (!userRoot.hasPermission(ac.getUser(), project, UPDATE_PERM)) {
 				String projectUuid = project.getUuid();
 				throw error(FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
 			}
@@ -214,10 +216,11 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	public void handleRemoveMicroschemaFromProject(InternalActionContext ac, String microschemaUuid) {
 		validateParameter(microschemaUuid, "microschemaUuid");
 
-		utils.syncTx(ac, () -> {
+		utils.syncTx(ac, tx -> {
 			Project project = ac.getProject();
 			String projectUuid = project.getUuid();
-			if (!ac.getUser().hasPermission(project, UPDATE_PERM)) {
+			UserRoot userRoot = tx.data().userDao();
+			if (!userRoot.hasPermission(ac.getUser(), project, UPDATE_PERM)) {
 				throw error(FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
 			}
 			MicroschemaContainer microschema = getRootVertex(ac).loadObjectByUuid(ac, microschemaUuid, READ_PERM);

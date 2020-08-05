@@ -6,10 +6,11 @@ import java.util.function.Function;
 
 import com.gentics.madl.traversal.RawTraversalResult;
 import com.gentics.madl.traversal.RawTraversalResultImpl;
-import com.gentics.madl.tx.AbstractTx;
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.db.AbstractTx;
+import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.db.TxData;
 import com.gentics.mesh.graphdb.cluster.TxCleanupTask;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.tx.OrientStorage;
@@ -37,6 +38,7 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	private final Timer commitTimer;
 	private final Database db;
 	private final BootstrapInitializer boot;
+	private final TxData txData;
 
 	public OrientDBTx(Database db, BootstrapInitializer boot, OrientStorage provider, TypeResolver typeResolver, Timer commitTimer) {
 		this.db = db;
@@ -52,6 +54,7 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 			DelegatingFramedOrientGraph transaction = new DelegatingFramedOrientGraph((OrientGraph) provider.rawTx(), typeResolver);
 			init(transaction);
 		}
+		this.txData = new OrientTxData(boot);
 	}
 
 	@Override
@@ -126,5 +129,10 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 			log.error("Could not set mesh component attribute. Followup errors may happen.");
 		}
 		super.init(transactionalGraph);
+	}
+
+	@Override
+	public TxData data() {
+		return txData;
 	}
 }

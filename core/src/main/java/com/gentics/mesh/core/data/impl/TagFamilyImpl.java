@@ -32,7 +32,9 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
+import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedProjectElementEventModel;
 import com.gentics.mesh.core.rest.event.tagfamily.TagFamilyMeshEventModel;
@@ -47,7 +49,6 @@ import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
-import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -126,8 +127,9 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 			throw error(BAD_REQUEST, "tag_name_not_set");
 		}
 
+		UserRoot userRoot = Tx.get().data().userDao();
 		MeshAuthUser requestUser = ac.getUser();
-		if (!requestUser.hasPermission(this, CREATE_PERM)) {
+		if (!userRoot.hasPermission(requestUser, this, CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
 

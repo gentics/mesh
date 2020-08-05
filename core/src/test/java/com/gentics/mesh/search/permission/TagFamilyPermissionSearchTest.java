@@ -7,10 +7,10 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;

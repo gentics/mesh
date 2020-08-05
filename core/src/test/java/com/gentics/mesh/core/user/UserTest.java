@@ -22,7 +22,6 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
@@ -36,6 +35,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.user.UserReference;
@@ -127,13 +127,14 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testHasPermission() {
 		try (Tx tx = tx()) {
+			UserRoot userRoot = tx.data().userDao();
 			User user = user();
 			long start = System.currentTimeMillis();
 			int nChecks = 9000;
 			int runs = 90;
 			for (int e = 0; e < runs; e++) {
 				for (int i = 0; i < nChecks; i++) {
-					assertTrue(user.hasPermission(content(), READ_PERM));
+					assertTrue(userRoot.hasPermission(user, content(), READ_PERM));
 				}
 			}
 			long duration = System.currentTimeMillis() - start;
@@ -205,11 +206,12 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testGetPermissions() {
 		try (Tx tx = tx()) {
+			UserRoot userRoot = tx.data().userDao();
 			Permission[] perms = { CREATE, UPDATE, DELETE, READ, READ_PUBLISHED, PUBLISH };
 			long start = System.currentTimeMillis();
 			int nChecks = 10000;
 			for (int i = 0; i < nChecks; i++) {
-				PermissionInfo loadedPermInfo = user().getPermissionInfo(content());
+				PermissionInfo loadedPermInfo = userRoot.getPermissionInfo(user(), content());
 				assertThat(loadedPermInfo).hasPerm(perms);
 				// assertNotNull(ac.data().get("permissions:" + language.getUuid()));
 			}
@@ -293,18 +295,20 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testCRUDPermissions() {
 		try (Tx tx = tx()) {
+			UserRoot userRoot = tx.data().userDao();
 			MeshRoot root = meshRoot();
 			User user = user();
 			User newUser = root.getUserRoot().create("Anton", user());
-			assertFalse(user.hasPermission(newUser, GraphPermission.CREATE_PERM));
+			assertFalse(userRoot.hasPermission(user, newUser, GraphPermission.CREATE_PERM));
 			user.inheritRolePermissions(root.getUserRoot(), newUser);
-			assertTrue(user.hasPermission(newUser, GraphPermission.CREATE_PERM));
+			assertTrue(userRoot.hasPermission(user, newUser, GraphPermission.CREATE_PERM));
 		}
 	}
 
 	@Test
 	public void testInheritPermissions() {
 		try (Tx tx = tx()) {
+			UserRoot userRoot = tx.data().userDao();
 			Node sourceNode = folder("news");
 			Node targetNode = folder("2015");
 			User newUser;
@@ -352,7 +356,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 				assertTrue(
 					"The new user should have all permissions to CRUD the target node since he is member of a group that has been assigned to roles with various permissions that cover CRUD. Failed for permission {"
 						+ perm.name() + "}",
-					newUser.hasPermission(targetNode, perm));
+					userRoot.hasPermission(newUser, targetNode, perm));
 			}
 
 			// roleWithAllPerm
@@ -474,7 +478,8 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testOwnRolePerm() {
 		try (Tx tx = tx()) {
-			assertTrue("The user should have update permissions on his role", user().hasPermission(role(), GraphPermission.UPDATE_PERM));
+			UserRoot userRoot = tx.data().userDao();
+			assertTrue("The user should have update permissions on his role", userRoot.hasPermission(user(), role(), GraphPermission.UPDATE_PERM));
 		}
 	}
 

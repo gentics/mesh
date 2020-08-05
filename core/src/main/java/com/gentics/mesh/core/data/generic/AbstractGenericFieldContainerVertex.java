@@ -5,7 +5,7 @@ import static com.tinkerpop.blueprints.Direction.IN;
 
 import java.util.Iterator;
 
-import com.gentics.madl.tx.Tx;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.data.BasicFieldContainer;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;

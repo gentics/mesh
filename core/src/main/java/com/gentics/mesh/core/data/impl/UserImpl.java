@@ -19,11 +19,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.Optional;
-import java.util.Set;
 import java.util.Spliterator;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.apache.commons.lang3.BooleanUtils;
@@ -31,7 +28,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.DummyEventQueueBatch;
@@ -51,8 +47,9 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.NodeRoot;
+import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.project.ProjectReference;
@@ -69,11 +66,9 @@ import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.util.ETag;
-import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -305,89 +300,14 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public PermissionInfo getPermissionInfo(MeshVertex vertex) {
-		PermissionInfo info = new PermissionInfo();
-		Set<GraphPermission> permissions = getPermissions(vertex);
-		for (GraphPermission perm : permissions) {
-			info.set(perm.getRestPerm(), true);
-		}
-		info.setOthers(false, vertex.hasPublishPermissions());
-
-		return info;
-	}
-
-	@Override
-	public Set<GraphPermission> getPermissions(MeshVertex vertex) {
-		Predicate<? super GraphPermission> isValidPermission = perm -> perm != READ_PUBLISHED_PERM && perm != PUBLISH_PERM
-			|| vertex.hasPublishPermissions();
-
-		return Stream.of(GraphPermission.values())
-			// Don't check for publish perms if it does not make sense for the vertex type
-			.filter(isValidPermission)
-			.filter(perm -> hasPermission(vertex, perm))
-			.collect(Collectors.toSet());
-	}
-
-	@Override
-	public boolean hasPermissionForId(Object elementId, GraphPermission permission) {
-		PermissionCache permissionCache = mesh().permissionCache();
-		if (permissionCache.hasPermission(id(), permission, elementId)) {
-			return true;
-		} else {
-			// Admin users have all permissions
-			if (isAdmin()) {
-				for (GraphPermission perm : GraphPermission.values()) {
-					permissionCache.store(id(), perm, elementId);
-				}
-				return true;
-			}
-
-			FramedGraph graph = getGraph();
-			// Find all roles that are assigned to the user by checking the
-			// shortcut edge from the index
-			String idxKey = "e." + ASSIGNED_TO_ROLE + "_out";
-			Iterable<Edge> roleEdges = graph.getEdges(idxKey.toLowerCase(), this.id());
-			Vertex vertex = graph.getVertex(elementId);
-			for (Edge roleEdge : roleEdges) {
-				Vertex role = roleEdge.getVertex(Direction.IN);
-
-				Set<String> allowedRoles = vertex.getProperty(permission.propertyKey());
-				boolean hasPermission = allowedRoles != null && allowedRoles.contains(role.<String>getProperty("uuid"));
-				if (hasPermission) {
-					// We only store granting permissions in the store in order
-					// reduce the invalidation calls.
-					// This way we do not need to invalidate the cache if a role
-					// is removed from a group or a role is deleted.
-					permissionCache.store(id(), permission, elementId);
-					return true;
-				}
-			}
-			// Fall back to read and check whether the user has read perm. Read permission also includes read published.
-			if (permission == READ_PUBLISHED_PERM) {
-				return hasPermissionForId(elementId, READ_PERM);
-			} else {
-				return false;
-			}
-		}
-
-	}
-
-	@Override
-	public boolean hasPermission(MeshVertex vertex, GraphPermission permission) {
-		if (log.isTraceEnabled()) {
-			log.debug("Checking permissions for vertex {" + vertex.getUuid() + "}");
-		}
-		return hasPermissionForId(vertex.id(), permission);
-	}
-
-	@Override
 	public boolean hasReadPermission(NodeGraphFieldContainer container, String branchUuid, String requestedVersion) {
 		Node node = container.getParentNode();
-		if (hasPermission(node, READ_PERM)) {
+		UserRoot userRoot = Tx.get().data().userDao();
+		if (userRoot.hasPermission(this, node, READ_PERM)) {
 			return true;
 		}
 		boolean published = container.isPublished(branchUuid);
-		if (published && hasPermission(node, READ_PUBLISHED_PERM)) {
+		if (published && userRoot.hasPermission(this, node, READ_PUBLISHED_PERM)) {
 			return true;
 		}
 		return false;
@@ -544,19 +464,6 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		mesh().permissionCache().clear();
 	}
 
-	/**
-	 * Encode the given password and set the generated hash.
-	 *
-	 * @param password
-	 *            Plain password to be hashed and set
-	 * @return Fluent API
-	 */
-	@Override
-	public User setPassword(String password) {
-		setPasswordHash(mesh().passwordEncoder().encode(password));
-		return this;
-	}
-
 	@Override
 	public boolean updateDry(InternalActionContext ac) {
 		return update(ac, new DummyEventQueueBatch(), true);
@@ -710,10 +617,11 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	@Override
 	public boolean canReadNode(InternalActionContext ac, Node node) {
 		String version = ac.getVersioningParameters().getVersion();
+		UserRoot userRoot = Tx.get().data().userDao();
 		if (ContainerType.forVersion(version) == ContainerType.PUBLISHED) {
-			return ac.getUser().hasPermission(node, GraphPermission.READ_PUBLISHED_PERM);
+			return userRoot.hasPermission(ac.getUser(), node, GraphPermission.READ_PUBLISHED_PERM);
 		} else {
-			return ac.getUser().hasPermission(node, GraphPermission.READ_PERM);
+			return userRoot.hasPermission(ac.getUser(), node, GraphPermission.READ_PERM);
 		}
 	}
 

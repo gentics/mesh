@@ -7,7 +7,10 @@ import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -21,9 +24,9 @@ import javax.imageio.ImageIO;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.image.spi.CacheFileInfo;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
@@ -37,6 +40,7 @@ import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.test.assertj.MeshCoreAssertion;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+
 import io.vertx.core.buffer.Buffer;
 
 @MeshTestSetting(testSize = FULL, startServer = true)

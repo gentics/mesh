@@ -1,9 +1,9 @@
 
 package com.gentics.mesh.server.cluster.test.task;
 
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.context.impl.LocalActionContextImpl;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.role.RoleCrudHandler;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
