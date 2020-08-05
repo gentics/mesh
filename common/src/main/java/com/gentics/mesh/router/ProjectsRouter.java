@@ -85,7 +85,10 @@ public class ProjectsRouter {
 			log.info("Added project router {" + name + "}");
 
 			projectRouter.route().handler(ctx -> {
-				Project project = Tx.get().data().projectDao().findByName(name);
+				Database db = apiRouter.getRoot().getStorage().getDb().get();
+				Project project = db.tx(tx -> {
+					return tx.data().projectDao().findByName(name);
+				});
 				if (project == null) {
 					log.warn("Project for name {" + name + "} could not be found.");
 					ctx.fail(error(NOT_FOUND, "project_not_found", name));
