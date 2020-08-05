@@ -27,6 +27,11 @@
 | string
 | The error message.
 
+| path
+| true
+| string
+| Path of the error.
+
 | type
 | true
 | string
