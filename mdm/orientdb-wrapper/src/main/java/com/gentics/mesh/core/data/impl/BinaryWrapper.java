@@ -1,31 +1,25 @@
-package com.gentics.mesh.core.data.dao.impl;
+package com.gentics.mesh.core.data.impl;
 
+import java.io.InputStream;
 import java.util.Set;
-import java.util.Stack;
 import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 import com.gentics.madl.traversal.RawTraversalResult;
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.GroupRoot;
-import com.gentics.mesh.core.rest.common.PermissionInfo;
+import com.gentics.mesh.core.rest.node.field.image.Point;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.Supplier;
 import com.gentics.mesh.madl.frame.EdgeFrame;
 import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.madl.frame.VertexFrame;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
 import com.gentics.mesh.madl.traversal.TraversalResult;
-import com.gentics.mesh.parameter.PagingParameters;
 import com.google.gson.JsonObject;
 import com.syncleus.ferma.ClassInitializer;
 import com.syncleus.ferma.FramedGraph;
@@ -34,26 +28,20 @@ import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Vertex;
 
+import io.reactivex.Flowable;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 
-public class GroupDaoWrapperImpl implements GroupRoot {
+public class BinaryWrapper implements Binary {
 
-	private final GroupRoot delegate;
+	private final Binary delegate;
 
-	public GroupDaoWrapperImpl(GroupRoot delegate) {
+	public BinaryWrapper(Binary delegate) {
 		this.delegate = delegate;
 	}
 
 	public Object id() {
 		return delegate.id();
-	}
-
-	public Group create(String name, User user) {
-		return delegate.create(name, user);
-	}
-
-	public PermissionInfo getRolePermissions(InternalActionContext ac, String roleUuid) {
-		return delegate.getRolePermissions(ac, roleUuid);
 	}
 
 	public void setUuid(String uuid) {
@@ -64,16 +52,8 @@ public class GroupDaoWrapperImpl implements GroupRoot {
 		delegate.setUniqueLinkOutTo(vertex, labels);
 	}
 
-	public TraversalResult<? extends Role> getRolesWithPerm(GraphPermission perm) {
-		return delegate.getRolesWithPerm(perm);
-	}
-
 	public String getUuid() {
 		return delegate.getUuid();
-	}
-
-	public Group create(String name, User user, String uuid) {
-		return delegate.create(name, user, uuid);
 	}
 
 	public Vertex getVertex() {
@@ -82,6 +62,10 @@ public class GroupDaoWrapperImpl implements GroupRoot {
 
 	public String getElementVersion() {
 		return delegate.getElementVersion();
+	}
+
+	public Flowable<Buffer> getStream() {
+		return delegate.getStream();
 	}
 
 	public void setUniqueLinkInTo(VertexFrame vertex, String... labels) {
@@ -112,8 +96,8 @@ public class GroupDaoWrapperImpl implements GroupRoot {
 		return delegate.addFramedEdge(label, inVertex, initializer);
 	}
 
-	public void addGroup(Group group) {
-		delegate.addGroup(group);
+	public Supplier<InputStream> openBlockingStream() {
+		return delegate.openBlockingStream();
 	}
 
 	public void setSingleLinkInTo(VertexFrame vertex, String... labels) {
@@ -136,12 +120,12 @@ public class GroupDaoWrapperImpl implements GroupRoot {
 		delegate.remove();
 	}
 
-	public void removeGroup(Group group) {
-		delegate.removeGroup(group);
-	}
-
 	public void delete() {
 		delegate.delete();
+	}
+
+	public String getBase64ContentSync() {
+		return delegate.getBase64ContentSync();
 	}
 
 	public <T extends ElementFrame> TraversalResult<? extends T> out(String label, Class<T> clazz) {
@@ -165,12 +149,20 @@ public class GroupDaoWrapperImpl implements GroupRoot {
 		return delegate.outE(label, clazz);
 	}
 
+	public String getSHA512Sum() {
+		return delegate.getSHA512Sum();
+	}
+
 	public <T> T getProperty(String name) {
 		return delegate.getProperty(name);
 	}
 
 	public <T extends ElementFrame> TraversalResult<? extends T> in(String label, Class<T> clazz) {
 		return delegate.in(label, clazz);
+	}
+
+	public Binary setSHA512Sum(String sha512sum) {
+		return delegate.setSHA512Sum(sha512sum);
 	}
 
 	public <T> T addFramedEdge(String label, com.syncleus.ferma.VertexFrame inVertex, Class<T> kind) {
@@ -197,6 +189,10 @@ public class GroupDaoWrapperImpl implements GroupRoot {
 		return delegate.db();
 	}
 
+	public long getSize() {
+		return delegate.getSize();
+	}
+
 	public Vertx vertx() {
 		return delegate.vertx();
 	}
@@ -209,6 +205,10 @@ public class GroupDaoWrapperImpl implements GroupRoot {
 		return delegate.options();
 	}
 
+	public Binary setSize(long sizeInBytes) {
+		return delegate.setSize(sizeInBytes);
+	}
+
 	public <T> T addFramedEdgeExplicit(String label, com.syncleus.ferma.VertexFrame inVertex, ClassInitializer<T> initializer) {
 		return delegate.addFramedEdgeExplicit(label, inVertex, initializer);
 	}
@@ -217,24 +217,28 @@ public class GroupDaoWrapperImpl implements GroupRoot {
 		delegate.setCachedUuid(uuid);
 	}
 
-	public TraversalResult<? extends Group> findAll() {
-		return delegate.findAll();
-	}
-
 	public void setProperty(String name, Object value) {
 		delegate.setProperty(name, value);
+	}
+
+	public Integer getImageHeight() {
+		return delegate.getImageHeight();
 	}
 
 	public Class<?> getTypeResolution() {
 		return delegate.getTypeResolution();
 	}
 
-	public Stream<? extends Group> findAllStream(InternalActionContext ac, GraphPermission permission) {
-		return delegate.findAllStream(ac, permission);
+	public Integer getImageWidth() {
+		return delegate.getImageWidth();
 	}
 
 	public void setTypeResolution(Class<?> type) {
 		delegate.setTypeResolution(type);
+	}
+
+	public Binary setImageHeight(Integer heigth) {
+		return delegate.setImageHeight(heigth);
 	}
 
 	public <T> T addFramedEdgeExplicit(String label, com.syncleus.ferma.VertexFrame inVertex, Class<T> kind) {
@@ -245,12 +249,20 @@ public class GroupDaoWrapperImpl implements GroupRoot {
 		delegate.removeTypeResolution();
 	}
 
+	public Binary setImageWidth(Integer width) {
+		return delegate.setImageWidth(width);
+	}
+
 	public VertexTraversal<?, ?, ?> v() {
 		return delegate.v();
 	}
 
 	public EdgeTraversal<?, ?, ?> e() {
 		return delegate.e();
+	}
+
+	public Point getImageSize() {
+		return delegate.getImageSize();
 	}
 
 	public EdgeTraversal<?, ?, ?> e(Object... ids) {
@@ -265,8 +277,8 @@ public class GroupDaoWrapperImpl implements GroupRoot {
 		return delegate.getGraphAttribute(key);
 	}
 
-	public TraversalResult<? extends Group> findAllDynamic() {
-		return delegate.findAllDynamic();
+	public TraversalResult<? extends BinaryGraphField> findFields() {
+		return delegate.findFields();
 	}
 
 	public VertexTraversal<?, ?, ?> in(String... labels) {
@@ -275,10 +287,6 @@ public class GroupDaoWrapperImpl implements GroupRoot {
 
 	public EdgeTraversal<?, ?, ?> outE(String... labels) {
 		return delegate.outE(labels);
-	}
-
-	public TransformablePage<? extends Group> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
-		return delegate.findAll(ac, pagingInfo);
 	}
 
 	public EdgeTraversal<?, ?, ?> inE(String... labels) {
@@ -293,10 +301,6 @@ public class GroupDaoWrapperImpl implements GroupRoot {
 		delegate.linkIn(vertex, labels);
 	}
 
-	public TransformablePage<? extends Group> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Group> extraFilter) {
-		return delegate.findAll(ac, pagingInfo, extraFilter);
-	}
-
 	public void unlinkOut(com.syncleus.ferma.VertexFrame vertex, String... labels) {
 		delegate.unlinkOut(vertex, labels);
 	}
@@ -305,16 +309,8 @@ public class GroupDaoWrapperImpl implements GroupRoot {
 		delegate.unlinkIn(vertex, labels);
 	}
 
-	public TransformablePage<? extends Group> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo) {
-		return delegate.findAllNoPerm(ac, pagingInfo);
-	}
-
 	public void setLinkOut(com.syncleus.ferma.VertexFrame vertex, String... labels) {
 		delegate.setLinkOut(vertex, labels);
-	}
-
-	public Group findByName(String name) {
-		return delegate.findByName(name);
 	}
 
 	public VertexTraversal<?, ?, ?> traversal() {
@@ -325,64 +321,12 @@ public class GroupDaoWrapperImpl implements GroupRoot {
 		return delegate.toJson();
 	}
 
-	public Group findByName(InternalActionContext ac, String name, GraphPermission perm) {
-		return delegate.findByName(ac, name, perm);
-	}
-
 	public <T> T reframe(Class<T> kind) {
 		return delegate.reframe(kind);
 	}
 
 	public <T> T reframeExplicit(Class<T> kind) {
 		return delegate.reframeExplicit(kind);
-	}
-
-	public Group findByUuid(String uuid) {
-		return delegate.findByUuid(uuid);
-	}
-
-	public Group loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
-		return delegate.loadObjectByUuid(ac, uuid, perm);
-	}
-
-	public Group loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
-		return delegate.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
-	}
-
-	public Group loadObjectByUuidNoPerm(String uuid, boolean errorIfNotFound) {
-		return delegate.loadObjectByUuidNoPerm(uuid, errorIfNotFound);
-	}
-
-	public MeshVertex resolveToElement(Stack<String> stack) {
-		return delegate.resolveToElement(stack);
-	}
-
-	public Group create(InternalActionContext ac, EventQueueBatch batch) {
-		return delegate.create(ac, batch);
-	}
-
-	public Group create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		return delegate.create(ac, batch, uuid);
-	}
-
-	public void addItem(Group item) {
-		delegate.addItem(item);
-	}
-
-	public void removeItem(Group item) {
-		delegate.removeItem(item);
-	}
-
-	public String getRootLabel() {
-		return delegate.getRootLabel();
-	}
-
-	public Class<? extends Group> getPersistanceClass() {
-		return delegate.getPersistanceClass();
-	}
-
-	public long computeCount() {
-		return delegate.computeCount();
 	}
 
 }
