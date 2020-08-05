@@ -1,6 +1,6 @@
 {
 	# [$.data.p.elements.length()=1]
-	p: nodes(nodeType: published, query: "{\"query\":{\"query_string\":{\"query\":\"supersonic\", \"type\": \"phrase\" }}}") {
+	p: nodes(version: published, query: "{\"query\":{\"query_string\":{\"query\":\"supersonic\", \"type\": \"phrase\" }}}") {
 		elements {
 			node {
 				uuid
@@ -10,7 +10,7 @@
 		}
 	}
 
-	presult: nodes(nodeType: published, query: "{ \"query\": { \"match\": { \"fields.slug\": \"blaar\" } } }") {
+	presult: nodes(version: published, query: "{ \"query\": { \"match\": { \"fields.slug\": \"blaar\" } } }") {
 		elements {
 			uuid
 			version
@@ -18,7 +18,7 @@
 	}
 	
 		# [$.data.d.elements.length()=1]
-	d: nodes(nodeType: draft, query: "{\"query\":{\"query_string\":{\"query\":\"supersonic\", \"type\": \"phrase\" }}}") {
+	d: nodes(version: draft, query: "{\"query\":{\"query_string\":{\"query\":\"supersonic\", \"type\": \"phrase\" }}}") {
 		elements {
 			node {
 				uuid
@@ -28,7 +28,7 @@
 		}
 	}
 
-	dresult: nodes(nodeType: draft, query: "{ \"query\": { \"match\": { \"fields.slug\": \"blaar\" } } }") {
+	dresult: nodes(version: draft, query: "{ \"query\": { \"match\": { \"fields.slug\": \"blaar\" } } }") {
 		elements {
 			uuid
 			version
