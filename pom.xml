@@ -97,8 +97,8 @@
 		<module>plugin-bom</module>
 		<module>plugin-dep</module>
 		<module>plugin-parent</module>
-		<module>mdm</module>
 		<module>common</module>
+		<module>mdm</module>
 		<module>test-common</module>
 		<module>elasticsearch</module>
 		<module>rest-client</module>

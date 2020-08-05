@@ -10,10 +10,10 @@
 		<version>1.6.1-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>mesh-mdm-orientdb-wrapper</artifactId>
+	<artifactId>mesh-mdm-orientdb-api</artifactId>
 	<packaging>jar</packaging>
 
-	<description>MDM OrientDB Wrapper</description>
+	<description>MDM OrientDB API</description>
 
 	<dependencies>
 		<dependency>
@@ -22,7 +22,18 @@
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-mdm-orientdb-api</artifactId>
+			<artifactId>mesh-common</artifactId>
 		</dependency>
+
+		<!-- Needed for OrientDB API -->
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>madl-ferma</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-mdm-api</artifactId>
+		</dependency>
+
 	</dependencies>
 </project>

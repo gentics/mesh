@@ -395,13 +395,18 @@
 
 			<!-- MDM -->
 			<dependency>
-				<artifactId>mesh-mdm-api</artifactId>
 				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-mdm-api</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<artifactId>mesh-mdm-orientdb-wrapper</artifactId>
 				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-mdm-orientdb-api</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-mdm-orientdb-wrapper</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
