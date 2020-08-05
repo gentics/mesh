@@ -12,6 +12,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.event.EventQueueBatch;
 
@@ -22,7 +23,7 @@ public interface TestGraphHelper extends TestHelper {
 
 	default Project createProject(String name, String schema) {
 		EventQueueBatch batch = Mockito.mock(EventQueueBatch.class);
-		return boot().projectRoot().create(name, null, null, null, user(), schemaContainer(schema).getLatestVersion(), batch);
+		return Tx.get().data().projectDao().create(name, null, null, null, user(), schemaContainer(schema).getLatestVersion(), batch);
 	}
 
 	default Branch createBranch(String name) {

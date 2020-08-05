@@ -17,6 +17,7 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.MeshProjectElementEventModel;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
@@ -48,7 +49,7 @@ public class BranchEventHandler implements EventHandler {
 				return Flowable.empty();
 			} else {
 				Map<String, IndexInfo> map = helper.getDb().transactional(tx -> {
-					Project project = helper.getBoot().projectRoot().findByUuid(model.getProject().getUuid());
+					Project project = Tx.get().data().projectDao().findByUuid(model.getProject().getUuid());
 					Branch branch = project.getBranchRoot().findByUuid(model.getUuid());
 					return nodeIndexHandler.getIndices(project, branch).runInExistingTx(tx);
 				}).runInNewTx();

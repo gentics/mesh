@@ -371,7 +371,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			Tag reloadedTag = boot().tagRoot().findByUuid(tagUuid);
 			assertNull("The tag should have been deleted", reloadedTag);
 
-			Project project = boot().projectRoot().findByName(PROJECT_NAME);
+			Project project = tx.data().projectDao().findByName(PROJECT_NAME);
 			assertNotNull(project);
 		}
 	}

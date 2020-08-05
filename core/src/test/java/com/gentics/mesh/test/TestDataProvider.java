@@ -181,7 +181,7 @@ public class TestDataProvider {
 			addPermissions(project.getBranchRoot());
 			addPermissions(project.getInitialBranch());
 			addPermissions(project.getTagFamilyRoot());
-			addPermissions(boot.projectRoot());
+			addPermissions(tx.data().projectDao());
 			addPermissions(boot.userRoot());
 			addPermissions(boot.groupRoot());
 			addPermissions(boot.roleRoot());

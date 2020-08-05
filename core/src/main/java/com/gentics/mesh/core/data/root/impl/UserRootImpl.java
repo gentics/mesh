@@ -37,6 +37,7 @@ import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.user.ExpandableNode;
 import com.gentics.mesh.core.rest.user.NodeReference;
@@ -205,7 +206,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 			}
 
 			// TODO decide whether we need to check perms on the project as well
-			Project project = boot.projectRoot().findByName(projectName);
+			Project project = Tx.get().data().projectDao().findByName(projectName);
 			if (project == null) {
 				throw error(BAD_REQUEST, "project_not_found", projectName);
 			}

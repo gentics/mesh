@@ -22,6 +22,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.request.UpdateDocumentRequest;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModelImpl;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedProjectElementEventModel;
@@ -77,7 +78,7 @@ public class PermissionChangedEventHandler implements EventHandler {
 
 	private Flowable<UpdateDocumentRequest> handleNodePermissionsChange(PermissionChangedProjectElementEventModel model) {
 		NodeContainerTransformer tf = (NodeContainerTransformer) meshEntities.nodeContent.getTransformer();
-		return meshHelper.getDb().tx(() -> ofNullable(meshHelper.getBoot().projectRoot().findByUuid(model.getProject().getUuid()))
+		return meshHelper.getDb().tx(() -> ofNullable(Tx.get().data().projectDao().findByUuid(model.getProject().getUuid()))
 			.flatMap(project -> ofNullable(project.getNodeRoot().findByUuid(model.getUuid()))
 				.flatMap(node -> project.getBranchRoot().findAll().stream().map(MeshElement::getUuid)
 					.flatMap(branchUuid -> Util.latestVersionTypes()

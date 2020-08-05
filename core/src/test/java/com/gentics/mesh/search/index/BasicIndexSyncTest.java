@@ -241,8 +241,8 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		assertMetrics("project", 0, 1, 0);
 
 		// Now manually delete the project
-		tx(() -> {
-			Project project = boot().projectRoot().findByName("project_2");
+		tx(tx -> {
+			Project project = tx.data().projectDao().findByName("project_2");
 			BulkActionContextImpl context = Mockito.mock(BulkActionContextImpl.class);
 			Mockito.when(context.batch()).thenReturn(Mockito.mock(EventQueueBatch.class));
 			project.delete(context);

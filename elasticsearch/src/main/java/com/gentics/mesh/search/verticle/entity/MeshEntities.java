@@ -29,6 +29,7 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.ProjectEvent;
@@ -185,20 +186,20 @@ public class MeshEntities {
 
 	private Optional<TagFamily> toTagFamily(MeshElementEventModel eventModel) {
 		ProjectEvent event = Util.requireType(ProjectEvent.class, eventModel);
-		return findElementByUuid(boot.projectRoot(), event.getProject().getUuid())
+		return findElementByUuid(Tx.get().data().projectDao(), event.getProject().getUuid())
 			.flatMap(project -> findElementByUuid(project.getTagFamilyRoot(), eventModel.getUuid()));
 	}
 
 	private Optional<Tag> toTag(MeshElementEventModel eventModel) {
 		TagElementEventModel event = Util.requireType(TagElementEventModel.class, eventModel);
-		return findElementByUuid(boot.projectRoot(), event.getProject().getUuid())
+		return findElementByUuid(Tx.get().data().projectDao(), event.getProject().getUuid())
 			.flatMap(project -> findElementByUuid(project.getTagFamilyRoot(), event.getTagFamily().getUuid()))
 			.flatMap(family -> findElementByUuid(family, eventModel.getUuid()));
 	}
 
 	private Optional<NodeGraphFieldContainer> toNodeContent(MeshElementEventModel eventModel) {
 		NodeMeshEventModel event = Util.requireType(NodeMeshEventModel.class, eventModel);
-		return findElementByUuid(boot.projectRoot(), event.getProject().getUuid())
+		return findElementByUuid(Tx.get().data().projectDao(), event.getProject().getUuid())
 			.flatMap(project -> findElementByUuid(project.getNodeRoot(), eventModel.getUuid()))
 			.flatMap(node -> warningOptional(
 				"Could not find NodeGraphFieldContainer for event " + eventModel.toJson(),

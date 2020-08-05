@@ -11,6 +11,7 @@ import javax.naming.InvalidNameException;
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.distributed.RequestDelegator;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -127,7 +128,7 @@ public class RouterStorage {
 				database.tx(tx -> {
 					// Check whether there are any projects which do not have an
 					// active project router
-					for (Project project : boot.get().projectRoot().findAll()) {
+					for (Project project : Tx.get().data().projectDao().findAll()) {
 						if (!projectsRouter.hasProjectRouter(project.getName())) {
 							log.info("Mounting project {" + project.getName() + "}");
 							projectsRouter.addProjectRouter(project.getName());

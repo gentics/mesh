@@ -562,7 +562,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 				/*
 				 * TODO decide whether we need to check perms on the project as well
 				 */
-				Project project = mesh().boot().projectRoot().findByName(projectName);
+				Project project = Tx.get().data().projectDao().findByName(projectName);
 				if (project == null) {
 					throw error(BAD_REQUEST, "project_not_found", projectName);
 				}

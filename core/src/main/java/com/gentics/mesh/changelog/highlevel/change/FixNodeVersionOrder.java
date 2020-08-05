@@ -197,7 +197,7 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 	}
 
 	private Stream<? extends Project> singleBranchProjects() {
-		return boot.get().projectRoot().findAll().stream()
+		return Tx.get().data().projectDao().findAll().stream()
 			.filter(this::hasSingleBranch);
 	}
 

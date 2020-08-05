@@ -35,6 +35,7 @@ import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.error.NameConflictException;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -182,15 +183,17 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		ProjectCreateRequest requestModel = ac.fromJson(ProjectCreateRequest.class);
 		String projectName = requestModel.getName();
 		MeshAuthUser creator = ac.getUser();
+		
 
 		if (StringUtils.isEmpty(requestModel.getName())) {
 			throw error(BAD_REQUEST, "project_missing_name");
 		}
-		if (!userRoot.hasPermission(creator, boot.projectRoot(), CREATE_PERM)) {
-			throw error(FORBIDDEN, "error_missing_perm", boot.projectRoot().getUuid(), CREATE_PERM.getRestPerm().getName());
+		ProjectRoot projectDao = Tx.get().data().projectDao();
+		if (!userRoot.hasPermission(creator, projectDao, CREATE_PERM)) {
+			throw error(FORBIDDEN, "error_missing_perm", Tx.get().data().projectDao().getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
 		// TODO instead of this check, a constraint in the db should be added
-		Project conflictingProject = boot.projectRoot().findByName(requestModel.getName());
+		Project conflictingProject = projectDao.findByName(requestModel.getName());
 		if (conflictingProject != null) {
 			throw new NameConflictException("project_conflicting_name", projectName, conflictingProject.getUuid());
 		}

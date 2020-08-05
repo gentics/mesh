@@ -17,6 +17,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.MeshProjectElementEventModel;
 import com.gentics.mesh.core.rest.event.ProjectEvent;
@@ -91,7 +92,7 @@ public class TagFamilyEventHandler implements EventHandler {
 	 * @return
 	 */
 	private Stream<SearchRequest> createNodeUpdates(MeshProjectElementEventModel model, TagFamily tagFamily) {
-		return findElementByUuidStream(helper.getBoot().projectRoot(), model.getProject().getUuid())
+		return findElementByUuidStream(Tx.get().data().projectDao(), model.getProject().getUuid())
 			.flatMap(project -> project.getBranchRoot().findAll().stream()
 				.flatMap(branch -> tagFamily.findAll().stream()
 					.flatMap(tag -> tag.getNodes(branch).stream())

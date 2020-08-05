@@ -143,7 +143,7 @@ public class NodeContentEventHandler implements EventHandler {
 	private Transactional<SchemaContainerVersion> findLatestSchemaVersion(NodeMeshEventModel message) {
 		return helper.getDb().transactional(tx -> {
 			SchemaContainer schema = boot.schemaContainerRoot().findByUuid(message.getSchema().getUuid());
-			return boot.projectRoot().findByUuid(message.getProject().getUuid())
+			return tx.data().projectDao().findByUuid(message.getProject().getUuid())
 				.getBranchRoot().findByUuid(message.getBranchUuid())
 				.findLatestSchemaVersion(schema);
 		});

@@ -1,6 +1,7 @@
 package com.gentics.mesh.search.verticle.eventhandler.node;
 
 import com.gentics.mesh.core.data.search.request.SearchRequest;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.node.NodeTaggedEventModel;
 import com.gentics.mesh.search.verticle.MessageEvent;
@@ -40,7 +41,7 @@ public class NodeTagEventHandler implements EventHandler {
 	public Flowable<SearchRequest> handle(MessageEvent messageEvent) {
 		return Flowable.defer(() -> {
 			NodeTaggedEventModel model = requireType(NodeTaggedEventModel.class, messageEvent.message);
-			return helper.getDb().transactional(tx -> findElementByUuidStream(helper.getBoot().projectRoot(), model.getProject().getUuid())
+			return helper.getDb().transactional(tx -> findElementByUuidStream(Tx.get().data().projectDao(), model.getProject().getUuid())
 				.flatMap(project -> findElementByUuidStream(project.getBranchRoot(), model.getBranch().getUuid())
 				.flatMap(branch -> entities.generateNodeRequests(model.getNode().getUuid(), project, branch)))
 			.collect(toFlowable())).runInNewTx();
