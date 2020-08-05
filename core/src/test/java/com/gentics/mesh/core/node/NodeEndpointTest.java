@@ -900,6 +900,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			String uuid = tx(() -> node.getUuid());
 			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().published()));
 
+			/*
+			 * Extra case for https://github.com/gentics/mesh/issues/1104
 			// The draft version shares the same container with the published version.
 			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()));
 	
@@ -911,6 +913,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			call(() -> client().updateNode(PROJECT_NAME, uuid, request));
 			revokeAdmin();
 			mesh().permissionCache().clear();
+			*/
 
 			// Now the containers are different and the request should fail
 			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()), FORBIDDEN, "error_missing_perm", uuid,
