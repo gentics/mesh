@@ -258,13 +258,13 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 	@Override
 	public boolean hasPermissionForId(User user, Object elementId, GraphPermission permission) {
 		PermissionCache permissionCache = mesh().permissionCache();
-		if (permissionCache.hasPermission(id(), permission, elementId)) {
+		if (permissionCache.hasPermission(user.id(), permission, elementId)) {
 			return true;
 		} else {
 			// Admin users have all permissions
 			if (user.isAdmin()) {
 				for (GraphPermission perm : GraphPermission.values()) {
-					permissionCache.store(id(), perm, elementId);
+					permissionCache.store(user.id(), perm, elementId);
 				}
 				return true;
 			}
@@ -273,7 +273,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 			// Find all roles that are assigned to the user by checking the
 			// shortcut edge from the index
 			String idxKey = "e." + ASSIGNED_TO_ROLE + "_out";
-			Iterable<Edge> roleEdges = graph.getEdges(idxKey.toLowerCase(), this.id());
+			Iterable<Edge> roleEdges = graph.getEdges(idxKey.toLowerCase(), user.id());
 			Vertex vertex = graph.getVertex(elementId);
 			for (Edge roleEdge : roleEdges) {
 				Vertex role = roleEdge.getVertex(Direction.IN);
@@ -285,7 +285,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 					// reduce the invalidation calls.
 					// This way we do not need to invalidate the cache if a role
 					// is removed from a group or a role is deleted.
-					permissionCache.store(id(), permission, elementId);
+					permissionCache.store(user.id(), permission, elementId);
 					return true;
 				}
 			}
