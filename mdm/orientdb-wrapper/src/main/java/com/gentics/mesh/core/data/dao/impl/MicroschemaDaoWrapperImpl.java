@@ -13,6 +13,7 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
@@ -40,7 +41,7 @@ import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.Vertx;
 
-public class MicroschemaDaoWrapperImpl implements MicroschemaContainerRoot {
+public class MicroschemaDaoWrapperImpl implements MicroschemaDaoWrapper {
 
 	private final MicroschemaContainerRoot delegate;
 

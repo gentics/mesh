@@ -40,7 +40,7 @@ import com.tinkerpop.blueprints.Vertex;
 import io.vertx.core.Vertx;
 
 // Use ProjectDao instead of ProjectRoot once ready 
-public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDaoWrapper {
+public class ProjectDaoWrapperImpl implements ProjectDaoWrapper {
 
 	private final ProjectRoot delegate;
 

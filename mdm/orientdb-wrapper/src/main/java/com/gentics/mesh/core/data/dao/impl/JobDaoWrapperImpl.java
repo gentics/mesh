@@ -15,6 +15,7 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.JobDaoWrapper;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.page.TransformablePage;
@@ -42,7 +43,7 @@ import com.tinkerpop.blueprints.Vertex;
 import io.reactivex.Completable;
 import io.vertx.core.Vertx;
 
-public class JobDaoWrapperImpl {
+public class JobDaoWrapperImpl implements JobDaoWrapper {
 
 	private final JobRoot delegate;
 

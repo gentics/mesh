@@ -9,14 +9,19 @@ import java.util.stream.Stream;
 import com.gentics.madl.traversal.RawTraversalResult;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HasPermissions;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
+import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -36,7 +41,7 @@ import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.Vertx;
 
-public class UserDaoWrapperImpl {
+public class UserDaoWrapperImpl implements UserDaoWrapper {
 
 	private final UserRoot delegate;
 
@@ -415,6 +420,62 @@ public class UserDaoWrapperImpl {
 
 	public long computeCount() {
 		return delegate.computeCount();
+	}
+
+	@Override
+	public void delete(User element, BulkActionContext bac) {
+		delegate.delete(element, bac);
+	}
+
+	@Override
+	public User addPermissionsOnRole(User user, HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode,
+		GraphPermission... toGrant) {
+		return delegate.addPermissionsOnRole(user, sourceNode, permission, targetNode, toGrant);
+	}
+
+	@Override
+	public User addCRUDPermissionOnRole(User user, HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode) {
+		return delegate.addCRUDPermissionOnRole(user, sourceNode, permission, targetNode);
+	}
+
+	@Override
+	public boolean canReadNode(User user, InternalActionContext ac, Node node) {
+		return delegate.canReadNode(user, ac, node);
+	}
+
+	@Override
+	public String getAPIPath(User element, InternalActionContext ac) {
+		return delegate.getAPIPath(element, ac);
+	}
+
+	@Override
+	public String getETag(User element, InternalActionContext ac) {
+		return delegate.getETag(element, ac);
+	}
+
+	@Override
+	public boolean hasReadPermission(User user, NodeGraphFieldContainer container, String branchUuid, String requestedVersion) {
+		return delegate.hasReadPermission(user, container, branchUuid, requestedVersion);
+	}
+
+	@Override
+	public User inheritRolePermissions(User user, MeshVertex sourceNode, MeshVertex targetNode) {
+		return delegate.inheritRolePermissions(user, sourceNode, targetNode);
+	}
+
+	@Override
+	public UserResponse transformToRestSync(User element, InternalActionContext ac, int level, String... languageTags) {
+		return delegate.transformToRestSync(element, ac, level, languageTags);
+	}
+
+	@Override
+	public boolean update(User user, InternalActionContext ac, EventQueueBatch batch) {
+		return delegate.update(user, ac, batch);
+	}
+
+	@Override
+	public boolean updateDry(User user, InternalActionContext ac) {
+		return delegate.updateDry(user, ac);
 	}
 
 }

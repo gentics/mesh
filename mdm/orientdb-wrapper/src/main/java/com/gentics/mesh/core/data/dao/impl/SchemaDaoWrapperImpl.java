@@ -13,6 +13,7 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
@@ -41,7 +42,7 @@ import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.Vertx;
 
-public class SchemaDaoWrapperImpl implements SchemaContainerRoot {
+public class SchemaDaoWrapperImpl implements SchemaDaoWrapper {
 
 	private final SchemaContainerRoot delegate;
 

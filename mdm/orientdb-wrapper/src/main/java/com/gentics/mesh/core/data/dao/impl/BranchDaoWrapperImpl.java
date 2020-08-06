@@ -40,7 +40,7 @@ import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.Vertx;
 
-public class BranchDaoWrapperImpl implements BranchRoot, BranchDaoWrapper {
+public class BranchDaoWrapperImpl implements BranchDaoWrapper {
 
 	private final BranchRoot delegate;
 
@@ -437,6 +437,11 @@ public class BranchDaoWrapperImpl implements BranchRoot, BranchDaoWrapper {
 	@Override
 	public Branch findByUuid(Project project, String uuid) {
 		return delegate.findByUuid(project, uuid);
+	}
+
+	@Override
+	public void delete(Branch element, BulkActionContext bac) {
+		delegate.delete(element, bac);
 	}
 
 }
