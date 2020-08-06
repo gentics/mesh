@@ -242,15 +242,16 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 * @return indexName -> documentName -> NodeGraphFieldContainer
 	 */
 	private Map<String, Map<String, NodeGraphFieldContainer>> loadVersionsFromGraph(Branch branch, SchemaContainerVersion version, ContainerType type) {
-		return db.tx(() -> {
+		Map<String, Map<String, NodeGraphFieldContainer>> tx = db.tx(() -> {
 			String branchUuid = branch.getUuid();
 			List<String> indexLanguages = version.getSchema().findOverriddenSearchLanguages().collect(Collectors.toList());
 
 			return version.getFieldContainers(branchUuid)
 				.filter(c -> c.isType(type, branchUuid))
+				.map(NodeGraphFieldContainer.class::cast)
 				.collect(Collectors.groupingBy(content -> {
-					String languageTag = content.getLanguageTag();
-					return NodeGraphFieldContainer.composeIndexName(
+						String languageTag = content.getLanguageTag();
+						return NodeGraphFieldContainer.composeIndexName(
 							branch.getProject().getUuid(),
 							branchUuid,
 							version.getUuid(),
@@ -263,6 +264,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 					Collectors.toMap(c -> c.getParentNode().getUuid() + "-" + c.getLanguageTag(), Function.identity())
 				));
 		});
+		return tx;
 	}
 
 	/**

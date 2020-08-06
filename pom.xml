@@ -230,9 +230,9 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
 					<verbose>false</verbose>
-					<compilerVersion>1.8</compilerVersion>
-					<source>1.8</source>
-					<target>1.8</target>
+					<compilerVersion>11</compilerVersion>
+					<source>11</source>
+					<target>11</target>
 				</configuration>
 			</plugin>
 			<plugin>

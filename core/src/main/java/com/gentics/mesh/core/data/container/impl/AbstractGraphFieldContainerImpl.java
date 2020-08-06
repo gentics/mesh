@@ -401,11 +401,12 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 		Function<FieldTypes, List<FieldSchema>> getFields = type -> Optional.ofNullable(affectedFields.get(type.toString()))
 			.orElse(Collections.emptyList());
 
-		return Stream.of(
+		Stream<Stream<Node>> nodeStream = Stream.of(
 			getFields.apply(FieldTypes.NODE).stream().flatMap(this::getNodeFromNodeField),
 			getFields.apply(FieldTypes.MICRONODE).stream().flatMap(this::getNodesFromMicronode),
 			getFields.apply(FieldTypes.LIST).stream().flatMap(this::getNodesFromList)
-		).flatMap(Function.identity())::iterator;
+		);
+		return nodeStream.flatMap(Function.identity())::iterator;
 	}
 
 	/**
