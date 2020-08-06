@@ -2,11 +2,12 @@ package com.gentics.mesh.core.data.root;
 
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.rest.role.RoleResponse;
 
 /**
  * Aggregation node for roles.
  */
-public interface RoleRoot extends RootVertex<Role> {
+public interface RoleRoot extends RootVertex<Role>, TransformableElementRoot<Role, RoleResponse> {
 
 	public static final String TYPE = "roles";
 

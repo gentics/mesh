@@ -15,6 +15,7 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
@@ -22,8 +23,12 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.RoleImpl;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
+import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.parameter.GenericParameters;
+import com.gentics.mesh.parameter.value.FieldsSet;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -109,4 +114,31 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 		throw error(INTERNAL_SERVER_ERROR, "The global role root can't be deleted.");
 	}
 
+	@Override
+	public RoleResponse transformToRestSync(Role role, InternalActionContext ac, int level, String... languageTags) {
+		GenericParameters generic = ac.getGenericParameters();
+		FieldsSet fields = generic.getFields();
+
+		RoleResponse restRole = new RoleResponse();
+
+		if (fields.has("name")) {
+			restRole.setName(role.getName());
+		}
+
+		if (fields.has("groups")) {
+			setGroups(role, ac, restRole);
+		}
+		role.fillCommonRestFields(ac, fields, restRole);
+
+		setRolePermissions(role, ac, restRole);
+		return restRole;
+
+	}
+
+	private void setGroups(Role role, InternalActionContext ac, RoleResponse restRole) {
+		for (Group group : role.getGroups()) {
+			restRole.getGroups().add(group.transformToReference());
+		}
+	}
+	
 }

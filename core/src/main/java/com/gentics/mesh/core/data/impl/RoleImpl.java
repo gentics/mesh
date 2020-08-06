@@ -1,20 +1,15 @@
 package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import com.gentics.madl.index.IndexHandler;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
@@ -28,6 +23,7 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
@@ -35,14 +31,8 @@ import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.madl.field.FieldType;
 import com.gentics.mesh.madl.traversal.TraversalResult;
-import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.parameter.value.FieldsSet;
-import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.traversals.VertexTraversal;
-import com.tinkerpop.blueprints.Edge;
-
-import io.reactivex.Single;
 
 /**
  * @see Role
@@ -118,28 +108,8 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 
 	@Override
 	public RoleResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		GenericParameters generic = ac.getGenericParameters();
-		FieldsSet fields = generic.getFields();
-
-		RoleResponse restRole = new RoleResponse();
-
-		if (fields.has("name")) {
-			restRole.setName(getName());
-		}
-
-		if (fields.has("groups")) {
-			setGroups(ac, restRole);
-		}
-		fillCommonRestFields(ac, fields, restRole);
-
-		setRolePermissions(ac, restRole);
-		return restRole;
-	}
-
-	private void setGroups(InternalActionContext ac, RoleResponse restRole) {
-		for (Group group : getGroups()) {
-			restRole.getGroups().add(group.transformToReference());
-		}
+		RoleRoot roleRoot = mesh().boot().roleRoot();
+		return roleRoot.transformToRestSync(this, ac, level, languageTags);
 	}
 
 	@Override
