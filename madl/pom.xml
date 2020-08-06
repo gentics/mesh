@@ -31,7 +31,6 @@
 		<module>api</module>
 		<module>core</module>
 		<module>madl-ferma</module>
-		<module>neo4j</module>
 		<module>orientdb</module>
 	</modules>
 </project>
