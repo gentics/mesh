@@ -16,7 +16,12 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.root.TagRoot;
+import com.gentics.mesh.core.rest.tag.TagFamilyReference;
+import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.parameter.GenericParameters;
+import com.gentics.mesh.parameter.value.FieldsSet;
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -102,6 +107,38 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	@Override
 	public Tag create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		throw new NotImplementedException("The tag family is the root element thus should be used for creation of tags.");
+	}
+
+	@Override
+	public TagResponse transformToRestSync(Tag tag, InternalActionContext ac, int level, String... languageTags) {
+		GenericParameters generic = ac.getGenericParameters();
+		FieldsSet fields = generic.getFields();
+
+		TagResponse restTag = new TagResponse();
+		if (fields.has("uuid")) {
+			restTag.setUuid(tag.getUuid());
+			// Performance shortcut to return now and ignore the other checks
+			if (fields.size() == 1) {
+				return restTag;
+			}
+		}
+		if (fields.has("tagFamily")) {
+			TagFamily tagFamily = tag.getTagFamily();
+			if (tagFamily != null) {
+				TagFamilyReference tagFamilyReference = new TagFamilyReference();
+				tagFamilyReference.setName(tagFamily.getName());
+				tagFamilyReference.setUuid(tagFamily.getUuid());
+				restTag.setTagFamily(tagFamilyReference);
+			}
+		}
+		if (fields.has("name")) {
+			restTag.setName(tag.getName());
+		}
+
+		tag.fillCommonRestFields(ac, fields, restTag);
+		setRolePermissions(tag, ac, restTag);
+		return restTag;
+
 	}
 
 }

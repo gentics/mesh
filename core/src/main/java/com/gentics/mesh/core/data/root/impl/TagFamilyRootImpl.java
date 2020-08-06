@@ -29,7 +29,10 @@ import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
+import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.parameter.GenericParameters;
+import com.gentics.mesh.parameter.value.FieldsSet;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -150,11 +153,40 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 				if ("tags".contentEquals(nestedRootNode)) {
 					return tagFamily.resolveToElement(stack);
 				} else {
-					//TODO i18n
+					// TODO i18n
 					throw error(NOT_FOUND, "Unknown tagFamily element {" + nestedRootNode + "}");
 				}
 			}
 		}
+	}
+
+	@Override
+	public TagFamilyResponse transformToRestSync(TagFamily tagFamily, InternalActionContext ac, int level, String... languageTags) {
+		GenericParameters generic = ac.getGenericParameters();
+		FieldsSet fields = generic.getFields();
+
+		TagFamilyResponse restTagFamily = new TagFamilyResponse();
+		if (fields.has("uuid")) {
+			restTagFamily.setUuid(tagFamily.getUuid());
+
+			// Performance shortcut to return now and ignore the other checks
+			if (fields.size() == 1) {
+				return restTagFamily;
+			}
+		}
+
+		if (fields.has("name")) {
+			restTagFamily.setName(tagFamily.getName());
+		}
+
+		tagFamily.fillCommonRestFields(ac, fields, restTagFamily);
+
+		if (fields.has("perms")) {
+			setRolePermissions(tagFamily, ac, restTagFamily);
+		}
+
+		return restTagFamily;
+
 	}
 
 }

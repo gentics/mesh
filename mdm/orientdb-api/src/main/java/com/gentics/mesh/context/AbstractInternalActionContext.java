@@ -21,8 +21,6 @@ public abstract class AbstractInternalActionContext extends AbstractActionContex
 
 	private static final String SKIP_LOCK_DATA_KEY = "SKIP_LOCK";
 
-	private boolean skipWriteLock = false;
-
 	/**
 	 * Field which will store the body model.
 	 */

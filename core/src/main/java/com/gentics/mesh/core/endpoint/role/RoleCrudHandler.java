@@ -21,6 +21,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
@@ -69,12 +70,12 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 		}
 
 		utils.syncTx(ac, tx -> {
-
+			RoleRoot roleDao = tx.data().roleDao();
 			if (log.isDebugEnabled()) {
 				log.debug("Handling permission request for element on path {" + pathToElement + "}");
 			}
 			// 1. Load the role that should be used - read perm implies that the user is able to read the attached permissions
-			Role role = boot.roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
+			Role role = roleDao.loadObjectByUuid(ac, roleUuid, READ_PERM);
 
 			// 2. Resolve the path to element that is targeted
 			MeshVertex targetElement = boot.meshRoot().resolvePathToElement(pathToElement);
@@ -118,8 +119,9 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 					log.debug("Handling permission request for element on path {" + pathToElement + "}");
 				}
 
+				RoleRoot roleDao = tx.data().roleDao();
 				// 1. Load the role that should be used
-				Role role = boot.roleRoot().loadObjectByUuid(ac, roleUuid, UPDATE_PERM);
+				Role role = roleDao.loadObjectByUuid(ac, roleUuid, UPDATE_PERM);
 
 				// 2. Resolve the path to element that is targeted
 				MeshVertex element = boot.meshRoot().resolvePathToElement(pathToElement);

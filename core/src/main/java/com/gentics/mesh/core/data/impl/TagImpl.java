@@ -35,7 +35,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -50,9 +50,7 @@ import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.madl.traversal.TraversalResult;
-import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.parameter.value.FieldsSet;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
@@ -100,33 +98,8 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 
 	@Override
 	public TagResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		GenericParameters generic = ac.getGenericParameters();
-		FieldsSet fields = generic.getFields();
-
-		TagResponse restTag = new TagResponse();
-		if (fields.has("uuid")) {
-			restTag.setUuid(getUuid());
-			// Performance shortcut to return now and ignore the other checks
-			if (fields.size() == 1) {
-				return restTag;
-			}
-		}
-		if (fields.has("tagFamily")) {
-			TagFamily tagFamily = getTagFamily();
-			if (tagFamily != null) {
-				TagFamilyReference tagFamilyReference = new TagFamilyReference();
-				tagFamilyReference.setName(tagFamily.getName());
-				tagFamilyReference.setUuid(tagFamily.getUuid());
-				restTag.setTagFamily(tagFamilyReference);
-			}
-		}
-		if (fields.has("name")) {
-			restTag.setName(getName());
-		}
-
-		fillCommonRestFields(ac, fields, restTag);
-		setRolePermissions(ac, restTag);
-		return restTag;
+		TagRoot tagRoot = mesh().boot().tagRoot();
+		return tagRoot.transformToRestSync(this, ac, level, languageTags);
 	}
 
 	@Override

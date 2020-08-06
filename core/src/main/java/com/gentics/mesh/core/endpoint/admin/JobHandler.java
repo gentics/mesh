@@ -104,17 +104,18 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 	@Override
 	public void handleRead(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		utils.syncTx(ac, (tx) -> {
+		utils.syncTx(ac, tx -> {
 			if (!ac.getUser().isAdmin()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
-			JobRoot root = boot.jobRoot();
-			Job job = root.loadObjectByUuidNoPerm(uuid, true);
+			JobRoot jobDao = tx.data().jobDao();
+			Job job = jobDao.loadObjectByUuidNoPerm(uuid, true);
 			String etag = job.getETag(ac);
 			ac.setEtag(etag, true);
 			if (ac.matches(etag, true)) {
 				throw new NotModifiedException();
 			} else {
+				// TODO Careful. Each job impl. may have a different transform impl.
 				return job.transformToRestSync(ac, 0);
 			}
 		}, model -> ac.send(model, OK));
@@ -132,7 +133,7 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 	 * @param uuid
 	 */
 	public void handleResetJob(InternalActionContext ac, String uuid) {
-		utils.syncTx(ac, (tx) -> {
+		utils.syncTx(ac, tx -> {
 			if (!ac.getUser().isAdmin()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}

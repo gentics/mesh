@@ -3,11 +3,12 @@ package com.gentics.mesh.core.data.root;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 
 /**
  * Aggregation node for tag families.
  */
-public interface TagFamilyRoot extends RootVertex<TagFamily> {
+public interface TagFamilyRoot extends RootVertex<TagFamily>, TransformableElementRoot<TagFamily, TagFamilyResponse> {
 
 	public static final String TYPE = "tagFamilies";
 

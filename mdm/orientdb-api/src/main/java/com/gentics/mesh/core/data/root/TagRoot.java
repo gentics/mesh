@@ -4,11 +4,12 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.rest.tag.TagResponse;
 
 /**
  * Aggregation node for tags.
  */
-public interface TagRoot extends RootVertex<Tag> {
+public interface TagRoot extends RootVertex<Tag>, TransformableElementRoot<Tag, TagResponse> {
 
 	public static final String TYPE = "tags";
 

@@ -19,6 +19,7 @@ import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
+import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -381,6 +382,21 @@ public class TagDaoWrapperImpl implements TagRoot {
 
 	public long computeCount() {
 		return delegate.computeCount();
+	}
+
+	@Override
+	public TagResponse transformToRestSync(Tag tag, InternalActionContext ac, int level, String... languageTags) {
+		return delegate.transformToRestSync(tag, ac, level, languageTags);
+	}
+
+	@Override
+	public String getAPIPath(Tag tag, InternalActionContext ac) {
+		return delegate.getAPIPath(tag, ac);
+	}
+
+	@Override
+	public String getETag(Tag tag, InternalActionContext ac) {
+		return delegate.getETag(tag, ac);
 	}
 
 }

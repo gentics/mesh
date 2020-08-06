@@ -44,9 +44,7 @@ import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.parameter.value.FieldsSet;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 import io.vertx.core.logging.Logger;
@@ -148,30 +146,8 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public TagFamilyResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		GenericParameters generic = ac.getGenericParameters();
-		FieldsSet fields = generic.getFields();
-
-		TagFamilyResponse restTagFamily = new TagFamilyResponse();
-		if (fields.has("uuid")) {
-			restTagFamily.setUuid(getUuid());
-
-			// Performance shortcut to return now and ignore the other checks
-			if (fields.size() == 1) {
-				return restTagFamily;
-			}
-		}
-
-		if (fields.has("name")) {
-			restTagFamily.setName(getName());
-		}
-
-		fillCommonRestFields(ac, fields, restTagFamily);
-
-		if (fields.has("perms")) {
-			setRolePermissions(ac, restTagFamily);
-		}
-
-		return restTagFamily;
+		TagFamilyRoot tagFamilyDao = mesh().boot().tagFamilyRoot();
+		return tagFamilyDao.transformToRestSync(this, ac, level, languageTags);
 	}
 
 	@Override
