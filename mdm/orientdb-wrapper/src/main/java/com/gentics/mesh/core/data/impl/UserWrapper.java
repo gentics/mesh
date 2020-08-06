@@ -8,10 +8,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.HasPermissions;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
@@ -431,10 +428,6 @@ public class UserWrapper implements User {
 		delegate.linkIn(vertex, labels);
 	}
 
-	public User addCRUDPermissionOnRole(HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode) {
-		return delegate.addCRUDPermissionOnRole(sourceNode, permission, targetNode);
-	}
-
 	public void unlinkOut(com.syncleus.ferma.VertexFrame vertex, String... labels) {
 		delegate.unlinkOut(vertex, labels);
 	}
@@ -459,20 +452,8 @@ public class UserWrapper implements User {
 		return delegate.reframe(kind);
 	}
 
-	public User addPermissionsOnRole(HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode, GraphPermission... toGrant) {
-		return delegate.addPermissionsOnRole(sourceNode, permission, targetNode, toGrant);
-	}
-
 	public <T> T reframeExplicit(Class<T> kind) {
 		return delegate.reframeExplicit(kind);
-	}
-
-	public User inheritRolePermissions(MeshVertex sourceNode, MeshVertex targetNode) {
-		return delegate.inheritRolePermissions(sourceNode, targetNode);
-	}
-
-	public boolean updateDry(InternalActionContext ac) {
-		return delegate.updateDry(ac);
 	}
 
 	public Page<? extends Group> getGroups(User user, PagingParameters params) {
@@ -519,22 +500,6 @@ public class UserWrapper implements User {
 		return delegate.enable();
 	}
 
-	public User deactivate() {
-		return delegate.deactivate();
-	}
-
-	public boolean hasReadPermission(NodeGraphFieldContainer container, String branchUuid, String requestedVersion) {
-		return delegate.hasReadPermission(container, branchUuid, requestedVersion);
-	}
-
-	public void failOnNoReadPermission(NodeGraphFieldContainer container, String branchUuid, String requestedVersion) {
-		delegate.failOnNoReadPermission(container, branchUuid, requestedVersion);
-	}
-
-	public boolean canReadNode(InternalActionContext ac, Node node) {
-		return delegate.canReadNode(ac, node);
-	}
-
 	public User setResetToken(String token) {
 		return delegate.setResetToken(token);
 	}
@@ -561,10 +526,6 @@ public class UserWrapper implements User {
 
 	public User invalidateResetToken() {
 		return delegate.invalidateResetToken();
-	}
-
-	public boolean isResetTokenValid(String token, int maxTokenAgeMins) {
-		return delegate.isResetTokenValid(token, maxTokenAgeMins);
 	}
 
 	public String getAPIKeyTokenCode() {

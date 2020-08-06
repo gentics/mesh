@@ -98,7 +98,7 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 		}
 
 		Role role = create(requestModel.getName(), requestUser, uuid);
-		requestUser.inheritRolePermissions(this, role);
+		userRoot.inheritRolePermissions(requestUser, this, role);
 		batch.add(role.onCreated());
 		return role;
 

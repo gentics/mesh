@@ -24,6 +24,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.service.WebRootServiceImpl;
 import com.gentics.mesh.core.endpoint.node.BinaryFieldResponseHandler;
 import com.gentics.mesh.core.endpoint.node.NodeCrudHandler;
@@ -31,8 +32,8 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -98,6 +99,7 @@ public class WebRootHandler {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				MeshAuthUser requestUser = ac.getUser();
+				UserRoot userRoot = tx.data().userDao();
 
 				String branchUuid = ac.getBranch().getUuid();
 				// Load all nodes for the given path
@@ -120,7 +122,7 @@ public class WebRootHandler {
 				String version = ac.getVersioningParameters().getVersion();
 				Node node = container.getParentNode();
 				addCacheControl(rc, node, version);
-				requestUser.failOnNoReadPermission(container, branchUuid, version);
+				userRoot.failOnNoReadPermission(requestUser, container, branchUuid, version);
 
 				rc.response().putHeader(MeshHeaders.WEBROOT_NODE_UUID, node.getUuid());
 				// TODO decide whether we want to add also lang, version

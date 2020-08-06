@@ -16,7 +16,6 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -35,11 +34,13 @@ import com.gentics.mesh.core.data.node.field.list.ListGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
+import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.util.CompareUtils;
@@ -162,11 +163,12 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 		// TODO handle null across all types
 		// if (getNode() != null) {
 		NodeParameters parameters = ac.getNodeParameters();
+		UserRoot userRoot = mesh().boot().userRoot();
 		boolean expandField = ac.getNodeParameters().getExpandedFieldnameList().contains(fieldKey) || parameters.getExpandAll();
 		Node node = getNode();
 
 		// Check whether the user is allowed to read the node reference
-		boolean canReadNode = ac.getUser().canReadNode(ac, node);
+		boolean canReadNode = userRoot.canReadNode(ac.getUser(), ac, node);
 		if (!canReadNode) {
 			return null;
 		}

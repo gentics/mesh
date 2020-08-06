@@ -300,7 +300,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			User user = user();
 			User newUser = root.getUserRoot().create("Anton", user());
 			assertFalse(userRoot.hasPermission(user, newUser, GraphPermission.CREATE_PERM));
-			user.inheritRolePermissions(root.getUserRoot(), newUser);
+			userRoot.inheritRolePermissions(user, root.getUserRoot(), newUser);
 			assertTrue(userRoot.hasPermission(user, newUser, GraphPermission.CREATE_PERM));
 		}
 	}
@@ -350,7 +350,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			roleWithNoPerm = meshRoot().getRoleRoot().create("roleWithNoPerm", newUser);
 			newGroup.addRole(roleWithNoPerm);
-			user().inheritRolePermissions(sourceNode, targetNode);
+			userRoot.inheritRolePermissions(user(), sourceNode, targetNode);
 			ac.data().clear();
 			for (GraphPermission perm : GraphPermission.values()) {
 				assertTrue(

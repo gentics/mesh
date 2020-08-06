@@ -238,7 +238,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 				UserRoot root = boot.userRoot();
 				com.gentics.mesh.core.data.User admin = root.findByUsername("admin");
 				com.gentics.mesh.core.data.User createdUser = root.create(username, admin);
-				admin.inheritRolePermissions(root, createdUser);
+				root.inheritRolePermissions(admin, root, createdUser);
 
 				MeshAuthUser user = root.findMeshAuthUserByUsername(username);
 				String uuid = user.getUuid();
@@ -336,6 +336,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		if (!plugins.isEmpty()) {
 			RoleRoot roleRoot = boot.roleRoot();
 			GroupRoot groupRoot = boot.groupRoot();
+			UserRoot userRoot = boot.userRoot();
 
 			for (AuthServicePlugin plugin : plugins) {
 				try {
@@ -353,7 +354,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 						InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 						ac.setBody(mappedUser);
 						ac.setUser(admin.toAuthUser());
-						if (!delegator.canWrite() && user.updateDry(ac)) {
+						if (!delegator.canWrite() && userRoot.updateDry(user, ac)) {
 							throw new CannotWriteException();
 						}
 						user.update(ac, batch);
@@ -372,7 +373,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 							if (role == null) {
 								requiresWrite();
 								role = roleRoot.create(roleName, admin);
-								admin.inheritRolePermissions(roleRoot, role);
+								userRoot.inheritRolePermissions(admin, roleRoot, role);
 								batch.add(role.onCreated());
 							}
 						}
@@ -392,7 +393,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 							if (group == null) {
 								requiresWrite();
 								group = groupRoot.create(groupName, admin);
-								admin.inheritRolePermissions(groupRoot, group);
+								userRoot.inheritRolePermissions(admin, groupRoot, group);
 								batch.add(group.onCreated());
 								created = true;
 							}

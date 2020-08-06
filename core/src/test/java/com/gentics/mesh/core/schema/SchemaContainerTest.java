@@ -18,6 +18,7 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
+import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
@@ -174,10 +175,11 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 	@Override
 	public void testCRUDPermissions() throws MeshSchemaException {
 		try (Tx tx = tx()) {
+			UserRoot userRoot = tx.data().userDao();
 			SchemaModel schema = FieldUtil.createMinimalValidSchema();
 			SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
 			assertFalse(role().hasPermission(GraphPermission.CREATE_PERM, newContainer));
-			getRequestUser().inheritRolePermissions(meshRoot().getSchemaContainerRoot(), newContainer);
+			userRoot.inheritRolePermissions(getRequestUser(), meshRoot().getSchemaContainerRoot(), newContainer);
 			assertTrue("The addCRUDPermissionOnRole method should add the needed permissions on the new schema container.", role().hasPermission(
 				GraphPermission.CREATE_PERM, newContainer));
 		}

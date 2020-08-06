@@ -224,7 +224,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			Node node = folder("2015").create(user(), getSchemaContainer().getLatestVersion(), project());
 			InternalActionContext ac = mockActionContext("");
 			assertFalse(userRoot.hasPermission(user(), node, GraphPermission.CREATE_PERM));
-			user().inheritRolePermissions(folder("2015"), node);
+			userRoot.inheritRolePermissions(user(), folder("2015"), node);
 			ac.data().clear();
 			assertTrue(userRoot.hasPermission(user(), node, GraphPermission.CREATE_PERM));
 		}

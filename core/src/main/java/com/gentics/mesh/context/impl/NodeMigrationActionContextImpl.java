@@ -17,10 +17,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.NodeMigrationActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.HasPermissions;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
@@ -232,11 +229,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public boolean updateDry(InternalActionContext ac) {
-				return true;
-			}
-
-			@Override
 			public User setUsername(String string) {
 				return this;
 			}
@@ -272,16 +264,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public User inheritRolePermissions(MeshVertex sourceNode, MeshVertex targetNode) {
-				return this;
-			}
-
-			@Override
-			public boolean hasReadPermission(NodeGraphFieldContainer container, String branchUuid, String requestedVersion) {
-				return false;
-			}
-
-			@Override
 			public String getUsername() {
 				return "node_migration";
 			}
@@ -312,16 +294,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 			@Override
 			public Node getReferencedNode() {
-				return null;
-			}
-
-			@Override
-			public User addCRUDPermissionOnRole(HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode) {
-				return null;
-			}
-
-			@Override
-			public User addPermissionsOnRole(HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode, GraphPermission... toGrant) {
 				return null;
 			}
 
@@ -373,16 +345,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			@Override
 			public User disable() {
 				return this;
-			}
-
-			@Override
-			public User deactivate() {
-				return this;
-			}
-
-			@Override
-			public boolean canReadNode(InternalActionContext ac, Node node) {
-				return true;
 			}
 
 			@Override
@@ -665,6 +627,26 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 			@Override
 			public User setResetTokenIssueTimestamp(Long timestamp) {
+				return null;
+			}
+
+			@Override
+			public String getAPIKeyTokenCode() {
+				return null;
+			}
+
+			@Override
+			public User setAPITokenId(String code) {
+				return null;
+			}
+
+			@Override
+			public User setAPITokenIssueTimestamp() {
+				return null;
+			}
+
+			@Override
+			public User setAPITokenIssueTimestamp(Long timestamp) {
 				return null;
 			}
 

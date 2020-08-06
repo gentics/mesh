@@ -72,4 +72,17 @@ public final class CompareUtils {
 		return (a == null && b == null) || (a != null && NumberUtils.compare(a, b) == 0);
 	}
 
+	/**
+	 * Compare both values in order to determine whether the graph value should be updated.
+	 *
+	 * @param restValue
+	 *            Rest model string value
+	 * @param graphValue
+	 *            Graph string value
+	 * @return true if restValue is not null and the restValue is not equal to the graph value. Otherwise false.
+	 */
+	public static <T> boolean shouldUpdate(T restValue, T graphValue) {
+		return restValue != null && !restValue.equals(graphValue);
+	}
+
 }
