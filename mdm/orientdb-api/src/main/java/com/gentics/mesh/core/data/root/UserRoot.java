@@ -16,12 +16,13 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
+import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 
 /**
  * Aggregation node for users.
  */
-public interface UserRoot extends RootVertex<User> {
+public interface UserRoot extends RootVertex<User>, TransformableElementRoot<User, UserResponse> {
 	public static final String TYPE = "users";
 
 	/**

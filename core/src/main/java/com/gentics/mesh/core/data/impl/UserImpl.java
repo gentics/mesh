@@ -29,18 +29,14 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.data.root.impl.UserRootImpl;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.rest.group.GroupReference;
-import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.madl.traversal.TraversalResult;
-import com.gentics.mesh.parameter.GenericParameters;
-import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.util.ETag;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Direction;
@@ -272,88 +268,11 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		return new UserReference().setFirstName(getFirstname()).setLastName(getLastname()).setUuid(getUuid());
 	}
 
+	@Deprecated
 	@Override
 	public UserResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		GenericParameters generic = ac.getGenericParameters();
-		FieldsSet fields = generic.getFields();
-		UserResponse restUser = new UserResponse();
-
-		if (fields.has("username")) {
-			restUser.setUsername(getUsername());
-		}
-		if (fields.has("emailAddress")) {
-			restUser.setEmailAddress(getEmailAddress());
-		}
-		if (fields.has("firstname")) {
-			restUser.setFirstname(getFirstname());
-		}
-		if (fields.has("lastname")) {
-			restUser.setLastname(getLastname());
-		}
-		if (fields.has("admin")) {
-			restUser.setAdmin(isAdmin());
-		}
-		if (fields.has("enabled")) {
-			restUser.setEnabled(isEnabled());
-		}
-		if (fields.has("nodeReference")) {
-			setNodeReference(ac, restUser, level);
-		}
-		if (fields.has("groups")) {
-			setGroups(ac, restUser);
-		}
-		if (fields.has("rolesHash")) {
-			restUser.setRolesHash(getRolesHash());
-		}
-		if (fields.has("forcedPasswordChange")) {
-			restUser.setForcedPasswordChange(isForcedPasswordChange());
-		}
-		fillCommonRestFields(ac, fields, restUser);
-		setRolePermissions(ac, restUser);
-
-		return restUser;
-	}
-
-	/**
-	 * Set the groups to which the user belongs in the rest model.
-	 *
-	 * @param ac
-	 * @param restUser
-	 */
-	private void setGroups(InternalActionContext ac, UserResponse restUser) {
-		// TODO filter by permissions
-		for (Group group : getGroups()) {
-			GroupReference reference = group.transformToReference();
-			restUser.getGroups().add(reference);
-		}
-	}
-
-	/**
-	 * Add the node reference field to the user response (if required to).
-	 *
-	 * @param ac
-	 * @param restUser
-	 * @param level
-	 *            Current depth level of transformation
-	 */
-	private void setNodeReference(InternalActionContext ac, UserResponse restUser, int level) {
-		NodeParameters parameters = ac.getNodeParameters();
-
-		// Check whether a node reference was set.
-		Node node = getReferencedNode();
-		if (node == null) {
-			return;
-		}
-
-		// Check whether the node reference field of the user should be expanded
-		boolean expandReference = parameters.getExpandedFieldnameList().contains("nodeReference") || parameters.getExpandAll();
-		if (expandReference) {
-			restUser.setNodeResponse(node.transformToRestSync(ac, level));
-		} else {
-			NodeReference userNodeReference = node.transformToReference(ac);
-			restUser.setNodeReference(userNodeReference);
-		}
-
+		UserRoot userRoot = mesh().boot().userRoot();
+		return userRoot.transformToRestSync(this, ac, level, languageTags);
 	}
 
 	@Override
@@ -378,19 +297,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public void delete(BulkActionContext bac) {
-		// TODO don't allow this for the admin user
-		// disable();
-		// TODO we should not really delete users. Instead we should remove
-		// those from all groups and deactivate the access.
-		// if (log.isDebugEnabled()) {
-		// log.debug("Deleting user. The user will not be deleted. Instead the
-		// user will be just disabled and removed from all groups.");
-		// }
-		// outE(HAS_USER).removeAll();
-		bac.add(onDeleted());
-		getElement().remove();
-		bac.process();
-		mesh().permissionCache().clear();
+		UserRoot userRoot = mesh().boot().userRoot();
+		userRoot.delete(this, bac);
 	}
 
 	@Override
@@ -401,27 +309,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public String getSubETag(InternalActionContext ac) {
-		StringBuilder keyBuilder = new StringBuilder();
-		keyBuilder.append(getLastEditedTimestamp());
-
-		Node referencedNode = getReferencedNode();
-		boolean expandReference = ac.getNodeParameters().getExpandedFieldnameList().contains("nodeReference")
-			|| ac.getNodeParameters().getExpandAll();
-		// We only need to compute the full etag if the referenced node is expanded.
-		if (referencedNode != null && expandReference) {
-			keyBuilder.append("-");
-			keyBuilder.append(referencedNode.getETag(ac));
-		} else if (referencedNode != null) {
-			keyBuilder.append("-");
-			keyBuilder.append(referencedNode.getUuid());
-			keyBuilder.append(referencedNode.getProject().getName());
-		}
-		for (Group group : getGroups()) {
-			keyBuilder.append(group.getUuid());
-		}
-		keyBuilder.append(String.valueOf(isAdmin()));
-
-		return keyBuilder.toString();
+		UserRootImpl userRoot = (UserRootImpl)mesh().boot().userRoot();
+		return userRoot.getSubETag(this, ac);
 	}
 
 	@Override

@@ -12,15 +12,18 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HasPermissions;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.madl.traversal.TraversalResult;
@@ -36,7 +39,7 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * A root vertex is an aggregation vertex that is used to aggregate various basic elements such as users, nodes, groups.
  */
-public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> extends MeshVertex, HasPermissions {
+public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> extends MeshVertex, HasPermissions, HasPermissionsRoot {
 
 	public static final Logger log = LoggerFactory.getLogger(RootVertex.class);
 
@@ -345,4 +348,40 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 		return findAll().count();
 	}
 
+	/**
+	 * Get the permissions of a role for this element.
+	 *
+	 * @param vertex
+	 * @param ac
+	 * @param roleUuid
+	 * @return
+	 */
+	default PermissionInfo getRolePermissions(MeshVertex vertex, InternalActionContext ac, String roleUuid) {
+		// TODO implement
+		throw new RuntimeException("Not implemented");
+	}
+
+	/**
+	 * Return a traversal result for all roles which grant the permission to the element.
+	 *
+	 * @param vertex
+	 * @param perm
+	 * @return
+	 */
+	default TraversalResult<? extends Role> getRolesWithPerm(MeshVertex vertex, GraphPermission perm) {
+		// TODO implement
+		throw new RuntimeException("Not implemented");
+	}
+
+	/**
+	 * Delete the element. Additional entries will be added to the batch to keep the search index in sync.
+	 *
+	 * @param element
+	 * @param bac
+	 *            Deletion context which keeps track of the deletion process
+	 */
+	default void delete(T element, BulkActionContext bac) {
+		// TODO implement this in all derived classes
+		throw new RuntimeException("Not implemented");
+	}
 }
