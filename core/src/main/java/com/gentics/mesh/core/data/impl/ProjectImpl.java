@@ -46,6 +46,7 @@ import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.impl.BranchRootImpl;
 import com.gentics.mesh.core.data.root.impl.NodeRootImpl;
 import com.gentics.mesh.core.data.root.impl.ProjectMicroschemaContainerRootImpl;
+import com.gentics.mesh.core.data.root.impl.ProjectRootImpl;
 import com.gentics.mesh.core.data.root.impl.ProjectSchemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
@@ -250,7 +251,8 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public String getSubETag(InternalActionContext ac) {
-		return String.valueOf(getLastEditedTimestamp());
+		ProjectRootImpl projectRoot = (ProjectRootImpl)mesh().boot().projectRoot();
+		return projectRoot.getSubETag(this, ac);
 	}
 
 	@Override

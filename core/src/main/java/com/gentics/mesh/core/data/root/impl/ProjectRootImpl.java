@@ -302,4 +302,9 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 
 	}
 
+	@Override
+	public String getSubETag(Project project, InternalActionContext ac) {
+		return String.valueOf(project.getLastEditedTimestamp());
+	}
+
 }
