@@ -459,7 +459,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			Tag tag = tagFamily.create("someTag", project(), user());
 			assertTrue(userRoot.hasPermission(user(), tagFamily, GraphPermission.READ_PERM));
 			assertFalse(userRoot.hasPermission(user(), tag, GraphPermission.READ_PERM));
-			getRequestUser().inheritRolePermissions(tagFamily, tag);
+			userRoot.inheritRolePermissions(getRequestUser(), tagFamily, tag);
 			assertTrue(userRoot.hasPermission(user(), tag, GraphPermission.READ_PERM));
 		}
 	}

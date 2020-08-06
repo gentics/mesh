@@ -1,22 +1,11 @@
 package com.gentics.mesh.core.data.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_ROLE;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_GROUP;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_REFERENCE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
-import static com.gentics.mesh.core.rest.error.Errors.conflict;
-import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.Optional;
 import java.util.Spliterator;
@@ -24,19 +13,13 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import org.apache.commons.lang3.BooleanUtils;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.context.impl.DummyEventQueueBatch;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.HasPermissions;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
@@ -45,19 +28,12 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.group.GroupReference;
-import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.project.ProjectReference;
-import com.gentics.mesh.core.rest.user.ExpandableNode;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.madl.traversal.TraversalResult;
@@ -110,14 +86,6 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		// TODO Fixme - The #delete method will currently remove the user instead of disabling it.
 		// Thus this method is not used.
 		property(ENABLED_FLAG_PROPERTY_KEY, false);
-		return this;
-	}
-
-	// TODO do we really need disable and deactivate and remove?!
-	@Override
-	public User deactivate() {
-		outE(HAS_GROUP).removeAll();
-		disable();
 		return this;
 	}
 
@@ -300,20 +268,6 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public boolean hasReadPermission(NodeGraphFieldContainer container, String branchUuid, String requestedVersion) {
-		Node node = container.getParentNode();
-		UserRoot userRoot = Tx.get().data().userDao();
-		if (userRoot.hasPermission(this, node, READ_PERM)) {
-			return true;
-		}
-		boolean published = container.isPublished(branchUuid);
-		if (published && userRoot.hasPermission(this, node, READ_PUBLISHED_PERM)) {
-			return true;
-		}
-		return false;
-	}
-
-	@Override
 	public UserReference transformToReference() {
 		return new UserReference().setFirstName(getFirstname()).setLastName(getLastname()).setUuid(getUuid());
 	}
@@ -423,31 +377,6 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public User addCRUDPermissionOnRole(HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode) {
-		addPermissionsOnRole(sourceNode, permission, targetNode, CREATE_PERM, READ_PERM, UPDATE_PERM, DELETE_PERM, PUBLISH_PERM, READ_PUBLISHED_PERM);
-		return this;
-	}
-
-	@Override
-	public User addPermissionsOnRole(HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode, GraphPermission... toGrant) {
-		// 2. Add CRUD permission to identified roles and target node
-		for (Role role : sourceNode.getRolesWithPerm(permission)) {
-			role.grantPermissions(targetNode, toGrant);
-		}
-		return this;
-	}
-
-	@Override
-	public User inheritRolePermissions(MeshVertex sourceNode, MeshVertex targetNode) {
-
-		for (GraphPermission perm : GraphPermission.values()) {
-			String key = perm.propertyKey();
-			targetNode.property(key, sourceNode.property(key));
-		}
-		return this;
-	}
-
-	@Override
 	public void delete(BulkActionContext bac) {
 		// TODO don't allow this for the admin user
 		// disable();
@@ -465,123 +394,9 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public boolean updateDry(InternalActionContext ac) {
-		return update(ac, new DummyEventQueueBatch(), true);
-	}
-	@Override
 	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
-		return update(ac, batch, false);
-	}
-
-	public boolean update(InternalActionContext ac, EventQueueBatch batch, boolean dry) {
-		UserUpdateRequest requestModel = ac.fromJson(UserUpdateRequest.class);
-		boolean modified = false;
-		if (shouldUpdate(requestModel.getUsername(), getUsername())) {
-			User conflictingUser = mesh().boot().userRoot().findByUsername(requestModel.getUsername());
-			if (conflictingUser != null && !conflictingUser.getUuid().equals(getUuid())) {
-				throw conflict(conflictingUser.getUuid(), requestModel.getUsername(), "user_conflicting_username");
-			}
-			if (!dry) {
-				setUsername(requestModel.getUsername());
-			}
-			modified = true;
-		}
-
-		if (shouldUpdate(requestModel.getAdmin(), isAdmin())) {
-			if (ac.getUser().isAdmin()) {
-				setAdmin(requestModel.getAdmin());
-				// Permissions need to be purged
-				mesh().permissionCache().clear();
-			} else {
-				throw error(FORBIDDEN, "user_error_admin_privilege_needed_for_admin_flag");
-			}
-			modified = true;
-		}
-
-		if (shouldUpdate(requestModel.getFirstname(), getFirstname())) {
-			if (!dry) {
-				setFirstname(requestModel.getFirstname());
-			}
-			modified = true;
-		}
-
-		if (shouldUpdate(requestModel.getLastname(), getLastname())) {
-			if (!dry) {
-				setLastname(requestModel.getLastname());
-			}
-			modified = true;
-		}
-
-		if (shouldUpdate(requestModel.getEmailAddress(), getEmailAddress())) {
-			if (!dry) {
-				setEmailAddress(requestModel.getEmailAddress());
-			}
-			modified = true;
-		}
-
-		if (shouldUpdate(requestModel.getForcedPasswordChange(), isForcedPasswordChange())) {
-			if (!dry) {
-				setForcedPasswordChange(requestModel.getForcedPasswordChange());
-			}
-			modified = true;
-		}
-
-		if (!isEmpty(requestModel.getPassword())) {
-			if (!dry) {
-				BCryptPasswordEncoder encoder = mesh().passwordEncoder();
-				setPasswordHash(encoder.encode(requestModel.getPassword()));
-			}
-			modified = true;
-		}
-
-		if (requestModel.getNodeReference() != null) {
-			ExpandableNode reference = requestModel.getNodeReference();
-			String referencedNodeUuid = null;
-			String projectName = null;
-			if (reference instanceof NodeResponse) {
-				NodeResponse response = (NodeResponse) reference;
-				ProjectReference project = response.getProject();
-				if (project == null) {
-					throw error(BAD_REQUEST, "user_incomplete_node_reference");
-				}
-				projectName = project.getName();
-				if (isEmpty(projectName)) {
-					throw error(BAD_REQUEST, "user_incomplete_node_reference");
-				}
-				referencedNodeUuid = response.getUuid();
-			}
-			if (reference instanceof NodeReference) {
-				NodeReference basicReference = ((NodeReference) reference);
-				if (isEmpty(basicReference.getProjectName()) || isEmpty(reference.getUuid())) {
-					throw error(BAD_REQUEST, "user_incomplete_node_reference");
-				}
-				referencedNodeUuid = basicReference.getUuid();
-				projectName = basicReference.getProjectName();
-			}
-			if (referencedNodeUuid != null && projectName != null) {
-				/*
-				 * TODO decide whether we need to check perms on the project as well
-				 */
-				Project project = Tx.get().data().projectDao().findByName(projectName);
-				if (project == null) {
-					throw error(BAD_REQUEST, "project_not_found", projectName);
-				}
-				NodeRoot nodeRoot = project.getNodeRoot();
-				Node node = nodeRoot.loadObjectByUuid(ac, referencedNodeUuid, READ_PERM);
-				if (!dry) {
-					setReferencedNode(node);
-				}
-				modified = true;
-			}
-
-		}
-
-		if (modified && !dry) {
-			setEditor(ac.getUser());
-			setLastEditedTimestamp();
-			batch.add(onUpdated());
-		}
-		return modified;
+		UserRoot userRoot = Tx.get().data().userDao();
+		return userRoot.update(this, ac, batch);
 	}
 
 	@Override
@@ -615,17 +430,6 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public boolean canReadNode(InternalActionContext ac, Node node) {
-		String version = ac.getVersioningParameters().getVersion();
-		UserRoot userRoot = Tx.get().data().userDao();
-		if (ContainerType.forVersion(version) == ContainerType.PUBLISHED) {
-			return userRoot.hasPermission(ac.getUser(), node, GraphPermission.READ_PUBLISHED_PERM);
-		} else {
-			return userRoot.hasPermission(ac.getUser(), node, GraphPermission.READ_PERM);
-		}
-	}
-
-	@Override
 	public User getCreator() {
 		return mesh().userProperties().getCreator(this);
 	}
@@ -638,6 +442,34 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	@Override
 	public MeshAuthUser toAuthUser() {
 		return reframeExplicit(MeshAuthUserImpl.class);
+	}
+
+	@Override
+	public String getAPIKeyTokenCode() {
+		return property(API_TOKEN_ID);
+	}
+
+	@Override
+	public User setAPITokenId(String code) {
+		property(API_TOKEN_ID, code);
+		return this;
+	}
+
+	@Override
+	public Long getAPITokenIssueTimestamp() {
+		return property(API_TOKEN_ISSUE_TIMESTAMP);
+	}
+
+	@Override
+	public User setAPITokenIssueTimestamp() {
+		setAPITokenIssueTimestamp(System.currentTimeMillis());
+		return this;
+	}
+
+	@Override
+	public User setAPITokenIssueTimestamp(Long timestamp) {
+		property(API_TOKEN_ISSUE_TIMESTAMP, timestamp);
+		return this;
 	}
 
 }

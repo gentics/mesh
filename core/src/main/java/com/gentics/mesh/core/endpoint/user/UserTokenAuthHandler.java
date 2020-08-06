@@ -70,7 +70,7 @@ public class UserTokenAuthHandler extends AuthHandlerImpl {
 				}
 
 				// 2. Validate the provided token code
-				if (!element.isResetTokenValid(token, DEFAULT_MAX_TOKEN_AGE_IN_MINS)) {
+				if (!root.isResetTokenValid(element, token, DEFAULT_MAX_TOKEN_AGE_IN_MINS)) {
 					return null;
 				}
 

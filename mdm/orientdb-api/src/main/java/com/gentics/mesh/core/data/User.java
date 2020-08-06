@@ -1,24 +1,17 @@
 package com.gentics.mesh.core.data;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.rest.MeshEvent.USER_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.USER_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.USER_UPDATED;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 
 import java.util.Objects;
 
 import com.gentics.mesh.ElementType;
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.DateUtils;
@@ -171,60 +164,6 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	User setReferencedNode(Node node);
 
 	/**
-	 * This method will set CRUD permissions to the target node for all roles that would grant the given permission on the node. The method is most often used
-	 * to assign CRUD permissions on newly created elements. Example for adding CRUD permissions on a newly created project: The method will first determine the
-	 * list of roles that would initially enable you to create a new project. It will do so by examining the projectRoot node. After this step the CRUD
-	 * permissions will be added to the newly created project and the found roles. In this case the call would look like this:
-	 * addCRUDPermissionOnRole(projectRoot, Permission.CREATE_PERM, newlyCreatedProject); This method will ensure that all users/roles that would be able to
-	 * create an element will also be able to CRUD it even when the creator of the element was only assigned to one of the enabling roles. Additionally the
-	 * permissions of the source node are inherited by the target node. All permissions between the source node and roles are copied to the target node.
-	 *
-	 * @param sourceNode
-	 *            Node that will be checked against to find all roles that would grant the given permission.
-	 * @param permission
-	 *            Permission that is used in conjunction with the node to determine the list of affected roles.
-	 * @param targetNode
-	 *            Node to which the CRUD permissions will be assigned.
-	 * @return Fluent API
-	 */
-	User addCRUDPermissionOnRole(HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode);
-
-	/**
-	 * This method adds additional permissions to the target node. The roles are selected like in method
-	 * {@link #addCRUDPermissionOnRole(HasPermissions, GraphPermission, MeshVertex)} .
-	 *
-	 * @param sourceNode
-	 *            Node that will be checked
-	 * @param permission
-	 *            checked permission
-	 * @param targetNode
-	 *            target node
-	 * @param toGrant
-	 *            permissions to grant
-	 * @return Fluent API
-	 */
-	User addPermissionsOnRole(HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode, GraphPermission... toGrant);
-
-	/**
-	 * Inherit permissions egdes from the source node and assign those permissions to the target node.
-	 *
-	 * @param sourceNode
-	 * @param targetNode
-	 * @return Fluent API
-	 */
-	User inheritRolePermissions(MeshVertex sourceNode, MeshVertex targetNode);
-
-	/**
-	 * Same as {@link User#update(InternalActionContext, EventQueueBatch)}, but does not actually perform any changes.
-	 *
-	 * Useful to check if any changes have to be made.
-	 *
-	 * @param ac
-	 * @return true if the user would have been modified
-	 */
-	boolean updateDry(InternalActionContext ac);
-
-	/**
 	 * Return a page of groups which the user was assigned to.
 	 *
 	 * @param user
@@ -301,51 +240,6 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	User enable();
 
 	/**
-	 * Disable the user and remove him from all groups
-	 *
-	 * @return
-	 */
-	User deactivate();
-
-	/**
-	 * Check the read permission on the given container and return false if the needed permission to read the container is not set.
-	 * This method will not return false if the user has READ permission or READ_PUBLISH permission on a published node.
-	 *
-	 * @param container
-	 * @param branchUuid
-	 * @param requestedVersion
-	 */
-	boolean hasReadPermission(NodeGraphFieldContainer container, String branchUuid, String requestedVersion);
-
-	/**
-	 * Check the read permission on the given container and fail if the needed permission to read the container is not set. This method will not fail if the
-	 * user has READ permission or READ_PUBLISH permission on a published node.
-	 *
-	 * @param container
-	 * @param branchUuid
-	 * @param requestedVersion
-	 */
-	default void failOnNoReadPermission(NodeGraphFieldContainer container, String branchUuid, String requestedVersion) {
-		Node node = container.getParentNode();
-		if (!hasReadPermission(container, branchUuid, requestedVersion)) {
-			throw error(FORBIDDEN, "error_missing_perm", node.getUuid(),
-				"published".equals(requestedVersion)
-					? READ_PUBLISHED_PERM.getRestPerm().getName()
-					: READ_PERM.getRestPerm().getName());
-		}
-	}
-
-	/**
-	 * Check whether the user is allowed to read the given node. Internally this check the currently configured version scope and check for
-	 * {@link GraphPermission#READ_PERM} or {@link GraphPermission#READ_PUBLISHED_PERM}.
-	 *
-	 * @param ac
-	 * @param node
-	 * @return
-	 */
-	boolean canReadNode(InternalActionContext ac, Node node);
-
-	/**
 	 * Set the reset token for the user.
 	 *
 	 * @param token
@@ -402,39 +296,11 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	}
 
 	/**
-	 * Check whether the given token code is valid. This method will also clear the token code if the token has expired.
-	 *
-	 * @param token
-	 *            Token Code
-	 * @param maxTokenAgeMins
-	 *            maximum allowed token age in minutes
-	 * @return
-	 */
-	default boolean isResetTokenValid(String token, int maxTokenAgeMins) {
-		Long resetTokenIssueTimestamp = getResetTokenIssueTimestamp();
-		if (token == null || resetTokenIssueTimestamp == null) {
-			return false;
-		}
-		long maxTokenAge = 1000 * 60 * maxTokenAgeMins;
-		long tokenAge = System.currentTimeMillis() - resetTokenIssueTimestamp;
-		boolean isExpired = tokenAge > maxTokenAge;
-		boolean isTokenMatch = token.equals(getResetToken());
-
-		if (isTokenMatch && isExpired) {
-			invalidateResetToken();
-			return false;
-		}
-		return isTokenMatch && !isExpired;
-	}
-
-	/**
 	 * Return the currently stored API token id.
 	 *
 	 * @return API token id or null if no token has yet been generated.
 	 */
-	default String getAPIKeyTokenCode() {
-		return property(API_TOKEN_ID);
-	}
+	String getAPIKeyTokenCode();
 
 	/**
 	 * Set the user API token id.
@@ -442,10 +308,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @param code
 	 * @return Fluent API
 	 */
-	default User setAPITokenId(String code) {
-		property(API_TOKEN_ID, code);
-		return this;
-	}
+	User setAPITokenId(String code);
 
 	/**
 	 * Return the timestamp when the api key token code was last issued.
@@ -461,10 +324,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 *
 	 * @return Fluent API
 	 */
-	default User setAPITokenIssueTimestamp() {
-		setAPITokenIssueTimestamp(System.currentTimeMillis());
-		return this;
-	}
+	User setAPITokenIssueTimestamp();
 
 	/**
 	 * Set the API token issue timestamp.
@@ -472,10 +332,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @param timestamp
 	 * @return Fluent API
 	 */
-	default User setAPITokenIssueTimestamp(Long timestamp) {
-		property(API_TOKEN_ISSUE_TIMESTAMP, timestamp);
-		return this;
-	}
+	User setAPITokenIssueTimestamp(Long timestamp);
 
 	/**
 	 * Return the API token issue date.

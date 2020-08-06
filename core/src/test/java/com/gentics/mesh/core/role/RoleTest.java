@@ -195,7 +195,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			Node node = parentNode.create(user(), getSchemaContainer().getLatestVersion(), project());
 			assertEquals(0, userRoot.getPermissions(requestUser, node).size());
-			requestUser.inheritRolePermissions(parentNode, node);
+			userRoot.inheritRolePermissions(requestUser, parentNode, node);
 			ac.data().clear();
 			assertEquals(6, userRoot.getPermissions(requestUser, node).size());
 
@@ -319,7 +319,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			InternalActionContext ac = mockActionContext();
 			Role role = root.getRoleRoot().create("SuperUser", user());
 			assertFalse(userRoot.hasPermission(user(), role, GraphPermission.CREATE_PERM));
-			user().inheritRolePermissions(root.getUserRoot(), role);
+			userRoot.inheritRolePermissions(user(), root.getUserRoot(), role);
 			ac.data().clear();
 			assertTrue(userRoot.hasPermission(user(), role, GraphPermission.CREATE_PERM));
 		}

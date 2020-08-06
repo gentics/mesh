@@ -165,7 +165,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 			throw error(FORBIDDEN, "error_missing_perm", getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
 		SchemaContainer container = create(requestModel, requestUser, uuid, ac.getSchemaUpdateParameters().isStrictValidation());
-		requestUser.inheritRolePermissions(this, container);
+		userRoot.inheritRolePermissions(requestUser, this, container);
 		batch.add(container.onCreated());
 		return container;
 

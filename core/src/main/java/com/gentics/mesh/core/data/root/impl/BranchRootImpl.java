@@ -64,6 +64,8 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 	private Branch create(String name, User creator, String uuid, boolean setLatest, Branch baseBranch, boolean assignSchemas,
 		EventQueueBatch batch) {
 		Branch branch = getGraph().addFramedVertex(BranchImpl.class);
+		UserRoot userRoot = mesh().boot().userRoot();
+
 		if (uuid != null) {
 			branch.setUuid(uuid);
 		}
@@ -87,7 +89,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 		}
 
 		// set initial permissions on the branch
-		creator.inheritRolePermissions(getProject(), branch);
+		userRoot.inheritRolePermissions(creator, getProject(), branch);
 
 		if (assignSchemas) {
 			assignSchemas(creator, baseBranch, branch, false, batch);

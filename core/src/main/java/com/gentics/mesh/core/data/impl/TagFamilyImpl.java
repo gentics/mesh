@@ -139,7 +139,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 		}
 
 		Tag newTag = create(requestModel.getName(), project, requestUser, uuid);
-		ac.getUser().inheritRolePermissions(this, newTag);
+		userRoot.inheritRolePermissions(ac.getUser(), this, newTag);
 		addTag(newTag);
 
 		batch.add(newTag.onCreated());

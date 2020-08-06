@@ -98,7 +98,7 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 
 		// Finally create the group and set the permissions
 		Group group = create(requestModel.getName(), requestUser, uuid);
-		requestUser.inheritRolePermissions(root.getGroupRoot(), group);
+		userRoot.inheritRolePermissions(requestUser, root.getGroupRoot(), group);
 		batch.add(group.onCreated());
 		return group;
 	}

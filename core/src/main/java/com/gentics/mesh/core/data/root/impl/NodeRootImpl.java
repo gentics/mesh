@@ -23,7 +23,6 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.madl.index.IndexHandler;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
@@ -47,6 +46,7 @@ import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceInfo;
@@ -241,6 +241,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		Project project = ac.getProject();
 		MeshAuthUser requestUser = ac.getUser();
 		BootstrapInitializer boot = mesh().boot();
+		UserRoot userRoot = mesh().boot().userRoot();
 
 		NodeCreateRequest requestModel = ac.fromJson(NodeCreateRequest.class);
 		if (requestModel.getParentNode() == null || isEmpty(requestModel.getParentNode().getUuid())) {
@@ -259,7 +260,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		Node node = parentNode.create(requestUser, schemaVersion, project, branch, uuid);
 
 		// Add initial permissions to the created node
-		requestUser.inheritRolePermissions(parentNode, node);
+		userRoot.inheritRolePermissions(requestUser, parentNode, node);
 
 		// Create the language specific graph field container for the node
 		Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());

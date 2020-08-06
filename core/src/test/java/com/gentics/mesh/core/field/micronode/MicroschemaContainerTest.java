@@ -25,6 +25,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
+import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
@@ -257,12 +258,13 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 	@Override
 	public void testCRUDPermissions() throws MeshJsonException {
 		try (Tx tx = tx()) {
+			UserRoot userRoot = tx.data().userDao();
 			MicroschemaModel schema = new MicroschemaModelImpl();
 			schema.setName("someNewMicroschema");
 			MicroschemaContainer container = createMicroschema(schema);
 
 			assertFalse(role().hasPermission(GraphPermission.CREATE_PERM, container));
-			getRequestUser().inheritRolePermissions(meshRoot().getMicroschemaContainerRoot(), container);
+			userRoot.inheritRolePermissions(getRequestUser(), meshRoot().getMicroschemaContainerRoot(), container);
 			assertTrue("The addCRUDPermissionOnRole method should add the needed permissions on the new microschema container.",
 				role().hasPermission(GraphPermission.CREATE_PERM, container));
 		}

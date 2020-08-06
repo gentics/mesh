@@ -1,14 +1,17 @@
 package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
+import static com.gentics.mesh.util.CompareUtils.shouldUpdate;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
@@ -19,6 +22,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
@@ -26,22 +30,31 @@ import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.DummyEventQueueBatch;
 import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.HasPermissions;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.user.ExpandableNode;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
+import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
 import com.syncleus.ferma.FramedGraph;
@@ -185,7 +198,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 			}
 		}
 
-		requestUser.inheritRolePermissions(this, user);
+		inheritRolePermissions(requestUser, this, user);
 		ExpandableNode reference = requestModel.getNodeReference();
 		batch.add(user.onCreated());
 
@@ -193,7 +206,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 			Group parentGroup = boot.groupRoot().loadObjectByUuid(ac, groupUuid, CREATE_PERM);
 			parentGroup.addUser(user);
 			// batch.add(parentGroup.onUpdated());
-			requestUser.inheritRolePermissions(parentGroup, user);
+			inheritRolePermissions(requestUser, parentGroup, user);
 		}
 
 		if (reference != null && reference instanceof NodeReference) {
@@ -308,4 +321,172 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 		return hasPermissionForId(user, vertex.id(), permission);
 	}
 
+	@Override
+	public User addCRUDPermissionOnRole(User user, HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode) {
+		addPermissionsOnRole(user, sourceNode, permission, targetNode, CREATE_PERM, READ_PERM, UPDATE_PERM, DELETE_PERM, PUBLISH_PERM, READ_PUBLISHED_PERM);
+		return user;
+	}
+
+	@Override
+	public User addPermissionsOnRole(User user, HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode, GraphPermission... toGrant) {
+		// 2. Add CRUD permission to identified roles and target node
+		for (Role role : sourceNode.getRolesWithPerm(permission)) {
+			role.grantPermissions(targetNode, toGrant);
+		}
+		return user;
+	}
+
+	@Override
+	public User inheritRolePermissions(User user, MeshVertex sourceNode, MeshVertex targetNode) {
+
+		for (GraphPermission perm : GraphPermission.values()) {
+			String key = perm.propertyKey();
+			targetNode.property(key, sourceNode.property(key));
+		}
+		return user;
+	}
+
+	@Override
+	public boolean updateDry(User user, InternalActionContext ac) {
+		return update(user, ac, new DummyEventQueueBatch(), true);
+	}
+
+	@Override
+	public boolean update(User user, InternalActionContext ac, EventQueueBatch batch) {
+		return update(user, ac, batch, false);
+	}
+
+	private boolean update(User user, InternalActionContext ac, EventQueueBatch batch, boolean dry) {
+		UserUpdateRequest requestModel = ac.fromJson(UserUpdateRequest.class);
+		boolean modified = false;
+		if (shouldUpdate(requestModel.getUsername(), user.getUsername())) {
+			User conflictingUser = mesh().boot().userRoot().findByUsername(requestModel.getUsername());
+			if (conflictingUser != null && !conflictingUser.getUuid().equals(getUuid())) {
+				throw conflict(conflictingUser.getUuid(), requestModel.getUsername(), "user_conflicting_username");
+			}
+			if (!dry) {
+				user.setUsername(requestModel.getUsername());
+			}
+			modified = true;
+		}
+
+		if (shouldUpdate(requestModel.getAdmin(), user.isAdmin())) {
+			if (ac.getUser().isAdmin()) {
+				user.setAdmin(requestModel.getAdmin());
+				// Permissions need to be purged
+				mesh().permissionCache().clear();
+			} else {
+				throw error(FORBIDDEN, "user_error_admin_privilege_needed_for_admin_flag");
+			}
+			modified = true;
+		}
+
+		if (shouldUpdate(requestModel.getFirstname(), user.getFirstname())) {
+			if (!dry) {
+				user.setFirstname(requestModel.getFirstname());
+			}
+			modified = true;
+		}
+
+		if (shouldUpdate(requestModel.getLastname(), user.getLastname())) {
+			if (!dry) {
+				user.setLastname(requestModel.getLastname());
+			}
+			modified = true;
+		}
+
+		if (shouldUpdate(requestModel.getEmailAddress(), user.getEmailAddress())) {
+			if (!dry) {
+				user.setEmailAddress(requestModel.getEmailAddress());
+			}
+			modified = true;
+		}
+
+		if (shouldUpdate(requestModel.getForcedPasswordChange(), user.isForcedPasswordChange())) {
+			if (!dry) {
+				user.setForcedPasswordChange(requestModel.getForcedPasswordChange());
+			}
+			modified = true;
+		}
+
+		if (!isEmpty(requestModel.getPassword())) {
+			if (!dry) {
+				BCryptPasswordEncoder encoder = mesh().passwordEncoder();
+				user.setPasswordHash(encoder.encode(requestModel.getPassword()));
+			}
+			modified = true;
+		}
+
+		if (requestModel.getNodeReference() != null) {
+			ExpandableNode reference = requestModel.getNodeReference();
+			String referencedNodeUuid = null;
+			String projectName = null;
+			if (reference instanceof NodeResponse) {
+				NodeResponse response = (NodeResponse) reference;
+				ProjectReference project = response.getProject();
+				if (project == null) {
+					throw error(BAD_REQUEST, "user_incomplete_node_reference");
+				}
+				projectName = project.getName();
+				if (isEmpty(projectName)) {
+					throw error(BAD_REQUEST, "user_incomplete_node_reference");
+				}
+				referencedNodeUuid = response.getUuid();
+			}
+			if (reference instanceof NodeReference) {
+				NodeReference basicReference = ((NodeReference) reference);
+				if (isEmpty(basicReference.getProjectName()) || isEmpty(reference.getUuid())) {
+					throw error(BAD_REQUEST, "user_incomplete_node_reference");
+				}
+				referencedNodeUuid = basicReference.getUuid();
+				projectName = basicReference.getProjectName();
+			}
+			if (referencedNodeUuid != null && projectName != null) {
+				/*
+				 * TODO decide whether we need to check perms on the project as well
+				 */
+				Project project = Tx.get().data().projectDao().findByName(projectName);
+				if (project == null) {
+					throw error(BAD_REQUEST, "project_not_found", projectName);
+				}
+				NodeRoot nodeRoot = project.getNodeRoot();
+				Node node = nodeRoot.loadObjectByUuid(ac, referencedNodeUuid, READ_PERM);
+				if (!dry) {
+					user.setReferencedNode(node);
+				}
+				modified = true;
+			}
+
+		}
+
+		if (modified && !dry) {
+			user.setEditor(ac.getUser());
+			user.setLastEditedTimestamp();
+			batch.add(user.onUpdated());
+		}
+		return modified;
+	}
+
+	@Override
+	public boolean hasReadPermission(User user, NodeGraphFieldContainer container, String branchUuid, String requestedVersion) {
+		Node node = container.getParentNode();
+		if (hasPermission(user, node, READ_PERM)) {
+			return true;
+		}
+		boolean published = container.isPublished(branchUuid);
+		if (published && hasPermission(user, node, READ_PUBLISHED_PERM)) {
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	public boolean canReadNode(User user, InternalActionContext ac, Node node) {
+		String version = ac.getVersioningParameters().getVersion();
+		if (ContainerType.forVersion(version) == ContainerType.PUBLISHED) {
+			return hasPermission(ac.getUser(), node, GraphPermission.READ_PUBLISHED_PERM);
+		} else {
+			return hasPermission(ac.getUser(), node, GraphPermission.READ_PERM);
+		}
+	}
 }
