@@ -40,6 +40,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
+import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.impl.BranchRootImpl;
@@ -61,10 +62,7 @@ import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.madl.field.FieldType;
 import com.gentics.mesh.madl.traversal.TraversalResult;
-import com.gentics.mesh.parameter.GenericParameters;
-import com.gentics.mesh.parameter.value.FieldsSet;
 
-import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -165,21 +163,8 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public ProjectResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		GenericParameters generic = ac.getGenericParameters();
-		FieldsSet fields = generic.getFields();
-
-		ProjectResponse restProject = new ProjectResponse();
-		if (fields.has("name")) {
-			restProject.setName(getName());
-		}
-		if (fields.has("rootNode")) {
-			restProject.setRootNode(getBaseNode().transformToReference(ac));
-		}
-
-		fillCommonRestFields(ac, fields, restProject);
-		setRolePermissions(ac, restProject);
-
-		return restProject;
+		ProjectRoot projectRoot = mesh().boot().projectRoot();
+		return projectRoot.transformToRestSync(this, ac, level, languageTags);
 	}
 
 	@Override

@@ -19,6 +19,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
+import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -388,6 +389,21 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 
 	public long computeCount() {
 		return delegate.computeCount();
+	}
+
+	@Override
+	public String getAPIPath(Project element, InternalActionContext ac) {
+		return delegate.getAPIPath(element, ac);
+	}
+
+	@Override
+	public String getETag(Project element, InternalActionContext ac) {
+		return delegate.getAPIPath(element, ac);
+	}
+
+	@Override
+	public ProjectResponse transformToRestSync(Project element, InternalActionContext ac, int level, String[] languageTags) {
+		return delegate.transformToRestSync(element, ac, level, languageTags);
 	}
 
 }

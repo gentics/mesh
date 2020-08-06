@@ -38,7 +38,10 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.error.NameConflictException;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
+import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.parameter.GenericParameters;
+import com.gentics.mesh.parameter.value.FieldsSet;
 
 /**
  * @see ProjectRoot
@@ -183,7 +186,6 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		ProjectCreateRequest requestModel = ac.fromJson(ProjectCreateRequest.class);
 		String projectName = requestModel.getName();
 		MeshAuthUser creator = ac.getUser();
-		
 
 		if (StringUtils.isEmpty(requestModel.getName())) {
 			throw error(BAD_REQUEST, "project_missing_name");
@@ -231,6 +233,27 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		});
 
 		return project;
+
+	}
+
+	@Override
+	public ProjectResponse transformToRestSync(Project project, InternalActionContext ac, int level, String... languageTags) {
+
+		GenericParameters generic = ac.getGenericParameters();
+		FieldsSet fields = generic.getFields();
+
+		ProjectResponse restProject = new ProjectResponse();
+		if (fields.has("name")) {
+			restProject.setName(project.getName());
+		}
+		if (fields.has("rootNode")) {
+			restProject.setRootNode(project.getBaseNode().transformToReference(ac));
+		}
+
+		project.fillCommonRestFields(ac, fields, restProject);
+		setRolePermissions(project, ac, restProject);
+
+		return restProject;
 
 	}
 

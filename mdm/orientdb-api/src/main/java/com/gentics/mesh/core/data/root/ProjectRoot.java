@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.root;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 
 /**
@@ -21,7 +22,7 @@ import com.gentics.mesh.event.EventQueueBatch;
  * <img src="http://getmesh.io/docs/javadoc/cypher/com.gentics.mesh.core.data.root.impl.ProjectRootImpl.jpg" alt="">
  * </p>
  */
-public interface ProjectRoot extends RootVertex<Project> {
+public interface ProjectRoot extends RootVertex<Project>, TransformableElementRoot<Project, ProjectResponse> {
 
 	public static final String TYPE = "projects";
 
