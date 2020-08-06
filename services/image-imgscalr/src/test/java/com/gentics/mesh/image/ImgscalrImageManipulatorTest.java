@@ -29,7 +29,6 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
-import org.xml.sax.SAXException;
 
 import com.gentics.mesh.core.image.spi.ImageInfo;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -666,7 +665,7 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 	}
 
 	@Test
-	public void testTikaMetadata() throws IOException, SAXException, TikaException {
+	public void testTikaMetadata() throws IOException, TikaException {
 		InputStream ins = getClass().getResourceAsStream("/pictures/12382975864_09e6e069e7_o.jpg");
 		Map<String, String> metadata = manipulator.getMetadata(ins).blockingGet();
 		assertTrue(!metadata.isEmpty());

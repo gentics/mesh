@@ -25,6 +25,16 @@ include::content/docs/variables.adoc-include[]
 
 * The Mesh Server will require Java 11 with the release of 2.0.0. The runtime support for Java 8 will be dropped. The Mesh Java REST client will still be usable with Java 8.
 
+[[v1.7.0]]
+== 1.7.0
+
+CAUTION: Java 10: This version of Gentics Mesh will only be executable using Java 10 or newer JVM versions.
+		The Java APIs for `mesh-api`, `mesh-rest-model`, `mesh-rest-client` and `mesh-test-common` are still be usable with Java 8.
+		
+icon:plus[] Internal: The maven package structure for internal code has been changed.
+
+icon:plus[] Internal: The internal code has been cleaned up.
+
 [[v1.6.0]]
 == 1.6.0 (05.08.2020)
 
