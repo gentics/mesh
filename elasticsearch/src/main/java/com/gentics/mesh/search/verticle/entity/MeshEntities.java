@@ -7,7 +7,6 @@ import static com.gentics.mesh.util.StreamUtil.toStream;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -94,12 +93,12 @@ public class MeshEntities {
 		this.options = options;
 		this.complianceMode = options.getSearchOptions().getComplianceMode();
 
-		schema = new SimpleMeshEntity<>(schemaTransformer, SchemaContainer.TYPE_INFO, byUuid(boot::schemaDao));
-		microschema = new SimpleMeshEntity<>(microschemaTransformer, MicroschemaContainer.TYPE_INFO, byUuid(boot::microschemaDao));
-		user = new SimpleMeshEntity<>(userTransformer, User.TYPE_INFO, byUuid(boot::userDao));
-		group = new SimpleMeshEntity<>(groupTransformer, Group.TYPE_INFO, byUuid(boot::groupDao));
-		role = new SimpleMeshEntity<>(roleTransformer, Role.TYPE_INFO, byUuid(boot::roleDao));
-		project = new SimpleMeshEntity<>(projectTransformer, Project.TYPE_INFO, byUuid(boot::projectDao));
+		schema = new SimpleMeshEntity<>(schemaTransformer, SchemaContainer.TYPE_INFO, byUuid(uuid -> boot.schemaDao().findByUuid(uuid)));
+		microschema = new SimpleMeshEntity<>(microschemaTransformer, MicroschemaContainer.TYPE_INFO, byUuid(uuid -> boot.microschemaDao().findByUuid(uuid)));
+		user = new SimpleMeshEntity<>(userTransformer, User.TYPE_INFO, byUuid(uuid -> boot.userDao().findByUuid(uuid)));
+		group = new SimpleMeshEntity<>(groupTransformer, Group.TYPE_INFO, byUuid(uuid -> boot.groupDao().findByUuid(uuid)));
+		role = new SimpleMeshEntity<>(roleTransformer, Role.TYPE_INFO, byUuid(uuid -> boot.roleDao().findByUuid(uuid)));
+		project = new SimpleMeshEntity<>(projectTransformer, Project.TYPE_INFO, byUuid(uuid -> boot.projectDao().findByUuid(uuid)));
 		tagFamily = new SimpleMeshEntity<>(tagFamilyTransformer, TagFamily.TYPE_INFO, this::toTagFamily);
 		tag = new SimpleMeshEntity<>(tagTransformer, Tag.TYPE_INFO, this::toTag);
 		nodeContent = new NodeMeshEntity(nodeTransformer, this::toNodeContent);
@@ -234,8 +233,8 @@ public class MeshEntities {
 		return toStream(findElementByUuid(rootVertex, uuid));
 	}
 
-	private <T extends MeshCoreVertex<? extends RestModel, T>> EventVertexMapper<T> byUuid(Supplier<RootVertex<T>> rootVertex) {
-		return event -> findElementByUuid(rootVertex.get(), event.getUuid());
+	private <T extends MeshCoreVertex<? extends RestModel, T>> EventVertexMapper<T> byUuid(Function<String, T> elementLoader) {
+		return event -> Optional.ofNullable(elementLoader.apply(event.getUuid()));
 	}
 
 	/**
