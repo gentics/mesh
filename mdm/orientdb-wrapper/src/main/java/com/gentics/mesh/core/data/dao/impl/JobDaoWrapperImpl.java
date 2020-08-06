@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.dao.impl;
 
+import java.time.ZonedDateTime;
 import java.util.Set;
 import java.util.Stack;
 import java.util.function.Function;
@@ -9,14 +10,16 @@ import java.util.stream.Stream;
 import com.gentics.madl.traversal.RawTraversalResult;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.dao.ProjectDao;
+import com.gentics.mesh.core.data.job.Job;
+import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.ProjectRoot;
+import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -36,14 +39,14 @@ import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Vertex;
 
+import io.reactivex.Completable;
 import io.vertx.core.Vertx;
 
-// Use ProjectDao instead of ProjectRoot once ready 
-public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
+public class JobDaoWrapperImpl {
 
-	private final ProjectRoot delegate;
+	private final JobRoot delegate;
 
-	private ProjectDaoWrapperImpl(ProjectRoot delegate) {
+	public JobDaoWrapperImpl(JobRoot delegate) {
 		this.delegate = delegate;
 	}
 
@@ -67,6 +70,10 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		return delegate.getRolesWithPerm(perm);
 	}
 
+	public Job enqueueSchemaMigration(User creator, Branch branch, SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion) {
+		return delegate.enqueueSchemaMigration(creator, branch, fromVersion, toVersion);
+	}
+
 	public String getUuid() {
 		return delegate.getUuid();
 	}
@@ -79,9 +86,8 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		return delegate.getElementVersion();
 	}
 
-	public Project create(String projectName, String hostname, Boolean ssl, String pathPrefix, User creator,
-		SchemaContainerVersion schemaContainerVersion, EventQueueBatch batch) {
-		return delegate.create(projectName, hostname, ssl, pathPrefix, creator, schemaContainerVersion, batch);
+	public Job enqueueBranchMigration(User creator, Branch branch, SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion) {
+		return delegate.enqueueBranchMigration(creator, branch, fromVersion, toVersion);
 	}
 
 	public void setUniqueLinkInTo(VertexFrame vertex, String... labels) {
@@ -132,6 +138,11 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		delegate.remove();
 	}
 
+	public Job enqueueMicroschemaMigration(User creator, Branch branch, MicroschemaContainerVersion fromVersion,
+		MicroschemaContainerVersion toVersion) {
+		return delegate.enqueueMicroschemaMigration(creator, branch, fromVersion, toVersion);
+	}
+
 	public void delete() {
 		delegate.delete();
 	}
@@ -165,6 +176,10 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		return delegate.in(label, clazz);
 	}
 
+	public Job enqueueBranchMigration(User creator, Branch branch) {
+		return delegate.enqueueBranchMigration(creator, branch);
+	}
+
 	public <T> T addFramedEdge(String label, com.syncleus.ferma.VertexFrame inVertex, Class<T> kind) {
 		return delegate.addFramedEdge(label, inVertex, kind);
 	}
@@ -189,6 +204,10 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		return delegate.db();
 	}
 
+	public Job enqueueVersionPurge(User user, Project project, ZonedDateTime before) {
+		return delegate.enqueueVersionPurge(user, project, before);
+	}
+
 	public Vertx vertx() {
 		return delegate.vertx();
 	}
@@ -201,6 +220,10 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		return delegate.options();
 	}
 
+	public Job enqueueVersionPurge(User user, Project project) {
+		return delegate.enqueueVersionPurge(user, project);
+	}
+
 	public <T> T addFramedEdgeExplicit(String label, com.syncleus.ferma.VertexFrame inVertex, ClassInitializer<T> initializer) {
 		return delegate.addFramedEdgeExplicit(label, inVertex, initializer);
 	}
@@ -209,24 +232,31 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		delegate.setCachedUuid(uuid);
 	}
 
-	public TraversalResult<? extends Project> findAll() {
+	public TraversalResult<? extends Job> findAll() {
 		return delegate.findAll();
-	}
-
-	public Project create(String projectName, String hostname, Boolean ssl, String pathPrefix, User creator,
-		SchemaContainerVersion schemaContainerVersion, String uuid, EventQueueBatch batch) {
-		return delegate.create(projectName, hostname, ssl, pathPrefix, creator, schemaContainerVersion, uuid, batch);
 	}
 
 	public void setProperty(String name, Object value) {
 		delegate.setProperty(name, value);
 	}
 
+	public Completable process() {
+		return delegate.process();
+	}
+
+	public void purgeFailed() {
+		delegate.purgeFailed();
+	}
+
+	public void clear() {
+		delegate.clear();
+	}
+
 	public Class<?> getTypeResolution() {
 		return delegate.getTypeResolution();
 	}
 
-	public Stream<? extends Project> findAllStream(InternalActionContext ac, GraphPermission permission) {
+	public Stream<? extends Job> findAllStream(InternalActionContext ac, GraphPermission permission) {
 		return delegate.findAllStream(ac, permission);
 	}
 
@@ -254,10 +284,6 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		return delegate.e(ids);
 	}
 
-	public void removeProject(Project project) {
-		delegate.removeProject(project);
-	}
-
 	public TEdge addFramedEdge(String label, com.syncleus.ferma.VertexFrame inVertex) {
 		return delegate.addFramedEdge(label, inVertex);
 	}
@@ -266,11 +292,7 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		return delegate.getGraphAttribute(key);
 	}
 
-	public void addProject(Project project) {
-		delegate.addProject(project);
-	}
-
-	public TraversalResult<? extends Project> findAllDynamic() {
+	public TraversalResult<? extends Job> findAllDynamic() {
 		return delegate.findAllDynamic();
 	}
 
@@ -282,7 +304,7 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		return delegate.outE(labels);
 	}
 
-	public TransformablePage<? extends Project> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
+	public TransformablePage<? extends Job> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 		return delegate.findAll(ac, pagingInfo);
 	}
 
@@ -298,7 +320,7 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		delegate.linkIn(vertex, labels);
 	}
 
-	public TransformablePage<? extends Project> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Project> extraFilter) {
+	public TransformablePage<? extends Job> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Job> extraFilter) {
 		return delegate.findAll(ac, pagingInfo, extraFilter);
 	}
 
@@ -310,7 +332,7 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		delegate.unlinkIn(vertex, labels);
 	}
 
-	public TransformablePage<? extends Project> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo) {
+	public TransformablePage<? extends Job> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo) {
 		return delegate.findAllNoPerm(ac, pagingInfo);
 	}
 
@@ -318,7 +340,7 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		delegate.setLinkOut(vertex, labels);
 	}
 
-	public Project findByName(String name) {
+	public Job findByName(String name) {
 		return delegate.findByName(name);
 	}
 
@@ -330,7 +352,7 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		return delegate.toJson();
 	}
 
-	public Project findByName(InternalActionContext ac, String name, GraphPermission perm) {
+	public Job findByName(InternalActionContext ac, String name, GraphPermission perm) {
 		return delegate.findByName(ac, name, perm);
 	}
 
@@ -342,19 +364,19 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		return delegate.reframeExplicit(kind);
 	}
 
-	public Project findByUuid(String uuid) {
+	public Job findByUuid(String uuid) {
 		return delegate.findByUuid(uuid);
 	}
 
-	public Project loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
+	public Job loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
 		return delegate.loadObjectByUuid(ac, uuid, perm);
 	}
 
-	public Project loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+	public Job loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
 		return delegate.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
 	}
 
-	public Project loadObjectByUuidNoPerm(String uuid, boolean errorIfNotFound) {
+	public Job loadObjectByUuidNoPerm(String uuid, boolean errorIfNotFound) {
 		return delegate.loadObjectByUuidNoPerm(uuid, errorIfNotFound);
 	}
 
@@ -362,19 +384,19 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		return delegate.resolveToElement(stack);
 	}
 
-	public Project create(InternalActionContext ac, EventQueueBatch batch) {
+	public Job create(InternalActionContext ac, EventQueueBatch batch) {
 		return delegate.create(ac, batch);
 	}
 
-	public Project create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
+	public Job create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		return delegate.create(ac, batch, uuid);
 	}
 
-	public void addItem(Project item) {
+	public void addItem(Job item) {
 		delegate.addItem(item);
 	}
 
-	public void removeItem(Project item) {
+	public void removeItem(Job item) {
 		delegate.removeItem(item);
 	}
 
@@ -382,7 +404,7 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		return delegate.getRootLabel();
 	}
 
-	public Class<? extends Project> getPersistanceClass() {
+	public Class<? extends Job> getPersistanceClass() {
 		return delegate.getPersistanceClass();
 	}
 

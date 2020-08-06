@@ -13,12 +13,15 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.dao.ProjectDao;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.ProjectRoot;
+import com.gentics.mesh.core.data.root.SchemaContainerRoot;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -38,12 +41,11 @@ import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.Vertx;
 
-// Use ProjectDao instead of ProjectRoot once ready 
-public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
+public class SchemaDaoWrapperImpl implements SchemaContainerRoot {
 
-	private final ProjectRoot delegate;
+	private final SchemaContainerRoot delegate;
 
-	private ProjectDaoWrapperImpl(ProjectRoot delegate) {
+	public SchemaDaoWrapperImpl(SchemaContainerRoot delegate) {
 		this.delegate = delegate;
 	}
 
@@ -71,17 +73,16 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		return delegate.getUuid();
 	}
 
+	public SchemaContainer create(SchemaModel schema, User creator) throws MeshSchemaException {
+		return delegate.create(schema, creator);
+	}
+
 	public Vertex getVertex() {
 		return delegate.getVertex();
 	}
 
 	public String getElementVersion() {
 		return delegate.getElementVersion();
-	}
-
-	public Project create(String projectName, String hostname, Boolean ssl, String pathPrefix, User creator,
-		SchemaContainerVersion schemaContainerVersion, EventQueueBatch batch) {
-		return delegate.create(projectName, hostname, ssl, pathPrefix, creator, schemaContainerVersion, batch);
 	}
 
 	public void setUniqueLinkInTo(VertexFrame vertex, String... labels) {
@@ -134,6 +135,10 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 
 	public void delete() {
 		delegate.delete();
+	}
+
+	public SchemaContainer create(SchemaModel schema, User creator, String uuid) throws MeshSchemaException {
+		return delegate.create(schema, creator, uuid);
 	}
 
 	public <T extends ElementFrame> TraversalResult<? extends T> out(String label, Class<T> clazz) {
@@ -189,6 +194,10 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		return delegate.db();
 	}
 
+	public SchemaContainer create(SchemaModel schema, User creator, String uuid, boolean validate) throws MeshSchemaException {
+		return delegate.create(schema, creator, uuid, validate);
+	}
+
 	public Vertx vertx() {
 		return delegate.vertx();
 	}
@@ -209,29 +218,32 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		delegate.setCachedUuid(uuid);
 	}
 
-	public TraversalResult<? extends Project> findAll() {
+	public TraversalResult<? extends SchemaContainer> findAll() {
 		return delegate.findAll();
-	}
-
-	public Project create(String projectName, String hostname, Boolean ssl, String pathPrefix, User creator,
-		SchemaContainerVersion schemaContainerVersion, String uuid, EventQueueBatch batch) {
-		return delegate.create(projectName, hostname, ssl, pathPrefix, creator, schemaContainerVersion, uuid, batch);
 	}
 
 	public void setProperty(String name, Object value) {
 		delegate.setProperty(name, value);
 	}
 
+	public void addSchemaContainer(User user, SchemaContainer schemaContainer, EventQueueBatch batch) {
+		delegate.addSchemaContainer(user, schemaContainer, batch);
+	}
+
 	public Class<?> getTypeResolution() {
 		return delegate.getTypeResolution();
 	}
 
-	public Stream<? extends Project> findAllStream(InternalActionContext ac, GraphPermission permission) {
+	public Stream<? extends SchemaContainer> findAllStream(InternalActionContext ac, GraphPermission permission) {
 		return delegate.findAllStream(ac, permission);
 	}
 
 	public void setTypeResolution(Class<?> type) {
 		delegate.setTypeResolution(type);
+	}
+
+	public void removeSchemaContainer(SchemaContainer schemaContainer, EventQueueBatch batch) {
+		delegate.removeSchemaContainer(schemaContainer, batch);
 	}
 
 	public <T> T addFramedEdgeExplicit(String label, com.syncleus.ferma.VertexFrame inVertex, Class<T> kind) {
@@ -242,6 +254,10 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		delegate.removeTypeResolution();
 	}
 
+	public boolean contains(SchemaContainer schema) {
+		return delegate.contains(schema);
+	}
+
 	public VertexTraversal<?, ?, ?> v() {
 		return delegate.v();
 	}
@@ -250,12 +266,12 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		return delegate.e();
 	}
 
-	public EdgeTraversal<?, ?, ?> e(Object... ids) {
-		return delegate.e(ids);
+	public SchemaContainerVersion fromReference(SchemaReference reference) {
+		return delegate.fromReference(reference);
 	}
 
-	public void removeProject(Project project) {
-		delegate.removeProject(project);
+	public EdgeTraversal<?, ?, ?> e(Object... ids) {
+		return delegate.e(ids);
 	}
 
 	public TEdge addFramedEdge(String label, com.syncleus.ferma.VertexFrame inVertex) {
@@ -266,11 +282,11 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		return delegate.getGraphAttribute(key);
 	}
 
-	public void addProject(Project project) {
-		delegate.addProject(project);
+	public Project getProject() {
+		return delegate.getProject();
 	}
 
-	public TraversalResult<? extends Project> findAllDynamic() {
+	public TraversalResult<? extends SchemaContainer> findAllDynamic() {
 		return delegate.findAllDynamic();
 	}
 
@@ -282,7 +298,7 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		return delegate.outE(labels);
 	}
 
-	public TransformablePage<? extends Project> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
+	public TransformablePage<? extends SchemaContainer> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 		return delegate.findAll(ac, pagingInfo);
 	}
 
@@ -298,7 +314,8 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		delegate.linkIn(vertex, labels);
 	}
 
-	public TransformablePage<? extends Project> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Project> extraFilter) {
+	public TransformablePage<? extends SchemaContainer> findAll(InternalActionContext ac, PagingParameters pagingInfo,
+		Predicate<SchemaContainer> extraFilter) {
 		return delegate.findAll(ac, pagingInfo, extraFilter);
 	}
 
@@ -310,7 +327,7 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		delegate.unlinkIn(vertex, labels);
 	}
 
-	public TransformablePage<? extends Project> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo) {
+	public TransformablePage<? extends SchemaContainer> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo) {
 		return delegate.findAllNoPerm(ac, pagingInfo);
 	}
 
@@ -318,7 +335,7 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		delegate.setLinkOut(vertex, labels);
 	}
 
-	public Project findByName(String name) {
+	public SchemaContainer findByName(String name) {
 		return delegate.findByName(name);
 	}
 
@@ -330,7 +347,7 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		return delegate.toJson();
 	}
 
-	public Project findByName(InternalActionContext ac, String name, GraphPermission perm) {
+	public SchemaContainer findByName(InternalActionContext ac, String name, GraphPermission perm) {
 		return delegate.findByName(ac, name, perm);
 	}
 
@@ -342,19 +359,19 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		return delegate.reframeExplicit(kind);
 	}
 
-	public Project findByUuid(String uuid) {
+	public SchemaContainer findByUuid(String uuid) {
 		return delegate.findByUuid(uuid);
 	}
 
-	public Project loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
+	public SchemaContainer loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
 		return delegate.loadObjectByUuid(ac, uuid, perm);
 	}
 
-	public Project loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+	public SchemaContainer loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
 		return delegate.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
 	}
 
-	public Project loadObjectByUuidNoPerm(String uuid, boolean errorIfNotFound) {
+	public SchemaContainer loadObjectByUuidNoPerm(String uuid, boolean errorIfNotFound) {
 		return delegate.loadObjectByUuidNoPerm(uuid, errorIfNotFound);
 	}
 
@@ -362,19 +379,19 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		return delegate.resolveToElement(stack);
 	}
 
-	public Project create(InternalActionContext ac, EventQueueBatch batch) {
+	public SchemaContainer create(InternalActionContext ac, EventQueueBatch batch) {
 		return delegate.create(ac, batch);
 	}
 
-	public Project create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
+	public SchemaContainer create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		return delegate.create(ac, batch, uuid);
 	}
 
-	public void addItem(Project item) {
+	public void addItem(SchemaContainer item) {
 		delegate.addItem(item);
 	}
 
-	public void removeItem(Project item) {
+	public void removeItem(SchemaContainer item) {
 		delegate.removeItem(item);
 	}
 
@@ -382,7 +399,7 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		return delegate.getRootLabel();
 	}
 
-	public Class<? extends Project> getPersistanceClass() {
+	public Class<? extends SchemaContainer> getPersistanceClass() {
 		return delegate.getPersistanceClass();
 	}
 

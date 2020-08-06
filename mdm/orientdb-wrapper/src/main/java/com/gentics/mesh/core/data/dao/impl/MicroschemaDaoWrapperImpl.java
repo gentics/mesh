@@ -9,16 +9,18 @@ import java.util.stream.Stream;
 import com.gentics.madl.traversal.RawTraversalResult;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.dao.ProjectDao;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.ProjectRoot;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
+import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
+import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -38,12 +40,11 @@ import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.Vertx;
 
-// Use ProjectDao instead of ProjectRoot once ready 
-public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
+public class MicroschemaDaoWrapperImpl implements MicroschemaContainerRoot {
 
-	private final ProjectRoot delegate;
+	private final MicroschemaContainerRoot delegate;
 
-	private ProjectDaoWrapperImpl(ProjectRoot delegate) {
+	public MicroschemaDaoWrapperImpl(MicroschemaContainerRoot delegate) {
 		this.delegate = delegate;
 	}
 
@@ -71,17 +72,16 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		return delegate.getUuid();
 	}
 
+	public void addMicroschema(User user, MicroschemaContainer container, EventQueueBatch batch) {
+		delegate.addMicroschema(user, container, batch);
+	}
+
 	public Vertex getVertex() {
 		return delegate.getVertex();
 	}
 
 	public String getElementVersion() {
 		return delegate.getElementVersion();
-	}
-
-	public Project create(String projectName, String hostname, Boolean ssl, String pathPrefix, User creator,
-		SchemaContainerVersion schemaContainerVersion, EventQueueBatch batch) {
-		return delegate.create(projectName, hostname, ssl, pathPrefix, creator, schemaContainerVersion, batch);
 	}
 
 	public void setUniqueLinkInTo(VertexFrame vertex, String... labels) {
@@ -108,6 +108,10 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		return delegate.getId();
 	}
 
+	public void removeMicroschema(MicroschemaContainer container, EventQueueBatch batch) {
+		delegate.removeMicroschema(container, batch);
+	}
+
 	public <T> T addFramedEdge(String label, com.syncleus.ferma.VertexFrame inVertex, ClassInitializer<T> initializer) {
 		return delegate.addFramedEdge(label, inVertex, initializer);
 	}
@@ -130,6 +134,10 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 
 	public void remove() {
 		delegate.remove();
+	}
+
+	public MicroschemaContainer create(MicroschemaModel microschema, User user, EventQueueBatch batch) {
+		return delegate.create(microschema, user, batch);
 	}
 
 	public void delete() {
@@ -177,6 +185,10 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		return delegate.inE(label, clazz);
 	}
 
+	public MicroschemaContainer create(MicroschemaModel microschema, User user, String uuid, EventQueueBatch batch) {
+		return delegate.create(microschema, user, uuid, batch);
+	}
+
 	public <T extends RawTraversalResult<?>> T traverse(Function<GraphTraversal<Vertex, Vertex>, GraphTraversal<?, ?>> traverser) {
 		return delegate.traverse(traverser);
 	}
@@ -205,29 +217,36 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		return delegate.addFramedEdgeExplicit(label, inVertex, initializer);
 	}
 
+	public boolean contains(MicroschemaContainer microschema) {
+		return delegate.contains(microschema);
+	}
+
 	public void setCachedUuid(String uuid) {
 		delegate.setCachedUuid(uuid);
 	}
 
-	public TraversalResult<? extends Project> findAll() {
+	public TraversalResult<? extends MicroschemaContainer> findAll() {
 		return delegate.findAll();
-	}
-
-	public Project create(String projectName, String hostname, Boolean ssl, String pathPrefix, User creator,
-		SchemaContainerVersion schemaContainerVersion, String uuid, EventQueueBatch batch) {
-		return delegate.create(projectName, hostname, ssl, pathPrefix, creator, schemaContainerVersion, uuid, batch);
 	}
 
 	public void setProperty(String name, Object value) {
 		delegate.setProperty(name, value);
 	}
 
+	public MicroschemaContainerVersion fromReference(MicroschemaReference reference) {
+		return delegate.fromReference(reference);
+	}
+
 	public Class<?> getTypeResolution() {
 		return delegate.getTypeResolution();
 	}
 
-	public Stream<? extends Project> findAllStream(InternalActionContext ac, GraphPermission permission) {
+	public Stream<? extends MicroschemaContainer> findAllStream(InternalActionContext ac, GraphPermission permission) {
 		return delegate.findAllStream(ac, permission);
+	}
+
+	public MicroschemaContainerVersion fromReference(MicroschemaReference reference, Branch branch) {
+		return delegate.fromReference(reference, branch);
 	}
 
 	public void setTypeResolution(Class<?> type) {
@@ -254,10 +273,6 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		return delegate.e(ids);
 	}
 
-	public void removeProject(Project project) {
-		delegate.removeProject(project);
-	}
-
 	public TEdge addFramedEdge(String label, com.syncleus.ferma.VertexFrame inVertex) {
 		return delegate.addFramedEdge(label, inVertex);
 	}
@@ -266,11 +281,7 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		return delegate.getGraphAttribute(key);
 	}
 
-	public void addProject(Project project) {
-		delegate.addProject(project);
-	}
-
-	public TraversalResult<? extends Project> findAllDynamic() {
+	public TraversalResult<? extends MicroschemaContainer> findAllDynamic() {
 		return delegate.findAllDynamic();
 	}
 
@@ -282,7 +293,7 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		return delegate.outE(labels);
 	}
 
-	public TransformablePage<? extends Project> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
+	public TransformablePage<? extends MicroschemaContainer> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 		return delegate.findAll(ac, pagingInfo);
 	}
 
@@ -298,7 +309,8 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		delegate.linkIn(vertex, labels);
 	}
 
-	public TransformablePage<? extends Project> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Project> extraFilter) {
+	public TransformablePage<? extends MicroschemaContainer> findAll(InternalActionContext ac, PagingParameters pagingInfo,
+		Predicate<MicroschemaContainer> extraFilter) {
 		return delegate.findAll(ac, pagingInfo, extraFilter);
 	}
 
@@ -310,7 +322,7 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		delegate.unlinkIn(vertex, labels);
 	}
 
-	public TransformablePage<? extends Project> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo) {
+	public TransformablePage<? extends MicroschemaContainer> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo) {
 		return delegate.findAllNoPerm(ac, pagingInfo);
 	}
 
@@ -318,7 +330,7 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		delegate.setLinkOut(vertex, labels);
 	}
 
-	public Project findByName(String name) {
+	public MicroschemaContainer findByName(String name) {
 		return delegate.findByName(name);
 	}
 
@@ -330,7 +342,7 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		return delegate.toJson();
 	}
 
-	public Project findByName(InternalActionContext ac, String name, GraphPermission perm) {
+	public MicroschemaContainer findByName(InternalActionContext ac, String name, GraphPermission perm) {
 		return delegate.findByName(ac, name, perm);
 	}
 
@@ -342,19 +354,19 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		return delegate.reframeExplicit(kind);
 	}
 
-	public Project findByUuid(String uuid) {
+	public MicroschemaContainer findByUuid(String uuid) {
 		return delegate.findByUuid(uuid);
 	}
 
-	public Project loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
+	public MicroschemaContainer loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
 		return delegate.loadObjectByUuid(ac, uuid, perm);
 	}
 
-	public Project loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+	public MicroschemaContainer loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
 		return delegate.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
 	}
 
-	public Project loadObjectByUuidNoPerm(String uuid, boolean errorIfNotFound) {
+	public MicroschemaContainer loadObjectByUuidNoPerm(String uuid, boolean errorIfNotFound) {
 		return delegate.loadObjectByUuidNoPerm(uuid, errorIfNotFound);
 	}
 
@@ -362,19 +374,19 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		return delegate.resolveToElement(stack);
 	}
 
-	public Project create(InternalActionContext ac, EventQueueBatch batch) {
+	public MicroschemaContainer create(InternalActionContext ac, EventQueueBatch batch) {
 		return delegate.create(ac, batch);
 	}
 
-	public Project create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
+	public MicroschemaContainer create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		return delegate.create(ac, batch, uuid);
 	}
 
-	public void addItem(Project item) {
+	public void addItem(MicroschemaContainer item) {
 		delegate.addItem(item);
 	}
 
-	public void removeItem(Project item) {
+	public void removeItem(MicroschemaContainer item) {
 		delegate.removeItem(item);
 	}
 
@@ -382,7 +394,7 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 		return delegate.getRootLabel();
 	}
 
-	public Class<? extends Project> getPersistanceClass() {
+	public Class<? extends MicroschemaContainer> getPersistanceClass() {
 		return delegate.getPersistanceClass();
 	}
 
