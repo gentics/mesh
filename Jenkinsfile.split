@@ -27,7 +27,7 @@ final def runs = 20;
 final def imagePrefix		   = "gtx-docker-releases-staging-mesh.docker.apa-it.at/";
 
 stage("Setup Build Environment") {
-	node("mesh-root-worker") {
+	node("mesh-root-worker-11") {
 		githubBuildStarted()
 		try {
 			stage("Checkout") {
@@ -82,7 +82,7 @@ stage("Setup Build Environment") {
 						for (int i = 0; i < runs; i++) {
 							def current = i
 							branches["split${current}"] = {
-								node('mesh-worker') {
+								node('mesh-worker-11') {
 									echo "Preparing slave environment for ${current}"
 									sh "rm -rf split${current}"
 									sh "mkdir split${current}"
@@ -180,7 +180,7 @@ stage("Setup Build Environment") {
 			stage("Cluster Tests") {
 				if (Boolean.valueOf(params.runClusterTests)) {
 					stash includes: '**', name: 'project'
-					node("mesh-cluster-worker") {
+					node("mesh-cluster-worker-11") {
 						try {
 							unstash 'project'
 							sh "mvn -B -DskipTests clean install -pl '!demo,!doc'"
@@ -214,7 +214,7 @@ stage("Setup Build Environment") {
 			stage("Performance Tests") {
 				if (Boolean.valueOf(params.runPerformanceTests)) {
 					stash includes: '**', name: 'project'
-					node("mesh-performance-worker") {
+					node("mesh-performance-worker-11") {
 						try {
 							unstash 'project'
 							sh "mvn -B -U clean package -pl '!doc,!demo,!server' -Dskip.unit.tests=true -Dskip.cluster.tests=true -Dskip.performance.tests=false -Dmaven.test.failure.ignore=true"

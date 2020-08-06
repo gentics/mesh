@@ -46,6 +46,10 @@
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-mdm-orientdb-wrapper</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-distributed</artifactId>
 		</dependency>
 		<dependency>

@@ -1,6 +1,5 @@
 # This Dockerfile is used to build an image containing basic stuff to be used as a Jenkins slave build node.
 FROM jenkinsci/jnlp-slave:3.27-1
-MAINTAINER Johannes Schüth <j.schueth@gentics.com>
 USER root
 
 # APT
@@ -19,7 +18,7 @@ RUN echo 'deb http://debian.apa.at/debian buster main contrib non-free' > /etc/a
    rm -Rf /var/lib/apt/lists/*
 
 # Maven
-RUN cd /opt && wget -nv -O maven.tar.gz "http://mirror.klaus-uwe.me/apache/maven/maven-3/3.6.1/binaries/apache-maven-3.6.1-bin.tar.gz" && \
+RUN cd /opt && wget -nv -O maven.tar.gz "https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz" && \
     tar -xzf maven.tar.gz && mv apache-maven* maven && rm maven.tar.gz && \
     ln -s /opt/maven/bin/mvn /usr/local/bin/mvn
 
@@ -32,20 +31,21 @@ RUN curl "https://get.docker.com/builds/`uname -s`/`uname -m`/docker-latest.tgz"
 # Install Java 8
 RUN mkdir -p /usr/lib/jvm/ && \
    cd /usr/lib/jvm/ && \
-   wget -nv -O jdk-8-x64.tar.gz "https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u202-b08/OpenJDK8U-jdk_x64_linux_hotspot_8u202b08.tar.gz" && \
+   wget -nv -O jdk-8-x64.tar.gz "https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u265-b01/OpenJDK8U-jdk_x64_linux_hotspot_8u265b01.tar.gz" && \
    tar xfz jdk-8-x64.tar.gz && \
    rm *.gz && \
-   mv jdk8u202-b08/ java-8
+   mv java-1.8.0-openjdk-amd64 java-8
 ENV JAVA_1_8_HOME /usr/lib/jvm/java-8
 
 # Install Java 11
 RUN mkdir -p /usr/lib/jvm/ && \
    cd /usr/lib/jvm/ && \
-   wget -nv -O openjdk-11.tar.gz "https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.3%2B7/OpenJDK11U-jre_x64_linux_hotspot_11.0.3_7.tar.gz" && \
+   wget -nv -O openjdk-11.tar.gz "https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.8%2B10/OpenJDK11U-jdk_x64_linux_hotspot_11.0.8_10.tar.gz" && \
    tar xfz openjdk-11.tar.gz && \
    rm *.gz && \
    mv jdk-11* java-11
 ENV JAVA_1_11_HOME /usr/lib/jvm/java-11
+ENV JAVA_HOME /usr/lib/jvm/java-11
 
 # Add Jenkins user
 RUN echo "jenkins:jenkins" | chpasswd
