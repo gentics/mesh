@@ -13,7 +13,7 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.dao.ProjectDao;
+import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.ProjectRoot;
@@ -40,11 +40,11 @@ import com.tinkerpop.blueprints.Vertex;
 import io.vertx.core.Vertx;
 
 // Use ProjectDao instead of ProjectRoot once ready 
-public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
+public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDaoWrapper {
 
 	private final ProjectRoot delegate;
 
-	private ProjectDaoWrapperImpl(ProjectRoot delegate) {
+	public ProjectDaoWrapperImpl(ProjectRoot delegate) {
 		this.delegate = delegate;
 	}
 
@@ -404,6 +404,16 @@ public class ProjectDaoWrapperImpl implements ProjectRoot, ProjectDao {
 	@Override
 	public ProjectResponse transformToRestSync(Project element, InternalActionContext ac, int level, String[] languageTags) {
 		return delegate.transformToRestSync(element, ac, level, languageTags);
+	}
+
+	@Override
+	public String getSubETag(Project project, InternalActionContext ac) {
+		return delegate.getSubETag(project, ac);
+	}
+
+	@Override
+	public void delete(Project element, BulkActionContext bac) {
+		delegate.delete(element, bac);
 	}
 
 }

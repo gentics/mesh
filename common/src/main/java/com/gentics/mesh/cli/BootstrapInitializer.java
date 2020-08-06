@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
+import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
@@ -33,9 +34,18 @@ public interface BootstrapInitializer {
 	/**
 	 * Return the project root element.
 	 * 
+	 * @deprecated Use {@link #projectDao()} instead.
 	 * @return
 	 */
+	@Deprecated
 	ProjectRoot projectRoot();
+
+	/**
+	 * Return the project dao.
+	 * 
+	 * @return
+	 */
+	ProjectDaoWrapper projectDao();
 
 	/**
 	 * Return the language root element.

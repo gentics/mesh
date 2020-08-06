@@ -15,6 +15,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -28,6 +29,7 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.BranchImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
@@ -49,7 +51,7 @@ import com.gentics.mesh.parameter.value.FieldsSet;
 /**
  * @see BranchRoot
  */
-public class BranchRootImpl extends AbstractRootVertex<Branch> implements BranchRoot {
+public class BranchRootImpl extends AbstractRootVertex<Branch> implements BranchRoot, BranchDao {
 
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(BranchRootImpl.class, MeshVertexImpl.class);
@@ -305,6 +307,21 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 		// Role permissions
 		setRolePermissions(branch, ac, restBranch);
 		return restBranch;
+	}
+
+	/**
+	 * @deprecated Use {@link #findByUuid(Project, String)} instead
+	 */
+	@Override
+	@Deprecated
+	public Branch findByUuid(String uuid) {
+		return super.findByUuid(uuid);
+	}
+	
+	@Override
+	public Branch findByUuid(Project project, String uuid) {
+		Objects.requireNonNull(project);
+		return project.getBranchRoot().findByUuid(uuid);
 	}
 
 	/**

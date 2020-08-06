@@ -25,6 +25,7 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.node.Node;
@@ -192,7 +193,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		if (StringUtils.isEmpty(requestModel.getName())) {
 			throw error(BAD_REQUEST, "project_missing_name");
 		}
-		ProjectRoot projectDao = Tx.get().data().projectDao();
+		ProjectDaoWrapper projectDao = Tx.get().data().projectDao();
 		if (!userRoot.hasPermission(creator, projectDao, CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", Tx.get().data().projectDao().getUuid(), CREATE_PERM.getRestPerm().getName());
 		}

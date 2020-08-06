@@ -14,6 +14,7 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.BranchRoot;
@@ -39,7 +40,7 @@ import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.Vertx;
 
-public class BranchDaoWrapperImpl implements BranchRoot {
+public class BranchDaoWrapperImpl implements BranchRoot, BranchDaoWrapper {
 
 	private final BranchRoot delegate;
 
@@ -276,10 +277,12 @@ public class BranchDaoWrapperImpl implements BranchRoot {
 		return delegate.e(ids);
 	}
 
+	@Deprecated
 	public TEdge addFramedEdge(String label, com.syncleus.ferma.VertexFrame inVertex) {
 		return delegate.addFramedEdge(label, inVertex);
 	}
 
+	@Deprecated
 	public <T> T getGraphAttribute(String key) {
 		return delegate.getGraphAttribute(key);
 	}
@@ -288,10 +291,12 @@ public class BranchDaoWrapperImpl implements BranchRoot {
 		return delegate.findAllDynamic();
 	}
 
+	@Deprecated
 	public VertexTraversal<?, ?, ?> in(String... labels) {
 		return delegate.in(labels);
 	}
 
+	@Deprecated
 	public EdgeTraversal<?, ?, ?> outE(String... labels) {
 		return delegate.outE(labels);
 	}
@@ -300,14 +305,17 @@ public class BranchDaoWrapperImpl implements BranchRoot {
 		return delegate.findAll(ac, pagingInfo);
 	}
 
+	@Deprecated
 	public EdgeTraversal<?, ?, ?> inE(String... labels) {
 		return delegate.inE(labels);
 	}
 
+	@Deprecated
 	public void linkOut(com.syncleus.ferma.VertexFrame vertex, String... labels) {
 		delegate.linkOut(vertex, labels);
 	}
 
+	@Deprecated
 	public void linkIn(com.syncleus.ferma.VertexFrame vertex, String... labels) {
 		delegate.linkIn(vertex, labels);
 	}
@@ -316,10 +324,12 @@ public class BranchDaoWrapperImpl implements BranchRoot {
 		return delegate.findAll(ac, pagingInfo, extraFilter);
 	}
 
+	@Deprecated
 	public void unlinkOut(com.syncleus.ferma.VertexFrame vertex, String... labels) {
 		delegate.unlinkOut(vertex, labels);
 	}
 
+	@Deprecated
 	public void unlinkIn(com.syncleus.ferma.VertexFrame vertex, String... labels) {
 		delegate.unlinkIn(vertex, labels);
 	}
@@ -328,6 +338,7 @@ public class BranchDaoWrapperImpl implements BranchRoot {
 		return delegate.findAllNoPerm(ac, pagingInfo);
 	}
 
+	@Deprecated
 	public void setLinkOut(com.syncleus.ferma.VertexFrame vertex, String... labels) {
 		delegate.setLinkOut(vertex, labels);
 	}
@@ -336,10 +347,12 @@ public class BranchDaoWrapperImpl implements BranchRoot {
 		return delegate.findByName(name);
 	}
 
+	@Deprecated
 	public VertexTraversal<?, ?, ?> traversal() {
 		return delegate.traversal();
 	}
 
+	@Deprecated
 	public JsonObject toJson() {
 		return delegate.toJson();
 	}
@@ -348,10 +361,12 @@ public class BranchDaoWrapperImpl implements BranchRoot {
 		return delegate.findByName(ac, name, perm);
 	}
 
+	@Deprecated
 	public <T> T reframe(Class<T> kind) {
 		return delegate.reframe(kind);
 	}
 
+	@Deprecated
 	public <T> T reframeExplicit(Class<T> kind) {
 		return delegate.reframeExplicit(kind);
 	}
@@ -417,6 +432,11 @@ public class BranchDaoWrapperImpl implements BranchRoot {
 	@Override
 	public BranchResponse transformToRestSync(Branch branch, InternalActionContext ac, int level, String... languageTags) {
 		return delegate.transformToRestSync(branch, ac, level, languageTags);
+	}
+
+	@Override
+	public Branch findByUuid(Project project, String uuid) {
+		return delegate.findByUuid(project, uuid);
 	}
 
 }

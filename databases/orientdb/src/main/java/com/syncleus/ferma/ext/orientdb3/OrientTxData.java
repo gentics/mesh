@@ -1,11 +1,12 @@
 package com.syncleus.ferma.ext.orientdb3;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.dao.ProjectDao;
+import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
-import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
@@ -36,8 +37,8 @@ public class OrientTxData implements TxData {
 	}
 
 	@Override
-	public ProjectRoot projectDao() {
-		return boot.projectRoot();
+	public ProjectDaoWrapper projectDao() {
+		return boot.projectDao();
 	}
 
 	@Override

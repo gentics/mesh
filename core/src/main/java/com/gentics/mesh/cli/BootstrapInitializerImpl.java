@@ -35,7 +35,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.cache.CacheRegistryImpl;
@@ -49,6 +48,8 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
+import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
+import com.gentics.mesh.core.data.dao.impl.ProjectDaoWrapperImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.job.JobRoot;
@@ -66,6 +67,7 @@ import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
@@ -823,6 +825,11 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	@Override
 	public ProjectRoot projectRoot() {
 		return meshRoot().getProjectRoot();
+	}
+
+	@Override
+	public ProjectDaoWrapper projectDao() {
+		return new ProjectDaoWrapperImpl(projectRoot());
 	}
 
 	/**

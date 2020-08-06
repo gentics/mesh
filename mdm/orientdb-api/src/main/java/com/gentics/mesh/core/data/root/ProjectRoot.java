@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.root;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -87,5 +88,7 @@ public interface ProjectRoot extends RootVertex<Project>, TransformableElementRo
 	 * @param project
 	 */
 	void addProject(Project project);
+
+	String getSubETag(Project project, InternalActionContext ac);
 
 }

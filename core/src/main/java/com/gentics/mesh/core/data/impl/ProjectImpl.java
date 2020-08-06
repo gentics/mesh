@@ -32,6 +32,7 @@ import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
@@ -40,13 +41,11 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
-import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.impl.BranchRootImpl;
 import com.gentics.mesh.core.data.root.impl.NodeRootImpl;
 import com.gentics.mesh.core.data.root.impl.ProjectMicroschemaContainerRootImpl;
-import com.gentics.mesh.core.data.root.impl.ProjectRootImpl;
 import com.gentics.mesh.core.data.root.impl.ProjectSchemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
@@ -162,10 +161,14 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		linkOut(baseNode, HAS_ROOT_NODE);
 	}
 
+	/**
+	 * @deprecated Use {@link ProjectDaoWrapper}{@link #transformToRestSync(InternalActionContext, int, String...)} instead
+	 */
 	@Override
+	@Deprecated
 	public ProjectResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		ProjectRoot projectRoot = mesh().boot().projectRoot();
-		return projectRoot.transformToRestSync(this, ac, level, languageTags);
+		ProjectDaoWrapper projectDao= mesh().boot().projectDao();
+		return projectDao.transformToRestSync(this, ac, level, languageTags);
 	}
 
 	@Override
@@ -189,7 +192,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	@Override
 	@Deprecated
 	public void delete(BulkActionContext bac) {
-		ProjectRoot projectDao = mesh().boot().projectRoot();
+		ProjectDaoWrapper projectDao = mesh().boot().projectDao();
 		projectDao.delete(this, bac);
 	}
 
@@ -251,8 +254,8 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public String getSubETag(InternalActionContext ac) {
-		ProjectRootImpl projectRoot = (ProjectRootImpl)mesh().boot().projectRoot();
-		return projectRoot.getSubETag(this, ac);
+		ProjectDaoWrapper projectDao = mesh().boot().projectDao();
+		return projectDao.getSubETag(this, ac);
 	}
 
 	@Override
