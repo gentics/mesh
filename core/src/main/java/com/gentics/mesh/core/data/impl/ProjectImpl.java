@@ -182,46 +182,14 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		return baseNode;
 	}
 
+	/**
+	 * @deprecated Use Dao method instead.
+	 */
 	@Override
+	@Deprecated
 	public void delete(BulkActionContext bac) {
-		if (log.isDebugEnabled()) {
-			log.debug("Deleting project {" + getName() + "}");
-		}
-
-		// Remove the nodes in the project hierarchy
-		Node base = getBaseNode();
-		base.delete(bac, true, true);
-
-		// Remove the tagfamilies from the index
-		getTagFamilyRoot().delete(bac);
-
-		// Remove all nodes in this project
-		for (Node node : findNodes()) {
-			node.delete(bac, true, false);
-			bac.inc();
-		}
-
-		// Finally also remove the node root
-		getNodeRoot().delete(bac);
-
-		// Unassign the schema from the container
-		for (SchemaContainer container : getSchemaContainerRoot().findAll()) {
-			getSchemaContainerRoot().removeSchemaContainer(container, bac.batch());
-		}
-
-		// Remove the project schema root from the index
-		getSchemaContainerRoot().delete(bac);
-
-		// Remove the branch root and all branches
-		getBranchRoot().delete(bac);
-
-		// Remove the project from the index
-		bac.add(onDeleted());
-
-		// Finally remove the project node
-		getVertex().remove();
-
-		bac.process(true);
+		ProjectRoot projectDao = mesh().boot().projectRoot();
+		projectDao.delete(this, bac);
 	}
 
 	@Override

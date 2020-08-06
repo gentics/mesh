@@ -27,6 +27,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
@@ -34,6 +35,7 @@ import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.error.NameConflictException;
@@ -254,6 +256,49 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		setRolePermissions(project, ac, restProject);
 
 		return restProject;
+
+	}
+
+	@Override
+	public void delete(Project project, BulkActionContext bac) {
+		if (log.isDebugEnabled()) {
+			log.debug("Deleting project {" + project.getName() + "}");
+		}
+
+		// Remove the nodes in the project hierarchy
+		Node base = project.getBaseNode();
+		base.delete(bac, true, true);
+
+		// Remove the tagfamilies from the index
+		project.getTagFamilyRoot().delete(bac);
+
+		// Remove all nodes in this project
+		for (Node node : project.findNodes()) {
+			node.delete(bac, true, false);
+			bac.inc();
+		}
+
+		// Finally also remove the node root
+		project.getNodeRoot().delete(bac);
+
+		// Unassign the schema from the container
+		for (SchemaContainer container : project.getSchemaContainerRoot().findAll()) {
+			project.getSchemaContainerRoot().removeSchemaContainer(container, bac.batch());
+		}
+
+		// Remove the project schema root from the index
+		project.getSchemaContainerRoot().delete(bac);
+
+		// Remove the branch root and all branches
+		project.getBranchRoot().delete(bac);
+
+		// Remove the project from the index
+		bac.add(project.onDeleted());
+
+		// Finally remove the project node
+		project.getVertex().remove();
+
+		bac.process(true);
 
 	}
 
