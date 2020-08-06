@@ -119,7 +119,7 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 			JsonObject hitsInfo = firstResponse.getJsonObject("hits");
 
 			// The scrolling iterator will wrap the current response and query ES for more data if needed.
-			Page<? extends NodeContent> page = db.tx(() -> {
+			Page<? extends NodeContent> page = db.tx(tx -> {
 				long totalCount = extractTotalCount(hitsInfo);
 				List<NodeContent> elementList = new ArrayList<>();
 				JsonArray hits = hitsInfo.getJsonArray("hits");
@@ -140,7 +140,7 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 						continue;
 					}
 
-					Language language = boot.languageRoot().findByLanguageTag(languageTag);
+					Language language = tx.data().languageDao().findByLanguageTag(languageTag);
 					if (language == null) {
 						log.warn("Could not find language {" + languageTag + "}");
 						totalCount--;

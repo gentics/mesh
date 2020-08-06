@@ -33,7 +33,7 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 
 	public Language englishLang() {
 		try (Tx tx = tx()) {
-			return boot().languageRoot().findByLanguageTag("en");
+			return tx.data().languageDao().findByLanguageTag("en");
 		}
 	}
 
@@ -41,7 +41,7 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 	@Override
 	public void testRootNode() {
 		try (Tx tx = tx()) {
-			LanguageRoot languageRoot = meshRoot().getLanguageRoot();
+			LanguageRoot languageRoot = tx.data().languageDao();
 
 			long nLanguagesBefore = languageRoot.computeCount();
 

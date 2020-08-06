@@ -103,11 +103,11 @@ public class BinaryTransformHandler extends AbstractHandler {
 		String languageTag = transformation.getLanguage();
 
 		// Load needed elements
-		Node node = db.tx(() -> {
+		Node node = db.tx(tx -> {
 			Project project = ac.getProject();
 			Node n = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 
-			Language language = boot.get().languageRoot().findByLanguageTag(languageTag);
+			Language language = tx.data().languageDao().findByLanguageTag(languageTag);
 			if (language == null) {
 				throw error(NOT_FOUND, "error_language_not_found", transformation.getLanguage());
 			}

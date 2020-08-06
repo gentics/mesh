@@ -263,7 +263,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		userRoot.inheritRolePermissions(requestUser, parentNode, node);
 
 		// Create the language specific graph field container for the node
-		Language language = boot.languageRoot().findByLanguageTag(requestModel.getLanguage());
+		Language language = Tx.get().data().languageDao().findByLanguageTag(requestModel.getLanguage());
 		if (language == null) {
 			throw error(BAD_REQUEST, "language_not_found", requestModel.getLanguage());
 		}

@@ -267,7 +267,7 @@ public class BinaryUploadHandler extends AbstractHandler {
 				if (binary == null) {
 					binary = binaries.create(binaryUuid, hash, upload.size()).runInExistingTx(tx);
 				}
-				Language language = boot.get().languageRoot().findByLanguageTag(languageTag);
+				Language language = tx.data().languageDao().findByLanguageTag(languageTag);
 				if (language == null) {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
 				}
