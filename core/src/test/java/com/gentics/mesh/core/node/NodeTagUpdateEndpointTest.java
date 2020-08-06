@@ -20,6 +20,7 @@ import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
+import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.event.node.NodeTaggedEventModel;
@@ -83,7 +84,10 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testUpdateByTagName() {
-		long previousCount = tx(() -> tagFamily("colors").findAll().count());
+		long previousCount = tx(tx -> {
+			TagDaoWrapper tagDao = tx.data().tagDao();
+			return tagDao.findAll(tagFamily("colors")).count();
+		});
 		assertEquals("The colors tag family did not have the expected amount of tags", 3, previousCount);
 
 		String tagFamilyUuid = tx(() -> tagFamily("colors").getUuid());
@@ -184,7 +188,8 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 		waitForSearchIdleEvent();
 		try (Tx tx = tx()) {
 			// 4 Node containers need to be updated and two tag families and 4 new tags
-			assertThat(trackingSearchProvider()).storedAllContainers(content(), project(), latestBranch(), "en", "de").hasEvents(4 + 2 + 4, 0, 0, 0, 0);
+			assertThat(trackingSearchProvider()).storedAllContainers(content(), project(), latestBranch(), "en", "de").hasEvents(4 + 2 + 4, 0, 0, 0,
+				0);
 		}
 
 		trackingSearchProvider().clear().blockingAwait();

@@ -400,4 +400,9 @@ public class TagDaoWrapperImpl implements TagDaoWrapper {
 		return delegate.getETag(tag, ac);
 	}
 
+	@Override
+	public TraversalResult<? extends Tag> findAll(TagFamily tagFamily) {
+		return tagFamily.findAll();
+	}
+
 }

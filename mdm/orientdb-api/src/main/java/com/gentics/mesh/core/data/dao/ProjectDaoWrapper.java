@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.dao;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
@@ -27,4 +28,9 @@ public interface ProjectDaoWrapper extends ProjectDao, ProjectRoot {
 	Project findByUuid(String uuid);
 
 	String getSubETag(Project project, InternalActionContext ac);
+
+	String getAPIPath(Project project, InternalActionContext ac);
+
+	void delete(Project project, BulkActionContext bc);
+
 }

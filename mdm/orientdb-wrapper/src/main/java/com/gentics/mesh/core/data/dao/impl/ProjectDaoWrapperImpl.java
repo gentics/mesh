@@ -391,17 +391,14 @@ public class ProjectDaoWrapperImpl implements ProjectDaoWrapper {
 		return delegate.computeCount();
 	}
 
-	@Override
 	public String getAPIPath(Project element, InternalActionContext ac) {
 		return delegate.getAPIPath(element, ac);
 	}
 
-	@Override
 	public String getETag(Project element, InternalActionContext ac) {
 		return delegate.getAPIPath(element, ac);
 	}
 
-	@Override
 	public ProjectResponse transformToRestSync(Project element, InternalActionContext ac, int level, String[] languageTags) {
 		return delegate.transformToRestSync(element, ac, level, languageTags);
 	}
