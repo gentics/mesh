@@ -48,8 +48,24 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
+import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
+import com.gentics.mesh.core.data.dao.JobDaoWrapper;
+import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.impl.GroupDaoWrapperImpl;
+import com.gentics.mesh.core.data.dao.impl.JobDaoWrapperImpl;
+import com.gentics.mesh.core.data.dao.impl.MicroschemaDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.ProjectDaoWrapperImpl;
+import com.gentics.mesh.core.data.dao.impl.RoleDaoWrapperImpl;
+import com.gentics.mesh.core.data.dao.impl.SchemaDaoWrapperImpl;
+import com.gentics.mesh.core.data.dao.impl.TagDaoWrapperImpl;
+import com.gentics.mesh.core.data.dao.impl.TagFamilyDaoWrapperImpl;
+import com.gentics.mesh.core.data.dao.impl.UserDaoWrapperImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.job.JobRoot;
@@ -778,8 +794,18 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
+	public SchemaDaoWrapper schemaDao() {
+		return new SchemaDaoWrapperImpl(schemaDao());
+	}
+
+	@Override
 	public MicroschemaContainerRoot microschemaContainerRoot() {
 		return meshRoot().getMicroschemaContainerRoot();
+	}
+
+	@Override
+	public MicroschemaDaoWrapper microschemaDao() {
+		return new MicroschemaDaoWrapperImpl(microschemaContainerRoot());
 	}
 
 	@Override
@@ -788,13 +814,28 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
+	public RoleDaoWrapper roleDao() {
+		return new RoleDaoWrapperImpl(roleRoot());
+	}
+
+	@Override
 	public TagRoot tagRoot() {
 		return meshRoot().getTagRoot();
 	}
 
 	@Override
+	public TagDaoWrapper tagDao() {
+		return new TagDaoWrapperImpl(tagRoot());
+	}
+
+	@Override
 	public TagFamilyRoot tagFamilyRoot() {
 		return meshRoot().getTagFamilyRoot();
+	}
+
+	@Override
+	public TagFamilyDaoWrapper tagFamilyDao() {
+		return new TagFamilyDaoWrapperImpl(tagFamilyRoot());
 	}
 
 	@Override
@@ -808,13 +849,28 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
+	public UserDaoWrapper userDao() {
+		return new UserDaoWrapperImpl(userRoot());
+	}
+
+	@Override
 	public GroupRoot groupRoot() {
 		return meshRoot().getGroupRoot();
 	}
 
 	@Override
+	public GroupDaoWrapper groupDao() {
+		return new GroupDaoWrapperImpl(groupRoot());
+	}
+
+	@Override
 	public JobRoot jobRoot() {
 		return meshRoot().getJobRoot();
+	}
+
+	@Override
+	public JobDaoWrapper jobDao() {
+		return new JobDaoWrapperImpl(jobRoot());
 	}
 
 	@Override

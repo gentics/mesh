@@ -8,7 +8,17 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
+import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
+import com.gentics.mesh.core.data.dao.JobDaoWrapper;
+import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.SchemaDao;
+import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDao;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
@@ -40,11 +50,6 @@ public interface BootstrapInitializer {
 	@Deprecated
 	ProjectRoot projectRoot();
 
-	/**
-	 * Return the project dao.
-	 * 
-	 * @return
-	 */
 	ProjectDaoWrapper projectDao();
 
 	/**
@@ -57,24 +62,35 @@ public interface BootstrapInitializer {
 	/**
 	 * Return the group root element.
 	 * 
+	 * @deprecated Use {@link #groupDao()} instead.
 	 * @return
 	 */
+	@Deprecated
 	GroupRoot groupRoot();
+
+	GroupDaoWrapper groupDao();
 
 	/**
 	 * Return the user root element.
 	 * 
+	 * @deprecated Use {@link #userDao()} instead.
 	 * @return
 	 */
+	@Deprecated
 	UserRoot userRoot();
+
+	UserDaoWrapper userDao();
 
 	/**
 	 * Return the job root element.
-	 * 
+	 *
+	 * @deprecated Use {@link #jobDao()} instead.
 	 * @return
 	 */
+	@Deprecated
 	JobRoot jobRoot();
 
+	JobDaoWrapper jobDao();
 
 	/**
 	 * Return the changelog root element.
@@ -86,37 +102,57 @@ public interface BootstrapInitializer {
 	/**
 	 * Return the global tagfamily root element. Note that each project has their own tag family root element.
 	 * 
+	 * @deprecated Use {@link #tagFamilyDao()} instead.
 	 * @return
 	 */
+	@Deprecated
 	TagFamilyRoot tagFamilyRoot();
+
+	TagFamilyDaoWrapper tagFamilyDao();
 
 	/**
 	 * Return the global tag root element. Note that each project has their own tag root element.
 	 * 
+	 * @deprecated Use {@link #tagDao()} instead. 
 	 * @return
 	 */
+	@Deprecated
 	TagRoot tagRoot();
+
+	TagDaoWrapper tagDao();
 
 	/**
 	 * Return the role root element.
 	 * 
+	 * @deprecated Use {@link #roleDao()} instead.
 	 * @return
 	 */
+	@Deprecated
 	RoleRoot roleRoot();
+
+	RoleDaoWrapper roleDao();
 
 	/**
 	 * Return the global microschema root element.
 	 * 
+	 * @deprecated Use {@link #microschemaDao()} instead.
 	 * @return
 	 */
+	@Deprecated
 	MicroschemaContainerRoot microschemaContainerRoot();
+
+	MicroschemaDaoWrapper microschemaDao();
 
 	/**
 	 * Return the global schema container root element.
 	 * 
+	 * @deprecated Use {@link #schemaDao()} instead.
 	 * @return
 	 */
+	@Deprecated
 	SchemaContainerRoot schemaContainerRoot();
+
+	SchemaDaoWrapper schemaDao();
 
 	/**
 	 * Return the mesh root element. All other mesh graph elements are connected to this element. It represents the main root of the whole mesh graph.
