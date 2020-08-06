@@ -1,38 +1,42 @@
 package com.gentics.mesh.core.db;
 
+import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
+import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
+import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
+import com.gentics.mesh.core.data.dao.JobDaoWrapper;
+import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
+import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
-import com.gentics.mesh.core.data.job.JobRoot;
-import com.gentics.mesh.core.data.root.GroupRoot;
-import com.gentics.mesh.core.data.root.LanguageRoot;
-import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
-import com.gentics.mesh.core.data.root.RoleRoot;
-import com.gentics.mesh.core.data.root.SchemaContainerRoot;
-import com.gentics.mesh.core.data.root.TagFamilyRoot;
-import com.gentics.mesh.core.data.root.TagRoot;
-import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 
 public interface TxData {
 
-	UserRoot userDao();
+	UserDaoWrapper userDao();
 
-	GroupRoot groupDao();
+	GroupDaoWrapper groupDao();
 
-	RoleRoot roleDao();
+	RoleDaoWrapper roleDao();
 
 	ProjectDaoWrapper projectDao();
 
-	LanguageRoot languageDao();
+	LanguageDaoWrapper languageDao();
 
-	JobRoot jobDao();
+	JobDaoWrapper jobDao();
 
-	TagFamilyRoot tagFamilyDao();
+	TagFamilyDaoWrapper tagFamilyDao();
 
-	TagRoot tagDao();
+	TagDaoWrapper tagDao();
 
-//	BranchRoot branchDao();
+	BranchDaoWrapper branchDao();
 
-	MicroschemaContainerRoot microschemaDao();
+	MicroschemaDaoWrapper microschemaDao();
 
-	SchemaContainerRoot schemaDao();
+	SchemaDaoWrapper schemaDao();
+
+	BinaryDaoWrapper binaryDao();
 
 }

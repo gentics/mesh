@@ -15,6 +15,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.GroupRoot;
@@ -69,14 +70,15 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	public void testFindAllVisible() throws InvalidArgumentException {
 		int groupCount = groups().size();
 		try (Tx tx = tx()) {
+			GroupDaoWrapper groupDao = tx.data().groupDao();
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			Page<? extends Group> page = boot().groupRoot().findAll(ac, new PagingParametersImpl(1, 19L));
+			Page<? extends Group> page = groupDao.findAll(ac, new PagingParametersImpl(1, 19L));
 
 			assertEquals(groupCount, page.getTotalElements());
 			assertEquals(groupCount, page.getSize());
 
-			page = boot().groupRoot().findAll(ac, new PagingParametersImpl(1, 3L));
+			page = groupDao.findAll(ac, new PagingParametersImpl(1, 3L));
 			assertEquals(groupCount, page.getTotalElements());
 			assertEquals("We expected one page per group.", groupCount, page.getSize());
 		}
@@ -86,7 +88,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Override
 	public void testFindAll() {
 		try (Tx tx = tx()) {
-			long size = boot().groupRoot().computeCount();
+			long size = tx.data().groupDao().computeCount();
 			assertEquals(groups().size(), size);
 		}
 	}
@@ -109,7 +111,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Override
 	public void testFindByName() {
 		try (Tx tx = tx()) {
-			assertNotNull(boot().groupRoot().findByName(group().getName()));
+			assertNotNull(tx.data().groupDao().findByName(group().getName()));
 		}
 	}
 
@@ -117,7 +119,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Override
 	public void testFindByUUID() {
 		try (Tx tx = tx()) {
-			Group group = boot().groupRoot().findByUuid(group().getUuid());
+			Group group = tx.data().groupDao().findByUuid(group().getUuid());
 			assertNotNull(group);
 		}
 	}
@@ -128,7 +130,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 		try (Tx tx = tx()) {
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-
+			GroupDaoWrapper groupDao = tx.data().groupDao();
 			GroupResponse response = group().transformToRestSync(ac, 0);
 
 			assertNotNull(response);
@@ -141,7 +143,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Override
 	public void testCreateDelete() throws Exception {
 		try (Tx tx = tx()) {
-			Group group = meshRoot().getGroupRoot().create("newGroup", user());
+			Group group = tx.data().groupDao().create("newGroup", user());
 			assertNotNull(group);
 			String uuid = group.getUuid();
 			group.delete(createBulkContext());

@@ -34,9 +34,9 @@ import org.junit.Test;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RoleRoot;
-import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
@@ -78,12 +78,12 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 
 		try (Tx tx = tx()) {
-			UserRoot userRoot = tx.data().userDao();
+			UserDaoWrapper userDao = tx.data().userDao();
 			Role createdRole = meshRoot().getRoleRoot().findByUuid(restRole.getUuid());
-			assertTrue(userRoot.hasPermission(user(), createdRole, UPDATE_PERM));
-			assertTrue(userRoot.hasPermission(user(), createdRole, READ_PERM));
-			assertTrue(userRoot.hasPermission(user(), createdRole, DELETE_PERM));
-			assertTrue(userRoot.hasPermission(user(), createdRole, CREATE_PERM));
+			assertTrue(userDao.hasPermission(user(), createdRole, UPDATE_PERM));
+			assertTrue(userDao.hasPermission(user(), createdRole, READ_PERM));
+			assertTrue(userDao.hasPermission(user(), createdRole, DELETE_PERM));
+			assertTrue(userDao.hasPermission(user(), createdRole, CREATE_PERM));
 
 			String roleUuid = restRole.getUuid();
 			restRole = call(() -> client().findRoleByUuid(roleUuid));
@@ -101,7 +101,9 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			tx.success();
 		}
 
-		String roleRootUuid = db().tx(() -> meshRoot().getRoleRoot().getUuid());
+		String roleRootUuid = db().tx(tx -> {
+			return tx.data().roleDao().getUuid();
+		});
 		RoleCreateRequest request = new RoleCreateRequest();
 		request.setName("new_role");
 		call(() -> client().createRole(request), FORBIDDEN, "error_missing_perm", roleRootUuid, CREATE_PERM.getRestPerm().getName());

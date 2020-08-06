@@ -17,6 +17,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.UserRoot;
@@ -57,7 +58,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 
 	@Override
 	public RootVertex<User> getRootVertex(Tx tx, InternalActionContext ac) {
-		return boot.userRoot();
+		return tx.data().userDao();
 	}
 
 	/**
@@ -77,7 +78,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				UserRoot userRoot = boot.userRoot();
+				UserDaoWrapper userRoot = tx.data().userDao();
 
 				// 1. Load the user that should be used - read perm implies that the
 				// user is able to read the attached permissions
@@ -116,7 +117,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				// 1. Load the user that should be used
-				User user = boot.userRoot().loadObjectByUuid(ac, userUuid, CREATE_PERM);
+				User user = tx.data().userDao().loadObjectByUuid(ac, userUuid, CREATE_PERM);
 
 				// 2. Generate a new token and store it for the user
 				UserResetTokenResponse tokenResponse = db.tx(() -> {
@@ -149,7 +150,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				// 1. Load the user that should be used
-				User user = boot.userRoot().loadObjectByUuid(ac, userUuid, UPDATE_PERM);
+				User user = tx.data().userDao().loadObjectByUuid(ac, userUuid, UPDATE_PERM);
 
 				// 2. Generate the API key for the user
 				UserAPITokenResponse apiKeyRespose = db.tx(() -> {
@@ -181,7 +182,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				// 1. Load the user that should be used
-				User user = boot.userRoot().loadObjectByUuid(ac, userUuid, UPDATE_PERM);
+				User user = tx.data().userDao().loadObjectByUuid(ac, userUuid, UPDATE_PERM);
 
 				// 2. Generate the API key for the user
 				GenericMessageResponse message = db.tx(() -> {

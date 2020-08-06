@@ -51,6 +51,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.UserRoot;
@@ -580,8 +581,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		try (Tx tx = tx()) {
 			assertThat(restUser).matches(updateRequest);
-			assertNull("The user node should have been updated and thus no user should be found.", boot().userRoot().findByUsername(oldName));
-			User reloadedUser = boot().userRoot().findByUsername(newName);
+			assertNull("The user node should have been updated and thus no user should be found.", boot().userDao().findByUsername(oldName));
+			User reloadedUser = boot().userDao().findByUsername(newName);
 			assertNotNull(reloadedUser);
 			assertEquals("Epic Stark", reloadedUser.getLastname());
 			assertEquals("Tony Awesome", reloadedUser.getFirstname());
@@ -609,8 +610,9 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		UserResponse restUser = call(() -> client().updateUser(uuid, updateRequest));
 		assertThat(restUser).matches(updateRequest);
 		try (Tx tx = tx()) {
-			assertNull("The user node should have been updated and thus no user should be found.", boot().userRoot().findByUsername(oldUsername));
-			User reloadedUser = boot().userRoot().findByUsername(username);
+			UserDaoWrapper userDao = tx.data().userDao();
+			assertNull("The user node should have been updated and thus no user should be found.", userDao.findByUsername(oldUsername));
+			User reloadedUser = userDao.findByUsername(username);
 			assertNotNull(reloadedUser);
 			assertEquals(lastname, reloadedUser.getLastname());
 			assertEquals(firstname, reloadedUser.getFirstname());
@@ -649,13 +651,14 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		UserResponse restUser = call(() -> client().updateUser(userUuid, updateRequest));
 		try (Tx tx = tx()) {
+			UserDaoWrapper userDao = tx.data().userDao();
 			assertNotNull(user().getReferencedNode());
 			assertNotNull(restUser.getNodeReference());
 			assertEquals(PROJECT_NAME, ((NodeReference) restUser.getNodeReference()).getProjectName());
 			assertEquals(nodeUuid, restUser.getNodeReference().getUuid());
 			assertThat(restUser).matches(updateRequest);
-			assertNull("The user node should have been updated and thus no user should be found.", boot().userRoot().findByUsername(username));
-			User reloadedUser = boot().userRoot().findByUsername("dummy_user_changed");
+			assertNull("The user node should have been updated and thus no user should be found.", userDao.findByUsername(username));
+			User reloadedUser = userDao.findByUsername("dummy_user_changed");
 			assertNotNull(reloadedUser);
 			assertEquals("Epic Stark", reloadedUser.getLastname());
 			assertEquals("Tony Awesome", reloadedUser.getFirstname());
@@ -933,7 +936,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertThat(restUser).matches(updateRequest);
 
 		try (Tx tx = tx()) {
-			User reloadedUser = boot().userRoot().findByUuid(uuid);
+			User reloadedUser = tx.data().userDao().findByUuid(uuid);
 			assertNotEquals("The hash should be different and thus the password updated.", oldHash, reloadedUser.getPasswordHash());
 		}
 
@@ -958,7 +961,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertThat(restUser).matches(updateRequest);
 
 		try (Tx tx = tx()) {
-			User reloadedUser = boot().userRoot().findByUsername(username);
+			User reloadedUser = tx.data().userDao().findByUsername(username);
 			assertNotEquals("The hash should be different and thus the password updated.", oldHash, reloadedUser.getPasswordHash());
 		}
 	}
@@ -978,7 +981,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		call(() -> client().updateUser(userUuid(), request), FORBIDDEN, "error_missing_perm", userUuid(), UPDATE_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
-			User reloadedUser = boot().userRoot().findByUuid(userUuid());
+			User reloadedUser = tx.data().userDao().findByUuid(userUuid());
 			assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
 		}
 	}
@@ -1003,7 +1006,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		call(() -> client().updateUser(userUuid(), updatedUser), FORBIDDEN, "error_missing_perm", userUuid(), UPDATE_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
-			User reloadedUser = boot().userRoot().findByUuid(userUuid());
+			User reloadedUser = tx.data().userDao().findByUuid(userUuid());
 			assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
 			assertEquals("The firstname should not be updated.", user().getFirstname(), reloadedUser.getFirstname());
 			assertEquals("The firstname should not be updated.", user().getLastname(), reloadedUser.getLastname());
@@ -1154,7 +1157,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		try (Tx tx2 = tx()) {
 			assertThat(restUser).matches(request);
 
-			User user = boot().userRoot().findByUuid(restUser.getUuid());
+			User user = tx2.data().userDao().findByUuid(restUser.getUuid());
 			assertThat(restUser).matches(user);
 		}
 	}
@@ -1309,7 +1312,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			waitForSearchIdleEvent();
 
 			try (Tx tx2 = tx()) {
-				User loadedUser = boot().userRoot().findByUuid(uuid);
+				User loadedUser = tx2.data().userDao().findByUuid(uuid);
 				assertNull("The user should have been deleted.", loadedUser);
 			}
 

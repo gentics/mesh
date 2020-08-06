@@ -22,6 +22,7 @@ import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
@@ -271,8 +272,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	@Deprecated
 	@Override
 	public UserResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		UserRoot userRoot = mesh().boot().userRoot();
-		return userRoot.transformToRestSync(this, ac, level, languageTags);
+		UserDaoWrapper userDao = mesh().boot().userDao();
+		return userDao.transformToRestSync(this, ac, level, languageTags);
 	}
 
 	@Override
@@ -297,8 +298,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public void delete(BulkActionContext bac) {
-		UserRoot userRoot = mesh().boot().userRoot();
-		userRoot.delete(this, bac);
+		UserDaoWrapper userDao = mesh().boot().userDao();
+		userDao.delete(this, bac);
 	}
 
 	@Override
@@ -309,7 +310,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public String getSubETag(InternalActionContext ac) {
-		UserRootImpl userRoot = (UserRootImpl)mesh().boot().userRoot();
+		UserDaoWrapper userRoot = mesh().boot().userDao();
 		return userRoot.getSubETag(this, ac);
 	}
 

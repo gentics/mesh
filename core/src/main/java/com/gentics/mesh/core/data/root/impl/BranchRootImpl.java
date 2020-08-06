@@ -30,6 +30,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.BranchDao;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.BranchImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
@@ -72,7 +73,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 	private Branch create(String name, User creator, String uuid, boolean setLatest, Branch baseBranch, boolean assignSchemas,
 		EventQueueBatch batch) {
 		Branch branch = getGraph().addFramedVertex(BranchImpl.class);
-		UserRoot userRoot = mesh().boot().userRoot();
+		UserDaoWrapper userRoot = mesh().boot().userDao();
 
 		if (uuid != null) {
 			branch.setUuid(uuid);

@@ -19,6 +19,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GroupImpl;
 import com.gentics.mesh.core.data.root.GroupRoot;
@@ -79,13 +80,13 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 	@Override
 	public Group create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		MeshAuthUser requestUser = ac.getUser();
-		UserRoot userRoot = mesh().boot().userRoot();
+		UserDaoWrapper userDao = mesh().boot().userDao();
 		GroupCreateRequest requestModel = ac.fromJson(GroupCreateRequest.class);
 
 		if (StringUtils.isEmpty(requestModel.getName())) {
 			throw error(BAD_REQUEST, "error_name_must_be_set");
 		}
-		if (!userRoot.hasPermission(requestUser, this, CREATE_PERM)) {
+		if (!userDao.hasPermission(requestUser, this, CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", this.getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
 		MeshRoot root = mesh().boot().meshRoot();
@@ -98,7 +99,7 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 
 		// Finally create the group and set the permissions
 		Group group = create(requestModel.getName(), requestUser, uuid);
-		userRoot.inheritRolePermissions(requestUser, root.getGroupRoot(), group);
+		userDao.inheritRolePermissions(requestUser, root.getGroupRoot(), group);
 		batch.add(group.onCreated());
 		return group;
 	}

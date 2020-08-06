@@ -369,10 +369,10 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 
 		String roleUuid;
 		try (Tx tx = tx()) {
-			Group testGroup = boot().groupRoot().create("testGroup", user());
-			Role testRole = boot().roleRoot().create("testRole", user());
-			User testUser = boot().userRoot().create("test", user());
-			boot().userRoot().setPassword(testUser, "dummy");
+			Group testGroup = tx.data().groupDao().create("testGroup", user());
+			Role testRole = tx.data().roleDao().create("testRole", user());
+			User testUser = tx.data().userDao().create("test", user());
+			tx.data().userDao().setPassword(testUser, "dummy");
 
 			testGroup.addRole(testRole);
 			testGroup.addUser(testUser);

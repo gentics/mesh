@@ -7,6 +7,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
 
@@ -32,9 +33,10 @@ public class MultiMeshIntegrationTest {
 			mesh.run(false);
 			System.out.println("Done");
 			MeshComponent meshInternal = mesh.internal();
-			meshInternal.database().tx(() -> {
-				System.out.println(meshInternal.boot().userRoot().getUuid());
-				System.out.println("Admin: " + meshInternal.boot().userRoot().findByName("admin").getUuid());
+			meshInternal.database().tx(tx -> {
+				UserDaoWrapper userDao = tx.data().userDao();
+				System.out.println(userDao.getUuid());
+				System.out.println("Admin: " + userDao.findByName("admin").getUuid());
 			});
 			meshes.add(mesh);
 

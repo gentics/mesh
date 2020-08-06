@@ -37,7 +37,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.vertx.core.json.JsonObject;
 
-@Category({FailingTests.class})
+@Category({ FailingTests.class })
 @MeshTestSetting(testSize = PROJECT_AND_NODE, startServer = true, useKeycloak = true)
 public class OAuth2KeycloakPluginTest extends AbstractOAuthTest {
 
@@ -78,11 +78,13 @@ public class OAuth2KeycloakPluginTest extends AbstractOAuthTest {
 		assertEquals("group1", me2.getGroups().get(0).getName());
 		assertEquals("group2", me2.getGroups().get(1).getName());
 
-		assertNotNull(tx(() -> boot().groupRoot().findByName("group1")));
-		assertNotNull(tx(() -> boot().groupRoot().findByName("group2")));
+		assertNotNull(tx(tx -> {
+			return tx.data().groupDao().findByName("group1");
+		}));
+		assertNotNull(tx(() -> boot().groupDao().findByName("group2")));
 
-		assertNotNull(tx(() -> boot().roleRoot().findByName("role1")));
-		assertNotNull(tx(() -> boot().roleRoot().findByName("role2")));
+		assertNotNull(tx(() -> boot().groupDao().findByName("role1")));
+		assertNotNull(tx(() -> boot().groupDao().findByName("role2")));
 
 		// Invoke request without token
 		JsonObject meJson = new JsonObject(get(VersionHandler.CURRENT_API_BASE_PATH + "/auth/me"));
@@ -239,12 +241,12 @@ public class OAuth2KeycloakPluginTest extends AbstractOAuthTest {
 		setAdminToken();
 
 		// Apply permissions
-		String role1Uuid = tx(() -> boot().roleRoot().findByName("role1").getUuid());
+		String role1Uuid = tx(() -> boot().groupDao().findByName("role1").getUuid());
 		RolePermissionRequest updateRequest = new RolePermissionRequest().setRecursive(true);
 		updateRequest.getPermissions().setRead(true);
 		call(() -> client().updateRolePermissions(role1Uuid, "projects/" + projectUuid(), updateRequest));
 		// Assign the role to the group
-		String groupUuid = tx(() -> boot().groupRoot().findByName("group1").getUuid());
+		String groupUuid = tx(() -> boot().groupDao().findByName("group1").getUuid());
 		call(() -> client().addRoleToGroup(groupUuid, role1Uuid));
 
 		// Reset the keycloak token

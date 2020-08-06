@@ -73,7 +73,7 @@ public abstract class AbstractOAuthTest extends AbstractMeshTest {
 	}
 
 	protected void assertGroupRoles(String groupName, String... expectedRoles) {
-		String groupUuid = tx(() -> boot().groupRoot().findByName(groupName).getUuid());
+		String groupUuid = tx(() -> boot().groupDao().findByName(groupName).getUuid());
 		RoleListResponse rolesForGroup = call(() -> client().findRolesForGroup(groupUuid));
 		List<String> roleNamesOfGroup = rolesForGroup.getData().stream().map(r -> r.getName()).collect(Collectors.toList());
 		assertThat(roleNamesOfGroup).as("Roles of group {" + groupName + "}").containsExactlyInAnyOrder(expectedRoles);

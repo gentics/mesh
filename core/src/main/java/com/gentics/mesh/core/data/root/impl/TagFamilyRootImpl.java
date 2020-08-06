@@ -114,7 +114,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 	@Override
 	public TagFamily create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		MeshAuthUser requestUser = ac.getUser();
-		UserRoot userRoot = mesh().boot().userRoot();
+		UserRoot userRoot = mesh().boot().userDao();
 		TagFamilyCreateRequest requestModel = ac.fromJson(TagFamilyCreateRequest.class);
 
 		String name = requestModel.getName();

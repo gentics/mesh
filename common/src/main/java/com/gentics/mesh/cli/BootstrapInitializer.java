@@ -10,17 +10,15 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.JobDaoWrapper;
+import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.job.JobRoot;
-import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
@@ -55,18 +53,13 @@ public interface BootstrapInitializer {
 	/**
 	 * Return the language root element.
 	 * 
-	 * @return
-	 */
-	LanguageRoot languageRoot();
-
-	/**
-	 * Return the group root element.
-	 * 
-	 * @deprecated Use {@link #groupDao()} instead.
+	 * @deprecated Use {@link #languageDao()} instead. 
 	 * @return
 	 */
 	@Deprecated
-	GroupRoot groupRoot();
+	LanguageRoot languageRoot();
+
+	LanguageDaoWrapper languageDao();
 
 	GroupDaoWrapper groupDao();
 

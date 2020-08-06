@@ -94,12 +94,12 @@ public class MeshEntities {
 		this.options = options;
 		this.complianceMode = options.getSearchOptions().getComplianceMode();
 
-		schema = new SimpleMeshEntity<>(schemaTransformer, SchemaContainer.TYPE_INFO, byUuid(boot::schemaContainerRoot));
-		microschema = new SimpleMeshEntity<>(microschemaTransformer, MicroschemaContainer.TYPE_INFO, byUuid(boot::microschemaContainerRoot));
-		user = new SimpleMeshEntity<>(userTransformer, User.TYPE_INFO, byUuid(boot::userRoot));
-		group = new SimpleMeshEntity<>(groupTransformer, Group.TYPE_INFO, byUuid(boot::groupRoot));
-		role = new SimpleMeshEntity<>(roleTransformer, Role.TYPE_INFO, byUuid(boot::roleRoot));
-		project = new SimpleMeshEntity<>(projectTransformer, Project.TYPE_INFO, byUuid(boot::projectRoot));
+		schema = new SimpleMeshEntity<>(schemaTransformer, SchemaContainer.TYPE_INFO, byUuid(boot::schemaDao));
+		microschema = new SimpleMeshEntity<>(microschemaTransformer, MicroschemaContainer.TYPE_INFO, byUuid(boot::microschemaDao));
+		user = new SimpleMeshEntity<>(userTransformer, User.TYPE_INFO, byUuid(boot::userDao));
+		group = new SimpleMeshEntity<>(groupTransformer, Group.TYPE_INFO, byUuid(boot::groupDao));
+		role = new SimpleMeshEntity<>(roleTransformer, Role.TYPE_INFO, byUuid(boot::roleDao));
+		project = new SimpleMeshEntity<>(projectTransformer, Project.TYPE_INFO, byUuid(boot::projectDao));
 		tagFamily = new SimpleMeshEntity<>(tagFamilyTransformer, TagFamily.TYPE_INFO, this::toTagFamily);
 		tag = new SimpleMeshEntity<>(tagTransformer, Tag.TYPE_INFO, this::toTag);
 		nodeContent = new NodeMeshEntity(nodeTransformer, this::toNodeContent);

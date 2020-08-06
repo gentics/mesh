@@ -106,7 +106,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 		if (fields.has("perms")) {
 			// When this is a node migration, do not set user permissions
 			if (!(ac instanceof NodeMigrationActionContextImpl)) {
-				PermissionInfo permissionInfo = mesh().boot().userRoot().getPermissionInfo(ac.getUser(), this);
+				PermissionInfo permissionInfo = mesh().boot().userDao().getPermissionInfo(ac.getUser(), this);
 				model.setPermissions(permissionInfo);
 			}
 		}

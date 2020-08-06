@@ -29,6 +29,7 @@ import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -150,11 +151,12 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 
-			Page<? extends User> page = boot().userRoot().findAll(ac, new PagingParametersImpl(1, 6L));
+			UserDaoWrapper userDao = tx.data().userDao();
+			Page<? extends User> page = userDao.findAll(ac, new PagingParametersImpl(1, 6L));
 			assertEquals(users().size(), page.getTotalElements());
 			assertEquals(users().size(), page.getSize());
 
-			page = boot().userRoot().findAll(ac, new PagingParametersImpl(1, 15L));
+			page = userDao.findAll(ac, new PagingParametersImpl(1, 15L));
 			assertEquals(users().size(), page.getTotalElements());
 			assertEquals(users().size(), page.getSize());
 		}
@@ -164,7 +166,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
-			Page<? extends User> page = boot().userRoot().findAll(mockActionContext(), new PagingParametersImpl(1, 25L));
+			Page<? extends User> page = tx.data().userDao().findAll(mockActionContext(), new PagingParametersImpl(1, 25L));
 			assertNotNull(page);
 			assertEquals(users().size(), page.getTotalElements());
 		}
@@ -240,8 +242,9 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testFindByName() {
 		try (Tx tx = tx()) {
-			assertNull(boot().userRoot().findByUsername("bogus"));
-			boot().userRoot().findByUsername(user().getUsername());
+			UserDaoWrapper userDao = tx.data().userDao();
+			assertNull(userDao.findByUsername("bogus"));
+			userDao.findByUsername(user().getUsername());
 		}
 	}
 
@@ -249,8 +252,9 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testFindByUUID() throws Exception {
 		try (Tx tx = tx()) {
+			UserDaoWrapper userDao = tx.data().userDao();
 			String uuid = user().getUuid();
-			User foundUser = boot().userRoot().findByUuid(uuid);
+			User foundUser = userDao.findByUuid(uuid);
 			assertNotNull(foundUser);
 			assertEquals(uuid, foundUser.getUuid());
 		}

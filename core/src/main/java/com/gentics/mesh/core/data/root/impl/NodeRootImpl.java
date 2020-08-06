@@ -34,6 +34,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
@@ -102,18 +103,18 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	public Stream<? extends Node> findAllStream(InternalActionContext ac, GraphPermission perm) {
 		MeshAuthUser user = ac.getUser();
 		String branchUuid = ac.getBranch().getUuid();
-		UserRoot userRoot = mesh().boot().userRoot();
+		UserDaoWrapper userDao = mesh().boot().userDao();
 
 		return findAll(ac.getProject().getUuid())
 			.filter(item -> {
-				boolean hasRead = userRoot.hasPermissionForId(user, item.getId(), READ_PERM);
+				boolean hasRead = userDao.hasPermissionForId(user, item.getId(), READ_PERM);
 				if (hasRead) {
 					return true;
 				} else {
 					// Check whether the node is published. In this case we need to check the read publish perm.
 					boolean isPublishedForBranch = GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, PUBLISHED);
 					if (isPublishedForBranch) {
-						return userRoot.hasPermissionForId(user, item.getId(), READ_PUBLISHED_PERM);
+						return userDao.hasPermissionForId(user, item.getId(), READ_PUBLISHED_PERM);
 					}
 				}
 				return false;
@@ -140,20 +141,20 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 		Branch branch = ac.getBranch();
 		String branchUuid = branch.getUuid();
-		UserRoot userRoot = mesh().boot().userRoot();
+		UserDaoWrapper userDao = mesh().boot().userDao();
 
 		return findAll(ac.getProject().getUuid()).filter(item -> {
 			// Check whether the node has at least one content of the type in the selected branch - Otherwise the node should be skipped
 			return GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, type);
 		}).filter(item -> {
-			boolean hasRead = userRoot.hasPermissionForId(user, item.getId(), READ_PERM);
+			boolean hasRead = userDao.hasPermissionForId(user, item.getId(), READ_PERM);
 			if (hasRead) {
 				return true;
 			} else if (type == PUBLISHED) {
 				// Check whether the node is published. In this case we need to check the read publish perm.
 				boolean isPublishedForBranch = GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, PUBLISHED);
 				if (isPublishedForBranch) {
-					return userRoot.hasPermissionForId(user, item.getId(), READ_PUBLISHED_PERM);
+					return userDao.hasPermissionForId(user, item.getId(), READ_PUBLISHED_PERM);
 				}
 			}
 			return false;
@@ -169,7 +170,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	@Override
 	public Node loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
 		Node element = findByUuid(uuid);
-		UserRoot userRoot = mesh().boot().userRoot();
+		UserRoot userRoot = mesh().boot().userDao();
 		if (element == null) {
 			throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);
 		}
@@ -241,7 +242,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		Project project = ac.getProject();
 		MeshAuthUser requestUser = ac.getUser();
 		BootstrapInitializer boot = mesh().boot();
-		UserRoot userRoot = mesh().boot().userRoot();
+		UserDaoWrapper userRoot = boot.userDao();
 
 		NodeCreateRequest requestModel = ac.fromJson(NodeCreateRequest.class);
 		if (requestModel.getParentNode() == null || isEmpty(requestModel.getParentNode().getUuid())) {
@@ -298,7 +299,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		Project project = ac.getProject();
 		MeshAuthUser requestUser = ac.getUser();
 		Branch branch = ac.getBranch();
-		UserRoot userRoot = mesh().boot().userRoot();
+		UserDaoWrapper userDao = mesh().boot().userDao();
 
 		String body = ac.getBodyAsString();
 
@@ -329,7 +330,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 			if (schemaByName != null) {
 				String schemaName = schemaByName.getName();
 				String schemaUuid = schemaByName.getUuid();
-				if (userRoot.hasPermission(requestUser, schemaByName, READ_PERM)) {
+				if (userDao.hasPermission(requestUser, schemaByName, READ_PERM)) {
 					SchemaContainerVersion schemaVersion = branch.findLatestSchemaVersion(schemaByName);
 					if (schemaVersion == null) {
 						throw error(BAD_REQUEST, "schema_error_schema_not_linked_to_branch", schemaByName.getName(), branch.getName(), project.getName());

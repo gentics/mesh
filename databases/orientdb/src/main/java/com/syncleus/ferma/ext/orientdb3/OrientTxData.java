@@ -1,17 +1,26 @@
 package com.syncleus.ferma.ext.orientdb3;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.dao.ProjectDao;
+import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
+import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
+import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
+import com.gentics.mesh.core.data.dao.JobDaoWrapper;
+import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
+import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagFamilyDao;
+import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.job.JobRoot;
-import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
-import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.db.TxData;
 
 public class OrientTxData implements TxData {
@@ -22,18 +31,18 @@ public class OrientTxData implements TxData {
 	}
 
 	@Override
-	public UserRoot userDao() {
-		return boot.userRoot();
+	public UserDaoWrapper userDao() {
+		return boot.userDao();
 	}
 
 	@Override
-	public GroupRoot groupDao() {
-		return boot.groupRoot();
+	public GroupDaoWrapper groupDao() {
+		return boot.groupDao();
 	}
 
 	@Override
-	public RoleRoot roleDao() {
-		return boot.roleRoot();
+	public RoleDaoWrapper roleDao() {
+		return boot.roleDao();
 	}
 
 	@Override
@@ -42,32 +51,44 @@ public class OrientTxData implements TxData {
 	}
 
 	@Override
-	public JobRoot jobDao() {
-		return boot.jobRoot();
+	public JobDaoWrapper jobDao() {
+		return boot.jobDao();
 	}
 
 	@Override
-	public LanguageRoot languageDao() {
-		return boot.languageRoot();
+	public LanguageDaoWrapper languageDao() {
+		return boot.languageDao();
 	}
 
 	@Override
-	public SchemaContainerRoot schemaDao() {
-		return boot.schemaContainerRoot();
+	public SchemaDaoWrapper schemaDao() {
+		return boot.schemaDao();
 	}
 
 	@Override
-	public TagRoot tagDao() {
-		return boot.tagRoot();
+	public TagDaoWrapper tagDao() {
+		return boot.tagDao();
 	}
 
 	@Override
-	public TagFamilyRoot tagFamilyDao() {
-		return boot.tagFamilyRoot();
+	public TagFamilyDaoWrapper tagFamilyDao() {
+		return boot.tagFamilyDao();
 	}
 
 	@Override
-	public MicroschemaContainerRoot microschemaDao() {
-		return boot.microschemaContainerRoot();
+	public MicroschemaDaoWrapper microschemaDao() {
+		return boot.microschemaDao();
+	}
+	
+	@Override
+	public BinaryDaoWrapper binaryDao() {
+		//TODO There is currently no binary wrapper. We need to write a new impl.
+		return null;
+	}
+	
+	@Override
+	public BranchDaoWrapper branchDao() {
+		// TODO there is currently no global branch root
+		return null;
 	}
 }

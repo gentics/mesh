@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.dao;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.madl.traversal.TraversalResult;
@@ -8,4 +9,6 @@ import com.gentics.mesh.madl.traversal.TraversalResult;
 public interface UserDaoWrapper extends UserDao, UserRoot {
 
 	TraversalResult<? extends User> findAll();
+
+	String getSubETag(User user, InternalActionContext ac);
 }

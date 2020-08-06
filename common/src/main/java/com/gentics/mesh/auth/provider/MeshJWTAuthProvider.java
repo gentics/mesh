@@ -163,7 +163,7 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 	 *            Handler which will be invoked which will return the authenticated user or fail if the credentials do not match or the user could not be found
 	 */
 	private void authenticate(String username, String password, String newPassword, Handler<AsyncResult<AuthenticationResult>> resultHandler) {
-		MeshAuthUser user = db.tx(() -> boot.userRoot().findMeshAuthUserByUsername(username));
+		MeshAuthUser user = db.tx(() -> boot.userDao().findMeshAuthUserByUsername(username));
 		if (user != null) {
 			String accountPasswordHash = db.tx(user::getPasswordHash);
 			// TODO check if user is enabled
@@ -191,7 +191,7 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 				} else {
 					if (forcedPasswordChange) {
 						MeshAuthUser localUser = user;
-						db.tx(() -> boot.userRoot().setPassword(localUser, newPassword));
+						db.tx(() -> boot.userDao().setPassword(localUser, newPassword));
 					}
 					resultHandler.handle(Future.succeededFuture(new AuthenticationResult(user)));
 					return;
@@ -264,7 +264,7 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 	private User loadUserByJWT(JsonObject jwt) throws Exception {
 		return db.tx(tx -> {
 			String userUuid = jwt.getString(USERID_FIELD_NAME);
-			MeshAuthUser user = boot.userRoot().findMeshAuthUserByUuid(userUuid);
+			MeshAuthUser user = tx.data().userDao().findMeshAuthUserByUuid(userUuid);
 			if (user == null) {
 				if (log.isDebugEnabled()) {
 					log.debug("Could not load user with UUID {" + userUuid + "}.");

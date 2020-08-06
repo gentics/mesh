@@ -21,6 +21,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
@@ -157,15 +158,15 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	@Override
 	public SchemaContainer create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		MeshAuthUser requestUser = ac.getUser();
-		UserRoot userRoot = mesh().boot().userRoot();
+		UserDaoWrapper userDao = mesh().boot().userDao();
 		SchemaModel requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModelImpl.class);
 		requestModel.validate();
 
-		if (!userRoot.hasPermission(requestUser, this, CREATE_PERM)) {
+		if (!userDao.hasPermission(requestUser, this, CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
 		SchemaContainer container = create(requestModel, requestUser, uuid, ac.getSchemaUpdateParameters().isStrictValidation());
-		userRoot.inheritRolePermissions(requestUser, this, container);
+		userDao.inheritRolePermissions(requestUser, this, container);
 		batch.add(container.onCreated());
 		return container;
 

@@ -81,7 +81,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		trackingSearchProvider().clear().blockingAwait();
 
 		try (Tx tx = tx()) {
-			assertElement(boot().groupRoot(), restGroup.getUuid(), true);
+			assertElement(tx.data().groupDao(), restGroup.getUuid(), true);
 		}
 	}
 
@@ -93,7 +93,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		String groupRootUuid = db().tx(() -> meshRoot().getGroupRoot().getUuid());
 
 		try (Tx tx = tx()) {
-			role().revokePermissions(meshRoot().getGroupRoot(), CREATE_PERM);
+			role().revokePermissions(tx.data().groupDao(), CREATE_PERM);
 			tx.success();
 		}
 
@@ -117,7 +117,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 		try (Tx tx = tx()) {
 			assertThat(restGroup).matches(request);
-			Group reloadedGroup = boot().groupRoot().findByUuid(uuid);
+			Group reloadedGroup = tx.data().groupDao().findByUuid(uuid);
 			assertEquals("The group should have been updated", name, reloadedGroup.getName());
 		}
 	}
@@ -167,7 +167,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 			GroupResponse restGroup = call(() -> client().createGroup(request));
 			assertThat(restGroup).matches(request);
 
-			assertElement(boot().groupRoot(), restGroup.getUuid(), true);
+			assertElement(tx.data().groupDao(), restGroup.getUuid(), true);
 			call(() -> client().createGroup(request), CONFLICT, "group_conflicting_name", name);
 		}
 	}
@@ -184,7 +184,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 			GroupResponse restGroup = call(() -> client().createGroup(request));
 			assertThat(restGroup).matches(request);
 
-			Group foundGroup = boot().groupRoot().findByUuid(restGroup.getUuid());
+			Group foundGroup = tx.data().groupDao().findByUuid(restGroup.getUuid());
 			assertNotNull("Group should have been created.", foundGroup);
 
 			call(() -> client().findGroupByUuid(restGroup.getUuid()));
@@ -353,7 +353,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 		try (Tx tx = tx()) {
 			assertThat(restGroup).matches(request);
-			Group reloadedGroup = boot().groupRoot().findByUuid(groupUuid);
+			Group reloadedGroup = tx.data().groupDao().findByUuid(groupUuid);
 			assertEquals("The group should have been updated", name, reloadedGroup.getName());
 		}
 	}
@@ -388,7 +388,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		call(() -> client().updateGroup(groupUuid(), request), BAD_REQUEST, "error_name_must_be_set");
 
 		try (Tx tx = tx()) {
-			Group reloadedGroup = boot().groupRoot().findByUuid(groupUuid());
+			Group reloadedGroup = tx.data().groupDao().findByUuid(groupUuid());
 			assertEquals("The group should not have been updated", oldName, reloadedGroup.getName());
 		}
 	}
@@ -404,7 +404,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		awaitEvents();
 
 		try (Tx tx = tx()) {
-			Group reloadedGroup = boot().groupRoot().findByUuid(groupUuid());
+			Group reloadedGroup = tx.data().groupDao().findByUuid(groupUuid());
 			assertEquals("The group should be the same", name, reloadedGroup.getName());
 		}
 	}
@@ -485,7 +485,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 1, 0, 0);
 
 		try (Tx tx = tx()) {
-			assertElement(boot().groupRoot(), groupUuid(), false);
+			assertElement(tx.data().groupDao(), groupUuid(), false);
 		}
 	}
 
@@ -516,7 +516,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 		try (Tx tx = tx()) {
 			call(() -> client().deleteGroup(groupUuid()), FORBIDDEN, "error_missing_perm", groupUuid(), DELETE_PERM.getRestPerm().getName());
-			assertElement(boot().groupRoot(), groupUuid(), true);
+			assertElement(tx.data().groupDao(), groupUuid(), true);
 		}
 	}
 
@@ -544,7 +544,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 	@Override
 	public void testDeleteByUUIDMultithreaded() throws InterruptedException {
 		int nJobs = 10;
-		String uuid = db().tx(() -> group().getUuid());
+		String uuid = tx(() -> group().getUuid());
 
 		validateDeletion(i -> client().deleteGroup(uuid), nJobs);
 	}

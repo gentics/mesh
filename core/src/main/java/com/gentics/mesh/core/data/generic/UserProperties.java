@@ -48,7 +48,7 @@ public class UserProperties {
 	private User getUser(MeshVertex vertex, String propertyKey) {
 		return Optional.ofNullable(vertex)
 			.map(v -> v.<String>getProperty(propertyKey))
-			.map(boot.userRoot()::findByUuid)
+			.map(boot.userDao()::findByUuid)
 			.orElse(null);
 	}
 

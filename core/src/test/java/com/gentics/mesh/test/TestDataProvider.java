@@ -182,11 +182,11 @@ public class TestDataProvider {
 			addPermissions(project.getInitialBranch());
 			addPermissions(project.getTagFamilyRoot());
 			addPermissions(tx.data().projectDao());
-			addPermissions(boot.userRoot());
-			addPermissions(boot.groupRoot());
-			addPermissions(boot.roleRoot());
-			addPermissions(boot.microschemaContainerRoot());
-			addPermissions(boot.schemaContainerRoot());
+			addPermissions(boot.userDao());
+			addPermissions(boot.groupDao());
+			addPermissions(boot.roleDao());
+			addPermissions(boot.microschemaDao());
+			addPermissions(boot.schemaDao());
 			log.debug("Added BasicPermissions to nodes took {" + (System.currentTimeMillis() - startPerm) + "} ms.");
 			tx.success();
 		});
@@ -197,7 +197,7 @@ public class TestDataProvider {
 
 	private void setAdminPassword() {
 		String hash = "$2a$10$X7NA0kiqrFlyX0NUhPdW1e7jevHyoaoB4OyoxV1pdA7B3SLVSkx22";
-		boot.userRoot().findByUsername("admin").setPasswordHash(hash);
+		boot.userDao().findByUsername("admin").setPasswordHash(hash);
 	}
 
 	private void addPermissions(MeshVertex vertex) {

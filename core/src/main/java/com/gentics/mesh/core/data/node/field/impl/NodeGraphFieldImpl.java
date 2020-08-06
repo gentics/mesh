@@ -24,6 +24,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.FieldGetter;
@@ -163,12 +164,12 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 		// TODO handle null across all types
 		// if (getNode() != null) {
 		NodeParameters parameters = ac.getNodeParameters();
-		UserRoot userRoot = mesh().boot().userRoot();
+		UserDaoWrapper userDao = mesh().boot().userDao();
 		boolean expandField = ac.getNodeParameters().getExpandedFieldnameList().contains(fieldKey) || parameters.getExpandAll();
 		Node node = getNode();
 
 		// Check whether the user is allowed to read the node reference
-		boolean canReadNode = userRoot.canReadNode(ac.getUser(), ac, node);
+		boolean canReadNode = userDao.canReadNode(ac.getUser(), ac, node);
 		if (!canReadNode) {
 			return null;
 		}

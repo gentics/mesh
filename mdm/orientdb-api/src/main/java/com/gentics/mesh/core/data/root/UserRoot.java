@@ -12,6 +12,7 @@ import com.gentics.mesh.core.data.HasPermissions;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -271,4 +272,6 @@ public interface UserRoot extends RootVertex<User>, TransformableElementRoot<Use
 		}
 		return isTokenMatch && !isExpired;
 	}
+
+	String getSubETag(User user, InternalActionContext ac);
 }

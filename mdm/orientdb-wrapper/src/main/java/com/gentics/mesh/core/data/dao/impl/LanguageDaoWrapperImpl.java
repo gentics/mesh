@@ -9,19 +9,14 @@ import java.util.stream.Stream;
 import com.gentics.madl.traversal.RawTraversalResult;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HasPermissions;
-import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
-import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -41,16 +36,20 @@ import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.Vertx;
 
-public class UserDaoWrapperImpl implements UserDaoWrapper {
+public class LanguageDaoWrapperImpl implements LanguageDaoWrapper {
 
-	private final UserRoot delegate;
+	private final LanguageRoot delegate;
 
-	public UserDaoWrapperImpl(UserRoot delegate) {
+	public LanguageDaoWrapperImpl(LanguageRoot delegate) {
 		this.delegate = delegate;
 	}
 
 	public Object id() {
 		return delegate.id();
+	}
+
+	public Language create(String languageName, String languageTag) {
+		return delegate.create(languageName, languageTag);
 	}
 
 	public PermissionInfo getRolePermissions(InternalActionContext ac, String roleUuid) {
@@ -65,8 +64,8 @@ public class UserDaoWrapperImpl implements UserDaoWrapper {
 		delegate.setUniqueLinkOutTo(vertex, labels);
 	}
 
-	public User create(String username, User creator) {
-		return delegate.create(username, creator);
+	public Language create(String languageName, String languageTag, String uuid) {
+		return delegate.create(languageName, languageTag, uuid);
 	}
 
 	public TraversalResult<? extends Role> getRolesWithPerm(GraphPermission perm) {
@@ -77,6 +76,10 @@ public class UserDaoWrapperImpl implements UserDaoWrapper {
 		return delegate.getUuid();
 	}
 
+	public void addLanguage(Language language) {
+		delegate.addLanguage(language);
+	}
+
 	public Vertex getVertex() {
 		return delegate.getVertex();
 	}
@@ -85,12 +88,12 @@ public class UserDaoWrapperImpl implements UserDaoWrapper {
 		return delegate.getElementVersion();
 	}
 
-	public void setUniqueLinkInTo(VertexFrame vertex, String... labels) {
-		delegate.setUniqueLinkInTo(vertex, labels);
+	public Language findByLanguageTag(String languageTag) {
+		return delegate.findByLanguageTag(languageTag);
 	}
 
-	public User create(String username, User creator, String uuid) {
-		return delegate.create(username, creator, uuid);
+	public void setUniqueLinkInTo(VertexFrame vertex, String... labels) {
+		delegate.setUniqueLinkInTo(vertex, labels);
 	}
 
 	public <T> T property(String name) {
@@ -149,10 +152,6 @@ public class UserDaoWrapperImpl implements UserDaoWrapper {
 		return delegate.getGraph();
 	}
 
-	public MeshAuthUser findMeshAuthUserByUsername(String username) {
-		return delegate.findMeshAuthUserByUsername(username);
-	}
-
 	public <R> void property(String key, R value) {
 		delegate.property(key, value);
 	}
@@ -172,10 +171,6 @@ public class UserDaoWrapperImpl implements UserDaoWrapper {
 
 	public <T extends ElementFrame> TraversalResult<? extends T> in(String label, Class<T> clazz) {
 		return delegate.in(label, clazz);
-	}
-
-	public MeshAuthUser findMeshAuthUserByUuid(String userUuid) {
-		return delegate.findMeshAuthUserByUuid(userUuid);
 	}
 
 	public <T> T addFramedEdge(String label, com.syncleus.ferma.VertexFrame inVertex, Class<T> kind) {
@@ -202,10 +197,6 @@ public class UserDaoWrapperImpl implements UserDaoWrapper {
 		return delegate.db();
 	}
 
-	public User findByUsername(String username) {
-		return delegate.findByUsername(username);
-	}
-
 	public Vertx vertx() {
 		return delegate.vertx();
 	}
@@ -214,16 +205,8 @@ public class UserDaoWrapperImpl implements UserDaoWrapper {
 		return delegate.hasPublishPermissions();
 	}
 
-	public void addUser(User user) {
-		delegate.addUser(user);
-	}
-
 	public MeshOptions options() {
 		return delegate.options();
-	}
-
-	public void removeUser(User user) {
-		delegate.removeUser(user);
 	}
 
 	public <T> T addFramedEdgeExplicit(String label, com.syncleus.ferma.VertexFrame inVertex, ClassInitializer<T> initializer) {
@@ -234,40 +217,28 @@ public class UserDaoWrapperImpl implements UserDaoWrapper {
 		delegate.setCachedUuid(uuid);
 	}
 
-	public TraversalResult<? extends User> findAll() {
-		return delegate.findAll();
-	}
-
 	public void setProperty(String name, Object value) {
 		delegate.setProperty(name, value);
 	}
 
-	public User setPassword(User user, String password) {
-		return delegate.setPassword(user, password);
+	public TraversalResult<? extends Language> findAll() {
+		return delegate.findAll();
 	}
 
 	public Class<?> getTypeResolution() {
 		return delegate.getTypeResolution();
 	}
 
-	public Stream<? extends User> findAllStream(InternalActionContext ac, GraphPermission permission) {
-		return delegate.findAllStream(ac, permission);
-	}
-
 	public void setTypeResolution(Class<?> type) {
 		delegate.setTypeResolution(type);
 	}
 
-	public PermissionInfo getPermissionInfo(User user, MeshVertex vertex) {
-		return delegate.getPermissionInfo(user, vertex);
+	public Stream<? extends Language> findAllStream(InternalActionContext ac, GraphPermission permission) {
+		return delegate.findAllStream(ac, permission);
 	}
 
 	public <T> T addFramedEdgeExplicit(String label, com.syncleus.ferma.VertexFrame inVertex, Class<T> kind) {
 		return delegate.addFramedEdgeExplicit(label, inVertex, kind);
-	}
-
-	public Set<GraphPermission> getPermissions(User user, MeshVertex vertex) {
-		return delegate.getPermissions(user, vertex);
 	}
 
 	public void removeTypeResolution() {
@@ -278,20 +249,12 @@ public class UserDaoWrapperImpl implements UserDaoWrapper {
 		return delegate.v();
 	}
 
-	public boolean hasPermission(User user, MeshVertex element, GraphPermission permission) {
-		return delegate.hasPermission(user, element, permission);
-	}
-
 	public EdgeTraversal<?, ?, ?> e() {
 		return delegate.e();
 	}
 
 	public EdgeTraversal<?, ?, ?> e(Object... ids) {
 		return delegate.e(ids);
-	}
-
-	public boolean hasPermissionForId(User user, Object elementId, GraphPermission permission) {
-		return delegate.hasPermissionForId(user, elementId, permission);
 	}
 
 	public TEdge addFramedEdge(String label, com.syncleus.ferma.VertexFrame inVertex) {
@@ -302,7 +265,7 @@ public class UserDaoWrapperImpl implements UserDaoWrapper {
 		return delegate.getGraphAttribute(key);
 	}
 
-	public TraversalResult<? extends User> findAllDynamic() {
+	public TraversalResult<? extends Language> findAllDynamic() {
 		return delegate.findAllDynamic();
 	}
 
@@ -314,10 +277,6 @@ public class UserDaoWrapperImpl implements UserDaoWrapper {
 		return delegate.outE(labels);
 	}
 
-	public TransformablePage<? extends User> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
-		return delegate.findAll(ac, pagingInfo);
-	}
-
 	public EdgeTraversal<?, ?, ?> inE(String... labels) {
 		return delegate.inE(labels);
 	}
@@ -326,11 +285,15 @@ public class UserDaoWrapperImpl implements UserDaoWrapper {
 		delegate.linkOut(vertex, labels);
 	}
 
+	public TransformablePage<? extends Language> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
+		return delegate.findAll(ac, pagingInfo);
+	}
+
 	public void linkIn(com.syncleus.ferma.VertexFrame vertex, String... labels) {
 		delegate.linkIn(vertex, labels);
 	}
 
-	public TransformablePage<? extends User> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<User> extraFilter) {
+	public TransformablePage<? extends Language> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Language> extraFilter) {
 		return delegate.findAll(ac, pagingInfo, extraFilter);
 	}
 
@@ -342,7 +305,7 @@ public class UserDaoWrapperImpl implements UserDaoWrapper {
 		delegate.unlinkIn(vertex, labels);
 	}
 
-	public TransformablePage<? extends User> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo) {
+	public TransformablePage<? extends Language> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo) {
 		return delegate.findAllNoPerm(ac, pagingInfo);
 	}
 
@@ -350,43 +313,43 @@ public class UserDaoWrapperImpl implements UserDaoWrapper {
 		delegate.setLinkOut(vertex, labels);
 	}
 
-	public User findByName(String name) {
-		return delegate.findByName(name);
-	}
-
 	public VertexTraversal<?, ?, ?> traversal() {
 		return delegate.traversal();
+	}
+
+	public Language findByName(String name) {
+		return delegate.findByName(name);
 	}
 
 	public JsonObject toJson() {
 		return delegate.toJson();
 	}
 
-	public User findByName(InternalActionContext ac, String name, GraphPermission perm) {
-		return delegate.findByName(ac, name, perm);
-	}
-
 	public <T> T reframe(Class<T> kind) {
 		return delegate.reframe(kind);
+	}
+
+	public Language findByName(InternalActionContext ac, String name, GraphPermission perm) {
+		return delegate.findByName(ac, name, perm);
 	}
 
 	public <T> T reframeExplicit(Class<T> kind) {
 		return delegate.reframeExplicit(kind);
 	}
 
-	public User findByUuid(String uuid) {
+	public Language findByUuid(String uuid) {
 		return delegate.findByUuid(uuid);
 	}
 
-	public User loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
+	public Language loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
 		return delegate.loadObjectByUuid(ac, uuid, perm);
 	}
 
-	public User loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+	public Language loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
 		return delegate.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
 	}
 
-	public User loadObjectByUuidNoPerm(String uuid, boolean errorIfNotFound) {
+	public Language loadObjectByUuidNoPerm(String uuid, boolean errorIfNotFound) {
 		return delegate.loadObjectByUuidNoPerm(uuid, errorIfNotFound);
 	}
 
@@ -394,19 +357,19 @@ public class UserDaoWrapperImpl implements UserDaoWrapper {
 		return delegate.resolveToElement(stack);
 	}
 
-	public User create(InternalActionContext ac, EventQueueBatch batch) {
+	public Language create(InternalActionContext ac, EventQueueBatch batch) {
 		return delegate.create(ac, batch);
 	}
 
-	public User create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
+	public Language create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		return delegate.create(ac, batch, uuid);
 	}
 
-	public void addItem(User item) {
+	public void addItem(Language item) {
 		delegate.addItem(item);
 	}
 
-	public void removeItem(User item) {
+	public void removeItem(Language item) {
 		delegate.removeItem(item);
 	}
 
@@ -414,7 +377,7 @@ public class UserDaoWrapperImpl implements UserDaoWrapper {
 		return delegate.getRootLabel();
 	}
 
-	public Class<? extends User> getPersistanceClass() {
+	public Class<? extends Language> getPersistanceClass() {
 		return delegate.getPersistanceClass();
 	}
 
@@ -422,65 +385,16 @@ public class UserDaoWrapperImpl implements UserDaoWrapper {
 		return delegate.computeCount();
 	}
 
-	@Override
-	public void delete(User element, BulkActionContext bac) {
+	public PermissionInfo getRolePermissions(MeshVertex vertex, InternalActionContext ac, String roleUuid) {
+		return delegate.getRolePermissions(vertex, ac, roleUuid);
+	}
+
+	public TraversalResult<? extends Role> getRolesWithPerm(MeshVertex vertex, GraphPermission perm) {
+		return delegate.getRolesWithPerm(vertex, perm);
+	}
+
+	public void delete(Language element, BulkActionContext bac) {
 		delegate.delete(element, bac);
-	}
-
-	@Override
-	public User addPermissionsOnRole(User user, HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode,
-		GraphPermission... toGrant) {
-		return delegate.addPermissionsOnRole(user, sourceNode, permission, targetNode, toGrant);
-	}
-
-	@Override
-	public User addCRUDPermissionOnRole(User user, HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode) {
-		return delegate.addCRUDPermissionOnRole(user, sourceNode, permission, targetNode);
-	}
-
-	@Override
-	public boolean canReadNode(User user, InternalActionContext ac, Node node) {
-		return delegate.canReadNode(user, ac, node);
-	}
-
-	@Override
-	public String getAPIPath(User element, InternalActionContext ac) {
-		return delegate.getAPIPath(element, ac);
-	}
-
-	@Override
-	public String getETag(User element, InternalActionContext ac) {
-		return delegate.getETag(element, ac);
-	}
-
-	@Override
-	public boolean hasReadPermission(User user, NodeGraphFieldContainer container, String branchUuid, String requestedVersion) {
-		return delegate.hasReadPermission(user, container, branchUuid, requestedVersion);
-	}
-
-	@Override
-	public User inheritRolePermissions(User user, MeshVertex sourceNode, MeshVertex targetNode) {
-		return delegate.inheritRolePermissions(user, sourceNode, targetNode);
-	}
-
-	@Override
-	public UserResponse transformToRestSync(User element, InternalActionContext ac, int level, String... languageTags) {
-		return delegate.transformToRestSync(element, ac, level, languageTags);
-	}
-
-	@Override
-	public boolean update(User user, InternalActionContext ac, EventQueueBatch batch) {
-		return delegate.update(user, ac, batch);
-	}
-
-	@Override
-	public boolean updateDry(User user, InternalActionContext ac) {
-		return delegate.updateDry(user, ac);
-	}
-
-	@Override
-	public String getSubETag(User user, InternalActionContext ac) {
-		return delegate.getSubETag(user, ac);
 	}
 
 }

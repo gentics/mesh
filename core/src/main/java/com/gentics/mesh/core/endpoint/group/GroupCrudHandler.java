@@ -49,7 +49,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 
 	@Override
 	public RootVertex<Group> getRootVertex(Tx tx, InternalActionContext ac) {
-		return boot.get().groupRoot();
+		return tx.data().groupDao();
 	}
 
 	/**
@@ -152,7 +152,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		utils.syncTx(ac, tx -> {
 			MeshAuthUser requestUser = ac.getUser();
 			PagingParametersImpl pagingInfo = new PagingParametersImpl(ac);
-			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, READ_PERM);
+			Group group = tx.data().groupDao().loadObjectByUuid(ac, groupUuid, READ_PERM);
 			TransformablePage<? extends User> userPage = group.getVisibleUsers(requestUser, pagingInfo);
 			return userPage.transformToRestSync(ac, 0);
 		}, model -> ac.send(model, OK));
@@ -204,9 +204,9 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(userUuid, "userUuid");
 
 		try (WriteLock lock = writeLock.lock(ac)) {
-			utils.syncTx(ac, () -> {
-				Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
-				User user = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
+			utils.syncTx(ac, tx -> {
+				Group group = tx.data().groupDao().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
+				User user = tx.data().userDao().loadObjectByUuid(ac, userUuid, READ_PERM);
 
 				// No need to remove the user if it is not assigned
 				if (!group.hasUser(user)) {

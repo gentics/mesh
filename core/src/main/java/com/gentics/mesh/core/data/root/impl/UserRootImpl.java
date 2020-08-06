@@ -39,6 +39,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
@@ -208,7 +209,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 		batch.add(user.onCreated());
 
 		if (!isEmpty(groupUuid)) {
-			Group parentGroup = boot.groupRoot().loadObjectByUuid(ac, groupUuid, CREATE_PERM);
+			Group parentGroup = boot.groupDao().loadObjectByUuid(ac, groupUuid, CREATE_PERM);
 			parentGroup.addUser(user);
 			// batch.add(parentGroup.onUpdated());
 			inheritRolePermissions(requestUser, parentGroup, user);
@@ -362,10 +363,11 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 	}
 
 	private boolean update(User user, InternalActionContext ac, EventQueueBatch batch, boolean dry) {
+		UserDaoWrapper userDao = mesh().boot().userDao();
 		UserUpdateRequest requestModel = ac.fromJson(UserUpdateRequest.class);
 		boolean modified = false;
 		if (shouldUpdate(requestModel.getUsername(), user.getUsername())) {
-			User conflictingUser = mesh().boot().userRoot().findByUsername(requestModel.getUsername());
+			User conflictingUser = userDao.findByUsername(requestModel.getUsername());
 			if (conflictingUser != null && !conflictingUser.getUuid().equals(getUuid())) {
 				throw conflict(conflictingUser.getUuid(), requestModel.getUsername(), "user_conflicting_username");
 			}

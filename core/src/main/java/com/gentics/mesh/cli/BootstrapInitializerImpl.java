@@ -50,6 +50,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.JobDaoWrapper;
+import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
@@ -59,6 +60,7 @@ import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.dao.impl.GroupDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.JobDaoWrapperImpl;
+import com.gentics.mesh.core.data.dao.impl.LanguageDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.MicroschemaDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.ProjectDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.RoleDaoWrapperImpl;
@@ -604,9 +606,10 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		String password = configuration.getAdminPassword();
 		if (password != null) {
 			db.tx(tx -> {
-				User adminUser = userRoot().findByName(ADMIN_USERNAME);
+				UserDaoWrapper userDao = tx.data().userDao();
+				User adminUser = userDao.findByName(ADMIN_USERNAME);
 				if (adminUser != null) {
-					userRoot().setPassword(adminUser, password);
+					userDao.setPassword(adminUser, password);
 					adminUser.setAdmin(true);
 				} else {
 					// Recreate the user if it can't be found.
@@ -616,7 +619,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 					adminUser.setCreationTimestamp();
 					adminUser.setEditor(adminUser);
 					adminUser.setLastEditedTimestamp();
-					userRoot().setPassword(adminUser, password);
+					userDao.setPassword(adminUser, password);
 					adminUser.setAdmin(true);
 				}
 				tx.success();
@@ -795,7 +798,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Override
 	public SchemaDaoWrapper schemaDao() {
-		return new SchemaDaoWrapperImpl(schemaDao());
+		return new SchemaDaoWrapperImpl(schemaContainerRoot());
 	}
 
 	@Override
@@ -844,6 +847,11 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
+	public LanguageDaoWrapper languageDao() {
+		return new LanguageDaoWrapperImpl(meshRoot().getLanguageRoot());
+	}
+
+	@Override
 	public UserRoot userRoot() {
 		return meshRoot().getUserRoot();
 	}
@@ -854,13 +862,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
-	public GroupRoot groupRoot() {
-		return meshRoot().getGroupRoot();
-	}
-
-	@Override
 	public GroupDaoWrapper groupDao() {
-		return new GroupDaoWrapperImpl(groupRoot());
+		return new GroupDaoWrapperImpl(meshRoot().getGroupRoot());
 	}
 
 	@Override

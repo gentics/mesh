@@ -15,6 +15,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -60,17 +61,17 @@ public class UserTokenAuthHandler extends AuthHandlerImpl {
 		String uuid = ac.getParameter("userUuid");
 		if (ac.getUser() == null && !isEmpty(token)) {
 
-			MeshAuthUser lastEditor = db.tx(() -> {
+			MeshAuthUser lastEditor = db.tx(tx -> {
 				// 1. Load the element from the root element using the given uuid
-				UserRoot root = boot.userRoot();
-				User element = root.findByUuid(uuid);
+				UserDaoWrapper userDao = tx.data().userDao();
+				User element = userDao.findByUuid(uuid);
 
 				if (element == null) {
 					throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);
 				}
 
 				// 2. Validate the provided token code
-				if (!root.isResetTokenValid(element, token, DEFAULT_MAX_TOKEN_AGE_IN_MINS)) {
+				if (!userDao.isResetTokenValid(element, token, DEFAULT_MAX_TOKEN_AGE_IN_MINS)) {
 					return null;
 				}
 

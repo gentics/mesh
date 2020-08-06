@@ -140,7 +140,7 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 		boolean expandField = parameters.getExpandedFieldnameList().contains(fieldKey) || parameters.getExpandAll();
 		String[] lTagsArray = languageTags.toArray(new String[languageTags.size()]);
 
-		UserRoot userRoot = mesh().boot().userRoot();
+		UserRoot userRoot = mesh().boot().userDao();
 
 		if (expandField && level < Node.MAX_TRANSFORMATION_LEVEL) {
 			NodeFieldList restModel = new NodeFieldListImpl();

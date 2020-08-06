@@ -19,11 +19,10 @@ import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.RoleImpl;
 import com.gentics.mesh.core.data.root.RoleRoot;
-import com.gentics.mesh.core.data.root.UserRoot;
-import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -85,7 +84,7 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 	public Role create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		RoleCreateRequest requestModel = ac.fromJson(RoleCreateRequest.class);
 		String roleName = requestModel.getName();
-		UserRoot userRoot = mesh().boot().userRoot();
+		UserDaoWrapper userRoot = mesh().boot().userDao();
 
 		MeshAuthUser requestUser = ac.getUser();
 		if (StringUtils.isEmpty(roleName)) {

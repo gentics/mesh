@@ -27,6 +27,7 @@ import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
@@ -215,14 +216,14 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		String cachingId = currentTokenId;
 
 		EventQueueBatch batch = batchProvider.get();
-		return db.maybeTx(tx -> boot.userRoot().findMeshAuthUserByUsername(username))
+		return db.maybeTx(tx -> boot.userDao().findMeshAuthUserByUsername(username))
 		.flatMapSingleElement(user -> db.singleTx(user::getUuid).flatMap(uuid -> {
 			// Compare the stored and current token id to see whether the current token is different.
 			// In that case a sync must be invoked.
 			String lastSeenTokenId = TOKEN_ID_LOG.getIfPresent(user.getUuid());
 			if (lastSeenTokenId == null || !lastSeenTokenId.equals(cachingId)) {
 				return assertReadOnlyDeactivated().andThen(db.singleTx(() -> {
-					com.gentics.mesh.core.data.User admin = boot.userRoot().findByUsername("admin");
+					com.gentics.mesh.core.data.User admin = boot.userDao().findByUsername("admin");
 						runPlugins(rc, batch, admin, user, uuid, token);
 						TOKEN_ID_LOG.put(uuid, cachingId);
 						return user;
@@ -235,12 +236,12 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 			assertReadOnlyDeactivated()
 			.andThen(requiresWriteCompletable())
 			.andThen(db.singleTxWriteLock(tx -> {
-				UserRoot root = boot.userRoot();
-				com.gentics.mesh.core.data.User admin = root.findByUsername("admin");
-				com.gentics.mesh.core.data.User createdUser = root.create(username, admin);
-				root.inheritRolePermissions(admin, root, createdUser);
+				UserDaoWrapper userDao = tx.data().userDao();
+				com.gentics.mesh.core.data.User admin = userDao.findByUsername("admin");
+				com.gentics.mesh.core.data.User createdUser = userDao.create(username, admin);
+				userDao.inheritRolePermissions(admin, userDao, createdUser);
 
-				MeshAuthUser user = root.findMeshAuthUserByUsername(username);
+				MeshAuthUser user = userDao.findMeshAuthUserByUsername(username);
 				String uuid = user.getUuid();
 				batch.add(user.onCreated());
 				// Not setting uuid since the user has not yet been committed.
@@ -334,9 +335,9 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		List<AuthServicePlugin> plugins = authPluginRegistry.getPlugins();
 		// Only load the needed data for plugins if there are any plugins
 		if (!plugins.isEmpty()) {
-			RoleRoot roleRoot = boot.roleRoot();
-			GroupRoot groupRoot = boot.groupRoot();
-			UserRoot userRoot = boot.userRoot();
+			RoleRoot roleRoot = boot.roleDao();
+			GroupRoot groupRoot = boot.groupDao();
+			UserRoot userRoot = boot.userDao();
 
 			for (AuthServicePlugin plugin : plugins) {
 				try {

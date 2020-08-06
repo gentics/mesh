@@ -82,7 +82,9 @@ public class MeshAnonymousAuthHandler extends AuthHandlerImpl implements MeshAut
 			if (log.isDebugEnabled()) {
 				log.debug("Using anonymous user.");
 			}
-			MeshAuthUser anonymousUser = db.tx(() -> boot.userRoot().findMeshAuthUserByUsername(ANONYMOUS_USERNAME));
+			MeshAuthUser anonymousUser = db.tx(tx -> {
+				return tx.data().userDao().findMeshAuthUserByUsername(ANONYMOUS_USERNAME);
+			});
 			if (anonymousUser == null) {
 				if (log.isDebugEnabled()) {
 					log.debug("No anonymous user and authorization header was found. Can't authenticate request.");

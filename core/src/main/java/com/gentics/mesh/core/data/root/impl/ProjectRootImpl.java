@@ -26,6 +26,8 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
+import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.node.Node;
@@ -35,7 +37,6 @@ import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
-import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.db.Tx;
@@ -180,7 +181,9 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 	@Override
 	public Project create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		BootstrapInitializer boot = mesh().boot();
-		UserRoot userRoot = boot.userRoot();
+		UserDaoWrapper userDao = boot.userDao();
+		ProjectDaoWrapper projectDao = Tx.get().data().projectDao();
+		SchemaDaoWrapper schemaDao = mesh().boot().schemaDao();
 
 		// TODO also create a default object schema for the project. Move this
 		// into service class
@@ -193,9 +196,8 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		if (StringUtils.isEmpty(requestModel.getName())) {
 			throw error(BAD_REQUEST, "project_missing_name");
 		}
-		ProjectDaoWrapper projectDao = Tx.get().data().projectDao();
-		if (!userRoot.hasPermission(creator, projectDao, CREATE_PERM)) {
-			throw error(FORBIDDEN, "error_missing_perm", Tx.get().data().projectDao().getUuid(), CREATE_PERM.getRestPerm().getName());
+		if (!userDao.hasPermission(creator, projectDao, CREATE_PERM)) {
+			throw error(FORBIDDEN, "error_missing_perm", projectDao.getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
 		// TODO instead of this check, a constraint in the db should be added
 		Project conflictingProject = projectDao.findByName(requestModel.getName());
@@ -207,7 +209,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		if (requestModel.getSchema() == null || !requestModel.getSchema().isSet()) {
 			throw error(BAD_REQUEST, "project_error_no_schema_reference");
 		}
-		SchemaContainerVersion schemaContainerVersion = mesh().boot().schemaContainerRoot().fromReference(requestModel.getSchema());
+		SchemaContainerVersion schemaContainerVersion = schemaDao.fromReference(requestModel.getSchema());
 
 		String hostname = requestModel.getHostname();
 		Boolean ssl = requestModel.getSsl();
@@ -217,13 +219,13 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		String branchUuid = initialBranch.getUuid();
 
 		// Add project permissions
-		userRoot.addCRUDPermissionOnRole(creator, this, CREATE_PERM, project);
-		userRoot.inheritRolePermissions(creator, project, project.getBaseNode());
-		userRoot.inheritRolePermissions(creator, project, project.getTagFamilyRoot());
-		userRoot.inheritRolePermissions(creator, project, project.getSchemaContainerRoot());
-		userRoot.inheritRolePermissions(creator, project, project.getMicroschemaContainerRoot());
-		userRoot.inheritRolePermissions(creator, project, project.getNodeRoot());
-		userRoot.inheritRolePermissions(creator, project, initialBranch);
+		userDao.addCRUDPermissionOnRole(creator, this, CREATE_PERM, project);
+		userDao.inheritRolePermissions(creator, project, project.getBaseNode());
+		userDao.inheritRolePermissions(creator, project, project.getTagFamilyRoot());
+		userDao.inheritRolePermissions(creator, project, project.getSchemaContainerRoot());
+		userDao.inheritRolePermissions(creator, project, project.getMicroschemaContainerRoot());
+		userDao.inheritRolePermissions(creator, project, project.getNodeRoot());
+		userDao.inheritRolePermissions(creator, project, initialBranch);
 
 		// Store the project and the branch in the index
 		batch.add(project.onCreated());

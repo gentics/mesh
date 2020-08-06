@@ -49,27 +49,27 @@ public class TxTest extends AbstractMeshTest {
 		int e = i.incrementAndGet();
 		try (Tx tx = tx()) {
 			assertNotNull(root.create("testuser" + e, user()));
-			assertNotNull(boot().userRoot().findByUsername("testuser" + e));
+			assertNotNull(boot().userDao().findByUsername("testuser" + e));
 			tx.success();
 		}
 		try (Tx tx = tx()) {
-			assertNotNull(boot().userRoot().findByUsername("testuser" + e));
+			assertNotNull(boot().userDao().findByUsername("testuser" + e));
 		}
 		int u = i.incrementAndGet();
 		Runnable task = () -> {
 			try (Tx tx = tx()) {
 				assertNotNull(root.create("testuser" + u, user()));
-				assertNotNull(boot().userRoot().findByUsername("testuser" + u));
+				assertNotNull(boot().userDao().findByUsername("testuser" + u));
 				tx.failure();
 			}
-			assertNull(boot().userRoot().findByUsername("testuser" + u));
+			assertNull(boot().userDao().findByUsername("testuser" + u));
 
 		};
 		Thread t = new Thread(task);
 		t.start();
 		t.join();
 		try (Tx tx = tx()) {
-			assertNull(boot().userRoot().findByUsername("testuser" + u));
+			assertNull(boot().userDao().findByUsername("testuser" + u));
 			System.out.println("RUN: " + i.get());
 		}
 
@@ -82,19 +82,19 @@ public class TxTest extends AbstractMeshTest {
 		Runnable task2 = () -> {
 			try (Tx tx = tx()) {
 				user.setUsername("test2");
-				assertNotNull(boot().userRoot().findByUsername("test2"));
+				assertNotNull(boot().userDao().findByUsername("test2"));
 				tx.success();
 			}
-			assertNotNull(boot().userRoot().findByUsername("test2"));
+			assertNotNull(boot().userDao().findByUsername("test2"));
 
 			Runnable task = () -> {
 				try (Tx tx = tx()) {
 					user.setUsername("test3");
-					assertNotNull(boot().userRoot().findByUsername("test3"));
+					assertNotNull(boot().userDao().findByUsername("test3"));
 					tx.failure();
 				}
-				assertNotNull(boot().userRoot().findByUsername("test2"));
-				assertNull(boot().userRoot().findByUsername("test3"));
+				assertNotNull(boot().userDao().findByUsername("test2"));
+				assertNull(boot().userDao().findByUsername("test3"));
 
 			};
 			Thread t = new Thread(task);
@@ -109,8 +109,8 @@ public class TxTest extends AbstractMeshTest {
 		t2.start();
 		t2.join();
 		try (Tx tx = tx()) {
-			assertNull(boot().userRoot().findByUsername("test3"));
-			assertNotNull("The user with username test2 could not be found.", boot().userRoot().findByUsername("test2"));
+			assertNull(boot().userDao().findByUsername("test3"));
+			assertNotNull("The user with username test2 could not be found.", boot().userDao().findByUsername("test2"));
 		}
 
 	}
