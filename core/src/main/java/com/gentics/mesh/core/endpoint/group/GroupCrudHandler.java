@@ -16,7 +16,9 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -168,8 +170,10 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
-				User user = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
+				GroupRoot groupDao = tx.data().groupDao();
+				UserRoot userDao = tx.data().userDao();
+				Group group = groupDao.loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
+				User user = userDao.loadObjectByUuid(ac, userUuid, READ_PERM);
 
 				// Only add the user if it is not yet assigned
 				if (!group.hasUser(user)) {
