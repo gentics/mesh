@@ -54,6 +54,7 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
@@ -148,52 +149,9 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 		return modified;
 	}
 
-	/**
-	 * Set the tag information to the rest model.
-	 * 
-	 * @param ac
-	 * @param restNode
-	 *            Rest model which will be updated
-	 */
-	private void setTagsToRest(InternalActionContext ac, BranchResponse restNode) {
-		restNode.setTags(getTags().stream().map(Tag::transformToReference).collect(Collectors.toList()));
-	}
-
 	@Override
 	public BranchResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		GenericParameters generic = ac.getGenericParameters();
-		FieldsSet fields = generic.getFields();
-
-		BranchResponse restBranch = new BranchResponse();
-		if (fields.has("name")) {
-			restBranch.setName(getName());
-		}
-		if (fields.has("hostname")) {
-			restBranch.setHostname(getHostname());
-		}
-		if (fields.has("ssl")) {
-			restBranch.setSsl(getSsl());
-		}
-		// restRelease.setActive(isActive());
-		if (fields.has("migrated")) {
-			restBranch.setMigrated(isMigrated());
-		}
-		if (fields.has("tags")) {
-			setTagsToRest(ac, restBranch);
-		}
-		if (fields.has("latest")) {
-			restBranch.setLatest(isLatest());
-		}
-		if (fields.has("pathPrefix")) {
-			restBranch.setPathPrefix(getPathPrefix());
-		}
-
-		// Add common fields
-		fillCommonRestFields(ac, fields, restBranch);
-
-		// Role permissions
-		setRolePermissions(ac, restBranch);
-		return restBranch;
+		return getRoot().transformToRestSync(this, ac, level, languageTags);
 	}
 
 	@Override

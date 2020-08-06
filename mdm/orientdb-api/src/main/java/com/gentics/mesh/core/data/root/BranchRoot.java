@@ -4,12 +4,13 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.rest.branch.BranchReference;
+import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 
 /**
  * Aggregation vertex for Branches.
  */
-public interface BranchRoot extends RootVertex<Branch> {
+public interface BranchRoot extends RootVertex<Branch>, TransformableElementRoot<Branch, BranchResponse> {
 
 	public static final String TYPE = "branches";
 

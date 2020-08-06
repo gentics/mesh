@@ -15,6 +15,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.util.stream.Collectors;
+
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.madl.index.IndexHandler;
@@ -24,6 +26,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.BranchImpl;
@@ -38,7 +41,10 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchReference;
+import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.parameter.GenericParameters;
+import com.gentics.mesh.parameter.value.FieldsSet;
 
 /**
  * @see BranchRoot
@@ -263,4 +269,54 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 
 		return branch;
 	}
+
+	@Override
+	public BranchResponse transformToRestSync(Branch branch, InternalActionContext ac, int level, String... languageTags) {
+		GenericParameters generic = ac.getGenericParameters();
+		FieldsSet fields = generic.getFields();
+
+		BranchResponse restBranch = new BranchResponse();
+		if (fields.has("name")) {
+			restBranch.setName(branch.getName());
+		}
+		if (fields.has("hostname")) {
+			restBranch.setHostname(branch.getHostname());
+		}
+		if (fields.has("ssl")) {
+			restBranch.setSsl(branch.getSsl());
+		}
+		// restRelease.setActive(isActive());
+		if (fields.has("migrated")) {
+			restBranch.setMigrated(branch.isMigrated());
+		}
+		if (fields.has("tags")) {
+			setTagsToRest(branch, ac, restBranch);
+		}
+		if (fields.has("latest")) {
+			restBranch.setLatest(branch.isLatest());
+		}
+		if (fields.has("pathPrefix")) {
+			restBranch.setPathPrefix(branch.getPathPrefix());
+		}
+
+		// Add common fields
+		branch.fillCommonRestFields(ac, fields, restBranch);
+
+		// Role permissions
+		setRolePermissions(branch, ac, restBranch);
+		return restBranch;
+	}
+
+	/**
+	 * Set the tag information to the rest model.
+	 * 
+	 * @param branch
+	 * @param ac
+	 * @param restNode
+	 *            Rest model which will be updated
+	 */
+	private void setTagsToRest(Branch branch, InternalActionContext ac, BranchResponse restNode) {
+		restNode.setTags(branch.getTags().stream().map(Tag::transformToReference).collect(Collectors.toList()));
+	}
+
 }

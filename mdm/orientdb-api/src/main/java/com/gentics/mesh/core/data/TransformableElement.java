@@ -47,7 +47,9 @@ public interface TransformableElement<T extends RestModel> extends MeshElement {
 	 * @param languageTags
 	 *            optional list of language tags to be used for language fallback
 	 * @return
+	 * @deprecated Use DAO method to transform elements instead
 	 */
+	@Deprecated
 	T transformToRestSync(InternalActionContext ac, int level, String... languageTags);
 
 	/**

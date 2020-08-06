@@ -17,6 +17,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.root.GroupRoot;
+import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.db.Tx;
@@ -80,8 +81,10 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
-				Role role = boot.get().roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
+				GroupRoot groupDao = tx.data().groupDao();
+				RoleRoot roleDao = tx.data().roleDao();
+				Group group = groupDao.loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
+				Role role = roleDao.loadObjectByUuid(ac, roleUuid, READ_PERM);
 				// Handle idempotency
 				if (group.hasRole(role)) {
 					if (log.isDebugEnabled()) {

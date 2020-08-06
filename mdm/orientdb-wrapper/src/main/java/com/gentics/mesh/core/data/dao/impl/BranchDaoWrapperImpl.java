@@ -18,6 +18,7 @@ import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.rest.branch.BranchReference;
+import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -401,6 +402,21 @@ public class BranchDaoWrapperImpl implements BranchRoot {
 
 	public long computeCount() {
 		return delegate.computeCount();
+	}
+
+	@Override
+	public String getETag(Branch branch, InternalActionContext ac) {
+		return delegate.getETag(branch, ac);
+	}
+
+	@Override
+	public String getAPIPath(Branch branch, InternalActionContext ac) {
+		return delegate.getAPIPath(branch, ac);
+	}
+
+	@Override
+	public BranchResponse transformToRestSync(Branch branch, InternalActionContext ac, int level, String... languageTags) {
+		return delegate.transformToRestSync(branch, ac, level, languageTags);
 	}
 
 }

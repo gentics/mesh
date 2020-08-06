@@ -195,8 +195,8 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 
 		utils.syncTx(ac, tx -> {
 			Project project = ac.getProject();
-			UserRoot userRoot = tx.data().userDao();
-			if (!userRoot.hasPermission(ac.getUser(), project, UPDATE_PERM)) {
+			UserRoot userDao = tx.data().userDao();
+			if (!userDao.hasPermission(ac.getUser(), project, UPDATE_PERM)) {
 				String projectUuid = project.getUuid();
 				throw error(FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
 			}
