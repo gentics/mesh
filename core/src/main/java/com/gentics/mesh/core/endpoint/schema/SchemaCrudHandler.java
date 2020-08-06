@@ -218,7 +218,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 	 * @param ac
 	 */
 	public void handleReadProjectList(InternalActionContext ac) {
-		utils.readElementList(ac, () -> ac.getProject().getSchemaContainerRoot());
+		utils.readElementList(ac, tx -> ac.getProject().getSchemaContainerRoot());
 	}
 
 	/**

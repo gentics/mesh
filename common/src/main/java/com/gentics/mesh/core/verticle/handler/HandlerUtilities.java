@@ -29,7 +29,6 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.db.TxAction;
 import com.gentics.mesh.core.db.TxAction0;
-import com.gentics.mesh.core.db.TxAction1;
 import com.gentics.mesh.core.db.TxAction2;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
@@ -76,7 +75,7 @@ public class HandlerUtilities {
 	 * @param ac
 	 * @param handler
 	 */
-	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createElement(InternalActionContext ac, TxAction1<RootVertex<T>> handler) {
+	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createElement(InternalActionContext ac, TxAction<RootVertex<T>> handler) {
 		createOrUpdateElement(ac, null, handler);
 	}
 
@@ -89,11 +88,11 @@ public class HandlerUtilities {
 	 * @param uuid
 	 *            Uuid of the element which should be deleted
 	 */
-	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void deleteElement(InternalActionContext ac, TxAction1<RootVertex<T>> handler,
+	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void deleteElement(InternalActionContext ac, TxAction<RootVertex<T>> handler,
 		String uuid) {
 		try (WriteLock lock = writeLock.lock(ac)) {
-			syncTx(ac, () -> {
-				RootVertex<T> root = handler.handle();
+			syncTx(ac, tx -> {
+				RootVertex<T> root = handler.handle(tx);
 				T element = root.loadObjectByUuid(ac, uuid, DELETE_PERM);
 
 				// Load the name and uuid of the element. We need this info after deletion.
@@ -119,7 +118,7 @@ public class HandlerUtilities {
 	 * 
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void updateElement(InternalActionContext ac, String uuid,
-		TxAction1<RootVertex<T>> handler) {
+		TxAction<RootVertex<T>> handler) {
 		createOrUpdateElement(ac, uuid, handler);
 	}
 
@@ -133,11 +132,11 @@ public class HandlerUtilities {
 	 *            Handler which provides the root vertex which should be used when loading the element
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createOrUpdateElement(InternalActionContext ac, String uuid,
-		TxAction1<RootVertex<T>> handler) {
+		TxAction<RootVertex<T>> handler) {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			AtomicBoolean created = new AtomicBoolean(false);
 			syncTx(ac, tx -> {
-				RootVertex<T> root = handler.handle();
+				RootVertex<T> root = handler.handle(tx);
 
 				// 1. Load the element from the root element using the given uuid (if not null)
 				T element = null;
@@ -184,10 +183,10 @@ public class HandlerUtilities {
 	 *            Permission to check against when loading the element
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElement(InternalActionContext ac, String uuid,
-		TxAction1<RootVertex<T>> handler, GraphPermission perm) {
+		TxAction<RootVertex<T>> handler, GraphPermission perm) {
 
 		syncTx(ac, tx -> {
-			RootVertex<T> root = handler.handle();
+			RootVertex<T> root = handler.handle(tx);
 			T element = root.loadObjectByUuid(ac, uuid, perm);
 
 			// Handle etag
@@ -209,10 +208,10 @@ public class HandlerUtilities {
 	 * @param handler
 	 *            Handler which provides the root vertex which should be used when loading the element
 	 */
-	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElementList(InternalActionContext ac, TxAction1<RootVertex<T>> handler) {
+	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElementList(InternalActionContext ac, TxAction<RootVertex<T>> handler) {
 
 		syncTx(ac, tx -> {
-			RootVertex<T> root = handler.handle();
+			RootVertex<T> root = handler.handle(tx);
 
 			PagingParameters pagingInfo = ac.getPagingParameters();
 			TransformablePage<? extends T> page = root.findAll(ac, pagingInfo);

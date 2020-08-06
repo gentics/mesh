@@ -48,7 +48,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 	 * @param ac
 	 */
 	public void handleCreate(InternalActionContext ac) {
-		utils.createElement(ac, () -> getRootVertex(ac));
+		utils.createElement(ac, tx -> getRootVertex(ac));
 	}
 
 	/**
@@ -60,7 +60,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 	 */
 	public void handleDelete(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		utils.deleteElement(ac, () -> getRootVertex(ac), uuid);
+		utils.deleteElement(ac, tx -> getRootVertex(ac), uuid);
 	}
 
 	/**
@@ -72,7 +72,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 	 */
 	public void handleRead(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		utils.readElement(ac, uuid, () -> getRootVertex(ac), READ_PERM);
+		utils.readElement(ac, uuid, tx -> getRootVertex(ac), READ_PERM);
 	}
 
 	/**
@@ -84,7 +84,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 	 */
 	public void handleUpdate(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		utils.updateElement(ac, uuid, () -> getRootVertex(ac));
+		utils.updateElement(ac, uuid, tx -> getRootVertex(ac));
 	}
 
 	/**
@@ -93,7 +93,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 	 * @param ac
 	 */
 	public void handleReadList(InternalActionContext ac) {
-		utils.readElementList(ac, () -> getRootVertex(ac));
+		utils.readElementList(ac, tx -> getRootVertex(ac));
 	}
 
 	/**

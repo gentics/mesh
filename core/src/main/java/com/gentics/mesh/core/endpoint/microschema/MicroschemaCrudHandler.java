@@ -178,7 +178,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	 * @param ac
 	 */
 	public void handleReadMicroschemaList(InternalActionContext ac) {
-		utils.readElementList(ac, () -> ac.getProject().getMicroschemaContainerRoot());
+		utils.readElementList(ac, tx -> ac.getProject().getMicroschemaContainerRoot());
 	}
 
 	/**

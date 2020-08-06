@@ -202,7 +202,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleRead(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 		GraphPermission requiredPermission = "published".equals(ac.getVersioningParameters().getVersion()) ? READ_PUBLISHED_PERM : READ_PERM;
-		utils.readElement(ac, uuid, () -> getRootVertex(ac), requiredPermission);
+		utils.readElement(ac, uuid, tx -> getRootVertex(ac), requiredPermission);
 	}
 
 	/**
