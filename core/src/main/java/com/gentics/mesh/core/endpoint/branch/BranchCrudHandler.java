@@ -39,6 +39,7 @@ import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
@@ -73,7 +74,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	}
 
 	@Override
-	public RootVertex<Branch> getRootVertex(InternalActionContext ac) {
+	public RootVertex<Branch> getRootVertex(Tx tx, InternalActionContext ac) {
 		return ac.getProject().getBranchRoot();
 	}
 
@@ -92,7 +93,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	public void handleGetSchemaVersions(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 		utils.syncTx(ac, tx -> {
-			Branch branch = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
+			Branch branch = getRootVertex(tx, ac).loadObjectByUuid(ac, uuid, READ_PERM);
 			return getSchemaVersionsInfo(branch);
 		}, model -> ac.send(model, OK));
 	}
@@ -108,7 +109,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 		validateParameter(uuid, "uuid");
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				RootVertex<Branch> root = getRootVertex(ac);
+				RootVertex<Branch> root = getRootVertex(tx, ac);
 				Branch branch = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 				BranchInfoSchemaList schemaReferenceList = ac.fromJson(BranchInfoSchemaList.class);
 				Project project = ac.getProject();
@@ -150,7 +151,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	public void handleGetMicroschemaVersions(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 		utils.syncTx(ac, tx -> {
-			Branch branch = getRootVertex(ac).loadObjectByUuid(ac, uuid, GraphPermission.READ_PERM);
+			Branch branch = getRootVertex(tx, ac).loadObjectByUuid(ac, uuid, GraphPermission.READ_PERM);
 			return getMicroschemaVersions(branch);
 		}, model -> ac.send(model, OK));
 	}
@@ -167,7 +168,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				RootVertex<Branch> root = getRootVertex(ac);
+				RootVertex<Branch> root = getRootVertex(tx, ac);
 				Branch branch = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 				BranchInfoMicroschemaList microschemaReferenceList = ac.fromJson(BranchInfoMicroschemaList.class);
 				MicroschemaContainerRoot microschemaContainerRoot = ac.getProject().getMicroschemaContainerRoot();
@@ -302,7 +303,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	 */
 	public void handleSetLatest(InternalActionContext ac, String branchUuid) {
 		try (WriteLock lock = writeLock.lock(ac)) {
-			utils.syncTx(ac, (tx) -> {
+			utils.syncTx(ac, tx -> {
 				Branch branch = ac.getProject().getBranchRoot().loadObjectByUuid(ac, branchUuid, UPDATE_PERM);
 				utils.eventAction(event -> {
 					branch.setLatest();
@@ -324,7 +325,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	public void readTags(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		utils.syncTx(ac, (tx) -> {
+		utils.syncTx(ac, tx -> {
 			Branch branch = ac.getProject().getBranchRoot().loadObjectByUuid(ac, uuid, READ_PERM);
 			TransformablePage<? extends Tag> tagPage = branch.getTags(ac.getUser(), ac.getPagingParameters());
 			return tagPage.transformToRestSync(ac, 0);

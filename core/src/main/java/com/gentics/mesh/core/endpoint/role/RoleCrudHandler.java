@@ -22,6 +22,7 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionResponse;
@@ -46,7 +47,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 	}
 
 	@Override
-	public RootVertex<Role> getRootVertex(InternalActionContext ac) {
+	public RootVertex<Role> getRootVertex(Tx tx, InternalActionContext ac) {
 		return boot.roleRoot();
 	}
 

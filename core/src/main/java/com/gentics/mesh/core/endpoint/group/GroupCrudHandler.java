@@ -17,6 +17,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
@@ -44,7 +45,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 	}
 
 	@Override
-	public RootVertex<Group> getRootVertex(InternalActionContext ac) {
+	public RootVertex<Group> getRootVertex(Tx tx, InternalActionContext ac) {
 		return boot.get().groupRoot();
 	}
 
@@ -57,7 +58,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 	 */
 	public void handleGroupRolesList(InternalActionContext ac, String groupUuid) {
 		utils.syncTx(ac, tx -> {
-			Group group = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, READ_PERM);
+			Group group = getRootVertex(tx, ac).loadObjectByUuid(ac, groupUuid, READ_PERM);
 			PagingParametersImpl pagingInfo = new PagingParametersImpl(ac);
 			TransformablePage<? extends Role> rolePage = group.getRoles(ac.getUser(), pagingInfo);
 			return rolePage.transformToRestSync(ac, 0);
@@ -112,8 +113,8 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(groupUuid, "groupUuid");
 
 		try (WriteLock lock = writeLock.lock(ac)) {
-			utils.syncTx(ac, () -> {
-				Group group = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
+			utils.syncTx(ac, tx -> {
+				Group group = getRootVertex(tx, ac).loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 				Role role = boot.get().roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 
 				// No need to update the group if it is not assigned

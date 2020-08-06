@@ -24,6 +24,7 @@ import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
@@ -54,7 +55,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	}
 
 	@Override
-	public RootVertex<MicroschemaContainer> getRootVertex(InternalActionContext ac) {
+	public RootVertex<MicroschemaContainer> getRootVertex(Tx tx, InternalActionContext ac) {
 		return boot.get().microschemaContainerRoot();
 	}
 
@@ -69,8 +70,8 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 			 * return a MicroschemaResponse for update requests. Instead a message will be returned. Changing this behaviour would cause a breaking change.
 			 * (Changed response model).
 			 */
-			boolean delegateToCreate = db.tx(() -> {
-				RootVertex<MicroschemaContainer> root = getRootVertex(ac);
+			boolean delegateToCreate = db.tx(tx -> {
+				RootVertex<MicroschemaContainer> root = getRootVertex(tx, ac);
 				if (!UUIDUtil.isUUID(uuid)) {
 					return false;
 				}
@@ -87,7 +88,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 
 			utils.syncTx(ac, (tx) -> {
 
-				RootVertex<MicroschemaContainer> root = getRootVertex(ac);
+				RootVertex<MicroschemaContainer> root = getRootVertex(tx, ac);
 				MicroschemaContainer schemaContainer = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 				Microschema requestModel = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModelImpl.class);
 				requestModel.validate();
@@ -145,7 +146,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	 */
 	public void handleDiff(InternalActionContext ac, String uuid) {
 		utils.syncTx(ac, (tx) -> {
-			MicroschemaContainer microschema = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
+			MicroschemaContainer microschema = getRootVertex(tx, ac).loadObjectByUuid(ac, uuid, READ_PERM);
 			Microschema requestModel = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModelImpl.class);
 			requestModel.validate();
 			return microschema.getLatestVersion().diff(ac, comparator, requestModel);
@@ -199,7 +200,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 				String projectUuid = project.getUuid();
 				throw error(FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
 			}
-			MicroschemaContainer microschema = getRootVertex(ac).loadObjectByUuid(ac, microschemaUuid, READ_PERM);
+			MicroschemaContainer microschema = getRootVertex(tx, ac).loadObjectByUuid(ac, microschemaUuid, READ_PERM);
 			MicroschemaContainerRoot root = project.getMicroschemaContainerRoot();
 
 			// Only assign if the microschema has not already been assigned.
@@ -223,7 +224,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 			if (!userRoot.hasPermission(ac.getUser(), project, UPDATE_PERM)) {
 				throw error(FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
 			}
-			MicroschemaContainer microschema = getRootVertex(ac).loadObjectByUuid(ac, microschemaUuid, READ_PERM);
+			MicroschemaContainer microschema = getRootVertex(tx, ac).loadObjectByUuid(ac, microschemaUuid, READ_PERM);
 			MicroschemaContainerRoot root = project.getMicroschemaContainerRoot();
 			if (root.contains(microschema)) {
 				// Remove the microschema from the project

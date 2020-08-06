@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
@@ -55,7 +56,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 	}
 
 	@Override
-	public RootVertex<User> getRootVertex(InternalActionContext ac) {
+	public RootVertex<User> getRootVertex(Tx tx, InternalActionContext ac) {
 		return boot.userRoot();
 	}
 

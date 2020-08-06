@@ -28,6 +28,7 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -64,7 +65,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 	}
 
 	@Override
-	public RootVertex<SchemaContainer> getRootVertex(InternalActionContext ac) {
+	public RootVertex<SchemaContainer> getRootVertex(Tx tx, InternalActionContext ac) {
 		return boot.get().schemaContainerRoot();
 	}
 
@@ -82,8 +83,8 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 			 * SchemaResponse for update requests. Instead a message will be returned. Changing this behaviour would cause a breaking change. (Changed response
 			 * model).
 			 */
-			boolean delegateToCreate = db.tx(() -> {
-				RootVertex<SchemaContainer> root = getRootVertex(ac);
+			boolean delegateToCreate = db.tx(tx -> {
+				RootVertex<SchemaContainer> root = getRootVertex(tx, ac);
 				if (!UUIDUtil.isUUID(uuid)) {
 					return false;
 				}
@@ -101,7 +102,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 			utils.syncTx(ac, tx1 -> {
 
 				// 1. Load the schema container with update permissions
-				RootVertex<SchemaContainer> root = getRootVertex(ac);
+				RootVertex<SchemaContainer> root = getRootVertex(tx1, ac);
 				SchemaContainer schemaContainer = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 				SchemaUpdateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaUpdateRequest.class);
 
@@ -204,8 +205,8 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 	public void handleDiff(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		utils.syncTx(ac, (tx) -> {
-			SchemaContainer schema = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
+		utils.syncTx(ac, tx -> {
+			SchemaContainer schema = getRootVertex(tx, ac).loadObjectByUuid(ac, uuid, READ_PERM);
 			Schema requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaUpdateRequest.class);
 			requestModel.validate();
 			return schema.getLatestVersion().diff(ac, comparator, requestModel);
@@ -240,7 +241,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 				if (!userRoot.hasPermission(ac.getUser(), project, GraphPermission.UPDATE_PERM)) {
 					throw error(FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
 				}
-				SchemaContainer schema = getRootVertex(ac).loadObjectByUuid(ac, schemaUuid, READ_PERM);
+				SchemaContainer schema = getRootVertex(tx, ac).loadObjectByUuid(ac, schemaUuid, READ_PERM);
 				SchemaContainerRoot root = project.getSchemaContainerRoot();
 				if (root.contains(schema)) {
 					// Schema has already been assigned. No need to create indices
