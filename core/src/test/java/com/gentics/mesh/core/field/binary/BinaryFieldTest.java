@@ -71,7 +71,8 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 				input = input.concat("Hallo");
 			}
 			Binary binary = mesh().binaries().create("hashsum", 1L).runInExistingTx(tx);
-			mesh().binaryStorage().store(Flowable.just(Buffer.buffer(input)), binary.getUuid()).blockingAwait();
+			Buffer buffer = Buffer.buffer(input);
+			mesh().binaryStorage().store(Flowable.just(buffer), buffer.length(), binary.getUuid()).blockingAwait();
 			String base64 = binary.getBase64ContentSync();
 			assertEquals(input.toString(), new String(BASE64.decode(base64)));
 		}
@@ -82,7 +83,8 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 		try (Tx tx = tx()) {
 			String input = " ";
 			Binary binary = mesh().binaries().create("hashsum", 1L).runInExistingTx(tx);
-			mesh().binaryStorage().store(Flowable.just(Buffer.buffer(input)), binary.getUuid()).blockingAwait();
+			Buffer buffer = Buffer.buffer(input);
+			mesh().binaryStorage().store(Flowable.just(buffer), buffer.length(), binary.getUuid()).blockingAwait();
 			String base64 = binary.getBase64ContentSync();
 			assertEquals(input.toString(), new String(BASE64.decode(base64)));
 		}
@@ -317,7 +319,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 		Single<ImageInfo> info = mesh().imageManipulator().readImageInfo(file.getAbsolutePath());
 		// Two obs handler
 		Single<String> hash = FileUtils.hash(obs);
-		Single<String> store = mesh().binaryStorage().store(obs, "bogus").toSingleDefault("null");
+		Single<String> store = mesh().binaryStorage().store(obs, bytes.length, "bogus").toSingleDefault("null");
 
 		TransformationResult result = Single.zip(hash, info, store, (hashV, infoV, storeV) -> {
 			return new TransformationResult(hashV, 0, infoV, "blume.jpg");

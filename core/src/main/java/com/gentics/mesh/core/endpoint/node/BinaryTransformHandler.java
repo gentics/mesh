@@ -52,6 +52,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.file.FileProps;
+import io.vertx.reactivex.core.file.AsyncFile;
 import io.vertx.reactivex.core.file.FileSystem;
 
 @Singleton
@@ -175,9 +176,14 @@ public class BinaryTransformHandler extends AbstractHandler {
 				}
 			});
 			// Store the binary in a temporary location
-			Flowable<Buffer> data = fs.rxOpen(r.getFilePath(), new OpenOptions()).toFlowable()
-				.flatMap(RxUtil::toBufferFlow);
-			return binaryStorage.storeInTemp(data, temporaryId).andThen(Single.just(r));
+			String path = r.getFilePath();
+			Single<AsyncFile> open = fs.rxOpen(path, new OpenOptions());
+			Single<FileProps> info = fs.rxProps(path);
+			return RxUtil.flatZip(open, info, (a, i) -> {
+				Flowable<Buffer> data = RxUtil.toBufferFlow(a);
+				long size = i.size();
+				return binaryStorage.storeInTemp(data, size, temporaryId).andThen(Single.just(r));
+			});
 		}).map(r -> {
 			// Update graph with the new image information
 			return updateNodeInGraph(ac, context, r, node, languageTag, fieldName, parameters);

@@ -1,7 +1,9 @@
 package com.gentics.mesh.core.endpoint.node;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.http.HttpConstants.ETAG;
 import static com.gentics.mesh.util.MimeTypeUtils.DEFAULT_BINARY_MIME_TYPE;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_MODIFIED;
 
 import javax.inject.Inject;
@@ -20,6 +22,7 @@ import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.EncodeUtil;
 import com.gentics.mesh.util.MimeTypeUtils;
+
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.http.impl.MimeMapping;
@@ -55,16 +58,21 @@ public class BinaryFieldResponseHandler {
 	 * @param binaryField
 	 */
 	public void handle(RoutingContext rc, BinaryGraphField binaryField) {
-		rc.response().putHeader(HttpHeaders.ACCEPT_RANGES, "bytes");
-		if (checkETag(rc, binaryField)) {
+		if (!storage.exists(binaryField).blockingGet()) {
+			rc.fail(error(NOT_FOUND, "node_error_binary_data_not_found"));
 			return;
-		}
-		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-		ImageManipulationParameters imageParams = ac.getImageParameters();
-		if (binaryField.hasProcessableImage() && imageParams.hasResizeParams()) {
-			resizeAndRespond(rc, binaryField, imageParams);
 		} else {
-			respond(rc, binaryField);
+			rc.response().putHeader(HttpHeaders.ACCEPT_RANGES, "bytes");
+			if (checkETag(rc, binaryField)) {
+				return;
+			}
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			ImageManipulationParameters imageParams = ac.getImageParameters();
+			if (binaryField.hasProcessableImage() && imageParams.hasResizeParams()) {
+				resizeAndRespond(rc, binaryField, imageParams);
+			} else {
+				respond(rc, binaryField);
+			}
 		}
 	}
 

@@ -22,6 +22,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphql.plugin.GraphQLPluginRegistry;
 import com.gentics.mesh.plugin.MeshPlugin;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
+import com.gentics.mesh.plugin.registry.binary.BinaryStoragePluginRegistry;
 
 import dagger.Lazy;
 import io.reactivex.Completable;
@@ -48,6 +49,8 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 	private final RestPluginRegistry restRegistry;
 
 	private final AuthServicePluginRegistry authServiceRegistry;
+	
+	private final BinaryStoragePluginRegistry binaryStoragePluginRegistry;
 
 	private final MeshOptions options;
 
@@ -62,11 +65,12 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 
 	@Inject
 	public DelegatingPluginRegistryImpl(MeshOptions options, RestPluginRegistry restRegistry, GraphQLPluginRegistry graphqlRegistry,
-		AuthServicePluginRegistry authServiceRegistry, Lazy<MeshPluginManager> manager, Lazy<Vertx> rxVertx, Database db) {
+		AuthServicePluginRegistry authServiceRegistry, BinaryStoragePluginRegistry binaryStoragePluginRegistry, Lazy<MeshPluginManager> manager, Lazy<Vertx> rxVertx, Database db) {
 		this.options = options;
 		this.restRegistry = restRegistry;
 		this.graphqlRegistry = graphqlRegistry;
 		this.authServiceRegistry = authServiceRegistry;
+		this.binaryStoragePluginRegistry = binaryStoragePluginRegistry;
 		this.manager = manager;
 		this.rxVertx = rxVertx;
 		this.db = db;
@@ -108,7 +112,7 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 	}
 
 	private Observable<PluginRegistry> registries() {
-		return Observable.fromArray(graphqlRegistry, restRegistry, authServiceRegistry);
+		return Observable.fromArray(graphqlRegistry, restRegistry, authServiceRegistry, binaryStoragePluginRegistry);
 	}
 
 	/**

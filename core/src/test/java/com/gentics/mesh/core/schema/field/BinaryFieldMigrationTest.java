@@ -64,7 +64,7 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 		if (store == true) {
 			BinaryStorage storage = meshDagger().binaryStorage();
 			String tmpId = UUIDUtil.randomUUID();
-			storage.storeInTemp(Flowable.just(buffer), tmpId).blockingAwait();
+			storage.storeInTemp(Flowable.just(buffer), buffer.length(), tmpId).blockingAwait();
 			storage.moveInPlace(binary.getUuid(), tmpId).blockingAwait();
 		}
 	};
