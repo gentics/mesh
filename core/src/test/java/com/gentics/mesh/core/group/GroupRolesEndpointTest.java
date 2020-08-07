@@ -22,6 +22,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.group.GroupRoleAssignModel;
@@ -40,9 +41,10 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 	public void testReadRolesByGroup() throws Exception {
 		String roleUuid;
 		try (Tx tx = tx()) {
+			GroupRoot groupRoot = tx.data().groupDao();
 			RoleRoot root = meshRoot().getRoleRoot();
 			Role extraRole = root.create("extraRole", user());
-			group().addRole(extraRole);
+			groupRoot.addRole(group(), extraRole);
 
 			roleUuid = extraRole.getUuid();
 			role().grantPermissions(extraRole, READ_PERM);
@@ -69,11 +71,12 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		String roleName = "extraRole";
 		String groupName = tx(() -> group().getName());
 		String groupUuid = groupUuid();
-		String roleUuid = tx(() -> {
+		String roleUuid = tx(tx -> {
+			GroupRoot groupRoot = tx.data().groupDao();
 			RoleRoot root = meshRoot().getRoleRoot();
 			Role extraRole = root.create(roleName, user());
 			role().grantPermissions(extraRole, READ_PERM);
-			assertEquals(1, group().getRoles().count());
+			assertEquals(1, groupRoot.getRoles(group()).count());
 			return extraRole.getUuid();
 		});
 
@@ -103,8 +106,9 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		awaitEvents();
 
 		try (Tx tx = tx()) {
+			GroupRoot groupRoot = tx.data().groupDao();
 			assertEquals(1, restGroup.getRoles().stream().filter(ref -> ref.getName().equals("extraRole")).count());
-			assertEquals(2, group().getRoles().count());
+			assertEquals(2, groupRoot.getRoles(group()).count());
 		}
 
 	}
@@ -112,7 +116,8 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testAddBogusRoleToGroup() throws Exception {
 		try (Tx tx = tx()) {
-			assertEquals(1, group().getRoles().count());
+			GroupRoot groupRoot = tx.data().groupDao();
+			assertEquals(1, groupRoot.getRoles(group()).count());
 		}
 		call(() -> client().addRoleToGroup(groupUuid(), "bogus"), NOT_FOUND, "object_not_found_for_uuid", "bogus");
 	}
@@ -122,10 +127,11 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		String roleUuid;
 		Role extraRole;
 		try (Tx tx = tx()) {
+			GroupRoot groupRoot = tx.data().groupDao();
 			RoleRoot root = meshRoot().getRoleRoot();
 			extraRole = root.create("extraRole", user());
 			roleUuid = extraRole.getUuid();
-			assertEquals(1, group().getRoles().count());
+			assertEquals(1, groupRoot.getRoles(group()).count());
 			tx.success();
 		}
 
@@ -134,7 +140,8 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		awaitEvents();
 
 		try (Tx tx = tx()) {
-			assertEquals(1, group().getRoles().count());
+			GroupRoot groupRoot = tx.data().groupDao();
+			assertEquals(1, groupRoot.getRoles(group()).count());
 		}
 
 		// Now confirm that the request works once we set the perm
@@ -148,7 +155,8 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		awaitEvents();
 
 		try (Tx tx = tx()) {
-			assertEquals(2, group().getRoles().count());
+			GroupRoot groupRoot = tx.data().groupDao();
+			assertEquals(2, groupRoot.getRoles(group()).count());
 		}
 
 	}
@@ -158,12 +166,13 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		String groupName = tx(() -> group().getName());
 		String groupUuid = groupUuid();
 		String roleName = "extraRole";
-		String roleUuid = tx(() -> {
+		String roleUuid = tx(tx -> {
+			GroupRoot groupRoot = tx.data().groupDao();
 			RoleRoot root = meshRoot().getRoleRoot();
 			Role extraRole = root.create(roleName, user());
-			group().addRole(extraRole);
+			groupRoot.addRole(group(), extraRole);
 			role().grantPermissions(extraRole, READ_PERM);
-			assertEquals(2, group().getRoles().count());
+			assertEquals(2, groupRoot.getRoles(group()).count());
 			searchProvider().reset();
 			return extraRole.getUuid();
 		});
@@ -191,7 +200,8 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 			.anyMatch("extraRole"::equals));
 
 		try (Tx tx = tx()) {
-			assertEquals(1, group().getRoles().count());
+			GroupRoot groupRoot = tx.data().groupDao();
+			assertEquals(1, groupRoot.getRoles(group()).count());
 		}
 
 		// Test for idempotency
@@ -219,7 +229,8 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			assertTrue("Role should be assigned to group.", group().hasRole(extraRole));
+			GroupRoot groupRoot = tx.data().groupDao();
+			assertTrue("Role should be assigned to group.", groupRoot.hasRole(group(), extraRole));
 		}
 	}
 
@@ -240,7 +251,8 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			assertFalse("Role should not be assigned to group.", group().hasRole(extraRole));
+			GroupRoot groupRoot = tx.data().groupDao();
+			assertFalse("Role should not be assigned to group.", groupRoot.hasRole(group(), extraRole));
 		}
 	}
 
@@ -256,9 +268,10 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		Role extraRole;
 		try (Tx tx = tx()) {
 			RoleRoot root = meshRoot().getRoleRoot();
+			GroupRoot groupRoot = tx.data().groupDao();
 			Group group = group();
 			extraRole = root.create("extraRole", user());
-			group.addRole(extraRole);
+			groupRoot.addRole(group, extraRole);
 
 			assertNotNull(group.getUuid());
 			assertNotNull(extraRole.getUuid());
@@ -273,9 +286,10 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
+			GroupRoot groupRoot = tx.data().groupDao();
 			GroupResponse restGroup = call(() -> client().findGroupByUuid(groupUuid()));
 			assertThat(restGroup).matches(group());
-			assertFalse("Role should now no longer be assigned to group.", group().hasRole(extraRole));
+			assertFalse("Role should now no longer be assigned to group.", groupRoot.hasRole(group(), extraRole));
 		}
 	}
 
@@ -284,11 +298,12 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		String extraRoleUuid;
 		Role extraRole;
 		try (Tx tx = tx()) {
+			GroupRoot groupRoot = tx.data().groupDao();
 			Group group = group();
 			RoleRoot root = meshRoot().getRoleRoot();
 			extraRole = root.create("extraRole", user());
 			extraRoleUuid = extraRole.getUuid();
-			group.addRole(extraRole);
+			groupRoot.addRole(group, extraRole);
 			role().revokePermissions(group, UPDATE_PERM);
 			tx.success();
 		}
@@ -297,7 +312,8 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 			UPDATE_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
-			assertTrue("Role should be stil assigned to group.", group().hasRole(extraRole));
+			GroupRoot groupRoot = tx.data().groupDao();
+			assertTrue("Role should be stil assigned to group.", groupRoot.hasRole(group(), extraRole));
 		}
 	}
 }

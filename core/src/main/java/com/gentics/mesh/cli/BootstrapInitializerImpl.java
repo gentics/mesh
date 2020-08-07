@@ -1044,14 +1044,14 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			Group adminGroup = groupRoot.findByName("admin");
 			if (adminGroup == null) {
 				adminGroup = groupRoot.create("admin", adminUser);
-				adminGroup.addUser(adminUser);
+				groupRoot.addUser(adminGroup, adminUser);
 				log.debug("Created admin group {" + adminGroup.getUuid() + "}");
 			}
 
 			Role adminRole = roleRoot.findByName("admin");
 			if (adminRole == null) {
 				adminRole = roleRoot.create("admin", adminUser);
-				adminGroup.addRole(adminRole);
+				groupRoot.addRole(adminGroup, adminRole);
 				log.debug("Created admin role {" + adminRole.getUuid() + "}");
 			}
 
@@ -1089,7 +1089,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				Group anonymousGroup = groupRoot.findByName("anonymous");
 				if (anonymousGroup == null) {
 					anonymousGroup = groupRoot.create("anonymous", anonymousUser);
-					anonymousGroup.addUser(anonymousUser);
+					groupRoot.addUser(anonymousGroup, anonymousUser);
 					log.debug("Created anonymous group {" + anonymousGroup.getUuid() + "}");
 				}
 
@@ -1097,7 +1097,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				anonymousRole = roleRoot.findByName("anonymous");
 				if (anonymousRole == null) {
 					anonymousRole = roleRoot.create("anonymous", anonymousUser);
-					anonymousGroup.addRole(anonymousRole);
+					groupRoot.addRole(anonymousGroup, anonymousRole);
 					log.debug("Created anonymous role {" + anonymousRole.getUuid() + "}");
 				}
 

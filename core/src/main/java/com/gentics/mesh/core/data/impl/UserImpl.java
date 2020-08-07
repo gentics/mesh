@@ -29,8 +29,8 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
+import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
-import com.gentics.mesh.core.data.root.impl.UserRootImpl;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
@@ -245,9 +245,10 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public void updateShortcutEdges() {
+		GroupRoot groupRoot = Tx.get().data().groupDao();
 		outE(ASSIGNED_TO_ROLE).removeAll();
 		for (Group group : getGroups()) {
-			for (Role role : group.getRoles()) {
+			for (Role role : groupRoot.getRoles(group)) {
 				setUniqueLinkOutTo(role, ASSIGNED_TO_ROLE);
 			}
 		}
@@ -279,7 +280,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	@Override
 	public User addGroup(Group group) {
 		// Redirect to group implementation
-		group.addUser(this);
+		mesh().boot().groupDao().addUser(group, this);
 		return this;
 	}
 

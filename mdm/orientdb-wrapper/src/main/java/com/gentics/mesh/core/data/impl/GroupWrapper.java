@@ -8,21 +8,16 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
-import com.gentics.mesh.core.rest.event.group.GroupRoleAssignModel;
-import com.gentics.mesh.core.rest.event.group.GroupUserAssignModel;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModelImpl;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.madl.frame.EdgeFrame;
@@ -30,7 +25,6 @@ import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.madl.frame.VertexFrame;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
 import com.gentics.mesh.madl.traversal.TraversalResult;
-import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.google.gson.JsonObject;
 import com.syncleus.ferma.ClassInitializer;
@@ -272,10 +266,6 @@ public class GroupWrapper implements Group {
 		return delete.getProperty(name, type);
 	}
 
-	public void addUser(User user) {
-		delete.addUser(user);
-	}
-
 	public Database db() {
 		return delete.db();
 	}
@@ -288,10 +278,6 @@ public class GroupWrapper implements Group {
 		return delete.vertx();
 	}
 
-	public void removeUser(User user) {
-		delete.removeUser(user);
-	}
-
 	public boolean hasPublishPermissions() {
 		return delete.hasPublishPermissions();
 	}
@@ -300,20 +286,12 @@ public class GroupWrapper implements Group {
 		return delete.options();
 	}
 
-	public void addRole(Role role) {
-		delete.addRole(role);
-	}
-
 	public <T> T addFramedEdgeExplicit(String label, com.syncleus.ferma.VertexFrame inVertex, ClassInitializer<T> initializer) {
 		return delete.addFramedEdgeExplicit(label, inVertex, initializer);
 	}
 
 	public MeshElementEventModel onCreated() {
 		return delete.onCreated();
-	}
-
-	public void removeRole(Role role) {
-		delete.removeRole(role);
 	}
 
 	public void setCachedUuid(String uuid) {
@@ -328,10 +306,6 @@ public class GroupWrapper implements Group {
 		return delete.onUpdated();
 	}
 
-	public TraversalResult<? extends User> getUsers() {
-		return delete.getUsers();
-	}
-
 	public MeshElementEventModel onDeleted() {
 		return delete.onDeleted();
 	}
@@ -340,24 +314,12 @@ public class GroupWrapper implements Group {
 		return delete.getTypeResolution();
 	}
 
-	public TraversalResult<? extends Role> getRoles() {
-		return delete.getRoles();
-	}
-
 	public PermissionChangedEventModelImpl onPermissionChanged(Role role) {
 		return delete.onPermissionChanged(role);
 	}
 
-	public boolean hasUser(User user) {
-		return delete.hasUser(user);
-	}
-
 	public void setTypeResolution(Class<?> type) {
 		delete.setTypeResolution(type);
-	}
-
-	public boolean hasRole(Role role) {
-		return delete.hasRole(role);
 	}
 
 	public void fillPermissionChanged(PermissionChangedEventModelImpl model, Role role) {
@@ -372,10 +334,6 @@ public class GroupWrapper implements Group {
 		delete.removeTypeResolution();
 	}
 
-	public TransformablePage<? extends Role> getRoles(User user, PagingParameters pagingInfo) {
-		return delete.getRoles(user, pagingInfo);
-	}
-
 	public VertexTraversal<?, ?, ?> v() {
 		return delete.v();
 	}
@@ -388,24 +346,12 @@ public class GroupWrapper implements Group {
 		return delete.e(ids);
 	}
 
-	public TransformablePage<? extends User> getVisibleUsers(MeshAuthUser requestUser, PagingParameters pagingInfo) {
-		return delete.getVisibleUsers(requestUser, pagingInfo);
-	}
-
 	public TEdge addFramedEdge(String label, com.syncleus.ferma.VertexFrame inVertex) {
 		return delete.addFramedEdge(label, inVertex);
 	}
 
 	public <T> T getGraphAttribute(String key) {
 		return delete.getGraphAttribute(key);
-	}
-
-	public GroupUserAssignModel createUserAssignmentEvent(User user, Assignment assignment) {
-		return delete.createUserAssignmentEvent(user, assignment);
-	}
-
-	public GroupRoleAssignModel createRoleAssignmentEvent(Role role, Assignment assignment) {
-		return delete.createRoleAssignmentEvent(role, assignment);
 	}
 
 	public VertexTraversal<?, ?, ?> in(String... labels) {

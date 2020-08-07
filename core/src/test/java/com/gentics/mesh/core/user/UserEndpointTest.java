@@ -54,6 +54,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ListResponse;
@@ -374,7 +375,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			for (int i = 0; i < 10; i++) {
 				Group extraGroup = meshRoot().getGroupRoot().create("group_" + i, user());
-				extraGroup.addUser(user());
+				tx.data().groupDao().addUser(extraGroup, user());
 			}
 			assertEquals(11, user().getGroups().count());
 			tx.success();
@@ -456,10 +457,11 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		long foundUsers;
 		try (Tx tx = tx()) {
 			UserRoot root = meshRoot().getUserRoot();
+			GroupRoot groupRoot = tx.data().groupDao();
 			for (int i = 0; i < nUsers; i++) {
 				String username = "testuser_" + i;
 				User user = root.create(username, user());
-				group().addUser(user);
+				groupRoot.addUser(group(), user);
 				user.setLastname("should_be_listed");
 				user.setFirstname("should_be_listed");
 				user.setEmailAddress("should_be_listed");

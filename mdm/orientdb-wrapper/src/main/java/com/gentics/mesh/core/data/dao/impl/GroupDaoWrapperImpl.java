@@ -10,6 +10,7 @@ import com.gentics.madl.traversal.RawTraversalResult;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
@@ -18,7 +19,11 @@ import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
+import com.gentics.mesh.core.rest.event.group.GroupRoleAssignModel;
+import com.gentics.mesh.core.rest.event.group.GroupUserAssignModel;
+import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.madl.frame.EdgeFrame;
@@ -35,6 +40,7 @@ import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Vertex;
 
+import io.reactivex.Single;
 import io.vertx.core.Vertx;
 
 public class GroupDaoWrapperImpl implements GroupDaoWrapper {
@@ -386,4 +392,98 @@ public class GroupDaoWrapperImpl implements GroupDaoWrapper {
 		return delegate.computeCount();
 	}
 
+	@Override
+	public void addUser(Group group, User user) {
+		delegate.addUser(group, user);
+	}
+
+	@Override
+	public void removeUser(Group group, User user) {
+		delegate.removeUser(group, user);
+	}
+
+	@Override
+	public void addRole(Group group, Role role) {
+		delegate.addRole(group, role);
+	}
+
+	@Override
+	public void removeRole(Group group, Role role) {
+		delegate.removeRole(group, role);
+	}
+
+	@Override
+	public TraversalResult<? extends User> getUsers(Group group) {
+		return delegate.getUsers(group);
+	}
+
+	@Override
+	public TraversalResult<? extends Role> getRoles(Group group) {
+		return delegate.getRoles(group);
+	}
+
+	@Override
+	public boolean hasUser(Group group, User user) {
+		return delegate.hasUser(group, user);
+	}
+
+	@Override
+	public boolean hasRole(Group group, Role role) {
+		return delegate.hasRole(group, role);
+	}
+
+	@Override
+	public TransformablePage<? extends Role> getRoles(Group group, User user, PagingParameters pagingInfo) {
+		return delegate.getRoles(group, user, pagingInfo);
+	}
+
+	@Override
+	public TransformablePage<? extends User> getVisibleUsers(Group group, MeshAuthUser requestUser, PagingParameters pagingInfo) {
+		return delegate.getVisibleUsers(group, requestUser, pagingInfo);
+	}
+
+	@Override
+	public GroupUserAssignModel createUserAssignmentEvent(Group group, User user, Assignment assignment) {
+		return delegate.createUserAssignmentEvent(group, user, assignment);
+	}
+
+	@Override
+	public GroupRoleAssignModel createRoleAssignmentEvent(Group group, Role role, Assignment assignment) {
+		return delegate.createRoleAssignmentEvent(group, role, assignment);
+	}
+
+	@Override
+	public PermissionInfo getRolePermissions(MeshVertex vertex, InternalActionContext ac, String roleUuid) {
+		return delegate.getRolePermissions(vertex, ac, roleUuid);
+	}
+
+	@Override
+	public TraversalResult<? extends Role> getRolesWithPerm(MeshVertex vertex, GraphPermission perm) {
+		return delegate.getRolesWithPerm(vertex, perm);
+	}
+
+	@Override
+	public void delete(Group element, BulkActionContext bac) {
+		delegate.delete(element, bac);
+	}
+
+	@Override
+	public String getAPIPath(Group element, InternalActionContext ac) {
+		return delegate.getAPIPath(element, ac);
+	}
+
+	@Override
+	public Single<GroupResponse> transformToRest(Group element, InternalActionContext ac, int level, String... languageTags) {
+		return delegate.transformToRest(element, ac, level, languageTags);
+	}
+
+	@Override
+	public GroupResponse transformToRestSync(Group element, InternalActionContext ac, int level, String... languageTags) {
+		return delegate.transformToRestSync(element, ac, level, languageTags);
+	}
+
+	@Override
+	public String getETag(Group element, InternalActionContext ac) {
+		return delegate.getETag(element, ac);
+	}
 }

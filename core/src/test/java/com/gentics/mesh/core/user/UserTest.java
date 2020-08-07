@@ -33,6 +33,7 @@ import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
@@ -226,13 +227,14 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testFindUsersOfGroup() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
 			UserRoot userRoot = meshRoot().getUserRoot();
+			GroupRoot groupRoot = tx.data().groupDao();
 			User extraUser = userRoot.create("extraUser", user());
-			group().addUser(extraUser);
+			groupRoot.addUser(group(), extraUser);
 			role().grantPermissions(extraUser, GraphPermission.READ_PERM);
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			MeshAuthUser requestUser = ac.getUser();
-			Page<? extends User> userPage = group().getVisibleUsers(requestUser, new PagingParametersImpl(1, 10L));
+			Page<? extends User> userPage = groupRoot.getVisibleUsers(group(), requestUser, new PagingParametersImpl(1, 10L));
 
 			assertEquals(2, userPage.getTotalElements());
 		}
@@ -313,6 +315,8 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testInheritPermissions() {
 		try (Tx tx = tx()) {
 			UserRoot userRoot = tx.data().userDao();
+			GroupRoot groupRoot = tx.data().groupDao();
+
 			Node sourceNode = folder("news");
 			Node targetNode = folder("2015");
 			User newUser;
@@ -328,32 +332,32 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			Group newGroup = meshRoot().getGroupRoot().create("extraGroup", user());
 			newUser = meshRoot().getUserRoot().create("Anton", user());
-			newGroup.addUser(newUser);
+			groupRoot.addUser(newGroup, newUser);
 
 			// Create test roles
 			roleWithDeletePerm = meshRoot().getRoleRoot().create("roleWithDeletePerm", newUser);
-			newGroup.addRole(roleWithDeletePerm);
+			groupRoot.addRole(newGroup, roleWithDeletePerm);
 			roleWithDeletePerm.grantPermissions(sourceNode, GraphPermission.DELETE_PERM);
 
 			roleWithReadPerm = meshRoot().getRoleRoot().create("roleWithReadPerm", newUser);
-			newGroup.addRole(roleWithReadPerm);
+			groupRoot.addRole(newGroup, roleWithReadPerm);
 			roleWithReadPerm.grantPermissions(sourceNode, GraphPermission.READ_PERM);
 
 			roleWithUpdatePerm = meshRoot().getRoleRoot().create("roleWithUpdatePerm", newUser);
-			newGroup.addRole(roleWithUpdatePerm);
+			groupRoot.addRole(newGroup, roleWithUpdatePerm);
 			roleWithUpdatePerm.grantPermissions(sourceNode, GraphPermission.UPDATE_PERM);
 
 			roleWithAllPerm = meshRoot().getRoleRoot().create("roleWithAllPerm", newUser);
-			newGroup.addRole(roleWithAllPerm);
+			groupRoot.addRole(newGroup, roleWithAllPerm);
 			roleWithAllPerm.grantPermissions(sourceNode, GraphPermission.CREATE_PERM, GraphPermission.UPDATE_PERM, GraphPermission.DELETE_PERM,
 				GraphPermission.READ_PERM, GraphPermission.READ_PUBLISHED_PERM, PUBLISH_PERM);
 
 			roleWithCreatePerm = meshRoot().getRoleRoot().create("roleWithCreatePerm", newUser);
-			newGroup.addRole(roleWithCreatePerm);
+			groupRoot.addRole(newGroup, roleWithCreatePerm);
 			roleWithCreatePerm.grantPermissions(sourceNode, GraphPermission.CREATE_PERM);
 
 			roleWithNoPerm = meshRoot().getRoleRoot().create("roleWithNoPerm", newUser);
-			newGroup.addRole(roleWithNoPerm);
+			groupRoot.addRole(newGroup, roleWithNoPerm);
 			userRoot.inheritRolePermissions(user(), sourceNode, targetNode);
 			ac.data().clear();
 			for (GraphPermission perm : GraphPermission.values()) {
@@ -421,16 +425,17 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testUserGroup() {
 		try (Tx tx = tx()) {
+			GroupRoot groupRoot = tx.data().groupDao();
 			User user = user();
 			assertEquals(1, user.getGroups().count());
 
 			for (int i = 0; i < 10; i++) {
 				Group extraGroup = meshRoot().getGroupRoot().create("group_" + i, user());
 				// Multiple calls should not affect the result
-				extraGroup.addUser(user);
-				extraGroup.addUser(user);
-				extraGroup.addUser(user);
-				extraGroup.addUser(user);
+				groupRoot.addUser(extraGroup, user);
+				groupRoot.addUser(extraGroup, user);
+				groupRoot.addUser(extraGroup, user);
+				groupRoot.addUser(extraGroup, user);
 			}
 
 			assertEquals(11, user().getGroups().count());
@@ -563,13 +568,14 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
 	public void testUserRolesHashes() {
-		try (Tx tz = tx()) {
+		try (Tx tx = tx()) {
+			GroupRoot groupRoot = tx.data().groupDao();
 			User oldUser = user();
 			User newUser = meshRoot().getUserRoot().create("newuser", oldUser);
 			Group newGroup = meshRoot().getGroupRoot().create("newgroup", oldUser);
 
-			group().getRoles().forEach(newGroup::addRole);
-			newGroup.addUser(newUser);
+			groupRoot.getRoles(group()).forEach(role -> groupRoot.addRole(newGroup, role));
+			groupRoot.addUser(newGroup, newUser);
 
 			// Both groups have the same roles, so the hashes must match.
 			assertEquals(oldUser.getRolesHash(), newUser.getRolesHash());

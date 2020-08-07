@@ -52,6 +52,7 @@ import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -1641,13 +1642,14 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		// 1. Load Ids / Objects
 		String uuid = tx(() -> content("concorde").getUuid());
 		final Node node = tx(() -> content("concorde"));
-		NodeGraphFieldContainer origContainer = tx(() -> {
+		NodeGraphFieldContainer origContainer = tx(tx -> {
+			GroupRoot groupRoot = tx.data().groupDao();
 			Node prod = content("concorde");
 			NodeGraphFieldContainer container = prod.getLatestDraftFieldContainer(english());
 			assertEquals("Concorde_english_name", container.getString("teaser").getString());
 			assertEquals("Concorde english title", container.getString("title").getString());
 			UserInfo userInfo = data().createUserInfo("dummy", "Dummy Firstname", "Dummy Lastname");
-			group().addUser(userInfo.getUser());
+			groupRoot.addUser(group(), userInfo.getUser());
 			return container;
 		});
 

@@ -46,6 +46,7 @@ import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.db.Tx;
@@ -165,6 +166,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 	@Override
 	public User create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		BootstrapInitializer boot = mesh().boot();
+		GroupRoot groupDao = mesh().boot().groupDao();
 		MeshAuthUser requestUser = ac.getUser();
 
 		UserCreateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), UserCreateRequest.class);
@@ -212,8 +214,8 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 		batch.add(user.onCreated());
 
 		if (!isEmpty(groupUuid)) {
-			Group parentGroup = boot.groupDao().loadObjectByUuid(ac, groupUuid, CREATE_PERM);
-			parentGroup.addUser(user);
+			Group parentGroup = groupDao.loadObjectByUuid(ac, groupUuid, CREATE_PERM);
+			groupDao.addUser(parentGroup, user);
 			// batch.add(parentGroup.onUpdated());
 			inheritRolePermissions(requestUser, parentGroup, user);
 		}

@@ -11,16 +11,8 @@ import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagFamilyDao;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
-import com.gentics.mesh.core.data.job.JobRoot;
-import com.gentics.mesh.core.data.root.LanguageRoot;
-import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
-import com.gentics.mesh.core.data.root.RoleRoot;
-import com.gentics.mesh.core.data.root.SchemaContainerRoot;
-import com.gentics.mesh.core.data.root.TagFamilyRoot;
-import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.db.TxData;
 
 public class OrientTxData implements TxData {
@@ -79,13 +71,13 @@ public class OrientTxData implements TxData {
 	public MicroschemaDaoWrapper microschemaDao() {
 		return boot.microschemaDao();
 	}
-	
+
 	@Override
 	public BinaryDaoWrapper binaryDao() {
 		//TODO There is currently no binary wrapper. We need to write a new impl.
 		return null;
 	}
-	
+
 	@Override
 	public BranchDaoWrapper branchDao() {
 		// TODO there is currently no global branch root
