@@ -38,6 +38,10 @@ public class TraversalResult<T> implements Iterable<T> {
 		return Iterators.size(it.iterator());
 	}
 
+	public Iterable<T> iterable() {
+		return it;
+	}
+
 	public Iterator<T> iterator() {
 		return it.iterator();
 	}
