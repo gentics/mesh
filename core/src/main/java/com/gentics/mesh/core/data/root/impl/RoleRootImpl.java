@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROL
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
+import static com.gentics.mesh.util.CompareUtils.shouldUpdate;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -18,6 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
@@ -35,6 +37,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
+import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -208,5 +211,30 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 		}
 	}
 
+	@Override
+	public void delete(Role role, BulkActionContext bac) {
+		bac.add(role.onDeleted());
+		getVertex().remove();
+		bac.process();
+		mesh().permissionCache().clear();
+	}
+
+	@Override
+	public boolean update(Role role, InternalActionContext ac, EventQueueBatch batch) {
+		RoleUpdateRequest requestModel = ac.fromJson(RoleUpdateRequest.class);
+		BootstrapInitializer boot = mesh().boot();
+		if (shouldUpdate(requestModel.getName(), role.getName())) {
+			// Check for conflict
+			Role roleWithSameName = boot.roleRoot().findByName(requestModel.getName());
+			if (roleWithSameName != null && !roleWithSameName.getUuid().equals(getUuid())) {
+				throw conflict(roleWithSameName.getUuid(), requestModel.getName(), "role_conflicting_name");
+			}
+
+			role.setName(requestModel.getName());
+			batch.add(role.onUpdated());
+			return true;
+		}
+		return false;
+	}
 
 }

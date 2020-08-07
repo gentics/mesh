@@ -1,12 +1,10 @@
 package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
-import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
@@ -17,7 +15,6 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
-import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.madl.field.FieldType;
@@ -63,28 +60,14 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 
 	@Override
 	public void delete(BulkActionContext bac) {
-		bac.add(onDeleted());
-		getVertex().remove();
-		bac.process();
-		mesh().permissionCache().clear();
+		RoleRoot roleDao = mesh().boot().roleDao();
+		roleDao.delete(this, bac);
 	}
 
 	@Override
 	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
-		RoleUpdateRequest requestModel = ac.fromJson(RoleUpdateRequest.class);
-		BootstrapInitializer boot = mesh().boot();
-		if (shouldUpdate(requestModel.getName(), getName())) {
-			// Check for conflict
-			Role roleWithSameName = boot.roleRoot().findByName(requestModel.getName());
-			if (roleWithSameName != null && !roleWithSameName.getUuid().equals(getUuid())) {
-				throw conflict(roleWithSameName.getUuid(), requestModel.getName(), "role_conflicting_name");
-			}
-
-			setName(requestModel.getName());
-			batch.add(onUpdated());
-			return true;
-		}
-		return false;
+		RoleRoot roleDao = mesh().boot().roleDao();
+		return roleDao.update(this, ac, batch);
 	}
 
 	@Override
