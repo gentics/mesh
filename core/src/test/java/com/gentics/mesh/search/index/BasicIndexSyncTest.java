@@ -138,7 +138,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		// Assert insert
 		tx(() -> {
 			for (int i = 0; i < 400; i++) {
-				boot().groupDao().create("role_" + i, user(), null);
+				boot().roleDao().create("role_" + i, user(), null);
 			}
 		});
 		syncIndex();
@@ -153,7 +153,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 		// Assert deletion
 		tx(() -> {
-			boot().userDao().findByName("role_3").getElement().remove();
+			boot().roleDao().findByName("role_3").getElement().remove();
 		});
 		syncIndex();
 		assertMetrics("role", 0, 0, 1);
@@ -182,7 +182,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 		// Assert deletion
 		tx(() -> {
-			boot().userDao().findByName("tag_3").getElement().remove();
+			boot().tagDao().findByName("tag_3").getElement().remove();
 		});
 		syncIndex();
 		assertMetrics("tag", 0, 0, 1);
