@@ -248,8 +248,11 @@ public class TableGenerator extends AbstractRenderingGenerator {
 	 * @return
 	 */
 	public static Set<Class<?>> allFoundClassesAnnotatedWithEntityToBeScanned() {
-		Reflections reflections = new Reflections("com.gentics.mesh.*");
+		Reflections reflections = new Reflections("com.gentics.mesh");
 		Set<Class<?>> annotated = reflections.getTypesAnnotatedWith(GenerateDocumentation.class);
+		if (annotated.isEmpty()) {
+			throw new RuntimeException("Failed to find annotated classes");
+		}
 		return annotated;
 	}
 }
