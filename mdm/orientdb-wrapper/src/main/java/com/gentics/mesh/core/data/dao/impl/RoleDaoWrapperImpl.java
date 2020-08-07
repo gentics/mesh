@@ -426,26 +426,26 @@ public class RoleDaoWrapperImpl implements RoleDaoWrapper {
 
 	@Override
 	public void grantPermissions(Role role, MeshVertex vertex, GraphPermission... permissions) {
-		delegate.grantPermissions(role, vertex, permissions);
+		boot.get().roleRoot().grantPermissions(role, vertex, permissions);
 	}
 
 	@Override
 	public void revokePermissions(Role role, MeshVertex vertex, GraphPermission... permissions) {
-		delegate.revokePermissions(role, vertex, permissions);
+		boot.get().roleRoot().revokePermissions(role, vertex, permissions);
 	}
 
 	@Override
 	public Set<GraphPermission> getPermissions(Role role, MeshVertex element) {
-		return delegate.getPermissions(role, element);
+		return boot.get().roleRoot().getPermissions(role, element);
 	}
 
 	@Override
 	public Page<? extends Group> getGroups(Role role, User user, PagingParameters params) {
-		return delegate.getGroups(role, user, params);
+		return boot.get().roleRoot().getGroups(role, user, params);
 	}
 
 	@Override
 	public boolean hasPermission(Role role, GraphPermission permission, MeshVertex element) {
-		return delegate.hasPermission(role, permission, element);
+		return boot.get().roleRoot().hasPermission(role, permission, element);
 	}
 }

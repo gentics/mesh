@@ -18,6 +18,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
@@ -208,10 +209,11 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Override
 	public void testTransformation() throws Exception {
 		try (Tx tx = tx()) {
+			TagFamilyDaoWrapper tagFamilyDao = tx.data().tagFamilyDao();
 			TagFamily tagFamily = tagFamily("colors");
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			TagFamilyResponse response = tagFamily.transformToRestSync(ac, 0);
+			TagFamilyResponse response = tagFamilyDao.transformToRestSync(tagFamily, ac, 0);
 			assertNotNull(response);
 			assertEquals(tagFamily.getName(), response.getName());
 			assertEquals(tagFamily.getUuid(), response.getUuid());
