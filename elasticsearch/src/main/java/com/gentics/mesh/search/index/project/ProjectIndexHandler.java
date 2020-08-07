@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
@@ -97,8 +98,8 @@ public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
 	}
 
 	@Override
-	public Stream<? extends Project> loadAllElements() {
-		return boot.meshRoot().getProjectRoot().findAll().stream();
+	public Stream<? extends Project> loadAllElements(Tx tx) {
+		return tx.data().projectDao().findAll().stream();
 	}
 
 	@Override

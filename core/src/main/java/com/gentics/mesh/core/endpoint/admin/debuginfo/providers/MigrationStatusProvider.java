@@ -8,6 +8,8 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
+import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoBufferEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
@@ -53,10 +55,14 @@ public class MigrationStatusProvider implements DebugInfoProvider {
 	}
 
 	private Flowable<ProjectBranch> getAllBranches() {
-		return db.singleTx(() -> Tx.get().data().projectDao().findAll().stream()
-			.flatMap(project -> project.getBranchRoot().findAll().stream()
-			.map(branch -> new ProjectBranch(project.getName(), branch.getName(), branch)))
-			.collect(Collectors.toList()))
+		return db.singleTx(tx -> {
+			BranchDaoWrapper branchDao = tx.data().branchDao();
+			ProjectDaoWrapper projectDao = tx.data().projectDao();
+			return projectDao.findAll().stream()
+				.flatMap(project -> branchDao.findAll(project).stream()
+					.map(branch -> new ProjectBranch(project.getName(), branch.getName(), branch)))
+				.collect(Collectors.toList());
+		})
 			.flatMapPublisher(Flowable::fromIterable);
 	}
 

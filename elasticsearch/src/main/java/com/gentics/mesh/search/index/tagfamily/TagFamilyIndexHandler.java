@@ -21,6 +21,7 @@ import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
@@ -149,8 +150,8 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 	}
 
 	@Override
-	public Stream<? extends TagFamily> loadAllElements() {
-		return boot.meshRoot().getTagFamilyRoot().findAll().stream();
+	public Stream<? extends TagFamily> loadAllElements(Tx tx) {
+		return tx.data().tagFamilyDao().findAll().stream();
 	}
 
 }

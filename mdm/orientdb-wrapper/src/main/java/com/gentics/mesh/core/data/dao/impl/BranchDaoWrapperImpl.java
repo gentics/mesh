@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.dao.impl;
 
+import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
 import java.util.function.Function;
@@ -442,6 +443,12 @@ public class BranchDaoWrapperImpl implements BranchDaoWrapper {
 	@Override
 	public void delete(Branch element, BulkActionContext bac) {
 		delegate.delete(element, bac);
+	}
+
+	@Override
+	public TraversalResult<? extends Branch> findAll(Project project) {
+		Objects.requireNonNull(project);
+		return project.getBranchRoot().findAll();
 	}
 
 }

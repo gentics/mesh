@@ -15,6 +15,7 @@ import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
@@ -90,8 +91,8 @@ public class GroupIndexHandler extends AbstractIndexHandler<Group> {
 	}
 
 	@Override
-	public Stream<? extends Group> loadAllElements() {
-		return boot.meshRoot().getGroupRoot().findAll().stream();
+	public Stream<? extends Group> loadAllElements(Tx tx) {
+		return tx.data().groupDao().findAll().stream();
 	}
 
 	@Override

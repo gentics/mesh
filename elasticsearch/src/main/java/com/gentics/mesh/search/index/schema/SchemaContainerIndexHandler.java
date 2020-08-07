@@ -15,6 +15,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
@@ -101,7 +102,7 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 	}
 
 	@Override
-	public Stream<? extends SchemaContainer> loadAllElements() {
-		return boot.meshRoot().getSchemaContainerRoot().findAll().stream();
+	public Stream<? extends SchemaContainer> loadAllElements(Tx tx) {
+		return tx.data().schemaDao().findAll().stream();
 	}
 }

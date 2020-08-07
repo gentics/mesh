@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -35,8 +36,7 @@ import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
 import io.reactivex.Flowable;
 
 /**
- * When a project is updated, all nodes, tags and tag family documents have to be updated,
- * because the documents for these objects contain the project name.
+ * When a project is updated, all nodes, tags and tag family documents have to be updated, because the documents for these objects contain the project name.
  */
 @Singleton
 public class ProjectUpdateEventHandler implements EventHandler {
@@ -57,69 +57,63 @@ public class ProjectUpdateEventHandler implements EventHandler {
 		MeshElementEventModelImpl model = requireType(MeshElementEventModelImpl.class, messageEvent.message);
 		return Flowable.mergeArray(
 			updateNodes(model),
-			updateTags(model)
-		);
+			updateTags(model));
 	}
 
 	/**
-	 * Finds all latest nodes of all languages, all types and all branches in the project and transforms them to
-	 * elastic search create requests.
+	 * Finds all latest nodes of all languages, all types and all branches in the project and transforms them to elastic search create requests.
+	 * 
 	 * @param model
 	 * @return
 	 */
 	private Flowable<SearchRequest> updateNodes(MeshElementEventModelImpl model) {
 		return Flowable.defer(() -> helper.getDb().transactional(tx -> toStream(entities.project.getElement(model))
-				.flatMap(project -> {
-					List<Branch> branches = (List<Branch>) project.getBranchRoot().findAll().list();
-					return project.findNodes().stream()
-				.flatMap(node -> Stream.of(DRAFT, PUBLISHED)
-				.flatMap(type -> branches.stream()
-				.flatMap(branch -> node.getGraphFieldContainers(branch, type).stream()
-				.map(container -> helper.createDocumentRequest(
-					NodeGraphFieldContainer.composeIndexName(
-						project.getUuid(),
-						branch.getUuid(),
-						container.getSchemaContainerVersion().getUuid(),
-						type
-					),
-					NodeGraphFieldContainer.composeDocumentId(node.getUuid(), container.getLanguageTag()),
-					((NodeContainerTransformer)entities.nodeContent.getTransformer()).toDocument(
-						container,
-						branch.getUuid(),
-						type
-					), complianceMode
-				))
-			)));})
+			.flatMap(project -> {
+				BranchDaoWrapper branchDao = tx.data().branchDao();
+				List<Branch> branches = (List<Branch>) branchDao.findAll(project).list();
+				return project.findNodes().stream()
+					.flatMap(node -> Stream.of(DRAFT, PUBLISHED)
+						.flatMap(type -> branches.stream()
+							.flatMap(branch -> node.getGraphFieldContainers(branch, type).stream()
+								.map(container -> helper.createDocumentRequest(
+									NodeGraphFieldContainer.composeIndexName(
+										project.getUuid(),
+										branch.getUuid(),
+										container.getSchemaContainerVersion().getUuid(),
+										type),
+									NodeGraphFieldContainer.composeDocumentId(node.getUuid(), container.getLanguageTag()),
+									((NodeContainerTransformer) entities.nodeContent.getTransformer()).toDocument(
+										container,
+										branch.getUuid(),
+										type),
+									complianceMode)))));
+			})
 			.collect(toFlowable()))
-			.runInNewTx()
-		);
+			.runInNewTx());
 	}
 
 	/**
 	 * Creates requests for all tag families and tags in the project
+	 * 
 	 * @param model
 	 * @return
 	 */
 	private Flowable<SearchRequest> updateTags(MeshElementEventModelImpl model) {
 		return Flowable.defer(() -> helper.getDb().transactional(tx -> toStream(entities.project.getElement(model))
-				.flatMap(project -> project.getTagFamilyRoot().findAll().stream()
+			.flatMap(project -> project.getTagFamilyRoot().findAll().stream()
 				.flatMap(family -> Stream.concat(
 					Stream.of(createTagFamilyRequest(project, family)),
-					createTagRequests(family, project)
-				)
-			))
+					createTagRequests(family, project))))
 			.collect(toFlowable()))
-			.runInNewTx()
-		);
+			.runInNewTx());
 	}
 
 	private Stream<CreateDocumentRequest> createTagRequests(TagFamily family, Project project) {
 		return family.findAll().stream()
-		.map(tag -> helper.createDocumentRequest(
-			Tag.composeIndexName(project.getUuid()),
-			tag.getUuid(),
-			entities.tag.transform(tag), complianceMode
-		));
+			.map(tag -> helper.createDocumentRequest(
+				Tag.composeIndexName(project.getUuid()),
+				tag.getUuid(),
+				entities.tag.transform(tag), complianceMode));
 	}
 
 	private CreateDocumentRequest createTagFamilyRequest(Project project, TagFamily family) {
@@ -127,8 +121,7 @@ public class ProjectUpdateEventHandler implements EventHandler {
 			TagFamily.composeIndexName(project.getUuid()),
 			family.getUuid(),
 			entities.tagFamily.transform(family),
-			complianceMode
-		);
+			complianceMode);
 	}
 
 	@Override

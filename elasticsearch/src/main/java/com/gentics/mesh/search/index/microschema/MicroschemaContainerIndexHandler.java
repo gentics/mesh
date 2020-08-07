@@ -15,6 +15,7 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
@@ -96,8 +97,8 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 	}
 
 	@Override
-	public Stream<? extends MicroschemaContainer> loadAllElements() {
-		return boot.meshRoot().getMicroschemaContainerRoot().findAll().stream();
+	public Stream<? extends MicroschemaContainer> loadAllElements(Tx tx) {
+		return tx.data().microschemaDao().findAll().stream();
 	}
 
 	@Override

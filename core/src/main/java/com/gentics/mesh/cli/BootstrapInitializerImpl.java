@@ -584,9 +584,11 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	 */
 	private void handleLocalData(boolean forceIndexSync, MeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
 		// Load the verticles
-		List<String> initialProjects = db.tx(() -> meshRoot().getProjectRoot().findAll().stream()
-			.map(Project::getName)
-			.collect(Collectors.toList()));
+		List<String> initialProjects = db.tx(tx -> {
+			return tx.data().projectDao().findAll().stream()
+				.map(Project::getName)
+				.collect(Collectors.toList());
+		});
 
 		// Set read only mode
 		localConfigApi.init()

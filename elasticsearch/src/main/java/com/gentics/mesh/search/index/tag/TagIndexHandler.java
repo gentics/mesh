@@ -16,11 +16,13 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
@@ -127,9 +129,10 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 
 	@Override
 	public Set<String> filterUnknownIndices(Set<String> indices) {
-		return db.tx(() -> {
+		return db.tx(tx -> {
 			Set<String> activeIndices = new HashSet<>();
-			for (Project project : boot.meshRoot().getProjectRoot().findAll()) {
+			ProjectDaoWrapper projectDao = tx.data().projectDao();
+			for (Project project : projectDao.findAll()) {
 				activeIndices.add(Tag.composeIndexName(project.getUuid()));
 			}
 			return indices.stream()
@@ -157,8 +160,8 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	}
 
 	@Override
-	public Stream<? extends Tag> loadAllElements() {
-		return boot.meshRoot().getTagRoot().findAll().stream();
+	public Stream<? extends Tag> loadAllElements(Tx tx) {
+		return tx.data().tagDao().findAll().stream();
 	}
 
 }

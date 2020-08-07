@@ -76,7 +76,8 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 	protected final SyncMeters meters;
 
-	public AbstractIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options, SyncMetersFactory syncMetersFactory) {
+	public AbstractIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options,
+		SyncMetersFactory syncMetersFactory) {
 		this.searchProvider = searchProvider;
 		this.db = db;
 		this.boot = boot;
@@ -241,10 +242,12 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	}
 
 	private Map<String, String> loadVersionsFromGraph() {
-		return db.tx(() -> loadAllElements()
-			.collect(Collectors.toMap(
-				MeshElement::getUuid,
-				this::generateVersion)));
+		return db.tx(tx -> {
+			return loadAllElements(tx)
+				.collect(Collectors.toMap(
+					MeshElement::getUuid,
+					this::generateVersion));
+		});
 	}
 
 	// TODO Async
