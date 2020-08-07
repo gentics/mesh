@@ -214,7 +214,7 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 	@Override
 	public void delete(Role role, BulkActionContext bac) {
 		bac.add(role.onDeleted());
-		getVertex().remove();
+		role.getVertex().remove();
 		bac.process();
 		mesh().permissionCache().clear();
 	}
