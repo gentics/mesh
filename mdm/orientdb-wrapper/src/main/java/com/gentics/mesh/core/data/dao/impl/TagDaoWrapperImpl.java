@@ -403,12 +403,17 @@ public class TagDaoWrapperImpl implements TagDaoWrapper {
 	public String getETag(Tag tag, InternalActionContext ac) {
 		return boot.get().tagRoot().getETag(tag, ac);
 	}
-	
+
 	// New Methods
 
 	@Override
 	public TraversalResult<? extends Tag> findAll(TagFamily tagFamily) {
 		return tagFamily.findAll();
+	}
+
+	@Override
+	public boolean update(Tag element, InternalActionContext ac, EventQueueBatch batch) {
+		return element.getTagFamily().update(element, ac, batch);
 	}
 
 }

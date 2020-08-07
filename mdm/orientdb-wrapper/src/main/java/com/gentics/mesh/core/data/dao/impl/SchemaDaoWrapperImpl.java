@@ -413,4 +413,9 @@ public class SchemaDaoWrapperImpl implements SchemaDaoWrapper {
 		return boot.get().schemaContainerRoot().computeCount();
 	}
 
+	@Override
+	public boolean update(SchemaContainer element, InternalActionContext ac, EventQueueBatch batch) {
+		return boot.get().schemaContainerRoot().update(element, ac, batch);
+	}
+
 }

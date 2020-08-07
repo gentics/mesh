@@ -425,5 +425,10 @@ public class TagFamilyDaoWrapperImpl implements TagFamilyDaoWrapper {
 	public void delete(TagFamily element, BulkActionContext bac) {
 		boot.get().tagFamilyRoot().delete(element, bac);
 	}
+	
+	@Override
+	public boolean update(TagFamily element, InternalActionContext ac, EventQueueBatch batch) {
+		return element.getProject().getTagFamilyRoot().update(element, ac, batch);
+	}
 
 }

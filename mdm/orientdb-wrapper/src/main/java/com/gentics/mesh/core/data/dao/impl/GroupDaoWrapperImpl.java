@@ -489,6 +489,11 @@ public class GroupDaoWrapperImpl implements GroupDaoWrapper {
 	}
 
 	@Override
+	public boolean update(Group element, InternalActionContext ac, EventQueueBatch batch) {
+		return boot.get().groupRoot().update(element, ac, batch);
+	}
+
+	@Override
 	public String getETag(Group element, InternalActionContext ac) {
 		return boot.get().groupRoot().getETag(element, ac);
 	}

@@ -410,6 +410,11 @@ public class ProjectDaoWrapperImpl implements ProjectDaoWrapper {
 	}
 
 	@Override
+	public boolean update(Project element, InternalActionContext ac, EventQueueBatch batch) {
+		return boot.get().projectRoot().update(element, ac, batch);
+	}
+
+	@Override
 	public String getSubETag(Project project, InternalActionContext ac) {
 		return boot.get().projectRoot().getSubETag(project, ac);
 	}

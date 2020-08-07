@@ -445,6 +445,11 @@ public class RoleDaoWrapperImpl implements RoleDaoWrapper {
 	}
 
 	@Override
+	public boolean update(Role element, InternalActionContext ac, EventQueueBatch batch) {
+		return boot.get().roleRoot().update(element, ac, batch);
+	}
+
+	@Override
 	public boolean hasPermission(Role role, GraphPermission permission, MeshVertex element) {
 		return boot.get().roleRoot().hasPermission(role, permission, element);
 	}

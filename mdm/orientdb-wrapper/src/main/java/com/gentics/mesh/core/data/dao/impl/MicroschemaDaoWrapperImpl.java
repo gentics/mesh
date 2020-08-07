@@ -408,4 +408,9 @@ public class MicroschemaDaoWrapperImpl implements MicroschemaDaoWrapper {
 		return boot.get().microschemaContainerRoot().computeCount();
 	}
 
+	@Override
+	public boolean update(MicroschemaContainer element, InternalActionContext ac, EventQueueBatch batch) {
+		return boot.get().microschemaContainerRoot().update(element, ac, batch);
+	}
+
 }
