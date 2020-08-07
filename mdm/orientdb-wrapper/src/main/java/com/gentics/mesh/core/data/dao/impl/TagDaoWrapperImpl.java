@@ -1,5 +1,10 @@
 package com.gentics.mesh.core.data.dao.impl;
 
+import static com.gentics.mesh.core.rest.error.Errors.conflict;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+
 import java.util.Set;
 import java.util.Stack;
 import java.util.function.Function;
@@ -23,6 +28,7 @@ import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.tag.TagResponse;
+import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -412,8 +418,43 @@ public class TagDaoWrapperImpl implements TagDaoWrapper {
 	}
 
 	@Override
-	public boolean update(Tag element, InternalActionContext ac, EventQueueBatch batch) {
-		return element.getTagFamily().update(element, ac, batch);
+	public String getSubETag(Tag tag, InternalActionContext ac) {
+		StringBuilder keyBuilder = new StringBuilder();
+		keyBuilder.append(tag.getLastEditedTimestamp());
+		keyBuilder.append(ac.getBranch(tag.getProject()).getUuid());
+		return keyBuilder.toString();
+	}
+
+	@Override
+	public boolean update(Tag tag, InternalActionContext ac, EventQueueBatch batch) {
+		TagUpdateRequest requestModel = ac.fromJson(TagUpdateRequest.class);
+		String newTagName = requestModel.getName();
+		if (isEmpty(newTagName)) {
+			throw error(BAD_REQUEST, "tag_name_not_set");
+		} else {
+			TagFamily tagFamily = tag.getTagFamily();
+
+			// Check for conflicts
+			Tag foundTagWithSameName = tagFamily.findByName(newTagName);
+			if (foundTagWithSameName != null && !foundTagWithSameName.getUuid().equals(getUuid())) {
+				throw conflict(foundTagWithSameName.getUuid(), newTagName, "tag_create_tag_with_same_name_already_exists", newTagName, tagFamily
+					.getName());
+			}
+
+			if (!newTagName.equals(tag.getName())) {
+				tag.setEditor(ac.getUser());
+				tag.setLastEditedTimestamp();
+				tag.setName(newTagName);
+				batch.add(tag.onUpdated());
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public void delete(Tag tag, BulkActionContext bac) {
+		boot.get().tagRoot().delete(tag, bac);
 	}
 
 }

@@ -29,6 +29,8 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.TagDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
@@ -96,7 +98,11 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 		return new TagReference().setName(getName()).setUuid(getUuid()).setTagFamily(getTagFamily().getName());
 	}
 
+	/**
+	 * Use {@link TagDaoWrapper#transformToRestSync(Tag, InternalActionContext, int, String...)} instead.
+	 */
 	@Override
+	@Deprecated
 	public TagResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		TagRoot tagRoot = mesh().boot().tagRoot();
 		return tagRoot.transformToRestSync(this, ac, level, languageTags);
@@ -122,23 +128,10 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 		return out(ASSIGNED_TO_PROJECT, ProjectImpl.class).nextOrNull();
 	}
 
+	@Deprecated
 	@Override
 	public void delete(BulkActionContext bac) {
-		String uuid = getUuid();
-		String name = getName();
-		if (log.isDebugEnabled()) {
-			log.debug("Deleting tag {" + uuid + ":" + name + "}");
-		}
-		bac.add(onDeleted());
-
-		// For node which have been previously tagged we need to fire the untagged event.
-		for (Branch branch : getProject().getBranchRoot().findAll()) {
-			for (Node node : getNodes(branch)) {
-				bac.add(node.onTagged(this, branch, UNASSIGNED));
-			}
-		}
-		getElement().remove();
-		bac.process();
+		Tx.get().data().tagDao().delete(this, bac);
 	}
 
 	@Override
@@ -207,38 +200,14 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 
 	@Override
 	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
-		TagUpdateRequest requestModel = ac.fromJson(TagUpdateRequest.class);
-		String newTagName = requestModel.getName();
-		if (isEmpty(newTagName)) {
-			throw error(BAD_REQUEST, "tag_name_not_set");
-		} else {
-			TagFamily tagFamily = getTagFamily();
-
-			// Check for conflicts
-			Tag foundTagWithSameName = tagFamily.findByName(newTagName);
-			if (foundTagWithSameName != null && !foundTagWithSameName.getUuid().equals(getUuid())) {
-				throw conflict(foundTagWithSameName.getUuid(), newTagName, "tag_create_tag_with_same_name_already_exists", newTagName, tagFamily
-					.getName());
-			}
-
-			if (!newTagName.equals(getName())) {
-				setEditor(ac.getUser());
-				setLastEditedTimestamp();
-				setName(newTagName);
-				batch.add(onUpdated());
-				return true;
-			}
-		}
-		return false;
-
+		TagDaoWrapper tagDao = Tx.get().data().tagDao();
+		return tagDao.update(this, ac, batch);
 	}
 
 	@Override
 	public String getSubETag(InternalActionContext ac) {
-		StringBuilder keyBuilder = new StringBuilder();
-		keyBuilder.append(getLastEditedTimestamp());
-		keyBuilder.append(ac.getBranch(getProject()).getUuid());
-		return keyBuilder.toString();
+		TagDaoWrapper tagRoot = mesh().boot().tagDao();
+		return tagRoot.getSubETag(this, ac);
 	}
 
 	@Override

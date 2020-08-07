@@ -1,10 +1,12 @@
 package com.gentics.mesh.core.data.root;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.rest.tag.TagResponse;
+import com.gentics.mesh.event.EventQueueBatch;
 
 /**
  * Aggregation node for tags.
@@ -45,5 +47,7 @@ public interface TagRoot extends RootVertex<Tag>, TransformableElementRoot<Tag, 
 	 */
 	Tag create(String name, Project project, TagFamily tagFamily, User creator);
 
+
+	boolean update(Tag tag, InternalActionContext ac, EventQueueBatch batch); 
 
 }
