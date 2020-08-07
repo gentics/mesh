@@ -80,7 +80,7 @@ All you need is to https://getmesh.io/Download[download the Gentics Mesh JAR] fi
 java -jar mesh-demo-X.X.X.jar
 ----
 
-Gentics Mesh comes with OrientDB, an embedded graph database, and Elasticsearch. There are no external dependencies besides Java Runtime 8.
+Gentics Mesh comes with OrientDB, an embedded graph database, and Elasticsearch. There are no external dependencies besides Java Runtime 11.
 On first startup, Gentics Mesh will create the data folder and subfolders, set a password for the keystore file and provide the configuration files mesh.yml and mesh-ui-config.js. See <<Installation Directory>> for a detailed discussion on Gentics Mesh files & folders.
 
 [[cli]]
@@ -132,7 +132,7 @@ The ```elasticsearch``` folder contains the included Elasticsearch installation 
 
 === Server Requirements
 
-Gentics Mesh comes with OrientDB, an embedded graph database. There are no external dependencies besides Java Runtime 8.
+Gentics Mesh comes with OrientDB, an embedded graph database. There are no external dependencies besides Java Runtime 11.
 
 Production servers must be run on Linux. Windows is not supported. You can however run Gentics Mesh on Windows via link:https://docs.docker.com/docker-for-windows/[Docker Windows].
 
