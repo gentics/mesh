@@ -68,24 +68,24 @@ public class NodeContentEventHandler implements EventHandler {
 			NodeMeshEventModel message = requireType(NodeMeshEventModel.class, messageEvent.message);
 
 			switch (event) {
-				case NODE_CONTENT_CREATED:
-				case NODE_UPDATED:
-				case NODE_PUBLISHED:
-					EventCauseInfo cause = message.getCause();
-					if (cause != null && cause.getAction() == SCHEMA_MIGRATION) {
-						return migrationUpdate(message);
-					} else {
-						return toFlowable(upsertNodes(message));
-					}
-				case NODE_CONTENT_DELETED:
-				case NODE_UNPUBLISHED:
-					if (EventCauseHelper.isProjectDeleteCause(message)) {
-						return Flowable.empty();
-					} else {
-						return Flowable.just(deleteNodes(message, getSchemaVersionUuid(message).runInNewTx()));
-					}
-				default:
-					throw new RuntimeException("Unexpected event " + event.address);
+			case NODE_CONTENT_CREATED:
+			case NODE_UPDATED:
+			case NODE_PUBLISHED:
+				EventCauseInfo cause = message.getCause();
+				if (cause != null && cause.getAction() == SCHEMA_MIGRATION) {
+					return migrationUpdate(message);
+				} else {
+					return toFlowable(upsertNodes(message));
+				}
+			case NODE_CONTENT_DELETED:
+			case NODE_UNPUBLISHED:
+				if (EventCauseHelper.isProjectDeleteCause(message)) {
+					return Flowable.empty();
+				} else {
+					return Flowable.just(deleteNodes(message, getSchemaVersionUuid(message).runInNewTx()));
+				}
+			default:
+				throw new RuntimeException("Unexpected event " + event.address);
 
 			}
 		});
@@ -121,8 +121,7 @@ public class NodeContentEventHandler implements EventHandler {
 			message.getBranchUuid(),
 			schemaVersionUuid,
 			message.getType(),
-			getIndexLanguage(message).runInNewTx()
-		);
+			getIndexLanguage(message).runInNewTx());
 	}
 
 	private Transactional<String> getIndexLanguage(NodeMeshEventModel message) {
@@ -130,10 +129,8 @@ public class NodeContentEventHandler implements EventHandler {
 			.mapInTx(schema -> schema.getSchema().findOverriddenSearchLanguages()
 				.anyMatch(lang -> lang.equals(message.getLanguageTag()))
 					? message.getLanguageTag()
-					: null
-			);
+					: null);
 	}
-
 
 	private Transactional<String> getSchemaVersionUuid(NodeMeshEventModel message) {
 		return findLatestSchemaVersion(message)
@@ -142,7 +139,7 @@ public class NodeContentEventHandler implements EventHandler {
 
 	private Transactional<SchemaContainerVersion> findLatestSchemaVersion(NodeMeshEventModel message) {
 		return helper.getDb().transactional(tx -> {
-			SchemaContainer schema = boot.schemaContainerRoot().findByUuid(message.getSchema().getUuid());
+			SchemaContainer schema = tx.data().schemaDao().findByUuid(message.getSchema().getUuid());
 			return tx.data().projectDao().findByUuid(message.getProject().getUuid())
 				.getBranchRoot().findByUuid(message.getBranchUuid())
 				.findLatestSchemaVersion(schema);
@@ -150,9 +147,11 @@ public class NodeContentEventHandler implements EventHandler {
 	}
 
 	private String getSchemaVersionUuid(SchemaReference reference) {
-		return helper.getDb().tx(() -> boot.schemaContainerRoot()
-			.findByUuid(reference.getUuid())
-			.findVersionByRev(reference.getVersion())
-			.getUuid());
+		return helper.getDb().tx(tx -> {
+			return tx.data().schemaDao()
+				.findByUuid(reference.getUuid())
+				.findVersionByRev(reference.getVersion())
+				.getUuid();
+		});
 	}
 }

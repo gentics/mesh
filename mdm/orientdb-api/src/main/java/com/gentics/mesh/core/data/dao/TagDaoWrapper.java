@@ -1,7 +1,10 @@
 package com.gentics.mesh.core.data.dao;
 
+import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 

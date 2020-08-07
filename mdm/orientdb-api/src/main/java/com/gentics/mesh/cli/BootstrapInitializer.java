@@ -19,6 +19,7 @@ import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.job.JobRoot;
+import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
@@ -60,6 +61,9 @@ public interface BootstrapInitializer {
 	LanguageRoot languageRoot();
 
 	LanguageDaoWrapper languageDao();
+
+	@Deprecated
+	GroupRoot groupRoot();
 
 	GroupDaoWrapper groupDao();
 

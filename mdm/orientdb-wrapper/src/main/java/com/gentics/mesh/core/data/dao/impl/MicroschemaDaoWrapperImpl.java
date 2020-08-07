@@ -6,7 +6,10 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import javax.inject.Inject;
+
 import com.gentics.madl.traversal.RawTraversalResult;
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
@@ -39,368 +42,370 @@ import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Vertex;
 
+import dagger.Lazy;
 import io.vertx.core.Vertx;
 
 public class MicroschemaDaoWrapperImpl implements MicroschemaDaoWrapper {
 
-	private final MicroschemaContainerRoot delegate;
+	private final Lazy<BootstrapInitializer> boot;
 
-	public MicroschemaDaoWrapperImpl(MicroschemaContainerRoot delegate) {
-		this.delegate = delegate;
+	@Inject
+	public MicroschemaDaoWrapperImpl(Lazy<BootstrapInitializer> boot) {
+		this.boot = boot;
 	}
 
 	public Object id() {
-		return delegate.id();
+		return boot.get().microschemaContainerRoot().id();
 	}
 
 	public PermissionInfo getRolePermissions(InternalActionContext ac, String roleUuid) {
-		return delegate.getRolePermissions(ac, roleUuid);
+		return boot.get().microschemaContainerRoot().getRolePermissions(ac, roleUuid);
 	}
 
 	public void setUuid(String uuid) {
-		delegate.setUuid(uuid);
+		boot.get().microschemaContainerRoot().setUuid(uuid);
 	}
 
 	public void setUniqueLinkOutTo(VertexFrame vertex, String... labels) {
-		delegate.setUniqueLinkOutTo(vertex, labels);
+		boot.get().microschemaContainerRoot().setUniqueLinkOutTo(vertex, labels);
 	}
 
 	public TraversalResult<? extends Role> getRolesWithPerm(GraphPermission perm) {
-		return delegate.getRolesWithPerm(perm);
+		return boot.get().microschemaContainerRoot().getRolesWithPerm(perm);
 	}
 
 	public String getUuid() {
-		return delegate.getUuid();
+		return boot.get().microschemaContainerRoot().getUuid();
 	}
 
 	public void addMicroschema(User user, MicroschemaContainer container, EventQueueBatch batch) {
-		delegate.addMicroschema(user, container, batch);
+		boot.get().microschemaContainerRoot().addMicroschema(user, container, batch);
 	}
 
 	public Vertex getVertex() {
-		return delegate.getVertex();
+		return boot.get().microschemaContainerRoot().getVertex();
 	}
 
 	public String getElementVersion() {
-		return delegate.getElementVersion();
+		return boot.get().microschemaContainerRoot().getElementVersion();
 	}
 
 	public void setUniqueLinkInTo(VertexFrame vertex, String... labels) {
-		delegate.setUniqueLinkInTo(vertex, labels);
+		boot.get().microschemaContainerRoot().setUniqueLinkInTo(vertex, labels);
 	}
 
 	public <T> T property(String name) {
-		return delegate.property(name);
+		return boot.get().microschemaContainerRoot().property(name);
 	}
 
 	public void delete(BulkActionContext bac) {
-		delegate.delete(bac);
+		boot.get().microschemaContainerRoot().delete(bac);
 	}
 
 	public Vertex getElement() {
-		return delegate.getElement();
+		return boot.get().microschemaContainerRoot().getElement();
 	}
 
 	public void setSingleLinkOutTo(VertexFrame vertex, String... labels) {
-		delegate.setSingleLinkOutTo(vertex, labels);
+		boot.get().microschemaContainerRoot().setSingleLinkOutTo(vertex, labels);
 	}
 
 	public Object getId() {
-		return delegate.getId();
+		return boot.get().microschemaContainerRoot().getId();
 	}
 
 	public void removeMicroschema(MicroschemaContainer container, EventQueueBatch batch) {
-		delegate.removeMicroschema(container, batch);
+		boot.get().microschemaContainerRoot().removeMicroschema(container, batch);
 	}
 
 	public <T> T addFramedEdge(String label, com.syncleus.ferma.VertexFrame inVertex, ClassInitializer<T> initializer) {
-		return delegate.addFramedEdge(label, inVertex, initializer);
+		return boot.get().microschemaContainerRoot().addFramedEdge(label, inVertex, initializer);
 	}
 
 	public void setSingleLinkInTo(VertexFrame vertex, String... labels) {
-		delegate.setSingleLinkInTo(vertex, labels);
+		boot.get().microschemaContainerRoot().setSingleLinkInTo(vertex, labels);
 	}
 
 	public Set<String> getPropertyKeys() {
-		return delegate.getPropertyKeys();
+		return boot.get().microschemaContainerRoot().getPropertyKeys();
 	}
 
 	public void addToStringSetProperty(String propertyKey, String value) {
-		delegate.addToStringSetProperty(propertyKey, value);
+		boot.get().microschemaContainerRoot().addToStringSetProperty(propertyKey, value);
 	}
 
 	public VertexTraversal<?, ?, ?> out(String... labels) {
-		return delegate.out(labels);
+		return boot.get().microschemaContainerRoot().out(labels);
 	}
 
 	public void remove() {
-		delegate.remove();
+		boot.get().microschemaContainerRoot().remove();
 	}
 
 	public MicroschemaContainer create(MicroschemaModel microschema, User user, EventQueueBatch batch) {
-		return delegate.create(microschema, user, batch);
+		return boot.get().microschemaContainerRoot().create(microschema, user, batch);
 	}
 
 	public void delete() {
-		delegate.delete();
+		boot.get().microschemaContainerRoot().delete();
 	}
 
 	public <T extends ElementFrame> TraversalResult<? extends T> out(String label, Class<T> clazz) {
-		return delegate.out(label, clazz);
+		return boot.get().microschemaContainerRoot().out(label, clazz);
 	}
 
 	public FramedGraph getGraph() {
-		return delegate.getGraph();
+		return boot.get().microschemaContainerRoot().getGraph();
 	}
 
 	public <R> void property(String key, R value) {
-		delegate.property(key, value);
+		boot.get().microschemaContainerRoot().property(key, value);
 	}
 
 	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
 		Set<GraphPermission> permissionsToRevoke) {
-		delegate.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
+		boot.get().microschemaContainerRoot().applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
 	}
 
 	public <T extends EdgeFrame> TraversalResult<? extends T> outE(String label, Class<T> clazz) {
-		return delegate.outE(label, clazz);
+		return boot.get().microschemaContainerRoot().outE(label, clazz);
 	}
 
 	public <T> T getProperty(String name) {
-		return delegate.getProperty(name);
+		return boot.get().microschemaContainerRoot().getProperty(name);
 	}
 
 	public <T extends ElementFrame> TraversalResult<? extends T> in(String label, Class<T> clazz) {
-		return delegate.in(label, clazz);
+		return boot.get().microschemaContainerRoot().in(label, clazz);
 	}
 
 	public <T> T addFramedEdge(String label, com.syncleus.ferma.VertexFrame inVertex, Class<T> kind) {
-		return delegate.addFramedEdge(label, inVertex, kind);
+		return boot.get().microschemaContainerRoot().addFramedEdge(label, inVertex, kind);
 	}
 
 	public void removeProperty(String key) {
-		delegate.removeProperty(key);
+		boot.get().microschemaContainerRoot().removeProperty(key);
 	}
 
 	public <T extends EdgeFrame> TraversalResult<? extends T> inE(String label, Class<T> clazz) {
-		return delegate.inE(label, clazz);
+		return boot.get().microschemaContainerRoot().inE(label, clazz);
 	}
 
 	public MicroschemaContainer create(MicroschemaModel microschema, User user, String uuid, EventQueueBatch batch) {
-		return delegate.create(microschema, user, uuid, batch);
+		return boot.get().microschemaContainerRoot().create(microschema, user, uuid, batch);
 	}
 
 	public <T extends RawTraversalResult<?>> T traverse(Function<GraphTraversal<Vertex, Vertex>, GraphTraversal<?, ?>> traverser) {
-		return delegate.traverse(traverser);
+		return boot.get().microschemaContainerRoot().traverse(traverser);
 	}
 
 	public <T> T getProperty(String name, Class<T> type) {
-		return delegate.getProperty(name, type);
+		return boot.get().microschemaContainerRoot().getProperty(name, type);
 	}
 
 	public Database db() {
-		return delegate.db();
+		return boot.get().microschemaContainerRoot().db();
 	}
 
 	public Vertx vertx() {
-		return delegate.vertx();
+		return boot.get().microschemaContainerRoot().vertx();
 	}
 
 	public boolean hasPublishPermissions() {
-		return delegate.hasPublishPermissions();
+		return boot.get().microschemaContainerRoot().hasPublishPermissions();
 	}
 
 	public MeshOptions options() {
-		return delegate.options();
+		return boot.get().microschemaContainerRoot().options();
 	}
 
 	public <T> T addFramedEdgeExplicit(String label, com.syncleus.ferma.VertexFrame inVertex, ClassInitializer<T> initializer) {
-		return delegate.addFramedEdgeExplicit(label, inVertex, initializer);
+		return boot.get().microschemaContainerRoot().addFramedEdgeExplicit(label, inVertex, initializer);
 	}
 
 	public boolean contains(MicroschemaContainer microschema) {
-		return delegate.contains(microschema);
+		return boot.get().microschemaContainerRoot().contains(microschema);
 	}
 
 	public void setCachedUuid(String uuid) {
-		delegate.setCachedUuid(uuid);
+		boot.get().microschemaContainerRoot().setCachedUuid(uuid);
 	}
 
 	public TraversalResult<? extends MicroschemaContainer> findAll() {
-		return delegate.findAll();
+		return boot.get().microschemaContainerRoot().findAll();
 	}
 
 	public void setProperty(String name, Object value) {
-		delegate.setProperty(name, value);
+		boot.get().microschemaContainerRoot().setProperty(name, value);
 	}
 
 	public MicroschemaContainerVersion fromReference(MicroschemaReference reference) {
-		return delegate.fromReference(reference);
+		return boot.get().microschemaContainerRoot().fromReference(reference);
 	}
 
 	public Class<?> getTypeResolution() {
-		return delegate.getTypeResolution();
+		return boot.get().microschemaContainerRoot().getTypeResolution();
 	}
 
 	public Stream<? extends MicroschemaContainer> findAllStream(InternalActionContext ac, GraphPermission permission) {
-		return delegate.findAllStream(ac, permission);
+		return boot.get().microschemaContainerRoot().findAllStream(ac, permission);
 	}
 
 	public MicroschemaContainerVersion fromReference(MicroschemaReference reference, Branch branch) {
-		return delegate.fromReference(reference, branch);
+		return boot.get().microschemaContainerRoot().fromReference(reference, branch);
 	}
 
 	public void setTypeResolution(Class<?> type) {
-		delegate.setTypeResolution(type);
+		boot.get().microschemaContainerRoot().setTypeResolution(type);
 	}
 
 	public <T> T addFramedEdgeExplicit(String label, com.syncleus.ferma.VertexFrame inVertex, Class<T> kind) {
-		return delegate.addFramedEdgeExplicit(label, inVertex, kind);
+		return boot.get().microschemaContainerRoot().addFramedEdgeExplicit(label, inVertex, kind);
 	}
 
 	public void removeTypeResolution() {
-		delegate.removeTypeResolution();
+		boot.get().microschemaContainerRoot().removeTypeResolution();
 	}
 
 	public VertexTraversal<?, ?, ?> v() {
-		return delegate.v();
+		return boot.get().microschemaContainerRoot().v();
 	}
 
 	public EdgeTraversal<?, ?, ?> e() {
-		return delegate.e();
+		return boot.get().microschemaContainerRoot().e();
 	}
 
 	public EdgeTraversal<?, ?, ?> e(Object... ids) {
-		return delegate.e(ids);
+		return boot.get().microschemaContainerRoot().e(ids);
 	}
 
 	public TEdge addFramedEdge(String label, com.syncleus.ferma.VertexFrame inVertex) {
-		return delegate.addFramedEdge(label, inVertex);
+		return boot.get().microschemaContainerRoot().addFramedEdge(label, inVertex);
 	}
 
 	public <T> T getGraphAttribute(String key) {
-		return delegate.getGraphAttribute(key);
+		return boot.get().microschemaContainerRoot().getGraphAttribute(key);
 	}
 
 	public TraversalResult<? extends MicroschemaContainer> findAllDynamic() {
-		return delegate.findAllDynamic();
+		return boot.get().microschemaContainerRoot().findAllDynamic();
 	}
 
 	public VertexTraversal<?, ?, ?> in(String... labels) {
-		return delegate.in(labels);
+		return boot.get().microschemaContainerRoot().in(labels);
 	}
 
 	public EdgeTraversal<?, ?, ?> outE(String... labels) {
-		return delegate.outE(labels);
+		return boot.get().microschemaContainerRoot().outE(labels);
 	}
 
 	public TransformablePage<? extends MicroschemaContainer> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
-		return delegate.findAll(ac, pagingInfo);
+		return boot.get().microschemaContainerRoot().findAll(ac, pagingInfo);
 	}
 
 	public EdgeTraversal<?, ?, ?> inE(String... labels) {
-		return delegate.inE(labels);
+		return boot.get().microschemaContainerRoot().inE(labels);
 	}
 
 	public void linkOut(com.syncleus.ferma.VertexFrame vertex, String... labels) {
-		delegate.linkOut(vertex, labels);
+		boot.get().microschemaContainerRoot().linkOut(vertex, labels);
 	}
 
 	public void linkIn(com.syncleus.ferma.VertexFrame vertex, String... labels) {
-		delegate.linkIn(vertex, labels);
+		boot.get().microschemaContainerRoot().linkIn(vertex, labels);
 	}
 
 	public TransformablePage<? extends MicroschemaContainer> findAll(InternalActionContext ac, PagingParameters pagingInfo,
 		Predicate<MicroschemaContainer> extraFilter) {
-		return delegate.findAll(ac, pagingInfo, extraFilter);
+		return boot.get().microschemaContainerRoot().findAll(ac, pagingInfo, extraFilter);
 	}
 
 	public void unlinkOut(com.syncleus.ferma.VertexFrame vertex, String... labels) {
-		delegate.unlinkOut(vertex, labels);
+		boot.get().microschemaContainerRoot().unlinkOut(vertex, labels);
 	}
 
 	public void unlinkIn(com.syncleus.ferma.VertexFrame vertex, String... labels) {
-		delegate.unlinkIn(vertex, labels);
+		boot.get().microschemaContainerRoot().unlinkIn(vertex, labels);
 	}
 
 	public TransformablePage<? extends MicroschemaContainer> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo) {
-		return delegate.findAllNoPerm(ac, pagingInfo);
+		return boot.get().microschemaContainerRoot().findAllNoPerm(ac, pagingInfo);
 	}
 
 	public void setLinkOut(com.syncleus.ferma.VertexFrame vertex, String... labels) {
-		delegate.setLinkOut(vertex, labels);
+		boot.get().microschemaContainerRoot().setLinkOut(vertex, labels);
 	}
 
 	public MicroschemaContainer findByName(String name) {
-		return delegate.findByName(name);
+		return boot.get().microschemaContainerRoot().findByName(name);
 	}
 
 	public VertexTraversal<?, ?, ?> traversal() {
-		return delegate.traversal();
+		return boot.get().microschemaContainerRoot().traversal();
 	}
 
 	public JsonObject toJson() {
-		return delegate.toJson();
+		return boot.get().microschemaContainerRoot().toJson();
 	}
 
 	public MicroschemaContainer findByName(InternalActionContext ac, String name, GraphPermission perm) {
-		return delegate.findByName(ac, name, perm);
+		return boot.get().microschemaContainerRoot().findByName(ac, name, perm);
 	}
 
 	public <T> T reframe(Class<T> kind) {
-		return delegate.reframe(kind);
+		return boot.get().microschemaContainerRoot().reframe(kind);
 	}
 
 	public <T> T reframeExplicit(Class<T> kind) {
-		return delegate.reframeExplicit(kind);
+		return boot.get().microschemaContainerRoot().reframeExplicit(kind);
 	}
 
 	public MicroschemaContainer findByUuid(String uuid) {
-		return delegate.findByUuid(uuid);
+		return boot.get().microschemaContainerRoot().findByUuid(uuid);
 	}
 
 	public MicroschemaContainer loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
-		return delegate.loadObjectByUuid(ac, uuid, perm);
+		return boot.get().microschemaContainerRoot().loadObjectByUuid(ac, uuid, perm);
 	}
 
 	public MicroschemaContainer loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
-		return delegate.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+		return boot.get().microschemaContainerRoot().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
 	}
 
 	public MicroschemaContainer loadObjectByUuidNoPerm(String uuid, boolean errorIfNotFound) {
-		return delegate.loadObjectByUuidNoPerm(uuid, errorIfNotFound);
+		return boot.get().microschemaContainerRoot().loadObjectByUuidNoPerm(uuid, errorIfNotFound);
 	}
 
 	public MeshVertex resolveToElement(Stack<String> stack) {
-		return delegate.resolveToElement(stack);
+		return boot.get().microschemaContainerRoot().resolveToElement(stack);
 	}
 
 	public MicroschemaContainer create(InternalActionContext ac, EventQueueBatch batch) {
-		return delegate.create(ac, batch);
+		return boot.get().microschemaContainerRoot().create(ac, batch);
 	}
 
 	public MicroschemaContainer create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		return delegate.create(ac, batch, uuid);
+		return boot.get().microschemaContainerRoot().create(ac, batch, uuid);
 	}
 
 	public void addItem(MicroschemaContainer item) {
-		delegate.addItem(item);
+		boot.get().microschemaContainerRoot().addItem(item);
 	}
 
 	public void removeItem(MicroschemaContainer item) {
-		delegate.removeItem(item);
+		boot.get().microschemaContainerRoot().removeItem(item);
 	}
 
 	public String getRootLabel() {
-		return delegate.getRootLabel();
+		return boot.get().microschemaContainerRoot().getRootLabel();
 	}
 
 	public Class<? extends MicroschemaContainer> getPersistanceClass() {
-		return delegate.getPersistanceClass();
+		return boot.get().microschemaContainerRoot().getPersistanceClass();
 	}
 
 	public long computeCount() {
-		return delegate.computeCount();
+		return boot.get().microschemaContainerRoot().computeCount();
 	}
 
 }

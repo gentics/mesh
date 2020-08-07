@@ -29,6 +29,8 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.page.TransformablePage;
@@ -93,7 +95,9 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	public void handleGetSchemaVersions(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 		utils.syncTx(ac, tx -> {
-			Branch branch = getRootVertex(tx, ac).loadObjectByUuid(ac, uuid, READ_PERM);
+			Project project = ac.getProject();
+			BranchDaoWrapper branchDao = tx.data().branchDao();
+			Branch branch = branchDao.loadObjectByUuid(project, ac, uuid, READ_PERM);
 			return getSchemaVersionsInfo(branch);
 		}, model -> ac.send(model, OK));
 	}
@@ -109,10 +113,10 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 		validateParameter(uuid, "uuid");
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				RootVertex<Branch> root = getRootVertex(tx, ac);
-				Branch branch = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
-				BranchInfoSchemaList schemaReferenceList = ac.fromJson(BranchInfoSchemaList.class);
 				Project project = ac.getProject();
+				BranchDaoWrapper branchDao = tx.data().branchDao();
+				Branch branch = branchDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
+				BranchInfoSchemaList schemaReferenceList = ac.fromJson(BranchInfoSchemaList.class);
 				SchemaContainerRoot schemaContainerRoot = project.getSchemaContainerRoot();
 
 				BranchInfoSchemaList branchList = utils.eventAction(event -> {
@@ -151,7 +155,9 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	public void handleGetMicroschemaVersions(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 		utils.syncTx(ac, tx -> {
-			Branch branch = getRootVertex(tx, ac).loadObjectByUuid(ac, uuid, GraphPermission.READ_PERM);
+			Project project = ac.getProject();
+			BranchDaoWrapper branchDao = tx.data().branchDao();
+			Branch branch = branchDao.loadObjectByUuid(project, ac, uuid, GraphPermission.READ_PERM);
 			return getMicroschemaVersions(branch);
 		}, model -> ac.send(model, OK));
 	}
@@ -168,8 +174,9 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				RootVertex<Branch> root = getRootVertex(tx, ac);
-				Branch branch = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
+				Project project = ac.getProject();
+				BranchDaoWrapper branchDao = tx.data().branchDao();
+				Branch branch = branchDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
 				BranchInfoMicroschemaList microschemaReferenceList = ac.fromJson(BranchInfoMicroschemaList.class);
 				MicroschemaContainerRoot microschemaContainerRoot = ac.getProject().getMicroschemaContainerRoot();
 
@@ -269,7 +276,9 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 		Function<Branch, Iterable<T>> activeSchemas, PentaFunction<JobRoot, User, Branch, T, T, Job> enqueueMigration) {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				Branch branch = ac.getProject().getBranchRoot().findByUuid(branchUuid);
+				Project project = ac.getProject();
+				BranchDaoWrapper branchDao = tx.data().branchDao();
+				Branch branch = branchDao.findByUuid(project, branchUuid);
 
 				// Get all active versions and group by Microschema
 				Collection<? extends List<T>> versions = StreamSupport.stream(activeSchemas.apply(branch).spliterator(), false)
@@ -304,12 +313,14 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	public void handleSetLatest(InternalActionContext ac, String branchUuid) {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				Branch branch = ac.getProject().getBranchRoot().loadObjectByUuid(ac, branchUuid, UPDATE_PERM);
+				Project project = ac.getProject();
+				BranchDaoWrapper branchDao = tx.data().branchDao();
+				Branch branch = branchDao.loadObjectByUuid(project, ac, branchUuid, UPDATE_PERM);
 				utils.eventAction(event -> {
 					branch.setLatest();
 					event.add(branch.onSetLatest());
 				});
-				return branch.transformToRestSync(ac, 0);
+				return branchDao.transformToRestSync(branch, ac, 0);
 			}, model -> ac.send(model, OK));
 		}
 	}
@@ -326,7 +337,9 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 		validateParameter(uuid, "uuid");
 
 		utils.syncTx(ac, tx -> {
-			Branch branch = ac.getProject().getBranchRoot().loadObjectByUuid(ac, uuid, READ_PERM);
+			Project project = ac.getProject();
+			BranchDaoWrapper branchDao = tx.data().branchDao();
+			Branch branch = branchDao.loadObjectByUuid(project, ac, uuid, READ_PERM);
 			TransformablePage<? extends Tag> tagPage = branch.getTags(ac.getUser(), ac.getPagingParameters());
 			return tagPage.transformToRestSync(ac, 0);
 		}, model -> ac.send(model, OK));
@@ -348,8 +361,11 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, (tx) -> {
-				Branch branch = ac.getProject().getBranchRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
-				Tag tag = boot.meshRoot().getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
+				Project project = ac.getProject();
+				BranchDaoWrapper branchDao = tx.data().branchDao();
+				TagDaoWrapper tagDao = tx.data().tagDao();
+				Branch branch = branchDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
+				Tag tag = tagDao.loadObjectByUuid(ac, tagUuid, READ_PERM);
 
 				// TODO check if the branch is already tagged
 				if (branch.hasTag(tag)) {
@@ -363,7 +379,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 					});
 				}
 
-				return branch.transformToRestSync(ac, 0);
+				return branchDao.transformToRestSync(branch, ac, 0);
 			}, model -> ac.send(model, OK));
 		}
 	}
@@ -383,9 +399,13 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 		validateParameter(tagUuid, "tagUuid");
 
 		try (WriteLock lock = writeLock.lock(ac)) {
-			utils.syncTx(ac, () -> {
-				Branch branch = ac.getProject().getBranchRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
-				Tag tag = boot.meshRoot().getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
+			utils.syncTx(ac, tx -> {
+				Project project = ac.getProject();
+				BranchDaoWrapper branchDao = tx.data().branchDao();
+				TagDaoWrapper tagDao = tx.data().tagDao();
+
+				Branch branch = branchDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
+				Tag tag = tagDao.loadObjectByUuid(ac, tagUuid, READ_PERM);
 
 				// TODO check if the tag has already been removed
 
@@ -418,7 +438,10 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				Branch branch = ac.getProject().getBranchRoot().loadObjectByUuid(ac, branchUuid, UPDATE_PERM);
+				Project project = ac.getProject();
+				BranchDaoWrapper branchDao = tx.data().branchDao();
+
+				Branch branch = branchDao.loadObjectByUuid(project, ac, branchUuid, UPDATE_PERM);
 
 				TransformablePage<? extends Tag> page = utils.eventAction(batch -> {
 					return branch.updateTags(ac, batch);

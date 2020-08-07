@@ -30,6 +30,7 @@ import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandler;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
 import com.gentics.mesh.dagger.module.BindModule;
+import com.gentics.mesh.dagger.module.DaoModule;
 import com.gentics.mesh.dagger.module.DebugInfoProviderModule;
 import com.gentics.mesh.dagger.module.MeshModule;
 import com.gentics.mesh.dagger.module.MicrometerModule;
@@ -69,7 +70,7 @@ import io.vertx.core.Vertx;
  * Central dagger mesh component which will expose dependencies.
  */
 @Singleton
-@Component(modules = { MeshModule.class, PluginModule.class, SearchProviderModule.class, BindModule.class, DebugInfoProviderModule.class, MicrometerModule.class })
+@Component(modules = { MeshModule.class, PluginModule.class, SearchProviderModule.class, BindModule.class, DebugInfoProviderModule.class, MicrometerModule.class, DaoModule.class })
 public interface MeshComponent {
 
 	BootstrapInitializer boot();

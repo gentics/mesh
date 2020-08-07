@@ -318,12 +318,6 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 	public Branch findByUuid(String uuid) {
 		return super.findByUuid(uuid);
 	}
-	
-	@Override
-	public Branch findByUuid(Project project, String uuid) {
-		Objects.requireNonNull(project);
-		return project.getBranchRoot().findByUuid(uuid);
-	}
 
 	/**
 	 * Set the tag information to the rest model.

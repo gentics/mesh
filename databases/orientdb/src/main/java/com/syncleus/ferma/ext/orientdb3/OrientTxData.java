@@ -1,8 +1,8 @@
 package com.syncleus.ferma.ext.orientdb3;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
+import com.gentics.mesh.core.data.dao.DaoCollection;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.JobDaoWrapper;
 import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
@@ -16,71 +16,70 @@ import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.db.TxData;
 
 public class OrientTxData implements TxData {
-	private final BootstrapInitializer boot;
 
-	public OrientTxData(BootstrapInitializer boot) {
-		this.boot = boot;
+	private final DaoCollection daos;
+
+	public OrientTxData(DaoCollection daoCollection) {
+		this.daos = daoCollection;
 	}
 
 	@Override
 	public UserDaoWrapper userDao() {
-		return boot.userDao();
+		return daos.userDao();
 	}
 
 	@Override
 	public GroupDaoWrapper groupDao() {
-		return boot.groupDao();
+		return daos.groupDao();
 	}
 
 	@Override
 	public RoleDaoWrapper roleDao() {
-		return boot.roleDao();
+		return daos.roleDao();
 	}
 
 	@Override
 	public ProjectDaoWrapper projectDao() {
-		return boot.projectDao();
+		return daos.projectDao();
 	}
 
 	@Override
 	public JobDaoWrapper jobDao() {
-		return boot.jobDao();
+		return daos.jobDao();
 	}
 
 	@Override
 	public LanguageDaoWrapper languageDao() {
-		return boot.languageDao();
+		return daos.languageDao();
 	}
 
 	@Override
 	public SchemaDaoWrapper schemaDao() {
-		return boot.schemaDao();
+		return daos.schemaDao();
 	}
 
 	@Override
 	public TagDaoWrapper tagDao() {
-		return boot.tagDao();
+		return daos.tagDao();
 	}
 
 	@Override
 	public TagFamilyDaoWrapper tagFamilyDao() {
-		return boot.tagFamilyDao();
+		return daos.tagFamilyDao();
 	}
 
 	@Override
 	public MicroschemaDaoWrapper microschemaDao() {
-		return boot.microschemaDao();
+		return daos.microschemaDao();
 	}
 
 	@Override
 	public BinaryDaoWrapper binaryDao() {
-		//TODO There is currently no binary wrapper. We need to write a new impl.
-		return null;
+		return daos.binaryDao();
 	}
 
 	@Override
 	public BranchDaoWrapper branchDao() {
-		// TODO there is currently no global branch root
-		return null;
+		return daos.branchDao();
 	}
 }

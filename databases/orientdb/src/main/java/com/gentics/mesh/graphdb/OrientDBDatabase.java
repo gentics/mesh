@@ -24,8 +24,10 @@ import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.dao.DaoCollection;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.db.TxAction;
+import com.gentics.mesh.core.db.TxAction0;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterServerConfig;
@@ -114,6 +116,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private final Lazy<BootstrapInitializer> boot;
 
+	private final Lazy<DaoCollection> daos;
+
 	private Thread txCleanupThread;
 
 	private Timer topologyLockTimer;
@@ -126,14 +130,16 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private WriteLock writeLock;
 
+
 	@Inject
-	public OrientDBDatabase(Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, MetricsService metrics, OrientDBTypeHandler typeHandler,
+	public OrientDBDatabase(Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, Lazy<DaoCollection> daos, MetricsService metrics, OrientDBTypeHandler typeHandler,
 		OrientDBIndexHandler indexHandler,
 		OrientDBClusterManager clusterManager,
 		TxCleanupTask txCleanupTask,
 		Mesh mesh, WriteLock writeLock) {
 		super(vertx);
 		this.boot = boot;
+		this.daos = daos;
 		this.metrics = metrics;
 		if (metrics != null) {
 			txTimer = metrics.timer(TX_TIME);
@@ -366,7 +372,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	@Deprecated
 	public Tx tx() {
-		return new OrientDBTx(this, boot.get(), txProvider, resolver, commitTimer);
+		return new OrientDBTx(this, boot.get(), daos.get(), txProvider, resolver, commitTimer);
 	}
 
 	@Override

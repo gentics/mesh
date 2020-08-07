@@ -48,6 +48,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
+import com.gentics.mesh.core.data.dao.DaoCollection;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.JobDaoWrapper;
 import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
@@ -58,16 +59,6 @@ import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
-import com.gentics.mesh.core.data.dao.impl.GroupDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.JobDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.LanguageDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.MicroschemaDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.ProjectDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.RoleDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.SchemaDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.TagDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.TagFamilyDaoWrapperImpl;
-import com.gentics.mesh.core.data.dao.impl.UserDaoWrapperImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.job.JobRoot;
@@ -196,6 +187,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Inject
 	public MasterElector coordinatorMasterElector;
+
+	@Inject
+	public DaoCollection daoCollection;
 
 	private MeshRoot meshRoot;
 
@@ -800,7 +794,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Override
 	public SchemaDaoWrapper schemaDao() {
-		return new SchemaDaoWrapperImpl(schemaContainerRoot());
+		return daoCollection.schemaDao();
 	}
 
 	@Override
@@ -810,7 +804,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Override
 	public MicroschemaDaoWrapper microschemaDao() {
-		return new MicroschemaDaoWrapperImpl(microschemaContainerRoot());
+		return daoCollection.microschemaDao();
 	}
 
 	@Override
@@ -820,7 +814,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Override
 	public RoleDaoWrapper roleDao() {
-		return new RoleDaoWrapperImpl(roleRoot());
+		return daoCollection.roleDao();
 	}
 
 	@Override
@@ -830,7 +824,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Override
 	public TagDaoWrapper tagDao() {
-		return new TagDaoWrapperImpl(tagRoot());
+		return daoCollection.tagDao();
 	}
 
 	@Override
@@ -840,7 +834,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Override
 	public TagFamilyDaoWrapper tagFamilyDao() {
-		return new TagFamilyDaoWrapperImpl(tagFamilyRoot());
+		return daoCollection.tagFamilyDao();
 	}
 
 	@Override
@@ -850,7 +844,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Override
 	public LanguageDaoWrapper languageDao() {
-		return new LanguageDaoWrapperImpl(meshRoot().getLanguageRoot());
+		return daoCollection.languageDao();
 	}
 
 	@Override
@@ -860,12 +854,17 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Override
 	public UserDaoWrapper userDao() {
-		return new UserDaoWrapperImpl(userRoot());
+		return daoCollection.userDao();
+	}
+
+	@Override
+	public GroupRoot groupRoot() {
+		return meshRoot().getGroupRoot();
 	}
 
 	@Override
 	public GroupDaoWrapper groupDao() {
-		return new GroupDaoWrapperImpl(meshRoot().getGroupRoot());
+		return daoCollection.groupDao();
 	}
 
 	@Override
@@ -875,7 +874,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Override
 	public JobDaoWrapper jobDao() {
-		return new JobDaoWrapperImpl(jobRoot());
+		return daoCollection.jobDao();
 	}
 
 	@Override
@@ -890,7 +889,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Override
 	public ProjectDaoWrapper projectDao() {
-		return new ProjectDaoWrapperImpl(projectRoot());
+		return daoCollection.projectDao();
 	}
 
 	/**

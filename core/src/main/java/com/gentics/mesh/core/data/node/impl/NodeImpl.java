@@ -71,6 +71,7 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagEdge;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
+import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.generic.AbstractGenericFieldContainerVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -280,7 +281,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			StringBuilder builder = new StringBuilder();
 
 			// Append the prefix first
-			Branch branch = getProject().getBranchRoot().findByUuid(branchUuid);
+			BranchDaoWrapper branchDao = Tx.get().data().branchDao();
+			Branch branch = branchDao.findByUuid(getProject(), branchUuid);
 			if (branch != null) {
 				String prefix = PathPrefixUtil.sanitize(branch.getPathPrefix());
 				if (!prefix.isEmpty()) {

@@ -22,6 +22,10 @@
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-changelog-system</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-mdm-orientdb-api</artifactId>
+		</dependency>
 
 		<!-- OrientDB -->
 		<dependency>

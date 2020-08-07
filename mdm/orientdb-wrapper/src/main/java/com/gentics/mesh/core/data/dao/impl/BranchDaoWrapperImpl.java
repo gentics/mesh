@@ -7,6 +7,9 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.gentics.madl.traversal.RawTraversalResult;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -41,12 +44,14 @@ import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.Vertx;
 
+@Singleton
 public class BranchDaoWrapperImpl implements BranchDaoWrapper {
 
-	private final BranchRoot delegate;
+	private BranchRoot delegate;
 
-	public BranchDaoWrapperImpl(BranchRoot delegate) {
-		this.delegate = delegate;
+	@Inject
+	public BranchDaoWrapperImpl() {
+		// this.delegate = delegate;
 	}
 
 	public Object id() {
@@ -420,6 +425,8 @@ public class BranchDaoWrapperImpl implements BranchDaoWrapper {
 		return delegate.computeCount();
 	}
 
+	// New methods
+
 	@Override
 	public String getETag(Branch branch, InternalActionContext ac) {
 		return delegate.getETag(branch, ac);
@@ -432,12 +439,7 @@ public class BranchDaoWrapperImpl implements BranchDaoWrapper {
 
 	@Override
 	public BranchResponse transformToRestSync(Branch branch, InternalActionContext ac, int level, String... languageTags) {
-		return delegate.transformToRestSync(branch, ac, level, languageTags);
-	}
-
-	@Override
-	public Branch findByUuid(Project project, String uuid) {
-		return delegate.findByUuid(project, uuid);
+		return branch.getRoot().transformToRestSync(branch, ac, level, languageTags);
 	}
 
 	@Override
@@ -446,9 +448,20 @@ public class BranchDaoWrapperImpl implements BranchDaoWrapper {
 	}
 
 	@Override
+	public Branch findByUuid(Project project, String uuid) {
+		Objects.requireNonNull(project);
+		return project.getBranchRoot().findByUuid(uuid);
+	}
+
+	@Override
 	public TraversalResult<? extends Branch> findAll(Project project) {
 		Objects.requireNonNull(project);
 		return project.getBranchRoot().findAll();
+	}
+
+	@Override
+	public Branch loadObjectByUuid(Project project, InternalActionContext ac, String uuid, GraphPermission perm) {
+		return project.getBranchRoot().loadObjectByUuid(ac, uuid, perm);
 	}
 
 }

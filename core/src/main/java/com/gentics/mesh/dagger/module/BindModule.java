@@ -20,6 +20,30 @@ import com.gentics.mesh.core.data.PersistenceClassMap;
 import com.gentics.mesh.core.data.PersistenceClassMapImpl;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.impl.BinariesImpl;
+import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
+import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
+import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
+import com.gentics.mesh.core.data.dao.JobDaoWrapper;
+import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
+import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.impl.BinaryDaoWrapperImpl;
+import com.gentics.mesh.core.data.dao.impl.BranchDaoWrapperImpl;
+import com.gentics.mesh.core.data.dao.impl.GroupDaoWrapperImpl;
+import com.gentics.mesh.core.data.dao.impl.JobDaoWrapperImpl;
+import com.gentics.mesh.core.data.dao.impl.LanguageDaoWrapperImpl;
+import com.gentics.mesh.core.data.dao.impl.MicroschemaDaoWrapperImpl;
+import com.gentics.mesh.core.data.dao.impl.ProjectDaoWrapperImpl;
+import com.gentics.mesh.core.data.dao.impl.RoleDaoWrapperImpl;
+import com.gentics.mesh.core.data.dao.impl.SchemaDaoWrapperImpl;
+import com.gentics.mesh.core.data.dao.impl.TagDaoWrapperImpl;
+import com.gentics.mesh.core.data.dao.impl.TagFamilyDaoWrapperImpl;
+import com.gentics.mesh.core.data.dao.impl.UserDaoWrapperImpl;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.data.service.WebRootServiceImpl;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
@@ -116,4 +140,43 @@ public abstract class BindModule {
 
 	@Binds
 	abstract DelegatingPluginRegistry bindPluginRegistry(DelegatingPluginRegistryImpl e);
+
+	// Daos
+
+	@Binds
+	abstract UserDaoWrapper bindUserDao(UserDaoWrapperImpl e);
+
+	@Binds
+	abstract RoleDaoWrapper bindRoleDao(RoleDaoWrapperImpl e);
+
+	@Binds
+	abstract GroupDaoWrapper bindGroupDao(GroupDaoWrapperImpl e);
+
+	@Binds
+	abstract ProjectDaoWrapper bindProjectDao(ProjectDaoWrapperImpl e);
+
+	@Binds
+	abstract JobDaoWrapper bindJobDao(JobDaoWrapperImpl e);
+
+	@Binds
+	abstract TagDaoWrapper bindTagDao(TagDaoWrapperImpl e);
+
+	@Binds
+	abstract TagFamilyDaoWrapper bindTagFamilyDao(TagFamilyDaoWrapperImpl e);
+
+	@Binds
+	abstract BinaryDaoWrapper bindBinaryDao(BinaryDaoWrapperImpl e);
+
+	@Binds
+	abstract BranchDaoWrapper bindBranchDao(BranchDaoWrapperImpl e);
+
+	@Binds
+	abstract SchemaDaoWrapper bindSchemaDao(SchemaDaoWrapperImpl e);
+
+	@Binds
+	abstract MicroschemaDaoWrapper bindMicroschemaDao(MicroschemaDaoWrapperImpl e);
+
+	@Binds
+	abstract LanguageDaoWrapper bindLanguageDao(LanguageDaoWrapperImpl e);
+
 }

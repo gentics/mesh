@@ -6,7 +6,10 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import javax.inject.Inject;
+
 import com.gentics.madl.traversal.RawTraversalResult;
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HasPermissions;
@@ -39,448 +42,450 @@ import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Vertex;
 
+import dagger.Lazy;
 import io.vertx.core.Vertx;
 
 public class UserDaoWrapperImpl implements UserDaoWrapper {
 
-	private final UserRoot delegate;
+	private final Lazy<BootstrapInitializer> boot;
 
-	public UserDaoWrapperImpl(UserRoot delegate) {
-		this.delegate = delegate;
+	@Inject
+	public UserDaoWrapperImpl(Lazy<BootstrapInitializer> boot) {
+		this.boot = boot;
 	}
 
 	public Object id() {
-		return delegate.id();
+		return boot.get().userRoot().id();
 	}
 
 	public PermissionInfo getRolePermissions(InternalActionContext ac, String roleUuid) {
-		return delegate.getRolePermissions(ac, roleUuid);
+		return boot.get().userRoot().getRolePermissions(ac, roleUuid);
 	}
 
 	public void setUuid(String uuid) {
-		delegate.setUuid(uuid);
+		boot.get().userRoot().setUuid(uuid);
 	}
 
 	public void setUniqueLinkOutTo(VertexFrame vertex, String... labels) {
-		delegate.setUniqueLinkOutTo(vertex, labels);
+		boot.get().userRoot().setUniqueLinkOutTo(vertex, labels);
 	}
 
 	public User create(String username, User creator) {
-		return delegate.create(username, creator);
+		return boot.get().userRoot().create(username, creator);
 	}
 
 	public TraversalResult<? extends Role> getRolesWithPerm(GraphPermission perm) {
-		return delegate.getRolesWithPerm(perm);
+		return boot.get().userRoot().getRolesWithPerm(perm);
 	}
 
 	public String getUuid() {
-		return delegate.getUuid();
+		return boot.get().userRoot().getUuid();
 	}
 
 	public Vertex getVertex() {
-		return delegate.getVertex();
+		return boot.get().userRoot().getVertex();
 	}
 
 	public String getElementVersion() {
-		return delegate.getElementVersion();
+		return boot.get().userRoot().getElementVersion();
 	}
 
 	public void setUniqueLinkInTo(VertexFrame vertex, String... labels) {
-		delegate.setUniqueLinkInTo(vertex, labels);
+		boot.get().userRoot().setUniqueLinkInTo(vertex, labels);
 	}
 
 	public User create(String username, User creator, String uuid) {
-		return delegate.create(username, creator, uuid);
+		return boot.get().userRoot().create(username, creator, uuid);
 	}
 
 	public <T> T property(String name) {
-		return delegate.property(name);
+		return boot.get().userRoot().property(name);
 	}
 
 	public void delete(BulkActionContext bac) {
-		delegate.delete(bac);
+		boot.get().userRoot().delete(bac);
 	}
 
 	public Vertex getElement() {
-		return delegate.getElement();
+		return boot.get().userRoot().getElement();
 	}
 
 	public void setSingleLinkOutTo(VertexFrame vertex, String... labels) {
-		delegate.setSingleLinkOutTo(vertex, labels);
+		boot.get().userRoot().setSingleLinkOutTo(vertex, labels);
 	}
 
 	public Object getId() {
-		return delegate.getId();
+		return boot.get().userRoot().getId();
 	}
 
 	public <T> T addFramedEdge(String label, com.syncleus.ferma.VertexFrame inVertex, ClassInitializer<T> initializer) {
-		return delegate.addFramedEdge(label, inVertex, initializer);
+		return boot.get().userRoot().addFramedEdge(label, inVertex, initializer);
 	}
 
 	public void setSingleLinkInTo(VertexFrame vertex, String... labels) {
-		delegate.setSingleLinkInTo(vertex, labels);
+		boot.get().userRoot().setSingleLinkInTo(vertex, labels);
 	}
 
 	public Set<String> getPropertyKeys() {
-		return delegate.getPropertyKeys();
+		return boot.get().userRoot().getPropertyKeys();
 	}
 
 	public void addToStringSetProperty(String propertyKey, String value) {
-		delegate.addToStringSetProperty(propertyKey, value);
+		boot.get().userRoot().addToStringSetProperty(propertyKey, value);
 	}
 
 	public VertexTraversal<?, ?, ?> out(String... labels) {
-		return delegate.out(labels);
+		return boot.get().userRoot().out(labels);
 	}
 
 	public void remove() {
-		delegate.remove();
+		boot.get().userRoot().remove();
 	}
 
 	public void delete() {
-		delegate.delete();
+		boot.get().userRoot().delete();
 	}
 
 	public <T extends ElementFrame> TraversalResult<? extends T> out(String label, Class<T> clazz) {
-		return delegate.out(label, clazz);
+		return boot.get().userRoot().out(label, clazz);
 	}
 
 	public FramedGraph getGraph() {
-		return delegate.getGraph();
+		return boot.get().userRoot().getGraph();
 	}
 
 	public MeshAuthUser findMeshAuthUserByUsername(String username) {
-		return delegate.findMeshAuthUserByUsername(username);
+		return boot.get().userRoot().findMeshAuthUserByUsername(username);
 	}
 
 	public <R> void property(String key, R value) {
-		delegate.property(key, value);
+		boot.get().userRoot().property(key, value);
 	}
 
 	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
 		Set<GraphPermission> permissionsToRevoke) {
-		delegate.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
+		boot.get().userRoot().applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
 	}
 
 	public <T extends EdgeFrame> TraversalResult<? extends T> outE(String label, Class<T> clazz) {
-		return delegate.outE(label, clazz);
+		return boot.get().userRoot().outE(label, clazz);
 	}
 
 	public <T> T getProperty(String name) {
-		return delegate.getProperty(name);
+		return boot.get().userRoot().getProperty(name);
 	}
 
 	public <T extends ElementFrame> TraversalResult<? extends T> in(String label, Class<T> clazz) {
-		return delegate.in(label, clazz);
+		return boot.get().userRoot().in(label, clazz);
 	}
 
 	public MeshAuthUser findMeshAuthUserByUuid(String userUuid) {
-		return delegate.findMeshAuthUserByUuid(userUuid);
+		return boot.get().userRoot().findMeshAuthUserByUuid(userUuid);
 	}
 
 	public <T> T addFramedEdge(String label, com.syncleus.ferma.VertexFrame inVertex, Class<T> kind) {
-		return delegate.addFramedEdge(label, inVertex, kind);
+		return boot.get().userRoot().addFramedEdge(label, inVertex, kind);
 	}
 
 	public void removeProperty(String key) {
-		delegate.removeProperty(key);
+		boot.get().userRoot().removeProperty(key);
 	}
 
 	public <T extends EdgeFrame> TraversalResult<? extends T> inE(String label, Class<T> clazz) {
-		return delegate.inE(label, clazz);
+		return boot.get().userRoot().inE(label, clazz);
 	}
 
 	public <T extends RawTraversalResult<?>> T traverse(Function<GraphTraversal<Vertex, Vertex>, GraphTraversal<?, ?>> traverser) {
-		return delegate.traverse(traverser);
+		return boot.get().userRoot().traverse(traverser);
 	}
 
 	public <T> T getProperty(String name, Class<T> type) {
-		return delegate.getProperty(name, type);
+		return boot.get().userRoot().getProperty(name, type);
 	}
 
 	public Database db() {
-		return delegate.db();
+		return boot.get().userRoot().db();
 	}
 
 	public User findByUsername(String username) {
-		return delegate.findByUsername(username);
+		return boot.get().userRoot().findByUsername(username);
 	}
 
 	public Vertx vertx() {
-		return delegate.vertx();
+		return boot.get().userRoot().vertx();
 	}
 
 	public boolean hasPublishPermissions() {
-		return delegate.hasPublishPermissions();
+		return boot.get().userRoot().hasPublishPermissions();
 	}
 
 	public void addUser(User user) {
-		delegate.addUser(user);
+		boot.get().userRoot().addUser(user);
 	}
 
 	public MeshOptions options() {
-		return delegate.options();
+		return boot.get().userRoot().options();
 	}
 
 	public void removeUser(User user) {
-		delegate.removeUser(user);
+		boot.get().userRoot().removeUser(user);
 	}
 
 	public <T> T addFramedEdgeExplicit(String label, com.syncleus.ferma.VertexFrame inVertex, ClassInitializer<T> initializer) {
-		return delegate.addFramedEdgeExplicit(label, inVertex, initializer);
+		return boot.get().userRoot().addFramedEdgeExplicit(label, inVertex, initializer);
 	}
 
 	public void setCachedUuid(String uuid) {
-		delegate.setCachedUuid(uuid);
+		boot.get().userRoot().setCachedUuid(uuid);
 	}
 
 	public TraversalResult<? extends User> findAll() {
-		return delegate.findAll();
+		return boot.get().userRoot().findAll();
 	}
 
 	public void setProperty(String name, Object value) {
-		delegate.setProperty(name, value);
+		boot.get().userRoot().setProperty(name, value);
 	}
 
 	public User setPassword(User user, String password) {
-		return delegate.setPassword(user, password);
+		return boot.get().userRoot().setPassword(user, password);
 	}
 
 	public Class<?> getTypeResolution() {
-		return delegate.getTypeResolution();
+		return boot.get().userRoot().getTypeResolution();
 	}
 
 	public Stream<? extends User> findAllStream(InternalActionContext ac, GraphPermission permission) {
-		return delegate.findAllStream(ac, permission);
+		return boot.get().userRoot().findAllStream(ac, permission);
 	}
 
 	public void setTypeResolution(Class<?> type) {
-		delegate.setTypeResolution(type);
+		boot.get().userRoot().setTypeResolution(type);
 	}
 
 	public PermissionInfo getPermissionInfo(User user, MeshVertex vertex) {
-		return delegate.getPermissionInfo(user, vertex);
+		return boot.get().userRoot().getPermissionInfo(user, vertex);
 	}
 
 	public <T> T addFramedEdgeExplicit(String label, com.syncleus.ferma.VertexFrame inVertex, Class<T> kind) {
-		return delegate.addFramedEdgeExplicit(label, inVertex, kind);
+		return boot.get().userRoot().addFramedEdgeExplicit(label, inVertex, kind);
 	}
 
 	public Set<GraphPermission> getPermissions(User user, MeshVertex vertex) {
-		return delegate.getPermissions(user, vertex);
+		return boot.get().userRoot().getPermissions(user, vertex);
 	}
 
 	public void removeTypeResolution() {
-		delegate.removeTypeResolution();
+		boot.get().userRoot().removeTypeResolution();
 	}
 
 	public VertexTraversal<?, ?, ?> v() {
-		return delegate.v();
+		return boot.get().userRoot().v();
 	}
 
 	public boolean hasPermission(User user, MeshVertex element, GraphPermission permission) {
-		return delegate.hasPermission(user, element, permission);
+		return boot.get().userRoot().hasPermission(user, element, permission);
 	}
 
 	public EdgeTraversal<?, ?, ?> e() {
-		return delegate.e();
+		return boot.get().userRoot().e();
 	}
 
 	public EdgeTraversal<?, ?, ?> e(Object... ids) {
-		return delegate.e(ids);
+		return boot.get().userRoot().e(ids);
 	}
 
 	public boolean hasPermissionForId(User user, Object elementId, GraphPermission permission) {
-		return delegate.hasPermissionForId(user, elementId, permission);
+		return boot.get().userRoot().hasPermissionForId(user, elementId, permission);
 	}
 
 	public TEdge addFramedEdge(String label, com.syncleus.ferma.VertexFrame inVertex) {
-		return delegate.addFramedEdge(label, inVertex);
+		return boot.get().userRoot().addFramedEdge(label, inVertex);
 	}
 
 	public <T> T getGraphAttribute(String key) {
-		return delegate.getGraphAttribute(key);
+		return boot.get().userRoot().getGraphAttribute(key);
 	}
 
 	public TraversalResult<? extends User> findAllDynamic() {
-		return delegate.findAllDynamic();
+		return boot.get().userRoot().findAllDynamic();
 	}
 
 	public VertexTraversal<?, ?, ?> in(String... labels) {
-		return delegate.in(labels);
+		return boot.get().userRoot().in(labels);
 	}
 
 	public EdgeTraversal<?, ?, ?> outE(String... labels) {
-		return delegate.outE(labels);
+		return boot.get().userRoot().outE(labels);
 	}
 
 	public TransformablePage<? extends User> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
-		return delegate.findAll(ac, pagingInfo);
+		return boot.get().userRoot().findAll(ac, pagingInfo);
 	}
 
 	public EdgeTraversal<?, ?, ?> inE(String... labels) {
-		return delegate.inE(labels);
+		return boot.get().userRoot().inE(labels);
 	}
 
 	public void linkOut(com.syncleus.ferma.VertexFrame vertex, String... labels) {
-		delegate.linkOut(vertex, labels);
+		boot.get().userRoot().linkOut(vertex, labels);
 	}
 
 	public void linkIn(com.syncleus.ferma.VertexFrame vertex, String... labels) {
-		delegate.linkIn(vertex, labels);
+		boot.get().userRoot().linkIn(vertex, labels);
 	}
 
 	public TransformablePage<? extends User> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<User> extraFilter) {
-		return delegate.findAll(ac, pagingInfo, extraFilter);
+		return boot.get().userRoot().findAll(ac, pagingInfo, extraFilter);
 	}
 
 	public void unlinkOut(com.syncleus.ferma.VertexFrame vertex, String... labels) {
-		delegate.unlinkOut(vertex, labels);
+		boot.get().userRoot().unlinkOut(vertex, labels);
 	}
 
 	public void unlinkIn(com.syncleus.ferma.VertexFrame vertex, String... labels) {
-		delegate.unlinkIn(vertex, labels);
+		boot.get().userRoot().unlinkIn(vertex, labels);
 	}
 
 	public TransformablePage<? extends User> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo) {
-		return delegate.findAllNoPerm(ac, pagingInfo);
+		return boot.get().userRoot().findAllNoPerm(ac, pagingInfo);
 	}
 
 	public void setLinkOut(com.syncleus.ferma.VertexFrame vertex, String... labels) {
-		delegate.setLinkOut(vertex, labels);
+		boot.get().userRoot().setLinkOut(vertex, labels);
 	}
 
 	public User findByName(String name) {
-		return delegate.findByName(name);
+		return boot.get().userRoot().findByName(name);
 	}
 
 	public VertexTraversal<?, ?, ?> traversal() {
-		return delegate.traversal();
+		return boot.get().userRoot().traversal();
 	}
 
 	public JsonObject toJson() {
-		return delegate.toJson();
+		return boot.get().userRoot().toJson();
 	}
 
 	public User findByName(InternalActionContext ac, String name, GraphPermission perm) {
-		return delegate.findByName(ac, name, perm);
+		return boot.get().userRoot().findByName(ac, name, perm);
 	}
 
 	public <T> T reframe(Class<T> kind) {
-		return delegate.reframe(kind);
+		return boot.get().userRoot().reframe(kind);
 	}
 
 	public <T> T reframeExplicit(Class<T> kind) {
-		return delegate.reframeExplicit(kind);
+		return boot.get().userRoot().reframeExplicit(kind);
 	}
 
 	public User findByUuid(String uuid) {
-		return delegate.findByUuid(uuid);
+		return boot.get().userRoot().findByUuid(uuid);
 	}
 
 	public User loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
-		return delegate.loadObjectByUuid(ac, uuid, perm);
+		return boot.get().userRoot().loadObjectByUuid(ac, uuid, perm);
 	}
 
 	public User loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
-		return delegate.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+		return boot.get().userRoot().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
 	}
 
 	public User loadObjectByUuidNoPerm(String uuid, boolean errorIfNotFound) {
-		return delegate.loadObjectByUuidNoPerm(uuid, errorIfNotFound);
+		return boot.get().userRoot().loadObjectByUuidNoPerm(uuid, errorIfNotFound);
 	}
 
 	public MeshVertex resolveToElement(Stack<String> stack) {
-		return delegate.resolveToElement(stack);
+		return boot.get().userRoot().resolveToElement(stack);
 	}
 
 	public User create(InternalActionContext ac, EventQueueBatch batch) {
-		return delegate.create(ac, batch);
+		return boot.get().userRoot().create(ac, batch);
 	}
 
 	public User create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		return delegate.create(ac, batch, uuid);
+		return boot.get().userRoot().create(ac, batch, uuid);
 	}
 
 	public void addItem(User item) {
-		delegate.addItem(item);
+		boot.get().userRoot().addItem(item);
 	}
 
 	public void removeItem(User item) {
-		delegate.removeItem(item);
+		boot.get().userRoot().removeItem(item);
 	}
 
 	public String getRootLabel() {
-		return delegate.getRootLabel();
+		return boot.get().userRoot().getRootLabel();
 	}
 
 	public Class<? extends User> getPersistanceClass() {
-		return delegate.getPersistanceClass();
+		return boot.get().userRoot().getPersistanceClass();
 	}
 
 	public long computeCount() {
-		return delegate.computeCount();
+		return boot.get().userRoot().computeCount();
 	}
 
 	@Override
 	public void delete(User element, BulkActionContext bac) {
-		delegate.delete(element, bac);
+		boot.get().userRoot().delete(element, bac);
 	}
 
 	@Override
 	public User addPermissionsOnRole(User user, HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode,
 		GraphPermission... toGrant) {
-		return delegate.addPermissionsOnRole(user, sourceNode, permission, targetNode, toGrant);
+		return boot.get().userRoot().addPermissionsOnRole(user, sourceNode, permission, targetNode, toGrant);
 	}
 
 	@Override
 	public User addCRUDPermissionOnRole(User user, HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode) {
-		return delegate.addCRUDPermissionOnRole(user, sourceNode, permission, targetNode);
+		return boot.get().userRoot().addCRUDPermissionOnRole(user, sourceNode, permission, targetNode);
 	}
 
 	@Override
 	public boolean canReadNode(User user, InternalActionContext ac, Node node) {
-		return delegate.canReadNode(user, ac, node);
+		return boot.get().userRoot().canReadNode(user, ac, node);
 	}
 
 	@Override
 	public String getAPIPath(User element, InternalActionContext ac) {
-		return delegate.getAPIPath(element, ac);
+		return boot.get().userRoot().getAPIPath(element, ac);
 	}
 
 	@Override
 	public String getETag(User element, InternalActionContext ac) {
-		return delegate.getETag(element, ac);
+		return boot.get().userRoot().getETag(element, ac);
 	}
 
 	@Override
 	public boolean hasReadPermission(User user, NodeGraphFieldContainer container, String branchUuid, String requestedVersion) {
-		return delegate.hasReadPermission(user, container, branchUuid, requestedVersion);
+		return boot.get().userRoot().hasReadPermission(user, container, branchUuid, requestedVersion);
 	}
 
 	@Override
 	public User inheritRolePermissions(User user, MeshVertex sourceNode, MeshVertex targetNode) {
-		return delegate.inheritRolePermissions(user, sourceNode, targetNode);
+		return boot.get().userRoot().inheritRolePermissions(user, sourceNode, targetNode);
 	}
 
 	@Override
 	public UserResponse transformToRestSync(User element, InternalActionContext ac, int level, String... languageTags) {
-		return delegate.transformToRestSync(element, ac, level, languageTags);
+		return boot.get().userRoot().transformToRestSync(element, ac, level, languageTags);
 	}
 
 	@Override
 	public boolean update(User user, InternalActionContext ac, EventQueueBatch batch) {
-		return delegate.update(user, ac, batch);
+		return boot.get().userRoot().update(user, ac, batch);
 	}
 
 	@Override
 	public boolean updateDry(User user, InternalActionContext ac) {
-		return delegate.updateDry(user, ac);
+		return boot.get().userRoot().updateDry(user, ac);
 	}
 
 	@Override
 	public String getSubETag(User user, InternalActionContext ac) {
-		return delegate.getSubETag(user, ac);
+		return boot.get().userRoot().getSubETag(user, ac);
 	}
 
 }

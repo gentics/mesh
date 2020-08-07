@@ -92,11 +92,4 @@ public interface BranchRoot extends RootVertex<Branch>, TransformableElementRoot
 	 */
 	Branch fromReference(BranchReference reference);
 
-	/**
-	 * Find the branch of the project by uuid.
-	 * 
-	 * @param project
-	 * @param uuid
-	 */
-	Branch findByUuid(Project project, String uuid);
 }

@@ -6,7 +6,10 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import javax.inject.Inject;
+
 import com.gentics.madl.traversal.RawTraversalResult;
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -17,7 +20,6 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -37,389 +39,391 @@ import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Vertex;
 
+import dagger.Lazy;
 import io.reactivex.Single;
 import io.vertx.core.Vertx;
 
 // TODO there is no tag family root since the tag itself is the root. 
 public class TagFamilyDaoWrapperImpl implements TagFamilyDaoWrapper {
 
-	private final TagFamilyRoot delegate;
+	private final Lazy<BootstrapInitializer> boot;
 
-	public TagFamilyDaoWrapperImpl(TagFamilyRoot delegate) {
-		this.delegate = delegate;
+	@Inject
+	public TagFamilyDaoWrapperImpl(Lazy<BootstrapInitializer> boot) {
+		this.boot = boot;
 	}
 
 	public Object id() {
-		return delegate.id();
+		return boot.get().tagFamilyRoot().id();
 	}
 
 	public PermissionInfo getRolePermissions(InternalActionContext ac, String roleUuid) {
-		return delegate.getRolePermissions(ac, roleUuid);
+		return boot.get().tagFamilyRoot().getRolePermissions(ac, roleUuid);
 	}
 
 	public void setUuid(String uuid) {
-		delegate.setUuid(uuid);
+		boot.get().tagFamilyRoot().setUuid(uuid);
 	}
 
 	public String getAPIPath(TagFamily element, InternalActionContext ac) {
-		return delegate.getAPIPath(element, ac);
+		return boot.get().tagFamilyRoot().getAPIPath(element, ac);
 	}
 
 	public void setUniqueLinkOutTo(VertexFrame vertex, String... labels) {
-		delegate.setUniqueLinkOutTo(vertex, labels);
+		boot.get().tagFamilyRoot().setUniqueLinkOutTo(vertex, labels);
 	}
 
 	public TagFamily create(String name, User user) {
-		return delegate.create(name, user);
+		return boot.get().tagFamilyRoot().create(name, user);
 	}
 
 	public TraversalResult<? extends Role> getRolesWithPerm(GraphPermission perm) {
-		return delegate.getRolesWithPerm(perm);
+		return boot.get().tagFamilyRoot().getRolesWithPerm(perm);
 	}
 
 	public String getUuid() {
-		return delegate.getUuid();
+		return boot.get().tagFamilyRoot().getUuid();
 	}
 
 	public Single<TagFamilyResponse> transformToRest(TagFamily element, InternalActionContext ac, int level, String... languageTags) {
-		return delegate.transformToRest(element, ac, level, languageTags);
+		return boot.get().tagFamilyRoot().transformToRest(element, ac, level, languageTags);
 	}
 
 	public Vertex getVertex() {
-		return delegate.getVertex();
+		return boot.get().tagFamilyRoot().getVertex();
 	}
 
 	public String getElementVersion() {
-		return delegate.getElementVersion();
+		return boot.get().tagFamilyRoot().getElementVersion();
 	}
 
 	public void setUniqueLinkInTo(VertexFrame vertex, String... labels) {
-		delegate.setUniqueLinkInTo(vertex, labels);
+		boot.get().tagFamilyRoot().setUniqueLinkInTo(vertex, labels);
 	}
 
 	public <T> T property(String name) {
-		return delegate.property(name);
+		return boot.get().tagFamilyRoot().property(name);
 	}
 
 	public TagFamily create(String name, User user, String uuid) {
-		return delegate.create(name, user, uuid);
+		return boot.get().tagFamilyRoot().create(name, user, uuid);
 	}
 
 	public void delete(BulkActionContext bac) {
-		delegate.delete(bac);
+		boot.get().tagFamilyRoot().delete(bac);
 	}
 
 	public Vertex getElement() {
-		return delegate.getElement();
+		return boot.get().tagFamilyRoot().getElement();
 	}
 
 	public void setSingleLinkOutTo(VertexFrame vertex, String... labels) {
-		delegate.setSingleLinkOutTo(vertex, labels);
+		boot.get().tagFamilyRoot().setSingleLinkOutTo(vertex, labels);
 	}
 
 	public Object getId() {
-		return delegate.getId();
+		return boot.get().tagFamilyRoot().getId();
 	}
 
 	public <T> T addFramedEdge(String label, com.syncleus.ferma.VertexFrame inVertex, ClassInitializer<T> initializer) {
-		return delegate.addFramedEdge(label, inVertex, initializer);
+		return boot.get().tagFamilyRoot().addFramedEdge(label, inVertex, initializer);
 	}
 
 	public void setSingleLinkInTo(VertexFrame vertex, String... labels) {
-		delegate.setSingleLinkInTo(vertex, labels);
+		boot.get().tagFamilyRoot().setSingleLinkInTo(vertex, labels);
 	}
 
 	public Set<String> getPropertyKeys() {
-		return delegate.getPropertyKeys();
+		return boot.get().tagFamilyRoot().getPropertyKeys();
 	}
 
 	public void addToStringSetProperty(String propertyKey, String value) {
-		delegate.addToStringSetProperty(propertyKey, value);
+		boot.get().tagFamilyRoot().addToStringSetProperty(propertyKey, value);
 	}
 
 	public VertexTraversal<?, ?, ?> out(String... labels) {
-		return delegate.out(labels);
+		return boot.get().tagFamilyRoot().out(labels);
 	}
 
 	public void remove() {
-		delegate.remove();
+		boot.get().tagFamilyRoot().remove();
 	}
 
 	public void delete() {
-		delegate.delete();
+		boot.get().tagFamilyRoot().delete();
 	}
 
 	public TagFamilyResponse transformToRestSync(TagFamily element, InternalActionContext ac, int level, String... languageTags) {
-		return delegate.transformToRestSync(element, ac, level, languageTags);
+		return boot.get().tagFamilyRoot().transformToRestSync(element, ac, level, languageTags);
 	}
 
 	public <T extends ElementFrame> TraversalResult<? extends T> out(String label, Class<T> clazz) {
-		return delegate.out(label, clazz);
+		return boot.get().tagFamilyRoot().out(label, clazz);
 	}
 
 	public FramedGraph getGraph() {
-		return delegate.getGraph();
+		return boot.get().tagFamilyRoot().getGraph();
 	}
 
 	public <R> void property(String key, R value) {
-		delegate.property(key, value);
+		boot.get().tagFamilyRoot().property(key, value);
 	}
 
 	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
 		Set<GraphPermission> permissionsToRevoke) {
-		delegate.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
+		boot.get().tagFamilyRoot().applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
 	}
 
 	public void removeTagFamily(TagFamily tagFamily) {
-		delegate.removeTagFamily(tagFamily);
+		boot.get().tagFamilyRoot().removeTagFamily(tagFamily);
 	}
 
 	public <T extends EdgeFrame> TraversalResult<? extends T> outE(String label, Class<T> clazz) {
-		return delegate.outE(label, clazz);
+		return boot.get().tagFamilyRoot().outE(label, clazz);
 	}
 
 	public <T> T getProperty(String name) {
-		return delegate.getProperty(name);
+		return boot.get().tagFamilyRoot().getProperty(name);
 	}
 
 	public <T extends ElementFrame> TraversalResult<? extends T> in(String label, Class<T> clazz) {
-		return delegate.in(label, clazz);
+		return boot.get().tagFamilyRoot().in(label, clazz);
 	}
 
 	public <T> T addFramedEdge(String label, com.syncleus.ferma.VertexFrame inVertex, Class<T> kind) {
-		return delegate.addFramedEdge(label, inVertex, kind);
+		return boot.get().tagFamilyRoot().addFramedEdge(label, inVertex, kind);
 	}
 
 	public void addTagFamily(TagFamily tagFamily) {
-		delegate.addTagFamily(tagFamily);
+		boot.get().tagFamilyRoot().addTagFamily(tagFamily);
 	}
 
 	public void removeProperty(String key) {
-		delegate.removeProperty(key);
+		boot.get().tagFamilyRoot().removeProperty(key);
 	}
 
 	public <T extends EdgeFrame> TraversalResult<? extends T> inE(String label, Class<T> clazz) {
-		return delegate.inE(label, clazz);
+		return boot.get().tagFamilyRoot().inE(label, clazz);
 	}
 
 	public Project getProject() {
-		return delegate.getProject();
+		return boot.get().tagFamilyRoot().getProject();
 	}
 
 	public <T extends RawTraversalResult<?>> T traverse(Function<GraphTraversal<Vertex, Vertex>, GraphTraversal<?, ?>> traverser) {
-		return delegate.traverse(traverser);
+		return boot.get().tagFamilyRoot().traverse(traverser);
 	}
 
 	public <T> T getProperty(String name, Class<T> type) {
-		return delegate.getProperty(name, type);
+		return boot.get().tagFamilyRoot().getProperty(name, type);
 	}
 
 	public Database db() {
-		return delegate.db();
+		return boot.get().tagFamilyRoot().db();
 	}
 
 	public String getETag(TagFamily element, InternalActionContext ac) {
-		return delegate.getETag(element, ac);
+		return boot.get().tagFamilyRoot().getETag(element, ac);
 	}
 
 	public Vertx vertx() {
-		return delegate.vertx();
+		return boot.get().tagFamilyRoot().vertx();
 	}
 
 	public boolean hasPublishPermissions() {
-		return delegate.hasPublishPermissions();
+		return boot.get().tagFamilyRoot().hasPublishPermissions();
 	}
 
 	public MeshOptions options() {
-		return delegate.options();
+		return boot.get().tagFamilyRoot().options();
 	}
 
 	public <T> T addFramedEdgeExplicit(String label, com.syncleus.ferma.VertexFrame inVertex, ClassInitializer<T> initializer) {
-		return delegate.addFramedEdgeExplicit(label, inVertex, initializer);
+		return boot.get().tagFamilyRoot().addFramedEdgeExplicit(label, inVertex, initializer);
 	}
 
 	public void setCachedUuid(String uuid) {
-		delegate.setCachedUuid(uuid);
+		boot.get().tagFamilyRoot().setCachedUuid(uuid);
 	}
 
 	public void setProperty(String name, Object value) {
-		delegate.setProperty(name, value);
+		boot.get().tagFamilyRoot().setProperty(name, value);
 	}
 
 	public TraversalResult<? extends TagFamily> findAll() {
-		return delegate.findAll();
+		return boot.get().tagFamilyRoot().findAll();
 	}
 
 	public Class<?> getTypeResolution() {
-		return delegate.getTypeResolution();
+		return boot.get().tagFamilyRoot().getTypeResolution();
 	}
 
 	public void setTypeResolution(Class<?> type) {
-		delegate.setTypeResolution(type);
+		boot.get().tagFamilyRoot().setTypeResolution(type);
 	}
 
 	public Stream<? extends TagFamily> findAllStream(InternalActionContext ac, GraphPermission permission) {
-		return delegate.findAllStream(ac, permission);
+		return boot.get().tagFamilyRoot().findAllStream(ac, permission);
 	}
 
 	public <T> T addFramedEdgeExplicit(String label, com.syncleus.ferma.VertexFrame inVertex, Class<T> kind) {
-		return delegate.addFramedEdgeExplicit(label, inVertex, kind);
+		return boot.get().tagFamilyRoot().addFramedEdgeExplicit(label, inVertex, kind);
 	}
 
 	public void removeTypeResolution() {
-		delegate.removeTypeResolution();
+		boot.get().tagFamilyRoot().removeTypeResolution();
 	}
 
 	public VertexTraversal<?, ?, ?> v() {
-		return delegate.v();
+		return boot.get().tagFamilyRoot().v();
 	}
 
 	public EdgeTraversal<?, ?, ?> e() {
-		return delegate.e();
+		return boot.get().tagFamilyRoot().e();
 	}
 
 	public EdgeTraversal<?, ?, ?> e(Object... ids) {
-		return delegate.e(ids);
+		return boot.get().tagFamilyRoot().e(ids);
 	}
 
 	public TEdge addFramedEdge(String label, com.syncleus.ferma.VertexFrame inVertex) {
-		return delegate.addFramedEdge(label, inVertex);
+		return boot.get().tagFamilyRoot().addFramedEdge(label, inVertex);
 	}
 
 	public <T> T getGraphAttribute(String key) {
-		return delegate.getGraphAttribute(key);
+		return boot.get().tagFamilyRoot().getGraphAttribute(key);
 	}
 
 	public TraversalResult<? extends TagFamily> findAllDynamic() {
-		return delegate.findAllDynamic();
+		return boot.get().tagFamilyRoot().findAllDynamic();
 	}
 
 	public VertexTraversal<?, ?, ?> in(String... labels) {
-		return delegate.in(labels);
+		return boot.get().tagFamilyRoot().in(labels);
 	}
 
 	public EdgeTraversal<?, ?, ?> outE(String... labels) {
-		return delegate.outE(labels);
+		return boot.get().tagFamilyRoot().outE(labels);
 	}
 
 	public EdgeTraversal<?, ?, ?> inE(String... labels) {
-		return delegate.inE(labels);
+		return boot.get().tagFamilyRoot().inE(labels);
 	}
 
 	public void linkOut(com.syncleus.ferma.VertexFrame vertex, String... labels) {
-		delegate.linkOut(vertex, labels);
+		boot.get().tagFamilyRoot().linkOut(vertex, labels);
 	}
 
 	public TransformablePage<? extends TagFamily> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
-		return delegate.findAll(ac, pagingInfo);
+		return boot.get().tagFamilyRoot().findAll(ac, pagingInfo);
 	}
 
 	public void linkIn(com.syncleus.ferma.VertexFrame vertex, String... labels) {
-		delegate.linkIn(vertex, labels);
+		boot.get().tagFamilyRoot().linkIn(vertex, labels);
 	}
 
 	public TransformablePage<? extends TagFamily> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<TagFamily> extraFilter) {
-		return delegate.findAll(ac, pagingInfo, extraFilter);
+		return boot.get().tagFamilyRoot().findAll(ac, pagingInfo, extraFilter);
 	}
 
 	public void unlinkOut(com.syncleus.ferma.VertexFrame vertex, String... labels) {
-		delegate.unlinkOut(vertex, labels);
+		boot.get().tagFamilyRoot().unlinkOut(vertex, labels);
 	}
 
 	public void unlinkIn(com.syncleus.ferma.VertexFrame vertex, String... labels) {
-		delegate.unlinkIn(vertex, labels);
+		boot.get().tagFamilyRoot().unlinkIn(vertex, labels);
 	}
 
 	public TransformablePage<? extends TagFamily> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo) {
-		return delegate.findAllNoPerm(ac, pagingInfo);
+		return boot.get().tagFamilyRoot().findAllNoPerm(ac, pagingInfo);
 	}
 
 	public void setLinkOut(com.syncleus.ferma.VertexFrame vertex, String... labels) {
-		delegate.setLinkOut(vertex, labels);
+		boot.get().tagFamilyRoot().setLinkOut(vertex, labels);
 	}
 
 	public VertexTraversal<?, ?, ?> traversal() {
-		return delegate.traversal();
+		return boot.get().tagFamilyRoot().traversal();
 	}
 
 	public TagFamily findByName(String name) {
-		return delegate.findByName(name);
+		return boot.get().tagFamilyRoot().findByName(name);
 	}
 
 	public JsonObject toJson() {
-		return delegate.toJson();
+		return boot.get().tagFamilyRoot().toJson();
 	}
 
 	public <T> T reframe(Class<T> kind) {
-		return delegate.reframe(kind);
+		return boot.get().tagFamilyRoot().reframe(kind);
 	}
 
 	public TagFamily findByName(InternalActionContext ac, String name, GraphPermission perm) {
-		return delegate.findByName(ac, name, perm);
+		return boot.get().tagFamilyRoot().findByName(ac, name, perm);
 	}
 
 	public <T> T reframeExplicit(Class<T> kind) {
-		return delegate.reframeExplicit(kind);
+		return boot.get().tagFamilyRoot().reframeExplicit(kind);
 	}
 
 	public TagFamily findByUuid(String uuid) {
-		return delegate.findByUuid(uuid);
+		return boot.get().tagFamilyRoot().findByUuid(uuid);
 	}
 
 	public TagFamily loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
-		return delegate.loadObjectByUuid(ac, uuid, perm);
+		return boot.get().tagFamilyRoot().loadObjectByUuid(ac, uuid, perm);
 	}
 
 	public TagFamily loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
-		return delegate.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+		return boot.get().tagFamilyRoot().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
 	}
 
 	public TagFamily loadObjectByUuidNoPerm(String uuid, boolean errorIfNotFound) {
-		return delegate.loadObjectByUuidNoPerm(uuid, errorIfNotFound);
+		return boot.get().tagFamilyRoot().loadObjectByUuidNoPerm(uuid, errorIfNotFound);
 	}
 
 	public MeshVertex resolveToElement(Stack<String> stack) {
-		return delegate.resolveToElement(stack);
+		return boot.get().tagFamilyRoot().resolveToElement(stack);
 	}
 
 	public TagFamily create(InternalActionContext ac, EventQueueBatch batch) {
-		return delegate.create(ac, batch);
+		return boot.get().tagFamilyRoot().create(ac, batch);
 	}
 
 	public TagFamily create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		return delegate.create(ac, batch, uuid);
+		return boot.get().tagFamilyRoot().create(ac, batch, uuid);
 	}
 
 	public void addItem(TagFamily item) {
-		delegate.addItem(item);
+		boot.get().tagFamilyRoot().addItem(item);
 	}
 
 	public void removeItem(TagFamily item) {
-		delegate.removeItem(item);
+		boot.get().tagFamilyRoot().removeItem(item);
 	}
 
 	public String getRootLabel() {
-		return delegate.getRootLabel();
+		return boot.get().tagFamilyRoot().getRootLabel();
 	}
 
 	public Class<? extends TagFamily> getPersistanceClass() {
-		return delegate.getPersistanceClass();
+		return boot.get().tagFamilyRoot().getPersistanceClass();
 	}
 
 	public long computeCount() {
-		return delegate.computeCount();
+		return boot.get().tagFamilyRoot().computeCount();
 	}
 
 	public PermissionInfo getRolePermissions(MeshVertex vertex, InternalActionContext ac, String roleUuid) {
-		return delegate.getRolePermissions(vertex, ac, roleUuid);
+		return boot.get().tagFamilyRoot().getRolePermissions(vertex, ac, roleUuid);
 	}
 
 	public TraversalResult<? extends Role> getRolesWithPerm(MeshVertex vertex, GraphPermission perm) {
-		return delegate.getRolesWithPerm(vertex, perm);
+		return boot.get().tagFamilyRoot().getRolesWithPerm(vertex, perm);
 	}
 
 	public void delete(TagFamily element, BulkActionContext bac) {
-		delegate.delete(element, bac);
+		boot.get().tagFamilyRoot().delete(element, bac);
 	}
 
 }

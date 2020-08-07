@@ -90,7 +90,9 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 	public void testCreateWithNoPerm() throws Exception {
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName("test12345");
-		String groupRootUuid = db().tx(() -> meshRoot().getGroupRoot().getUuid());
+		String groupRootUuid = db().tx(tx -> {
+			return tx.data().groupDao().getUuid();
+		});
 
 		try (Tx tx = tx()) {
 			role().revokePermissions(tx.data().groupDao(), CREATE_PERM);
@@ -574,7 +576,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 	@Override
 	public void testPermissionResponse() {
 		GroupResponse group = client().findGroups().blockingGet().getData().get(0);
-		
+
 		assertThat(group.getPermissions()).hasNoPublishPermsSet();
 	}
 }
