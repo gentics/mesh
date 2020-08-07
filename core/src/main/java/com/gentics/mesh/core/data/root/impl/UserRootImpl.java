@@ -31,6 +31,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.DummyEventQueueBatch;
+import com.gentics.mesh.context.impl.NodeMigrationUser;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.HasPermissions;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -147,8 +148,10 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 		// Load the user vertex directly via the index - This way no record loading will occur.
 		MeshAuthUserImpl t = db().index().findByUuid(MeshAuthUserImpl.class, userUuid);
 		if (t != null) {
-			// Note: The found user will be directly returned. No check will be performed to verify that the found element is a user or assigned to the user root.
-			// This method will only be used when loading the user via the uuid which was loaded from an immutable JWT. We thus can avoid this check to increase performance.
+			// Note: The found user will be directly returned. No check will be performed to verify that the found element is a user or assigned to the user
+			// root.
+			// This method will only be used when loading the user via the uuid which was loaded from an immutable JWT. We thus can avoid this check to increase
+			// performance.
 			return t;
 		}
 		return null;
@@ -329,12 +332,14 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 
 	@Override
 	public User addCRUDPermissionOnRole(User user, HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode) {
-		addPermissionsOnRole(user, sourceNode, permission, targetNode, CREATE_PERM, READ_PERM, UPDATE_PERM, DELETE_PERM, PUBLISH_PERM, READ_PUBLISHED_PERM);
+		addPermissionsOnRole(user, sourceNode, permission, targetNode, CREATE_PERM, READ_PERM, UPDATE_PERM, DELETE_PERM, PUBLISH_PERM,
+			READ_PUBLISHED_PERM);
 		return user;
 	}
 
 	@Override
-	public User addPermissionsOnRole(User user, HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode, GraphPermission... toGrant) {
+	public User addPermissionsOnRole(User user, HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode,
+		GraphPermission... toGrant) {
 		// 2. Add CRUD permission to identified roles and target node
 		for (Role role : sourceNode.getRolesWithPerm(permission)) {
 			role.grantPermissions(targetNode, toGrant);
@@ -489,6 +494,9 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 
 	@Override
 	public boolean canReadNode(User user, InternalActionContext ac, Node node) {
+		if (user instanceof NodeMigrationUser) {
+			return true;
+		}
 		String version = ac.getVersioningParameters().getVersion();
 		if (ContainerType.forVersion(version) == ContainerType.PUBLISHED) {
 			return hasPermission(ac.getUser(), node, GraphPermission.READ_PUBLISHED_PERM);
@@ -622,6 +630,5 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 		bac.process();
 		mesh().permissionCache().clear();
 	}
-
 
 }
