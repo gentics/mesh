@@ -19,6 +19,7 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.node.NodeMovedEventModel;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
@@ -87,8 +88,9 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 		Node targetNode = folder("2015");
 
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode(initialBranchUuid()).getUuid());
-			role().revokePermissions(sourceNode, UPDATE_PERM);
+			roleDao.revokePermissions(role(), sourceNode, UPDATE_PERM);
 			tx.success();
 		}
 

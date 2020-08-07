@@ -384,4 +384,18 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 		// TODO implement this in all derived classes
 		throw new RuntimeException("Not implemented");
 	}
+
+	/**
+	 * Update the vertex using the action context information.
+	 *
+	 * @param ac
+	 * @param batch
+	 *            Batch to which entries will be added in order to update the search index.
+	 * @return true if the element was updated. Otherwise false
+	 */
+	default boolean update(T element, InternalActionContext ac, EventQueueBatch batch) {
+		// TODO implement this in all derived classes
+		throw new RuntimeException("Not implemented");
+	}
+
 }

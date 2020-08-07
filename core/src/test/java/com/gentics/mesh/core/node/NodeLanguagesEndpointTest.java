@@ -14,6 +14,7 @@ import static org.junit.Assert.assertFalse;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
@@ -74,7 +75,8 @@ public class NodeLanguagesEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testDeleteLanguageNoPerm() {
 		try (Tx tx = tx()) {
-			role().revokePermissions(content(), DELETE_PERM);
+			RoleRoot roleDao = tx.data().roleDao();
+			roleDao.revokePermissions(role(), content(), DELETE_PERM);
 			tx.success();
 		}
 		call(() -> client().deleteNode(PROJECT_NAME, contentUuid(), "en"), FORBIDDEN, "error_missing_perm", contentUuid(), DELETE_PERM.getRestPerm().getName());

@@ -47,6 +47,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -100,11 +101,12 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 	public void testReadByUUIDWithMissingPermission() throws Exception {
 		String uuid;
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			Role role = role();
 			TagFamily tagFamily = project().getTagFamilyRoot().findAll().iterator().next();
 			uuid = tagFamily.getUuid();
 			assertNotNull(tagFamily);
-			role.revokePermissions(tagFamily, READ_PERM);
+			roleDao.revokePermissions(role, tagFamily, READ_PERM);
 			tx.success();
 		}
 
@@ -226,7 +228,8 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		request.setName("newTagFamily");
 		String tagFamilyRootUuid = db().tx(() -> project().getTagFamilyRoot().getUuid());
 		try (Tx tx = tx()) {
-			role().revokePermissions(project().getTagFamilyRoot(), CREATE_PERM);
+			RoleRoot roleDao = tx.data().roleDao();
+			roleDao.revokePermissions(role(), project().getTagFamilyRoot(), CREATE_PERM);
 			tx.success();
 		}
 		call(() -> client().createTagFamily(PROJECT_NAME, request), FORBIDDEN, "error_missing_perm", tagFamilyRootUuid,
@@ -274,7 +277,8 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 	@Test
 	public void testCreateWithoutPerm() {
 		try (Tx tx = tx()) {
-			role().revokePermissions(project().getTagFamilyRoot(), CREATE_PERM);
+			RoleRoot roleDao = tx.data().roleDao();
+			roleDao.revokePermissions(role(), project().getTagFamilyRoot(), CREATE_PERM);
 			tx.success();
 		}
 		try (Tx tx = tx()) {
@@ -359,8 +363,9 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 		TagFamily basicTagFamily = tagFamily("basic");
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			Role role = role();
-			role.revokePermissions(basicTagFamily, DELETE_PERM);
+			roleDao.revokePermissions(role, basicTagFamily, DELETE_PERM);
 			tx.success();
 		}
 
@@ -487,9 +492,10 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		String name;
 		TagFamily tagFamily = tagFamily("basic");
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			uuid = tagFamily.getUuid();
 			name = tagFamily.getName();
-			role().revokePermissions(tagFamily, UPDATE_PERM);
+			roleDao.revokePermissions(role(), tagFamily, UPDATE_PERM);
 			tx.success();
 		}
 

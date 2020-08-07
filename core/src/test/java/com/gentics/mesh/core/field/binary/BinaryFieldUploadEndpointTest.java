@@ -34,6 +34,7 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -68,8 +69,9 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		String uuid = tx(() -> node.getUuid());
 
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			prepareSchema(node, "", "binary");
-			role().revokePermissions(node, UPDATE_PERM);
+			roleDao.revokePermissions(role(), node, UPDATE_PERM);
 			tx.success();
 		}
 

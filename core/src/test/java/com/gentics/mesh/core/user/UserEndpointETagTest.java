@@ -11,6 +11,7 @@ import static org.junit.Assert.assertNull;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
@@ -48,7 +49,8 @@ public class UserEndpointETagTest extends AbstractMeshTest {
 		assertEquals(etag, etag2);
 
 		try (Tx tx = tx()) {
-			role().revokePermissions(user(), UPDATE_PERM);
+			RoleRoot roleDao = tx.data().roleDao();
+			roleDao.revokePermissions(role(), user(), UPDATE_PERM);
 			tx.success();
 		}
 

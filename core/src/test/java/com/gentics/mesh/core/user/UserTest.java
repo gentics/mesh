@@ -35,6 +35,7 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
+import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.db.Tx;
@@ -226,11 +227,12 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testFindUsersOfGroup() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			UserRoot userRoot = meshRoot().getUserRoot();
 			GroupRoot groupRoot = tx.data().groupDao();
 			User extraUser = userRoot.create("extraUser", user());
 			groupRoot.addUser(group(), extraUser);
-			role().grantPermissions(extraUser, GraphPermission.READ_PERM);
+			roleDao.grantPermissions(role(), extraUser, GraphPermission.READ_PERM);
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			MeshAuthUser requestUser = ac.getUser();
@@ -314,8 +316,9 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testInheritPermissions() {
 		try (Tx tx = tx()) {
-			UserRoot userRoot = tx.data().userDao();
-			GroupRoot groupRoot = tx.data().groupDao();
+			RoleRoot roleDao = tx.data().roleDao();
+			UserRoot userDao = tx.data().userDao();
+			GroupRoot groupDao = tx.data().groupDao();
 
 			Node sourceNode = folder("news");
 			Node targetNode = folder("2015");
@@ -332,45 +335,44 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			Group newGroup = meshRoot().getGroupRoot().create("extraGroup", user());
 			newUser = meshRoot().getUserRoot().create("Anton", user());
-			groupRoot.addUser(newGroup, newUser);
+			groupDao.addUser(newGroup, newUser);
 
 			// Create test roles
 			roleWithDeletePerm = meshRoot().getRoleRoot().create("roleWithDeletePerm", newUser);
-			groupRoot.addRole(newGroup, roleWithDeletePerm);
-			roleWithDeletePerm.grantPermissions(sourceNode, GraphPermission.DELETE_PERM);
+			groupDao.addRole(newGroup, roleWithDeletePerm);
+			roleDao.grantPermissions(roleWithDeletePerm, sourceNode, GraphPermission.DELETE_PERM);
 
 			roleWithReadPerm = meshRoot().getRoleRoot().create("roleWithReadPerm", newUser);
-			groupRoot.addRole(newGroup, roleWithReadPerm);
-			roleWithReadPerm.grantPermissions(sourceNode, GraphPermission.READ_PERM);
+			groupDao.addRole(newGroup, roleWithReadPerm);
+			roleDao.grantPermissions(roleWithReadPerm, sourceNode, GraphPermission.READ_PERM);
 
 			roleWithUpdatePerm = meshRoot().getRoleRoot().create("roleWithUpdatePerm", newUser);
-			groupRoot.addRole(newGroup, roleWithUpdatePerm);
-			roleWithUpdatePerm.grantPermissions(sourceNode, GraphPermission.UPDATE_PERM);
+			groupDao.addRole(newGroup, roleWithUpdatePerm);
+			roleDao.grantPermissions(roleWithUpdatePerm, sourceNode, GraphPermission.UPDATE_PERM);
 
 			roleWithAllPerm = meshRoot().getRoleRoot().create("roleWithAllPerm", newUser);
-			groupRoot.addRole(newGroup, roleWithAllPerm);
-			roleWithAllPerm.grantPermissions(sourceNode, GraphPermission.CREATE_PERM, GraphPermission.UPDATE_PERM, GraphPermission.DELETE_PERM,
+			groupDao.addRole(newGroup, roleWithAllPerm);
+			roleDao.grantPermissions(roleWithAllPerm, sourceNode, GraphPermission.CREATE_PERM, GraphPermission.UPDATE_PERM, GraphPermission.DELETE_PERM,
 				GraphPermission.READ_PERM, GraphPermission.READ_PUBLISHED_PERM, PUBLISH_PERM);
 
 			roleWithCreatePerm = meshRoot().getRoleRoot().create("roleWithCreatePerm", newUser);
-			groupRoot.addRole(newGroup, roleWithCreatePerm);
-			roleWithCreatePerm.grantPermissions(sourceNode, GraphPermission.CREATE_PERM);
+			groupDao.addRole(newGroup, roleWithCreatePerm);
+			roleDao.grantPermissions(roleWithCreatePerm, sourceNode, GraphPermission.CREATE_PERM);
 
 			roleWithNoPerm = meshRoot().getRoleRoot().create("roleWithNoPerm", newUser);
-			groupRoot.addRole(newGroup, roleWithNoPerm);
-			userRoot.inheritRolePermissions(user(), sourceNode, targetNode);
+			groupDao.addRole(newGroup, roleWithNoPerm);
+			userDao.inheritRolePermissions(user(), sourceNode, targetNode);
 			ac.data().clear();
 			for (GraphPermission perm : GraphPermission.values()) {
 				assertTrue(
 					"The new user should have all permissions to CRUD the target node since he is member of a group that has been assigned to roles with various permissions that cover CRUD. Failed for permission {"
 						+ perm.name() + "}",
-					userRoot.hasPermission(newUser, targetNode, perm));
+					userDao.hasPermission(newUser, targetNode, perm));
 			}
 
 			// roleWithAllPerm
 			for (GraphPermission perm : GraphPermission.values()) {
-				assertTrue("The role should grant all permissions to the target node. Failed for permission {" + perm.name() + "}", roleWithAllPerm
-					.hasPermission(perm, targetNode));
+				assertTrue("The role should grant all permissions to the target node. Failed for permission {" + perm.name() + "}", roleDao.hasPermission(roleWithAllPerm, perm, targetNode));
 			}
 
 			// roleWithNoPerm
@@ -378,26 +380,26 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 				assertFalse(
 					"No extra permissions should be assigned to the role that did not have any permissions on the source element. Failed for permission {"
 						+ perm.name() + "}",
-					roleWithNoPerm.hasPermission(perm, targetNode));
+					roleDao.hasPermission(roleWithNoPerm, perm, targetNode));
 			}
 
 			// roleWithDeletePerm
-			assertFalse("The role should only have delete permissions on the object", roleWithDeletePerm.hasPermission(CREATE_PERM, targetNode));
-			assertFalse("The role should only have delete permissions on the object", roleWithDeletePerm.hasPermission(READ_PERM, targetNode));
-			assertFalse("The role should only have delete permissions on the object", roleWithDeletePerm.hasPermission(UPDATE_PERM, targetNode));
-			assertTrue("The role should only have delete permissions on the object", roleWithDeletePerm.hasPermission(DELETE_PERM, targetNode));
+			assertFalse("The role should only have delete permissions on the object", roleDao.hasPermission(roleWithDeletePerm, CREATE_PERM, targetNode));
+			assertFalse("The role should only have delete permissions on the object", roleDao.hasPermission(roleWithDeletePerm, READ_PERM, targetNode));
+			assertFalse("The role should only have delete permissions on the object", roleDao.hasPermission(roleWithDeletePerm, UPDATE_PERM, targetNode));
+			assertTrue("The role should only have delete permissions on the object", roleDao.hasPermission(roleWithDeletePerm, DELETE_PERM, targetNode));
 
 			// roleWithReadPerm
-			assertFalse("The role should only have read permissions on the object", roleWithReadPerm.hasPermission(CREATE_PERM, targetNode));
-			assertTrue("The role should only have read permissions on the object", roleWithReadPerm.hasPermission(READ_PERM, targetNode));
-			assertFalse("The role should only have read permissions on the object", roleWithReadPerm.hasPermission(UPDATE_PERM, targetNode));
-			assertFalse("The role should only have read permissions on the object", roleWithReadPerm.hasPermission(DELETE_PERM, targetNode));
+			assertFalse("The role should only have read permissions on the object", roleDao.hasPermission(roleWithReadPerm, CREATE_PERM, targetNode));
+			assertTrue("The role should only have read permissions on the object", roleDao.hasPermission(roleWithReadPerm, READ_PERM, targetNode));
+			assertFalse("The role should only have read permissions on the object", roleDao.hasPermission(roleWithReadPerm, UPDATE_PERM, targetNode));
+			assertFalse("The role should only have read permissions on the object", roleDao.hasPermission(roleWithReadPerm, DELETE_PERM, targetNode));
 
 			// roleWithUpdatePerm
-			assertFalse("The role should only have update permissions on the object", roleWithUpdatePerm.hasPermission(CREATE_PERM, targetNode));
-			assertFalse("The role should only have update permissions on the object", roleWithUpdatePerm.hasPermission(READ_PERM, targetNode));
-			assertTrue("The role should only have update permissions on the object", roleWithUpdatePerm.hasPermission(UPDATE_PERM, targetNode));
-			assertFalse("The role should only have update permissions on the object", roleWithUpdatePerm.hasPermission(DELETE_PERM, targetNode));
+			assertFalse("The role should only have update permissions on the object", roleDao.hasPermission(roleWithUpdatePerm, CREATE_PERM, targetNode));
+			assertFalse("The role should only have update permissions on the object", roleDao.hasPermission(roleWithUpdatePerm, READ_PERM, targetNode));
+			assertTrue("The role should only have update permissions on the object", roleDao.hasPermission(roleWithUpdatePerm, UPDATE_PERM, targetNode));
+			assertFalse("The role should only have update permissions on the object", roleDao.hasPermission(roleWithUpdatePerm, DELETE_PERM, targetNode));
 		}
 
 	}

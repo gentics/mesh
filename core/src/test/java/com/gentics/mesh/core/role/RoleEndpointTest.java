@@ -98,7 +98,9 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testCreateWithNoPerm() throws Exception {
 
 		try (Tx tx = tx()) {
-			role().revokePermissions(meshRoot().getRoleRoot(), CREATE_PERM);
+			RoleRoot roleDao = tx.data().roleDao();
+
+			roleDao.revokePermissions(role(), meshRoot().getRoleRoot(), CREATE_PERM);
 			tx.success();
 		}
 
@@ -161,8 +163,9 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.setName("new_role");
 
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			// Add needed permission to group
-			role().revokePermissions(meshRoot().getRoleRoot(), CREATE_PERM);
+			roleDao.revokePermissions(role(), meshRoot().getRoleRoot(), CREATE_PERM);
 			tx.success();
 		}
 
@@ -201,12 +204,13 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testReadByUUID() throws Exception {
 		Role extraRole;
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			GroupRoot groupRoot = tx.data().groupDao();
 			RoleRoot roleRoot = meshRoot().getRoleRoot();
 			extraRole = roleRoot.create("extra role", user());
 			groupRoot.addRole(group(), extraRole);
 			assertNotNull("The UUID of the role must not be null.", extraRole.getUuid());
-			role().grantPermissions(extraRole, READ_PERM);
+			roleDao.grantPermissions(role(), extraRole, READ_PERM);
 			tx.success();
 		}
 
@@ -229,13 +233,14 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testReadByUUIDWithMissingPermission() throws Exception {
 		String extraRoleUuid;
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			GroupRoot groupRoot = tx.data().groupDao();
 			RoleRoot roleRoot = meshRoot().getRoleRoot();
 			Role extraRole = roleRoot.create("extra role", user());
 			extraRoleUuid = extraRole.getUuid();
 			groupRoot.addRole(group(), extraRole);
 			// Revoke read permission from the role
-			role().revokePermissions(extraRole, READ_PERM);
+			roleDao.revokePermissions(role(), extraRole, READ_PERM);
 			tx.success();
 		}
 
@@ -246,7 +251,8 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testReadOwnRoleByUUIDWithMissingPermission() throws Exception {
 		try (Tx tx = tx()) {
-			role().revokePermissions(role(), READ_PERM);
+			RoleRoot roleDao = tx.data().roleDao();
+			roleDao.revokePermissions(role(), role(), READ_PERM);
 			tx.success();
 		}
 
@@ -261,17 +267,18 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		final int initialRolesCount = roles().size();
 
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			GroupRoot groupRoot = tx.data().groupDao();
 			RoleRoot roleRoot = meshRoot().getRoleRoot();
 			Role noPermRole = roleRoot.create(noPermRoleName, user());
 
-			role().grantPermissions(group(), READ_PERM);
+			roleDao.grantPermissions(role(), group(), READ_PERM);
 
 			// Create and save some roles
 			for (int i = 0; i < nRoles; i++) {
 				Role extraRole = roleRoot.create("extra role " + i, user());
 				groupRoot.addRole(group(), extraRole);
-				role().grantPermissions(extraRole, READ_PERM);
+				roleDao.grantPermissions(role(), extraRole, READ_PERM);
 			}
 			// Role with no permission
 			groupRoot.addRole(group(), noPermRole);
@@ -340,11 +347,12 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Override
 	public void testUpdate() throws JsonGenerationException, JsonMappingException, IOException, Exception {
 		String extraRoleUuid = tx(tx -> {
+			RoleRoot roleDao = tx.data().roleDao();
 			GroupRoot groupRoot = tx.data().groupDao();
 			RoleRoot roleRoot = meshRoot().getRoleRoot();
 			Role extraRole = roleRoot.create("extra role", user());
 			groupRoot.addRole(group(), extraRole);
-			role().grantPermissions(extraRole, UPDATE_PERM);
+			roleDao.grantPermissions(role(), extraRole, UPDATE_PERM);
 			return extraRole.getUuid();
 		});
 
@@ -374,7 +382,8 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
 		try (Tx tx = tx()) {
-			role().revokePermissions(role(), UPDATE_PERM);
+			RoleRoot roleDao = tx.data().roleDao();
+			roleDao.revokePermissions(role(), role(), UPDATE_PERM);
 			tx.success();
 		}
 
@@ -409,7 +418,8 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testUpdateOwnRole() throws JsonGenerationException, JsonMappingException, IOException, Exception {
 		try (Tx tx = tx()) {
-			role().revokePermissions(role(), UPDATE_PERM);
+			RoleRoot roleDao = tx.data().roleDao();
+			roleDao.revokePermissions(role(), role(), UPDATE_PERM);
 			tx.success();
 		}
 		RoleUpdateRequest restRole = new RoleUpdateRequest();
@@ -418,7 +428,8 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// Add the missing permission and try again
 		try (Tx tx = tx()) {
-			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
+			RoleRoot roleDao = tx.data().roleDao();
+			roleDao.grantPermissions(role(), role(), GraphPermission.UPDATE_PERM);
 			tx.success();
 		}
 
@@ -437,11 +448,12 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testDeleteByUUID() throws Exception {
 
 		String extraRoleUuid = tx(tx -> {
+			RoleRoot roleDao = tx.data().roleDao();
 			GroupRoot groupRoot = tx.data().groupDao();
 			RoleRoot roleRoot = meshRoot().getRoleRoot();
 			Role extraRole = roleRoot.create("extra role", user());
 			groupRoot.addRole(group(), extraRole);
-			role().grantPermissions(extraRole, DELETE_PERM);
+			roleDao.grantPermissions(role(), extraRole, DELETE_PERM);
 			return extraRole.getUuid();
 		});
 
@@ -468,7 +480,8 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 		try (Tx tx = tx()) {
-			role().revokePermissions(role(), DELETE_PERM);
+			RoleRoot roleDao = tx.data().roleDao();
+			roleDao.revokePermissions(role(), role(), DELETE_PERM);
 			tx.success();
 		}
 

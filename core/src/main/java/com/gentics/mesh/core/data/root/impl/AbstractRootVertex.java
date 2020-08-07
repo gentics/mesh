@@ -13,9 +13,9 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.UserRoot;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -86,7 +86,8 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	}
 
 	public final String getETag(T element, InternalActionContext ac) {
-		UserRoot userRoot = Tx.get().data().userDao();
+		UserRoot userRoot = mesh().boot().userDao();
+		RoleRoot roleDao = mesh().boot().roleDao();
 
 		StringBuilder keyBuilder = new StringBuilder();
 		keyBuilder.append(getUuid());
@@ -107,7 +108,7 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 		if (!isEmpty(roleUuid)) {
 			Role role = mesh().boot().meshRoot().getRoleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 			if (role != null) {
-				Set<GraphPermission> permSet = role.getPermissions(element);
+				Set<GraphPermission> permSet = roleDao.getPermissions(role, element);
 				Set<String> humanNames = new HashSet<>();
 				for (GraphPermission permission : permSet) {
 					humanNames.add(permission.getRestPerm().getName());

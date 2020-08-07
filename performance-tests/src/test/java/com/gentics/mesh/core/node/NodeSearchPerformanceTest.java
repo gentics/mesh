@@ -12,6 +12,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -57,9 +58,10 @@ public class NodeSearchPerformanceTest extends AbstractMeshTest {
 
 		// Revoke all but one permission
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			for (Node node : project().getNodeRoot().findAll()) {
 				if (!node.getUuid().equals(lastNodeUuid)) {
-					role().revokePermissions(node, READ_PERM);
+					roleDao.revokePermissions(role(), node, READ_PERM);
 				}
 			}
 		}

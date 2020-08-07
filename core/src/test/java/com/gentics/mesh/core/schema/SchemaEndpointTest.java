@@ -48,6 +48,7 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -157,7 +158,8 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		SchemaCreateRequest schema = FieldUtil.createMinimalValidSchemaCreateRequest();
 		String schemaRootUuid = db().tx(() -> meshRoot().getSchemaContainerRoot().getUuid());
 		try (Tx tx = tx()) {
-			role().revokePermissions(meshRoot().getSchemaContainerRoot(), CREATE_PERM);
+			RoleRoot roleDao = tx.data().roleDao();
+			roleDao.revokePermissions(role(), meshRoot().getSchemaContainerRoot(), CREATE_PERM);
 			tx.success();
 		}
 		call(() -> client().createSchema(schema), FORBIDDEN, "error_missing_perm", schemaRootUuid, CREATE_PERM.getRestPerm().getName());
@@ -210,6 +212,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		final int nSchemas = 22;
 
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			SchemaContainerRoot schemaRoot = meshRoot().getSchemaContainerRoot();
 
 			// Create schema with no read permission
@@ -227,7 +230,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 				schema.setName("extra_schema_" + i);
 				SchemaContainer extraSchema = schemaRoot.create(schema, user());
 				extraSchema.getLatestVersion().setSchema(dummySchema);
-				role().grantPermissions(extraSchema, READ_PERM);
+				roleDao.grantPermissions(role(), extraSchema, READ_PERM);
 			}
 			totalSchemas = nSchemas + data().getSchemaContainers().size();
 			tx.success();
@@ -352,12 +355,13 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
 		String uuid = tx(() -> schemaContainer("content").getUuid());
-		tx(() -> {
+		tx(tx -> {
+			RoleRoot roleDao = tx.data().roleDao();
 			SchemaContainer schema = schemaContainer("content");
-			role().grantPermissions(schema, DELETE_PERM);
-			role().grantPermissions(schema, UPDATE_PERM);
-			role().grantPermissions(schema, CREATE_PERM);
-			role().revokePermissions(schema, READ_PERM);
+			roleDao.grantPermissions(role(), schema, DELETE_PERM);
+			roleDao.grantPermissions(role(), schema, UPDATE_PERM);
+			roleDao.grantPermissions(role(), schema, CREATE_PERM);
+			roleDao.revokePermissions(role(), schema, READ_PERM);
 		});
 
 		call(() -> client().findSchemaByUuid(uuid), FORBIDDEN, "error_missing_perm", uuid, READ_PERM.getRestPerm().getName());
@@ -642,7 +646,8 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 		SchemaContainer schema = schemaContainer("content");
 		try (Tx tx = tx()) {
-			role().revokePermissions(schema, DELETE_PERM);
+			RoleRoot roleDao = tx.data().roleDao();
+			roleDao.revokePermissions(role(), schema, DELETE_PERM);
 			tx.success();
 		}
 
@@ -727,8 +732,9 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
 		String schemaUuid;
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			SchemaContainer schema = schemaContainer("content");
-			role().revokePermissions(schema, UPDATE_PERM);
+			roleDao.revokePermissions(role(), schema, UPDATE_PERM);
 			schemaUuid = schema.getUuid();
 			tx.success();
 		}

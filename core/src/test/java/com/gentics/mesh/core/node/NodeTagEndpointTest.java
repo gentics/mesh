@@ -24,6 +24,7 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchReference;
@@ -118,8 +119,9 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		Node node = folder("2015");
 		Tag tag = tag("red");
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			assertFalse(node.getTags(project().getLatestBranch()).list().contains(tag));
-			role().revokePermissions(node, UPDATE_PERM);
+			roleDao.revokePermissions(role(), node, UPDATE_PERM);
 			tx.success();
 		}
 
@@ -139,8 +141,9 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		Tag tag = tag("red");
 
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			assertFalse(node.getTags(project().getLatestBranch()).list().contains(tag));
-			role().revokePermissions(tag, READ_PERM);
+			roleDao.revokePermissions(role(), tag, READ_PERM);
 			tx.success();
 		}
 
@@ -274,8 +277,9 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		Tag tag = tag("bike");
 
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			assertTrue(node.getTags(project().getLatestBranch()).list().contains(tag));
-			role().revokePermissions(node, UPDATE_PERM);
+			roleDao.revokePermissions(role(), node, UPDATE_PERM);
 			tx.success();
 		}
 
@@ -457,8 +461,9 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		Tag tag = tag("bike");
 
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			assertTrue(node.getTags(project().getLatestBranch()).list().contains(tag));
-			role().revokePermissions(tag, READ_PERM);
+			roleDao.revokePermissions(role(), tag, READ_PERM);
 			tx.success();
 		}
 

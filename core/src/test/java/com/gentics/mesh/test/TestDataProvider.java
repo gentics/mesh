@@ -42,6 +42,7 @@ import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
@@ -209,12 +210,14 @@ public class TestDataProvider {
 	}
 
 	private void addPermissions(Collection<? extends MeshVertex> elements) {
+		RoleRoot roleDao = Tx.get().data().roleDao();
+
 		Role role = userInfo.getRole();
 		for (MeshVertex meshVertex : elements) {
 			if (log.isTraceEnabled()) {
 				log.trace("Granting CRUD permissions on {" + meshVertex.getElement().getId() + "} with role {" + role.getElement().getId() + "}");
 			}
-			role.grantPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM, READ_PUBLISHED_PERM, PUBLISH_PERM);
+			roleDao.grantPermissions(role, meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM, READ_PUBLISHED_PERM, PUBLISH_PERM);
 		}
 	}
 
@@ -311,6 +314,7 @@ public class TestDataProvider {
 	}
 
 	public UserInfo createUserInfo(String username, String firstname, String lastname) {
+		RoleRoot roleDao = Tx.get().data().roleDao();
 
 		String password = "test123";
 		String hashedPassword = "$2a$10$n/UeWGbY9c1FHFyCqlVsY.XvNYmZ7Jjgww99SF94q/B5nomYuquom";
@@ -344,7 +348,7 @@ public class TestDataProvider {
 		String roleName = username + "_role";
 		Role role = root.getRoleRoot().create(roleName, user);
 		groupRoot.addRole(group, role);
-		role.grantPermissions(role, READ_PERM);
+		roleDao.grantPermissions(role, role, READ_PERM);
 		roles.put(roleName, role);
 
 		return new UserInfo(user, group, role, password);

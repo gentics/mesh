@@ -25,6 +25,7 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -182,7 +183,8 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 			assertThat(call(() -> client().publishNode(PROJECT_NAME, nodeUuid))).as("Publish Status").isPublished("en").isPublished("de");
 
 			db().tx(() -> {
-				role().revokePermissions(node, PUBLISH_PERM);
+				RoleRoot roleDao = tx.data().roleDao();
+				roleDao.revokePermissions(role(), node, PUBLISH_PERM);
 				return null;
 			});
 			call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid), FORBIDDEN, "error_missing_perm", nodeUuid,
@@ -199,7 +201,8 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 			assertThat(call(() -> client().publishNode(PROJECT_NAME, nodeUuid))).as("Publish Status").isPublished("en").isPublished("de");
 
 			db().tx(() -> {
-				role().revokePermissions(node, PUBLISH_PERM);
+				RoleRoot roleDao = tx.data().roleDao();
+				roleDao.revokePermissions(role(), node, PUBLISH_PERM);
 				return null;
 			});
 			call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "en"), FORBIDDEN, "error_missing_perm", nodeUuid,

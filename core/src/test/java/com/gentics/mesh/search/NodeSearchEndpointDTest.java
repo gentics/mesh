@@ -24,6 +24,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -152,6 +153,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 	public void testSearchManyNodesWithMicronodes() throws Exception {
 		long numAdditionalNodes = 99;
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			String branchUuid = project().getLatestBranch().getUuid();
 			addMicronodeField();
 			User user = user();
@@ -169,7 +171,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 				MicronodeGraphField vcardField = fieldContainer.createMicronode("vcard", microschemaContainers().get("vcard").getLatestVersion());
 				vcardField.getMicronode().createString("firstName").setString("Mickey");
 				vcardField.getMicronode().createString("lastName").setString("Mouse");
-				role().grantPermissions(node, GraphPermission.READ_PERM);
+				roleDao.grantPermissions(role(), node, GraphPermission.READ_PERM);
 			}
 			tx.success();
 		}

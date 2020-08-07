@@ -29,6 +29,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldEndpointTest;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
@@ -364,9 +365,10 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	public void testReadNodeExpandAllNoPerm() throws IOException {
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			// Revoke the permission to the referenced node
 			Node referencedNode = folder("news");
-			role().revokePermissions(referencedNode, GraphPermission.READ_PERM);
+			roleDao.revokePermissions(role(), referencedNode, GraphPermission.READ_PERM);
 
 			Node node = folder("2015");
 

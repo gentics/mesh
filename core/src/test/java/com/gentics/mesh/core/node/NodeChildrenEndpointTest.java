@@ -21,6 +21,7 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -101,10 +102,11 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 	public void testReadNodeByUUIDAndCheckChildrenPermissions() throws Exception {
 		Node node = folder("news");
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
 
-			role().revokePermissions(folder("2015"), READ_PERM);
+			roleDao.revokePermissions(role(), folder("2015"), READ_PERM);
 			tx.success();
 		}
 
@@ -159,9 +161,10 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 		Node node = folder("news");
 		Node nodeWithNoPerm = folder("2015");
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
-			role().revokePermissions(nodeWithNoPerm, READ_PERM);
+			roleDao.revokePermissions(role(), nodeWithNoPerm, READ_PERM);
 			tx.success();
 		}
 
@@ -179,9 +182,10 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 	public void testReadNodeChildrenWithNoPermission() throws Exception {
 		Node node = folder("news");
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
-			role().revokePermissions(node, READ_PERM);
+			roleDao.revokePermissions(role(), node, READ_PERM);
 			tx.success();
 		}
 

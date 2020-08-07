@@ -27,6 +27,7 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.GroupRoot;
+import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ListResponse;
@@ -46,12 +47,13 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 	public void testGetUsersByGroup() throws Exception {
 		String extraUserUuid;
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			GroupRoot groupRoot = tx.data().groupDao();
 			UserRoot userRoot = meshRoot().getUserRoot();
 			User extraUser = userRoot.create("extraUser", user());
 			groupRoot.addUser(group(), extraUser);
 			extraUserUuid = extraUser.getUuid();
-			role().grantPermissions(extraUser, READ_PERM);
+			roleDao.grantPermissions(role(), extraUser, READ_PERM);
 			tx.success();
 		}
 
@@ -74,10 +76,11 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 	public void testAddUserToGroupWithBogusGroupId() throws Exception {
 		String userUuid;
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			UserRoot userRoot = meshRoot().getUserRoot();
 			User extraUser = userRoot.create("extraUser", user());
 			userUuid = extraUser.getUuid();
-			role().grantPermissions(extraUser, READ_PERM);
+			roleDao.grantPermissions(role(), extraUser, READ_PERM);
 			tx.success();
 		}
 
@@ -92,12 +95,13 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 		final String groupUuid = groupUuid();
 		final String groupName = tx(() -> group().getName());
 		User extraUser = tx(tx -> {
+			RoleRoot roleDao = tx.data().roleDao();
 			GroupRoot groupRoot = tx.data().groupDao();
 			UserRoot userRoot = meshRoot().getUserRoot();
 			User user = userRoot.create("extraUser", user());
 			user.setFirstname(userFirstname);
 			user.setLastname(userLastname);
-			role().grantPermissions(user, READ_PERM);
+			roleDao.grantPermissions(role(), user, READ_PERM);
 			assertFalse("User should not be member of the group.", groupRoot.hasUser(group(), user));
 			return user;
 		});
@@ -138,11 +142,12 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 	public void testAddUserToGroupWithoutPermOnGroup() throws Exception {
 		User extraUser;
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			Group group = group();
 			UserRoot userRoot = meshRoot().getUserRoot();
 			extraUser = userRoot.create("extraUser", user());
-			role().grantPermissions(extraUser, READ_PERM);
-			role().revokePermissions(group, UPDATE_PERM);
+			roleDao.grantPermissions(role(), extraUser, READ_PERM);
+			roleDao.revokePermissions(role(), group, UPDATE_PERM);
 			tx.success();
 		}
 
@@ -159,9 +164,10 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 	public void testAddUserToGroupWithoutPermOnUser() throws Exception {
 		User extraUser;
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			UserRoot userRoot = meshRoot().getUserRoot();
 			extraUser = userRoot.create("extraUser", user());
-			role().grantPermissions(extraUser, DELETE_PERM);
+			roleDao.grantPermissions(role(), extraUser, DELETE_PERM);
 			tx.success();
 		}
 
@@ -176,9 +182,10 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testRemoveUserFromGroupWithoutPerm() throws Exception {
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			GroupRoot groupRoot = tx.data().groupDao();
 			assertTrue("User should be a member of the group.", groupRoot.hasUser(group(), user()));
-			role().revokePermissions(group(), UPDATE_PERM);
+			roleDao.revokePermissions(role(), group(), UPDATE_PERM);
 			tx.success();
 		}
 
@@ -198,12 +205,13 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 		final String userLastname = "Einstein";
 
 		User extraUser = tx(tx -> {
+			RoleRoot roleDao = tx.data().roleDao();
 			UserRoot userRoot = meshRoot().getUserRoot();
 			GroupRoot groupRoot = tx.data().groupDao();
 			User user = userRoot.create("extraUser", user());
 			user.setFirstname(userFirstname);
 			user.setLastname(userLastname);
-			role().grantPermissions(user, READ_PERM);
+			roleDao.grantPermissions(role(), user, READ_PERM);
 			groupRoot.addUser(group(), user);
 			return user;
 		});

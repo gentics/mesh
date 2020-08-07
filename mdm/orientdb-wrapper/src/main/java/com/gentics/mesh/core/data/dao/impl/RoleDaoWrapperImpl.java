@@ -13,10 +13,12 @@ import com.gentics.madl.traversal.RawTraversalResult;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RoleRoot;
@@ -422,4 +424,28 @@ public class RoleDaoWrapperImpl implements RoleDaoWrapper {
 		boot.get().roleRoot().delete(element, bac);
 	}
 
+	@Override
+	public void grantPermissions(Role role, MeshVertex vertex, GraphPermission... permissions) {
+		delegate.grantPermissions(role, vertex, permissions);
+	}
+
+	@Override
+	public void revokePermissions(Role role, MeshVertex vertex, GraphPermission... permissions) {
+		delegate.revokePermissions(role, vertex, permissions);
+	}
+
+	@Override
+	public Set<GraphPermission> getPermissions(Role role, MeshVertex element) {
+		return delegate.getPermissions(role, element);
+	}
+
+	@Override
+	public Page<? extends Group> getGroups(Role role, User user, PagingParameters params) {
+		return delegate.getGroups(role, user, params);
+	}
+
+	@Override
+	public boolean hasPermission(Role role, GraphPermission permission, MeshVertex element) {
+		return delegate.hasPermission(role, permission, element);
+	}
 }
