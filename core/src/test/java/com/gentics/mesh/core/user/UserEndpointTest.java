@@ -55,6 +55,7 @@ import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.GroupRoot;
+import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ListResponse;
@@ -159,8 +160,9 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// 2. Logout the current client user
 		client().logout().blockingGet();
-		tx(() -> {
-			role().revokePermissions(user(), UPDATE_PERM);
+		tx(tx -> {
+			RoleRoot roleDao = tx.data().roleDao();
+			roleDao.revokePermissions(role(), user(), UPDATE_PERM);
 		});
 
 		// 3. Update the user using the token code
@@ -190,8 +192,9 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertNotNull("The user token code should now be set to a non-null value but it was not", tx(() -> user().getResetToken()));
 
 		// Make sure the user has no actual update perm anymore
-		tx(() -> {
-			role().revokePermissions(user(), UPDATE_PERM);
+		tx(tx -> {
+			RoleRoot roleDao = tx.data().roleDao();
+			roleDao.revokePermissions(role(), user(), UPDATE_PERM);
 		});
 
 		// 2. Update the user using the token code
@@ -304,7 +307,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testIssueAPIKeyWithoutPerm() {
 		tx((tx) -> {
-			role().revokePermissions(user(), UPDATE_PERM);
+			RoleRoot roleDao = tx.data().roleDao();
+			roleDao.revokePermissions(role(), user(), UPDATE_PERM);
 			tx.success();
 		});
 
@@ -320,8 +324,9 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		call(() -> client().issueAPIToken(uuid));
 
 		tx((tx) -> {
+			RoleRoot roleDao = tx.data().roleDao();
 			User user = user();
-			role().revokePermissions(user, UPDATE_PERM);
+			roleDao.revokePermissions(role(), user, UPDATE_PERM);
 			tx.success();
 		});
 
@@ -333,13 +338,14 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		TagFamily tagFamily;
 		String pathToElement;
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			data().addTagFamilies();
 			tagFamily = data().getTagFamily("colors");
-			role().grantPermissions(tagFamily, GraphPermission.values());
+			roleDao.grantPermissions(role(), tagFamily, GraphPermission.values());
 
 			// Add permission on own role
-			role().grantPermissions(tagFamily, GraphPermission.UPDATE_PERM);
-			assertTrue(role().hasPermission(GraphPermission.UPDATE_PERM, tagFamily));
+			roleDao.grantPermissions(role(), tagFamily, GraphPermission.UPDATE_PERM);
+			assertTrue(roleDao.hasPermission(role(), GraphPermission.UPDATE_PERM, tagFamily));
 			pathToElement = "projects/" + project().getUuid() + "/tagFamilies/" + tagFamily.getUuid();
 			tx.success();
 		}
@@ -350,9 +356,10 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertThat(response).hasPerm(Permission.basicPermissions());
 
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			// Revoke single permission and check again
-			role().revokePermissions(tagFamily, GraphPermission.UPDATE_PERM);
-			assertFalse(role().hasPermission(GraphPermission.UPDATE_PERM, tagFamily));
+			roleDao.revokePermissions(role(), tagFamily, GraphPermission.UPDATE_PERM);
+			assertFalse(roleDao.hasPermission(role(), GraphPermission.UPDATE_PERM, tagFamily));
 			tx.success();
 		}
 		UserPermissionResponse permissionResponse = call(() -> client().readUserPermissions(userUuid, pathToElement));
@@ -405,9 +412,10 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			User user = user();
 			assertNotNull("The username of the user must not be null.", user.getUsername());
-			role().revokePermissions(user, READ_PERM);
+			roleDao.revokePermissions(role(), user, READ_PERM);
 			tx.success();
 		}
 		call(() -> client().findUserByUuid(userUuid()), FORBIDDEN, "error_missing_perm", userUuid(), READ_PERM.getRestPerm().getName());
@@ -456,6 +464,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		long foundUsers;
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			UserRoot root = meshRoot().getUserRoot();
 			GroupRoot groupRoot = tx.data().groupDao();
 			for (int i = 0; i < nUsers; i++) {
@@ -465,7 +474,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 				user.setLastname("should_be_listed");
 				user.setFirstname("should_be_listed");
 				user.setEmailAddress("should_be_listed");
-				role().grantPermissions(user, READ_PERM);
+				roleDao.grantPermissions(role(), user, READ_PERM);
 			}
 			User invisibleUser = root.create("should_not_be_listed", user());
 			invisibleUser.setLastname("should_not_be_listed");
@@ -972,9 +981,10 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testUpdatePasswordWithNoPermission() throws JsonGenerationException, JsonMappingException, IOException, Exception {
 		String oldHash;
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			User user = user();
 			oldHash = user.getPasswordHash();
-			role().revokePermissions(user, UPDATE_PERM);
+			roleDao.revokePermissions(role(), user, UPDATE_PERM);
 			tx.success();
 		}
 
@@ -993,9 +1003,10 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
 		String oldHash;
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			User user = user();
 			oldHash = user.getPasswordHash();
-			role().revokePermissions(user, UPDATE_PERM);
+			roleDao.revokePermissions(role(), user, UPDATE_PERM);
 			// updatedUser.addGroup(group().getName());
 			tx.success();
 		}
@@ -1044,6 +1055,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testCreateUserWithConflictingUsername() throws Exception {
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			// Create an user with a conflicting username
 			UserRoot userRoot = meshRoot().getUserRoot();
 			User user = userRoot.create("existing_username", user());
@@ -1051,7 +1063,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			// Add update permission to group in order to create the user in
 			// that group
-			role().grantPermissions(group(), CREATE_PERM);
+			roleDao.grantPermissions(role(), group(), CREATE_PERM);
 			tx.success();
 		}
 
@@ -1175,7 +1187,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.setPassword("test123456");
 
 		try (Tx tx = tx()) {
-			role().revokePermissions(meshRoot().getUserRoot(), CREATE_PERM);
+			RoleRoot roleDao = tx.data().roleDao();
+			roleDao.revokePermissions(role(), meshRoot().getUserRoot(), CREATE_PERM);
 			tx.success();
 		}
 
@@ -1341,14 +1354,15 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 		String uuid;
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			UserRoot userRoot = meshRoot().getUserRoot();
 			User user = userRoot.create("extraUser", user());
 			user.addGroup(group());
 			uuid = user.getUuid();
 			assertNotNull(uuid);
-			role().grantPermissions(user, UPDATE_PERM);
-			role().grantPermissions(user, CREATE_PERM);
-			role().grantPermissions(user, READ_PERM);
+			roleDao.grantPermissions(role(), user, UPDATE_PERM);
+			roleDao.grantPermissions(role(), user, CREATE_PERM);
+			roleDao.grantPermissions(role(), user, READ_PERM);
 			tx.success();
 		}
 
@@ -1375,13 +1389,14 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testDeleteByUUID2() throws Exception {
 		String uuid;
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			String name = "extraUser";
 			UserRoot userRoot = meshRoot().getUserRoot();
 			User extraUser = userRoot.create(name, user());
 			extraUser.addGroup(group());
 			uuid = extraUser.getUuid();
-			role().grantPermissions(extraUser, DELETE_PERM);
-			assertTrue(role().hasPermission(DELETE_PERM, extraUser));
+			roleDao.grantPermissions(role(), extraUser, DELETE_PERM);
+			assertTrue(roleDao.hasPermission(role(), DELETE_PERM, extraUser));
 			User user = userRoot.findByUuid(uuid);
 			assertEquals(1, user.getGroups().count());
 			assertTrue("The user should be enabled", user.isEnabled());

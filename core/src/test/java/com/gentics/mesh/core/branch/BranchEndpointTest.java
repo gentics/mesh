@@ -48,6 +48,7 @@ import org.junit.Test;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchListResponse;
@@ -225,9 +226,11 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testCreateWithNoPerm() throws Exception {
 		String branchName = "Branch V1";
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
+
 			Project project = project();
-			role().grantPermissions(project, READ_PERM);
-			role().revokePermissions(project, UPDATE_PERM);
+			roleDao.grantPermissions(role(), project, READ_PERM);
+			roleDao.revokePermissions(role(), project, UPDATE_PERM);
 			tx.success();
 		}
 		BranchCreateRequest request = new BranchCreateRequest();
@@ -468,7 +471,11 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testCreateWithNoPermBaseBranch() {
 		Branch latest = createBranch("Latest", true);
 		String latestUuid = tx(() -> latest.getUuid());
-		tx(() -> role().revokePermissions(latest, READ_PERM));
+		tx(tx -> {
+			RoleRoot roleDao = tx.data().roleDao();
+
+			roleDao.revokePermissions(role(), latest, READ_PERM);
+		});
 
 		BranchCreateRequest request = new BranchCreateRequest();
 		request.setName("New Branch");
@@ -550,7 +557,8 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testReadByUUIDWithMissingPermission() throws Exception {
 		revokeAdmin();
 		try (Tx tx = tx()) {
-			role().revokePermissions(project().getInitialBranch(), READ_PERM);
+			RoleRoot roleDao = tx.data().roleDao();
+			roleDao.revokePermissions(role(), project().getInitialBranch(), READ_PERM);
 			tx.success();
 		}
 		call(() -> client().findBranchByUuid(PROJECT_NAME, initialBranchUuid()), FORBIDDEN, "error_missing_perm", initialBranchUuid(),
@@ -603,8 +611,9 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		}
 		revokeAdmin();
 		try (Tx tx = tx()) {
-			role().revokePermissions(firstBranch, READ_PERM);
-			role().revokePermissions(thirdBranch, READ_PERM);
+			RoleRoot roleDao = tx.data().roleDao();
+			roleDao.revokePermissions(role(), firstBranch, READ_PERM);
+			roleDao.revokePermissions(role(), thirdBranch, READ_PERM);
 			tx.success();
 		}
 
@@ -669,7 +678,8 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
 		revokeAdmin();
 		try (Tx tx = tx()) {
-			role().revokePermissions(project().getInitialBranch(), UPDATE_PERM);
+			RoleRoot roleDao = tx.data().roleDao();
+			roleDao.revokePermissions(role(), project().getInitialBranch(), UPDATE_PERM);
 			tx.success();
 		}
 		BranchUpdateRequest request = new BranchUpdateRequest();
@@ -801,7 +811,8 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testSetLatestNoPerm() {
 		revokeAdmin();
 		try (Tx tx = tx()) {
-			role().revokePermissions(project().getInitialBranch(), UPDATE_PERM);
+			RoleRoot roleDao = tx.data().roleDao();
+			roleDao.revokePermissions(role(), project().getInitialBranch(), UPDATE_PERM);
 			tx.success();
 		}
 		call(() -> client().setLatestBranch(PROJECT_NAME, initialBranchUuid()), FORBIDDEN, "error_missing_perm", initialBranchUuid(),
@@ -1040,8 +1051,9 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testAssignSchemaVersionNoPermission() throws Exception {
 		revokeAdmin();
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			Project project = project();
-			role().revokePermissions(project.getInitialBranch(), UPDATE_PERM);
+			roleDao.revokePermissions(role(), project.getInitialBranch(), UPDATE_PERM);
 			tx.success();
 		}
 
@@ -1236,8 +1248,9 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testAssignMicroschemaVersionNoPermission() throws Exception {
 		revokeAdmin();
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			Project project = project();
-			role().revokePermissions(project.getInitialBranch(), UPDATE_PERM);
+			roleDao.revokePermissions(role(), project.getInitialBranch(), UPDATE_PERM);
 			tx.success();
 		}
 		call(() -> client().assignBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid(), new MicroschemaReferenceImpl().setName("vcard")

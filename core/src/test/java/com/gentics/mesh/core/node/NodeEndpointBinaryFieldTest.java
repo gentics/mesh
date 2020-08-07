@@ -25,6 +25,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -69,8 +70,9 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 
 		// Only grant read_published perm
 		try (Tx tx = tx()) {
-			role().revokePermissions(node, READ_PERM);
-			role().grantPermissions(node, READ_PUBLISHED_PERM);
+			RoleRoot roleDao = tx.data().roleDao();
+			roleDao.revokePermissions(role(), node, READ_PERM);
+			roleDao.grantPermissions(role(), node, READ_PUBLISHED_PERM);
 			tx.success();
 		}
 
@@ -96,8 +98,9 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 		// Only grant read_published perm
 		revokeAdmin();
 		try (Tx tx = tx()) {
-			role().revokePermissions(node, READ_PERM);
-			role().grantPermissions(node, READ_PUBLISHED_PERM);
+			RoleRoot roleDao = tx.data().roleDao();
+			roleDao.revokePermissions(role(), node, READ_PERM);
+			roleDao.grantPermissions(role(), node, READ_PUBLISHED_PERM);
 			tx.success();
 		}
 

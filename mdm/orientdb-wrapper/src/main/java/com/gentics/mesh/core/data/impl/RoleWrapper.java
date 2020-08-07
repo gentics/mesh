@@ -8,10 +8,8 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
@@ -27,7 +25,6 @@ import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.madl.frame.VertexFrame;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
 import com.gentics.mesh.madl.traversal.TraversalResult;
-import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.google.gson.JsonObject;
 import com.syncleus.ferma.ClassInitializer;
@@ -257,10 +254,6 @@ public class RoleWrapper implements Role {
 		delete.removeProperty(key);
 	}
 
-	public void grantPermissions(MeshVertex vertex, GraphPermission... permissions) {
-		delete.grantPermissions(vertex, permissions);
-	}
-
 	public <T extends EdgeFrame> TraversalResult<? extends T> inE(String label, Class<T> clazz) {
 		return delete.inE(label, clazz);
 	}
@@ -281,10 +274,6 @@ public class RoleWrapper implements Role {
 		return delete.getETag(ac);
 	}
 
-	public void revokePermissions(MeshVertex vertex, GraphPermission... permissions) {
-		delete.revokePermissions(vertex, permissions);
-	}
-
 	public Vertx vertx() {
 		return delete.vertx();
 	}
@@ -299,10 +288,6 @@ public class RoleWrapper implements Role {
 
 	public <T> T addFramedEdgeExplicit(String label, com.syncleus.ferma.VertexFrame inVertex, ClassInitializer<T> initializer) {
 		return delete.addFramedEdgeExplicit(label, inVertex, initializer);
-	}
-
-	public Set<GraphPermission> getPermissions(MeshVertex element) {
-		return delete.getPermissions(element);
 	}
 
 	public MeshElementEventModel onCreated() {
@@ -333,20 +318,12 @@ public class RoleWrapper implements Role {
 		return delete.getTypeResolution();
 	}
 
-	public Page<? extends Group> getGroups(User user, PagingParameters params) {
-		return delete.getGroups(user, params);
-	}
-
 	public PermissionChangedEventModelImpl onPermissionChanged(Role role) {
 		return delete.onPermissionChanged(role);
 	}
 
 	public void setTypeResolution(Class<?> type) {
 		delete.setTypeResolution(type);
-	}
-
-	public boolean hasPermission(GraphPermission permission, MeshVertex element) {
-		return delete.hasPermission(permission, element);
 	}
 
 	public void fillPermissionChanged(PermissionChangedEventModelImpl model, Role role) {

@@ -1110,11 +1110,12 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	@Override
 	public void initPermissions() {
 		db.tx(tx -> {
+			RoleRoot roleDao = tx.data().roleDao();
 			Role adminRole = meshRoot().getRoleRoot().findByName("admin");
 			for (Vertex vertex : tx.getGraph().getVertices()) {
 				WrappedVertex wrappedVertex = (WrappedVertex) vertex;
 				MeshVertex meshVertex = tx.getGraph().frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);
-				adminRole.grantPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM, PUBLISH_PERM, READ_PUBLISHED_PERM);
+				roleDao.grantPermissions(adminRole, meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM, PUBLISH_PERM, READ_PUBLISHED_PERM);
 				if (log.isTraceEnabled()) {
 					log.trace("Granting admin CRUD permissions on vertex {" + meshVertex.getUuid() + "} for role {" + adminRole.getUuid() + "}");
 				}

@@ -32,6 +32,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.db.Tx;
@@ -57,9 +58,11 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 		final String roleName = tx(() -> role().getName());
 
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
+
 			// Add permission on own role
-			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
-			assertTrue(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
+			roleDao.grantPermissions(role(), role(), GraphPermission.UPDATE_PERM);
+			assertTrue(roleDao.hasPermission(role(), GraphPermission.DELETE_PERM, tagFamily("colors")));
 			tx.success();
 		}
 
@@ -89,40 +92,45 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 		assertThat(trackingSearchProvider()).hasEvents(0, updateEvents, 0, 0, 0);
 
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			assertThat(message).matches("role_updated_permission", role().getName());
-			assertFalse(role().hasPermission(GraphPermission.READ_PERM, tagFamily("colors")));
+			assertFalse(roleDao.hasPermission(role(), GraphPermission.READ_PERM, tagFamily("colors")));
 		}
 	}
 
 	@Test
 	public void testRevokeAllPermissionFromProjectByName() {
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			// Add permission on own role
-			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
-			assertTrue(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
+			roleDao.grantPermissions(role(), role(), GraphPermission.UPDATE_PERM);
+			assertTrue(roleDao.hasPermission(role(), GraphPermission.DELETE_PERM, tagFamily("colors")));
 			tx.success();
 		}
 
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			RolePermissionRequest request = new RolePermissionRequest();
 			request.setRecursive(true);
 			request.getPermissions().setOthers(false);
 			GenericMessageResponse message = call(() -> client().updateRolePermissions(role().getUuid(), "projects/" + PROJECT_NAME, request));
 			assertThat(message).matches("role_updated_permission", role().getName());
-			assertFalse(role().hasPermission(GraphPermission.READ_PERM, tagFamily("colors")));
+			assertFalse(roleDao.hasPermission(role(), GraphPermission.READ_PERM, tagFamily("colors")));
 		}
 	}
 
 	@Test
 	public void testAddPermissionToProjectTagFamily() {
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			// Add permission on own role
-			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
-			assertTrue(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
+			roleDao.grantPermissions(role(), role(), GraphPermission.UPDATE_PERM);
+			assertTrue(roleDao.hasPermission(role(), GraphPermission.DELETE_PERM, tagFamily("colors")));
 			tx.success();
 		}
 
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			RolePermissionRequest request = new RolePermissionRequest();
 			request.setRecursive(false);
 			request.getPermissions().add(READ);
@@ -135,28 +143,32 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			assertFalse(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
+			RoleRoot roleDao = tx.data().roleDao();
+			assertFalse(roleDao.hasPermission(role(), GraphPermission.DELETE_PERM, tagFamily("colors")));
 		}
 	}
 
 	@Test
 	public void testAddPermissionToMicroschema() {
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 
 			// Add permission on own role
-			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
+			roleDao.grantPermissions(role(), role(), GraphPermission.UPDATE_PERM);
 			MicroschemaContainer vcard = microschemaContainer("vcard");
 
 			// Revoke all permissions to vcard microschema
-			role().revokePermissions(vcard, GraphPermission.values());
+			roleDao.revokePermissions(role(), vcard, GraphPermission.values());
 			tx.success();
 		}
 
 		MicroschemaContainer vcard;
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
+
 			// Validate revocation
 			vcard = microschemaContainer("vcard");
-			assertFalse(role().hasPermission(GraphPermission.DELETE_PERM, vcard));
+			assertFalse(roleDao.hasPermission(role(), GraphPermission.DELETE_PERM, vcard));
 
 			RolePermissionRequest request = new RolePermissionRequest();
 			request.setRecursive(false);
@@ -168,10 +180,11 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			assertFalse(role().hasPermission(GraphPermission.DELETE_PERM, vcard));
-			assertTrue(role().hasPermission(GraphPermission.UPDATE_PERM, vcard));
-			assertTrue(role().hasPermission(GraphPermission.CREATE_PERM, vcard));
-			assertTrue(role().hasPermission(GraphPermission.READ_PERM, vcard));
+			RoleRoot roleDao = tx.data().roleDao();
+			assertFalse(roleDao.hasPermission(role(), GraphPermission.DELETE_PERM, vcard));
+			assertTrue(roleDao.hasPermission(role(), GraphPermission.UPDATE_PERM, vcard));
+			assertTrue(roleDao.hasPermission(role(), GraphPermission.CREATE_PERM, vcard));
+			assertTrue(roleDao.hasPermission(role(), GraphPermission.READ_PERM, vcard));
 		}
 	}
 
@@ -184,15 +197,17 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 		request.getPermissions().add(CREATE);
 		request.getPermissions().setOthers(false);
 
-		tx(() -> {
-			assertTrue("The role should have read permission on the group.", role().hasPermission(GraphPermission.READ_PERM, group()));
+		tx(tx -> {
+			RoleRoot roleDao = tx.data().roleDao();
+			assertTrue("The role should have read permission on the group.", roleDao.hasPermission(role(), GraphPermission.READ_PERM, group()));
 		});
 
 		GenericMessageResponse message = call(() -> client().updateRolePermissions(roleUuid(), pathToElement, request));
 		assertThat(message).matches("role_updated_permission", tx(() -> role().getName()));
 
-		tx(() -> {
-			assertFalse("The role should no longer have read permission on the group.", role().hasPermission(GraphPermission.READ_PERM, group()));
+		tx(tx -> {
+			RoleRoot roleDao = tx.data().roleDao();
+			assertFalse("The role should no longer have read permission on the group.", roleDao.hasPermission(role(), GraphPermission.READ_PERM, group()));
 		});
 	}
 
@@ -209,7 +224,8 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 		request.getPermissions().setOthers(false);
 
 		try (Tx tx = tx()) {
-			assertTrue("The role should have delete permission on the group.", role().hasPermission(DELETE_PERM, group()));
+			RoleRoot roleDao = tx.data().roleDao();
+			assertTrue("The role should have delete permission on the group.", roleDao.hasPermission(role(), DELETE_PERM, group()));
 		}
 
 		expect(ROLE_PERMISSIONS_CHANGED).match(9, PermissionChangedEventModelImpl.class, event -> {
@@ -244,7 +260,8 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 		awaitEvents();
 
 		try (Tx tx = tx()) {
-			assertFalse("The role should no longer have delete permission on the group.", role().hasPermission(DELETE_PERM, group()));
+			RoleRoot roleDao = tx.data().roleDao();
+			assertFalse("The role should no longer have delete permission on the group.", roleDao.hasPermission(role(), DELETE_PERM, group()));
 		}
 
 	}
@@ -252,9 +269,10 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 	@Test
 	public void testGrantPermToProjectByName() {
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			// Add permission on own role
-			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
-			assertTrue(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
+			roleDao.grantPermissions(role(), role(), GraphPermission.UPDATE_PERM);
+			assertTrue(roleDao.hasPermission(role(), GraphPermission.DELETE_PERM, tagFamily("colors")));
 		}
 
 		String pathToElement = PROJECT_NAME + "/tagFamilies/" + tx(() -> tagFamily("colors").getUuid());
@@ -264,7 +282,10 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 		response = call(() -> client().readRolePermissions(roleUuid(), "/" + PROJECT_NAME));
 		assertThat(response).hasPerm(Permission.basicPermissions());
 
-		tx(() -> role().revokePermissions(project(), DELETE_PERM));
+		tx(tx -> {
+			RoleRoot roleDao = tx.data().roleDao();
+			roleDao.revokePermissions(role(), project(), DELETE_PERM);
+		});
 
 		response = call(() -> client().readRolePermissions(roleUuid(), "/" + PROJECT_NAME));
 		assertThat(response).hasNoPerm(DELETE);
@@ -277,9 +298,10 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 	@Test
 	public void testReadPermissionsOnProjectTagFamily() {
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			// Add permission on own role
-			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
-			assertTrue(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
+			roleDao.grantPermissions(role(), role(), GraphPermission.UPDATE_PERM);
+			assertTrue(roleDao.hasPermission(role(), GraphPermission.DELETE_PERM, tagFamily("colors")));
 			tx.success();
 		}
 
@@ -292,10 +314,11 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 	@Test
 	public void testApplyPermissionsOnTag() {
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			// Add permission on own role
-			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
-			assertTrue(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
-			role().revokePermissions(tag("red"), DELETE_PERM);
+			roleDao.grantPermissions(role(), role(), GraphPermission.UPDATE_PERM);
+			assertTrue(roleDao.hasPermission(role(), GraphPermission.DELETE_PERM, tagFamily("colors")));
+			roleDao.revokePermissions(role(), tag("red"), DELETE_PERM);
 			tx.success();
 		}
 
@@ -307,17 +330,19 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 		call(() -> client().updateRolePermissions(roleUuid(), pathToElement, request));
 
 		try (Tx tx = tx()) {
-			assertTrue(role().hasPermission(DELETE_PERM, tag("red")));
+			RoleRoot roleDao = tx.data().roleDao();
+			assertTrue(roleDao.hasPermission(role(), DELETE_PERM, tag("red")));
 		}
 	}
 
 	@Test
 	public void testApplyPermissionsOnTags() {
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			// Add permission on own role
-			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
-			assertTrue(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
-			role().revokePermissions(tag("red"), DELETE_PERM);
+			roleDao.grantPermissions(role(), role(), GraphPermission.UPDATE_PERM);
+			assertTrue(roleDao.hasPermission(role(), GraphPermission.DELETE_PERM, tagFamily("colors")));
+			roleDao.revokePermissions(role(), tag("red"), DELETE_PERM);
 			tx.success();
 		}
 
@@ -329,20 +354,22 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 		request.getPermissions().setDelete(true);
 		call(() -> client().updateRolePermissions(roleUuid(), pathToElement, request));
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			assertFalse("The perm of the tag should not change since the action currently only affects the tag family itself",
-				role().hasPermission(DELETE_PERM, tag("red")));
-			assertTrue("The tag family perm did not change", role().hasPermission(DELETE_PERM, tagFamily("colors")));
+				roleDao.hasPermission(role(), DELETE_PERM, tag("red")));
+			assertTrue("The tag family perm did not change", roleDao.hasPermission(role(), DELETE_PERM, tagFamily("colors")));
 		}
 	}
 
 	@Test
 	public void testApplyCreatePermissionsOnTagFamily() {
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			// Add permission on own role
-			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
-			role().revokePermissions(tagFamily("colors"), CREATE_PERM);
-			role().revokePermissions(tag("red"), CREATE_PERM);
-			assertFalse(role().hasPermission(GraphPermission.CREATE_PERM, tagFamily("colors")));
+			roleDao.grantPermissions(role(), role(), GraphPermission.UPDATE_PERM);
+			roleDao.revokePermissions(role(), tagFamily("colors"), CREATE_PERM);
+			roleDao.revokePermissions(role(), tag("red"), CREATE_PERM);
+			assertFalse(roleDao.hasPermission(role(), GraphPermission.CREATE_PERM, tagFamily("colors")));
 			tx.success();
 		}
 
@@ -356,9 +383,10 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 		request.getPermissions().setOthers(true);
 		call(() -> client().updateRolePermissions(roleUuid(), pathToElement, request));
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			assertFalse("The perm of the tag should not change since the action currently only affects the tag family itself",
-				role().hasPermission(CREATE_PERM, tag("red")));
-			assertTrue("The tag family perm did not change", role().hasPermission(CREATE_PERM, tagFamily("colors")));
+				roleDao.hasPermission(role(), CREATE_PERM, tag("red")));
+			assertTrue("The tag family perm did not change", roleDao.hasPermission(role(), CREATE_PERM, tagFamily("colors")));
 		}
 
 		tagFamilyResponse = call(() -> client().findTagFamilyByUuid(PROJECT_NAME, tagFamilyUuid));
@@ -370,6 +398,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 
 		String roleUuid;
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			GroupDaoWrapper groupDao = tx.data().groupDao();
 			Group testGroup = groupDao.create("testGroup", user());
 			Role testRole = tx.data().roleDao().create("testRole", user());
@@ -379,7 +408,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 			groupDao.addRole(testGroup, testRole);
 			groupDao.addUser(testGroup, testUser);
 			roleUuid = testRole.getUuid();
-			role().grantPermissions(testRole, GraphPermission.values());
+			roleDao.grantPermissions(role(), testRole, GraphPermission.values());
 			tx.success();
 		}
 
@@ -414,11 +443,12 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 	@Test
 	public void testAddPermissionToNode() {
 		try (Tx tx = tx()) {
-			UserRoot userRoot = tx.data().userDao();
+			RoleRoot roleDao = tx.data().roleDao();
+			UserRoot userDao = tx.data().userDao();
 			Node node = folder("2015");
-			role().revokePermissions(node, GraphPermission.UPDATE_PERM);
-			assertFalse(role().hasPermission(GraphPermission.UPDATE_PERM, node));
-			assertTrue(userRoot.hasPermission(user(), role(), GraphPermission.UPDATE_PERM));
+			roleDao.revokePermissions(role(), node, GraphPermission.UPDATE_PERM);
+			assertFalse(roleDao.hasPermission(role(), GraphPermission.UPDATE_PERM, node));
+			assertTrue(userDao.hasPermission(user(), role(), GraphPermission.UPDATE_PERM));
 			tx.success();
 		}
 
@@ -436,9 +466,10 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			assertTrue(role().hasPermission(GraphPermission.UPDATE_PERM, node));
-			assertTrue(role().hasPermission(GraphPermission.CREATE_PERM, node));
-			assertTrue(role().hasPermission(GraphPermission.READ_PERM, node));
+			RoleRoot roleDao = tx.data().roleDao();
+			assertTrue(roleDao.hasPermission(role(), GraphPermission.UPDATE_PERM, node));
+			assertTrue(roleDao.hasPermission(role(), GraphPermission.CREATE_PERM, node));
+			assertTrue(roleDao.hasPermission(role(), GraphPermission.READ_PERM, node));
 		}
 	}
 

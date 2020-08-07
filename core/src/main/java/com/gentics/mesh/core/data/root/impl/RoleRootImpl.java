@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
@@ -8,6 +9,10 @@ import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -17,17 +22,24 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.impl.GroupImpl;
 import com.gentics.mesh.core.data.impl.RoleImpl;
+import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.GenericParameters;
+import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
+import com.syncleus.ferma.traversals.VertexTraversal;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -139,5 +151,62 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 			restRole.getGroups().add(group.transformToReference());
 		}
 	}
-	
+
+	@Override
+	public Page<? extends Group> getGroups(Role role, User user, PagingParameters pagingInfo) {
+		VertexTraversal<?, ?, ?> traversal = role.out(HAS_ROLE);
+		return new DynamicTransformablePageImpl<Group>(user, traversal, pagingInfo, READ_PERM, GroupImpl.class);
+	}
+
+	@Override
+	public Set<GraphPermission> getPermissions(Role role, MeshVertex vertex) {
+		Set<GraphPermission> permissions = new HashSet<>();
+		GraphPermission[] possiblePermissions = vertex.hasPublishPermissions()
+			? GraphPermission.values()
+			: GraphPermission.basicPermissions();
+
+		for (GraphPermission permission : possiblePermissions) {
+			if (hasPermission(role, permission, vertex)) {
+				permissions.add(permission);
+			}
+		}
+		return permissions;
+	}
+
+	@Override
+	public boolean hasPermission(Role role, GraphPermission permission, MeshVertex vertex) {
+		Set<String> allowedUuids = vertex.property(permission.propertyKey());
+		return allowedUuids != null && allowedUuids.contains(role.getUuid());
+	}
+
+	@Override
+	public void grantPermissions(Role role, MeshVertex vertex, GraphPermission... permissions) {
+		for (GraphPermission permission : permissions) {
+			Set<String> allowedRoles = vertex.property(permission.propertyKey());
+			if (allowedRoles == null) {
+				vertex.property(permission.propertyKey(), Collections.singleton(role.getUuid()));
+			} else {
+				allowedRoles.add(role.getUuid());
+				vertex.property(permission.propertyKey(), allowedRoles);
+			}
+		}
+	}
+
+	@Override
+	public void revokePermissions(Role role, MeshVertex vertex, GraphPermission... permissions) {
+		boolean permissionRevoked = false;
+		for (GraphPermission permission : permissions) {
+			Set<String> allowedRoles = vertex.property(permission.propertyKey());
+			if (allowedRoles != null) {
+				permissionRevoked = allowedRoles.remove(role.getUuid()) || permissionRevoked;
+				vertex.property(permission.propertyKey(), allowedRoles);
+			}
+		}
+
+		if (permissionRevoked) {
+			mesh().permissionCache().clear();
+		}
+	}
+
+
 }

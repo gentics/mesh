@@ -34,7 +34,7 @@ public class PermissionProperties {
 		Stream<String> stream = roleUuids == null
 			? Stream.empty()
 			: roleUuids.stream();
-		RoleRoot roleRoot = boot.roleRoot();
+		RoleRoot roleRoot = boot.roleDao();
 		return new TraversalResult<>(stream
 			.map(roleRoot::findByUuid)
 			.filter(Objects::nonNull)
@@ -43,10 +43,11 @@ public class PermissionProperties {
 
 	public PermissionInfo getRolePermissions(MeshVertex vertex, InternalActionContext ac, String roleUuid) {
 		if (!isEmpty(roleUuid)) {
-			Role role = boot.roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
+			RoleRoot roleDao = boot.roleDao();
+			Role role = roleDao.loadObjectByUuid(ac, roleUuid, READ_PERM);
 			if (role != null) {
 				PermissionInfo permissionInfo = new PermissionInfo();
-				Set<GraphPermission> permSet = role.getPermissions(vertex);
+				Set<GraphPermission> permSet = roleDao.getPermissions(role, vertex);
 				for (GraphPermission permission : permSet) {
 					permissionInfo.set(permission.getRestPerm(), true);
 				}

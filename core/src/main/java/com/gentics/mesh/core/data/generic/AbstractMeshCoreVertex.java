@@ -19,8 +19,8 @@ import com.gentics.mesh.core.data.ProjectElement;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
@@ -157,7 +157,8 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 
 	@Override
 	public final String getETag(InternalActionContext ac) {
-		UserRoot userRoot = Tx.get().data().userDao();
+		UserRoot userRoot = mesh().boot().userDao();
+		RoleRoot roleDao = mesh().boot().roleDao();
 
 		StringBuilder keyBuilder = new StringBuilder();
 		keyBuilder.append(getUuid());
@@ -178,7 +179,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 		if (!isEmpty(roleUuid)) {
 			Role role = mesh().boot().meshRoot().getRoleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 			if (role != null) {
-				Set<GraphPermission> permSet = role.getPermissions(this);
+				Set<GraphPermission> permSet = roleDao.getPermissions(role, this);
 				Set<String> humanNames = new HashSet<>();
 				for (GraphPermission permission : permSet) {
 					humanNames.add(permission.getRestPerm().getName());

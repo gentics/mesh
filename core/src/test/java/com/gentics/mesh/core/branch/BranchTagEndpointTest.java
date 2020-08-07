@@ -21,6 +21,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
@@ -81,8 +82,9 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 		String branchUuid = tx(() -> branch.getUuid());
 
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			assertFalse(branch.getTags().list().contains(tag));
-			role().revokePermissions(branch, UPDATE_PERM);
+			roleDao.revokePermissions(role(), branch, UPDATE_PERM);
 			tx.success();
 		}
 
@@ -102,8 +104,9 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 		String branchUuid = tx(() -> branch.getUuid());
 
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			assertFalse(branch.getTags().list().contains(tag));
-			role().revokePermissions(tag, READ_PERM);
+			roleDao.revokePermissions(role(), tag, READ_PERM);
 			tx.success();
 		}
 
@@ -178,8 +181,9 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 
 		call(() -> client().addTagToBranch(PROJECT_NAME, branchUuid, tagUuid));
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			assertTrue(branch.getTags().list().contains(tag));
-			role().revokePermissions(branch, UPDATE_PERM);
+			roleDao.revokePermissions(role(), branch, UPDATE_PERM);
 			tx.success();
 		}
 
@@ -200,8 +204,9 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 
 		call(() -> client().addTagToBranch(PROJECT_NAME, branchUuid, tagUuid));
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			assertTrue(branch.getTags().list().contains(tag));
-			role().revokePermissions(tag, READ_PERM);
+			roleDao.revokePermissions(role(), tag, READ_PERM);
 			tx.success();
 		}
 
@@ -258,7 +263,8 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 		call(() -> client().addTagToBranch(PROJECT_NAME, branchUuid, blueUuid));
 
 		try (Tx tx = tx()) {
-			role().revokePermissions(red, READ_PERM);
+			RoleRoot roleDao = tx.data().roleDao();
+			roleDao.revokePermissions(role(), red, READ_PERM);
 			tx.success();
 		}
 
@@ -279,7 +285,8 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 		call(() -> client().addTagToBranch(PROJECT_NAME, branchUuid, blueUuid));
 
 		try (Tx tx = tx()) {
-			role().revokePermissions(branch, READ_PERM);
+			RoleRoot roleDao = tx.data().roleDao();
+			roleDao.revokePermissions(role(), branch, READ_PERM);
 			tx.success();
 		}
 
@@ -345,7 +352,8 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 		String branchUuid = tx(() -> branch.getUuid());
 
 		try (Tx tx = tx()) {
-			role().revokePermissions(blue, READ_PERM);
+			RoleRoot roleDao = tx.data().roleDao();
+			roleDao.revokePermissions(role(), blue, READ_PERM);
 			tx.success();
 		}
 
@@ -383,7 +391,8 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			role().revokePermissions(branch, UPDATE_PERM);
+			RoleRoot roleDao = tx.data().roleDao();
+			roleDao.revokePermissions(role(), branch, UPDATE_PERM);
 			tx.success();
 		}
 

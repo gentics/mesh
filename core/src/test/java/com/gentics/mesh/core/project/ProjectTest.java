@@ -19,6 +19,7 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
+import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.db.Tx;
@@ -155,11 +156,12 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testCRUDPermissions() {
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			UserRoot userRoot = tx.data().userDao();
 			MeshRoot root = meshRoot();
 			InternalActionContext ac = mockActionContext();
 			// 1. Give the user create on the project root
-			role().grantPermissions(meshRoot().getProjectRoot(), CREATE_PERM);
+			roleDao.grantPermissions(role(), meshRoot().getProjectRoot(), CREATE_PERM);
 			// 2. Create the project
 			Project project = createProject("TestProject", "folder");
 			assertFalse("The user should not have create permissions on the project.", userRoot.hasPermission(user(), project, CREATE_PERM));

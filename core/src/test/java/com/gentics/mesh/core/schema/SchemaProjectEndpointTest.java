@@ -17,6 +17,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.root.ProjectRoot;
+import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
@@ -76,12 +77,13 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 		String projectName = created.getName();
 
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
 			Project extraProject = projectRoot.findByUuid(created.getUuid());
 			// Add only read perms
 			SchemaContainer schema = schemaContainer("content");
-			role().grantPermissions(schema, READ_PERM);
-			role().grantPermissions(extraProject, UPDATE_PERM);
+			roleDao.grantPermissions(role(), schema, READ_PERM);
+			roleDao.grantPermissions(role(), extraProject, UPDATE_PERM);
 			tx.success();
 		}
 
@@ -118,10 +120,11 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 		String projectUuid = response.getUuid();
 
 		Project extraProject = tx((tx) -> {
+			RoleRoot roleDao = tx.data().roleDao();
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
 			// Revoke Update perm on project
 			Project p = projectRoot.findByUuid(projectUuid);
-			role().revokePermissions(p, UPDATE_PERM);
+			roleDao.revokePermissions(role(), p, UPDATE_PERM);
 			return p;
 		});
 
@@ -177,9 +180,10 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 	public void testRemoveSchemaFromProjectWithoutPerm() throws Exception {
 		SchemaContainer schema = schemaContainer("content");
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			assertTrue("The schema should be assigned to the project.", project().getSchemaContainerRoot().contains(schema));
 			// Revoke update perms on the project
-			role().revokePermissions(project(), UPDATE_PERM);
+			roleDao.revokePermissions(role(), project(), UPDATE_PERM);
 			tx.success();
 		}
 

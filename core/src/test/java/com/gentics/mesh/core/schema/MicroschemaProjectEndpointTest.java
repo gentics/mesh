@@ -18,6 +18,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.root.ProjectRoot;
+import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
@@ -79,6 +80,7 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 		MicroschemaContainer microschema = microschemaContainer("vcard");
 
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
 
 			ProjectCreateRequest request = new ProjectCreateRequest();
@@ -88,8 +90,8 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 			extraProject = projectRoot.findByUuid(created.getUuid());
 
 			// Add only read perms
-			role().grantPermissions(microschema, READ_PERM);
-			role().grantPermissions(extraProject, UPDATE_PERM);
+			roleDao.grantPermissions(role(), microschema, READ_PERM);
+			roleDao.grantPermissions(role(), extraProject, UPDATE_PERM);
 			tx.success();
 		}
 		try (Tx tx = tx()) {
@@ -106,6 +108,7 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 		String microschemaUuid;
 		Project extraProject;
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			MicroschemaContainer microschema = microschemaContainer("vcard");
 			microschemaUuid = microschema.getUuid();
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
@@ -116,7 +119,7 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 			projectUuid = response.getUuid();
 			extraProject = projectRoot.findByUuid(projectUuid);
 			// Revoke Update perm on project
-			role().revokePermissions(extraProject, UPDATE_PERM);
+			roleDao.revokePermissions(role(), extraProject, UPDATE_PERM);
 			tx.success();
 		}
 
@@ -173,9 +176,10 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 		MicroschemaContainer microschema = microschemaContainer("vcard");
 
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			assertTrue("The microschema should be assigned to the project.", project.getMicroschemaContainerRoot().contains(microschema));
 			// Revoke update perms on the project
-			role().revokePermissions(project, UPDATE_PERM);
+			roleDao.revokePermissions(role(), project, UPDATE_PERM);
 			tx.success();
 		}
 

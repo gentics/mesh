@@ -9,6 +9,8 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.root.RoleRoot;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 
@@ -44,9 +46,10 @@ public class RoleTypeProvider extends AbstractTypeProvider {
 
 		// .groups
 		roleType.field(newPagingFieldWithFetcher("groups", "Groups which reference the role.", (env) -> {
+			RoleRoot roleDao = Tx.get().data().roleDao();
 			Role role = env.getSource();
 			GraphQLContext gc = env.getContext();
-			return role.getGroups(gc.getUser(), getPagingInfo(env));
+			return roleDao.getGroups(role, gc.getUser(), getPagingInfo(env));
 		}, GROUP_PAGE_TYPE_NAME));
 		return roleType.build();
 	}

@@ -48,6 +48,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
+import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -342,9 +343,10 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 	@Override
 	public User addPermissionsOnRole(User user, HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode,
 		GraphPermission... toGrant) {
+		RoleRoot roleDao = mesh().boot().roleDao();
 		// 2. Add CRUD permission to identified roles and target node
 		for (Role role : sourceNode.getRolesWithPerm(permission)) {
-			role.grantPermissions(targetNode, toGrant);
+			roleDao.grantPermissions(role, targetNode, toGrant);
 		}
 		return user;
 	}

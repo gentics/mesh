@@ -29,6 +29,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.impl.NodeGraphFieldListImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractListFieldEndpointTest;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
@@ -307,7 +308,8 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 		Node referencedNode = folder("news");
 
 		try (Tx tx = tx()) {
-			role().revokePermissions(referencedNode, GraphPermission.READ_PERM);
+			RoleRoot roleDao = tx.data().roleDao();
+			roleDao.revokePermissions(role(), referencedNode, GraphPermission.READ_PERM);
 
 			// Create node list
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());

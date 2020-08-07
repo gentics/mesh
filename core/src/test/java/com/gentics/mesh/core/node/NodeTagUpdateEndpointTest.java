@@ -21,6 +21,7 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
+import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.event.node.NodeTaggedEventModel;
@@ -230,7 +231,8 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 	public void testUpdateWithNoNodePerm() {
 		// 1. Revoke the update permission
 		try (Tx tx = tx()) {
-			role().revokePermissions(content(), UPDATE_PERM);
+			RoleRoot roleDao = tx.data().roleDao();
+			roleDao.revokePermissions(role(), content(), UPDATE_PERM);
 			tx.success();
 		}
 		String nodeUuid = tx(() -> content().getUuid());
@@ -248,7 +250,8 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 	public void testUpdateWithNoTagFamilyCreatePerm() {
 		// 1. Revoke the tag create permission
 		try (Tx tx = tx()) {
-			role().revokePermissions(tagFamily("colors"), CREATE_PERM);
+			RoleRoot roleDao = tx.data().roleDao();
+			roleDao.revokePermissions(role(), tagFamily("colors"), CREATE_PERM);
 			tx.success();
 		}
 		String tagFamilyUuid = tx(() -> tagFamily("colors").getUuid());

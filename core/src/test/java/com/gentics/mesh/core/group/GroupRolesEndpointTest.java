@@ -41,13 +41,14 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 	public void testReadRolesByGroup() throws Exception {
 		String roleUuid;
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			GroupRoot groupRoot = tx.data().groupDao();
 			RoleRoot root = meshRoot().getRoleRoot();
 			Role extraRole = root.create("extraRole", user());
 			groupRoot.addRole(group(), extraRole);
 
 			roleUuid = extraRole.getUuid();
-			role().grantPermissions(extraRole, READ_PERM);
+			roleDao.grantPermissions(role(), extraRole, READ_PERM);
 			tx.success();
 		}
 
@@ -72,10 +73,11 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		String groupName = tx(() -> group().getName());
 		String groupUuid = groupUuid();
 		String roleUuid = tx(tx -> {
+			RoleRoot roleDao = tx.data().roleDao();
 			GroupRoot groupRoot = tx.data().groupDao();
 			RoleRoot root = meshRoot().getRoleRoot();
 			Role extraRole = root.create(roleName, user());
-			role().grantPermissions(extraRole, READ_PERM);
+			roleDao.grantPermissions(role(), extraRole, READ_PERM);
 			assertEquals(1, groupRoot.getRoles(group()).count());
 			return extraRole.getUuid();
 		});
@@ -146,7 +148,8 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 
 		// Now confirm that the request works once we set the perm
 		try (Tx tx = tx()) {
-			role().grantPermissions(extraRole, READ_PERM);
+			RoleRoot roleDao = tx.data().roleDao();
+			roleDao.grantPermissions(role(), extraRole, READ_PERM);
 			tx.success();
 		}
 
@@ -167,11 +170,12 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		String groupUuid = groupUuid();
 		String roleName = "extraRole";
 		String roleUuid = tx(tx -> {
+			RoleRoot roleDao = tx.data().roleDao();
 			GroupRoot groupRoot = tx.data().groupDao();
 			RoleRoot root = meshRoot().getRoleRoot();
 			Role extraRole = root.create(roleName, user());
 			groupRoot.addRole(group(), extraRole);
-			role().grantPermissions(extraRole, READ_PERM);
+			roleDao.grantPermissions(role(), extraRole, READ_PERM);
 			assertEquals(2, groupRoot.getRoles(group()).count());
 			searchProvider().reset();
 			return extraRole.getUuid();
@@ -216,10 +220,11 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 	public void testAddRoleToGroupWithPerm() throws Exception {
 		Role extraRole;
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			RoleRoot root = meshRoot().getRoleRoot();
 
 			extraRole = root.create("extraRole", user());
-			role().grantPermissions(extraRole, READ_PERM);
+			roleDao.grantPermissions(role(), extraRole, READ_PERM);
 			tx.success();
 		}
 
@@ -238,10 +243,11 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 	public void testAddRoleToGroupWithoutPermOnGroup() throws Exception {
 		Role extraRole;
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			Group group = group();
 			RoleRoot root = meshRoot().getRoleRoot();
 			extraRole = root.create("extraRole", user());
-			role().revokePermissions(group, UPDATE_PERM);
+			roleDao.revokePermissions(role(), group, UPDATE_PERM);
 			tx.success();
 		}
 
@@ -267,6 +273,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 	public void testRemoveRoleFromGroupWithPerm() throws Exception {
 		Role extraRole;
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			RoleRoot root = meshRoot().getRoleRoot();
 			GroupRoot groupRoot = tx.data().groupDao();
 			Group group = group();
@@ -276,8 +283,8 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 			assertNotNull(group.getUuid());
 			assertNotNull(extraRole.getUuid());
 
-			role().grantPermissions(extraRole, READ_PERM);
-			role().grantPermissions(group, UPDATE_PERM);
+			roleDao.grantPermissions(role(), extraRole, READ_PERM);
+			roleDao.grantPermissions(role(), group, UPDATE_PERM);
 			tx.success();
 		}
 
@@ -298,13 +305,14 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		String extraRoleUuid;
 		Role extraRole;
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			GroupRoot groupRoot = tx.data().groupDao();
 			Group group = group();
 			RoleRoot root = meshRoot().getRoleRoot();
 			extraRole = root.create("extraRole", user());
 			extraRoleUuid = extraRole.getUuid();
 			groupRoot.addRole(group, extraRole);
-			role().revokePermissions(group, UPDATE_PERM);
+			roleDao.revokePermissions(role(), group, UPDATE_PERM);
 			tx.success();
 		}
 

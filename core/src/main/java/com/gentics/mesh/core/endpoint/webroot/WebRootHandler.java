@@ -24,8 +24,10 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.service.WebRootServiceImpl;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.node.BinaryFieldResponseHandler;
 import com.gentics.mesh.core.endpoint.node.NodeCrudHandler;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -191,14 +193,16 @@ public class WebRootHandler {
 	 * @return
 	 */
 	private boolean isPublic(Node node, String version) {
+		RoleRoot roleDao = Tx.get().data().roleDao();
+
 		Role anonymousRole = boot.anonymousRole();
 		AuthenticationOptions authOptions = options.getAuthenticationOptions();
 		if (anonymousRole != null && authOptions != null && authOptions.isEnableAnonymousAccess()) {
-			if (anonymousRole.hasPermission(READ_PERM, node)) {
+			if (roleDao.hasPermission(anonymousRole, READ_PERM, node)) {
 				return true;
 			}
 			boolean requestsPublished = "published".equals(version);
-			if (requestsPublished && anonymousRole.hasPermission(READ_PUBLISHED_PERM, node)) {
+			if (requestsPublished && roleDao.hasPermission(anonymousRole, READ_PUBLISHED_PERM, node)) {
 				return true;
 			}
 		}

@@ -86,7 +86,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 			RolePermissionResponse response = new RolePermissionResponse();
 
 			// 1. Add granted permissions
-			for (GraphPermission perm : role.getPermissions(targetElement)) {
+			for (GraphPermission perm : roleDao.getPermissions(role, targetElement)) {
 				response.set(perm.getRestPerm(), true);
 			}
 			// 2. Add not granted permissions

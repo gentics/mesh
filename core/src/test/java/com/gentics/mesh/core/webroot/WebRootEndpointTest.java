@@ -28,6 +28,7 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
@@ -135,6 +136,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 	public void testReadContentWithNodeRefByPath() throws Exception {
 
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			Node parentNode = folder("2015");
 			// Update content schema and add node field
 			SchemaContainer folderSchema = schemaContainer("folder");
@@ -148,7 +150,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			Node node = parentNode.create(user(), contentSchema.getLatestVersion(), project());
 
 			// Grant permissions to the node otherwise it will not be able to be loaded
-			role().grantPermissions(node, GraphPermission.values());
+			roleDao.grantPermissions(role(), node, GraphPermission.values());
 			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(german(), project().getLatestBranch(), user());
 			englishContainer.createString("teaser").setString("german teaser");
 			englishContainer.createString("title").setString("german title");
@@ -301,10 +303,11 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		String englishPath = "/News/2015";
 		String uuid;
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			Node newsFolder = folder("2015");
 			uuid = newsFolder.getUuid();
-			role().revokePermissions(newsFolder, READ_PERM);
-			role().revokePermissions(newsFolder, READ_PUBLISHED_PERM);
+			roleDao.revokePermissions(role(), newsFolder, READ_PERM);
+			roleDao.revokePermissions(role(), newsFolder, READ_PUBLISHED_PERM);
 			tx.success();
 		}
 
@@ -375,7 +378,8 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		String path = "/News/2015";
 
 		try (Tx tx = tx()) {
-			anonymousRole().grantPermissions(folder("2015"), READ_PERM);
+			RoleRoot roleDao = tx.data().roleDao();
+			roleDao.grantPermissions(anonymousRole(), folder("2015"), READ_PERM);
 			tx.success();
 		}
 
@@ -390,7 +394,8 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		String path = "/News/2015";
 
 		try (Tx tx = tx()) {
-			anonymousRole().grantPermissions(folder("2015"), READ_PUBLISHED_PERM);
+			RoleRoot roleDao = tx.data().roleDao();
+			roleDao.grantPermissions(anonymousRole(), folder("2015"), READ_PUBLISHED_PERM);
 			tx.success();
 		}
 
@@ -442,8 +447,9 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 		// 2. Remove read perm and grant only publish perm to node
 		try (Tx tx = tx()) {
-			role().revokePermissions(folder("2015"), READ_PERM);
-			role().grantPermissions(folder("2015"), READ_PUBLISHED_PERM);
+			RoleRoot roleDao = tx.data().roleDao();
+			roleDao.revokePermissions(role(), folder("2015"), READ_PERM);
+			roleDao.grantPermissions(role(), folder("2015"), READ_PUBLISHED_PERM);
 			tx.success();
 		}
 
@@ -556,7 +562,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 	/**
 	 * Update the node slug field for the latest branch.
 	 * 
-	 * @param node
+	 * @param uuid
 	 *            node
 	 * @param language
 	 *            language

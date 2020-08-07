@@ -29,6 +29,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.Permission;
@@ -160,7 +161,8 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 
 		String microschemaRootUuid = tx(() -> meshRoot().getMicroschemaContainerRoot().getUuid());
 		try (Tx tx = tx()) {
-			role().revokePermissions(meshRoot().getMicroschemaContainerRoot(), CREATE_PERM);
+			RoleRoot roleDao = tx.data().roleDao();
+			roleDao.revokePermissions(role(), meshRoot().getMicroschemaContainerRoot(), CREATE_PERM);
 			tx.success();
 		}
 		call(() -> client().createMicroschema(request), FORBIDDEN, "error_missing_perm", microschemaRootUuid, CREATE_PERM.getRestPerm().getName());
@@ -260,12 +262,13 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 	public void testReadByUUIDWithMissingPermission() throws Exception {
 		String uuid;
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			MicroschemaContainer vcardContainer = microschemaContainers().get("vcard");
 			uuid = vcardContainer.getUuid();
-			role().grantPermissions(vcardContainer, DELETE_PERM);
-			role().grantPermissions(vcardContainer, UPDATE_PERM);
-			role().grantPermissions(vcardContainer, CREATE_PERM);
-			role().revokePermissions(vcardContainer, READ_PERM);
+			roleDao.grantPermissions(role(), vcardContainer, DELETE_PERM);
+			roleDao.grantPermissions(role(), vcardContainer, UPDATE_PERM);
+			roleDao.grantPermissions(role(), vcardContainer, CREATE_PERM);
+			roleDao.revokePermissions(role(), vcardContainer, READ_PERM);
 			tx.success();
 		}
 		call(() -> client().findMicroschemaByUuid(uuid), FORBIDDEN, "error_missing_perm", uuid, READ_PERM.getRestPerm().getName());
@@ -290,9 +293,10 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
 		String uuid;
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			MicroschemaContainer microschema = microschemaContainers().get("vcard");
 			uuid = microschema.getUuid();
-			role().revokePermissions(microschema, UPDATE_PERM);
+			roleDao.revokePermissions(role(), microschema, UPDATE_PERM);
 			tx.success();
 		}
 
@@ -470,9 +474,10 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 		MicroschemaContainer microschema;
 		try (Tx tx = tx()) {
+			RoleRoot roleDao = tx.data().roleDao();
 			microschema = microschemaContainers().get("vcard");
 			assertNotNull(microschema);
-			role().revokePermissions(microschema, DELETE_PERM);
+			roleDao.revokePermissions(role(), microschema, DELETE_PERM);
 			tx.success();
 		}
 
