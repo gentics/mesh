@@ -29,6 +29,7 @@ import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.UserRoot;
@@ -369,13 +370,14 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 
 		String roleUuid;
 		try (Tx tx = tx()) {
-			Group testGroup = tx.data().groupDao().create("testGroup", user());
+			GroupDaoWrapper groupDao = tx.data().groupDao();
+			Group testGroup = groupDao.create("testGroup", user());
 			Role testRole = tx.data().roleDao().create("testRole", user());
 			User testUser = tx.data().userDao().create("test", user());
 			tx.data().userDao().setPassword(testUser, "dummy");
 
-			testGroup.addRole(testRole);
-			testGroup.addUser(testUser);
+			groupDao.addRole(testGroup, testRole);
+			groupDao.addUser(testGroup, testUser);
 			roleUuid = testRole.getUuid();
 			role().grantPermissions(testRole, GraphPermission.values());
 			tx.success();

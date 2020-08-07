@@ -54,13 +54,13 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 
 			Group group = groupRoot.create("test group", user());
 			User user = userRoot.create("testuser", user());
-			group.addUser(user);
-			group.addUser(user);
-			group.addUser(user);
+			groupRoot.addUser(group, user);
+			groupRoot.addUser(group, user);
+			groupRoot.addUser(group, user);
 
-			assertEquals("The group should contain one member.", 1, group.getUsers().count());
+			assertEquals("The group should contain one member.", 1, groupRoot.getUsers(group).count());
 
-			User userOfGroup = group.getUsers().iterator().next();
+			User userOfGroup = groupRoot.getUsers(group).iterator().next();
 			assertEquals("Username did not match the expected one.", user.getUsername(), userOfGroup.getUsername());
 		}
 	}
@@ -172,10 +172,11 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Override
 	public void testRead() {
 		try (Tx tx = tx()) {
+			GroupRoot groupRoot = tx.data().groupDao();
 			Group group = group();
 			assertEquals("joe1_group", group.getName());
-			assertNotNull(group.getUsers());
-			assertEquals(1, group.getUsers().count());
+			assertNotNull(groupRoot.getUsers(group));
+			assertEquals(1, groupRoot.getUsers(group).count());
 			assertNotNull(group.getUuid());
 		}
 	}
@@ -194,13 +195,14 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Override
 	public void testDelete() throws Exception {
 		try (Tx tx = tx()) {
-			Group group = meshRoot().getGroupRoot().create("newGroup", user());
+			GroupRoot groupRoot = tx.data().groupDao();
+			Group group = groupRoot.create("newGroup", user());
 
 			assertNotNull(group);
 			assertEquals("newGroup", group.getName());
 			String uuid = group.getUuid();
 			String userUuid = user().getUuid();
-			group().addUser(user());
+			groupRoot.addUser(group(), user());
 
 			// TODO add users to group?
 			BulkActionContext bac = createBulkContext();

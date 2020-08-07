@@ -61,9 +61,10 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 	 */
 	public void handleGroupRolesList(InternalActionContext ac, String groupUuid) {
 		utils.syncTx(ac, tx -> {
+			GroupRoot groupRoot = tx.data().groupDao();
 			Group group = getRootVertex(tx, ac).loadObjectByUuid(ac, groupUuid, READ_PERM);
 			PagingParametersImpl pagingInfo = new PagingParametersImpl(ac);
-			TransformablePage<? extends Role> rolePage = group.getRoles(ac.getUser(), pagingInfo);
+			TransformablePage<? extends Role> rolePage = groupRoot.getRoles(group, ac.getUser(), pagingInfo);
 			return rolePage.transformToRestSync(ac, 0);
 		}, model -> ac.send(model, OK));
 	}
@@ -86,16 +87,16 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 				Group group = groupDao.loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 				Role role = roleDao.loadObjectByUuid(ac, roleUuid, READ_PERM);
 				// Handle idempotency
-				if (group.hasRole(role)) {
+				if (groupDao.hasRole(group, role)) {
 					if (log.isDebugEnabled()) {
 						log.debug("Role {" + role.getUuid() + "} is already assigned to group {" + group.getUuid() + "}.");
 					}
 				} else {
 					utils.eventAction(batch -> {
-						group.addRole(role);
+						groupDao.addRole(group, role);
 						group.setEditor(ac.getUser());
 						group.setLastEditedTimestamp();
-						batch.add(group.createRoleAssignmentEvent(role, ASSIGNED));
+						batch.add(groupDao.createRoleAssignmentEvent(group, role, ASSIGNED));
 					});
 				}
 				return group.transformToRestSync(ac, 0);
@@ -120,18 +121,19 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				Group group = getRootVertex(tx, ac).loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
+				GroupRoot groupRoot = tx.data().groupDao();
 				Role role = boot.get().roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 
 				// No need to update the group if it is not assigned
-				if (!group.hasRole(role)) {
+				if (!groupRoot.hasRole(group, role)) {
 					return;
 				}
 
 				utils.eventAction(batch -> {
-					group.removeRole(role);
+					groupRoot.removeRole(group, role);
 					group.setEditor(ac.getUser());
 					group.setLastEditedTimestamp();
-					batch.add(group.createRoleAssignmentEvent(role, UNASSIGNED));
+					batch.add(groupRoot.createRoleAssignmentEvent(group, role, UNASSIGNED));
 					return batch;
 				});
 
@@ -150,10 +152,11 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(groupUuid, "groupUuid");
 
 		utils.syncTx(ac, tx -> {
+			GroupRoot groupRoot = tx.data().groupDao();
 			MeshAuthUser requestUser = ac.getUser();
 			PagingParametersImpl pagingInfo = new PagingParametersImpl(ac);
 			Group group = tx.data().groupDao().loadObjectByUuid(ac, groupUuid, READ_PERM);
-			TransformablePage<? extends User> userPage = group.getVisibleUsers(requestUser, pagingInfo);
+			TransformablePage<? extends User> userPage = groupRoot.getVisibleUsers(group, requestUser, pagingInfo);
 			return userPage.transformToRestSync(ac, 0);
 		}, model -> ac.send(model, OK));
 	}
@@ -179,10 +182,10 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 				User user = userDao.loadObjectByUuid(ac, userUuid, READ_PERM);
 
 				// Only add the user if it is not yet assigned
-				if (!group.hasUser(user)) {
+				if (!groupDao.hasUser(group, user)) {
 					utils.eventAction(batch -> {
-						group.addUser(user);
-						batch.add(group.createUserAssignmentEvent(user, ASSIGNED));
+						groupDao.addUser(group, user);
+						batch.add(groupDao.createUserAssignmentEvent(group, user, ASSIGNED));
 					});
 				}
 				return group.transformToRestSync(ac, 0);
@@ -205,17 +208,18 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				Group group = tx.data().groupDao().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
-				User user = tx.data().userDao().loadObjectByUuid(ac, userUuid, READ_PERM);
+				GroupRoot groupDao = tx.data().groupDao();
+				Group group = groupDao.loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
+				User user = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 
 				// No need to remove the user if it is not assigned
-				if (!group.hasUser(user)) {
+				if (!groupDao.hasUser(group, user)) {
 					return;
 				}
 
 				utils.eventAction(batch -> {
-					group.removeUser(user);
-					batch.add(group.createUserAssignmentEvent(user, UNASSIGNED));
+					groupDao.removeUser(group, user);
+					batch.add(groupDao.createUserAssignmentEvent(group, user, UNASSIGNED));
 				});
 			}, () -> ac.send(NO_CONTENT));
 		}

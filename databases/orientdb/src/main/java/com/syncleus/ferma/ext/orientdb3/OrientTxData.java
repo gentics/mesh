@@ -71,13 +71,13 @@ public class OrientTxData implements TxData {
 	public MicroschemaDaoWrapper microschemaDao() {
 		return boot.microschemaDao();
 	}
-	
+
 	@Override
 	public BinaryDaoWrapper binaryDao() {
 		//TODO There is currently no binary wrapper. We need to write a new impl.
 		return null;
 	}
-	
+
 	@Override
 	public BranchDaoWrapper branchDao() {
 		// TODO there is currently no global branch root

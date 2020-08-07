@@ -1,6 +1,21 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
+import static com.gentics.mesh.core.rest.MeshEvent.GROUP_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.GROUP_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.GROUP_UPDATED;
+import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
+import static com.gentics.mesh.util.StreamUtil.toStream;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.stream.Stream;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
@@ -8,20 +23,8 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.entity.MeshEntities;
+
 import io.reactivex.Flowable;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.stream.Stream;
-
-import static com.gentics.mesh.core.rest.MeshEvent.GROUP_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.GROUP_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.GROUP_UPDATED;
-import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
-import static com.gentics.mesh.util.StreamUtil.toStream;
 
 @Singleton
 public class GroupEventHandler implements EventHandler {
@@ -47,13 +50,14 @@ public class GroupEventHandler implements EventHandler {
 			MeshEvent event = messageEvent.event;
 			MeshElementEventModel model = requireType(MeshElementEventModel.class, messageEvent.message);
 			if (event == GROUP_CREATED || event == GROUP_UPDATED) {
-				return helper.getDb().tx(() -> {
+				return helper.getDb().tx(tx -> {
 					// We also need to update all users of the group
 					Optional<Group> groupOptional = entities.group.getElement(model);
+					GroupRoot groupRoot = tx.data().groupDao();
 
 					return Stream.concat(
 						toStream(groupOptional).map(entities::createRequest),
-						toStream(groupOptional).flatMap(group -> group.getUsers().stream()).map(entities::createRequest)
+						toStream(groupOptional).flatMap(group -> groupRoot.getUsers(group).stream()).map(entities::createRequest)
 					).collect(Util.toFlowable());
 				});
 			} else if (event == GROUP_DELETED) {

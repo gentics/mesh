@@ -398,11 +398,11 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 								batch.add(group.onCreated());
 								created = true;
 							}
-							if (!group.hasUser(user)) {
+							if (!groupRoot.hasUser(group, user)) {
 								requiresWrite();
 								// Ensure that the user is part of the group
-								group.addUser(user);
-								batch.add(group.createUserAssignmentEvent(user, ASSIGNED));
+								groupRoot.addUser(group, user);
+								batch.add(groupRoot.createUserAssignmentEvent(group, user, ASSIGNED));
 								// We only need one event
 								if (!created) {
 									batch.add(group.onUpdated());
@@ -422,24 +422,24 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 									role = roleRoot.findByUuid(roleUuid);
 								}
 								// Add the role if it is missing
-								if (role != null && !group.hasRole(role)) {
+								if (role != null && !groupRoot.hasRole(group, role)) {
 									requiresWrite();
-									group.addRole(role);
+									groupRoot.addRole(group, role);
 									group.setLastEditedTimestamp();
 									group.setEditor(admin);
-									batch.add(group.createRoleAssignmentEvent(role, ASSIGNED));
+									batch.add(groupRoot.createRoleAssignmentEvent(group, role, ASSIGNED));
 								}
 							}
 
 							// 5. Check if the plugin wants to remove any of the roles from the mapped group.
 							RoleFilter roleFilter = result.getRoleFilter();
 							if (roleFilter != null) {
-								for (Role role : group.getRoles()) {
+								for (Role role : groupRoot.getRoles(group)) {
 									if (roleFilter.filter(group.getName(), role.getName())) {
 										requiresWrite();
 										log.info("Unassigning role {" + role.getName() + "} from group {" + group.getName() + "}");
-										group.removeRole(role);
-										batch.add(group.createRoleAssignmentEvent(role, UNASSIGNED));
+										groupRoot.removeRole(group, role);
+										batch.add(groupRoot.createRoleAssignmentEvent(group, role, UNASSIGNED));
 									}
 								}
 							}
@@ -470,10 +470,10 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 									group = groupRoot.findByUuid(groupUuid);
 								}
 								// Add the role if it is missing
-								if (group != null && !group.hasRole(role)) {
+								if (group != null && !groupRoot.hasRole(group, role)) {
 									requiresWrite();
-									group.addRole(role);
-									batch.add(group.createRoleAssignmentEvent(role, ASSIGNED));
+									groupRoot.addRole(group, role);
+									batch.add(groupRoot.createRoleAssignmentEvent(group, role, ASSIGNED));
 								}
 							}
 
@@ -487,8 +487,8 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 							if (groupFilter.filter(group.getName())) {
 								requiresWrite();
 								log.info("Unassigning group {" + group.getName() + "} from user {" + user.getUsername() + "}");
-								group.removeUser(user);
-								batch.add(group.createUserAssignmentEvent(user, UNASSIGNED));
+								groupRoot.removeUser(group, user);
+								batch.add(groupRoot.createUserAssignmentEvent(group, user, UNASSIGNED));
 							}
 						}
 					}

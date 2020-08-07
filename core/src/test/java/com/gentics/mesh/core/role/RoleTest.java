@@ -26,6 +26,7 @@ import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
@@ -216,21 +217,22 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testRolesOfGroup() throws InvalidArgumentException {
 
 		try (Tx tx = tx()) {
+			GroupRoot groupRoot = tx.data().groupDao();
 			RoleRoot root = meshRoot().getRoleRoot();
 			Role extraRole = root.create("extraRole", user());
-			group().addRole(extraRole);
+			groupRoot.addRole(group(), extraRole);
 
 			// Multiple add role calls should not affect the result
-			group().addRole(extraRole);
-			group().addRole(extraRole);
-			group().addRole(extraRole);
-			group().addRole(extraRole);
+			groupRoot.addRole(group(), extraRole);
+			groupRoot.addRole(group(), extraRole);
+			groupRoot.addRole(group(), extraRole);
+			groupRoot.addRole(group(), extraRole);
 
 			role().grantPermissions(extraRole, READ_PERM);
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			MeshAuthUser requestUser = ac.getUser();
-			Page<? extends Role> roles = group().getRoles(requestUser, new PagingParametersImpl(1, 10L));
+			Page<? extends Role> roles = groupRoot.getRoles(group(), requestUser, new PagingParametersImpl(1, 10L));
 			assertEquals(2, roles.getSize());
 			assertEquals(1, extraRole.getGroups().count());
 

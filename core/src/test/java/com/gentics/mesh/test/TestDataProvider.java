@@ -332,8 +332,9 @@ public class TestDataProvider {
 		users.put(username, user);
 
 		String groupName = username + "_group";
-		Group group = root.getGroupRoot().create(groupName, user);
-		group.addUser(user);
+		GroupRoot groupRoot = root.getGroupRoot();
+		Group group = groupRoot.create(groupName, user);
+		groupRoot.addUser(group, user);
 		group.setCreator(user);
 		group.setCreationTimestamp();
 		group.setEditor(user);
@@ -342,7 +343,7 @@ public class TestDataProvider {
 
 		String roleName = username + "_role";
 		Role role = root.getRoleRoot().create(roleName, user);
-		group.addRole(role);
+		groupRoot.addRole(group, role);
 		role.grantPermissions(role, READ_PERM);
 		roles.put(roleName, role);
 
@@ -372,7 +373,7 @@ public class TestDataProvider {
 			groups.put("guests", guestGroup);
 
 			Role guestRole = root.getRoleRoot().create("guest_role", userInfo.getUser());
-			guestGroup.addRole(guestRole);
+			groupRoot.addRole(guestGroup, guestRole);
 			roles.put(guestRole.getName(), guestRole);
 
 			// Extra User
