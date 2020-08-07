@@ -6,9 +6,9 @@ import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 
 // TODO move the contents of this to UserDao once migration is done
-public interface UserDaoWrapper extends UserDao, UserRoot {
-
-	TraversalResult<? extends User> findAll();
+public interface UserDaoWrapper extends UserDao, UserRoot, DaoWrapper<User> {
 
 	String getSubETag(User user, InternalActionContext ac);
+
+	TraversalResult<? extends User> findAll();
 }

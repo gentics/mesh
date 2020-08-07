@@ -4,11 +4,11 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.BranchRoot;
+import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 
 // TODO move the contents of this to BranchDao once migration is done
-public interface BranchDaoWrapper extends BranchDao, BranchRoot {
+public interface BranchDaoWrapper extends BranchDao {
 
 	TraversalResult<? extends Branch> findAll(Project project);
 
@@ -21,4 +21,6 @@ public interface BranchDaoWrapper extends BranchDao, BranchRoot {
 	 * @param uuid
 	 */
 	Branch findByUuid(Project project, String uuid);
+	
+	BranchResponse  transformToRestSync(Branch element, InternalActionContext ac, int level, String... languageTags);
 }
