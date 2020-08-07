@@ -1,5 +1,10 @@
 package com.gentics.mesh.core.data.dao.impl;
 
+import static com.gentics.mesh.core.rest.error.Errors.conflict;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+
 import java.util.Set;
 import java.util.Stack;
 import java.util.function.Function;
@@ -22,6 +27,7 @@ import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
+import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -427,8 +433,25 @@ public class TagFamilyDaoWrapperImpl implements TagFamilyDaoWrapper {
 	}
 	
 	@Override
-	public boolean update(TagFamily element, InternalActionContext ac, EventQueueBatch batch) {
-		return element.getProject().getTagFamilyRoot().update(element, ac, batch);
+	public boolean update(TagFamily tagFamily, InternalActionContext ac, EventQueueBatch batch) {
+		TagFamilyUpdateRequest requestModel = ac.fromJson(TagFamilyUpdateRequest.class);
+		Project project = ac.getProject();
+		String newName = requestModel.getName();
+
+		if (isEmpty(newName)) {
+			throw error(BAD_REQUEST, "tagfamily_name_not_set");
+		}
+
+		TagFamily tagFamilyWithSameName = project.getTagFamilyRoot().findByName(newName);
+		if (tagFamilyWithSameName != null && !tagFamilyWithSameName.getUuid().equals(tagFamily.getUuid())) {
+			throw conflict(tagFamilyWithSameName.getUuid(), newName, "tagfamily_conflicting_name", newName);
+		}
+		if (!tagFamily.getName().equals(newName)) {
+			tagFamily.setName(newName);
+			batch.add(tagFamily.onUpdated());
+			return true;
+		}
+		return false;
 	}
 
 }

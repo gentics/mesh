@@ -26,6 +26,8 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.TagDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.page.Page;
@@ -146,19 +148,22 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public TagFamilyResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		TagFamilyRoot tagFamilyDao = mesh().boot().tagFamilyRoot();
+		TagFamilyDaoWrapper tagFamilyDao = Tx.get().data().tagFamilyDao();
 		return tagFamilyDao.transformToRestSync(this, ac, level, languageTags);
 	}
 
 	@Override
 	public void delete(BulkActionContext bac) {
+		TagDaoWrapper tagDao = Tx.get().data().tagDao();
+		// TagFamilyDaoWrapper tagFamilyDao = Tx.get().data().tagFamilyDao();
+
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting tagFamily {" + getName() + "}");
 		}
 
 		// Delete all the tags of the tag root
 		for (Tag tag : findAll()) {
-			tag.delete(bac);
+			tagDao.delete(tag, bac);
 		}
 
 		bac.add(onDeleted());
@@ -170,24 +175,8 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
-		TagFamilyUpdateRequest requestModel = ac.fromJson(TagFamilyUpdateRequest.class);
-		Project project = ac.getProject();
-		String newName = requestModel.getName();
-
-		if (isEmpty(newName)) {
-			throw error(BAD_REQUEST, "tagfamily_name_not_set");
-		}
-
-		TagFamily tagFamilyWithSameName = project.getTagFamilyRoot().findByName(newName);
-		if (tagFamilyWithSameName != null && !tagFamilyWithSameName.getUuid().equals(this.getUuid())) {
-			throw conflict(tagFamilyWithSameName.getUuid(), newName, "tagfamily_conflicting_name", newName);
-		}
-		if (!getName().equals(newName)) {
-			this.setName(newName);
-			batch.add(onUpdated());
-			return true;
-		}
-		return false;
+		TagFamilyDaoWrapper tagFamilyDao = Tx.get().data().tagFamilyDao();
+		return tagFamilyDao.update(this, ac, batch);
 	}
 
 	@Override
