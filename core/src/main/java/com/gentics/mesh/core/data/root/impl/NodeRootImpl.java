@@ -124,15 +124,15 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 	/**
 	 * Finds all nodes of a project.
+	 * 
 	 * @param projectUuid
 	 * @return
 	 */
 	private Stream<Vertex> findAll(String projectUuid) {
 		return toStream(db().getVertices(
 			NodeImpl.class,
-			new String[]{PROJECT_KEY_PROPERTY},
-			new Object[]{projectUuid}
-		));
+			new String[] { PROJECT_KEY_PROPERTY },
+			new Object[] { projectUuid }));
 	}
 
 	private Stream<? extends Node> findAllStream(InternalActionContext ac, ContainerType type) {
@@ -159,7 +159,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 			}
 			return false;
 		})
-		.map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
+			.map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
 	}
 
 	@Override
@@ -168,8 +168,11 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public Node loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
+	public Node loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
 		Node element = findByUuid(uuid);
+		if (!errorIfNotFound && element == null) {
+			return null;
+		}
 		UserRoot userRoot = mesh().boot().userDao();
 		if (element == null) {
 			throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);
@@ -181,11 +184,11 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 			List<String> requestedLanguageTags = ac.getNodeParameters().getLanguageList(options());
 			NodeGraphFieldContainer fieldContainer = element.findVersion(requestedLanguageTags, branch.getUuid(),
-					ac.getVersioningParameters().getVersion());
+				ac.getVersioningParameters().getVersion());
 
 			if (fieldContainer == null) {
 				throw error(NOT_FOUND, "node_error_published_not_found_for_uuid_branch_language", uuid,
-						String.join(",", requestedLanguageTags), branch.getUuid());
+					String.join(",", requestedLanguageTags), branch.getUuid());
 			}
 			// Additionally check whether the read published permission could grant read
 			// perm for published nodes
@@ -238,7 +241,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	 */
 	// TODO use schema container version instead of container
 	private Node createNode(InternalActionContext ac, SchemaContainerVersion schemaVersion, EventQueueBatch batch,
-			String uuid) {
+		String uuid) {
 		Project project = ac.getProject();
 		MeshAuthUser requestUser = ac.getUser();
 		BootstrapInitializer boot = mesh().boot();
@@ -254,7 +257,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 		// Load the parent node in order to create the node
 		Node parentNode = project.getNodeRoot().loadObjectByUuid(ac, requestModel.getParentNode().getUuid(),
-				CREATE_PERM);
+			CREATE_PERM);
 		Branch branch = ac.getBranch();
 		// BUG: Don't use the latest version. Use the version which is linked to the
 		// branch!
@@ -306,8 +309,8 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		// 1. Extract the schema information from the given JSON
 		SchemaReferenceInfo schemaInfo = JsonUtil.readValue(body, SchemaReferenceInfo.class);
 		boolean missingSchemaInfo = schemaInfo.getSchema() == null
-				|| (StringUtils.isEmpty(schemaInfo.getSchema().getUuid())
-						&& StringUtils.isEmpty(schemaInfo.getSchema().getName()));
+			|| (StringUtils.isEmpty(schemaInfo.getSchema().getUuid())
+				&& StringUtils.isEmpty(schemaInfo.getSchema().getName()));
 		if (missingSchemaInfo) {
 			throw error(BAD_REQUEST, "error_schema_parameter_missing");
 		}
@@ -315,7 +318,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		if (!isEmpty(schemaInfo.getSchema().getUuid())) {
 			// 2. Use schema reference by uuid first
 			SchemaContainer schemaByUuid = project.getSchemaContainerRoot().loadObjectByUuid(ac,
-					schemaInfo.getSchema().getUuid(), READ_PERM);
+				schemaInfo.getSchema().getUuid(), READ_PERM);
 			SchemaContainerVersion schemaVersion = branch.findLatestSchemaVersion(schemaByUuid);
 			if (schemaVersion == null) {
 				throw error(BAD_REQUEST, "schema_error_schema_not_linked_to_branch", schemaByUuid.getName(), branch.getName(), project.getName());
@@ -326,14 +329,15 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		// 3. Or just schema reference by name
 		if (!isEmpty(schemaInfo.getSchema().getName())) {
 			SchemaContainer schemaByName = project.getSchemaContainerRoot()
-					.findByName(schemaInfo.getSchema().getName());
+				.findByName(schemaInfo.getSchema().getName());
 			if (schemaByName != null) {
 				String schemaName = schemaByName.getName();
 				String schemaUuid = schemaByName.getUuid();
 				if (userDao.hasPermission(requestUser, schemaByName, READ_PERM)) {
 					SchemaContainerVersion schemaVersion = branch.findLatestSchemaVersion(schemaByName);
 					if (schemaVersion == null) {
-						throw error(BAD_REQUEST, "schema_error_schema_not_linked_to_branch", schemaByName.getName(), branch.getName(), project.getName());
+						throw error(BAD_REQUEST, "schema_error_schema_not_linked_to_branch", schemaByName.getName(), branch.getName(),
+							project.getName());
 					}
 					return createNode(ac, schemaVersion, batch, uuid);
 				} else {
@@ -350,7 +354,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 	@Override
 	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive,
-			Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
+		Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
 		if (recursive) {
 			for (Node node : findAll()) {
 				// We don't need to recursively handle the permissions for each node again since
