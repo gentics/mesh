@@ -433,6 +433,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		root.field(newElementField("tagFamily", "Load tagFamily by name or uuid.", (ac) -> ac.getProject().getTagFamilyRoot(), TAG_FAMILY_TYPE_NAME));
 
 		// .tagFamilies
+		// TODO FIX ME - We need to switch from Root usage to dao usage.
 //		root.field(newPagingSearchField("tagFamilies", "Load page of tagFamilies.", (ac) -> boot.tagFamilyDao(), TAG_FAMILY_PAGE_TYPE_NAME,
 //			tagFamilySearchHandler, null));
 

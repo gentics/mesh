@@ -59,8 +59,9 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 
 	@Override
 	public LoadAllAction<Role> loadAllAction() {
-		// TODO Auto-generated method stub
-		return null;
+		return (tx, ac, pagingInfo) -> {
+			return tx.data().roleDao().findAll(ac, pagingInfo);
+		};
 	}
 
 	@Override

@@ -95,7 +95,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	@Override
 	public UpdateAction<Node> updateAction() {
 		return (tx, element, ac, batch) -> {
-			return ac.getProject().getNodeRoot().update(element, ac, batch);
+			return element.update(ac, batch);
+			//return ac.getProject().getNodeRoot().update(element, ac, batch);
 		};
 	}
 
