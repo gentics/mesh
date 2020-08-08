@@ -70,6 +70,14 @@ public class NodeWrapper implements Node {
 
 	private final Node delegate;
 
+	public static NodeWrapper wrap(Node node) {
+		if (node == null) {
+			return null;
+		} else {
+			return new NodeWrapper(node);
+		}
+	}
+
 	public NodeWrapper(Node delegate) {
 		this.delegate = delegate;
 	}

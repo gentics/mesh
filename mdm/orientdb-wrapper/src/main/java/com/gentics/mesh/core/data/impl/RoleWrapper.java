@@ -41,6 +41,14 @@ public class RoleWrapper implements Role {
 
 	private final Role delete;
 
+	public static RoleWrapper wrap(Role role) {
+		if (role == null) {
+			return null;
+		} else {
+			return new RoleWrapper(role);
+		}
+	}
+
 	public RoleWrapper(Role delegate) {
 		this.delete = delegate;
 	}
@@ -405,7 +413,5 @@ public class RoleWrapper implements Role {
 	public <T> T reframeExplicit(Class<T> kind) {
 		return delete.reframeExplicit(kind);
 	}
-	
-	
 
 }

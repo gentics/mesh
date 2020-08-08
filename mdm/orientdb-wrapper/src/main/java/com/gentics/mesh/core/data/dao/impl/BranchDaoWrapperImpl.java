@@ -54,4 +54,12 @@ public class BranchDaoWrapperImpl implements BranchDaoWrapper {
 		}
 	}
 
+	private BranchWrapper wrap(Branch branch) {
+		if (branch == null) {
+			return null;
+		} else {
+			return new BranchWrapper(branch);
+		}
+	}
+
 }

@@ -65,7 +65,7 @@ public class RouterStorage {
 
 	private MeshAuthChain authChain;
 
-	private final RouterStorageRegistry routerStorageRegistry;
+	private final RouterStorageRegistryImpl routerStorageRegistry;
 
 	private final RequestDelegator delegator;
 
@@ -73,7 +73,7 @@ public class RouterStorage {
 	public RouterStorage(Vertx vertx, MeshOptions options, MeshAuthChain authChain, CorsHandler corsHandler, BodyHandlerImpl bodyHandler,
 		Lazy<BootstrapInitializer> boot,
 		Lazy<Database> db, VersionHandler versionHandler,
-		RouterStorageRegistry routerStorageRegistry,
+		RouterStorageRegistryImpl routerStorageRegistry,
 		RequestDelegator delegator) {
 		this.vertx = vertx;
 		this.options = options;

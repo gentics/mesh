@@ -50,6 +50,14 @@ public class TagWrapper implements Tag {
 
 	private final Tag delegate;
 
+	public static TagWrapper wrap(Tag tag) {
+		if (tag == null) {
+			return null;
+		} else {
+			return new TagWrapper(tag);
+		}
+	}
+
 	public TagWrapper(Tag delegate) {
 		this.delegate = delegate;
 	}

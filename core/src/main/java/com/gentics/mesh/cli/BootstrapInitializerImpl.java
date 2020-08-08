@@ -99,7 +99,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MonitoringConfig;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
-import com.gentics.mesh.router.RouterStorageRegistry;
+import com.gentics.mesh.router.RouterStorageRegistryImpl;
 import com.gentics.mesh.search.DevNullSearchProvider;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
@@ -174,7 +174,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	public MeshOptions options;
 
 	@Inject
-	public RouterStorageRegistry routerStorageRegistry;
+	public RouterStorageRegistryImpl routerStorageRegistry;
 
 	@Inject
 	public MetricsOptions metricsOptions;

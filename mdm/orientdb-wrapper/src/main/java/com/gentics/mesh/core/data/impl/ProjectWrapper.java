@@ -55,6 +55,14 @@ public class ProjectWrapper implements Project {
 
 	private final Project delegate;
 
+	public static ProjectWrapper wrap(Project project) {
+		if (project == null) {
+			return null;
+		} else {
+			return new ProjectWrapper(project);
+		}
+	}
+
 	public ProjectWrapper(Project delegate) {
 		this.delegate = delegate;
 	}

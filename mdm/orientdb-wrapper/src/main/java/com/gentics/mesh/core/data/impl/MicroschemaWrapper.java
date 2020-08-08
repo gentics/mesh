@@ -45,6 +45,14 @@ public class MicroschemaWrapper implements MicroschemaContainer {
 
 	private final MicroschemaContainer delegate;
 
+	public static MicroschemaWrapper wrap(MicroschemaContainer microschema) {
+		if (microschema == null) {
+			return null;
+		} else {
+			return new MicroschemaWrapper(microschema);
+		}
+	}
+
 	public MicroschemaWrapper(MicroschemaContainer delegate) {
 		this.delegate = delegate;
 	}

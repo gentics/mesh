@@ -24,8 +24,10 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
+import com.gentics.mesh.core.data.impl.TagWrapper;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
@@ -454,7 +456,8 @@ public class TagDaoWrapperImpl implements TagDaoWrapper {
 
 	@Override
 	public void delete(Tag tag, BulkActionContext bac) {
-		boot.get().tagRoot().delete(tag, bac);
+		TagRoot root = boot.get().tagRoot();
+		root.delete(tag, bac);
 	}
 
 }

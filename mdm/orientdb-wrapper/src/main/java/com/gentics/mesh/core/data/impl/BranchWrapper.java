@@ -61,6 +61,14 @@ public class BranchWrapper implements Branch {
 
 	private final Branch delegate;
 
+	public static BranchWrapper wrap(Branch branch) {
+		if (branch == null) {
+			return null;
+		} else {
+			return new BranchWrapper(branch);
+		}
+	}
+
 	public BranchWrapper(Branch delegate) {
 		this.delegate = delegate;
 	}

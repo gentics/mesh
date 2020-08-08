@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.dao.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -20,6 +21,7 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
@@ -34,11 +36,13 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.error.NameConflictException;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
+import com.gentics.mesh.router.RouterStorageRegistry;
 
 import dagger.Lazy;
 import io.vertx.core.logging.Logger;
@@ -46,23 +50,42 @@ import io.vertx.core.logging.LoggerFactory;
 
 // Use ProjectDao instead of ProjectRoot once ready
 @Singleton
-public class ProjectDaoWrapperImpl implements ProjectDaoWrapper {
+public class ProjectDaoWrapperImpl extends AbstractDaoWrapper implements ProjectDaoWrapper {
 
 	private static final Logger log = LoggerFactory.getLogger(ProjectDaoWrapperImpl.class);
 
-	private final Lazy<BootstrapInitializer> boot;
-
-	private final Lazy<PermissionProperties> permissions;
+	private final RouterStorageRegistry routerStorageRegistry;
 
 	@Inject
-	public ProjectDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionProperties> permissions) {
-		this.boot = boot;
-		this.permissions = permissions;
+	public ProjectDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionProperties> permissions,
+		RouterStorageRegistry routerStorageRegistry) {
+		super(boot, permissions);
+		this.routerStorageRegistry = routerStorageRegistry;
 	}
 
 	@Override
-	public boolean update(Project element, InternalActionContext ac, EventQueueBatch batch) {
-		return boot.get().projectRoot().update(element, ac, batch);
+	public boolean update(Project project, InternalActionContext ac, EventQueueBatch batch) {
+		ProjectUpdateRequest requestModel = ac.fromJson(ProjectUpdateRequest.class);
+
+		String oldName = project.getName();
+		String newName = requestModel.getName();
+		routerStorageRegistry.assertProjectName(newName);
+		if (shouldUpdate(newName, oldName)) {
+			// Check for conflicting project name
+			Project projectWithSameName = boot.get().projectRoot().findByName(newName);
+			if (projectWithSameName != null && !projectWithSameName.getUuid().equals(project.getUuid())) {
+				throw conflict(projectWithSameName.getUuid(), newName, "project_conflicting_name");
+			}
+
+			project.setName(newName);
+			project.setEditor(ac.getUser());
+			project.setLastEditedTimestamp();
+
+			// Update the project and its nodes in the index
+			batch.add(project.onUpdated());
+			return true;
+		}
+		return false;
 	}
 
 	@Override
@@ -80,29 +103,37 @@ public class ProjectDaoWrapperImpl implements ProjectDaoWrapper {
 
 	@Override
 	public ProjectWrapper findByName(String name) {
-		return new ProjectWrapper(boot.get().projectRoot().findByName(name));
+		ProjectRoot root = boot.get().projectRoot();
+		Project project = root.findByName(name);
+		return ProjectWrapper.wrap(project);
 	}
 
 	@Override
 	public Project findByName(InternalActionContext ac, String projectName, GraphPermission perm) {
-		return new ProjectWrapper(boot.get().projectRoot().findByName(ac, projectName, perm));
+		ProjectRoot root = boot.get().projectRoot();
+		Project project = root.findByName(ac, projectName, perm);
+		return ProjectWrapper.wrap(project);
 	}
 
 	@Override
 	public ProjectWrapper findByUuid(String uuid) {
-		return new ProjectWrapper(boot.get().projectRoot().findByUuid(uuid));
+		ProjectRoot root = boot.get().projectRoot();
+		Project project = root.findByUuid(uuid);
+		return ProjectWrapper.wrap(project);
 	}
 
 	@Override
 	public Project loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
 		ProjectRoot root = boot.get().projectRoot();
-		return new ProjectWrapper(root.loadObjectByUuid(ac, uuid, perm));
+		Project project = root.loadObjectByUuid(ac, uuid, perm);
+		return ProjectWrapper.wrap(project);
 	}
 
 	@Override
 	public Project loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
 		ProjectRoot root = boot.get().projectRoot();
-		return new ProjectWrapper(root.loadObjectByUuid(ac, uuid, perm, errorIfNotFound));
+		Project project = root.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+		return ProjectWrapper.wrap(project);
 	}
 
 	@Override
@@ -269,9 +300,10 @@ public class ProjectDaoWrapperImpl implements ProjectDaoWrapper {
 		}
 
 		project.fillCommonRestFields(ac, fields, restProject);
-		permissions.get().setRolePermissions(project, ac, restProject);
+		setRolePermissions(project, ac, restProject);
 
 		return restProject;
 
 	}
+
 }

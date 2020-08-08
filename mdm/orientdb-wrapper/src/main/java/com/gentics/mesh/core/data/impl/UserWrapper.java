@@ -46,6 +46,14 @@ public class UserWrapper implements User {
 
 	private final User delegate;
 
+	public static UserWrapper wrap(User user) {
+		if (user == null) {
+			return null;
+		} else {
+			return new UserWrapper(user);
+		}
+	}
+
 	public UserWrapper(User delegate) {
 		this.delegate = delegate;
 	}

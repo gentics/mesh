@@ -36,7 +36,7 @@ import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.GraphQLEndpoint;
 import com.gentics.mesh.router.RouterStorage;
-import com.gentics.mesh.router.RouterStorageRegistry;
+import com.gentics.mesh.router.RouterStorageRegistryImpl;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 import com.gentics.mesh.search.ProjectRawSearchEndpointImpl;
 import com.gentics.mesh.search.ProjectSearchEndpointImpl;
@@ -145,7 +145,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 	public Provider<HealthEndpoint> healthEndpoint;
 
 	@Inject
-	public RouterStorageRegistry routerStorageRegistry;
+	public RouterStorageRegistryImpl routerStorageRegistry;
 
 	@Inject
 	public io.vertx.reactivex.core.Vertx rxVertx;

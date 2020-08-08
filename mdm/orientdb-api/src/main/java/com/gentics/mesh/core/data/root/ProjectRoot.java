@@ -46,6 +46,7 @@ public interface ProjectRoot extends RootVertex<Project>, TransformableElementRo
 	 * @param batch
 	 * @return
 	 */
+	@Deprecated
 	default Project create(String projectName, String hostname, Boolean ssl, String pathPrefix, User creator,
 		SchemaContainerVersion schemaContainerVersion, EventQueueBatch batch) {
 		return create(projectName, hostname, ssl, pathPrefix, creator, schemaContainerVersion, null, batch);

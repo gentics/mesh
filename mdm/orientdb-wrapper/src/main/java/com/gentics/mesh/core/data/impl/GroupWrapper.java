@@ -41,6 +41,14 @@ public class GroupWrapper implements Group {
 
 	private final Group delete;
 
+	public static GroupWrapper wrap(Group group) {
+		if (group == null) {
+			return null;
+		} else {
+			return new GroupWrapper(group);
+		}
+	}
+
 	public GroupWrapper(Group delegate) {
 		this.delete = delegate;
 	}

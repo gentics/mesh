@@ -12,7 +12,6 @@ import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_MICROSCHEMA_ASSIGNED;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_MICROSCHEMA_UNASSIGNED;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_SCHEMA_ASSIGNED;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_SCHEMA_UNASSIGNED;
-import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -57,7 +56,6 @@ import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
 import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
-import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.handler.VersionHandler;
@@ -199,27 +197,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
-		ProjectUpdateRequest requestModel = ac.fromJson(ProjectUpdateRequest.class);
-
-		String oldName = getName();
-		String newName = requestModel.getName();
-		mesh().routerStorageRegistry().assertProjectName(newName);
-		if (shouldUpdate(newName, oldName)) {
-			// Check for conflicting project name
-			Project projectWithSameName = mesh().boot().meshRoot().getProjectRoot().findByName(newName);
-			if (projectWithSameName != null && !projectWithSameName.getUuid().equals(getUuid())) {
-				throw conflict(projectWithSameName.getUuid(), newName, "project_conflicting_name");
-			}
-
-			setName(newName);
-			setEditor(ac.getUser());
-			setLastEditedTimestamp();
-
-			// Update the project and its nodes in the index
-			batch.add(onUpdated());
-			return true;
-		}
-		return false;
+		throw new RuntimeException("Wrong invocation. Use dao instead");
 	}
 
 	@Override

@@ -64,6 +64,8 @@ import com.gentics.mesh.plugin.manager.MeshPluginManagerImpl;
 import com.gentics.mesh.plugin.pf4j.PluginEnvironmentImpl;
 import com.gentics.mesh.plugin.registry.DelegatingPluginRegistry;
 import com.gentics.mesh.plugin.registry.DelegatingPluginRegistryImpl;
+import com.gentics.mesh.router.RouterStorageRegistry;
+import com.gentics.mesh.router.RouterStorageRegistryImpl;
 import com.gentics.mesh.search.index.common.DropIndexHandler;
 import com.gentics.mesh.search.index.common.DropIndexHandlerImpl;
 import com.gentics.mesh.storage.BinaryStorage;
@@ -179,4 +181,6 @@ public abstract class BindModule {
 	@Binds
 	abstract LanguageDaoWrapper bindLanguageDao(LanguageDaoWrapperImpl e);
 
+	@Binds
+	abstract RouterStorageRegistry bindRouterStorageRegistry(RouterStorageRegistryImpl e);
 }

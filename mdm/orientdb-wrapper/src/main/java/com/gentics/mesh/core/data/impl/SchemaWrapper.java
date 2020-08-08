@@ -47,6 +47,14 @@ public class SchemaWrapper implements SchemaContainer {
 
 	private final SchemaContainer delegate;
 
+	public static SchemaWrapper wrap(SchemaContainer schema) {
+		if (schema == null) {
+			return null;
+		} else {
+			return new SchemaWrapper(schema);
+		}
+	}
+
 	public SchemaWrapper(SchemaContainer delegate) {
 		this.delegate = delegate;
 	}

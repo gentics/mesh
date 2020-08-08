@@ -17,7 +17,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.router.RouterStorage;
-import com.gentics.mesh.router.RouterStorageRegistry;
+import com.gentics.mesh.router.RouterStorageRegistryImpl;
 import com.orientechnologies.orient.server.distributed.ODistributedServerManager.DB_STATUS;
 
 import dagger.Lazy;
@@ -43,12 +43,12 @@ public class DistributedEventManager {
 
 	private final Lazy<BootstrapInitializer> boot;
 
-	private final RouterStorageRegistry routerStorageRegistry;
+	private final RouterStorageRegistryImpl routerStorageRegistry;
 
 	private final Lazy<PermissionCache> permCache;
 
 	@Inject
-	public DistributedEventManager(Lazy<Vertx> vertx, Lazy<Database> db, Lazy<BootstrapInitializer> boot, RouterStorageRegistry routerStorageRegistry,
+	public DistributedEventManager(Lazy<Vertx> vertx, Lazy<Database> db, Lazy<BootstrapInitializer> boot, RouterStorageRegistryImpl routerStorageRegistry,
 		Lazy<PermissionCache> permCache) {
 		this.vertx = vertx;
 		this.db = db;

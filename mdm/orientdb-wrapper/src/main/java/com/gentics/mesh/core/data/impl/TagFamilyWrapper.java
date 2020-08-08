@@ -48,9 +48,17 @@ import com.tinkerpop.blueprints.Vertex;
 import io.reactivex.Single;
 import io.vertx.core.Vertx;
 
-public class TagFamilyWrapper {
+public class TagFamilyWrapper implements TagFamily {
 
 	private final TagFamily delegate;
+
+	public static TagFamilyWrapper wrap(TagFamily tagFamily) {
+		if (tagFamily == null) {
+			return null;
+		} else {
+			return new TagFamilyWrapper(tagFamily);
+		}
+	}
 
 	public TagFamilyWrapper(TagFamily delegate) {
 		this.delegate = delegate;

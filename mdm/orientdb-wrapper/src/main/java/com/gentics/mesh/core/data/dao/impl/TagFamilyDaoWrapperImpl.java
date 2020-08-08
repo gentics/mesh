@@ -19,6 +19,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
+import com.gentics.mesh.core.data.impl.TagFamilyWrapper;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
@@ -50,13 +51,17 @@ public class TagFamilyDaoWrapperImpl implements TagFamilyDaoWrapper {
 	}
 
 	@Override
-	public TagFamily findByName(Project project, String name) {
-		return project.getTagFamilyRoot().findByName(name);
+	public TagFamilyWrapper findByName(Project project, String name) {
+		TagFamilyRoot root = project.getTagFamilyRoot();
+		TagFamily tagFamily = root.findByName(name);
+		return TagFamilyWrapper.wrap(tagFamily);
 	}
 
 	@Override
-	public TagFamily findByUuid(Project project, String uuid) {
-		return project.getTagFamilyRoot().findByUuid(uuid);
+	public TagFamilyWrapper findByUuid(Project project, String uuid) {
+		TagFamilyRoot root = project.getTagFamilyRoot();
+		TagFamily tagFamily = root.findByUuid(uuid);
+		return TagFamilyWrapper.wrap(tagFamily);
 	}
 
 	@Override

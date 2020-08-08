@@ -46,7 +46,7 @@ import com.gentics.mesh.rest.MeshLocalClientImpl;
 import com.gentics.mesh.rest.RestAPIVerticle;
 import com.gentics.mesh.router.EndpointRegistry;
 import com.gentics.mesh.router.RouterStorage;
-import com.gentics.mesh.router.RouterStorageRegistry;
+import com.gentics.mesh.router.RouterStorageRegistryImpl;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
@@ -161,7 +161,7 @@ public interface MeshComponent {
 
 	MeshPluginManager pluginManager();
 
-	RouterStorageRegistry routerStorageRegistry();
+	RouterStorageRegistryImpl routerStorageRegistry();
 
 	Binaries binaries();
 

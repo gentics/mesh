@@ -120,7 +120,9 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	 * @param graphValue
 	 *            Graph string value
 	 * @return true if restValue is not null and the restValue is not equal to the graph value. Otherwise false.
+	 * @deprecated This method was moved to AbstractDaoWrapper
 	 */
+	@Deprecated
 	protected <T> boolean shouldUpdate(T restValue, T graphValue) {
 		return restValue != null && !restValue.equals(graphValue);
 	}

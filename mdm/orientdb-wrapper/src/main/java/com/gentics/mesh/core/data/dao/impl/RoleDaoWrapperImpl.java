@@ -21,7 +21,6 @@ import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -453,4 +452,5 @@ public class RoleDaoWrapperImpl implements RoleDaoWrapper {
 	public boolean hasPermission(Role role, GraphPermission permission, MeshVertex element) {
 		return boot.get().roleRoot().hasPermission(role, permission, element);
 	}
+
 }

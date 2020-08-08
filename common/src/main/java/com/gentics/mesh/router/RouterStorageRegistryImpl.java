@@ -9,12 +9,12 @@ import javax.naming.InvalidNameException;
 import io.vertx.core.impl.ConcurrentHashSet;
 
 @Singleton
-public class RouterStorageRegistry {
+public class RouterStorageRegistryImpl implements RouterStorageRegistry {
 
 	private Set<RouterStorage> instances = new ConcurrentHashSet<>();
 
 	@Inject
-	public RouterStorageRegistry() {
+	public RouterStorageRegistryImpl() {
 	}
 
 	public synchronized void registerEventbus() {

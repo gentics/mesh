@@ -36,6 +36,14 @@ public class BinaryWrapper implements Binary {
 
 	private final Binary delegate;
 
+	public static BinaryWrapper wrap(Binary binary) {
+		if (binary == null) {
+			return null;
+		} else {
+			return new BinaryWrapper(binary);
+		}
+	}
+
 	public BinaryWrapper(Binary delegate) {
 		this.delegate = delegate;
 	}
