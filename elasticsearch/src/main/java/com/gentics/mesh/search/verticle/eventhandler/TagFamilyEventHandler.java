@@ -92,7 +92,7 @@ public class TagFamilyEventHandler implements EventHandler {
 	 * @return
 	 */
 	private Stream<SearchRequest> createNodeUpdates(MeshProjectElementEventModel model, TagFamily tagFamily) {
-		return findElementByUuidStream(Tx.get().data().projectDao(), model.getProject().getUuid())
+		return findElementByUuidStream(helper.getBoot().projectRoot(), model.getProject().getUuid())
 			.flatMap(project -> project.getBranchRoot().findAll().stream()
 				.flatMap(branch -> tagFamily.findAll().stream()
 					.flatMap(tag -> tag.getNodes(branch).stream())

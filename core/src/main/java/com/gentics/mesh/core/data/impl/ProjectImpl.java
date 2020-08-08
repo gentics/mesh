@@ -41,6 +41,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
+import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.impl.BranchRootImpl;
@@ -254,8 +255,8 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public String getSubETag(InternalActionContext ac) {
-		ProjectDaoWrapper projectDao = mesh().boot().projectDao();
-		return projectDao.getSubETag(this, ac);
+		ProjectRoot projectRoot = mesh().boot().projectRoot();
+		return projectRoot.getSubETag(this, ac);
 	}
 
 	@Override

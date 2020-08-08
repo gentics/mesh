@@ -433,9 +433,9 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		root.field(newElementField("tagFamily", "Load tagFamily by name or uuid.", (ac) -> ac.getProject().getTagFamilyRoot(), TAG_FAMILY_TYPE_NAME));
 
 		// .tagFamilies
-		// TODO FIX ME - We need to switch from Root usage to dao usage.
-//		root.field(newPagingSearchField("tagFamilies", "Load page of tagFamilies.", (ac) -> boot.tagFamilyDao(), TAG_FAMILY_PAGE_TYPE_NAME,
-//			tagFamilySearchHandler, null));
+		// TODO fix me. The root of the project should be used and not the global one
+		root.field(newPagingSearchField("tagFamilies", "Load page of tagFamilies.", (ac) -> boot.tagFamilyRoot(), TAG_FAMILY_PAGE_TYPE_NAME,
+			tagFamilySearchHandler, null));
 
 		// .branch
 		root.field(newFieldDefinition().name("branch").description("Load the branch that is active for this GraphQL query.")

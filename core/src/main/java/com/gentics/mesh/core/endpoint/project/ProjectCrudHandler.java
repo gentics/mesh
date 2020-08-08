@@ -45,7 +45,11 @@ public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResp
 	@Override
 	public LoadAction<Project> loadAction() {
 		return (tx, ac, uuid, perm, errorIfNotFound) -> {
-			return tx.data().projectDao().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+			if (perm == null) {
+				return tx.data().projectDao().findByUuid(uuid);
+			} else {
+				return tx.data().projectDao().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+			}
 		};
 	}
 

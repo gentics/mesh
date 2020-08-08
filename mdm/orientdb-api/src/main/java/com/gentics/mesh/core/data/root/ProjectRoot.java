@@ -91,4 +91,6 @@ public interface ProjectRoot extends RootVertex<Project>, TransformableElementRo
 
 	String getSubETag(Project project, InternalActionContext ac);
 
+	Project create();
+
 }
