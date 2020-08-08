@@ -1,5 +1,10 @@
 package com.gentics.mesh.core.data.dao.impl;
 
+import static com.gentics.mesh.core.rest.error.Errors.conflict;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+
 import java.util.Set;
 import java.util.Stack;
 import java.util.function.Function;
@@ -27,6 +32,7 @@ import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.event.group.GroupRoleAssignModel;
 import com.gentics.mesh.core.rest.event.group.GroupUserAssignModel;
 import com.gentics.mesh.core.rest.group.GroupResponse;
+import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -489,8 +495,25 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper implements GroupDaoW
 	}
 
 	@Override
-	public boolean update(Group element, InternalActionContext ac, EventQueueBatch batch) {
-		return boot.get().groupRoot().update(element, ac, batch);
+	public boolean update(Group group, InternalActionContext ac, EventQueueBatch batch) {
+		GroupUpdateRequest requestModel = ac.fromJson(GroupUpdateRequest.class);
+
+		if (isEmpty(requestModel.getName())) {
+			throw error(BAD_REQUEST, "error_name_must_be_set");
+		}
+
+		if (shouldUpdate(requestModel.getName(), group.getName())) {
+			Group groupWithSameName = findByName(requestModel.getName());
+			if (groupWithSameName != null && !groupWithSameName.getUuid().equals(group.getUuid())) {
+				throw conflict(groupWithSameName.getUuid(), requestModel.getName(), "group_conflicting_name", requestModel.getName());
+			}
+
+			group.setName(requestModel.getName());
+
+			batch.add(group.onUpdated());
+			return true;
+		}
+		return false;
 	}
 
 	@Override

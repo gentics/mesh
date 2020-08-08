@@ -64,25 +64,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 
 	@Override
 	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
-		BootstrapInitializer boot = mesh().boot();
-		GroupUpdateRequest requestModel = ac.fromJson(GroupUpdateRequest.class);
-
-		if (isEmpty(requestModel.getName())) {
-			throw error(BAD_REQUEST, "error_name_must_be_set");
-		}
-
-		if (shouldUpdate(requestModel.getName(), getName())) {
-			Group groupWithSameName = boot.groupDao().findByName(requestModel.getName());
-			if (groupWithSameName != null && !groupWithSameName.getUuid().equals(getUuid())) {
-				throw conflict(groupWithSameName.getUuid(), requestModel.getName(), "group_conflicting_name", requestModel.getName());
-			}
-
-			setName(requestModel.getName());
-
-			batch.add(onUpdated());
-			return true;
-		}
-		return false;
+		throw new RuntimeException("Wrong invocation. Use dao instead.");
 	}
 
 	@Override
