@@ -36,12 +36,10 @@ import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
-import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
@@ -51,7 +49,11 @@ import com.gentics.mesh.core.rest.branch.info.BranchMicroschemaInfo;
 import com.gentics.mesh.core.rest.branch.info.BranchSchemaInfo;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.verticle.handler.CreateAction;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.core.verticle.handler.LoadAction;
+import com.gentics.mesh.core.verticle.handler.LoadAllAction;
+import com.gentics.mesh.core.verticle.handler.UpdateAction;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.PentaFunction;
@@ -76,8 +78,31 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	}
 
 	@Override
-	public RootVertex<Branch> getRootVertex(Tx tx, InternalActionContext ac) {
-		return ac.getProject().getBranchRoot();
+	public LoadAction<Branch> loadAction() {
+		return (tx, ac, uuid, perm, errorIfNotFound) -> {
+			return ac.getProject().getBranchRoot().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+		};
+	}
+
+	@Override
+	public LoadAllAction<Branch> loadAllAction() {
+		return (tx, ac, pagingInfo) -> {
+			return ac.getProject().getBranchRoot().findAll(ac, pagingInfo);
+		};
+	}
+
+	@Override
+	public CreateAction<Branch> createAction() {
+		return (tx, ac, batch, uuid) -> {
+			return ac.getProject().getBranchRoot().create(ac, batch, uuid);
+		};
+	}
+
+	@Override
+	public UpdateAction<Branch> updateAction() {
+		return (tx, element, ac, batch) -> {
+			return element.update(ac, batch);
+		};
 	}
 
 	@Override

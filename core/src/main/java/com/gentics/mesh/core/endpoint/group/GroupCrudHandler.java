@@ -15,6 +15,8 @@ import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
@@ -23,7 +25,11 @@ import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.group.GroupResponse;
+import com.gentics.mesh.core.verticle.handler.CreateAction;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.core.verticle.handler.LoadAction;
+import com.gentics.mesh.core.verticle.handler.LoadAllAction;
+import com.gentics.mesh.core.verticle.handler.UpdateAction;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -48,8 +54,31 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 	}
 
 	@Override
-	public RootVertex<Group> getRootVertex(Tx tx, InternalActionContext ac) {
-		return tx.data().groupDao();
+	public LoadAction<Group> loadAction() {
+		return (tx, ac, uuid, perm, errorIfNotFound) -> {
+			return tx.data().groupDao().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+		};
+	}
+
+	@Override
+	public LoadAllAction<Group> loadAllAction() {
+		return (tx, ac, pagingInfo) -> {
+			return tx.data().groupDao().findAll(ac, pagingInfo);
+		};
+	}
+
+	@Override
+	public CreateAction<Group> createAction() {
+		return (tx, ac, batch, uuid) -> {
+			return tx.data().groupDao().create(ac, batch, uuid);
+		};
+	}
+
+	@Override
+	public UpdateAction<Group> updateAction() {
+		return (tx, group, ac, batch) -> {
+			return tx.data().groupDao().update(group, ac, batch);
+		};
 	}
 
 	/**
@@ -62,7 +91,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 	public void handleGroupRolesList(InternalActionContext ac, String groupUuid) {
 		utils.syncTx(ac, tx -> {
 			GroupRoot groupRoot = tx.data().groupDao();
-			Group group = getRootVertex(tx, ac).loadObjectByUuid(ac, groupUuid, READ_PERM);
+			Group group = tx.data().groupDao().loadObjectByUuid(ac, groupUuid, READ_PERM);
 			PagingParametersImpl pagingInfo = new PagingParametersImpl(ac);
 			TransformablePage<? extends Role> rolePage = groupRoot.getRoles(group, ac.getUser(), pagingInfo);
 			return rolePage.transformToRestSync(ac, 0);
@@ -120,9 +149,12 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				Group group = getRootVertex(tx, ac).loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
+				GroupDaoWrapper groupDao = tx.data().groupDao();
+				RoleDaoWrapper roleDao = tx.data().roleDao();
 				GroupRoot groupRoot = tx.data().groupDao();
-				Role role = boot.get().roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
+
+				Group group = groupDao.loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
+				Role role = roleDao.loadObjectByUuid(ac, roleUuid, READ_PERM);
 
 				// No need to update the group if it is not assigned
 				if (!groupRoot.hasRole(group, role)) {

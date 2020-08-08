@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.verticle.handler;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.event.EventCauseAction.DELETE;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -25,7 +24,6 @@ import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.db.TxAction;
 import com.gentics.mesh.core.db.TxAction0;
@@ -73,27 +71,28 @@ public class HandlerUtilities {
 	 * Create an object using the given aggregation node and respond with a transformed object.
 	 * 
 	 * @param ac
-	 * @param handler
+	 * @param loadAction
+	 * @param createAction
+	 * @param updateAction 
 	 */
-	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createElement(InternalActionContext ac, TxAction<RootVertex<T>> handler) {
-		createOrUpdateElement(ac, null, handler);
+	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createElement(InternalActionContext ac, LoadAction<T> loadAction, CreateAction<T> createAction, UpdateAction<T> updateAction) {
+		createOrUpdateElement(ac, null, loadAction, createAction, updateAction);
 	}
 
 	/**
 	 * Delete the specified element.
 	 * 
 	 * @param ac
-	 * @param handler
+	 * @param loadAction
 	 *            Handler which provides the root vertex which will be used to load the element
 	 * @param uuid
 	 *            Uuid of the element which should be deleted
 	 */
-	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void deleteElement(InternalActionContext ac, TxAction<RootVertex<T>> handler,
+	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void deleteElement(InternalActionContext ac, LoadAction<T> loadAction,
 		String uuid) {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			syncTx(ac, tx -> {
-				RootVertex<T> root = handler.handle(tx);
-				T element = root.loadObjectByUuid(ac, uuid, DELETE_PERM);
+				T element = loadAction.load(tx, ac, uuid, DELETE_PERM, true);
 
 				// Load the name and uuid of the element. We need this info after deletion.
 				String elementUuid = element.getUuid();
@@ -101,7 +100,7 @@ public class HandlerUtilities {
 					bac.setRootCause(element.getTypeInfo().getType(), elementUuid, DELETE);
 					element.delete(bac);
 				});
-				log.info("Deleted element {" + elementUuid + "} for type {" + root.getClass().getSimpleName() + "}");
+				log.info("Deleted element {" + elementUuid + "} for type {" + element.getClass().getSimpleName() + "}");
 			}, () -> ac.send(NO_CONTENT));
 		}
 
@@ -113,13 +112,13 @@ public class HandlerUtilities {
 	 * @param ac
 	 * @param uuid
 	 *            Uuid of the element which should be updated
-	 * @param handler
+	 * @param loadAction
 	 *            Handler which provides the root vertex which should be used when loading the element
-	 * 
+	 * @param createAction
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void updateElement(InternalActionContext ac, String uuid,
-		TxAction<RootVertex<T>> handler) {
-		createOrUpdateElement(ac, uuid, handler);
+		LoadAction<T> loadAction, CreateAction<T> createAction, UpdateAction<T> updateAction) {
+		createOrUpdateElement(ac, uuid, loadAction, createAction, updateAction);
 	}
 
 	/**
@@ -128,36 +127,34 @@ public class HandlerUtilities {
 	 * @param ac
 	 * @param uuid
 	 *            Uuid of the element to create or update. If null, an element will be created with random Uuid
-	 * @param handler
-	 *            Handler which provides the root vertex which should be used when loading the element
+	 * @param loadAction
+	 * @param createAction
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createOrUpdateElement(InternalActionContext ac, String uuid,
-		TxAction<RootVertex<T>> handler) {
+		LoadAction<T> loadAction, CreateAction<T> createAction, UpdateAction<T> updateAction) {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			AtomicBoolean created = new AtomicBoolean(false);
 			syncTx(ac, tx -> {
-				RootVertex<T> root = handler.handle(tx);
-
 				// 1. Load the element from the root element using the given uuid (if not null)
 				T element = null;
 				if (uuid != null) {
 					if (!UUIDUtil.isUUID(uuid)) {
 						throw error(BAD_REQUEST, "error_illegal_uuid", uuid);
 					}
-					element = root.loadObjectByUuid(ac, uuid, UPDATE_PERM, false);
+					element = loadAction.load(tx, ac, uuid, GraphPermission.UPDATE_PERM, false);
 				}
 
 				// Check whether we need to update a found element or whether we need to create a new one.
 				if (element != null) {
 					final T updateElement = element;
 					eventAction(batch -> {
-						return updateElement.update(ac, batch);
+						return updateAction.update(tx, updateElement, ac, batch);
 					});
 					return updateElement.transformToRestSync(ac, 0);
 				} else {
 					T createdElement = eventAction(batch -> {
 						created.set(true);
-						return root.create(ac, batch, uuid);
+						return createAction.create(tx, ac, batch, uuid);
 					});
 					RM model = createdElement.transformToRestSync(ac, 0);
 					String path = createdElement.getAPIPath(ac);
@@ -177,17 +174,16 @@ public class HandlerUtilities {
 	 * @param ac
 	 * @param uuid
 	 *            Uuid of the element which should be loaded
-	 * @param handler
+	 * @param action
 	 *            Handler which provides the root vertex which should be used when loading the element
 	 * @param perm
 	 *            Permission to check against when loading the element
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElement(InternalActionContext ac, String uuid,
-		TxAction<RootVertex<T>> handler, GraphPermission perm) {
+		LoadAction<T> action, GraphPermission perm) {
 
 		syncTx(ac, tx -> {
-			RootVertex<T> root = handler.handle(tx);
-			T element = root.loadObjectByUuid(ac, uuid, perm);
+			T element = action.load(tx, ac, uuid, perm, true);
 
 			// Handle etag
 			if (ac.getGenericParameters().getETag()) {
@@ -205,16 +201,14 @@ public class HandlerUtilities {
 	 * Read a list of elements of the given root vertex and respond with a list response.
 	 * 
 	 * @param ac
-	 * @param handler
+	 * @param loadAllAction
 	 *            Handler which provides the root vertex which should be used when loading the element
 	 */
-	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElementList(InternalActionContext ac, TxAction<RootVertex<T>> handler) {
+	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElementList(InternalActionContext ac, LoadAllAction<T> loadAllAction) {
 
 		syncTx(ac, tx -> {
-			RootVertex<T> root = handler.handle(tx);
-
 			PagingParameters pagingInfo = ac.getPagingParameters();
-			TransformablePage<? extends T> page = root.findAll(ac, pagingInfo);
+			TransformablePage<? extends T> page = loadAllAction.loadAll(tx, ac, pagingInfo);
 
 			// Handle etag
 			if (ac.getGenericParameters().getETag()) {

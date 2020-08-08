@@ -16,12 +16,15 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.core.verticle.handler.CreateAction;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.core.verticle.handler.LoadAction;
+import com.gentics.mesh.core.verticle.handler.LoadAllAction;
+import com.gentics.mesh.core.verticle.handler.UpdateAction;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.ProjectPurgeParameters;
@@ -40,8 +43,31 @@ public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResp
 	}
 
 	@Override
-	public RootVertex<Project> getRootVertex(Tx tx, InternalActionContext ac) {
-		return tx.data().projectDao();
+	public LoadAction<Project> loadAction() {
+		return (tx, ac, uuid, perm, errorIfNotFound) -> {
+			return tx.data().projectDao().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+		};
+	}
+
+	@Override
+	public LoadAllAction<Project> loadAllAction() {
+		return (tx, ac, pagingInfo) -> {
+			return tx.data().projectDao().findAll(ac, pagingInfo);
+		};
+	}
+
+	@Override
+	public CreateAction<Project> createAction() {
+		return (tx, ac, batch, uuid) -> {
+			return tx.data().projectDao().create(ac, batch, uuid);
+		};
+	}
+
+	@Override
+	public UpdateAction<Project> updateAction() {
+		return (tx, element, ac, batch) -> {
+			return tx.data().projectDao().update(element, ac, batch);
+		};
 	}
 
 	/**
@@ -53,8 +79,7 @@ public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResp
 	 */
 	public void handleReadByName(InternalActionContext ac, String projectName) {
 		utils.syncTx(ac, tx -> {
-			RootVertex<Project> root = getRootVertex(tx, ac);
-			Project project = root.findByName(ac, projectName, READ_PERM);
+			Project project = tx.data().projectDao().findByName(ac, projectName, READ_PERM);
 			return project.transformToRestSync(ac, 0);
 		}, model -> ac.send(model, OK));
 	}
@@ -76,9 +101,9 @@ public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResp
 				if (!ac.getUser().isAdmin()) {
 					throw error(FORBIDDEN, "error_admin_permission_required");
 				}
-				RootVertex<Project> root = getRootVertex(tx, ac);
 				MeshAuthUser user = ac.getUser();
-				Project project = root.loadObjectByUuid(ac, uuid, DELETE_PERM);
+				ProjectDaoWrapper projectDao = tx.data().projectDao();
+				Project project = projectDao.loadObjectByUuid(ac, uuid, DELETE_PERM);
 				db.tx(() -> {
 					if (before.isPresent()) {
 						boot.jobRoot().enqueueVersionPurge(user, project, before.get());

@@ -8,10 +8,12 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.core.verticle.handler.CreateAction;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.core.verticle.handler.LoadAction;
+import com.gentics.mesh.core.verticle.handler.LoadAllAction;
+import com.gentics.mesh.core.verticle.handler.UpdateAction;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.graphdb.spi.Database;
 
@@ -35,14 +37,13 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 		this.writeLock = writeLock;
 	}
 
-	/**
-	 * Return the main root vertex that is used to handle CRUD for the elements that are used in combination with this handler.
-	 * @param tx TODO
-	 * @param ac
-	 * 
-	 * @return
-	 */
-	abstract public RootVertex<T> getRootVertex(Tx tx, InternalActionContext ac);
+	abstract public LoadAction<T> loadAction();
+
+	abstract public LoadAllAction<T> loadAllAction();
+
+	abstract public CreateAction<T> createAction();
+
+	abstract public UpdateAction<T> updateAction();
 
 	/**
 	 * Handle create requests.
@@ -50,7 +51,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 	 * @param ac
 	 */
 	public void handleCreate(InternalActionContext ac) {
-		utils.createElement(ac, tx -> getRootVertex(tx, ac));
+		utils.createElement(ac, loadAction(), createAction(), updateAction());
 	}
 
 	/**
@@ -62,7 +63,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 	 */
 	public void handleDelete(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		utils.deleteElement(ac, tx -> getRootVertex(tx, ac), uuid);
+		utils.deleteElement(ac, loadAction(), uuid);
 	}
 
 	/**
@@ -74,7 +75,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 	 */
 	public void handleRead(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		utils.readElement(ac, uuid, tx -> getRootVertex(tx, ac), READ_PERM);
+		utils.readElement(ac, uuid, loadAction(), READ_PERM);
 	}
 
 	/**
@@ -86,7 +87,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 	 */
 	public void handleUpdate(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		utils.updateElement(ac, uuid, tx -> getRootVertex(tx, ac));
+		utils.updateElement(ac, uuid, loadAction(), createAction(), updateAction());
 	}
 
 	/**
@@ -95,7 +96,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 	 * @param ac
 	 */
 	public void handleReadList(InternalActionContext ac) {
-		utils.readElementList(ac, tx -> getRootVertex(tx, ac));
+		utils.readElementList(ac, loadAllAction());
 	}
 
 	/**
@@ -112,7 +113,8 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 			// Only try to load the root element when a uuid string was specified
 			if (!isEmpty(uuid)) {
 				boolean result = db.tx(tx -> {
-					T foundElement = getRootVertex(tx, ac).findByUuid(uuid);
+					//TODO Calling load is not correct. The findByUuid method should be used here instead or the loadObject
+					T foundElement = loadAction().load(tx, ac, uuid, null, false);
 					if (foundElement == null) {
 						throw error(NOT_FOUND, i18nNotFoundMessage, uuid);
 					} else {

@@ -23,13 +23,15 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RoleRoot;
-import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
+import com.gentics.mesh.core.verticle.handler.CreateAction;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.core.verticle.handler.LoadAction;
+import com.gentics.mesh.core.verticle.handler.LoadAllAction;
+import com.gentics.mesh.core.verticle.handler.UpdateAction;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.graphdb.spi.Database;
 
@@ -49,8 +51,30 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 	}
 
 	@Override
-	public RootVertex<Role> getRootVertex(Tx tx, InternalActionContext ac) {
-		return boot.roleRoot();
+	public LoadAction<Role> loadAction() {
+		return (tx, ac, uuid, perm, errorIfNotFound) -> {
+			return tx.data().roleDao().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+		};
+	}
+
+	@Override
+	public LoadAllAction<Role> loadAllAction() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public CreateAction<Role> createAction() {
+		return (tx, ac, batch, uuid) -> {
+			return tx.data().roleDao().create(ac, batch, uuid);
+		};
+	}
+
+	@Override
+	public UpdateAction<Role> updateAction() {
+		return (tx, role, ac, batch) -> {
+			return tx.data().roleDao().update(role, ac, batch);
+		};
 	}
 
 	/**

@@ -46,6 +46,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -85,7 +86,8 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 	@Override
 	public void testReadByUuidWithRolePerms() {
 		try (Tx tx = tx()) {
-			TagFamily tagFamily = project().getTagFamilyRoot().findAll().iterator().next();
+			TagFamilyDaoWrapper tagFamilyDao = tx.data().tagFamilyDao();
+			TagFamily tagFamily = tagFamilyDao.findAll(project()).iterator().next();
 			String uuid = tagFamily.getUuid();
 
 			TagFamilyResponse response = call(() -> client().findTagFamilyByUuid(PROJECT_NAME, uuid, new RolePermissionParametersImpl().setRoleUuid(
@@ -102,8 +104,9 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		String uuid;
 		try (Tx tx = tx()) {
 			RoleRoot roleDao = tx.data().roleDao();
+			TagFamilyDaoWrapper tagFamilyDao = tx.data().tagFamilyDao();
 			Role role = role();
-			TagFamily tagFamily = project().getTagFamilyRoot().findAll().iterator().next();
+			TagFamily tagFamily = tagFamilyDao.findAll(project()).iterator().next();
 			uuid = tagFamily.getUuid();
 			assertNotNull(tagFamily);
 			roleDao.revokePermissions(role, tagFamily, READ_PERM);

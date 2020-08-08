@@ -19,16 +19,17 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.root.UserRoot;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserResetTokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.core.verticle.handler.CreateAction;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.core.verticle.handler.LoadAction;
+import com.gentics.mesh.core.verticle.handler.LoadAllAction;
+import com.gentics.mesh.core.verticle.handler.UpdateAction;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.DateUtils;
@@ -57,8 +58,31 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 	}
 
 	@Override
-	public RootVertex<User> getRootVertex(Tx tx, InternalActionContext ac) {
-		return tx.data().userDao();
+	public LoadAction<User> loadAction() {
+		return (tx, ac, uuid, perm, errorIfNotFound) -> {
+			return tx.data().userDao().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+		};
+	}
+
+	@Override
+	public LoadAllAction<User> loadAllAction() {
+		return (tx, ac, pagingInfo) -> {
+			return tx.data().userDao().findAll(ac, pagingInfo);
+		};
+	}
+
+	@Override
+	public CreateAction<User> createAction() {
+		return (tx, ac, batch, uuid) -> {
+			return tx.data().userDao().create(ac, batch, uuid);
+		};
+	}
+
+	@Override
+	public UpdateAction<User> updateAction() {
+		return (tx, user, ac, batch) -> {
+			return tx.data().userDao().update(user, ac, batch);
+		};
 	}
 
 	/**

@@ -167,7 +167,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 	@Override
 	public User create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		BootstrapInitializer boot = mesh().boot();
-		GroupRoot groupDao = mesh().boot().groupDao();
+		GroupRoot groupDao = boot.groupDao();
 		MeshAuthUser requestUser = ac.getUser();
 
 		UserCreateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), UserCreateRequest.class);

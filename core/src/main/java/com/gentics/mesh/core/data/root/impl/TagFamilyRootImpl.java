@@ -1,24 +1,17 @@
 package com.gentics.mesh.core.data.root.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAGFAMILY_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_FAMILY;
-import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.util.Stack;
-
-import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
@@ -27,12 +20,8 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
-import com.gentics.mesh.core.data.root.UserRoot;
-import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.parameter.GenericParameters;
-import com.gentics.mesh.parameter.value.FieldsSet;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -61,8 +50,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 
 	@Override
 	public Project getProject() {
-		Project project = in(HAS_TAGFAMILY_ROOT).has(ProjectImpl.class).nextOrDefaultExplicit(ProjectImpl.class, null);
-		return project;
+		return in(HAS_TAGFAMILY_ROOT).has(ProjectImpl.class).nextOrDefaultExplicit(ProjectImpl.class, null);
 	}
 
 	@Override
@@ -112,34 +100,6 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 	}
 
 	@Override
-	public TagFamily create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		MeshAuthUser requestUser = ac.getUser();
-		UserRoot userRoot = mesh().boot().userDao();
-		TagFamilyCreateRequest requestModel = ac.fromJson(TagFamilyCreateRequest.class);
-
-		String name = requestModel.getName();
-		if (StringUtils.isEmpty(name)) {
-			throw error(BAD_REQUEST, "tagfamily_name_not_set");
-		}
-
-		// Check whether the name is already in-use.
-		TagFamily conflictingTagFamily = findByName(name);
-		if (conflictingTagFamily != null) {
-			throw conflict(conflictingTagFamily.getUuid(), name, "tagfamily_conflicting_name", name);
-		}
-
-		if (!userRoot.hasPermission(requestUser, this, CREATE_PERM)) {
-			throw error(FORBIDDEN, "error_missing_perm", this.getUuid(), CREATE_PERM.getRestPerm().getName());
-		}
-		TagFamily tagFamily = create(name, requestUser, uuid);
-		addTagFamily(tagFamily);
-		userRoot.inheritRolePermissions(requestUser, this, tagFamily);
-
-		batch.add(tagFamily.onCreated());
-		return tagFamily;
-	}
-
-	@Override
 	public MeshVertex resolveToElement(Stack<String> stack) {
 		if (stack.isEmpty()) {
 			return this;
@@ -161,32 +121,18 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 	}
 
 	@Override
-	public TagFamilyResponse transformToRestSync(TagFamily tagFamily, InternalActionContext ac, int level, String... languageTags) {
-		GenericParameters generic = ac.getGenericParameters();
-		FieldsSet fields = generic.getFields();
+	public boolean update(TagFamily element, InternalActionContext ac, EventQueueBatch batch) {
+		throw new RuntimeException("Wrong invocation. Use the dao instead.");
+	}
 
-		TagFamilyResponse restTagFamily = new TagFamilyResponse();
-		if (fields.has("uuid")) {
-			restTagFamily.setUuid(tagFamily.getUuid());
+	@Override
+	public TagFamilyResponse transformToRestSync(TagFamily element, InternalActionContext ac, int level, String... languageTags) {
+		throw new RuntimeException("Wrong invocation. Use the dao instead.");
+	}
 
-			// Performance shortcut to return now and ignore the other checks
-			if (fields.size() == 1) {
-				return restTagFamily;
-			}
-		}
-
-		if (fields.has("name")) {
-			restTagFamily.setName(tagFamily.getName());
-		}
-
-		tagFamily.fillCommonRestFields(ac, fields, restTagFamily);
-
-		if (fields.has("perms")) {
-			setRolePermissions(tagFamily, ac, restTagFamily);
-		}
-
-		return restTagFamily;
-
+	@Override
+	public TagFamily create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
+		throw new RuntimeException("Wrong invocation. Use the dao instead.");
 	}
 
 }

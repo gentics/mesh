@@ -29,12 +29,15 @@ import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.verticle.handler.CreateAction;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.core.verticle.handler.LoadAction;
+import com.gentics.mesh.core.verticle.handler.LoadAllAction;
+import com.gentics.mesh.core.verticle.handler.UpdateAction;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -65,8 +68,35 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	}
 
 	@Override
-	public RootVertex<Node> getRootVertex(Tx tx, InternalActionContext ac) {
-		return ac.getProject().getNodeRoot();
+	public LoadAction<Node> loadAction() {
+		return (tx, ac, uuid, perm, errorIfNotFound) -> {
+			if (perm == null) {
+				return ac.getProject().getNodeRoot().findByUuid(uuid);
+			} else {
+				return ac.getProject().getNodeRoot().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+			}
+		};
+	}
+
+	@Override
+	public LoadAllAction<Node> loadAllAction() {
+		return (tx, ac, pagingInfo) -> {
+			return ac.getProject().getNodeRoot().findAll(ac, pagingInfo);
+		};
+	}
+
+	@Override
+	public CreateAction<Node> createAction() {
+		return (tx, ac, batch, uuid) -> {
+			return ac.getProject().getNodeRoot().create(ac, batch, uuid);
+		};
+	}
+
+	@Override
+	public UpdateAction<Node> updateAction() {
+		return (tx, element, ac, batch) -> {
+			return ac.getProject().getNodeRoot().update(element, ac, batch);
+		};
 	}
 
 	@Override
@@ -75,7 +105,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				Node node = getRootVertex(tx, ac).loadObjectByUuid(ac, uuid, DELETE_PERM);
+				Node node = ac.getProject().getNodeRoot().loadObjectByUuid(ac, uuid, DELETE_PERM);
 				if (node.getProject().getBaseNode().getUuid().equals(node.getUuid())) {
 					throw error(METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
 				}
@@ -102,7 +132,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				Node node = getRootVertex(tx, ac).loadObjectByUuid(ac, uuid, DELETE_PERM);
+				Node node = loadAction().load(tx, ac, uuid, DELETE_PERM, true);
 				Language language = boot.meshRoot().getLanguageRoot().findByLanguageTag(languageTag);
 				if (language == null) {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
@@ -162,7 +192,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		validateParameter(uuid, "uuid");
 
 		Node node = db.tx(tx -> {
-			return getRootVertex(tx, ac).loadObjectByUuid(ac, uuid, READ_PERM);
+			return loadAction().load(tx, ac, uuid, READ_PERM, true);
 		});
 		node.transformToNavigation(ac).subscribe(model -> ac.send(model, OK), ac::fail);
 
@@ -184,7 +214,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			PagingParameters pagingParams = ac.getPagingParameters();
 			VersioningParameters versionParams = ac.getVersioningParameters();
 			GraphPermission requiredPermission = "published".equals(ac.getVersioningParameters().getVersion()) ? READ_PUBLISHED_PERM : READ_PERM;
-			Node node = getRootVertex(tx, ac).loadObjectByUuid(ac, uuid, requiredPermission);
+			Node node = ac.getProject().getNodeRoot().loadObjectByUuid(ac, uuid, requiredPermission);
 			TransformablePage<? extends Node> page = node.getChildren(ac, nodeParams.getLanguageList(options),
 				ac.getBranch(node.getProject()).getUuid(), ContainerType.forVersion(versionParams.getVersion()), pagingParams);
 
@@ -204,7 +234,9 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleRead(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 		GraphPermission requiredPermission = "published".equals(ac.getVersioningParameters().getVersion()) ? READ_PUBLISHED_PERM : READ_PERM;
-		utils.readElement(ac, uuid, tx -> getRootVertex(tx, ac), requiredPermission);
+		utils.readElement(ac, uuid,
+			(tx, ac2, uuid2, perm, errorIfNotFound) -> ac.getProject().getNodeRoot().loadObjectByUuid(ac, uuid, requiredPermission, errorIfNotFound),
+			requiredPermission);
 	}
 
 	/**
@@ -219,7 +251,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		validateParameter(uuid, "uuid");
 
 		utils.syncTx(ac, tx -> {
-			Node node = getRootVertex(tx, ac).loadObjectByUuid(ac, uuid, READ_PERM);
+			Node node = ac.getProject().getNodeRoot().loadObjectByUuid(ac, uuid, READ_PERM);
 			TransformablePage<? extends Tag> tagPage = node.getTags(ac.getUser(), ac.getPagingParameters(), ac.getBranch());
 			// Handle etag
 			if (ac.getGenericParameters().getETag()) {
@@ -319,7 +351,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		validateParameter(uuid, "uuid");
 
 		utils.syncTx(ac, (tx) -> {
-			Node node = getRootVertex(tx, ac).loadObjectByUuid(ac, uuid, READ_PERM);
+			Node node = ac.getProject().getNodeRoot().loadObjectByUuid(ac, uuid, READ_PERM);
 			return node.transformToPublishStatus(ac);
 		}, model -> ac.send(model, OK));
 	}
@@ -337,7 +369,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				Node node = getRootVertex(tx, ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
+				Node node = ac.getProject().getNodeRoot().loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 				utils.bulkableAction(bac -> {
 					node.publish(ac, bac);
 				});
@@ -359,7 +391,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				Node node = getRootVertex(tx, ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
+				Node node = ac.getProject().getNodeRoot().loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 				utils.bulkableAction(bac -> {
 					node.takeOffline(ac, bac);
 				});
@@ -381,7 +413,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		validateParameter(uuid, "uuid");
 
 		utils.syncTx(ac, tx -> {
-			Node node = getRootVertex(tx, ac).loadObjectByUuid(ac, uuid, READ_PERM);
+			Node node = ac.getProject().getNodeRoot().loadObjectByUuid(ac, uuid, READ_PERM);
 			return node.transformToPublishStatus(ac, languageTag);
 		}, model -> ac.send(model, OK));
 	}
@@ -401,7 +433,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				Node node = getRootVertex(tx, ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
+				Node node = ac.getProject().getNodeRoot().loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 				utils.bulkableAction(bac -> {
 					node.publish(ac, bac, languageTag);
 				});
@@ -426,7 +458,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				Node node = getRootVertex(tx, ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
+				Node node = ac.getProject().getNodeRoot().loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 				utils.bulkableAction(bac -> {
 					Branch branch = ac.getBranch(ac.getProject());
 					node.takeOffline(ac, bac, branch, languageTag);
@@ -498,7 +530,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		validateParameter(uuid, "uuid");
 
 		utils.syncTx(ac, tx -> {
-			Node node = getRootVertex(tx, ac).loadObjectByUuid(ac, uuid, READ_PERM);
+			Node node = ac.getProject().getNodeRoot().loadObjectByUuid(ac, uuid, READ_PERM);
 			return node.transformToVersionList(ac);
 		}, model -> {
 			ac.send(model, OK);

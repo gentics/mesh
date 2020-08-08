@@ -433,8 +433,8 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		root.field(newElementField("tagFamily", "Load tagFamily by name or uuid.", (ac) -> ac.getProject().getTagFamilyRoot(), TAG_FAMILY_TYPE_NAME));
 
 		// .tagFamilies
-		root.field(newPagingSearchField("tagFamilies", "Load page of tagFamilies.", (ac) -> boot.tagFamilyDao(), TAG_FAMILY_PAGE_TYPE_NAME,
-			tagFamilySearchHandler, null));
+//		root.field(newPagingSearchField("tagFamilies", "Load page of tagFamilies.", (ac) -> boot.tagFamilyDao(), TAG_FAMILY_PAGE_TYPE_NAME,
+//			tagFamilySearchHandler, null));
 
 		// .branch
 		root.field(newFieldDefinition().name("branch").description("Load the branch that is active for this GraphQL query.")

@@ -20,7 +20,6 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.root.impl.SchemaContainerRootImpl;
@@ -28,7 +27,6 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -37,7 +35,11 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
+import com.gentics.mesh.core.verticle.handler.CreateAction;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.core.verticle.handler.LoadAction;
+import com.gentics.mesh.core.verticle.handler.LoadAllAction;
+import com.gentics.mesh.core.verticle.handler.UpdateAction;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
@@ -65,8 +67,31 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 	}
 
 	@Override
-	public RootVertex<SchemaContainer> getRootVertex(Tx tx, InternalActionContext ac) {
-		return boot.get().schemaContainerRoot();
+	public LoadAction<SchemaContainer> loadAction() {
+		return (tx, ac, uuid, perm, errorIfNotFound) -> {
+			return tx.data().schemaDao().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+		};
+	}
+
+	@Override
+	public LoadAllAction<SchemaContainer> loadAllAction() {
+		return (tx, ac, pagingInfo) -> {
+			return tx.data().schemaDao().findAll(ac, pagingInfo);
+		};
+	}
+
+	@Override
+	public CreateAction<SchemaContainer> createAction() {
+		return (tx, ac, batch, uuid) -> {
+			return tx.data().schemaDao().create(ac, batch, uuid);
+		};
+	}
+
+	@Override
+	public UpdateAction<SchemaContainer> updateAction() {
+		return (tx, schema, ac, batch) -> {
+			return tx.data().schemaDao().update(schema, ac, batch);
+		};
 	}
 
 	/**
@@ -84,11 +109,10 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 			 * model).
 			 */
 			boolean delegateToCreate = db.tx(tx -> {
-				RootVertex<SchemaContainer> root = getRootVertex(tx, ac);
 				if (!UUIDUtil.isUUID(uuid)) {
 					return false;
 				}
-				SchemaContainer schemaContainer = root.findByUuid(uuid);
+				SchemaContainer schemaContainer = tx.data().schemaDao().findByUuid(uuid);
 				return schemaContainer == null;
 			});
 
@@ -102,8 +126,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 			utils.syncTx(ac, tx1 -> {
 
 				// 1. Load the schema container with update permissions
-				RootVertex<SchemaContainer> root = getRootVertex(tx1, ac);
-				SchemaContainer schemaContainer = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
+				SchemaContainer schemaContainer = tx1.data().schemaDao().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 				SchemaUpdateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaUpdateRequest.class);
 
 				UserRoot userRoot = tx1.data().userDao();
@@ -206,7 +229,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 		validateParameter(uuid, "uuid");
 
 		utils.syncTx(ac, tx -> {
-			SchemaContainer schema = getRootVertex(tx, ac).loadObjectByUuid(ac, uuid, READ_PERM);
+			SchemaContainer schema = tx.data().schemaDao().loadObjectByUuid(ac, uuid, READ_PERM);
 			Schema requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaUpdateRequest.class);
 			requestModel.validate();
 			return schema.getLatestVersion().diff(ac, comparator, requestModel);
@@ -219,7 +242,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 	 * @param ac
 	 */
 	public void handleReadProjectList(InternalActionContext ac) {
-		utils.readElementList(ac, tx -> ac.getProject().getSchemaContainerRoot());
+		utils.readElementList(ac, (tx, ac2, pagingInfo) -> ac2.getProject().getSchemaContainerRoot().findAll(ac, pagingInfo));
 	}
 
 	/**
@@ -241,7 +264,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 				if (!userRoot.hasPermission(ac.getUser(), project, GraphPermission.UPDATE_PERM)) {
 					throw error(FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
 				}
-				SchemaContainer schema = getRootVertex(tx, ac).loadObjectByUuid(ac, schemaUuid, READ_PERM);
+				SchemaContainer schema = tx.data().schemaDao().loadObjectByUuid(ac, schemaUuid, READ_PERM);
 				SchemaContainerRoot root = project.getSchemaContainerRoot();
 				if (root.contains(schema)) {
 					// Schema has already been assigned. No need to create indices

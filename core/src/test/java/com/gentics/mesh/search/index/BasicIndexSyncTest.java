@@ -211,7 +211,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 		// Assert deletion
 		tx(() -> {
-			boot().tagFamilyDao().findByName("tagfamily_3").getElement().remove();
+			boot().tagFamilyDao().findByName(project(), "tagfamily_3").getElement().remove();
 		});
 		syncIndex();
 		assertMetrics("tagfamily", 0, 0, 1);
