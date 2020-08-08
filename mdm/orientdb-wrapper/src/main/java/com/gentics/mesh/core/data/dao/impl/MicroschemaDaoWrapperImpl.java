@@ -16,10 +16,11 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
+import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
@@ -45,13 +46,11 @@ import com.tinkerpop.blueprints.Vertex;
 import dagger.Lazy;
 import io.vertx.core.Vertx;
 
-public class MicroschemaDaoWrapperImpl implements MicroschemaDaoWrapper {
-
-	private final Lazy<BootstrapInitializer> boot;
+public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper implements MicroschemaDaoWrapper {
 
 	@Inject
-	public MicroschemaDaoWrapperImpl(Lazy<BootstrapInitializer> boot) {
-		this.boot = boot;
+	public MicroschemaDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionProperties> permissions) {
+		super(boot, permissions);
 	}
 
 	public Object id() {

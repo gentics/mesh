@@ -14,6 +14,7 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.FieldGetter;
@@ -25,7 +26,6 @@ import com.gentics.mesh.core.data.node.field.list.AbstractReferencingGraphFieldL
 import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.root.NodeRoot;
-import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
@@ -140,13 +140,13 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 		boolean expandField = parameters.getExpandedFieldnameList().contains(fieldKey) || parameters.getExpandAll();
 		String[] lTagsArray = languageTags.toArray(new String[languageTags.size()]);
 
-		UserRoot userRoot = mesh().boot().userDao();
+		UserDaoWrapper userDao = mesh().boot().userDao();
 
 		if (expandField && level < Node.MAX_TRANSFORMATION_LEVEL) {
 			NodeFieldList restModel = new NodeFieldListImpl();
 			for (com.gentics.mesh.core.data.node.field.nesting.NodeGraphField item : getList()) {
 				Node node = item.getNode();
-				if (!userRoot.canReadNode(ac.getUser(), ac, node)) {
+				if (!userDao.canReadNode(ac.getUser(), ac, node)) {
 					continue;
 				}
 				restModel.getItems().add(node.transformToRestSync(ac, level, lTagsArray));
@@ -157,7 +157,7 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 			NodeFieldList restModel = new NodeFieldListImpl();
 			for (com.gentics.mesh.core.data.node.field.nesting.NodeGraphField item : getList()) {
 				Node node = item.getNode();
-				if (!userRoot.canReadNode(ac.getUser(), ac, node)) {
+				if (!userDao.canReadNode(ac.getUser(), ac, node)) {
 					continue;
 				}
 				restModel.add(node.toListItem(ac, lTagsArray));

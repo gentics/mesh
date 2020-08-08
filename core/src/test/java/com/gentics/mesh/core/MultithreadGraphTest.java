@@ -6,7 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.root.MeshRoot;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -19,8 +19,8 @@ public class MultithreadGraphTest extends AbstractMeshTest {
 
 		runAndWait(() -> {
 			try (Tx tx = tx()) {
-				MeshRoot meshRoot = boot().meshRoot();
-				User user = meshRoot.getUserRoot().create("test", null);
+				UserDaoWrapper userDao = tx.data().userDao();
+				User user = userDao.create("test", null);
 				user.setCreated(user());
 				assertNotNull(user);
 				tx.success();

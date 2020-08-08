@@ -102,11 +102,11 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				UserDaoWrapper userRoot = tx.data().userDao();
+				UserDaoWrapper userDao = tx.data().userDao();
 
 				// 1. Load the user that should be used - read perm implies that the
 				// user is able to read the attached permissions
-				User user = userRoot.loadObjectByUuid(ac, userUuid, READ_PERM);
+				User user = userDao.loadObjectByUuid(ac, userUuid, READ_PERM);
 
 				// 2. Resolve the path to element that is targeted
 				MeshVertex targetElement = boot.meshRoot().resolvePathToElement(pathToElement);
@@ -116,7 +116,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 				UserPermissionResponse response = new UserPermissionResponse();
 
 				// 1. Add granted permissions
-				for (GraphPermission perm : userRoot.getPermissions(user, targetElement)) {
+				for (GraphPermission perm : userDao.getPermissions(user, targetElement)) {
 					response.set(perm.getRestPerm(), true);
 				}
 

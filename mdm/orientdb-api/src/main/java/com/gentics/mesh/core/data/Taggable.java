@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.db.Tx;
@@ -54,7 +55,7 @@ public interface Taggable {
 		List<Tag> tags = new ArrayList<>();
 		Project project = getProject();
 		TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();
-		UserRoot userRoot = Tx.get().data().userDao();
+		UserDaoWrapper userDao = Tx.get().data().userDao();
 		User user = ac.getUser();
 		for (TagReference tagReference : list) {
 			if (!tagReference.isSet()) {
@@ -75,7 +76,7 @@ public interface Taggable {
 				if (tag == null) {
 					throw error(NOT_FOUND, "tag_not_found", tagReference.getUuid());
 				}
-				if (!userRoot.hasPermission(user, tag, READ_PERM)) {
+				if (!userDao.hasPermission(user, tag, READ_PERM)) {
 					throw error(FORBIDDEN, "error_missing_perm", tag.getUuid(), READ_PERM.getRestPerm().getName());
 				}
 				tags.add(tag);
@@ -83,15 +84,15 @@ public interface Taggable {
 				Tag tag = tagFamily.findByName(tagReference.getName());
 				// Tag with name could not be found so create it
 				if (tag == null) {
-					if (userRoot.hasPermission(user, tagFamily, CREATE_PERM)) {
+					if (userDao.hasPermission(user, tagFamily, CREATE_PERM)) {
 						tag = tagFamily.create(tagReference.getName(), project, user);
-						userRoot.inheritRolePermissions(user, tagFamily, tag);
+						userDao.inheritRolePermissions(user, tagFamily, tag);
 						batch.add(tag.onCreated());
 					} else {
 						throw error(FORBIDDEN, "tag_error_missing_perm_on_tag_family", tagFamily.getName(), tagFamily.getUuid(), tagReference
 							.getName());
 					}
-				} else if (!userRoot.hasPermission(user, tag, READ_PERM)) {
+				} else if (!userDao.hasPermission(user, tag, READ_PERM)) {
 					throw error(FORBIDDEN, "error_missing_perm", tag.getUuid(), READ_PERM.getRestPerm().getName());
 				}
 

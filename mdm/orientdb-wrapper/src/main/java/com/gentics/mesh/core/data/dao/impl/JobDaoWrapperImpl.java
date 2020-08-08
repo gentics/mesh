@@ -19,7 +19,9 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.JobDaoWrapper;
+import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -48,13 +50,11 @@ import io.reactivex.Completable;
 import io.vertx.core.Vertx;
 
 @Singleton
-public class JobDaoWrapperImpl implements JobDaoWrapper {
-
-	private final Lazy<BootstrapInitializer> boot;
+public class JobDaoWrapperImpl extends AbstractDaoWrapper implements JobDaoWrapper {
 
 	@Inject
-	public JobDaoWrapperImpl(Lazy<BootstrapInitializer> boot) {
-		this.boot = boot;
+	public JobDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionProperties> permissions) {
+		super(boot, permissions);
 	}
 
 	public Object id() {

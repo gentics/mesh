@@ -22,12 +22,12 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -42,13 +42,10 @@ public class TxTest extends AbstractMeshTest {
 	public void testTransaction() throws InterruptedException {
 		AtomicInteger i = new AtomicInteger(0);
 
-		UserRoot root;
-		try (Tx tx = tx()) {
-			root = meshRoot().getUserRoot();
-		}
 		int e = i.incrementAndGet();
 		try (Tx tx = tx()) {
-			assertNotNull(root.create("testuser" + e, user()));
+			UserDaoWrapper userDao= tx.data().userDao();
+			assertNotNull(userDao.create("testuser" + e, user()));
 			assertNotNull(boot().userDao().findByUsername("testuser" + e));
 			tx.success();
 		}
@@ -58,8 +55,9 @@ public class TxTest extends AbstractMeshTest {
 		int u = i.incrementAndGet();
 		Runnable task = () -> {
 			try (Tx tx = tx()) {
-				assertNotNull(root.create("testuser" + u, user()));
-				assertNotNull(boot().userDao().findByUsername("testuser" + u));
+				UserDaoWrapper userDao= tx.data().userDao();
+				assertNotNull(userDao.create("testuser" + u, user()));
+				assertNotNull(userDao.findByUsername("testuser" + u));
 				tx.failure();
 			}
 			assertNull(boot().userDao().findByUsername("testuser" + u));

@@ -10,10 +10,10 @@ import java.util.stream.StreamSupport;
 
 import com.gentics.mesh.core.data.TransformableElement;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -150,11 +150,11 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 		AtomicLong pageCounter = new AtomicLong();
 		FramedGraph graph = Tx.getActive().getGraph();
 
-		UserRoot userRoot = Tx.get().data().userDao();
+		UserDaoWrapper userDao = Tx.get().data().userDao();
 
 		// Only handle elements which are visible to the user
 		if (perm != null) {
-			stream = stream.filter(item -> userRoot.hasPermissionForId(requestUser, item.getId(), perm));
+			stream = stream.filter(item -> userDao.hasPermissionForId(requestUser, item.getId(), perm));
 		}
 
 		Stream<T> framedStream;

@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.data.dao.impl;
+package com.gentics.mesh.core.data.dao;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;

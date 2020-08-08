@@ -305,8 +305,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
-		UserRoot userRoot = Tx.get().data().userDao();
-		return userRoot.update(this, ac, batch);
+		UserDaoWrapper userDao = Tx.get().data().userDao();
+		return userDao.update(this, ac, batch);
 	}
 
 	@Override

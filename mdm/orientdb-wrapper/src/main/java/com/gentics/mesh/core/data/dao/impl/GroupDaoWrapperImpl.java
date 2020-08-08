@@ -18,8 +18,9 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
-import com.gentics.mesh.core.data.impl.GroupWrapper;
+import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
@@ -49,13 +50,11 @@ import io.reactivex.Single;
 import io.vertx.core.Vertx;
 
 @Singleton
-public class GroupDaoWrapperImpl implements GroupDaoWrapper {
-
-	private final Lazy<BootstrapInitializer> boot;
+public class GroupDaoWrapperImpl extends AbstractDaoWrapper implements GroupDaoWrapper {
 
 	@Inject
-	public GroupDaoWrapperImpl(Lazy<BootstrapInitializer> boot) {
-		this.boot = boot;
+	public GroupDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionProperties> permissions) {
+		super(boot, permissions);
 	}
 
 	public Object id() {

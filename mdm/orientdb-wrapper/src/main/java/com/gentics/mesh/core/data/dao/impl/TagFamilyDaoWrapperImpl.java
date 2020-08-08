@@ -17,11 +17,12 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.impl.TagFamilyWrapper;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
-import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
@@ -34,15 +35,11 @@ import com.gentics.mesh.parameter.value.FieldsSet;
 import dagger.Lazy;
 
 // TODO there is no tag family root since the tag itself is the root. 
-public class TagFamilyDaoWrapperImpl implements TagFamilyDaoWrapper {
-
-	private final Lazy<BootstrapInitializer> boot;
-	private final Lazy<PermissionProperties> permissions;
+public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper implements TagFamilyDaoWrapper {
 
 	@Inject
 	public TagFamilyDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionProperties> permissions) {
-		this.boot = boot;
-		this.permissions = permissions;
+		super(boot, permissions);
 	}
 
 	@Override
@@ -122,7 +119,7 @@ public class TagFamilyDaoWrapperImpl implements TagFamilyDaoWrapper {
 	@Override
 	public TagFamily create(Project project, InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		MeshAuthUser requestUser = ac.getUser();
-		UserRoot userRoot = boot.get().userDao();
+		UserDaoWrapper userDao = boot.get().userDao();
 		TagFamilyCreateRequest requestModel = ac.fromJson(TagFamilyCreateRequest.class);
 
 		String name = requestModel.getName();
@@ -137,12 +134,12 @@ public class TagFamilyDaoWrapperImpl implements TagFamilyDaoWrapper {
 			throw conflict(conflictingTagFamily.getUuid(), name, "tagfamily_conflicting_name", name);
 		}
 
-		if (!userRoot.hasPermission(requestUser, projectTagFamilyRoot, CREATE_PERM)) {
+		if (!userDao.hasPermission(requestUser, projectTagFamilyRoot, CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", projectTagFamilyRoot.getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
 		TagFamily tagFamily = projectTagFamilyRoot.create(name, requestUser, uuid);
 		projectTagFamilyRoot.addTagFamily(tagFamily);
-		userRoot.inheritRolePermissions(requestUser, projectTagFamilyRoot, tagFamily);
+		userDao.inheritRolePermissions(requestUser, projectTagFamilyRoot, tagFamily);
 
 		batch.add(tagFamily.onCreated());
 		return tagFamily;

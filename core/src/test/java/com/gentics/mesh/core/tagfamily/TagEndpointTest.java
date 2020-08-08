@@ -19,6 +19,7 @@ import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
@@ -224,6 +225,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Override
 	public void testCreateDelete() throws Exception {
 		try (Tx tx = tx()) {
+			TagFamilyDaoWrapper tagFamilyDao = tx.data().tagFamilyDao();
 			TagFamilyRoot root = project().getTagFamilyRoot();
 			TagFamily tagFamily = root.create("test123", user());
 			assertNotNull(tagFamily);
@@ -243,12 +245,12 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Override
 	public void testCRUDPermissions() {
 		try (Tx tx = tx()) {
-			UserRoot userRoot = tx.data().userDao();
+			UserDaoWrapper userDao = tx.data().userDao();
 			TagFamilyRoot root = project().getTagFamilyRoot();
 			TagFamily tagFamily = root.create("test123", user());
-			assertFalse(userRoot.hasPermission(user(), tagFamily, GraphPermission.CREATE_PERM));
-			userRoot.inheritRolePermissions(user(), root, tagFamily);
-			assertTrue(userRoot.hasPermission(user(), tagFamily, GraphPermission.CREATE_PERM));
+			assertFalse(userDao.hasPermission(user(), tagFamily, GraphPermission.CREATE_PERM));
+			userDao.inheritRolePermissions(user(), root, tagFamily);
+			assertTrue(userDao.hasPermission(user(), tagFamily, GraphPermission.CREATE_PERM));
 		}
 	}
 

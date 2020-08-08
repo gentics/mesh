@@ -1,5 +1,8 @@
 package com.gentics.mesh.dagger.module;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 import com.gentics.mesh.auth.MeshOAuthService;
 import com.gentics.mesh.auth.oauth2.MeshOAuth2ServiceImpl;
 import com.gentics.mesh.cache.CacheRegistry;
@@ -183,4 +186,7 @@ public abstract class BindModule {
 
 	@Binds
 	abstract RouterStorageRegistry bindRouterStorageRegistry(RouterStorageRegistryImpl e);
+
+	@Binds
+	abstract PasswordEncoder bindPasswordEncoder(BCryptPasswordEncoder e);
 }

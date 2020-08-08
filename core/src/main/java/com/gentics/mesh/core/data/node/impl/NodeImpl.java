@@ -72,6 +72,7 @@ import com.gentics.mesh.core.data.TagEdge;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.generic.AbstractGenericFieldContainerVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -550,11 +551,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public Stream<Node> getChildrenStream(InternalActionContext ac) {
 		MeshAuthUser user = ac.getUser();
-		UserRoot userRoot = Tx.get().data().userDao();
+		UserDaoWrapper userDao = Tx.get().data().userDao();
 		return toStream(getUnframedChildren(ac.getBranch().getUuid()))
 			.filter(node -> {
 				Object id = node.getId();
-				return userRoot.hasPermissionForId(user, id, READ_PERM) || userRoot.hasPermissionForId(user, id, READ_PUBLISHED_PERM);
+				return userDao.hasPermissionForId(user, id, READ_PERM) || userDao.hasPermissionForId(user, id, READ_PUBLISHED_PERM);
 			}).map(node -> graph.frameElementExplicit(node, NodeImpl.class));
 	}
 
@@ -859,10 +860,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 */
 	private void setChildrenInfo(InternalActionContext ac, Branch branch, NodeResponse restNode) {
 		Map<String, NodeChildrenInfo> childrenInfo = new HashMap<>();
-		UserRoot userRoot = Tx.get().data().userDao();
+		UserDaoWrapper userDao = Tx.get().data().userDao();
 
 		for (Node child : getChildren(branch.getUuid())) {
-			if (userRoot.hasPermission(ac.getUser(), child, READ_PERM)) {
+			if (userDao.hasPermission(ac.getUser(), child, READ_PERM)) {
 				String schemaName = child.getSchemaContainer().getName();
 				NodeChildrenInfo info = childrenInfo.get(schemaName);
 				if (info == null) {
@@ -1561,7 +1562,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public Stream<? extends Node> getChildren(MeshAuthUser requestUser, String branchUuid, List<String> languageTags, ContainerType type) {
 		GraphPermission perm = type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM;
-		UserRoot userRoot = Tx.get().data().userDao();
+		UserDaoWrapper userRoot = Tx.get().data().userDao();
 
 		Predicate<Node> languageFilter = languageTags == null || languageTags.isEmpty()
 			? item -> true
@@ -1995,7 +1996,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 */
 	@Override
 	public String getSubETag(InternalActionContext ac) {
-		UserRoot userRoot = Tx.get().data().userDao();
+		UserDaoWrapper userDao = Tx.get().data().userDao();
 		StringBuilder keyBuilder = new StringBuilder();
 
 		// Parameters
@@ -2063,7 +2064,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// branch specific children
 		for (Node child : getChildren(branch.getUuid())) {
-			if (userRoot.hasPermission(ac.getUser(), child, READ_PUBLISHED_PERM)) {
+			if (userDao.hasPermission(ac.getUser(), child, READ_PUBLISHED_PERM)) {
 				keyBuilder.append("-");
 				keyBuilder.append(child.getSchemaContainer().getName());
 			}

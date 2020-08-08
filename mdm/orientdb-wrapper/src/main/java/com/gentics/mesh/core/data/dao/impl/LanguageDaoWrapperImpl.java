@@ -16,7 +16,9 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
+import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
@@ -41,13 +43,11 @@ import dagger.Lazy;
 import io.vertx.core.Vertx;
 
 @Singleton
-public class LanguageDaoWrapperImpl implements LanguageDaoWrapper {
-
-	private final Lazy<BootstrapInitializer> boot;
+public class LanguageDaoWrapperImpl extends AbstractDaoWrapper implements LanguageDaoWrapper {
 
 	@Inject
-	public LanguageDaoWrapperImpl(Lazy<BootstrapInitializer> boot) {
-		this.boot  = boot;
+	public LanguageDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionProperties> permissions) {
+		super(boot, permissions);
 	}
 
 	public Object id() {

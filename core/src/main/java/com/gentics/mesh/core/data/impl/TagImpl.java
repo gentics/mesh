@@ -146,7 +146,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 		MeshAuthUser user = ac.getUser();
 		Branch branch = ac.getBranch();
 		String branchUuid = branch.getUuid();
-		UserRoot userRoot = Tx.get().data().userDao();
+		UserDaoWrapper userRoot = Tx.get().data().userDao();
 		TraversalResult<? extends Node> nodes = new TraversalResult<>(inE(HAS_TAG).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branch.getUuid()).outV().frameExplicit(NodeImpl.class));
 		Stream<? extends Node> s = nodes.stream()
 			.filter(item -> {

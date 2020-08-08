@@ -173,7 +173,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		if (!errorIfNotFound && element == null) {
 			return null;
 		}
-		UserRoot userRoot = mesh().boot().userDao();
+		UserDaoWrapper userDao = mesh().boot().userDao();
 		if (element == null) {
 			throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);
 		}
@@ -193,15 +193,15 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 			// Additionally check whether the read published permission could grant read
 			// perm for published nodes
 			boolean isPublished = fieldContainer.isPublished(branch.getUuid());
-			if (isPublished && userRoot.hasPermission(requestUser, element, READ_PUBLISHED_PERM)) {
+			if (isPublished && userDao.hasPermission(requestUser, element, READ_PUBLISHED_PERM)) {
 				return element;
 				// The container could be a draft. Check whether READ perm is granted.
-			} else if (!isPublished && userRoot.hasPermission(requestUser, element, READ_PERM)) {
+			} else if (!isPublished && userDao.hasPermission(requestUser, element, READ_PERM)) {
 				return element;
 			} else {
 				throw error(FORBIDDEN, "error_missing_perm", uuid, READ_PUBLISHED_PERM.getRestPerm().getName());
 			}
-		} else if (userRoot.hasPermission(requestUser, element, perm)) {
+		} else if (userDao.hasPermission(requestUser, element, perm)) {
 			return element;
 		}
 		throw error(FORBIDDEN, "error_missing_perm", uuid, perm.getRestPerm().getName());

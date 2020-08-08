@@ -31,8 +31,8 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.db.Tx;
@@ -441,7 +441,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 		// Validate schema changes and versions
 		try (Tx tx = tx()) {
-			UserRoot userRoot = tx.data().userDao();
+			UserDaoWrapper userDao = tx.data().userDao();
 			assertEquals("We invoked 10 migration. Thus we expect 11 versions.", 11, Iterators.size(container.findAll().iterator()));
 			assertNull("The last version should not have any changes", container.getLatestVersion().getNextChange());
 			assertNull("The last version should not have any futher versions", container.getLatestVersion().getNextVersion());
@@ -461,7 +461,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			}
 
 			assertEquals("The latest version should have exactly 10 previous versions.", nVersions, 10);
-			assertTrue("The user should still have update permissions on the schema", userRoot.hasPermission(user(), container, UPDATE_PERM));
+			assertTrue("The user should still have update permissions on the schema", userDao.hasPermission(user(), container, UPDATE_PERM));
 		}
 
 	}

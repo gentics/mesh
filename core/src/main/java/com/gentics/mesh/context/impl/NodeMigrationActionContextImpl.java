@@ -11,6 +11,7 @@ import com.gentics.mesh.context.AbstractInternalActionContext;
 import com.gentics.mesh.context.NodeMigrationActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.NodeMigrationUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;

@@ -19,8 +19,8 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
-import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
@@ -222,7 +222,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 
 		utils.syncTx(ac, tx -> {
 			Project project = ac.getProject();
-			UserRoot userDao = tx.data().userDao();
+			UserDaoWrapper userDao = tx.data().userDao();
 			if (!userDao.hasPermission(ac.getUser(), project, UPDATE_PERM)) {
 				String projectUuid = project.getUuid();
 				throw error(FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
@@ -247,8 +247,8 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 		utils.syncTx(ac, tx -> {
 			Project project = ac.getProject();
 			String projectUuid = project.getUuid();
-			UserRoot userRoot = tx.data().userDao();
-			if (!userRoot.hasPermission(ac.getUser(), project, UPDATE_PERM)) {
+			UserDaoWrapper userDao = tx.data().userDao();
+			if (!userDao.hasPermission(ac.getUser(), project, UPDATE_PERM)) {
 				throw error(FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
 			}
 			MicroschemaContainer microschema = tx.data().microschemaDao().loadObjectByUuid(ac, microschemaUuid, READ_PERM);

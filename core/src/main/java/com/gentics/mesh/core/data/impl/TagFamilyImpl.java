@@ -28,6 +28,7 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.page.Page;
@@ -127,9 +128,9 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 			throw error(BAD_REQUEST, "tag_name_not_set");
 		}
 
-		UserRoot userRoot = Tx.get().data().userDao();
+		UserDaoWrapper userDao= Tx.get().data().userDao();
 		MeshAuthUser requestUser = ac.getUser();
-		if (!userRoot.hasPermission(requestUser, this, CREATE_PERM)) {
+		if (!userDao.hasPermission(requestUser, this, CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
 
@@ -139,7 +140,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 		}
 
 		Tag newTag = create(requestModel.getName(), project, requestUser, uuid);
-		userRoot.inheritRolePermissions(ac.getUser(), this, newTag);
+		userDao.inheritRolePermissions(ac.getUser(), this, newTag);
 		addTag(newTag);
 
 		batch.add(newTag.onCreated());

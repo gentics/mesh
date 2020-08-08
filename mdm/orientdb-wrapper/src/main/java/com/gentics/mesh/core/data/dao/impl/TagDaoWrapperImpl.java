@@ -23,8 +23,9 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
-import com.gentics.mesh.core.data.impl.TagWrapper;
+import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagRoot;
@@ -51,13 +52,11 @@ import com.tinkerpop.blueprints.Vertex;
 import dagger.Lazy;
 import io.vertx.core.Vertx;
 
-public class TagDaoWrapperImpl implements TagDaoWrapper {
-
-	private final Lazy<BootstrapInitializer> boot;
+public class TagDaoWrapperImpl extends AbstractDaoWrapper implements TagDaoWrapper {
 
 	@Inject
-	public TagDaoWrapperImpl(Lazy<BootstrapInitializer> boot) {
-		this.boot = boot;
+	public TagDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionProperties> permissions) {
+		super(boot, permissions);
 	}
 
 	public Object id() {

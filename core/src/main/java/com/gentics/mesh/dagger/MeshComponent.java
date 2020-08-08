@@ -4,7 +4,7 @@ import javax.annotation.Nullable;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
@@ -81,7 +81,7 @@ public interface MeshComponent {
 
 	SearchProvider searchProvider();
 
-	BCryptPasswordEncoder passwordEncoder();
+	PasswordEncoder passwordEncoder();
 
 	Provider<RouterStorage> routerStorageProvider();
 

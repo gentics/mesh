@@ -469,10 +469,10 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			GroupFilter.filter()));
 
 		// .user
-		root.field(newElementField("user", "Load user by name or uuid.", (ac) -> boot.userDao(), USER_TYPE_NAME, true));
+		root.field(newElementField("user", "Load user by name or uuid.", (ac) -> boot.userRoot(), USER_TYPE_NAME, true));
 
 		// .users
-		root.field(newPagingSearchField("users", "Load page of users.", (ac) -> boot.userDao(), USER_PAGE_TYPE_NAME, userSearchHandler,
+		root.field(newPagingSearchField("users", "Load page of users.", (ac) -> boot.userRoot(), USER_PAGE_TYPE_NAME, userSearchHandler,
 			UserFilter.filter()));
 
 		// .plugin

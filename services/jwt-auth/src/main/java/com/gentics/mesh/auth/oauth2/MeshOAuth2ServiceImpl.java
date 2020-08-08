@@ -27,9 +27,9 @@ import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
-import com.gentics.mesh.core.data.root.GroupRoot;
-import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.rest.group.GroupReference;
@@ -237,9 +237,10 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 			.andThen(requiresWriteCompletable())
 			.andThen(db.singleTxWriteLock(tx -> {
 				UserDaoWrapper userDao = tx.data().userDao();
+				UserRoot userRoot = boot.userRoot();
 				com.gentics.mesh.core.data.User admin = userDao.findByUsername("admin");
 				com.gentics.mesh.core.data.User createdUser = userDao.create(username, admin);
-				userDao.inheritRolePermissions(admin, userDao, createdUser);
+				userDao.inheritRolePermissions(admin, userRoot, createdUser);
 
 				MeshAuthUser user = userDao.findMeshAuthUserByUsername(username);
 				String uuid = user.getUuid();
@@ -335,9 +336,9 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		List<AuthServicePlugin> plugins = authPluginRegistry.getPlugins();
 		// Only load the needed data for plugins if there are any plugins
 		if (!plugins.isEmpty()) {
-			RoleRoot roleRoot = boot.roleDao();
-			GroupRoot groupRoot = boot.groupDao();
-			UserRoot userRoot = boot.userDao();
+			RoleDaoWrapper roleDao = boot.roleDao();
+			GroupDaoWrapper groupDao = boot.groupDao();
+			UserDaoWrapper userDao = boot.userDao();
 
 			for (AuthServicePlugin plugin : plugins) {
 				try {
@@ -355,7 +356,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 						InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 						ac.setBody(mappedUser);
 						ac.setUser(admin.toAuthUser());
-						if (!delegator.canWrite() && userRoot.updateDry(user, ac)) {
+						if (!delegator.canWrite() && userDao.updateDry(user, ac)) {
 							throw new CannotWriteException();
 						}
 						user.update(ac, batch);
@@ -369,12 +370,12 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 					if (mappedRoles != null) {
 						for (RoleResponse mappedRole : mappedRoles) {
 							String roleName = mappedRole.getName();
-							Role role = roleRoot.findByName(roleName);
+							Role role = roleDao.findByName(roleName);
 							// Role not found - Lets create it
 							if (role == null) {
 								requiresWrite();
-								role = roleRoot.create(roleName, admin);
-								userRoot.inheritRolePermissions(admin, roleRoot, role);
+								role = roleDao.create(roleName, admin);
+								userDao.inheritRolePermissions(admin, roleDao, role);
 								batch.add(role.onCreated());
 							}
 						}
@@ -387,22 +388,22 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 						// Now create the groups and assign the user to the listed groups
 						for (GroupResponse mappedGroup : mappedGroups) {
 							String groupName = mappedGroup.getName();
-							Group group = groupRoot.findByName(groupName);
+							Group group = groupDao.findByName(groupName);
 
 							// Group not found - Lets create it
 							boolean created = false;
 							if (group == null) {
 								requiresWrite();
-								group = groupRoot.create(groupName, admin);
-								userRoot.inheritRolePermissions(admin, groupRoot, group);
+								group = groupDao.create(groupName, admin);
+								userDao.inheritRolePermissions(admin, groupDao, group);
 								batch.add(group.onCreated());
 								created = true;
 							}
-							if (!groupRoot.hasUser(group, user)) {
+							if (!groupDao.hasUser(group, user)) {
 								requiresWrite();
 								// Ensure that the user is part of the group
-								groupRoot.addUser(group, user);
-								batch.add(groupRoot.createUserAssignmentEvent(group, user, ASSIGNED));
+								groupDao.addUser(group, user);
+								batch.add(groupDao.createUserAssignmentEvent(group, user, ASSIGNED));
 								// We only need one event
 								if (!created) {
 									batch.add(group.onUpdated());
@@ -415,31 +416,31 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 								Role role = null;
 								// Try name
 								if (roleName != null) {
-									role = roleRoot.findByName(roleName);
+									role = roleDao.findByName(roleName);
 								}
 								// Try uuid
 								if (role == null) {
-									role = roleRoot.findByUuid(roleUuid);
+									role = roleDao.findByUuid(roleUuid);
 								}
 								// Add the role if it is missing
-								if (role != null && !groupRoot.hasRole(group, role)) {
+								if (role != null && !groupDao.hasRole(group, role)) {
 									requiresWrite();
-									groupRoot.addRole(group, role);
+									groupDao.addRole(group, role);
 									group.setLastEditedTimestamp();
 									group.setEditor(admin);
-									batch.add(groupRoot.createRoleAssignmentEvent(group, role, ASSIGNED));
+									batch.add(groupDao.createRoleAssignmentEvent(group, role, ASSIGNED));
 								}
 							}
 
 							// 5. Check if the plugin wants to remove any of the roles from the mapped group.
 							RoleFilter roleFilter = result.getRoleFilter();
 							if (roleFilter != null) {
-								for (Role role : groupRoot.getRoles(group)) {
+								for (Role role : groupDao.getRoles(group)) {
 									if (roleFilter.filter(group.getName(), role.getName())) {
 										requiresWrite();
 										log.info("Unassigning role {" + role.getName() + "} from group {" + group.getName() + "}");
-										groupRoot.removeRole(group, role);
-										batch.add(groupRoot.createRoleAssignmentEvent(group, role, UNASSIGNED));
+										groupDao.removeRole(group, role);
+										batch.add(groupDao.createRoleAssignmentEvent(group, role, UNASSIGNED));
 									}
 								}
 							}
@@ -450,7 +451,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 					if (mappedRoles != null) {
 						for (RoleResponse mappedRole : mappedRoles) {
 							String roleName = mappedRole.getName();
-							Role role = roleRoot.findByName(roleName);
+							Role role = roleDao.findByName(roleName);
 
 							if (role == null) {
 								log.warn("Could not find referenced role {" + role + "}");
@@ -463,17 +464,17 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 								Group group = null;
 								// Try name
 								if (groupName != null) {
-									group = groupRoot.findByName(groupName);
+									group = groupDao.findByName(groupName);
 								}
 								// Try uuid
 								if (group == null) {
-									group = groupRoot.findByUuid(groupUuid);
+									group = groupDao.findByUuid(groupUuid);
 								}
 								// Add the role if it is missing
-								if (group != null && !groupRoot.hasRole(group, role)) {
+								if (group != null && !groupDao.hasRole(group, role)) {
 									requiresWrite();
-									groupRoot.addRole(group, role);
-									batch.add(groupRoot.createRoleAssignmentEvent(group, role, ASSIGNED));
+									groupDao.addRole(group, role);
+									batch.add(groupDao.createRoleAssignmentEvent(group, role, ASSIGNED));
 								}
 							}
 
@@ -487,8 +488,8 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 							if (groupFilter.filter(group.getName())) {
 								requiresWrite();
 								log.info("Unassigning group {" + group.getName() + "} from user {" + user.getUsername() + "}");
-								groupRoot.removeUser(group, user);
-								batch.add(groupRoot.createUserAssignmentEvent(group, user, UNASSIGNED));
+								groupDao.removeUser(group, user);
+								batch.add(groupDao.createUserAssignmentEvent(group, user, UNASSIGNED));
 							}
 						}
 					}

@@ -17,10 +17,10 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
-import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.verticle.handler.CreateAction;
@@ -207,7 +207,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				GroupRoot groupDao = tx.data().groupDao();
-				UserRoot userDao = tx.data().userDao();
+				UserDaoWrapper userDao = tx.data().userDao();
 				Group group = groupDao.loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 				User user = userDao.loadObjectByUuid(ac, userUuid, READ_PERM);
 
@@ -218,7 +218,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 						batch.add(groupDao.createUserAssignmentEvent(group, user, ASSIGNED));
 					});
 				}
-				return group.transformToRestSync(ac, 0);
+				return groupDao.transformToRestSync(group, ac, 0);
 			}, model -> ac.send(model, OK));
 		}
 	}

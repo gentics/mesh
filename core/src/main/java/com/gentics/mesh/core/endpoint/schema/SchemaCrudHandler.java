@@ -19,9 +19,10 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
-import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.root.impl.SchemaContainerRootImpl;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
@@ -129,7 +130,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 				SchemaContainer schemaContainer = tx1.data().schemaDao().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 				SchemaUpdateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaUpdateRequest.class);
 
-				UserRoot userRoot = tx1.data().userDao();
+				UserDaoWrapper userDao = tx1.data().userDao();
 
 				if (ac.getSchemaUpdateParameters().isStrictValidation()) {
 					SchemaContainerRootImpl.validateSchema(nodeIndexHandler, requestModel);
@@ -167,7 +168,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 								if (microschema == null) {
 									throw error(BAD_REQUEST, "schema_error_microschema_reference_not_found", microschemaName, field.getName());
 								}
-								if (!userRoot.hasPermission(ac.getUser(), microschema, READ_PERM)) {
+								if (!userDao.hasPermission(ac.getUser(), microschema, READ_PERM)) {
 									throw error(BAD_REQUEST, "schema_error_microschema_reference_no_perm", microschemaName, field.getName());
 								}
 
@@ -260,11 +261,12 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 			utils.syncTx(ac, tx -> {
 				Project project = ac.getProject();
 				String projectUuid = project.getUuid();
-				UserRoot userRoot = tx.data().userDao();
-				if (!userRoot.hasPermission(ac.getUser(), project, GraphPermission.UPDATE_PERM)) {
+				UserDaoWrapper userDao = tx.data().userDao();
+				if (!userDao.hasPermission(ac.getUser(), project, GraphPermission.UPDATE_PERM)) {
 					throw error(FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
 				}
-				SchemaContainer schema = tx.data().schemaDao().loadObjectByUuid(ac, schemaUuid, READ_PERM);
+				SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+				SchemaContainer schema = schemaDao.loadObjectByUuid(ac, schemaUuid, READ_PERM);
 				SchemaContainerRoot root = project.getSchemaContainerRoot();
 				if (root.contains(schema)) {
 					// Schema has already been assigned. No need to create indices
@@ -294,8 +296,8 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 			utils.syncTx(ac, tx -> {
 				Project project = ac.getProject();
 				String projectUuid = project.getUuid();
-				UserRoot userRoot = tx.data().userDao();
-				if (!userRoot.hasPermission(ac.getUser(), project, GraphPermission.UPDATE_PERM)) {
+				UserDaoWrapper userDao = tx.data().userDao();
+				if (!userDao.hasPermission(ac.getUser(), project, GraphPermission.UPDATE_PERM)) {
 					throw error(FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
 				}
 

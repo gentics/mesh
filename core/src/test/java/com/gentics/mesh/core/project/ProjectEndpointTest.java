@@ -51,10 +51,10 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.RoleRoot;
-import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
@@ -169,14 +169,14 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 		assertThat(restProject).matches(request);
 		try (Tx tx = tx()) {
-			UserRoot userRoot = tx.data().userDao();
+			UserDaoWrapper userDao = tx.data().userDao();
 			assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name));
 			Project project = meshRoot().getProjectRoot().findByUuid(restProject.getUuid());
 			assertNotNull(project);
-			assertTrue(userRoot.hasPermission(user(), project, CREATE_PERM));
-			assertTrue(userRoot.hasPermission(user(), project.getBaseNode(), CREATE_PERM));
-			assertTrue(userRoot.hasPermission(user(), project.getTagFamilyRoot(), CREATE_PERM));
-			assertTrue(userRoot.hasPermission(user(), project.getNodeRoot(), CREATE_PERM));
+			assertTrue(userDao.hasPermission(user(), project, CREATE_PERM));
+			assertTrue(userDao.hasPermission(user(), project.getBaseNode(), CREATE_PERM));
+			assertTrue(userDao.hasPermission(user(), project.getTagFamilyRoot(), CREATE_PERM));
+			assertTrue(userDao.hasPermission(user(), project.getNodeRoot(), CREATE_PERM));
 
 			assertEquals("folder", project.getBaseNode().getSchemaContainer().getLatestVersion().getName());
 		}

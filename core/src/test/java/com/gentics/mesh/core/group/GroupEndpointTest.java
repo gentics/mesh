@@ -39,9 +39,9 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
-import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
@@ -221,9 +221,9 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		tx(tx -> {
 			RoleRoot roleDao = tx.data().roleDao();
 			GroupRoot root = meshRoot().getGroupRoot();
-			UserRoot userRoot = tx.data().userDao();
+			UserDaoWrapper userDao = tx.data().userDao();
 			roleDao.revokePermissions(role(), root, CREATE_PERM);
-			assertFalse("The create permission to the groups root node should have been revoked.", userRoot.hasPermission(user(), root, CREATE_PERM));
+			assertFalse("The create permission to the groups root node should have been revoked.", userDao.hasPermission(user(), root, CREATE_PERM));
 		});
 		String rootUuid = db().tx(() -> meshRoot().getGroupRoot().getUuid());
 		call(() -> client().createGroup(request), FORBIDDEN, "error_missing_perm", rootUuid, CREATE_PERM.getRestPerm().getName());

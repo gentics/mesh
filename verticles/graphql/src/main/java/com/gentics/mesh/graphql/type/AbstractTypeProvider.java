@@ -23,12 +23,12 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.db.Tx;
@@ -362,23 +362,23 @@ public abstract class AbstractTypeProvider {
 		GraphQLContext gc = env.getContext();
 		Branch branch = env.getSource();
 		Stream<? extends SchemaContainerVersion> schemas = StreamSupport.stream(branch.findActiveSchemaVersions().spliterator(), false);
-		UserRoot userRoot = Tx.get().data().userDao();
+		UserDaoWrapper userDao = Tx.get().data().userDao();
 
 		// We need to handle permissions dedicately since we check the schema container perm and not the schema container version perm.
 		return handleUuidNameArgsNoPerm(env, uuid -> schemas.filter(schema -> {
 			SchemaContainer container = schema.getSchemaContainer();
-			return container.getUuid().equals(uuid) && userRoot.hasPermission(gc.getUser(), container, READ_PERM);
-		}).findFirst().get(), name -> schemas.filter(schema -> schema.getName().equals(name) && userRoot.hasPermission(gc.getUser(), schema
+			return container.getUuid().equals(uuid) && userDao.hasPermission(gc.getUser(), container, READ_PERM);
+		}).findFirst().get(), name -> schemas.filter(schema -> schema.getName().equals(name) && userDao.hasPermission(gc.getUser(), schema
 			.getSchemaContainer(), READ_PERM)).findFirst().get());
 	}
 
 	protected Page<SchemaContainerVersion> handleBranchSchemas(DataFetchingEnvironment env) {
 		GraphQLContext gc = env.getContext();
 		Branch branch = env.getSource();
-		UserRoot userRoot = Tx.get().data().userDao();
+		UserDaoWrapper userDao= Tx.get().data().userDao();
 
 		Stream<? extends SchemaContainerVersion> schemas = StreamSupport.stream(branch.findActiveSchemaVersions().spliterator(), false).filter(
-			schema -> userRoot.hasPermission(gc.getUser(), schema.getSchemaContainer(), READ_PERM));
+			schema -> userDao.hasPermission(gc.getUser(), schema.getSchemaContainer(), READ_PERM));
 		return new DynamicStreamPageImpl<>(schemas, getPagingInfo(env));
 	}
 

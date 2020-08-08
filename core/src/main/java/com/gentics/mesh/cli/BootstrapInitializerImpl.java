@@ -609,8 +609,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 					adminUser.setAdmin(true);
 				} else {
 					// Recreate the user if it can't be found.
-					UserRoot userRoot = meshRoot.getUserRoot();
-					adminUser = userRoot.create(ADMIN_USERNAME, null);
+					adminUser = userDao.create(ADMIN_USERNAME, null);
 					adminUser.setCreator(adminUser);
 					adminUser.setCreationTimestamp();
 					adminUser.setEditor(adminUser);
@@ -908,6 +907,10 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	public void initMandatoryData(MeshOptions config) throws Exception {
 
 		db.tx(tx -> {
+			UserDaoWrapper userDao = tx.data().userDao();
+			GroupDaoWrapper groupDao = tx.data().groupDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
+
 			MeshRoot meshRoot = meshRoot();
 
 			// Create the initial root vertices
@@ -919,14 +922,13 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			meshRoot.getChangelogRoot();
 
 			GroupRoot groupRoot = meshRoot.getGroupRoot();
-			UserRoot userRoot = meshRoot.getUserRoot();
 			RoleRoot roleRoot = meshRoot.getRoleRoot();
 			SchemaContainerRoot schemaContainerRoot = meshRoot.getSchemaContainerRoot();
 
 			// Verify that an admin user exists
-			User adminUser = userRoot.findByUsername(ADMIN_USERNAME);
+			User adminUser = userDao.findByUsername(ADMIN_USERNAME);
 			if (adminUser == null) {
-				adminUser = userRoot.create(ADMIN_USERNAME, adminUser);
+				adminUser = userDao.create(ADMIN_USERNAME, adminUser);
 				adminUser.setAdmin(true);
 				adminUser.setCreator(adminUser);
 				adminUser.setCreationTimestamp();
@@ -1071,13 +1073,14 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		// Only setup optional data for empty installations
 		if (isEmptyInstallation) {
 			db.tx(tx -> {
+				UserDaoWrapper userDao = tx.data().userDao();
 				meshRoot = meshRoot();
 
 				UserRoot userRoot = meshRoot().getUserRoot();
 				// Verify that an anonymous user exists
 				User anonymousUser = userRoot.findByUsername("anonymous");
 				if (anonymousUser == null) {
-					anonymousUser = userRoot.create("anonymous", anonymousUser);
+					anonymousUser = userDao.create("anonymous", anonymousUser);
 					anonymousUser.setCreator(anonymousUser);
 					anonymousUser.setCreationTimestamp();
 					anonymousUser.setEditor(anonymousUser);

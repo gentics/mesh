@@ -1,4 +1,4 @@
-package com.gentics.mesh.context.impl;
+package com.gentics.mesh.core.data;
 
 import java.util.Collections;
 import java.util.List;
@@ -8,10 +8,6 @@ import java.util.function.Function;
 import com.gentics.madl.traversal.RawTraversalResult;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;

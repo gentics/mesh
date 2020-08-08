@@ -15,12 +15,12 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
-import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.project.ProjectReference;
@@ -157,19 +157,19 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	public void testCRUDPermissions() {
 		try (Tx tx = tx()) {
 			RoleRoot roleDao = tx.data().roleDao();
-			UserRoot userRoot = tx.data().userDao();
+			UserDaoWrapper userDao = tx.data().userDao();
 			MeshRoot root = meshRoot();
 			InternalActionContext ac = mockActionContext();
 			// 1. Give the user create on the project root
 			roleDao.grantPermissions(role(), meshRoot().getProjectRoot(), CREATE_PERM);
 			// 2. Create the project
 			Project project = createProject("TestProject", "folder");
-			assertFalse("The user should not have create permissions on the project.", userRoot.hasPermission(user(), project, CREATE_PERM));
-			userRoot.inheritRolePermissions(user(), root.getProjectRoot(), project);
+			assertFalse("The user should not have create permissions on the project.", userDao.hasPermission(user(), project, CREATE_PERM));
+			userDao.inheritRolePermissions(user(), root.getProjectRoot(), project);
 			// 3. Assert that the crud permissions (eg. CREATE) was inherited
 			ac.data().clear();
 			assertTrue("The users role should have inherited the initial permission on the project root.",
-				userRoot.hasPermission(user(), project, CREATE_PERM));
+				userDao.hasPermission(user(), project, CREATE_PERM));
 		}
 	}
 

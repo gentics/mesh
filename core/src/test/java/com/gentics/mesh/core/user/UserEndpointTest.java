@@ -30,6 +30,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static io.vertx.core.http.HttpHeaders.HOST;
 import static io.vertx.core.http.HttpHeaders.LOCATION;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -51,10 +52,11 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.db.Tx;
@@ -464,24 +466,26 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		long foundUsers;
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
-			UserRoot root = meshRoot().getUserRoot();
-			GroupRoot groupRoot = tx.data().groupDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
+			UserDaoWrapper userDao = tx.data().userDao();
+			GroupDaoWrapper groupDao = tx.data().groupDao();
+			UserRoot userRoot = boot().userRoot();
+
 			for (int i = 0; i < nUsers; i++) {
 				String username = "testuser_" + i;
-				User user = root.create(username, user());
-				groupRoot.addUser(group(), user);
+				User user = userDao.create(username, user());
+				groupDao.addUser(group(), user);
 				user.setLastname("should_be_listed");
 				user.setFirstname("should_be_listed");
 				user.setEmailAddress("should_be_listed");
 				roleDao.grantPermissions(role(), user, READ_PERM);
 			}
-			User invisibleUser = root.create("should_not_be_listed", user());
+			User invisibleUser = userDao.create("should_not_be_listed", user());
 			invisibleUser.setLastname("should_not_be_listed");
 			invisibleUser.setFirstname("should_not_be_listed");
 			invisibleUser.setEmailAddress("should_not_be_listed");
 			invisibleUser.addGroup(group());
-			foundUsers = root.computeCount();
+			foundUsers = userRoot.computeCount();
 			tx.success();
 		}
 
@@ -723,10 +727,10 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testCreateUserWithNodeReference() {
 		String nodeUuid;
 		try (Tx tx = tx()) {
-			UserRoot userRoot = tx.data().userDao();
+			UserDaoWrapper userDao = tx.data().userDao();
 			Node node = folder("news");
 			nodeUuid = node.getUuid();
-			assertTrue(userRoot.hasPermission(user(), node, READ_PERM));
+			assertTrue(userDao.hasPermission(user(), node, READ_PERM));
 			tx.success();
 		}
 
@@ -1030,9 +1034,10 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testUpdateUserWithConflictingUsername() throws Exception {
 		try (Tx tx = tx()) {
+			UserDaoWrapper userDao = tx.data().userDao();
+
 			// Create an user with a conflicting username
-			UserRoot userRoot = meshRoot().getUserRoot();
-			User user = userRoot.create("existing_username", user());
+			User user = userDao.create("existing_username", user());
 			user.addGroup(group());
 			tx.success();
 		}
@@ -1055,10 +1060,11 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testCreateUserWithConflictingUsername() throws Exception {
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
+			UserDaoWrapper userDao = tx.data().userDao();
+			
 			// Create an user with a conflicting username
-			UserRoot userRoot = meshRoot().getUserRoot();
-			User user = userRoot.create("existing_username", user());
+			User user = userDao.create("existing_username", user());
 			user.addGroup(group());
 
 			// Add update permission to group in order to create the user in
@@ -1354,9 +1360,9 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 		String uuid;
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
-			UserRoot userRoot = meshRoot().getUserRoot();
-			User user = userRoot.create("extraUser", user());
+			RoleDaoWrapper roleDao = tx.data().roleDao();
+			UserDaoWrapper userDao = tx.data().userDao();
+			User user = userDao.create("extraUser", user());
 			user.addGroup(group());
 			uuid = user.getUuid();
 			assertNotNull(uuid);
@@ -1389,15 +1395,16 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testDeleteByUUID2() throws Exception {
 		String uuid;
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
+			UserDaoWrapper userDao = tx.data().userDao();
+			
 			String name = "extraUser";
-			UserRoot userRoot = meshRoot().getUserRoot();
-			User extraUser = userRoot.create(name, user());
+			User extraUser = userDao.create(name, user());
 			extraUser.addGroup(group());
 			uuid = extraUser.getUuid();
 			roleDao.grantPermissions(role(), extraUser, DELETE_PERM);
 			assertTrue(roleDao.hasPermission(role(), DELETE_PERM, extraUser));
-			User user = userRoot.findByUuid(uuid);
+			User user = userDao.findByUuid(uuid);
 			assertEquals(1, user.getGroups().count());
 			assertTrue("The user should be enabled", user.isEnabled());
 			tx.success();

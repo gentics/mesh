@@ -16,8 +16,8 @@ import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.EditorTrackingVertex;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.TransformableElement;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.NodeContent;
-import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -167,9 +167,8 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 				GraphQLContext gc = env.getContext();
 				MeshCoreVertex<?, ?> vertex = getMeshCoreVertex(env.getSource());
 
-				UserRoot userRoot = Tx.get().data().userDao();
-
-				return userRoot.getPermissionInfo(gc.getUser(), vertex);
+				UserDaoWrapper userDao = Tx.get().data().userDao();
+				return userDao.getPermissionInfo(gc.getUser(), vertex);
 			})
 		);
 
@@ -184,9 +183,8 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 				GraphQLContext gc = env.getContext();
 				MeshCoreVertex<?, ?> vertex = getMeshCoreVertex(env.getSource());
 
-				UserRoot userRoot = Tx.get().data().userDao();
-
-				userRoot.getPermissionInfo(gc.getUser(), vertex);
+				UserDaoWrapper userDao = Tx.get().data().userDao();
+				userDao.getPermissionInfo(gc.getUser(), vertex);
 				return vertex.getRolePermissions(gc, env.getArgument("role"));
 			})
 		);

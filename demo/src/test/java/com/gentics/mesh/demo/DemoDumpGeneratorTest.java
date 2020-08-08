@@ -18,11 +18,11 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.GroupRoot;
-import com.gentics.mesh.core.data.root.RoleRoot;
-import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -58,9 +58,9 @@ public class DemoDumpGeneratorTest {
 	public void testSetup() throws Exception {
 		generator.dump();
 		db.tx(tx -> {
-			RoleRoot roleDao = tx.data().roleDao();
-			UserRoot userDao = tx.data().userDao();
-			GroupRoot groupDao = tx.data().groupDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
+			UserDaoWrapper userDao = tx.data().userDao();
+			GroupDaoWrapper groupDao = tx.data().groupDao();
 			Project project = boot.meshRoot().getProjectRoot().findByName("demo");
 			assertTrue(project.getNodeRoot().computeCount() > 0);
 			User user = boot.meshRoot().getUserRoot().findByUsername("webclient");

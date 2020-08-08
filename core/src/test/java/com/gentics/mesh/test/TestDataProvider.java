@@ -35,6 +35,8 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
@@ -184,7 +186,7 @@ public class TestDataProvider {
 			addPermissions(project.getInitialBranch());
 			addPermissions(project.getTagFamilyRoot());
 			addPermissions(boot.projectRoot());
-			addPermissions(boot.userDao());
+			addPermissions(boot.userRoot());
 			addPermissions(boot.groupDao());
 			addPermissions(boot.roleDao());
 			addPermissions(boot.microschemaDao());
@@ -315,7 +317,8 @@ public class TestDataProvider {
 	}
 
 	public UserInfo createUserInfo(String username, String firstname, String lastname) {
-		RoleRoot roleDao = Tx.get().data().roleDao();
+		RoleDaoWrapper roleDao = Tx.get().data().roleDao();
+		UserDaoWrapper userDao = Tx.get().data().userDao();
 
 		String password = "test123";
 		String hashedPassword = "$2a$10$n/UeWGbY9c1FHFyCqlVsY.XvNYmZ7Jjgww99SF94q/B5nomYuquom";
@@ -323,7 +326,7 @@ public class TestDataProvider {
 		log.debug("Creating user with username: " + username + " and password: " + password);
 
 		String email = firstname.toLowerCase().substring(0, 1) + "." + lastname.toLowerCase() + "@spam.gentics.com";
-		User user = root.getUserRoot().create(username, null);
+		User user = userDao.create(username, null);
 		// Precomputed hash since hashing takes some time and we want to keep out tests fast
 		user.setPasswordHash(hashedPassword);
 		user.setFirstname(firstname);
@@ -356,6 +359,8 @@ public class TestDataProvider {
 	}
 
 	private void addUserGroupRoleProject() {
+		UserDaoWrapper userDao = Tx.get().data().userDao();
+
 		// User, Groups, Roles
 		userInfo = createUserInfo("joe1", "Joe", "Doe");
 		UserRoot userRoot = getMeshRoot().getUserRoot();
@@ -381,7 +386,7 @@ public class TestDataProvider {
 			roles.put(guestRole.getName(), guestRole);
 
 			// Extra User
-			User user = userRoot.create("guest", userInfo.getUser());
+			User user = userDao.create("guest", userInfo.getUser());
 			user.addGroup(guestGroup);
 			user.setFirstname("Guest Firstname");
 			user.setLastname("Guest Lastname");

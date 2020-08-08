@@ -19,6 +19,7 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -64,13 +65,13 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	default Stream<? extends T> findAllStream(InternalActionContext ac, GraphPermission permission) {
 		MeshAuthUser user = ac.getUser();
 		FramedTransactionalGraph graph = Tx.get().getGraph();
-		UserRoot userRoot = Tx.get().data().userDao();
+		UserDaoWrapper userDao = Tx.get().data().userDao();
 
 		String idx = "e." + getRootLabel().toLowerCase() + "_out";
 		Spliterator<Edge> itemEdges = graph.getEdges(idx.toLowerCase(), id()).spliterator();
 		return StreamSupport.stream(itemEdges, false)
 			.map(edge -> edge.getVertex(Direction.IN))
-			.filter(vertex -> userRoot.hasPermissionForId(user, vertex.getId(), permission))
+			.filter(vertex -> userDao.hasPermissionForId(user, vertex.getId(), permission))
 			.map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
 	}
 
@@ -155,8 +156,8 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 
 		MeshAuthUser requestUser = ac.getUser();
 		String elementUuid = element.getUuid();
-		UserRoot userRoot = Tx.get().data().userDao();
-		if (requestUser != null && userRoot.hasPermission(requestUser, element, perm)) {
+		UserDaoWrapper userDao = Tx.get().data().userDao();
+		if (requestUser != null && userDao.hasPermission(requestUser, element, perm)) {
 			return element;
 		} else {
 			throw error(FORBIDDEN, "error_missing_perm", elementUuid, perm.getRestPerm().getName());
@@ -226,8 +227,8 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 
 		MeshAuthUser requestUser = ac.getUser();
 		String elementUuid = element.getUuid();
-		UserRoot userRoot = Tx.get().data().userDao();
-		if (userRoot.hasPermission(requestUser, element, perm)) {
+		UserDaoWrapper userDao = Tx.get().data().userDao();
+		if (userDao.hasPermission(requestUser, element, perm)) {
 			return element;
 		} else {
 			throw error(FORBIDDEN, "error_missing_perm", elementUuid, perm.getRestPerm().getName());
