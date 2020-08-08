@@ -256,7 +256,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			Long creationTimeStamp = node.getCreationTimestamp();
 			assertNotNull(creationTimeStamp);
 			assertEquals(ts, creationTimeStamp.longValue());
-			assertEquals(user, node.getCreator());
+			assertEquals(user.getUuid(), node.getCreator().getUuid());
 			String english = english();
 			String german = german();
 
@@ -264,7 +264,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			englishContainer.createString("content").setString("english content");
 			englishContainer.createString("name").setString("english.html");
 			assertNotNull(node.getUuid());
-			assertEquals(user, englishContainer.getEditor());
+			assertEquals(user.getUuid(), englishContainer.getEditor().getUuid());
 			assertNotNull(englishContainer.getLastEditedTimestamp());
 
 			List<? extends GraphFieldContainer> allProperties = TestUtils.toList(node.getDraftGraphFieldContainers());

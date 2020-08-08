@@ -522,7 +522,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			user.setCreator(newUser);
 			assertNotNull(user.getCreator());
-			assertEquals(newUser, user.getCreator());
+			assertEquals(newUser.getUuid(), user.getCreator().getUuid());
 
 			user.setCreationTimestamp(0);
 			assertEquals(0, user.getCreationTimestamp().longValue());
