@@ -6,7 +6,7 @@ import com.gentics.mesh.madl.tp3.mock.Element;
 /**
  * Unwrapped traversal result.
  *
- * @param <T>
+ * @param <E>
  */
 public interface RawTraversalResult<E extends Element> extends BaseTraversalResult<E> {
 
