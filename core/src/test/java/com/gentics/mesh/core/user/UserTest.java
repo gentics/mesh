@@ -35,7 +35,6 @@ import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.db.Tx;
@@ -305,8 +304,9 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testCRUDPermissions() {
 		try (Tx tx = tx()) {
-			UserRoot userRoot = boot().userRoot();
 			UserDaoWrapper userDao = tx.data().userDao();
+			UserRoot userRoot = boot().userRoot();
+
 			User user = user();
 			User newUser = userDao.create("Anton", user());
 			assertFalse(userDao.hasPermission(user, newUser, GraphPermission.CREATE_PERM));
@@ -335,33 +335,33 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			InternalActionContext ac = mockActionContext();
 
-			Group newGroup = meshRoot().getGroupRoot().create("extraGroup", user());
+			Group newGroup = groupDao.create("extraGroup", user());
 			newUser = userDao.create("Anton", user());
 			groupDao.addUser(newGroup, newUser);
 
 			// Create test roles
-			roleWithDeletePerm = meshRoot().getRoleRoot().create("roleWithDeletePerm", newUser);
+			roleWithDeletePerm = roleDao.create("roleWithDeletePerm", newUser);
 			groupDao.addRole(newGroup, roleWithDeletePerm);
 			roleDao.grantPermissions(roleWithDeletePerm, sourceNode, GraphPermission.DELETE_PERM);
 
-			roleWithReadPerm = meshRoot().getRoleRoot().create("roleWithReadPerm", newUser);
+			roleWithReadPerm = roleDao.create("roleWithReadPerm", newUser);
 			groupDao.addRole(newGroup, roleWithReadPerm);
 			roleDao.grantPermissions(roleWithReadPerm, sourceNode, GraphPermission.READ_PERM);
 
-			roleWithUpdatePerm = meshRoot().getRoleRoot().create("roleWithUpdatePerm", newUser);
+			roleWithUpdatePerm = roleDao.create("roleWithUpdatePerm", newUser);
 			groupDao.addRole(newGroup, roleWithUpdatePerm);
 			roleDao.grantPermissions(roleWithUpdatePerm, sourceNode, GraphPermission.UPDATE_PERM);
 
-			roleWithAllPerm = meshRoot().getRoleRoot().create("roleWithAllPerm", newUser);
+			roleWithAllPerm = roleDao.create("roleWithAllPerm", newUser);
 			groupDao.addRole(newGroup, roleWithAllPerm);
 			roleDao.grantPermissions(roleWithAllPerm, sourceNode, GraphPermission.CREATE_PERM, GraphPermission.UPDATE_PERM, GraphPermission.DELETE_PERM,
 				GraphPermission.READ_PERM, GraphPermission.READ_PUBLISHED_PERM, PUBLISH_PERM);
 
-			roleWithCreatePerm = meshRoot().getRoleRoot().create("roleWithCreatePerm", newUser);
+			roleWithCreatePerm = roleDao.create("roleWithCreatePerm", newUser);
 			groupDao.addRole(newGroup, roleWithCreatePerm);
 			roleDao.grantPermissions(roleWithCreatePerm, sourceNode, GraphPermission.CREATE_PERM);
 
-			roleWithNoPerm = meshRoot().getRoleRoot().create("roleWithNoPerm", newUser);
+			roleWithNoPerm = roleDao.create("roleWithNoPerm", newUser);
 			groupDao.addRole(newGroup, roleWithNoPerm);
 			userDao.inheritRolePermissions(user(), sourceNode, targetNode);
 			ac.data().clear();
@@ -429,17 +429,17 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testUserGroup() {
 		try (Tx tx = tx()) {
-			GroupRoot groupRoot = tx.data().groupDao();
+			GroupDaoWrapper groupDao = tx.data().groupDao();
 			User user = user();
 			assertEquals(1, user.getGroups().count());
 
 			for (int i = 0; i < 10; i++) {
-				Group extraGroup = meshRoot().getGroupRoot().create("group_" + i, user());
+				Group extraGroup = groupDao.create("group_" + i, user());
 				// Multiple calls should not affect the result
-				groupRoot.addUser(extraGroup, user);
-				groupRoot.addUser(extraGroup, user);
-				groupRoot.addUser(extraGroup, user);
-				groupRoot.addUser(extraGroup, user);
+				groupDao.addUser(extraGroup, user);
+				groupDao.addUser(extraGroup, user);
+				groupDao.addUser(extraGroup, user);
+				groupDao.addUser(extraGroup, user);
 			}
 
 			assertEquals(11, user().getGroups().count());

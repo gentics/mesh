@@ -29,6 +29,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -48,7 +49,7 @@ import org.junit.Test;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.root.RoleRoot;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchListResponse;
@@ -226,7 +227,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testCreateWithNoPerm() throws Exception {
 		String branchName = "Branch V1";
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 
 			Project project = project();
 			roleDao.grantPermissions(role(), project, READ_PERM);
@@ -472,7 +473,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		Branch latest = createBranch("Latest", true);
 		String latestUuid = tx(() -> latest.getUuid());
 		tx(tx -> {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 
 			roleDao.revokePermissions(role(), latest, READ_PERM);
 		});
@@ -557,7 +558,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testReadByUUIDWithMissingPermission() throws Exception {
 		revokeAdmin();
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.revokePermissions(role(), project().getInitialBranch(), READ_PERM);
 			tx.success();
 		}
@@ -611,7 +612,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		}
 		revokeAdmin();
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.revokePermissions(role(), firstBranch, READ_PERM);
 			roleDao.revokePermissions(role(), thirdBranch, READ_PERM);
 			tx.success();
@@ -678,7 +679,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
 		revokeAdmin();
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.revokePermissions(role(), project().getInitialBranch(), UPDATE_PERM);
 			tx.success();
 		}
@@ -811,7 +812,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testSetLatestNoPerm() {
 		revokeAdmin();
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.revokePermissions(role(), project().getInitialBranch(), UPDATE_PERM);
 			tx.success();
 		}
@@ -1051,7 +1052,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testAssignSchemaVersionNoPermission() throws Exception {
 		revokeAdmin();
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			Project project = project();
 			roleDao.revokePermissions(role(), project.getInitialBranch(), UPDATE_PERM);
 			tx.success();
@@ -1248,7 +1249,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testAssignMicroschemaVersionNoPermission() throws Exception {
 		revokeAdmin();
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			Project project = project();
 			roleDao.revokePermissions(role(), project.getInitialBranch(), UPDATE_PERM);
 			tx.success();

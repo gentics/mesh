@@ -8,8 +8,8 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -26,7 +26,7 @@ public class GroupPermissionSearchTest extends AbstractMeshTest {
 		String groupname = "testgroup42a";
 		GroupResponse response = createGroup(groupname);
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			Group group = meshRoot().getGroupRoot().findByUuid(response.getUuid());
 			System.out.println("Group Uuid:" + response.getUuid());
 			for (Role role : user().getRoles()) {
@@ -44,7 +44,7 @@ public class GroupPermissionSearchTest extends AbstractMeshTest {
 
 		// Now add the perm
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			Group group = meshRoot().getGroupRoot().findByUuid(response.getUuid());
 			System.out.println("Group Uuid:" + response.getUuid());
 			roleDao.grantPermissions(role(), group, GraphPermission.READ_PERM);

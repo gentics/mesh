@@ -41,8 +41,8 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.ListResponse;
@@ -179,7 +179,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		String uuid;
 		String parentTagFamilyUuid;
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			TagFamily parentTagFamily = tagFamily("basic");
 			parentTagFamilyUuid = parentTagFamily.getUuid();
 			Tag tag = tag("vehicle");
@@ -306,7 +306,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		TagFamily parentTagFamily = tagFamily("basic");
 
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.revokePermissions(role(), tag, UPDATE_PERM);
 			tx.success();
 		}
@@ -383,7 +383,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.revokePermissions(role(), tag("vehicle"), DELETE_PERM);
 			tx.success();
 		}
@@ -461,7 +461,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 
 		String tagRootUuid = db().tx(() -> tagFamily("colors").getUuid());
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.revokePermissions(role(), tagFamily("colors"), CREATE_PERM);
 			tx.success();
 		}
@@ -609,7 +609,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		String uuid;
 		String parentTagFamilyUuid;
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			Tag tag = tag("red");
 
 			TagFamily parentTagFamily = tagFamily("colors");

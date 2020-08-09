@@ -16,7 +16,7 @@ import com.gentics.mesh.parameter.PagingParameters;
  * Temporary in-between interface that helps test removal of project root deps.
  */
 // TODO move the contents of this to ProjectDao once migration is done
-public interface ProjectDaoWrapper extends ProjectDao {
+public interface ProjectDaoWrapper extends ProjectDao, DaoTransformable<Project,ProjectResponse> {
 
 	TraversalResult<? extends Project> findAll();
 

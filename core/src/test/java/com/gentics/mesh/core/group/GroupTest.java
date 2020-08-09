@@ -97,12 +97,11 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Override
 	public void testRootNode() {
 		try (Tx tx = tx()) {
-			GroupRoot root = meshRoot().getGroupRoot();
-			long nGroupsBefore = root.computeCount();
-			GroupRoot groupRoot = meshRoot().getGroupRoot();
-			assertNotNull(groupRoot.create("test group2", user()));
+			GroupDaoWrapper groupDao = tx.data().groupDao();
+			long nGroupsBefore = groupDao.computeCount();
+			assertNotNull(groupDao.create("test group2", user()));
 
-			long nGroupsAfter = root.computeCount();
+			long nGroupsAfter = groupDao.computeCount();
 			assertEquals(nGroupsBefore + 1, nGroupsAfter);
 		}
 	}
@@ -187,7 +186,8 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Override
 	public void testCreate() {
 		try (Tx tx = tx()) {
-			Group group = meshRoot().getGroupRoot().create("newGroup", user());
+			GroupDaoWrapper groupDao = tx.data().groupDao();
+			Group group = groupDao.create("newGroup", user());
 			assertNotNull(group);
 			assertEquals("newGroup", group.getName());
 		}
@@ -197,14 +197,14 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Override
 	public void testDelete() throws Exception {
 		try (Tx tx = tx()) {
-			GroupRoot groupRoot = tx.data().groupDao();
-			Group group = groupRoot.create("newGroup", user());
+			GroupDaoWrapper groupDao = tx.data().groupDao();
+			Group group = groupDao.create("newGroup", user());
 
 			assertNotNull(group);
 			assertEquals("newGroup", group.getName());
 			String uuid = group.getUuid();
 			String userUuid = user().getUuid();
-			groupRoot.addUser(group(), user());
+			groupDao.addUser(group(), user());
 
 			// TODO add users to group?
 			BulkActionContext bac = createBulkContext();

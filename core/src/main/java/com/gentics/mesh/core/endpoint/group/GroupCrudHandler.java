@@ -19,8 +19,6 @@ import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.page.TransformablePage;
-import com.gentics.mesh.core.data.root.GroupRoot;
-import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.verticle.handler.CreateAction;
@@ -88,7 +86,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 	 */
 	public void handleGroupRolesList(InternalActionContext ac, String groupUuid) {
 		utils.syncTx(ac, tx -> {
-			GroupRoot groupRoot = tx.data().groupDao();
+			GroupDaoWrapper groupRoot = tx.data().groupDao();
 			Group group = tx.data().groupDao().loadObjectByUuid(ac, groupUuid, READ_PERM);
 			PagingParametersImpl pagingInfo = new PagingParametersImpl(ac);
 			TransformablePage<? extends Role> rolePage = groupRoot.getRoles(group, ac.getUser(), pagingInfo);
@@ -109,8 +107,9 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				GroupRoot groupDao = tx.data().groupDao();
-				RoleRoot roleDao = tx.data().roleDao();
+				GroupDaoWrapper groupDao = tx.data().groupDao();
+				RoleDaoWrapper roleDao = tx.data().roleDao();
+
 				Group group = groupDao.loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 				Role role = roleDao.loadObjectByUuid(ac, roleUuid, READ_PERM);
 				// Handle idempotency
@@ -149,21 +148,20 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			utils.syncTx(ac, tx -> {
 				GroupDaoWrapper groupDao = tx.data().groupDao();
 				RoleDaoWrapper roleDao = tx.data().roleDao();
-				GroupRoot groupRoot = tx.data().groupDao();
 
 				Group group = groupDao.loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 				Role role = roleDao.loadObjectByUuid(ac, roleUuid, READ_PERM);
 
 				// No need to update the group if it is not assigned
-				if (!groupRoot.hasRole(group, role)) {
+				if (!groupDao.hasRole(group, role)) {
 					return;
 				}
 
 				utils.eventAction(batch -> {
-					groupRoot.removeRole(group, role);
+					groupDao.removeRole(group, role);
 					group.setEditor(ac.getUser());
 					group.setLastEditedTimestamp();
-					batch.add(groupRoot.createRoleAssignmentEvent(group, role, UNASSIGNED));
+					batch.add(groupDao.createRoleAssignmentEvent(group, role, UNASSIGNED));
 					return batch;
 				});
 
@@ -182,11 +180,11 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(groupUuid, "groupUuid");
 
 		utils.syncTx(ac, tx -> {
-			GroupRoot groupRoot = tx.data().groupDao();
+			GroupDaoWrapper groupDao = tx.data().groupDao();
 			MeshAuthUser requestUser = ac.getUser();
 			PagingParametersImpl pagingInfo = new PagingParametersImpl(ac);
 			Group group = tx.data().groupDao().loadObjectByUuid(ac, groupUuid, READ_PERM);
-			TransformablePage<? extends User> userPage = groupRoot.getVisibleUsers(group, requestUser, pagingInfo);
+			TransformablePage<? extends User> userPage = groupDao.getVisibleUsers(group, requestUser, pagingInfo);
 			return userPage.transformToRestSync(ac, 0);
 		}, model -> ac.send(model, OK));
 	}
@@ -206,7 +204,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				GroupRoot groupDao = tx.data().groupDao();
+				GroupDaoWrapper groupDao = tx.data().groupDao();
 				UserDaoWrapper userDao = tx.data().userDao();
 				Group group = groupDao.loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 				User user = userDao.loadObjectByUuid(ac, userUuid, READ_PERM);
@@ -238,7 +236,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				GroupRoot groupDao = tx.data().groupDao();
+				GroupDaoWrapper groupDao = tx.data().groupDao();
 				Group group = groupDao.loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 				User user = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 

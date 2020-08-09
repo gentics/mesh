@@ -57,7 +57,6 @@ import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ListResponse;
@@ -163,7 +162,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		// 2. Logout the current client user
 		client().logout().blockingGet();
 		tx(tx -> {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.revokePermissions(role(), user(), UPDATE_PERM);
 		});
 
@@ -195,7 +194,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// Make sure the user has no actual update perm anymore
 		tx(tx -> {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.revokePermissions(role(), user(), UPDATE_PERM);
 		});
 
@@ -309,7 +308,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testIssueAPIKeyWithoutPerm() {
 		tx((tx) -> {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.revokePermissions(role(), user(), UPDATE_PERM);
 			tx.success();
 		});
@@ -326,7 +325,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		call(() -> client().issueAPIToken(uuid));
 
 		tx((tx) -> {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			User user = user();
 			roleDao.revokePermissions(role(), user, UPDATE_PERM);
 			tx.success();
@@ -340,7 +339,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		TagFamily tagFamily;
 		String pathToElement;
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			data().addTagFamilies();
 			tagFamily = data().getTagFamily("colors");
 			roleDao.grantPermissions(role(), tagFamily, GraphPermission.values());
@@ -358,7 +357,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertThat(response).hasPerm(Permission.basicPermissions());
 
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			// Revoke single permission and check again
 			roleDao.revokePermissions(role(), tagFamily, GraphPermission.UPDATE_PERM);
 			assertFalse(roleDao.hasPermission(role(), GraphPermission.UPDATE_PERM, tagFamily));
@@ -379,11 +378,12 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testReadUserWithMultipleGroups() {
 		try (Tx tx = tx()) {
+			GroupDaoWrapper groupDao = tx.data().groupDao();
 			User user = user();
 			assertEquals(1, user.getGroups().count());
 
 			for (int i = 0; i < 10; i++) {
-				Group extraGroup = meshRoot().getGroupRoot().create("group_" + i, user());
+				Group extraGroup = groupDao.create("group_" + i, user());
 				tx.data().groupDao().addUser(extraGroup, user());
 			}
 			assertEquals(11, user().getGroups().count());
@@ -414,7 +414,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			User user = user();
 			assertNotNull("The username of the user must not be null.", user.getUsername());
 			roleDao.revokePermissions(role(), user, READ_PERM);
@@ -985,7 +985,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testUpdatePasswordWithNoPermission() throws JsonGenerationException, JsonMappingException, IOException, Exception {
 		String oldHash;
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			User user = user();
 			oldHash = user.getPasswordHash();
 			roleDao.revokePermissions(role(), user, UPDATE_PERM);
@@ -1007,7 +1007,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
 		String oldHash;
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			User user = user();
 			oldHash = user.getPasswordHash();
 			roleDao.revokePermissions(role(), user, UPDATE_PERM);
@@ -1193,7 +1193,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.setPassword("test123456");
 
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.revokePermissions(role(), meshRoot().getUserRoot(), CREATE_PERM);
 			tx.success();
 		}

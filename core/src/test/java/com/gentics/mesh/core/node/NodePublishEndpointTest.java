@@ -28,8 +28,8 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -301,7 +301,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 	public void testGetPublishStatusNoPermission() {
 		Node node = folder("news");
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.revokePermissions(role(), node, READ_PERM);
 			tx.success();
 		}
@@ -377,7 +377,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		Node node = folder("2015");
 
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.revokePermissions(role(), node, PUBLISH_PERM);
 			tx.success();
 		}
@@ -532,7 +532,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 	public void testPublishLanguageNoPermission() {
 		Node node = folder("2015");
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.revokePermissions(role(), node, PUBLISH_PERM);
 			tx.success();
 		}

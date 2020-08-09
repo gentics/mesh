@@ -30,6 +30,8 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.root.GroupRoot;
+import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.rest.group.GroupReference;
@@ -217,41 +219,40 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 
 		EventQueueBatch batch = batchProvider.get();
 		return db.maybeTx(tx -> boot.userDao().findMeshAuthUserByUsername(username))
-		.flatMapSingleElement(user -> db.singleTx(user::getUuid).flatMap(uuid -> {
-			// Compare the stored and current token id to see whether the current token is different.
-			// In that case a sync must be invoked.
-			String lastSeenTokenId = TOKEN_ID_LOG.getIfPresent(user.getUuid());
-			if (lastSeenTokenId == null || !lastSeenTokenId.equals(cachingId)) {
-				return assertReadOnlyDeactivated().andThen(db.singleTx(() -> {
-					com.gentics.mesh.core.data.User admin = boot.userDao().findByUsername("admin");
+			.flatMapSingleElement(user -> db.singleTx(user::getUuid).flatMap(uuid -> {
+				// Compare the stored and current token id to see whether the current token is different.
+				// In that case a sync must be invoked.
+				String lastSeenTokenId = TOKEN_ID_LOG.getIfPresent(user.getUuid());
+				if (lastSeenTokenId == null || !lastSeenTokenId.equals(cachingId)) {
+					return assertReadOnlyDeactivated().andThen(db.singleTx(() -> {
+						com.gentics.mesh.core.data.User admin = boot.userDao().findByUsername("admin");
 						runPlugins(rc, batch, admin, user, uuid, token);
 						TOKEN_ID_LOG.put(uuid, cachingId);
 						return user;
-				}));
-			}
-			return Single.just(user);
-		}))
-		// Create the user if it can't be found.
-		.switchIfEmpty(
-			assertReadOnlyDeactivated()
-			.andThen(requiresWriteCompletable())
-			.andThen(db.singleTxWriteLock(tx -> {
-				UserDaoWrapper userDao = tx.data().userDao();
-				UserRoot userRoot = boot.userRoot();
-				com.gentics.mesh.core.data.User admin = userDao.findByUsername("admin");
-				com.gentics.mesh.core.data.User createdUser = userDao.create(username, admin);
-				userDao.inheritRolePermissions(admin, userRoot, createdUser);
-
-				MeshAuthUser user = userDao.findMeshAuthUserByUsername(username);
-				String uuid = user.getUuid();
-				batch.add(user.onCreated());
-				// Not setting uuid since the user has not yet been committed.
-				runPlugins(rc, batch, admin, user, null, token);
-				TOKEN_ID_LOG.put(uuid, cachingId);
-				return user;
+					}));
+				}
+				return Single.just(user);
 			}))
-		)
-		.doOnSuccess(ignore -> batch.dispatch());
+			// Create the user if it can't be found.
+			.switchIfEmpty(
+				assertReadOnlyDeactivated()
+					.andThen(requiresWriteCompletable())
+					.andThen(db.singleTxWriteLock(tx -> {
+						UserDaoWrapper userDao = tx.data().userDao();
+						UserRoot userRoot = boot.userRoot();
+						com.gentics.mesh.core.data.User admin = userDao.findByUsername("admin");
+						com.gentics.mesh.core.data.User createdUser = userDao.create(username, admin);
+						userDao.inheritRolePermissions(admin, userRoot, createdUser);
+
+						MeshAuthUser user = userDao.findMeshAuthUserByUsername(username);
+						String uuid = user.getUuid();
+						batch.add(user.onCreated());
+						// Not setting uuid since the user has not yet been committed.
+						runPlugins(rc, batch, admin, user, null, token);
+						TOKEN_ID_LOG.put(uuid, cachingId);
+						return user;
+					})))
+			.doOnSuccess(ignore -> batch.dispatch());
 	}
 
 	private Completable assertReadOnlyDeactivated() {
@@ -320,7 +321,8 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 	}
 
 	/**
-	 * Runs all {@link AuthServicePlugin} to detect and apply any changes that are returned from {@link AuthServicePlugin#mapToken(HttpServerRequest, String, JsonObject)}.
+	 * Runs all {@link AuthServicePlugin} to detect and apply any changes that are returned from
+	 * {@link AuthServicePlugin#mapToken(HttpServerRequest, String, JsonObject)}.
 	 *
 	 * @param rc
 	 * @param batch
@@ -328,7 +330,8 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 	 * @param user
 	 * @param userUuid
 	 * @param token
-	 * @throws CannotWriteException If a change is required but this instance cannot be written to because of cluster coordination.
+	 * @throws CannotWriteException
+	 *             If a change is required but this instance cannot be written to because of cluster coordination.
 	 * @return
 	 */
 	private void runPlugins(RoutingContext rc, EventQueueBatch batch, com.gentics.mesh.core.data.User admin, MeshAuthUser user, String userUuid,
@@ -339,6 +342,8 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 			RoleDaoWrapper roleDao = boot.roleDao();
 			GroupDaoWrapper groupDao = boot.groupDao();
 			UserDaoWrapper userDao = boot.userDao();
+			RoleRoot roleRoot = boot.roleRoot();
+			GroupRoot groupRoot = boot.groupRoot();
 
 			for (AuthServicePlugin plugin : plugins) {
 				try {
@@ -375,7 +380,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 							if (role == null) {
 								requiresWrite();
 								role = roleDao.create(roleName, admin);
-								userDao.inheritRolePermissions(admin, roleDao, role);
+								userDao.inheritRolePermissions(admin, roleRoot, role);
 								batch.add(role.onCreated());
 							}
 						}
@@ -395,7 +400,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 							if (group == null) {
 								requiresWrite();
 								group = groupDao.create(groupName, admin);
-								userDao.inheritRolePermissions(admin, groupDao, group);
+								userDao.inheritRolePermissions(admin, groupRoot, group);
 								batch.add(group.onCreated());
 								created = true;
 							}

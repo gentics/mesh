@@ -16,8 +16,8 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.db.AbstractVertexFrame;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.graph.GraphAttribute;
@@ -116,7 +116,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 
 	protected void applyVertexPermissions(EventQueueBatch batch, Role role, Set<GraphPermission> permissionsToGrant,
 		Set<GraphPermission> permissionsToRevoke) {
-		RoleRoot roleDao = mesh().boot().roleDao();
+		RoleDaoWrapper roleDao = mesh().boot().roleDao();
 		roleDao.grantPermissions(role, this, permissionsToGrant.toArray(new GraphPermission[permissionsToGrant.size()]));
 		roleDao.revokePermissions(role, this, permissionsToRevoke.toArray(new GraphPermission[permissionsToRevoke.size()]));
 

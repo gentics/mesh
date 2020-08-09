@@ -34,6 +34,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
@@ -187,8 +188,8 @@ public class TestDataProvider {
 			addPermissions(project.getTagFamilyRoot());
 			addPermissions(boot.projectRoot());
 			addPermissions(boot.userRoot());
-			addPermissions(boot.groupDao());
-			addPermissions(boot.roleDao());
+			addPermissions(boot.groupRoot());
+			addPermissions(boot.roleRoot());
 			addPermissions(boot.microschemaDao());
 			addPermissions(boot.schemaDao());
 			log.debug("Added BasicPermissions to nodes took {" + (System.currentTimeMillis() - startPerm) + "} ms.");
@@ -213,7 +214,7 @@ public class TestDataProvider {
 	}
 
 	private void addPermissions(Collection<? extends MeshVertex> elements) {
-		RoleRoot roleDao = Tx.get().data().roleDao();
+		RoleDaoWrapper roleDao = Tx.get().data().roleDao();
 
 		Role role = userInfo.getRole();
 		for (MeshVertex meshVertex : elements) {
@@ -317,8 +318,9 @@ public class TestDataProvider {
 	}
 
 	public UserInfo createUserInfo(String username, String firstname, String lastname) {
-		RoleDaoWrapper roleDao = Tx.get().data().roleDao();
 		UserDaoWrapper userDao = Tx.get().data().userDao();
+		GroupDaoWrapper groupDao = Tx.get().data().groupDao();
+		RoleDaoWrapper roleDao = Tx.get().data().roleDao();
 
 		String password = "test123";
 		String hashedPassword = "$2a$10$n/UeWGbY9c1FHFyCqlVsY.XvNYmZ7Jjgww99SF94q/B5nomYuquom";
@@ -341,8 +343,8 @@ public class TestDataProvider {
 
 		String groupName = username + "_group";
 		GroupRoot groupRoot = root.getGroupRoot();
-		Group group = groupRoot.create(groupName, user);
-		groupRoot.addUser(group, user);
+		Group group = groupDao.create(groupName, user);
+		groupDao.addUser(group, user);
 		group.setCreator(user);
 		group.setCreationTimestamp();
 		group.setEditor(user);
@@ -350,8 +352,8 @@ public class TestDataProvider {
 		groups.put(groupName, group);
 
 		String roleName = username + "_role";
-		Role role = root.getRoleRoot().create(roleName, user);
-		groupRoot.addRole(group, role);
+		Role role = roleDao.create(roleName, user);
+		groupDao.addRole(group, role);
 		roleDao.grantPermissions(role, role, READ_PERM);
 		roles.put(roleName, role);
 
@@ -360,6 +362,8 @@ public class TestDataProvider {
 
 	private void addUserGroupRoleProject() {
 		UserDaoWrapper userDao = Tx.get().data().userDao();
+		RoleDaoWrapper roleDao = Tx.get().data().roleDao();
+		GroupDaoWrapper groupDao = Tx.get().data().groupDao();
 
 		// User, Groups, Roles
 		userInfo = createUserInfo("joe1", "Joe", "Doe");
@@ -378,11 +382,11 @@ public class TestDataProvider {
 
 		if (getSize() == FULL) {
 			// Guest Group / Role
-			Group guestGroup = root.getGroupRoot().create("guests", userInfo.getUser());
+			Group guestGroup = groupDao.create("guests", userInfo.getUser());
 			groups.put("guests", guestGroup);
 
-			Role guestRole = root.getRoleRoot().create("guest_role", userInfo.getUser());
-			groupRoot.addRole(guestGroup, guestRole);
+			Role guestRole = roleDao.create("guest_role", userInfo.getUser());
+			groupDao.addRole(guestGroup, guestRole);
 			roles.put(guestRole.getName(), guestRole);
 
 			// Extra User
@@ -393,10 +397,10 @@ public class TestDataProvider {
 			user.setEmailAddress("guest@spam.gentics.com");
 			users.put(user.getUsername(), user);
 
-			Group group = groupRoot.create("extra_group", userInfo.getUser());
+			Group group = groupDao.create("extra_group", userInfo.getUser());
 			groups.put(group.getName(), group);
 
-			Role role = roleRoot.create("extra_role", userInfo.getUser());
+			Role role = roleDao.create("extra_role", userInfo.getUser());
 			roles.put(role.getName(), role);
 		}
 		// Publish the project basenode

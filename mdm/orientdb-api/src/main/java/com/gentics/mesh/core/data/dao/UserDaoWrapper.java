@@ -24,7 +24,7 @@ import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 
 // TODO move the contents of this to UserDao once migration is done
-public interface UserDaoWrapper extends UserDao, DaoWrapper<User> {
+public interface UserDaoWrapper extends UserDao, DaoWrapper<User>, DaoTransformable<User,UserResponse> {
 
 	String getSubETag(User user, InternalActionContext ac);
 

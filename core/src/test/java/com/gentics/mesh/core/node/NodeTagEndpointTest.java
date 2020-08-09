@@ -11,6 +11,7 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -23,8 +24,8 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchReference;
@@ -119,7 +120,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		Node node = folder("2015");
 		Tag tag = tag("red");
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			assertFalse(node.getTags(project().getLatestBranch()).list().contains(tag));
 			roleDao.revokePermissions(role(), node, UPDATE_PERM);
 			tx.success();
@@ -141,7 +142,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		Tag tag = tag("red");
 
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			assertFalse(node.getTags(project().getLatestBranch()).list().contains(tag));
 			roleDao.revokePermissions(role(), tag, READ_PERM);
 			tx.success();
@@ -277,7 +278,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		Tag tag = tag("bike");
 
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			assertTrue(node.getTags(project().getLatestBranch()).list().contains(tag));
 			roleDao.revokePermissions(role(), node, UPDATE_PERM);
 			tx.success();
@@ -461,7 +462,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		Tag tag = tag("bike");
 
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			assertTrue(node.getTags(project().getLatestBranch()).list().contains(tag));
 			roleDao.revokePermissions(role(), tag, READ_PERM);
 			tx.success();

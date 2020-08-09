@@ -51,10 +51,10 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
@@ -191,7 +191,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		request.setSchema(new SchemaReferenceImpl().setName("folder"));
 
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.revokePermissions(role(), meshRoot().getProjectRoot(), CREATE_PERM);
 			tx.success();
 		}
@@ -292,7 +292,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Override
 	public void testCreateReadDelete() throws Exception {
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.grantPermissions(role(), project().getBaseNode(), CREATE_PERM);
 			roleDao.grantPermissions(role(), project().getBaseNode(), CREATE_PERM);
 			roleDao.grantPermissions(role(), project().getBaseNode(), CREATE_PERM);
@@ -328,12 +328,12 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		final int nProjects = 142;
 		final String noPermProjectName = "no_perm_project";
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.grantPermissions(role(), project(), READ_PERM);
 			tx.success();
 		}
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			for (int i = 0; i < nProjects; i++) {
 				Project extraProject = createProject("extra_project_" + i, "folder");
 				extraProject.setBaseNode(project().getBaseNode());
@@ -431,7 +431,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Override
 	public void testReadByUUID() throws Exception {
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			Project project = project();
 			String uuid = project.getUuid();
 			assertNotNull("The UUID of the project must not be null.", project.getUuid());
@@ -468,7 +468,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.revokePermissions(role(), project(), READ_PERM);
 			tx.success();
 		}
@@ -528,7 +528,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	public void testUpdate() throws Exception {
 		String uuid = projectUuid();
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			Project project = project();
 			roleDao.grantPermissions(role(), project, UPDATE_PERM);
 			tx.success();
@@ -587,7 +587,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	public void testUpdateByUUIDWithoutPerm() throws JsonProcessingException, Exception {
 		String uuid = projectUuid();
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			Project project = project();
 			roleDao.grantPermissions(role(), project, READ_PERM);
 			roleDao.revokePermissions(role(), project, UPDATE_PERM);
@@ -610,7 +610,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	public void testDeleteByUUID() throws Exception {
 		String uuid = projectUuid();
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.grantPermissions(role(), project(), DELETE_PERM);
 			tx.success();
 		}
@@ -696,7 +696,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 		String uuid = projectUuid();
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.revokePermissions(role(), project(), DELETE_PERM);
 			tx.success();
 		}

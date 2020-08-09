@@ -31,6 +31,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -47,8 +48,8 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.BulkActionContext;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -158,7 +159,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		SchemaCreateRequest schema = FieldUtil.createMinimalValidSchemaCreateRequest();
 		String schemaRootUuid = db().tx(() -> meshRoot().getSchemaContainerRoot().getUuid());
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.revokePermissions(role(), meshRoot().getSchemaContainerRoot(), CREATE_PERM);
 			tx.success();
 		}
@@ -212,7 +213,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		final int nSchemas = 22;
 
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			SchemaContainerRoot schemaRoot = meshRoot().getSchemaContainerRoot();
 
 			// Create schema with no read permission
@@ -356,7 +357,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testReadByUUIDWithMissingPermission() throws Exception {
 		String uuid = tx(() -> schemaContainer("content").getUuid());
 		tx(tx -> {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			SchemaContainer schema = schemaContainer("content");
 			roleDao.grantPermissions(role(), schema, DELETE_PERM);
 			roleDao.grantPermissions(role(), schema, UPDATE_PERM);
@@ -646,7 +647,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 		SchemaContainer schema = schemaContainer("content");
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.revokePermissions(role(), schema, DELETE_PERM);
 			tx.success();
 		}
@@ -732,7 +733,8 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
 		String schemaUuid;
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
+
 			SchemaContainer schema = schemaContainer("content");
 			roleDao.revokePermissions(role(), schema, UPDATE_PERM);
 			schemaUuid = schema.getUuid();

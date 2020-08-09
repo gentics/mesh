@@ -10,9 +10,9 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -54,19 +54,19 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 
 	@Override
 	public RoleResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		RoleRoot roleDao = mesh().boot().roleDao();
+		RoleDaoWrapper roleDao = mesh().boot().roleDao();
 		return roleDao.transformToRestSync(this, ac, level, languageTags);
 	}
 
 	@Override
 	public void delete(BulkActionContext bac) {
-		RoleRoot roleDao = mesh().boot().roleDao();
+		RoleDaoWrapper roleDao = mesh().boot().roleDao();
 		roleDao.delete(this, bac);
 	}
 
 	@Override
 	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
-		RoleRoot roleDao = mesh().boot().roleDao();
+		RoleDaoWrapper roleDao = mesh().boot().roleDao();
 		return roleDao.update(this, ac, batch);
 	}
 

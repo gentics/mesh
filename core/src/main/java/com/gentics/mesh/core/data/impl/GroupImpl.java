@@ -1,16 +1,11 @@
 package com.gentics.mesh.core.data.impl;
 
-import static com.gentics.mesh.core.rest.error.Errors.conflict;
-import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.Set;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
@@ -20,11 +15,9 @@ import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
-import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.madl.field.FieldType;
@@ -58,7 +51,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 
 	@Override
 	public void delete(BulkActionContext bac) {
-		GroupRoot groupRoot = Tx.get().data().groupDao();
+		GroupDaoWrapper groupRoot = Tx.get().data().groupDao();
 		groupRoot.delete(this, bac);
 	}
 
@@ -70,9 +63,9 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	@Override
 	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
 		Set<GraphPermission> permissionsToRevoke) {
-		GroupRoot groupRoot = Tx.get().data().groupDao();
+		GroupDaoWrapper groupDao = Tx.get().data().groupDao();
 		if (recursive) {
-			for (User user : groupRoot.getUsers(this)) {
+			for (User user : groupDao.getUsers(this)) {
 				user.applyPermissions(batch, role, false, permissionsToGrant, permissionsToRevoke);
 			}
 		}

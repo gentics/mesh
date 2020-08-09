@@ -442,30 +442,30 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			.type(new GraphQLTypeReference(BRANCH_TYPE_NAME)).dataFetcher(this::branchFetcher).build());
 
 		// .schema
-		root.field(newElementField("schema", "Load schema by name or uuid.", (ac) -> boot.schemaDao(), SCHEMA_TYPE_NAME));
+		root.field(newElementField("schema", "Load schema by name or uuid.", (ac) -> boot.schemaContainerRoot(), SCHEMA_TYPE_NAME));
 
 		// .schemas
-		root.field(newPagingField("schemas", "Load page of schemas.", (ac) -> boot.schemaDao(), SCHEMA_PAGE_TYPE_NAME));
+		root.field(newPagingField("schemas", "Load page of schemas.", (ac) -> boot.schemaContainerRoot(), SCHEMA_PAGE_TYPE_NAME));
 
 		// .microschema
 		root.field(
-			newElementField("microschema", "Load microschema by name or uuid.", (ac) -> boot.microschemaDao(), MICROSCHEMA_TYPE_NAME));
+			newElementField("microschema", "Load microschema by name or uuid.", (ac) -> boot.microschemaContainerRoot(), MICROSCHEMA_TYPE_NAME));
 
 		// .microschemas
-		root.field(newPagingField("microschemas", "Load page of microschemas.", (ac) -> boot.microschemaDao(), MICROSCHEMA_PAGE_TYPE_NAME));
+		root.field(newPagingField("microschemas", "Load page of microschemas.", (ac) -> boot.microschemaContainerRoot(), MICROSCHEMA_PAGE_TYPE_NAME));
 
 		// .role
-		root.field(newElementField("role", "Load role by name or uuid.", (ac) -> boot.roleDao(), ROLE_TYPE_NAME));
+		root.field(newElementField("role", "Load role by name or uuid.", (ac) -> boot.roleRoot(), ROLE_TYPE_NAME));
 
 		// .roles
-		root.field(newPagingSearchField("roles", "Load page of roles.", (ac) -> boot.roleDao(), ROLE_PAGE_TYPE_NAME, roleSearchHandler,
+		root.field(newPagingSearchField("roles", "Load page of roles.", (ac) -> boot.roleRoot(), ROLE_PAGE_TYPE_NAME, roleSearchHandler,
 			RoleFilter.filter()));
 
 		// .group
-		root.field(newElementField("group", "Load group by name or uuid.", (ac) -> boot.groupDao(), GROUP_TYPE_NAME));
+		root.field(newElementField("group", "Load group by name or uuid.", (ac) -> boot.groupRoot(), GROUP_TYPE_NAME));
 
 		// .groups
-		root.field(newPagingSearchField("groups", "Load page of groups.", (ac) -> boot.groupDao(), GROUP_PAGE_TYPE_NAME, groupSearchHandler,
+		root.field(newPagingSearchField("groups", "Load page of groups.", (ac) -> boot.groupRoot(), GROUP_PAGE_TYPE_NAME, groupSearchHandler,
 			GroupFilter.filter()));
 
 		// .user

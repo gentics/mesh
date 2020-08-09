@@ -14,6 +14,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
@@ -34,16 +35,16 @@ public class PermissionProperties {
 		Stream<String> stream = roleUuids == null
 			? Stream.empty()
 			: roleUuids.stream();
-		RoleRoot roleRoot = boot.roleDao();
+		RoleDaoWrapper roleDao = boot.roleDao();
 		return new TraversalResult<>(stream
-			.map(roleRoot::findByUuid)
+			.map(roleDao::findByUuid)
 			.filter(Objects::nonNull)
 		);
 	}
 
 	public PermissionInfo getRolePermissions(MeshVertex vertex, InternalActionContext ac, String roleUuid) {
 		if (!isEmpty(roleUuid)) {
-			RoleRoot roleDao = boot.roleDao();
+			RoleDaoWrapper roleDao = boot.roleDao();
 			Role role = roleDao.loadObjectByUuid(ac, roleUuid, READ_PERM);
 			if (role != null) {
 				PermissionInfo permissionInfo = new PermissionInfo();

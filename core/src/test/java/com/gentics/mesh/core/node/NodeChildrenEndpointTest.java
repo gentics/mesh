@@ -7,6 +7,7 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.util.TestUtils.size;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -20,8 +21,8 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -102,7 +103,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 	public void testReadNodeByUUIDAndCheckChildrenPermissions() throws Exception {
 		Node node = folder("news");
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
 
@@ -161,7 +162,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 		Node node = folder("news");
 		Node nodeWithNoPerm = folder("2015");
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
 			roleDao.revokePermissions(role(), nodeWithNoPerm, READ_PERM);
@@ -182,7 +183,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 	public void testReadNodeChildrenWithNoPermission() throws Exception {
 		Node node = folder("news");
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
 			roleDao.revokePermissions(role(), node, READ_PERM);

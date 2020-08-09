@@ -27,6 +27,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
@@ -51,6 +52,8 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
@@ -304,7 +307,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.setParentNodeUuid(parentNodeUuid);
 
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.revokePermissions(role(), folder("news"), CREATE_PERM);
 			tx.success();
 		}
@@ -559,7 +562,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		Node node = folder("news");
 
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.revokePermissions(role(), schemaContainer("content"), READ_PERM);
 			tx.success();
 		}
@@ -585,7 +588,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// Revoke create perm
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.revokePermissions(role(), folder("news"), CREATE_PERM);
 			tx.success();
 		}
@@ -629,7 +632,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testReadMultipleAndAssertOrder() {
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			Node parentNode = folder("2015");
 			int nNodes = 20;
 			for (int i = 0; i < nNodes; i++) {
@@ -859,7 +862,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		while (!nodes.isEmpty()) {
 			Node folder = nodes.remove(0);
 			tx((tx) -> {
-				RoleRoot roleDao = tx.data().roleDao();
+				RoleDaoWrapper roleDao = tx.data().roleDao();
 				roleDao.revokePermissions(role(), folder, READ_PUBLISHED_PERM);
 				roleDao.revokePermissions(role(), folder, READ_PERM);
 				tx.success();
@@ -896,7 +899,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		for (Node node : nodes) {
 			// Revoke the read perm but keep the read published perm on the node
 			tx((tx) -> {
-				RoleRoot roleDao = tx.data().roleDao();
+				RoleDaoWrapper roleDao = tx.data().roleDao();
 				roleDao.revokePermissions(role(), node, READ_PERM);
 				roleDao.grantPermissions(role(), node, READ_PUBLISHED_PERM);
 				tx.success();
@@ -957,7 +960,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// 3. Revoke permissions and only grant read_published
 		tx((tx) -> {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			Node node = content();
 			roleDao.revokePermissions(role(), node, READ_PERM);
 			roleDao.revokePermissions(role(), node, CREATE_PERM);
@@ -1541,7 +1544,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testReadNodeByUUIDNoLanguage() throws Exception {
 		Node node;
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			// Create node with nl language
 			Node parentNode = folder("products");
 			Language languageNl = meshRoot().getLanguageRoot().findByLanguageTag("nl");
@@ -1599,7 +1602,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testReadByUUIDWithMissingPermission() throws Exception {
 		String uuid;
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			Node node = folder("2015");
 			uuid = node.getUuid();
 			roleDao.revokePermissions(role(), node, READ_PERM);
@@ -1653,7 +1656,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String uuid = tx(() -> content("concorde").getUuid());
 		final Node node = tx(() -> content("concorde"));
 		NodeGraphFieldContainer origContainer = tx(tx -> {
-			GroupRoot groupRoot = tx.data().groupDao();
+			GroupDaoWrapper groupRoot = tx.data().groupDao();
 			Node prod = content("concorde");
 			NodeGraphFieldContainer container = prod.getLatestDraftFieldContainer(english());
 			assertEquals("Concorde_english_name", container.getString("teaser").getString());
@@ -1783,7 +1786,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
 		Node node = folder("2015");
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.revokePermissions(role(), node, UPDATE_PERM);
 			tx.success();
 		}
@@ -2073,7 +2076,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 		String uuid;
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			Node node = folder("2015");
 			uuid = node.getUuid();
 			roleDao.revokePermissions(role(), node, DELETE_PERM);

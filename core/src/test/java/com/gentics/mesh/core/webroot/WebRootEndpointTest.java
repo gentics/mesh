@@ -26,6 +26,7 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RoleRoot;
@@ -136,7 +137,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 	public void testReadContentWithNodeRefByPath() throws Exception {
 
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			Node parentNode = folder("2015");
 			// Update content schema and add node field
 			SchemaContainer folderSchema = schemaContainer("folder");
@@ -303,7 +304,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		String englishPath = "/News/2015";
 		String uuid;
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			Node newsFolder = folder("2015");
 			uuid = newsFolder.getUuid();
 			roleDao.revokePermissions(role(), newsFolder, READ_PERM);
@@ -378,7 +379,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		String path = "/News/2015";
 
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.grantPermissions(anonymousRole(), folder("2015"), READ_PERM);
 			tx.success();
 		}
@@ -394,7 +395,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		String path = "/News/2015";
 
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.grantPermissions(anonymousRole(), folder("2015"), READ_PUBLISHED_PERM);
 			tx.success();
 		}
@@ -447,7 +448,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 		// 2. Remove read perm and grant only publish perm to node
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.revokePermissions(role(), folder("2015"), READ_PERM);
 			roleDao.grantPermissions(role(), folder("2015"), READ_PUBLISHED_PERM);
 			tx.success();

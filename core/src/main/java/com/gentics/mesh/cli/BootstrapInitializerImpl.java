@@ -1046,15 +1046,15 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 			Group adminGroup = groupRoot.findByName("admin");
 			if (adminGroup == null) {
-				adminGroup = groupRoot.create("admin", adminUser);
-				groupRoot.addUser(adminGroup, adminUser);
+				adminGroup = groupDao.create("admin", adminUser);
+				groupDao.addUser(adminGroup, adminUser);
 				log.debug("Created admin group {" + adminGroup.getUuid() + "}");
 			}
 
 			Role adminRole = roleRoot.findByName("admin");
 			if (adminRole == null) {
-				adminRole = roleRoot.create("admin", adminUser);
-				groupRoot.addRole(adminGroup, adminRole);
+				adminRole = roleDao.create("admin", adminUser);
+				groupDao.addRole(adminGroup, adminRole);
 				log.debug("Created admin role {" + adminRole.getUuid() + "}");
 			}
 
@@ -1074,6 +1074,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		if (isEmptyInstallation) {
 			db.tx(tx -> {
 				UserDaoWrapper userDao = tx.data().userDao();
+				GroupDaoWrapper groupDao = tx.data().groupDao();
+				RoleDaoWrapper roleDao = tx.data().roleDao();
+
 				meshRoot = meshRoot();
 
 				UserRoot userRoot = meshRoot().getUserRoot();
@@ -1092,16 +1095,16 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				GroupRoot groupRoot = meshRoot.getGroupRoot();
 				Group anonymousGroup = groupRoot.findByName("anonymous");
 				if (anonymousGroup == null) {
-					anonymousGroup = groupRoot.create("anonymous", anonymousUser);
-					groupRoot.addUser(anonymousGroup, anonymousUser);
+					anonymousGroup = groupDao.create("anonymous", anonymousUser);
+					groupDao.addUser(anonymousGroup, anonymousUser);
 					log.debug("Created anonymous group {" + anonymousGroup.getUuid() + "}");
 				}
 
 				RoleRoot roleRoot = meshRoot.getRoleRoot();
 				anonymousRole = roleRoot.findByName("anonymous");
 				if (anonymousRole == null) {
-					anonymousRole = roleRoot.create("anonymous", anonymousUser);
-					groupRoot.addRole(anonymousGroup, anonymousRole);
+					anonymousRole = roleDao.create("anonymous", anonymousUser);
+					groupDao.addRole(anonymousGroup, anonymousRole);
 					log.debug("Created anonymous role {" + anonymousRole.getUuid() + "}");
 				}
 
@@ -1113,7 +1116,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	@Override
 	public void initPermissions() {
 		db.tx(tx -> {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			Role adminRole = meshRoot().getRoleRoot().findByName("admin");
 			for (Vertex vertex : tx.getGraph().getVertices()) {
 				WrappedVertex wrappedVertex = (WrappedVertex) vertex;
