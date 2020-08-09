@@ -69,12 +69,12 @@ public class RoleWrapper implements Role {
 		return delete.getRolePermissions(ac, roleUuid);
 	}
 
-	public User getEditor() {
-		return delete.getEditor();
+	public UserWrapper getEditor() {
+		return UserWrapper.wrap(delete.getEditor());
 	}
 
-	public User getCreator() {
-		return delete.getCreator();
+	public UserWrapper getCreator() {
+		return UserWrapper.wrap(delete.getCreator());
 	}
 
 	public void setUuid(String uuid) {

@@ -8,6 +8,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.HibUser;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
@@ -42,7 +43,7 @@ import io.reactivex.Single;
 import io.vertx.core.Vertx;
 
 // TODO Change the interface to the MDM API User Interface once ready
-public class UserWrapper implements User {
+public class UserWrapper implements User, HibUser {
 
 	private final User delegate;
 
@@ -74,12 +75,12 @@ public class UserWrapper implements User {
 		return delegate.getRolePermissions(ac, roleUuid);
 	}
 
-	public User getEditor() {
-		return delegate.getEditor();
+	public UserWrapper getEditor() {
+		return UserWrapper.wrap(delegate.getEditor());
 	}
 
-	public User getCreator() {
-		return delegate.getCreator();
+	public UserWrapper getCreator() {
+		return UserWrapper.wrap(delegate.getCreator());
 	}
 
 	public void setUuid(String uuid) {
@@ -369,7 +370,7 @@ public class UserWrapper implements User {
 	}
 
 	public User setEmailAddress(String email) {
-		return delegate.setEmailAddress(email);
+		return UserWrapper.wrap(delegate.setEmailAddress(email));
 	}
 
 	public EdgeTraversal<?, ?, ?> e(Object... ids) {
@@ -381,7 +382,7 @@ public class UserWrapper implements User {
 	}
 
 	public User setLastname(String lastname) {
-		return delegate.setLastname(lastname);
+		return UserWrapper.wrap(delegate.setLastname(lastname));
 	}
 
 	public TEdge addFramedEdge(String label, com.syncleus.ferma.VertexFrame inVertex) {
@@ -397,7 +398,7 @@ public class UserWrapper implements User {
 	}
 
 	public User setFirstname(String firstname) {
-		return delegate.setFirstname(firstname);
+		return UserWrapper.wrap(delegate.setFirstname(firstname));
 	}
 
 	public String getPasswordHash() {
@@ -405,7 +406,7 @@ public class UserWrapper implements User {
 	}
 
 	public User setPasswordHash(String hash) {
-		return delegate.setPasswordHash(hash);
+		return UserWrapper.wrap(delegate.setPasswordHash(hash));
 	}
 
 	public VertexTraversal<?, ?, ?> in(String... labels) {
@@ -424,12 +425,12 @@ public class UserWrapper implements User {
 		delegate.linkOut(vertex, labels);
 	}
 
-	public Node getReferencedNode() {
-		return delegate.getReferencedNode();
+	public NodeWrapper getReferencedNode() {
+		return NodeWrapper.wrap(delegate.getReferencedNode());
 	}
 
 	public User setReferencedNode(Node node) {
-		return delegate.setReferencedNode(node);
+		return UserWrapper.wrap(delegate.setReferencedNode(node));
 	}
 
 	public void linkIn(com.syncleus.ferma.VertexFrame vertex, String... labels) {
@@ -469,11 +470,11 @@ public class UserWrapper implements User {
 	}
 
 	public TraversalResult<? extends Group> getGroups() {
-		return delegate.getGroups();
+		return GroupWrapper.wrap(delegate.getGroups());
 	}
 
 	public User addGroup(Group group) {
-		return delegate.addGroup(group);
+		return UserWrapper.wrap(delegate.addGroup(group));
 	}
 
 	public String getRolesHash() {

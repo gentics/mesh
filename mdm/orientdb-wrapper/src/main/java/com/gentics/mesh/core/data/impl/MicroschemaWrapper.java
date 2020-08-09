@@ -307,7 +307,7 @@ public class MicroschemaWrapper implements MicroschemaContainer {
 	}
 
 	public MicroschemaContainerVersion getLatestVersion() {
-		return delegate.getLatestVersion();
+		return MicroschemaVersionWrapper.wrap(delegate.getLatestVersion());
 	}
 
 	public MeshOptions options() {

@@ -55,7 +55,7 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 			DelegatingFramedOrientGraph transaction = new DelegatingFramedOrientGraph((OrientGraph) provider.rawTx(), typeResolver);
 			init(transaction);
 		}
-		this.txData = new OrientTxData(daos);
+		this.txData = new OrientTxData(boot.mesh().getOptions(), daos);
 	}
 
 	@Override

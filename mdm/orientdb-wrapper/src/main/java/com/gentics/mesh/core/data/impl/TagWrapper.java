@@ -9,6 +9,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
@@ -50,6 +51,10 @@ public class TagWrapper implements Tag {
 
 	private final Tag delegate;
 
+	public TagWrapper(Tag delegate) {
+		this.delegate = delegate;
+	}
+
 	public static TagWrapper wrap(Tag tag) {
 		if (tag == null) {
 			return null;
@@ -58,8 +63,8 @@ public class TagWrapper implements Tag {
 		}
 	}
 
-	public TagWrapper(Tag delegate) {
-		this.delegate = delegate;
+	public static TraversalResult<? extends TagWrapper> wrap(TraversalResult<? extends Tag> tags) {
+		return new TraversalResult<>(tags.stream().map(TagWrapper::new));
 	}
 
 	public Object id() {

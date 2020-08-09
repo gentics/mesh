@@ -9,6 +9,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.HibBranch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
@@ -57,7 +58,7 @@ import com.tinkerpop.blueprints.Vertex;
 import io.reactivex.Single;
 import io.vertx.core.Vertx;
 
-public class BranchWrapper implements Branch {
+public class BranchWrapper implements Branch, HibBranch {
 
 	private final Branch delegate;
 
@@ -483,7 +484,7 @@ public class BranchWrapper implements Branch {
 	}
 
 	public Branch getPreviousBranch() {
-		return delegate.getPreviousBranch();
+		return wrap(delegate.getPreviousBranch());
 	}
 
 	public BranchRoot getRoot() {
@@ -507,7 +508,7 @@ public class BranchWrapper implements Branch {
 	}
 
 	public Branch unassignSchema(SchemaContainer schemaContainer) {
-		return delegate.unassignSchema(schemaContainer);
+		return wrap(delegate.unassignSchema(schemaContainer));
 	}
 
 	public <T> T reframeExplicit(Class<T> kind) {

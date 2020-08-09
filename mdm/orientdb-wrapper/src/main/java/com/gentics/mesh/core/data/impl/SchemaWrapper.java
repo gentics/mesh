@@ -9,6 +9,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.HibSchema;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
@@ -43,7 +44,7 @@ import com.tinkerpop.blueprints.Vertex;
 import io.reactivex.Single;
 import io.vertx.core.Vertx;
 
-public class SchemaWrapper implements SchemaContainer {
+public class SchemaWrapper implements SchemaContainer, HibSchema {
 
 	private final SchemaContainer delegate;
 

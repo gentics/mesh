@@ -83,12 +83,12 @@ public class ProjectWrapper implements Project {
 		return delegate.getRolePermissions(ac, roleUuid);
 	}
 
-	public User getEditor() {
-		return delegate.getEditor();
+	public UserWrapper getEditor() {
+		return UserWrapper.wrap(delegate.getEditor());
 	}
 
-	public User getCreator() {
-		return delegate.getCreator();
+	public UserWrapper getCreator() {
+		return UserWrapper.wrap(delegate.getCreator());
 	}
 
 	public void setUuid(String uuid) {
@@ -107,11 +107,11 @@ public class ProjectWrapper implements Project {
 		return delegate.getAPIPath(ac);
 	}
 
-	public void setEditor(User user) {
+	public void setEditor(UserWrapper user) {
 		delegate.setEditor(user);
 	}
 
-	public void setCreator(User user) {
+	public void setCreator(UserWrapper user) {
 		delegate.setCreator(user);
 	}
 

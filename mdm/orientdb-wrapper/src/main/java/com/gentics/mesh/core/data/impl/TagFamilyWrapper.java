@@ -84,12 +84,12 @@ public class TagFamilyWrapper implements TagFamily {
 		return delegate.getRolePermissions(ac, roleUuid);
 	}
 
-	public User getEditor() {
-		return delegate.getEditor();
+	public UserWrapper getEditor() {
+		return UserWrapper.wrap(delegate.getEditor());
 	}
 
 	public User getCreator() {
-		return delegate.getCreator();
+		return UserWrapper.wrap(delegate.getCreator());
 	}
 
 	public void setUuid(String uuid) {
@@ -445,8 +445,8 @@ public class TagFamilyWrapper implements TagFamily {
 		return delegate.findAll(ac, pagingInfo, extraFilter);
 	}
 
-	public Tag create(InternalActionContext ac, EventQueueBatch batch) {
-		return delegate.create(ac, batch);
+	public TagWrapper create(InternalActionContext ac, EventQueueBatch batch) {
+		return TagWrapper.wrap(delegate.create(ac, batch));
 	}
 
 	public void unlinkOut(com.syncleus.ferma.VertexFrame vertex, String... labels) {
@@ -473,8 +473,8 @@ public class TagFamilyWrapper implements TagFamily {
 		delegate.setLinkOut(vertex, labels);
 	}
 
-	public Tag findByName(String name) {
-		return delegate.findByName(name);
+	public TagWrapper findByName(String name) {
+		return TagWrapper.wrap(delegate.findByName(name));
 	}
 
 	public VertexTraversal<?, ?, ?> traversal() {

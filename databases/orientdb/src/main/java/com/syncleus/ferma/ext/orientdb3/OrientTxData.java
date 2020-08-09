@@ -14,13 +14,22 @@ import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.db.TxData;
+import com.gentics.mesh.etc.config.MeshOptions;
 
 public class OrientTxData implements TxData {
 
 	private final DaoCollection daos;
 
-	public OrientTxData(DaoCollection daoCollection) {
+	private final MeshOptions options;
+
+	public OrientTxData(MeshOptions options, DaoCollection daoCollection) {
+		this.options = options;
 		this.daos = daoCollection;
+	}
+
+	@Override
+	public MeshOptions options() {
+		return options;
 	}
 
 	@Override

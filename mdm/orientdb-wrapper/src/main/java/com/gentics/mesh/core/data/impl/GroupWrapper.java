@@ -49,6 +49,10 @@ public class GroupWrapper implements Group {
 		}
 	}
 
+	public static TraversalResult<? extends GroupWrapper> wrap(TraversalResult<? extends Group> groups) {
+		return new TraversalResult<>(groups.stream().map(GroupWrapper::new));
+	}
+
 	public GroupWrapper(Group delegate) {
 		this.delete = delegate;
 	}
@@ -69,12 +73,12 @@ public class GroupWrapper implements Group {
 		return delete.getRolePermissions(ac, roleUuid);
 	}
 
-	public User getEditor() {
-		return delete.getEditor();
+	public UserWrapper getEditor() {
+		return UserWrapper.wrap(delete.getEditor());
 	}
 
-	public User getCreator() {
-		return delete.getCreator();
+	public UserWrapper getCreator() {
+		return UserWrapper.wrap(delete.getCreator());
 	}
 
 	public void setUuid(String uuid) {

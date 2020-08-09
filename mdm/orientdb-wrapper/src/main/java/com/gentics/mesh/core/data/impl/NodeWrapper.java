@@ -78,6 +78,10 @@ public class NodeWrapper implements Node {
 		}
 	}
 
+	public static TraversalResult<? extends NodeWrapper> wrap(TraversalResult<? extends Node> nodes) {
+		return new TraversalResult<>(nodes.stream().map(NodeWrapper::new));
+	}
+
 	public NodeWrapper(Node delegate) {
 		this.delegate = delegate;
 	}
@@ -90,8 +94,8 @@ public class NodeWrapper implements Node {
 		return delegate.getRolePermissions(ac, roleUuid);
 	}
 
-	public User getCreator() {
-		return delegate.getCreator();
+	public UserWrapper getCreator() {
+		return UserWrapper.wrap(delegate.getCreator());
 	}
 
 	public void setUuid(String uuid) {
@@ -106,7 +110,7 @@ public class NodeWrapper implements Node {
 		return delegate.getAPIPath(ac);
 	}
 
-	public void setCreator(User user) {
+	public void setCreator(UserWrapper user) {
 		delegate.setCreator(user);
 	}
 
@@ -395,8 +399,8 @@ public class NodeWrapper implements Node {
 		delegate.linkIn(vertex, labels);
 	}
 
-	public TraversalResult<? extends Tag> getTags(Branch branch) {
-		return delegate.getTags(branch);
+	public TraversalResult<? extends TagWrapper> getTags(Branch branch) {
+		return TagWrapper.wrap(delegate.getTags(branch));
 	}
 
 	public TransformablePage<? extends Tag> getTags(User user, PagingParameters params, Branch branch) {
@@ -423,32 +427,32 @@ public class NodeWrapper implements Node {
 		delegate.setLinkOut(vertex, labels);
 	}
 
-	public NodeGraphFieldContainer getGraphFieldContainer(String languageTag, Branch branch, ContainerType type) {
-		return delegate.getGraphFieldContainer(languageTag, branch, type);
+	public ContentWrapper getGraphFieldContainer(String languageTag, Branch branch, ContainerType type) {
+		return ContentWrapper.wrap(delegate.getGraphFieldContainer(languageTag, branch, type));
 	}
 
 	public VertexTraversal<?, ?, ?> traversal() {
 		return delegate.traversal();
 	}
 
-	public NodeGraphFieldContainer getGraphFieldContainer(String languageTag) {
-		return delegate.getGraphFieldContainer(languageTag);
+	public ContentWrapper getGraphFieldContainer(String languageTag) {
+		return ContentWrapper.wrap(delegate.getGraphFieldContainer(languageTag));
 	}
 
 	public JsonObject toJson() {
 		return delegate.toJson();
 	}
 
-	public NodeGraphFieldContainer getGraphFieldContainer(String languageTag, String branchUuid, ContainerType type) {
-		return delegate.getGraphFieldContainer(languageTag, branchUuid, type);
+	public ContentWrapper getGraphFieldContainer(String languageTag, String branchUuid, ContainerType type) {
+		return ContentWrapper.wrap(delegate.getGraphFieldContainer(languageTag, branchUuid, type));
 	}
 
 	public <T> T reframe(Class<T> kind) {
 		return delegate.reframe(kind);
 	}
 
-	public NodeGraphFieldContainer createGraphFieldContainer(String languageTag, Branch branch, User user) {
-		return delegate.createGraphFieldContainer(languageTag, branch, user);
+	public ContentWrapper createGraphFieldContainer(String languageTag, Branch branch, User user) {
+		return ContentWrapper.wrap(delegate.createGraphFieldContainer(languageTag, branch, user));
 	}
 
 	public <T> T reframeExplicit(Class<T> kind) {
@@ -501,31 +505,31 @@ public class NodeWrapper implements Node {
 	}
 
 	public Stream<Node> getChildrenStream(InternalActionContext ac) {
-		return delegate.getChildrenStream(ac);
+		return delegate.getChildrenStream(ac).map(NodeWrapper::new);
 	}
 
 	public Stream<? extends Node> getChildren(MeshAuthUser requestUser, String branchUuid, List<String> languageTags, ContainerType type) {
 		return delegate.getChildren(requestUser, branchUuid, languageTags, type);
 	}
 
-	public Node getParentNode(String branchUuid) {
-		return delegate.getParentNode(branchUuid);
+	public NodeWrapper getParentNode(String branchUuid) {
+		return wrap(delegate.getParentNode(branchUuid));
 	}
 
 	public void setParentNode(String branchUuid, Node parentNode) {
 		delegate.setParentNode(branchUuid, parentNode);
 	}
 
-	public Node create(User creator, SchemaContainerVersion schemaVersion, Project project) {
-		return delegate.create(creator, schemaVersion, project);
+	public NodeWrapper create(User creator, SchemaContainerVersion schemaVersion, Project project) {
+		return wrap(delegate.create(creator, schemaVersion, project));
 	}
 
-	public Node create(User creator, SchemaContainerVersion schemaVersion, Project project, Branch branch) {
-		return delegate.create(creator, schemaVersion, project, branch);
+	public NodeWrapper create(User creator, SchemaContainerVersion schemaVersion, Project project, Branch branch) {
+		return wrap(delegate.create(creator, schemaVersion, project, branch));
 	}
 
-	public Node create(User creator, SchemaContainerVersion schemaVersion, Project project, Branch branch, String uuid) {
-		return delegate.create(creator, schemaVersion, project, branch, uuid);
+	public NodeWrapper create(User creator, SchemaContainerVersion schemaVersion, Project project, Branch branch, String uuid) {
+		return wrap(delegate.create(creator, schemaVersion, project, branch, uuid));
 	}
 
 	public TransformablePage<? extends Node> getChildren(InternalActionContext ac, List<String> languageTags, String branchUuid, ContainerType type,
@@ -537,24 +541,24 @@ public class NodeWrapper implements Node {
 		return delegate.getDisplayName(ac);
 	}
 
-	public NodeGraphFieldContainer findVersion(List<String> languageTags, String branchUuid, String version) {
-		return delegate.findVersion(languageTags, branchUuid, version);
+	public ContentWrapper findVersion(List<String> languageTags, String branchUuid, String version) {
+		return ContentWrapper.wrap(delegate.findVersion(languageTags, branchUuid, version));
 	}
 
-	public NodeGraphFieldContainer findVersion(String languageTag, String branchUuid, String version) {
-		return delegate.findVersion(languageTag, branchUuid, version);
+	public ContentWrapper findVersion(String languageTag, String branchUuid, String version) {
+		return ContentWrapper.wrap(delegate.findVersion(languageTag, branchUuid, version));
 	}
 
 	public boolean hasPublishedContent(String branchUuid) {
 		return delegate.hasPublishedContent(branchUuid);
 	}
 
-	public NodeGraphFieldContainer findVersion(InternalActionContext ac, List<String> languageTags, String version) {
-		return delegate.findVersion(ac, languageTags, version);
+	public ContentWrapper findVersion(InternalActionContext ac, List<String> languageTags, String version) {
+		return ContentWrapper.wrap(delegate.findVersion(ac, languageTags, version));
 	}
 
-	public NodeGraphFieldContainer findVersion(InternalActionContext ac, List<String> languageTags, ContainerType type) {
-		return delegate.findVersion(ac, languageTags, type);
+	public ContentWrapper findVersion(InternalActionContext ac, List<String> languageTags, ContainerType type) {
+		return ContentWrapper.wrap(delegate.findVersion(ac, languageTags, type));
 	}
 
 	public void moveTo(InternalActionContext ac, Node targetNode, EventQueueBatch batch) {
@@ -634,8 +638,8 @@ public class NodeWrapper implements Node {
 		delegate.deleteFromBranch(ac, branch, bac, ignoreChecks);
 	}
 
-	public SchemaContainer getSchemaContainer() {
-		return delegate.getSchemaContainer();
+	public SchemaWrapper getSchemaContainer() {
+		return SchemaWrapper.wrap(delegate.getSchemaContainer());
 	}
 
 	public void setSchemaContainer(SchemaContainer container) {
@@ -646,8 +650,8 @@ public class NodeWrapper implements Node {
 		delegate.assertPublishConsistency(ac, branch);
 	}
 
-	public NodeGraphFieldContainer publish(InternalActionContext ac, String languageTag, Branch branch, User user) {
-		return delegate.publish(ac, languageTag, branch, user);
+	public ContentWrapper publish(InternalActionContext ac, String languageTag, Branch branch, User user) {
+		return ContentWrapper.wrap(delegate.publish(ac, languageTag, branch, user));
 	}
 
 	public void publish(InternalActionContext ac, Branch branch, BulkActionContext bac) {
