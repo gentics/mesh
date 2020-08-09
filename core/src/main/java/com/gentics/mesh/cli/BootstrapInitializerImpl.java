@@ -283,7 +283,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		addDebugInfoLogAppender(options);
 		RequirementsCheck.init(storageOptions);
 		try {
-			db.init(mesh.getOptions(), MeshVersion.getBuildInfo().getVersion(), "com.gentics.mesh.core.data");
+			db.init(MeshVersion.getBuildInfo().getVersion(), "com.gentics.mesh.core.data");
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

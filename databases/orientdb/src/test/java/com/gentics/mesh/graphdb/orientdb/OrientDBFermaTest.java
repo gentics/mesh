@@ -25,13 +25,15 @@ public class OrientDBFermaTest extends AbstractOrientDBTest {
 
 	private final static int nMembers = 2000;
 
-	private Database db = mockDatabase();
+	private Database db;
 
 	@Before
 	public void setup() throws Exception {
 		MeshOptions options = new MeshOptions();
 		options.getStorageOptions().setDirectory(null);
-		db.init(options, "com.gentics.mesh.graphdb.orientdb.graph");
+
+		db = mockDatabase(options);
+		db.init("com.gentics.mesh.graphdb.orientdb.graph");
 		db.setupConnectionPool();
 	}
 
@@ -40,7 +42,7 @@ public class OrientDBFermaTest extends AbstractOrientDBTest {
 		try (Tx tx = db.tx()) {
 			Person p = tx.getGraph().addFramedVertex(Person.class);
 			p.setName("personName");
-			System.out.println(p.getId());
+			System.out.println(p.id());
 			System.out.println(p.getElement().getId());
 			System.out.println(((OrientVertex) p.getElement()).getBaseClassName());
 			System.out.println(((OrientVertex) p.getElement()).getElementType());

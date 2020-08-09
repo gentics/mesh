@@ -18,10 +18,10 @@ public class OrientDBFermaMultithreadingReducedTest extends AbstractOrientDBTest
 
 	@Before
 	public void setup() throws Exception {
-		db = mockDatabase();
 		MeshOptions options = new MeshOptions();
 		options.getStorageOptions().setDirectory(null);
-		db.init(options, "com.gentics.mesh.graphdb.orientdb.graph");
+		db = mockDatabase(options);
+		db.init("com.gentics.mesh.graphdb.orientdb.graph");
 		db.setupConnectionPool();
 		setupData();
 	}
@@ -60,7 +60,7 @@ public class OrientDBFermaMultithreadingReducedTest extends AbstractOrientDBTest
 				String name = "newName";
 				p.setName(name);
 				reloaded = tx.getGraph().v().has(Person.class).has("name", name).nextOrDefaultExplicit(Person.class,
-						null);
+					null);
 				System.out.println(reloaded.getName());
 				assertNotNull(reloaded);
 				manipulatePerson(tx.getGraph(), reloaded);

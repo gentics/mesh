@@ -228,15 +228,13 @@ public interface Database extends TxFactory {
 	/**
 	 * Initialise the database and store the settings.
 	 * 
-	 * @param options
-	 *            Mesh options
 	 * @param meshVersion
 	 *            Version of mesh
 	 * @param basePaths
 	 *            Base paths which will be scanned for graph element classes
 	 * @throws Exception
 	 */
-	void init(MeshOptions options, String meshVersion, String... basePaths) throws Exception;
+	void init(String meshVersion, String... basePaths) throws Exception;
 
 	/**
 	 * Reload the given mesh element.

@@ -5,6 +5,7 @@ import static org.mockito.Mockito.when;
 
 import org.mockito.Mockito;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.dao.DaoCollection;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -21,7 +22,7 @@ import io.micrometer.core.instrument.Timer;
 
 public class AbstractOrientDBTest {
 
-	protected Database mockDatabase() {
+	protected Database mockDatabase(MeshOptions options) {
 		MetricsService metrics = Mockito.mock(MetricsService.class);
 		when(metrics.timer(Mockito.any())).thenReturn(Mockito.mock(Timer.class));
 		when(metrics.counter(Mockito.any())).thenReturn(Mockito.mock(Counter.class));
@@ -29,8 +30,8 @@ public class AbstractOrientDBTest {
 		Lazy<DaoCollection> lazyDaos = mock(Lazy.class);
 		BootstrapInitializer bootMock = mock(BootstrapInitializer.class);
 		when(lazyBoot.get()).thenReturn(bootMock);
-		MeshOptions options = new MeshOptions();
-		Database db = new OrientDBDatabase(null, lazyBoot, lazyDaos, metrics, null, null, new OrientDBClusterManager(null, null, null, options, null), null, null, null);
+		Database db = new OrientDBDatabase(options, null, lazyBoot, lazyDaos, metrics, null, null, new OrientDBClusterManager(null, null, null, options, null),
+			null, null, null);
 		return db;
 	}
 

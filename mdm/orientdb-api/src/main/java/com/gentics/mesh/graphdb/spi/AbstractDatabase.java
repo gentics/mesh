@@ -47,8 +47,7 @@ public abstract class AbstractDatabase implements Database {
 	}
 
 	@Override
-	public void init(MeshOptions options, String meshVersion, String... basePaths) throws Exception {
-		this.options = options;
+	public void init(String meshVersion, String... basePaths) throws Exception {
 		this.meshVersion = meshVersion;
 		this.basePaths = basePaths;
 	}
