@@ -14,6 +14,7 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
@@ -76,11 +77,12 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 	@Override
 	public void testRootNode() throws MeshSchemaException {
 		try (Tx tx = tx()) {
-			SchemaContainerRoot root = meshRoot().getSchemaContainerRoot();
-			long nSchemasBefore = root.computeCount();
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+
+			long nSchemasBefore = schemaDao.computeCount();
 			SchemaModel schema = FieldUtil.createMinimalValidSchema();
-			assertNotNull(root.create(schema, user()));
-			long nSchemasAfter = root.computeCount();
+			assertNotNull(schemaDao.create(schema, user()));
+			long nSchemasAfter = schemaDao.computeCount();
 			assertEquals(nSchemasBefore + 1, nSchemasAfter);
 		}
 	}
@@ -163,8 +165,10 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 	@Override
 	public void testCreateDelete() throws Exception {
 		try (Tx tx = tx()) {
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+
 			SchemaModel schema = FieldUtil.createMinimalValidSchema();
-			SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
+			SchemaContainer newContainer = schemaDao.create(schema, user());
 			assertNotNull(newContainer);
 			String uuid = newContainer.getUuid();
 			newContainer.delete(createBulkContext());
@@ -178,11 +182,14 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			UserDaoWrapper userDao = tx.data().userDao();
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+
 			SchemaModel schema = FieldUtil.createMinimalValidSchema();
-			SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
+			SchemaContainer newContainer = schemaDao.create(schema, user());
 			assertFalse(roleDao.hasPermission(role(), GraphPermission.CREATE_PERM, newContainer));
 			userDao.inheritRolePermissions(getRequestUser(), meshRoot().getSchemaContainerRoot(), newContainer);
-			assertTrue("The addCRUDPermissionOnRole method should add the needed permissions on the new schema container.", roleDao.hasPermission(role(), GraphPermission.CREATE_PERM, newContainer));
+			assertTrue("The addCRUDPermissionOnRole method should add the needed permissions on the new schema container.",
+				roleDao.hasPermission(role(), GraphPermission.CREATE_PERM, newContainer));
 		}
 
 	}
@@ -240,9 +247,9 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 	@Override
 	public void testReadPermission() throws MeshSchemaException {
 		try (Tx tx = tx()) {
-			SchemaContainer newContainer;
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 			SchemaModel schema = FieldUtil.createMinimalValidSchema();
-			newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
+			SchemaContainer newContainer = schemaDao.create(schema, user());
 			testPermission(GraphPermission.READ_PERM, newContainer);
 		}
 	}
@@ -251,9 +258,9 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 	@Override
 	public void testDeletePermission() throws MeshSchemaException {
 		try (Tx tx = tx()) {
-			SchemaContainer newContainer;
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 			SchemaModel schema = FieldUtil.createMinimalValidSchema();
-			newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
+			SchemaContainer newContainer = schemaDao.create(schema, user());
 			testPermission(GraphPermission.DELETE_PERM, newContainer);
 		}
 	}
@@ -262,9 +269,9 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 	@Override
 	public void testUpdatePermission() throws MeshSchemaException {
 		try (Tx tx = tx()) {
-			SchemaContainer newContainer;
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 			SchemaModel schema = FieldUtil.createMinimalValidSchema();
-			newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
+			SchemaContainer newContainer = schemaDao.create(schema, user());
 			testPermission(GraphPermission.UPDATE_PERM, newContainer);
 		}
 	}
@@ -273,9 +280,9 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 	@Override
 	public void testCreatePermission() throws MeshSchemaException {
 		try (Tx tx = tx()) {
-			SchemaContainer newContainer;
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 			SchemaModel schema = FieldUtil.createMinimalValidSchema();
-			newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
+			SchemaContainer newContainer = schemaDao.create(schema, user());
 			testPermission(GraphPermission.CREATE_PERM, newContainer);
 		}
 	}

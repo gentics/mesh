@@ -30,13 +30,13 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
+import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
-import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -140,15 +140,16 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 			utils.syncTx(ac, tx -> {
 				Project project = ac.getProject();
 				BranchDaoWrapper branchDao = tx.data().branchDao();
+				SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+
 				Branch branch = branchDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
 				BranchInfoSchemaList schemaReferenceList = ac.fromJson(BranchInfoSchemaList.class);
-				SchemaContainerRoot schemaContainerRoot = project.getSchemaContainerRoot();
 
 				BranchInfoSchemaList branchList = utils.eventAction(event -> {
 
 					// Resolve the list of references to graph schema container versions
 					for (SchemaReference reference : schemaReferenceList.getSchemas()) {
-						SchemaContainerVersion version = schemaContainerRoot.fromReference(reference);
+						SchemaContainerVersion version = schemaDao.fromReference(project, reference);
 						SchemaContainerVersion assignedVersion = branch.findLatestSchemaVersion(version.getSchemaContainer());
 						if (assignedVersion != null && Double.valueOf(assignedVersion.getVersion()) > Double.valueOf(version.getVersion())) {
 							throw error(BAD_REQUEST, "branch_error_downgrade_schema_version", version.getName(), assignedVersion.getVersion(),

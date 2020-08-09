@@ -190,8 +190,8 @@ public class TestDataProvider {
 			addPermissions(boot.userRoot());
 			addPermissions(boot.groupRoot());
 			addPermissions(boot.roleRoot());
-			addPermissions(boot.microschemaDao());
-			addPermissions(boot.schemaDao());
+			addPermissions(boot.microschemaContainerRoot());
+			addPermissions(boot.schemaContainerRoot());
 			log.debug("Added BasicPermissions to nodes took {" + (System.currentTimeMillis() - startPerm) + "} ms.");
 			tx.success();
 		});

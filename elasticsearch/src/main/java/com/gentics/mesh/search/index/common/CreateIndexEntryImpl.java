@@ -22,7 +22,7 @@ public class CreateIndexEntryImpl extends AbstractEntry<GenericEntryContext> imp
 	private String indexName;
 	private Schema schema;
 	private IndexHandler<?> indexHandler;
-	private GenericEntryContextImpl context = new GenericEntryContextImpl();
+	private GenericEntryContext context = new GenericEntryContextImpl();
 
 	@Inject
 	public CreateIndexEntryImpl(IndexHandler<?> indexHandler, String indexName) {
@@ -58,7 +58,7 @@ public class CreateIndexEntryImpl extends AbstractEntry<GenericEntryContext> imp
 	}
 
 	@Override
-	public GenericEntryContextImpl getContext() {
+	public GenericEntryContext getContext() {
 		return context;
 	}
 

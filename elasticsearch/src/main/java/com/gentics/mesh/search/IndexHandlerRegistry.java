@@ -4,7 +4,7 @@ import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
 import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandler;
-import com.gentics.mesh.search.index.node.NodeIndexHandler;
+import com.gentics.mesh.search.index.node.NodeIndexHandlerImpl;
 import com.gentics.mesh.search.index.project.ProjectIndexHandler;
 import com.gentics.mesh.search.index.role.RoleIndexHandler;
 import com.gentics.mesh.search.index.schema.SchemaContainerIndexHandler;
@@ -24,7 +24,7 @@ import java.util.List;
 public class IndexHandlerRegistry {
 
 	@Inject
-	NodeIndexHandler nodeIndexHandler;
+	NodeIndexHandlerImpl nodeIndexHandler;
 
 	@Inject
 	UserIndexHandler userIndexHandler;
@@ -100,7 +100,7 @@ public class IndexHandlerRegistry {
 		return null;
 	}
 
-	public NodeIndexHandler getNodeIndexHandler() {
+	public NodeIndexHandlerImpl getNodeIndexHandler() {
 		return nodeIndexHandler;
 	}
 }

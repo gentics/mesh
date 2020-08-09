@@ -4,9 +4,6 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.event.EventQueueBatch;
 
 /**
@@ -16,49 +13,6 @@ public interface SchemaContainerRoot extends RootVertex<SchemaContainer> {
 
 	public static final String TYPE = "schemas";
 
-	/**
-	 * Create new schema container.
-	 * 
-	 * @param schema
-	 *            Schema that should be stored in the container
-	 * @param creator
-	 *            User that is used to set editor and creator references
-	 * @return Created schema container
-	 * @throws MeshSchemaException
-	 */
-	default SchemaContainer create(SchemaModel schema, User creator) throws MeshSchemaException {
-		return create(schema, creator, null);
-	}
-
-	/**
-	 * Create new schema container.
-	 * 
-	 * @param schema
-	 *            Schema that should be stored in the container
-	 * @param creator
-	 *            User that is used to set editor and creator references
-	 * @param uuid
-	 *            Optional uuid
-	 * @return Created schema container
-	 * @throws MeshSchemaException
-	 */
-	SchemaContainer create(SchemaModel schema, User creator, String uuid) throws MeshSchemaException;
-
-	/**
-	 * Create new schema container.
-	 *
-	 * @param schema
-	 *            Schema that should be stored in the container
-	 * @param creator
-	 *            User that is used to set editor and creator references
-	 * @param uuid
-	 *            Optional uuid
-	 * @param validate
-	 *
-	 * @return Created schema container
-	 * @throws MeshSchemaException
-	 */
-	SchemaContainer create(SchemaModel schema, User creator, String uuid, boolean validate) throws MeshSchemaException;
 
 	/**
 	 * Add the schema to the aggregation node and assign it to all branches of the project to which the root belongs.
@@ -87,19 +41,14 @@ public interface SchemaContainerRoot extends RootVertex<SchemaContainer> {
 	boolean contains(SchemaContainer schema);
 
 	/**
-	 * Find the referenced schema container version. Throws an error, if the referenced schema container version can not be found
-	 * 
-	 * @param reference
-	 *            reference
-	 * @return Resolved container version
-	 */
-	SchemaContainerVersion fromReference(SchemaReference reference);
-
-	/**
 	 * Returns the project to which the schema container root belongs.
 	 * 
 	 * @return Project or null if this is the global root container
 	 */
 	Project getProject();
+
+	SchemaContainer create();
+
+	SchemaContainerVersion createVersion();
 
 }

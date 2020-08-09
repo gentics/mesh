@@ -16,7 +16,6 @@ import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -45,14 +44,12 @@ import io.reactivex.Flowable;
 public class NodeContentEventHandler implements EventHandler {
 	private final MeshHelper helper;
 	private final MeshEntities entities;
-	private final BootstrapInitializer boot;
 	private final ComplianceMode complianceMode;
 
 	@Inject
-	public NodeContentEventHandler(MeshHelper helper, MeshEntities entities, BootstrapInitializer boot, MeshOptions options) {
+	public NodeContentEventHandler(MeshHelper helper, MeshEntities entities, MeshOptions options) {
 		this.helper = helper;
 		this.entities = entities;
-		this.boot = boot;
 		this.complianceMode = options.getSearchOptions().getComplianceMode();
 	}
 

@@ -923,7 +923,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 			GroupRoot groupRoot = meshRoot.getGroupRoot();
 			RoleRoot roleRoot = meshRoot.getRoleRoot();
-			SchemaContainerRoot schemaContainerRoot = meshRoot.getSchemaContainerRoot();
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 
 			// Verify that an admin user exists
 			User adminUser = userDao.findByUsername(ADMIN_USERNAME);
@@ -960,7 +960,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			}
 
 			// Content
-			SchemaContainer contentSchemaContainer = schemaContainerRoot.findByName("content");
+			SchemaContainer contentSchemaContainer = schemaDao.findByName("content");
 			if (contentSchemaContainer == null) {
 				SchemaModel schema = new SchemaModelImpl();
 				schema.setName("content");
@@ -991,12 +991,12 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				schema.addField(contentFieldSchema);
 
 				schema.setContainer(false);
-				contentSchemaContainer = schemaContainerRoot.create(schema, adminUser, null, false);
+				contentSchemaContainer = schemaDao.create(schema, adminUser, null, false);
 				log.debug("Created schema container {" + schema.getName() + "} uuid: {" + contentSchemaContainer.getUuid() + "}");
 			}
 
 			// Folder
-			SchemaContainer folderSchemaContainer = schemaContainerRoot.findByName("folder");
+			SchemaContainer folderSchemaContainer = schemaDao.findByName("folder");
 			if (folderSchemaContainer == null) {
 				SchemaModel schema = new SchemaModelImpl();
 				schema.setName("folder");
@@ -1015,12 +1015,12 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				schema.addField(nameFieldSchema);
 
 				schema.setContainer(true);
-				folderSchemaContainer = schemaContainerRoot.create(schema, adminUser, null, false);
+				folderSchemaContainer = schemaDao.create(schema, adminUser, null, false);
 				log.debug("Created schema container {" + schema.getName() + "} uuid: {" + folderSchemaContainer.getUuid() + "}");
 			}
 
 			// Binary content for images and other downloads
-			SchemaContainer binarySchemaContainer = schemaContainerRoot.findByName("binary_content");
+			SchemaContainer binarySchemaContainer = schemaDao.findByName("binary_content");
 			if (binarySchemaContainer == null) {
 
 				SchemaModel schema = new SchemaModelImpl();
@@ -1040,7 +1040,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				schema.addField(binaryFieldSchema);
 
 				schema.setContainer(false);
-				binarySchemaContainer = schemaContainerRoot.create(schema, adminUser, null, false);
+				binarySchemaContainer = schemaDao.create(schema, adminUser, null, false);
 				log.debug("Created schema container {" + schema.getName() + "} uuid: {" + binarySchemaContainer.getUuid() + "}");
 			}
 

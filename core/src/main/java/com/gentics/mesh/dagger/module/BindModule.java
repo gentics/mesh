@@ -71,6 +71,8 @@ import com.gentics.mesh.router.RouterStorageRegistry;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
 import com.gentics.mesh.search.index.common.DropIndexHandler;
 import com.gentics.mesh.search.index.common.DropIndexHandlerImpl;
+import com.gentics.mesh.search.index.node.NodeIndexHandler;
+import com.gentics.mesh.search.index.node.NodeIndexHandlerImpl;
 import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.storage.LocalBinaryStorage;
 
@@ -189,4 +191,7 @@ public abstract class BindModule {
 
 	@Binds
 	abstract PasswordEncoder bindPasswordEncoder(BCryptPasswordEncoder e);
+
+	@Binds
+	abstract NodeIndexHandler bindNodeIndexHandler(NodeIndexHandlerImpl e);
 }

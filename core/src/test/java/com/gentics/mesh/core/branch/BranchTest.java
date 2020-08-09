@@ -17,6 +17,7 @@ import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
+import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.BranchRoot;
@@ -481,7 +482,8 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 		schema.setName(name);
 		schema.addField(FieldUtil.createStringFieldSchema("name"));
 		schema.setDisplayField("name");
-		return meshRoot().getSchemaContainerRoot().create(schema, user());
+		SchemaDaoWrapper schemaDao = Tx.get().data().schemaDao();
+		return schemaDao.create(schema, user());
 	}
 
 	/**

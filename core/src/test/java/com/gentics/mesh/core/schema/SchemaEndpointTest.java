@@ -49,6 +49,7 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
@@ -214,12 +215,14 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+
 			SchemaContainerRoot schemaRoot = meshRoot().getSchemaContainerRoot();
 
 			// Create schema with no read permission
 			SchemaModel schema = FieldUtil.createMinimalValidSchema();
 			schema.setName("No_Perm_Schema");
-			SchemaContainer noPermSchema = schemaRoot.create(schema, user());
+			SchemaContainer noPermSchema = schemaDao.create(schema, user());
 			SchemaModel dummySchema = new SchemaModelImpl();
 			dummySchema.setName("dummy");
 			dummySchema.setVersion("1.0");
@@ -229,7 +232,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			for (int i = 0; i < nSchemas; i++) {
 				schema = FieldUtil.createMinimalValidSchema();
 				schema.setName("extra_schema_" + i);
-				SchemaContainer extraSchema = schemaRoot.create(schema, user());
+				SchemaContainer extraSchema = schemaDao.create(schema, user());
 				extraSchema.getLatestVersion().setSchema(dummySchema);
 				roleDao.grantPermissions(role(), extraSchema, READ_PERM);
 			}

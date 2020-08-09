@@ -52,7 +52,7 @@ import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
 import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandler;
-import com.gentics.mesh.search.index.node.NodeIndexHandler;
+import com.gentics.mesh.search.index.node.NodeIndexHandlerImpl;
 import com.gentics.mesh.search.index.project.ProjectIndexHandler;
 import com.gentics.mesh.search.index.role.RoleIndexHandler;
 import com.gentics.mesh.search.index.schema.SchemaContainerIndexHandler;
@@ -97,7 +97,7 @@ public interface MeshComponent {
 
 	ServerSchemaStorage serverSchemaStorage();
 
-	NodeIndexHandler nodeContainerIndexHandler();
+	NodeIndexHandlerImpl nodeContainerIndexHandler();
 
 	NodeMigrationHandler nodeMigrationHandler();
 
