@@ -446,4 +446,12 @@ public interface Branch
 	 */
 	BranchMicroschemaAssignModel onMicroschemaAssignEvent(MicroschemaContainerVersion microschemaContainerVersion, Assignment assigned, JobStatus status);
 
+	/**
+	 * Load the tag with the given uuid that was used to tag the branch.
+	 *
+	 * @param uuid
+	 * @return
+	 */
+	Tag findTagByUuid(String uuid);
+
 }

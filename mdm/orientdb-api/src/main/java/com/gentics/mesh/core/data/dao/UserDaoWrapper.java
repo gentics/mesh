@@ -236,8 +236,6 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<User>, DaoTransforma
 
 	void delete(User user, BulkActionContext bac);
 
-	UserResponse transformToRestSync(User user, InternalActionContext ac, int level, String... languageTags);
-
 	/**
 	 * Find the mesh auth user with the given username.
 	 * 

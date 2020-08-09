@@ -8,7 +8,7 @@ import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 
 // TODO move the contents of this to BranchDao once migration is done
-public interface BranchDaoWrapper extends BranchDao {
+public interface BranchDaoWrapper extends BranchDao, DaoTransformable<Branch, BranchResponse> {
 
 	TraversalResult<? extends Branch> findAll(Project project);
 
@@ -21,6 +21,5 @@ public interface BranchDaoWrapper extends BranchDao {
 	 * @param uuid
 	 */
 	Branch findByUuid(Project project, String uuid);
-	
-	BranchResponse  transformToRestSync(Branch element, InternalActionContext ac, int level, String... languageTags);
+
 }

@@ -11,6 +11,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.LanguageRoot;
@@ -41,15 +42,15 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 	@Override
 	public void testRootNode() {
 		try (Tx tx = tx()) {
-			LanguageRoot languageRoot = tx.data().languageDao();
+			LanguageDaoWrapper languageDao = tx.data().languageDao();
 
-			long nLanguagesBefore = languageRoot.computeCount();
+			long nLanguagesBefore = languageDao.computeCount();
 
 			final String languageName = "klingon";
 			final String languageTag = "tlh";
-			assertNotNull(languageRoot.create(languageName, languageTag));
+			assertNotNull(languageDao.create(languageName, languageTag));
 
-			long nLanguagesAfter = languageRoot.computeCount();
+			long nLanguagesAfter = languageDao.computeCount();
 			assertEquals(nLanguagesBefore + 1, nLanguagesAfter);
 		}
 	}

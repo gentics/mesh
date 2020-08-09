@@ -161,7 +161,7 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 
 	@Override
 	public Stream<? extends Tag> loadAllElements(Tx tx) {
-		return tx.data().tagDao().findAll().stream();
+		return tx.data().tagDao().findAllGlobal().stream();
 	}
 
 }

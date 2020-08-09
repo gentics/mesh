@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.root.TagRoot;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -114,59 +115,18 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	}
 
 	@Override
-	public TagResponse transformToRestSync(Tag tag, InternalActionContext ac, int level, String... languageTags) {
-		GenericParameters generic = ac.getGenericParameters();
-		FieldsSet fields = generic.getFields();
-
-		TagResponse restTag = new TagResponse();
-		if (fields.has("uuid")) {
-			restTag.setUuid(tag.getUuid());
-			// Performance shortcut to return now and ignore the other checks
-			if (fields.size() == 1) {
-				return restTag;
-			}
-		}
-		if (fields.has("tagFamily")) {
-			TagFamily tagFamily = tag.getTagFamily();
-			if (tagFamily != null) {
-				TagFamilyReference tagFamilyReference = new TagFamilyReference();
-				tagFamilyReference.setName(tagFamily.getName());
-				tagFamilyReference.setUuid(tagFamily.getUuid());
-				restTag.setTagFamily(tagFamilyReference);
-			}
-		}
-		if (fields.has("name")) {
-			restTag.setName(tag.getName());
-		}
-
-		tag.fillCommonRestFields(ac, fields, restTag);
-		setRolePermissions(tag, ac, restTag);
-		return restTag;
-
-	}
-
-	@Override
-	public void delete(Tag tag, BulkActionContext bac) {
-		String uuid = tag.getUuid();
-		String name = tag.getName();
-		if (log.isDebugEnabled()) {
-			log.debug("Deleting tag {" + uuid + ":" + name + "}");
-		}
-		bac.add(tag.onDeleted());
-
-		// For node which have been previously tagged we need to fire the untagged event.
-		for (Branch branch : tag.getProject().getBranchRoot().findAll()) {
-			for (Node node : tag.getNodes(branch)) {
-				bac.add(node.onTagged(tag, branch, UNASSIGNED));
-			}
-		}
-		tag.getElement().remove();
-		bac.process();
-
-	}
-
-	@Override
 	public boolean update(Tag element, InternalActionContext ac, EventQueueBatch batch) {
 		return super.update(element, ac, batch);
 	}
+
+	@Override
+	public void delete(Tag element, BulkActionContext bac) {
+		throw new RuntimeException("Wrong invocation. Use dao instead");
+	}
+
+	@Override
+	public TagResponse transformToRestSync(Tag element, InternalActionContext ac, int level, String... languageTags) {
+		throw new RuntimeException("Wrong invocation. Use dao instead");
+	}
+
 }

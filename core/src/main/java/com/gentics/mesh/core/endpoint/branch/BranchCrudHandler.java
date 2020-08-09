@@ -389,8 +389,9 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 				Project project = ac.getProject();
 				BranchDaoWrapper branchDao = tx.data().branchDao();
 				TagDaoWrapper tagDao = tx.data().tagDao();
+
 				Branch branch = branchDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
-				Tag tag = tagDao.loadObjectByUuid(ac, tagUuid, READ_PERM);
+				Tag tag = tagDao.loadObjectByUuid(project, ac, tagUuid, READ_PERM);
 
 				// TODO check if the branch is already tagged
 				if (branch.hasTag(tag)) {
@@ -430,7 +431,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 				TagDaoWrapper tagDao = tx.data().tagDao();
 
 				Branch branch = branchDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
-				Tag tag = tagDao.loadObjectByUuid(ac, tagUuid, READ_PERM);
+				Tag tag = tagDao.loadObjectByUuid(project, ac, tagUuid, READ_PERM);
 
 				// TODO check if the tag has already been removed
 
@@ -463,11 +464,10 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				Project project = ac.getProject();
 				BranchDaoWrapper branchDao = tx.data().branchDao();
+				Project project = ac.getProject();
 
 				Branch branch = branchDao.loadObjectByUuid(project, ac, branchUuid, UPDATE_PERM);
-
 				TransformablePage<? extends Tag> page = utils.eventAction(batch -> {
 					return branch.updateTags(ac, batch);
 				});

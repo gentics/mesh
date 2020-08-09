@@ -46,6 +46,4 @@ public interface ProjectDaoWrapper extends ProjectDao, DaoTransformable<Project,
 	Project create(String name, String hostname, Boolean ssl, String pathPrefix, User creator, SchemaContainerVersion schemaContainerVersion,
 		String uuid, EventQueueBatch batch);
 
-	ProjectResponse transformToRestSync(Project project, InternalActionContext ac, int level, String... languageTags);
-
 }

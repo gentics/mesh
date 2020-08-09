@@ -7,7 +7,7 @@ import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 
-public interface TagFamilyDaoWrapper extends TagFamilyDao {
+public interface TagFamilyDaoWrapper extends TagFamilyDao, DaoTransformable<TagFamily, TagFamilyResponse> {
 
 	boolean update(TagFamily tagFamily, InternalActionContext ac, EventQueueBatch batch);
 
@@ -22,7 +22,5 @@ public interface TagFamilyDaoWrapper extends TagFamilyDao {
 	TagFamily findByName(Project project, String name);
 
 	TagFamily findByUuid(Project project, String uuid);
-
-	TagFamilyResponse transformToRestSync(TagFamily tagFamily, InternalActionContext ac, int level, String... languageTags);
 
 }

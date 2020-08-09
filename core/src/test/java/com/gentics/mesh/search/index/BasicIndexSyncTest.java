@@ -16,6 +16,7 @@ import org.mockito.Mockito;
 import com.gentics.mesh.context.impl.BulkActionContextImpl;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
@@ -182,7 +183,8 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 		// Assert deletion
 		tx(() -> {
-			boot().tagDao().findByName("tag_3").getElement().remove();
+			TagFamily tagFamily = tagFamily("colors");
+			boot().tagDao().findByName(tagFamily, "tag_3").getElement().remove();
 		});
 		syncIndex();
 		assertMetrics("tag", 0, 0, 1);

@@ -217,6 +217,10 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 */
 	default T loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
 		T element = findByUuid(uuid);
+		return checkPerms(element, uuid, ac, perm, errorIfNotFound);
+	}
+
+	default T checkPerms(T element, String uuid, InternalActionContext ac, GraphPermission perm, boolean errorIfNotFound) {
 		if (element == null) {
 			if (errorIfNotFound) {
 				throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);

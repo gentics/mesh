@@ -522,6 +522,11 @@ public class BranchWrapper implements Branch {
 		return delegate.contains(schemaContainerVersion);
 	}
 
+	@Override
+	public Tag findTagByUuid(String uuid) {
+		return delegate.findTagByUuid(uuid);
+	}
+
 	public TraversalResult<? extends SchemaContainerVersion> findAllSchemaVersions() {
 		return delegate.findAllSchemaVersions();
 	}

@@ -424,10 +424,11 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			.dataFetcher(this::rootNodeFetcher).build());
 
 		// .tag
-		root.field(newElementField("tag", "Load tag by name or uuid.", (ac) -> boot.tagDao(), TAG_TYPE_NAME));
+		//TODO use project specific tag root
+		root.field(newElementField("tag", "Load tag by name or uuid.", ac -> boot.tagRoot(), TAG_TYPE_NAME));
 
 		// .tags
-		root.field(newPagingSearchField("tags", "Load page of tags.", (ac) -> boot.tagDao(), TAG_PAGE_TYPE_NAME, tagSearchHandler, null));
+		root.field(newPagingSearchField("tags", "Load page of tags.", (ac) -> boot.tagRoot(), TAG_PAGE_TYPE_NAME, tagSearchHandler, null));
 
 		// .tagFamily
 		root.field(newElementField("tagFamily", "Load tagFamily by name or uuid.", (ac) -> ac.getProject().getTagFamilyRoot(), TAG_FAMILY_TYPE_NAME));

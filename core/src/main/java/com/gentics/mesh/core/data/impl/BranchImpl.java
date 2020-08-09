@@ -24,7 +24,6 @@ import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
@@ -54,7 +53,6 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
@@ -73,14 +71,11 @@ import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.madl.traversal.TraversalResult;
-import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.util.VersionUtil;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 import io.reactivex.Observable;
-import io.reactivex.Single;
 
 /**
  * @see Branch
@@ -620,6 +615,11 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	public TransformablePage<? extends Tag> getTags(User user, PagingParameters params) {
 		VertexTraversal<?, ?, ?> traversal = outE(HAS_BRANCH_TAG).inV();
 		return new DynamicTransformablePageImpl<Tag>(user, traversal, params, READ_PERM, TagImpl.class);
+	}
+
+	@Override
+	public Tag findTagByUuid(String uuid) {
+		return outE(HAS_BRANCH_TAG).inV().has(UUID_KEY, uuid).nextOrDefaultExplicit(TagImpl.class, null);
 	}
 
 	@Override
