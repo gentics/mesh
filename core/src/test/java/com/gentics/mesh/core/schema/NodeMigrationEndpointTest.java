@@ -91,7 +91,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testInitialAssignment() throws Exception {
-		tx(tx -> tx.data().jobDao().clear());
+		tx(tx -> {
+			tx.data().jobDao().clear();
+		});
 
 		/**
 		 * 1. Create the initial schema and assign it to the branch. Make sure that an index has been created. No job should be queued.
