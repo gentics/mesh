@@ -228,12 +228,6 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper implements SchemaDa
 	}
 
 	@Override
-	public boolean update(SchemaContainer schema, InternalActionContext ac, EventQueueBatch batch) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
 	public SchemaContainer loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
 		// TODO check for project in context?
 		SchemaContainerRoot schemaRoot = boot.get().schemaContainerRoot();

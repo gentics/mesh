@@ -32,6 +32,8 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
+import com.gentics.mesh.core.data.dao.JobDaoWrapper;
+import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
@@ -89,7 +91,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testInitialAssignment() throws Exception {
-		tx(() -> boot().jobRoot().clear());
+		tx(tx -> tx.data().jobDao().clear());
 
 		/**
 		 * 1. Create the initial schema and assign it to the branch. Make sure that an index has been created. No job should be queued.
@@ -101,14 +103,16 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		request.setDisplayField("text");
 		request.validate();
 		SchemaResponse schemaResponse = call(() -> client().createSchema(request));
-		String versionUuid = tx(() -> boot().schemaContainerRoot().findByName("dummy").getLatestVersion().getUuid());
+		String versionUuid = tx(tx -> {
+			return tx.data().schemaDao().findByName("dummy").getLatestVersion().getUuid();
+		});
 		call(() -> client().assignSchemaToProject(PROJECT_NAME, schemaResponse.getUuid()));
 		call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, initialBranchUuid(), schemaResponse.toReference()));
 
 		// Assert that the index was created and that no job was scheduled. We need no job since no migration is required
 		BranchSchemaEdge edge1;
 		try (Tx tx = tx()) {
-			edge1 = initialBranch().findBranchSchemaEdge(boot().schemaContainerRoot().findByName("dummy").getLatestVersion());
+			edge1 = initialBranch().findBranchSchemaEdge(tx.data().schemaDao().findByName("dummy").getLatestVersion());
 			assertEquals(COMPLETED, edge1.getMigrationStatus());
 			assertNull(edge1.getJobUuid());
 			assertTrue("The assignment should be active.", edge1.isActive());
@@ -144,10 +148,11 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		SchemaContainerVersion versionB;
 		String versionBUuid;
 		try (Tx tx = tx()) {
-			versionB = boot().schemaContainerRoot().findByName("dummy").getLatestVersion();
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			versionB = schemaDao.findByName("dummy").getLatestVersion();
 			versionBUuid = versionB.getUuid();
 			assertNotEquals(versionUuid, versionBUuid);
-			edge2 = initialBranch().findBranchSchemaEdge(boot().schemaContainerRoot().findByName("dummy").getLatestVersion());
+			edge2 = initialBranch().findBranchSchemaEdge(schemaDao.findByName("dummy").getLatestVersion());
 			assertNotNull(edge2.getJobUuid());
 			assertEquals("The migration should be queued", QUEUED, edge2.getMigrationStatus());
 			assertTrue("The assignment should be active.", edge2.isActive());
@@ -207,13 +212,14 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		SchemaContainerVersion versionC;
 		String versionCUuid;
 		try (Tx tx = tx()) {
-			versionC = tx(() -> boot().schemaContainerRoot().findByName("dummy").getLatestVersion());
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			versionC = tx(() -> schemaDao.findByName("dummy").getLatestVersion());
 			versionCUuid = versionC.getUuid();
 			assertTrue("There should be editable containers (one draft) which should be linked to the version.", versionB.getDraftFieldContainers(
 				initialBranchUuid()).hasNext());
 			assertNotEquals("A new latest version should have been created.", versionBUuid, versionCUuid);
 
-			edge3 = initialBranch().findBranchSchemaEdge(boot().schemaContainerRoot().findByName("dummy").getLatestVersion());
+			edge3 = initialBranch().findBranchSchemaEdge(schemaDao.findByName("dummy").getLatestVersion());
 			assertNotNull(edge3.getJobUuid());
 			assertEquals(QUEUED, edge3.getMigrationStatus());
 			assertFalse("The previous assignment should be inactive.", edge1.isActive());
@@ -268,13 +274,16 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		request.setDisplayField("text");
 		request.validate();
 		SchemaResponse schemaResponse = call(() -> client().createSchema(request));
-		String versionUuid = tx(() -> boot().schemaContainerRoot().findByName("dummy").getLatestVersion().getUuid());
+		String versionUuid = tx(tx -> {
+			return tx.data().schemaDao().findByName("dummy").getLatestVersion().getUuid();
+		});
 		call(() -> client().assignSchemaToProject(PROJECT_NAME, schemaResponse.getUuid()));
 		call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, initialBranchUuid(), schemaResponse.toReference()));
 
 		try (Tx tx = tx()) {
+			JobDaoWrapper jobDao = tx.data().jobDao();
 			// No job should be scheduled since this is the first time we assign the container to the project/branch
-			assertEquals(0, TestUtils.toList(boot().jobRoot().findAll()).size());
+			assertEquals(0, TestUtils.toList(jobDao.findAll()).size());
 		}
 
 		assertThat(trackingSearchProvider()).hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(), versionUuid,

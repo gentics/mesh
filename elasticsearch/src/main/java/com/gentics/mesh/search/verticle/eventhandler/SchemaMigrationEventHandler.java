@@ -16,6 +16,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
@@ -95,8 +96,9 @@ public class SchemaMigrationEventHandler implements EventHandler {
 
 	private Transactional<SchemaContainerVersion> getNewSchemaVersion(BranchSchemaAssignEventModel model) {
 		return helper.getDb().transactional(tx -> {
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 			SchemaReference schema = model.getSchema();
-			SchemaContainer container = helper.getBoot().schemaContainerRoot().findByUuid(schema.getUuid());
+			SchemaContainer container = schemaDao.findByUuid(schema.getUuid());
 			return container.findVersionByUuid(schema.getVersionUuid());
 		});
 	}

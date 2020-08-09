@@ -35,8 +35,10 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
+import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.GroupRoot;
@@ -425,17 +427,18 @@ public class TestDataProvider {
 	}
 
 	private void addBootstrapSchemas() {
+		SchemaDaoWrapper schemaDao = Tx.get().data().schemaDao();
 
 		// folder
-		SchemaContainer folderSchemaContainer = boot.schemaContainerRoot().findByName("folder");
+		SchemaContainer folderSchemaContainer = schemaDao.findByName("folder");
 		schemaContainers.put("folder", folderSchemaContainer);
 
 		// content
-		SchemaContainer contentSchemaContainer = boot.schemaContainerRoot().findByName("content");
+		SchemaContainer contentSchemaContainer = schemaDao.findByName("content");
 		schemaContainers.put("content", contentSchemaContainer);
 
 		// binary_content
-		SchemaContainer binaryContentSchemaContainer = boot.schemaContainerRoot().findByName("binary_content");
+		SchemaContainer binaryContentSchemaContainer = schemaDao.findByName("binary_content");
 		schemaContainers.put("binary_content", binaryContentSchemaContainer);
 
 	}
@@ -456,6 +459,8 @@ public class TestDataProvider {
 	 * @throws MeshJsonException
 	 */
 	private void addVCardMicroschema() throws MeshJsonException {
+		MicroschemaDaoWrapper microschemaDao = Tx.get().data().microschemaDao();
+
 		MicroschemaModel vcardMicroschema = new MicroschemaModelImpl();
 		vcardMicroschema.setName("vcard");
 		vcardMicroschema.setDescription("Microschema for a vcard");
@@ -486,8 +491,7 @@ public class TestDataProvider {
 		postcodeFieldSchema.setLabel("Post Code");
 		vcardMicroschema.addField(postcodeFieldSchema);
 
-		MicroschemaContainer vcardMicroschemaContainer = boot.microschemaContainerRoot().create(vcardMicroschema, userInfo.getUser(),
-			createBatch());
+		MicroschemaContainer vcardMicroschemaContainer = microschemaDao.create(vcardMicroschema, userInfo.getUser(), createBatch());
 		microschemaContainers.put(vcardMicroschemaContainer.getName(), vcardMicroschemaContainer);
 		project.getMicroschemaContainerRoot().addMicroschema(user(), vcardMicroschemaContainer, createBatch());
 	}
@@ -498,6 +502,8 @@ public class TestDataProvider {
 	 * @throws MeshJsonException
 	 */
 	private void addCaptionedImageMicroschema() throws MeshJsonException {
+		MicroschemaDaoWrapper microschemaDao = Tx.get().data().microschemaDao();
+
 		MicroschemaModel captionedImageMicroschema = new MicroschemaModelImpl();
 		captionedImageMicroschema.setName("captionedImage");
 		captionedImageMicroschema.setDescription("Microschema for a captioned image");
@@ -515,8 +521,7 @@ public class TestDataProvider {
 		captionFieldSchema.setLabel("Caption");
 		captionedImageMicroschema.addField(captionFieldSchema);
 
-		MicroschemaContainer microschemaContainer = boot.microschemaContainerRoot().create(captionedImageMicroschema, userInfo.getUser(),
-			createBatch());
+		MicroschemaContainer microschemaContainer = microschemaDao.create(captionedImageMicroschema, userInfo.getUser(), createBatch());
 		microschemaContainers.put(captionedImageMicroschema.getName(), microschemaContainer);
 		project.getMicroschemaContainerRoot().addMicroschema(user(), microschemaContainer, createBatch());
 	}

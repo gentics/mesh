@@ -80,9 +80,8 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 
 	@Override
 	public UpdateAction<MicroschemaContainer> updateAction() {
-		return (tx, microschema, ac, batch) -> {
-			return tx.data().microschemaDao().update(microschema, ac, batch);
-		};
+		// Microschemas are updated via migrations
+		return null;
 	}
 
 	@Override

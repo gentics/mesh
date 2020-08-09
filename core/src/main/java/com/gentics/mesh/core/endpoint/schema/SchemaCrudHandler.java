@@ -90,9 +90,8 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 	@Override
 	public UpdateAction<SchemaContainer> updateAction() {
-		return (tx, schema, ac, batch) -> {
-			return tx.data().schemaDao().update(schema, ac, batch);
-		};
+		// Schemas can't be directly updated. Update is handled via migrations
+		return null;
 	}
 
 	/**
@@ -294,14 +293,16 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
+				SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+				UserDaoWrapper userDao = tx.data().userDao();
 				Project project = ac.getProject();
 				String projectUuid = project.getUuid();
-				UserDaoWrapper userDao = tx.data().userDao();
+
 				if (!userDao.hasPermission(ac.getUser(), project, GraphPermission.UPDATE_PERM)) {
 					throw error(FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
 				}
 
-				SchemaContainer schema = boot.get().schemaContainerRoot().loadObjectByUuid(ac, schemaUuid, READ_PERM);
+				SchemaContainer schema = schemaDao.loadObjectByUuid(ac, schemaUuid, READ_PERM);
 
 				// No need to invoke the removal if the schema is not assigned
 				if (!project.getSchemaContainerRoot().contains(schema)) {
@@ -333,8 +334,9 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 		validateParameter(schemaUuid, "schemaUuid");
 
 		try (WriteLock lock = writeLock.lock(ac)) {
-			utils.syncTx(ac, (tx) -> {
-				SchemaContainer schema = boot.get().schemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
+			utils.syncTx(ac, tx -> {
+				SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+				SchemaContainer schema = schemaDao.loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
 				String version = utils.eventAction(batch -> {
 					SchemaContainerVersion newVersion = schema.getLatestVersion().applyChanges(ac, batch);
 					return newVersion.getVersion();

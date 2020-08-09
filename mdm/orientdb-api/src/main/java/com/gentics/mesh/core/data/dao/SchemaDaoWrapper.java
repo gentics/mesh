@@ -28,8 +28,6 @@ public interface SchemaDaoWrapper extends SchemaDao {
 
 	TransformablePage<? extends SchemaContainer> findAll(InternalActionContext ac, PagingParameters pagingInfo);
 
-	boolean update(SchemaContainer schema, InternalActionContext ac, EventQueueBatch batch);
-
 	SchemaContainer create(InternalActionContext ac, EventQueueBatch batch, String uuid);
 
 	/**

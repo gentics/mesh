@@ -51,7 +51,6 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.db.Tx;
@@ -118,10 +117,11 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 		assertThat(trackingSearchProvider()).hasStore(SchemaContainer.composeIndexName(), SchemaContainer.composeDocumentId(restSchema.getUuid()));
 		try (Tx tx = tx()) {
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 			assertThat(createRequest).matches(restSchema);
 			assertThat(restSchema.getPermissions()).hasPerm(CREATE, READ, UPDATE, DELETE);
 
-			SchemaContainer schemaContainer = boot().schemaContainerRoot().findByUuid(restSchema.getUuid());
+			SchemaContainer schemaContainer = schemaDao.findByUuid(restSchema.getUuid());
 			assertNotNull(schemaContainer);
 			assertEquals("Name does not match with the requested name", createRequest.getName(), schemaContainer.getName());
 			// assertEquals("Description does not match with the requested description", request.getDescription(), schema.getDescription());
@@ -216,8 +216,6 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
-
-			SchemaContainerRoot schemaRoot = meshRoot().getSchemaContainerRoot();
 
 			// Create schema with no read permission
 			SchemaModel schema = FieldUtil.createMinimalValidSchema();
@@ -574,6 +572,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Test
 	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
 		try (Tx tx = tx()) {
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 			SchemaContainer schema = schemaContainer("content");
 			String oldName = schema.getName();
 			SchemaUpdateRequest request = new SchemaUpdateRequest();
@@ -581,7 +580,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 			call(() -> client().updateSchema("bogus", request), NOT_FOUND, "object_not_found_for_uuid", "bogus");
 
-			SchemaContainer reloaded = boot().schemaContainerRoot().findByUuid(schema.getUuid());
+			SchemaContainer reloaded = schemaDao.findByUuid(schema.getUuid());
 			assertEquals("The name should not have been changed.", oldName, reloaded.getName());
 		}
 	}
@@ -609,7 +608,8 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		String jobUuid = tx(() -> schemaContainer("content").getLatestVersion().referencedJobsViaTo().iterator().next().getUuid());
 
 		try (Tx tx = tx()) {
-			SchemaContainer reloaded = boot().schemaContainerRoot().findByUuid(uuid);
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			SchemaContainer reloaded = schemaDao.findByUuid(uuid);
 
 			assertNotNull("The schema should not have been deleted.", reloaded);
 			// Validate and delete all remaining nodes that use the schema
@@ -637,8 +637,9 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		awaitEvents();
 
 		try (Tx tx = tx()) {
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 			assertFalse("The referenced job should have been deleted", tx.getGraph().getVertices("uuid", jobUuid).iterator().hasNext());
-			SchemaContainer reloaded = boot().schemaContainerRoot().findByUuid(uuid);
+			SchemaContainer reloaded = schemaDao.findByUuid(uuid);
 			assertFalse("The version of the schema container should have been deleted as well.", tx.getGraph().getVertices("uuid", versionUuid)
 				.iterator().hasNext());
 			assertNull("The schema should have been deleted.", reloaded);

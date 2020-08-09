@@ -10,10 +10,13 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -48,7 +51,10 @@ public class ServerSchemaStorage implements SchemaStorage {
 
 	public void init() {
 		// Iterate over all schemas and load them into the storage
-		for (SchemaContainer container : boot.get().schemaContainerRoot().findAll()) {
+		SchemaDaoWrapper schemaDao = Tx.get().data().schemaDao();
+		MicroschemaDaoWrapper microschemaDao = Tx.get().data().microschemaDao();
+
+		for (SchemaContainer container : schemaDao.findAll()) {
 			for (SchemaContainerVersion version : container.findAll()) {
 				SchemaModel restSchema = version.getSchema();
 				schemas.computeIfAbsent(restSchema.getName(), k -> new HashMap<>()).put(restSchema.getVersion(), restSchema);
@@ -56,7 +62,7 @@ public class ServerSchemaStorage implements SchemaStorage {
 		}
 
 		// load all microschemas and add to storage
-		for (MicroschemaContainer container : boot.get().microschemaContainerRoot().findAll()) {
+		for (MicroschemaContainer container : microschemaDao.findAll()) {
 			for (MicroschemaContainerVersion version : container.findAll()) {
 				MicroschemaModel restMicroschema = version.getSchema();
 				microschemas.computeIfAbsent(restMicroschema.getName(), k -> new HashMap<>()).put(restMicroschema.getVersion(), restMicroschema);
