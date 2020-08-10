@@ -33,7 +33,6 @@
 		<jacoco.skip>true</jacoco.skip>
 		<jacoco.env></jacoco.env>
 
-		<mesh.database.provider>mesh-orientdb</mesh.database.provider>
 		<mesh.image.provider>mesh-service-image-imgscalr</mesh.image.provider>
 		<mesh.build.timestamp>${maven.build.timestamp}</mesh.build.timestamp>
 	</properties>

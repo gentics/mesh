@@ -33,8 +33,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
-			<artifactId>${mesh.database.provider}</artifactId>
-			<version>${project.version}</version>
+			<artifactId>mesh-orientdb</artifactId>
 		</dependency>
 
 		<dependency>

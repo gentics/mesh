@@ -3,11 +3,11 @@ package com.gentics.mesh.util;
 import java.io.File;
 import java.nio.file.Path;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.orientechnologies.common.jna.ONative;
 import com.sun.jna.Platform;
+
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public final class FilesystemUtil {
 
@@ -19,7 +19,7 @@ public final class FilesystemUtil {
 
 	/**
 	 * Check whether provided filesystem location supports directIO.
-	 * 
+	 * 	
 	 * @param path
 	 * @return
 	 */

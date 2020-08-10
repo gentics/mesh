@@ -447,12 +447,12 @@
 			</dependency>
 			<dependency>
 				<groupId>com.gentics.mesh</groupId>
-				<artifactId>${mesh.database.provider}</artifactId>
+				<artifactId>mesh-orientdb</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>${mesh.database.provider}</artifactId>
+				<artifactId>mesh-orientdb</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
