@@ -642,4 +642,12 @@ public class BranchWrapper implements Branch, HibBranch {
 		return delegate.onMicroschemaAssignEvent(microschemaVersion, assigned, status);
 	}
 
+	public Set<String> getRoleUuidsForPerm(GraphPermission permission) {
+		return delegate.getRoleUuidsForPerm(permission);
+	}
+
+	public void setRoleUuidForPerm(GraphPermission permission, Set<String> allowedRoles) {
+		delegate.setRoleUuidForPerm(permission, allowedRoles);
+	}
+
 }

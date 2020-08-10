@@ -609,26 +609,26 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWra
 	}
 
 	@Override
-	public PermissionInfo getPermissionInfo(HibUser user, MeshVertex vertex) {
+	public PermissionInfo getPermissionInfo(HibUser user, HibElement element) {
 		PermissionInfo info = new PermissionInfo();
-		Set<GraphPermission> permissions = getPermissions(user, vertex);
+		Set<GraphPermission> permissions = getPermissions(user, element);
 		for (GraphPermission perm : permissions) {
 			info.set(perm.getRestPerm(), true);
 		}
-		info.setOthers(false, vertex.hasPublishPermissions());
+		info.setOthers(false, element.hasPublishPermissions());
 
 		return info;
 	}
 
 	@Override
-	public Set<GraphPermission> getPermissions(HibUser user, MeshVertex vertex) {
+	public Set<GraphPermission> getPermissions(HibUser user, HibElement element) {
 		Predicate<? super GraphPermission> isValidPermission = perm -> perm != READ_PUBLISHED_PERM && perm != PUBLISH_PERM
-			|| vertex.hasPublishPermissions();
+			|| element.hasPublishPermissions();
 
 		return Stream.of(GraphPermission.values())
 			// Don't check for publish perms if it does not make sense for the vertex type
 			.filter(isValidPermission)
-			.filter(perm -> hasPermission(user, vertex, perm))
+			.filter(perm -> hasPermission(user, element, perm))
 			.collect(Collectors.toSet());
 	}
 	

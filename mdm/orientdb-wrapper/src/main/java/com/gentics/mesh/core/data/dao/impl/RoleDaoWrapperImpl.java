@@ -20,7 +20,6 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
@@ -85,7 +84,7 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper implements RoleDaoWra
 	}
 
 	@Override
-	public Set<GraphPermission> getPermissions(Role role, HibCoreElement element) {
+	public Set<GraphPermission> getPermissions(Role role, HibElement element) {
 		Set<GraphPermission> permissions = new HashSet<>();
 		GraphPermission[] possiblePermissions = element.hasPublishPermissions()
 			? GraphPermission.values()
@@ -100,20 +99,20 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper implements RoleDaoWra
 	}
 	
 	@Override
-	public boolean hasPermission(Role role, GraphPermission permission, HibCoreElement vertex) {
-		Set<String> allowedUuids = vertex.property(permission.propertyKey());
+	public boolean hasPermission(Role role, GraphPermission permission, HibElement vertex) {
+		Set<String> allowedUuids = vertex.getRoleUuidsForPerm(permission);
 		return allowedUuids != null && allowedUuids.contains(role.getUuid());
 	}
 
 	@Override
 	public void grantPermissions(Role role, HibElement vertex, GraphPermission... permissions) {
 		for (GraphPermission permission : permissions) {
-			Set<String> allowedRoles = vertex.property(permission.propertyKey());
+			Set<String> allowedRoles = vertex.getRoleUuidsForPerm(permission);
 			if (allowedRoles == null) {
-				vertex.property(permission.propertyKey(), Collections.singleton(role.getUuid()));
+				vertex.setRoleUuidForPerm(permission, Collections.singleton(role.getUuid()));
 			} else {
 				allowedRoles.add(role.getUuid());
-				vertex.property(permission.propertyKey(), allowedRoles);
+				vertex.setRoleUuidForPerm(permission, allowedRoles);
 			}
 		}
 	}
@@ -122,10 +121,10 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper implements RoleDaoWra
 	public void revokePermissions(Role role, HibElement vertex, GraphPermission... permissions) {
 		boolean permissionRevoked = false;
 		for (GraphPermission permission : permissions) {
-			Set<String> allowedRoles = vertex.property(permission.propertyKey());
+			Set<String> allowedRoles = vertex.getRoleUuidsForPerm(permission);
 			if (allowedRoles != null) {
 				permissionRevoked = allowedRoles.remove(role.getUuid()) || permissionRevoked;
-				vertex.property(permission.propertyKey(), allowedRoles);
+				vertex.setRoleUuidForPerm(permission, allowedRoles);
 			}
 		}
 

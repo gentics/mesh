@@ -25,6 +25,7 @@ import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.elasticsearch.client.okhttp.RequestBuilder;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.page.Page;
@@ -62,7 +63,7 @@ import io.vertx.core.logging.LoggerFactory;
  *
  * @param <T>
  */
-public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM extends RestModel> implements SearchHandler<T, RM> {
+public abstract class AbstractSearchHandler<T extends HibCoreElement, RM extends RestModel> implements SearchHandler<T, RM> {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractSearchHandler.class);
 

@@ -40,7 +40,7 @@ import io.vertx.core.Vertx;
 
 public class GroupWrapper implements Group {
 
-	private final Group delete;
+	private final Group delegate;
 
 	public static GroupWrapper wrap(Group group) {
 		if (group == null) {
@@ -55,364 +55,372 @@ public class GroupWrapper implements Group {
 	}
 
 	public GroupWrapper(Group delegate) {
-		this.delete = delegate;
+		this.delegate = delegate;
 	}
 
 	public Object id() {
-		return delete.id();
+		return delegate.id();
 	}
 
 	public void setCreated(User creator) {
-		delete.setCreated(creator);
+		delegate.setCreated(creator);
 	}
 
 	public GroupReference transformToReference() {
-		return delete.transformToReference();
+		return delegate.transformToReference();
 	}
 
 	public PermissionInfo getRolePermissions(InternalActionContext ac, String roleUuid) {
-		return delete.getRolePermissions(ac, roleUuid);
+		return delegate.getRolePermissions(ac, roleUuid);
 	}
 
 	public HibUser getEditor() {
-		return delete.getEditor();
+		return delegate.getEditor();
 	}
 
 	public HibUser getCreator() {
-		return delete.getCreator();
+		return delegate.getCreator();
 	}
 
 	public void setUuid(String uuid) {
-		delete.setUuid(uuid);
+		delegate.setUuid(uuid);
 	}
 
 	public void setUniqueLinkOutTo(VertexFrame vertex, String... labels) {
-		delete.setUniqueLinkOutTo(vertex, labels);
+		delegate.setUniqueLinkOutTo(vertex, labels);
 	}
 
 	public String getName() {
-		return delete.getName();
+		return delegate.getName();
 	}
 
 	public String getAPIPath(InternalActionContext ac) {
-		return delete.getAPIPath(ac);
+		return delegate.getAPIPath(ac);
 	}
 
 	public void setEditor(User user) {
-		delete.setEditor(user);
+		delegate.setEditor(user);
 	}
 
 	public void setCreator(User user) {
-		delete.setCreator(user);
+		delegate.setCreator(user);
 	}
 
 	public TraversalResult<? extends Role> getRolesWithPerm(GraphPermission perm) {
-		return delete.getRolesWithPerm(perm);
+		return delegate.getRolesWithPerm(perm);
 	}
 
 	public String getUuid() {
-		return delete.getUuid();
+		return delegate.getUuid();
 	}
 
 	public void setName(String name) {
-		delete.setName(name);
+		delegate.setName(name);
 	}
 
 	public Single<GroupResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return delete.transformToRest(ac, level, languageTags);
+		return delegate.transformToRest(ac, level, languageTags);
 	}
 
 	public Vertex getVertex() {
-		return delete.getVertex();
+		return delegate.getVertex();
 	}
 
 	public String getElementVersion() {
-		return delete.getElementVersion();
+		return delegate.getElementVersion();
 	}
 
 	public Long getLastEditedTimestamp() {
-		return delete.getLastEditedTimestamp();
+		return delegate.getLastEditedTimestamp();
 	}
 
 	public Long getCreationTimestamp() {
-		return delete.getCreationTimestamp();
+		return delegate.getCreationTimestamp();
 	}
 
 	public void setUniqueLinkInTo(VertexFrame vertex, String... labels) {
-		delete.setUniqueLinkInTo(vertex, labels);
+		delegate.setUniqueLinkInTo(vertex, labels);
 	}
 
 	public <T> T property(String name) {
-		return delete.property(name);
+		return delegate.property(name);
 	}
 
 	public void delete(BulkActionContext bac) {
-		delete.delete(bac);
+		delegate.delete(bac);
 	}
 
 	public Vertex getElement() {
-		return delete.getElement();
+		return delegate.getElement();
 	}
 
 	public void setSingleLinkOutTo(VertexFrame vertex, String... labels) {
-		delete.setSingleLinkOutTo(vertex, labels);
+		delegate.setSingleLinkOutTo(vertex, labels);
 	}
 
 	public Object getId() {
-		return delete.getId();
+		return delegate.getId();
 	}
 
 	public <T> T addFramedEdge(String label, com.syncleus.ferma.VertexFrame inVertex, ClassInitializer<T> initializer) {
-		return delete.addFramedEdge(label, inVertex, initializer);
+		return delegate.addFramedEdge(label, inVertex, initializer);
 	}
 
 	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
-		return delete.update(ac, batch);
+		return delegate.update(ac, batch);
 	}
 
 	public void setLastEditedTimestamp(long timestamp) {
-		delete.setLastEditedTimestamp(timestamp);
+		delegate.setLastEditedTimestamp(timestamp);
 	}
 
 	public void setSingleLinkInTo(VertexFrame vertex, String... labels) {
-		delete.setSingleLinkInTo(vertex, labels);
+		delegate.setSingleLinkInTo(vertex, labels);
 	}
 
 	public Set<String> getPropertyKeys() {
-		return delete.getPropertyKeys();
+		return delegate.getPropertyKeys();
 	}
 
 	public String getCreationDate() {
-		return delete.getCreationDate();
+		return delegate.getCreationDate();
 	}
 
 	public void addToStringSetProperty(String propertyKey, String value) {
-		delete.addToStringSetProperty(propertyKey, value);
+		delegate.addToStringSetProperty(propertyKey, value);
 	}
 
 	public VertexTraversal<?, ?, ?> out(String... labels) {
-		return delete.out(labels);
+		return delegate.out(labels);
 	}
 
 	public void remove() {
-		delete.remove();
+		delegate.remove();
 	}
 
 	public TypeInfo getTypeInfo() {
-		return delete.getTypeInfo();
+		return delegate.getTypeInfo();
 	}
 
 	public void delete() {
-		delete.delete();
+		delegate.delete();
 	}
 
 	public GroupResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		return delete.transformToRestSync(ac, level, languageTags);
+		return delegate.transformToRestSync(ac, level, languageTags);
 	}
 
 	public void setCreationTimestamp(long timestamp) {
-		delete.setCreationTimestamp(timestamp);
+		delegate.setCreationTimestamp(timestamp);
 	}
 
 	public <T extends ElementFrame> TraversalResult<? extends T> out(String label, Class<T> clazz) {
-		return delete.out(label, clazz);
+		return delegate.out(label, clazz);
 	}
 
 	public void setLastEditedTimestamp() {
-		delete.setLastEditedTimestamp();
+		delegate.setLastEditedTimestamp();
 	}
 
 	public FramedGraph getGraph() {
-		return delete.getGraph();
+		return delegate.getGraph();
 	}
 
 	public <R> void property(String key, R value) {
-		delete.property(key, value);
+		delegate.property(key, value);
 	}
 
 	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
 		Set<GraphPermission> permissionsToRevoke) {
-		delete.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
+		delegate.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
 	}
 
 	public <T extends EdgeFrame> TraversalResult<? extends T> outE(String label, Class<T> clazz) {
-		return delete.outE(label, clazz);
+		return delegate.outE(label, clazz);
 	}
 
 	public <T> T getProperty(String name) {
-		return delete.getProperty(name);
+		return delegate.getProperty(name);
 	}
 
 	public <T extends ElementFrame> TraversalResult<? extends T> in(String label, Class<T> clazz) {
-		return delete.in(label, clazz);
+		return delegate.in(label, clazz);
 	}
 
 	public String getLastEditedDate() {
-		return delete.getLastEditedDate();
+		return delegate.getLastEditedDate();
 	}
 
 	public void fillCommonRestFields(InternalActionContext ac, FieldsSet fields, GenericRestResponse model) {
-		delete.fillCommonRestFields(ac, fields, model);
+		delegate.fillCommonRestFields(ac, fields, model);
 	}
 
 	public void setCreationTimestamp() {
-		delete.setCreationTimestamp();
+		delegate.setCreationTimestamp();
 	}
 
 	public <T> T addFramedEdge(String label, com.syncleus.ferma.VertexFrame inVertex, Class<T> kind) {
-		return delete.addFramedEdge(label, inVertex, kind);
+		return delegate.addFramedEdge(label, inVertex, kind);
 	}
 
 	public void removeProperty(String key) {
-		delete.removeProperty(key);
+		delegate.removeProperty(key);
 	}
 
 	public <T extends EdgeFrame> TraversalResult<? extends T> inE(String label, Class<T> clazz) {
-		return delete.inE(label, clazz);
+		return delegate.inE(label, clazz);
 	}
 
 	public <T extends RawTraversalResult<?>> T traverse(Function<GraphTraversal<Vertex, Vertex>, GraphTraversal<?, ?>> traverser) {
-		return delete.traverse(traverser);
+		return delegate.traverse(traverser);
 	}
 
 	public <T> T getProperty(String name, Class<T> type) {
-		return delete.getProperty(name, type);
+		return delegate.getProperty(name, type);
 	}
 
 	public Database db() {
-		return delete.db();
+		return delegate.db();
 	}
 
 	public String getETag(InternalActionContext ac) {
-		return delete.getETag(ac);
+		return delegate.getETag(ac);
 	}
 
 	public Vertx vertx() {
-		return delete.vertx();
+		return delegate.vertx();
 	}
 
 	public boolean hasPublishPermissions() {
-		return delete.hasPublishPermissions();
+		return delegate.hasPublishPermissions();
 	}
 
 	public MeshOptions options() {
-		return delete.options();
+		return delegate.options();
 	}
 
 	public <T> T addFramedEdgeExplicit(String label, com.syncleus.ferma.VertexFrame inVertex, ClassInitializer<T> initializer) {
-		return delete.addFramedEdgeExplicit(label, inVertex, initializer);
+		return delegate.addFramedEdgeExplicit(label, inVertex, initializer);
 	}
 
 	public MeshElementEventModel onCreated() {
-		return delete.onCreated();
+		return delegate.onCreated();
 	}
 
 	public void setCachedUuid(String uuid) {
-		delete.setCachedUuid(uuid);
+		delegate.setCachedUuid(uuid);
 	}
 
 	public void setProperty(String name, Object value) {
-		delete.setProperty(name, value);
+		delegate.setProperty(name, value);
 	}
 
 	public MeshElementEventModel onUpdated() {
-		return delete.onUpdated();
+		return delegate.onUpdated();
 	}
 
 	public MeshElementEventModel onDeleted() {
-		return delete.onDeleted();
+		return delegate.onDeleted();
 	}
 
 	public Class<?> getTypeResolution() {
-		return delete.getTypeResolution();
+		return delegate.getTypeResolution();
 	}
 
 	public PermissionChangedEventModelImpl onPermissionChanged(Role role) {
-		return delete.onPermissionChanged(role);
+		return delegate.onPermissionChanged(role);
 	}
 
 	public void setTypeResolution(Class<?> type) {
-		delete.setTypeResolution(type);
+		delegate.setTypeResolution(type);
 	}
 
 	public void fillPermissionChanged(PermissionChangedEventModelImpl model, Role role) {
-		delete.fillPermissionChanged(model, role);
+		delegate.fillPermissionChanged(model, role);
 	}
 
 	public <T> T addFramedEdgeExplicit(String label, com.syncleus.ferma.VertexFrame inVertex, Class<T> kind) {
-		return delete.addFramedEdgeExplicit(label, inVertex, kind);
+		return delegate.addFramedEdgeExplicit(label, inVertex, kind);
 	}
 
 	public void removeTypeResolution() {
-		delete.removeTypeResolution();
+		delegate.removeTypeResolution();
 	}
 
 	public VertexTraversal<?, ?, ?> v() {
-		return delete.v();
+		return delegate.v();
 	}
 
 	public EdgeTraversal<?, ?, ?> e() {
-		return delete.e();
+		return delegate.e();
 	}
 
 	public EdgeTraversal<?, ?, ?> e(Object... ids) {
-		return delete.e(ids);
+		return delegate.e(ids);
 	}
 
 	public TEdge addFramedEdge(String label, com.syncleus.ferma.VertexFrame inVertex) {
-		return delete.addFramedEdge(label, inVertex);
+		return delegate.addFramedEdge(label, inVertex);
 	}
 
 	public <T> T getGraphAttribute(String key) {
-		return delete.getGraphAttribute(key);
+		return delegate.getGraphAttribute(key);
 	}
 
 	public VertexTraversal<?, ?, ?> in(String... labels) {
-		return delete.in(labels);
+		return delegate.in(labels);
 	}
 
 	public EdgeTraversal<?, ?, ?> outE(String... labels) {
-		return delete.outE(labels);
+		return delegate.outE(labels);
 	}
 
 	public EdgeTraversal<?, ?, ?> inE(String... labels) {
-		return delete.inE(labels);
+		return delegate.inE(labels);
 	}
 
 	public void linkOut(com.syncleus.ferma.VertexFrame vertex, String... labels) {
-		delete.linkOut(vertex, labels);
+		delegate.linkOut(vertex, labels);
 	}
 
 	public void linkIn(com.syncleus.ferma.VertexFrame vertex, String... labels) {
-		delete.linkIn(vertex, labels);
+		delegate.linkIn(vertex, labels);
 	}
 
 	public void unlinkOut(com.syncleus.ferma.VertexFrame vertex, String... labels) {
-		delete.unlinkOut(vertex, labels);
+		delegate.unlinkOut(vertex, labels);
 	}
 
 	public void unlinkIn(com.syncleus.ferma.VertexFrame vertex, String... labels) {
-		delete.unlinkIn(vertex, labels);
+		delegate.unlinkIn(vertex, labels);
 	}
 
 	public void setLinkOut(com.syncleus.ferma.VertexFrame vertex, String... labels) {
-		delete.setLinkOut(vertex, labels);
+		delegate.setLinkOut(vertex, labels);
 	}
 
 	public VertexTraversal<?, ?, ?> traversal() {
-		return delete.traversal();
+		return delegate.traversal();
 	}
 
 	public JsonObject toJson() {
-		return delete.toJson();
+		return delegate.toJson();
 	}
 
 	public <T> T reframe(Class<T> kind) {
-		return delete.reframe(kind);
+		return delegate.reframe(kind);
 	}
 
 	public <T> T reframeExplicit(Class<T> kind) {
-		return delete.reframeExplicit(kind);
+		return delegate.reframeExplicit(kind);
+	}
+
+	public Set<String> getRoleUuidsForPerm(GraphPermission permission) {
+		return delegate.getRoleUuidsForPerm(permission);
+	}
+
+	public void setRoleUuidForPerm(GraphPermission permission, Set<String> allowedRoles) {
+		delegate.setRoleUuidForPerm(permission, allowedRoles);
 	}
 
 }

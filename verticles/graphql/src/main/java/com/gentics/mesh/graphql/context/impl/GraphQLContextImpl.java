@@ -3,7 +3,7 @@ package com.gentics.mesh.graphql.context.impl;
 import static com.gentics.mesh.core.rest.error.Errors.missingPerm;
 
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.MeshCoreVertex;
+import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
@@ -28,14 +28,14 @@ public class GraphQLContextImpl extends InternalRoutingActionContextImpl impleme
 	}
 
 	@Override
-	public <T extends MeshCoreVertex<?, ?>> T requiresPerm(T vertex, GraphPermission... permission) {
+	public <T extends HibCoreElement> T requiresPerm(T element, GraphPermission... permission) {
 		UserDaoWrapper userDao = Tx.get().data().userDao();
 		for (GraphPermission perm : permission) {
-			if (userDao.hasPermission(getUser(), vertex, perm)) {
-				return vertex;
+			if (userDao.hasPermission(getUser(), element, perm)) {
+				return element;
 			}
 		}
-		throw missingPerm(vertex.getTypeInfo().getType().name().toLowerCase(), vertex.getUuid());
+		throw missingPerm(element.getTypeInfo().getType().name().toLowerCase(), element.getUuid());
 	}
 
 	@Override

@@ -542,4 +542,12 @@ public class TagFamilyWrapper implements TagFamily {
 		return delegate.computeCount();
 	}
 
+	public Set<String> getRoleUuidsForPerm(GraphPermission permission) {
+		return delegate.getRoleUuidsForPerm(permission);
+	}
+
+	public void setRoleUuidForPerm(GraphPermission permission, Set<String> allowedRoles) {
+		delegate.setRoleUuidForPerm(permission, allowedRoles);
+	}
+
 }

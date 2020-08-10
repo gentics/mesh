@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.endpoint.tag;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Tag;
@@ -13,7 +16,12 @@ import com.gentics.mesh.core.verticle.handler.CRUDActions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
+@Singleton
 public class TagCrudActions implements CRUDActions<Tag, TagResponse> {
+
+	@Inject
+	public TagCrudActions() {
+	}
 
 	@Override
 	public Tag load(Tx tx, InternalActionContext ac, String tagUuid, GraphPermission perm, boolean errorIfNotFound) {

@@ -36,6 +36,7 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.PermissionException;
+import com.gentics.mesh.core.verticle.handler.CRUDActions;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
@@ -400,7 +401,7 @@ public abstract class AbstractTypeProvider {
 	 * @return
 	 */
 	protected <T extends HibCoreElement> GraphQLFieldDefinition newPagingSearchField(String name, String description,
-		Function<GraphQLContext, RootVertex<T>> rootProvider,
+		Function<GraphQLContext, CRUDActions<T, ?>> actions,
 		String pageTypeName, SearchHandler<?, ?> searchHandler, StartFilter<T, Map<String, ?>> filterProvider) {
 		Builder fieldDefBuilder = newFieldDefinition()
 			.name(name)
@@ -421,11 +422,10 @@ public abstract class AbstractTypeProvider {
 						throw new RuntimeException(e);
 					}
 				} else {
-					RootVertex<T> root = rootProvider.apply(gc);
 					if (filterProvider != null && filter != null) {
-						return root.findAll(gc, getPagingInfo(env), filterProvider.createPredicate(filter));
+						return actions.findAll(gc, getPagingInfo(env), filterProvider.createPredicate(filter));
 					} else {
-						return root.findAll(gc, getPagingInfo(env));
+						return actions.findAll(gc, getPagingInfo(env));
 					}
 				}
 			});

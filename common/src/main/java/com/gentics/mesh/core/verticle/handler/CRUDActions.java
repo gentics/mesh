@@ -10,6 +10,15 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
+/**
+ * The CRUD Actions class contains context aware CRUD code. The implementation is utilizing the provided context information to apply CRUD on the specific
+ * element.
+ * 
+ * The tag CRUD action is for example aware of the tagFamilyUuid in the context parameters and uses the project in the context to scope the operation correctly.
+ * 
+ * @param <T>
+ * @param <RM>
+ */
 public interface CRUDActions<T extends HibElement, RM extends RestModel> {
 
 	T load(Tx tx, InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound);

@@ -12,7 +12,7 @@ import javax.inject.Inject;
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.MeshCoreVertex;
+import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.rest.common.ListResponse;
@@ -194,7 +194,7 @@ public class SearchEndpointImpl extends AbstractInternalEndpoint implements Sear
 	 * @param classOfRL
 	 *            Class of matching list response
 	 */
-	private <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void registerHandler(String typeName,
+	private <T extends HibCoreElement, TR extends RestModel, RL extends ListResponse<TR>> void registerHandler(String typeName,
 		Function<String, T> elementLoader, Class<RL> classOfRL, SearchHandler<T, TR> searchHandler, RL exampleListResponse,
 		boolean filterByLanguage) {
 		InternalEndpointRoute endpoint = createRoute();

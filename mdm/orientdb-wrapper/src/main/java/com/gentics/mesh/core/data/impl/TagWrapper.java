@@ -457,4 +457,12 @@ public class TagWrapper implements Tag {
 		return delegate.reframeExplicit(kind);
 	}
 
+	public Set<String> getRoleUuidsForPerm(GraphPermission permission) {
+		return delegate.getRoleUuidsForPerm(permission);
+	}
+
+	public void setRoleUuidForPerm(GraphPermission permission, Set<String> allowedRoles) {
+		delegate.setRoleUuidForPerm(permission, allowedRoles);
+	}
+
 }

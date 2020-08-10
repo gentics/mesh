@@ -96,7 +96,7 @@ public class MeshEntities {
 
 		schema = new SimpleMeshEntity<>(schemaTransformer, Schema.TYPE_INFO, byUuid(uuid -> boot.schemaDao().findByUuid(uuid)));
 		microschema = new SimpleMeshEntity<>(microschemaTransformer, Microschema.TYPE_INFO, byUuid(uuid -> boot.microschemaDao().findByUuid(uuid)));
-		user = new SimpleMeshEntity<>(userTransformer, User.TYPE_INFO, byUuid(uuid -> boot.userDao().findByUuid(uuid)));
+		user = new SimpleMeshEntity<>(userTransformer, User.TYPE_INFO, byHibElementUuid(uuid -> boot.userDao().findByUuid(uuid)));
 		group = new SimpleMeshEntity<>(groupTransformer, Group.TYPE_INFO, byUuid(uuid -> boot.groupDao().findByUuid(uuid)));
 		role = new SimpleMeshEntity<>(roleTransformer, Role.TYPE_INFO, byUuid(uuid -> boot.roleDao().findByUuid(uuid)));
 		project = new SimpleMeshEntity<>(projectTransformer, Project.TYPE_INFO, byUuid(uuid -> boot.projectDao().findByUuid(uuid)));

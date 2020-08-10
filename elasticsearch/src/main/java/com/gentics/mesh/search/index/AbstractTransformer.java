@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.EditorTrackingVertex;
 import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -117,11 +117,7 @@ public abstract class AbstractTransformer<T> implements Transformer<T> {
 	 * @param element
 	 */
 	protected void addPermissionInfo(JsonObject document, HibElement element) {
-		Iterable<? extends Role> roleIt = element.getRolesWithPerm(GraphPermission.READ_PERM);
-		List<String> roleUuids = new ArrayList<>();
-		for (Role role : roleIt) {
-			roleUuids.add(role.getUuid());
-		}
+		Set<String> roleUuids = element.getRoleUuidsForPerm(GraphPermission.READ_PERM);
 		document.put("_roleUuids", roleUuids);
 	}
 

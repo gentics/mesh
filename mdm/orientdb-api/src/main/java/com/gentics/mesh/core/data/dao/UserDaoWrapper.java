@@ -106,18 +106,18 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<HibUser>, DaoTransfo
 	 * Return the permission info object for the given vertex.
 	 *
 	 * @param user
-	 * @param vertex
+	 * @param element
 	 * @return
 	 */
-	PermissionInfo getPermissionInfo(HibUser user, MeshVertex vertex);
+	PermissionInfo getPermissionInfo(HibUser user, HibElement element);
 
 	/**
 	 * Return a set of permissions which the user got for the given vertex.
 	 *
-	 * @param vertex
+	 * @param element
 	 * @return
 	 */
-	Set<GraphPermission> getPermissions(HibUser user, MeshVertex vertex);
+	Set<GraphPermission> getPermissions(HibUser user, HibElement element);
 
 	/**
 	 * Update the vertex using the action context information.

@@ -2,9 +2,12 @@ package com.gentics.mesh.core.data;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
+import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
@@ -323,6 +326,20 @@ public class NodeMigrationUser implements MeshAuthUser {
 
 	@Override
 	public Object getId() {
+		return null;
+	}
+
+	@Override
+	public Set<String> getRoleUuidsForPerm(GraphPermission permission) {
+		return Collections.emptySet();
+	}
+
+	@Override
+	public void setRoleUuidForPerm(GraphPermission permission, Set<String> allowedRoles) {
+	}
+
+	@Override
+	public TypeInfo getTypeInfo() {
 		return null;
 	}
 

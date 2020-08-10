@@ -428,14 +428,14 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		root.field(newElementField("tag", "Load tag by name or uuid.", ac -> boot.tagRoot(), TAG_TYPE_NAME));
 
 		// .tags
-		root.field(newPagingSearchField("tags", "Load page of tags.", (ac) -> boot.tagRoot(), TAG_PAGE_TYPE_NAME, tagSearchHandler, null));
+		root.field(newPagingSearchField("tags", "Load page of tags.", ac -> boot.tagRoot(), TAG_PAGE_TYPE_NAME, tagSearchHandler, null));
 
 		// .tagFamily
-		root.field(newElementField("tagFamily", "Load tagFamily by name or uuid.", (ac) -> ac.getProject().getTagFamilyRoot(), TAG_FAMILY_TYPE_NAME));
+		root.field(newElementField("tagFamily", "Load tagFamily by name or uuid.", ac -> ac.getProject().getTagFamilyRoot(), TAG_FAMILY_TYPE_NAME));
 
 		// .tagFamilies
 		// TODO fix me. The root of the project should be used and not the global one
-		root.field(newPagingSearchField("tagFamilies", "Load page of tagFamilies.", (ac) -> boot.tagFamilyRoot(), TAG_FAMILY_PAGE_TYPE_NAME,
+		root.field(newPagingSearchField("tagFamilies", "Load page of tagFamilies.", ac -> boot.tagFamilyRoot(), TAG_FAMILY_PAGE_TYPE_NAME,
 			tagFamilySearchHandler, null));
 
 		// .branch
@@ -443,30 +443,30 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			.type(new GraphQLTypeReference(BRANCH_TYPE_NAME)).dataFetcher(this::branchFetcher).build());
 
 		// .schema
-		root.field(newElementField("schema", "Load schema by name or uuid.", (ac) -> boot.schemaContainerRoot(), SCHEMA_TYPE_NAME));
+		root.field(newElementField("schema", "Load schema by name or uuid.", ac -> boot.schemaContainerRoot(), SCHEMA_TYPE_NAME));
 
 		// .schemas
-		root.field(newPagingField("schemas", "Load page of schemas.", (ac) -> boot.schemaContainerRoot(), SCHEMA_PAGE_TYPE_NAME));
+		root.field(newPagingField("schemas", "Load page of schemas.", ac -> boot.schemaContainerRoot(), SCHEMA_PAGE_TYPE_NAME));
 
 		// .microschema
 		root.field(
-			newElementField("microschema", "Load microschema by name or uuid.", (ac) -> boot.microschemaContainerRoot(), MICROSCHEMA_TYPE_NAME));
+			newElementField("microschema", "Load microschema by name or uuid.", ac -> boot.microschemaContainerRoot(), MICROSCHEMA_TYPE_NAME));
 
 		// .microschemas
-		root.field(newPagingField("microschemas", "Load page of microschemas.", (ac) -> boot.microschemaContainerRoot(), MICROSCHEMA_PAGE_TYPE_NAME));
+		root.field(newPagingField("microschemas", "Load page of microschemas.", ac -> boot.microschemaContainerRoot(), MICROSCHEMA_PAGE_TYPE_NAME));
 
 		// .role
-		root.field(newElementField("role", "Load role by name or uuid.", (ac) -> boot.roleRoot(), ROLE_TYPE_NAME));
+		root.field(newElementField("role", "Load role by name or uuid.", ac -> boot.roleRoot(), ROLE_TYPE_NAME));
 
 		// .roles
-		root.field(newPagingSearchField("roles", "Load page of roles.", (ac) -> boot.roleRoot(), ROLE_PAGE_TYPE_NAME, roleSearchHandler,
+		root.field(newPagingSearchField("roles", "Load page of roles.", ac -> boot.roleRoot(), ROLE_PAGE_TYPE_NAME, roleSearchHandler,
 			RoleFilter.filter()));
 
 		// .group
-		root.field(newElementField("group", "Load group by name or uuid.", (ac) -> boot.groupRoot(), GROUP_TYPE_NAME));
+		root.field(newElementField("group", "Load group by name or uuid.", ac -> boot.groupRoot(), GROUP_TYPE_NAME));
 
 		// .groups
-		root.field(newPagingSearchField("groups", "Load page of groups.", (ac) -> boot.groupRoot(), GROUP_PAGE_TYPE_NAME, groupSearchHandler,
+		root.field(newPagingSearchField("groups", "Load page of groups.", ac -> boot.groupRoot(), GROUP_PAGE_TYPE_NAME, groupSearchHandler,
 			GroupFilter.filter()));
 
 		// .user

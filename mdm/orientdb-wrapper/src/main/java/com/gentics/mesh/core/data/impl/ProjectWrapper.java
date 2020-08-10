@@ -501,4 +501,12 @@ public class ProjectWrapper implements Project {
 		return delegate.findNode(uuid);
 	}
 
+	public Set<String> getRoleUuidsForPerm(GraphPermission permission) {
+		return delegate.getRoleUuidsForPerm(permission);
+	}
+
+	public void setRoleUuidForPerm(GraphPermission permission, Set<String> allowedRoles) {
+		delegate.setRoleUuidForPerm(permission, allowedRoles);
+	}
+
 }

@@ -419,4 +419,13 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper implements JobDaoWrapp
 		return boot.get().jobRoot().computeCount();
 	}
 
+	@Override
+	public Set<String> getRoleUuidsForPerm(GraphPermission permission) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void setRoleUuidForPerm(GraphPermission permission, java.util.Set<String> allowedRoles) {
+	}
+
 }

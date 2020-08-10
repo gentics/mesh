@@ -3,8 +3,7 @@ package com.gentics.mesh.graphql.context;
 import java.util.function.Supplier;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibElement;
-import com.gentics.mesh.core.data.MeshCoreVertex;
+import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -27,10 +26,8 @@ public interface GraphQLContext extends InternalActionContext, GraphQLPluginCont
 	 * @return Provided element will be returned if at least one of the permissions grants access
 	 * @throws PermissionException
 	 */
-	<T extends MeshCoreVertex<?, ?>> T requiresPerm(T vertex, GraphPermission... permission);
+	<T extends HibCoreElement> T requiresPerm(T vertex, GraphPermission... permission);
 
-	<T extends HibElement> T requiresPerm(T vertex, GraphPermission... permission);
-	
 	/**
 	 * Check whether the current user of the context has read permission on the container (via type and parent node).
 	 * 

@@ -477,4 +477,12 @@ public class MicroschemaVersionWrapper implements MicroschemaVersion, HibMicrosc
 		return delegate.referencedJobsViaFrom();
 	}
 
+	public Set<String> getRoleUuidsForPerm(GraphPermission permission) {
+		return delegate.getRoleUuidsForPerm(permission);
+	}
+
+	public void setRoleUuidForPerm(GraphPermission permission, Set<String> allowedRoles) {
+		delegate.setRoleUuidForPerm(permission, allowedRoles);
+	}
+
 }

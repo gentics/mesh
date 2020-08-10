@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.endpoint.project;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
@@ -11,7 +14,12 @@ import com.gentics.mesh.core.verticle.handler.CRUDActions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
+@Singleton
 public class ProjectCrudActions implements CRUDActions<Project, ProjectResponse> {
+
+	@Inject
+	public ProjectCrudActions() {
+	}
 
 	@Override
 	public Project load(Tx tx, InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {

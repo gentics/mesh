@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data;
 
+import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 
 /**
@@ -25,4 +26,11 @@ public interface HibCoreElement extends HibElement {
 	 * @return Created event
 	 */
 	MeshElementEventModel onDeleted();
+
+	/**
+	 * Return the type info of the element.
+	 * 
+	 * @return
+	 */
+	TypeInfo getTypeInfo();
 }

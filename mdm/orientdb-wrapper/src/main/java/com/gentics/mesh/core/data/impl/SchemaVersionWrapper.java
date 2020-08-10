@@ -487,6 +487,13 @@ public class SchemaVersionWrapper implements SchemaVersion, HibSchemaVersion {
 	public Iterable<Job> referencedJobsViaFrom() {
 		return delegate.referencedJobsViaFrom();
 	}
-	
+
+	public Set<String> getRoleUuidsForPerm(GraphPermission permission) {
+		return delegate.getRoleUuidsForPerm(permission);
+	}
+
+	public void setRoleUuidForPerm(GraphPermission permission, Set<String> allowedRoles) {
+		delegate.setRoleUuidForPerm(permission, allowedRoles);
+	}
 	
 }
