@@ -46,7 +46,7 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
@@ -511,7 +511,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 				new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
 		}, COMPLETED, 1);
 
-		Schema reloadedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
+		SchemaModel reloadedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
 		assertEquals("The segment field slug should be set", "slug", reloadedSchema.getSegmentField());
 		assertEquals("someLabel", reloadedSchema.getField("extraname").getLabel());
 

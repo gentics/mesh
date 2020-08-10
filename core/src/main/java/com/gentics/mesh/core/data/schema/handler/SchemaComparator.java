@@ -1,9 +1,9 @@
 package com.gentics.mesh.core.data.schema.handler;
 
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.AUTO_PURGE_FLAG_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.CONTAINER_FLAG_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.DISPLAY_FIELD_NAME_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.ELASTICSEARCH_KEY;
-import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.AUTO_PURGE_FLAG_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.SEGMENT_FIELD_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.URLFIELDS_KEY;
 
@@ -13,7 +13,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.schema.SchemaChange;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 
 /**
@@ -22,37 +22,37 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
  *
  */
 @Singleton
-public class SchemaComparator extends AbstractFieldSchemaContainerComparator<Schema> {
+public class SchemaComparator extends AbstractFieldSchemaContainerComparator<SchemaModel> {
 
 	@Inject
 	public SchemaComparator() {
 	}
 
 	@Override
-	public List<SchemaChangeModel> diff(Schema schemaA, Schema schemaB) {
+	public List<SchemaChangeModel> diff(SchemaModel schemaA, SchemaModel schemaB) {
 		// .fields - diff fields
-		List<SchemaChangeModel> changes = super.diff(schemaA, schemaB, Schema.class);
+		List<SchemaChangeModel> changes = super.diff(schemaA, schemaB, SchemaModel.class);
 
 		// .segmentField
-		compareAndAddSchemaProperty(changes, SEGMENT_FIELD_KEY, schemaA.getSegmentField(), schemaB.getSegmentField(), Schema.class);
+		compareAndAddSchemaProperty(changes, SEGMENT_FIELD_KEY, schemaA.getSegmentField(), schemaB.getSegmentField(), SchemaModel.class);
 
 		// .urlFields
-		compareAndAddSchemaProperty(changes, URLFIELDS_KEY, schemaA.getUrlFields(), schemaB.getUrlFields(), Schema.class);
+		compareAndAddSchemaProperty(changes, URLFIELDS_KEY, schemaA.getUrlFields(), schemaB.getUrlFields(), SchemaModel.class);
 
 		// .displayField
-		compareAndAddSchemaProperty(changes, DISPLAY_FIELD_NAME_KEY, schemaA.getDisplayField(), schemaB.getDisplayField(), Schema.class);
+		compareAndAddSchemaProperty(changes, DISPLAY_FIELD_NAME_KEY, schemaA.getDisplayField(), schemaB.getDisplayField(), SchemaModel.class);
 
 		// .autoPurge
-		compareAndAddSchemaProperty(changes, AUTO_PURGE_FLAG_KEY, schemaA.getAutoPurge(), schemaB.getAutoPurge(), Schema.class);
+		compareAndAddSchemaProperty(changes, AUTO_PURGE_FLAG_KEY, schemaA.getAutoPurge(), schemaB.getAutoPurge(), SchemaModel.class);
 
 		// .container
 		// Only diff the flag if a value has been set in the schemaB
 		if (schemaB.getContainer() != null) {
-			compareAndAddSchemaProperty(changes, CONTAINER_FLAG_KEY, schemaA.getContainer(), schemaB.getContainer(), Schema.class);
+			compareAndAddSchemaProperty(changes, CONTAINER_FLAG_KEY, schemaA.getContainer(), schemaB.getContainer(), SchemaModel.class);
 		}
 
 		// .elasticsearch
-		compareAndAddSchemaElasticSearchProperty(changes, ELASTICSEARCH_KEY, schemaA.getElasticsearch(), schemaB.getElasticsearch(), Schema.class);
+		compareAndAddSchemaElasticSearchProperty(changes, ELASTICSEARCH_KEY, schemaA.getElasticsearch(), schemaB.getElasticsearch(), SchemaModel.class);
 
 		return changes;
 	}

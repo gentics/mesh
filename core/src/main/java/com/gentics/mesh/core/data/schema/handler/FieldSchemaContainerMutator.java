@@ -5,11 +5,11 @@ import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.Microschema;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.dagger.MeshComponent;
 
 /**
- * The field container mutator utilizes {@link SchemaChange} objects in order to modify/mutate a given field container implementation (e.g. {@link Schema} or
+ * The field container mutator utilizes {@link SchemaChange} objects in order to modify/mutate a given field container implementation (e.g. {@link SchemaModel} or
  * {@link Microschema}. This way {@link SchemaChange} operations can be applied on a given schema.
  */
 public class FieldSchemaContainerMutator {

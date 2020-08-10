@@ -32,7 +32,7 @@ public interface SchemaStorage {
 	 *            Schema name
 	 * @return Found schema or null when no schema could be found
 	 */
-	SchemaModel getSchema(String name);
+	SchemaUpdateModel getSchema(String name);
 
 	/**
 	 * Return the schema with the given name in the given version.
@@ -43,7 +43,7 @@ public interface SchemaStorage {
 	 *            Schema version
 	 * @return Found schema or null when no schema could be found
 	 */
-	SchemaModel getSchema(String name, String version);
+	SchemaUpdateModel getSchema(String name, String version);
 
 	/**
 	 * Add the given schema to the storage. Existing schemas will be updated.
@@ -51,7 +51,7 @@ public interface SchemaStorage {
 	 * @param schema
 	 *            Schema
 	 */
-	void addSchema(SchemaModel schema);
+	void addSchema(SchemaUpdateModel schema);
 
 	/**
 	 * Get the microschema with the given name in the newest version

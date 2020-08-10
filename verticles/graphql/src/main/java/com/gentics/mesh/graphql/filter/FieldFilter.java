@@ -1,5 +1,18 @@
 package com.gentics.mesh.graphql.filter;
 
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import com.gentics.graphqlfilter.filter.BooleanFilter;
+import com.gentics.graphqlfilter.filter.DateFilter;
+import com.gentics.graphqlfilter.filter.FilterField;
+import com.gentics.graphqlfilter.filter.MainFilter;
+import com.gentics.graphqlfilter.filter.NumberFilter;
+import com.gentics.graphqlfilter.filter.StringFilter;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
 import com.gentics.mesh.core.data.node.field.DateGraphField;
@@ -7,21 +20,8 @@ import com.gentics.mesh.core.data.node.field.HtmlGraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
 import com.gentics.mesh.graphql.context.GraphQLContext;
-import com.gentics.graphqlfilter.filter.BooleanFilter;
-import com.gentics.graphqlfilter.filter.DateFilter;
-import com.gentics.graphqlfilter.filter.FilterField;
-import com.gentics.graphqlfilter.filter.MainFilter;
-import com.gentics.graphqlfilter.filter.NumberFilter;
-import com.gentics.graphqlfilter.filter.StringFilter;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Filters by the fields of a node with a certain schema.
@@ -42,13 +42,13 @@ public class FieldFilter extends MainFilter<GraphFieldContainer> {
 	 * @param container
 	 *            The schema model to create the filter for
 	 */
-	public static FieldFilter filter(GraphQLContext context, SchemaModel container) {
+	public static FieldFilter filter(GraphQLContext context, SchemaUpdateModel container) {
 		return context.getOrStore(NAME_PREFIX + container.getName(), () -> new FieldFilter(container));
 	}
 
-	private final SchemaModel schema;
+	private final SchemaUpdateModel schema;
 
-	private FieldFilter(SchemaModel container) {
+	private FieldFilter(SchemaUpdateModel container) {
 		super(container.getName() + "FieldFilter", "Filters by fields");
 		this.schema = container;
 	}

@@ -43,8 +43,8 @@ import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.Transactional;
@@ -156,7 +156,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 	public Transactional<Map<String, IndexInfo>> getIndices(Project project, Branch branch, SchemaContainerVersion containerVersion) {
 		return db.transactional(tx -> {
 			Map<String, IndexInfo> indexInfos = new HashMap<>();
-			SchemaModel schema = containerVersion.getSchema();
+			SchemaUpdateModel schema = containerVersion.getSchema();
 
 			// Add all language specific indices (might be none)
 			schema.findOverriddenSearchLanguages().forEach(language -> Stream.of(DRAFT, PUBLISHED).forEach(version -> {
@@ -179,7 +179,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 		});
 	}
 
-	public IndexInfo createIndexInfo(Branch branch, Schema schema, String language, String indexName, String sourceInfo) {
+	public IndexInfo createIndexInfo(Branch branch, SchemaModel schema, String language, String indexName, String sourceInfo) {
 		JsonObject mapping = getMappingProvider().getMapping(schema, branch, language);
 		JsonObject settings = language == null
 			? getDefaultSetting(schema.getElasticsearch())
@@ -670,7 +670,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 	 * 
 	 * @param schema
 	 */
-	public Completable validate(Schema schema) {
+	public Completable validate(SchemaModel schema) {
 		return Flowable.defer(() -> {
 			schema.validate();
 			return Flowable.fromIterable(schema.findOverriddenSearchLanguages()::iterator);
@@ -685,7 +685,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 	 * @param schema
 	 * @return
 	 */
-	public JsonObject createIndexSettings(Schema schema) {
+	public JsonObject createIndexSettings(SchemaModel schema) {
 		return createIndexSettings(schema, null);
 	}
 
@@ -695,11 +695,11 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 	 * @param schema
 	 * @return
 	 */
-	public JsonObject createIndexSettings(Schema schema, String language) {
+	public JsonObject createIndexSettings(SchemaModel schema, String language) {
 		return searchProvider.createIndexSettings(createDummyIndexInfo(schema, language));
 	}
 
-	private IndexInfo createDummyIndexInfo(Schema schema, String language) {
+	private IndexInfo createDummyIndexInfo(SchemaModel schema, String language) {
 		String indexName = language != null
 			? "validationDummy-" + language
 			: "validationDummy";

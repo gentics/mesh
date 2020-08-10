@@ -34,8 +34,8 @@ import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.Microschema;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -478,7 +478,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	 * @throws Exception
 	 */
 	protected SchemaContainer createSchemaDirect(String name) throws Exception {
-		SchemaModel schema = new SchemaModelImpl();
+		SchemaUpdateModel schema = new SchemaModelImpl();
 		schema.setName(name);
 		schema.addField(FieldUtil.createStringFieldSchema("name"));
 		schema.setDisplayField("name");
@@ -496,9 +496,9 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	 * @throws Exception
 	 */
 	protected void updateSchema(SchemaContainer schemaContainer, String newName) throws Exception {
-		Schema schema = schemaContainer.getLatestVersion().getSchema();
+		SchemaModel schema = schemaContainer.getLatestVersion().getSchema();
 
-		Schema updatedSchema = new SchemaModelImpl();
+		SchemaModel updatedSchema = new SchemaModelImpl();
 		updatedSchema.setName(schema.getName());
 		updatedSchema.setDisplayField(schema.getDisplayField());
 		updatedSchema.getFields().addAll(schema.getFields());

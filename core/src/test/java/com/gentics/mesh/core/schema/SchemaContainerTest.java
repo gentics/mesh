@@ -25,9 +25,9 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.error.MeshSchemaException;
@@ -80,7 +80,7 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 
 			long nSchemasBefore = schemaDao.computeCount();
-			SchemaModel schema = FieldUtil.createMinimalValidSchema();
+			SchemaUpdateModel schema = FieldUtil.createMinimalValidSchema();
 			assertNotNull(schemaDao.create(schema, user()));
 			long nSchemasAfter = schemaDao.computeCount();
 			assertEquals(nSchemasBefore + 1, nSchemasAfter);
@@ -100,7 +100,7 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 		try (Tx tx = tx()) {
 			meshDagger().serverSchemaStorage().clear();
 			meshDagger().serverSchemaStorage().init();
-			Schema schema = meshDagger().serverSchemaStorage().getSchema("folder");
+			SchemaModel schema = meshDagger().serverSchemaStorage().getSchema("folder");
 			assertNotNull(schema);
 			assertEquals("folder", schema.getName());
 		}
@@ -152,11 +152,11 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 	public void testTransformation() throws IOException {
 		try (Tx tx = tx()) {
 			SchemaContainer container = getSchemaContainer();
-			SchemaModel schema = container.getLatestVersion().getSchema();
+			SchemaUpdateModel schema = container.getLatestVersion().getSchema();
 			assertNotNull(schema);
 			String json = schema.toJson();
 			assertNotNull(json);
-			Schema deserializedSchema = JsonUtil.readValue(json, SchemaModelImpl.class);
+			SchemaModel deserializedSchema = JsonUtil.readValue(json, SchemaModelImpl.class);
 			assertNotNull(deserializedSchema);
 		}
 	}
@@ -167,7 +167,7 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 		try (Tx tx = tx()) {
 			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 
-			SchemaModel schema = FieldUtil.createMinimalValidSchema();
+			SchemaUpdateModel schema = FieldUtil.createMinimalValidSchema();
 			SchemaContainer newContainer = schemaDao.create(schema, user());
 			assertNotNull(newContainer);
 			String uuid = newContainer.getUuid();
@@ -184,7 +184,7 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 			UserDaoWrapper userDao = tx.data().userDao();
 			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 
-			SchemaModel schema = FieldUtil.createMinimalValidSchema();
+			SchemaUpdateModel schema = FieldUtil.createMinimalValidSchema();
 			SchemaContainer newContainer = schemaDao.create(schema, user());
 			assertFalse(roleDao.hasPermission(role(), GraphPermission.CREATE_PERM, newContainer));
 			userDao.inheritRolePermissions(getRequestUser(), meshRoot().getSchemaContainerRoot(), newContainer);
@@ -218,7 +218,7 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 		try (Tx tx = tx()) {
 			SchemaContainer schemaContainer = meshRoot().getSchemaContainerRoot().findByName("content");
 			SchemaContainerVersion currentVersion = schemaContainer.getLatestVersion();
-			SchemaModel schema = currentVersion.getSchema();
+			SchemaUpdateModel schema = currentVersion.getSchema();
 			schema.setName("changed");
 			currentVersion.setSchema(schema);
 			assertEquals("changed", currentVersion.getSchema().getName());
@@ -248,7 +248,7 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 	public void testReadPermission() throws MeshSchemaException {
 		try (Tx tx = tx()) {
 			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
-			SchemaModel schema = FieldUtil.createMinimalValidSchema();
+			SchemaUpdateModel schema = FieldUtil.createMinimalValidSchema();
 			SchemaContainer newContainer = schemaDao.create(schema, user());
 			testPermission(GraphPermission.READ_PERM, newContainer);
 		}
@@ -259,7 +259,7 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 	public void testDeletePermission() throws MeshSchemaException {
 		try (Tx tx = tx()) {
 			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
-			SchemaModel schema = FieldUtil.createMinimalValidSchema();
+			SchemaUpdateModel schema = FieldUtil.createMinimalValidSchema();
 			SchemaContainer newContainer = schemaDao.create(schema, user());
 			testPermission(GraphPermission.DELETE_PERM, newContainer);
 		}
@@ -270,7 +270,7 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 	public void testUpdatePermission() throws MeshSchemaException {
 		try (Tx tx = tx()) {
 			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
-			SchemaModel schema = FieldUtil.createMinimalValidSchema();
+			SchemaUpdateModel schema = FieldUtil.createMinimalValidSchema();
 			SchemaContainer newContainer = schemaDao.create(schema, user());
 			testPermission(GraphPermission.UPDATE_PERM, newContainer);
 		}
@@ -281,7 +281,7 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 	public void testCreatePermission() throws MeshSchemaException {
 		try (Tx tx = tx()) {
 			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
-			SchemaModel schema = FieldUtil.createMinimalValidSchema();
+			SchemaUpdateModel schema = FieldUtil.createMinimalValidSchema();
 			SchemaContainer newContainer = schemaDao.create(schema, user());
 			testPermission(GraphPermission.CREATE_PERM, newContainer);
 		}

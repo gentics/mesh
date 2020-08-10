@@ -31,7 +31,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -70,10 +69,10 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
@@ -218,10 +217,10 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 
 			// Create schema with no read permission
-			SchemaModel schema = FieldUtil.createMinimalValidSchema();
+			SchemaUpdateModel schema = FieldUtil.createMinimalValidSchema();
 			schema.setName("No_Perm_Schema");
 			SchemaContainer noPermSchema = schemaDao.create(schema, user());
-			SchemaModel dummySchema = new SchemaModelImpl();
+			SchemaUpdateModel dummySchema = new SchemaModelImpl();
 			dummySchema.setName("dummy");
 			dummySchema.setVersion("1.0");
 			noPermSchema.getLatestVersion().setSchema(dummySchema);
@@ -257,7 +256,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			assertEquals(perPage, restResponse.getMetainfo().getPerPage().longValue());
 			assertEquals(totalSchemas, restResponse.getMetainfo().getTotalCount());
 
-			List<Schema> allSchemas = new ArrayList<>();
+			List<SchemaModel> allSchemas = new ArrayList<>();
 			for (int page = 1; page <= totalPages; page++) {
 				restResponse = client().findSchemas(new PagingParametersImpl(page, perPage)).blockingGet();
 				allSchemas.addAll(restResponse.getData());

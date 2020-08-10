@@ -21,7 +21,7 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
@@ -54,7 +54,7 @@ public class SchemaTest {
 
 	@Test
 	public void testSimpleSchema() throws IOException {
-		Schema schema = new SchemaModelImpl();
+		SchemaModel schema = new SchemaModelImpl();
 		schema.setName("dummySchema");
 		schema.setContainer(true);
 		schema.addField(new HtmlFieldSchemaImpl().setLabel("Label").setName("Name").setRequired(true));
@@ -63,7 +63,7 @@ public class SchemaTest {
 
 	@Test
 	public void testSchemaWithNoFieldType() throws IOException {
-		Schema schema = new SchemaModelImpl();
+		SchemaModel schema = new SchemaModelImpl();
 		schema.setName("dummySchema");
 		schema.setContainer(true);
 		schema.addField(new HtmlFieldSchemaImpl().setLabel("Label").setName("Name").setRequired(true));
@@ -81,7 +81,7 @@ public class SchemaTest {
 
 	@Test
 	public void testSchemaNameValidation() {
-		Schema schema = new SchemaModelImpl();
+		SchemaModel schema = new SchemaModelImpl();
 		schema.setContainer(true);
 		schema.addField(new HtmlFieldSchemaImpl().setLabel("Label").setName("Name").setRequired(true));
 
@@ -112,7 +112,7 @@ public class SchemaTest {
 
 	@Test
 	public void testComplexSchema() throws IOException {
-		Schema schema = new SchemaModelImpl();
+		SchemaModel schema = new SchemaModelImpl();
 		schema.setName("dummySchema");
 		schema.setDisplayField("name");
 		schema.setSegmentField("name_2");
@@ -145,39 +145,39 @@ public class SchemaTest {
 		validateSchema(schema);
 	}
 
-	private void validateSchema(Schema schema) throws JsonParseException, JsonMappingException, IOException {
+	private void validateSchema(SchemaModel schema) throws JsonParseException, JsonMappingException, IOException {
 		assertNotNull(schema);
 		String json = schema.toJson();
 		System.out.println(json);
 		assertNotNull(json);
-		Schema deserializedSchema = JsonUtil.readValue(json, SchemaModelImpl.class);
+		SchemaModel deserializedSchema = JsonUtil.readValue(json, SchemaModelImpl.class);
 		assertEquals(schema.getFields().size(), deserializedSchema.getFields().size());
 		assertNotNull(deserializedSchema);
 	}
 
 	@Test
 	public void testNoNameInvalid() throws MeshJsonException {
-		Schema schema = new SchemaModelImpl();
+		SchemaModel schema = new SchemaModelImpl();
 		expectErrorOnValidate(schema, "schema_error_no_name");
 	}
 
 	@Test
 	public void testNoFields() throws MeshJsonException {
-		Schema schema = new SchemaModelImpl();
+		SchemaModel schema = new SchemaModelImpl();
 		schema.setName("test");
 		schema.validate();
 	}
 
 	@Test
 	public void testSegmentFieldNotSet() throws MeshJsonException {
-		Schema schema = FieldUtil.createMinimalValidSchema();
+		SchemaModel schema = FieldUtil.createMinimalValidSchema();
 		schema.setSegmentField(null);
 		schema.validate();
 	}
 
 	@Test
 	public void testSegmentFieldInvalid() throws MeshJsonException {
-		Schema schema = new SchemaModelImpl();
+		SchemaModel schema = new SchemaModelImpl();
 		schema.setName("test");
 		schema.setSegmentField("invalid");
 		schema.setDisplayField("name");
@@ -187,13 +187,13 @@ public class SchemaTest {
 
 	@Test
 	public void testMinimalSchemaValid() throws MeshJsonException {
-		Schema schema = FieldUtil.createMinimalValidSchema();
+		SchemaModel schema = FieldUtil.createMinimalValidSchema();
 		schema.validate();
 	}
 
 	@Test
 	public void testDisplayFieldNotSet() throws MeshJsonException {
-		Schema schema = new SchemaModelImpl();
+		SchemaModel schema = new SchemaModelImpl();
 		schema.setName("test");
 		schema.setSegmentField("name");
 		schema.addField(FieldUtil.createStringFieldSchema("name"));
@@ -202,7 +202,7 @@ public class SchemaTest {
 
 	@Test
 	public void testDuplicateLabelCheckWithNullValues() {
-		Schema schema = new SchemaModelImpl();
+		SchemaModel schema = new SchemaModelImpl();
 		schema.setName("test");
 		schema.setSegmentField("fieldA");
 		schema.setDisplayField("fieldB");
@@ -218,7 +218,7 @@ public class SchemaTest {
 
 	@Test
 	public void testInvalidListType() {
-		Schema schema = FieldUtil.createMinimalValidSchema();
+		SchemaModel schema = FieldUtil.createMinimalValidSchema();
 		ListFieldSchema listField = FieldUtil.createListFieldSchema("listField");
 		listField.setListType("blabla");
 		schema.addField(listField);
@@ -227,7 +227,7 @@ public class SchemaTest {
 
 	@Test
 	public void testMissingListType() {
-		Schema schema = FieldUtil.createMinimalValidSchema();
+		SchemaModel schema = FieldUtil.createMinimalValidSchema();
 		ListFieldSchema listField = FieldUtil.createListFieldSchema("listField");
 		listField.setListType(null);
 		schema.addField(listField);
@@ -236,7 +236,7 @@ public class SchemaTest {
 
 	@Test
 	public void testDisplayFieldInvalid() {
-		Schema schema = new SchemaModelImpl();
+		SchemaModel schema = new SchemaModelImpl();
 		schema.setName("test");
 		schema.setSegmentField("name");
 		schema.setDisplayField("invalid");
@@ -246,7 +246,7 @@ public class SchemaTest {
 
 	@Test
 	public void testBinaryDisplayField() {
-		Schema schema = new SchemaModelImpl();
+		SchemaModel schema = new SchemaModelImpl();
 		schema.setName("test");
 		schema.setDisplayField("binary");
 		schema.addField(FieldUtil.createBinaryFieldSchema("binary"));
@@ -255,7 +255,7 @@ public class SchemaTest {
 
 	@Test
 	public void testDuplicateFieldSchemaName() {
-		Schema schema = new SchemaModelImpl();
+		SchemaModel schema = new SchemaModelImpl();
 		schema.setName("test");
 		schema.setSegmentField("name");
 		schema.setDisplayField("name");
@@ -269,7 +269,7 @@ public class SchemaTest {
 	 */
 	@Test
 	public void testDisplayFieldInvalidType() {
-		Schema schema = new SchemaModelImpl();
+		SchemaModel schema = new SchemaModelImpl();
 		schema.setName("test");
 		schema.setSegmentField("name");
 		schema.setDisplayField("name");
@@ -279,7 +279,7 @@ public class SchemaTest {
 
 	@Test
 	public void testSegmentFieldBinaryField() {
-		Schema schema = FieldUtil.createMinimalValidSchema();
+		SchemaModel schema = FieldUtil.createMinimalValidSchema();
 		schema.addField(FieldUtil.createBinaryFieldSchema("binaryField"));
 		schema.setSegmentField("binaryField");
 		schema.validate();
@@ -290,7 +290,7 @@ public class SchemaTest {
 	 */
 	@Test
 	public void testSegmentFieldToNoStringOrBinaryFieldInvalid() {
-		Schema schema = FieldUtil.createMinimalValidSchema();
+		SchemaModel schema = FieldUtil.createMinimalValidSchema();
 		schema.addField(FieldUtil.createNumberFieldSchema("numberField"));
 		schema.setSegmentField("numberField");
 		expectErrorOnValidate(schema, "schema_error_segmentfield_type_invalid", "number");

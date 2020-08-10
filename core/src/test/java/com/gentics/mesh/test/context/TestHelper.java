@@ -60,8 +60,8 @@ import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
@@ -471,7 +471,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		NodeResponse nodeResponse = call(() -> client().findNodeByUuid(projectName, uuid, new VersioningParametersImpl().setBranch(sourceBranchName)
 			.draft()));
 
-		Schema schema = schemaContainer(nodeResponse.getSchema().getName()).getLatestVersion().getSchema();
+		SchemaModel schema = schemaContainer(nodeResponse.getSchema().getName()).getLatestVersion().getSchema();
 
 		// update node for target branch
 		NodeCreateRequest create = new NodeCreateRequest();
@@ -535,7 +535,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 			.blockingFirst();
 	}
 
-	default public Schema readSchema(String uuid) {
+	default public SchemaModel readSchema(String uuid) {
 		return call(() -> client().findSchemaByUuid(uuid));
 	}
 
@@ -571,7 +571,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	 */
 	default public void prepareSchema(Node node, String mimeTypeWhitelist, String binaryFieldName) throws IOException {
 		// Update the schema and enable binary support for folders
-		SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
+		SchemaUpdateModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		schema.addField(new BinaryFieldSchemaImpl().setAllowedMimeTypes(mimeTypeWhitelist).setName(binaryFieldName).setLabel("Binary content"));
 		node.getSchemaContainer().getLatestVersion().setSchema(schema);
 		mesh().serverSchemaStorage().clear();

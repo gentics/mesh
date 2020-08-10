@@ -6,11 +6,11 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 
 import io.vertx.core.json.JsonObject;
 
-public class SchemaCreateRequest implements Schema {
+public class SchemaCreateRequest implements SchemaModel {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Name of the display field.")

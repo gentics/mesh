@@ -59,7 +59,7 @@ import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
@@ -311,10 +311,10 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		assertEquals("1.0", beforeSchema.getVersion());
 
 		// Add elasticsearch setting to content field
-		SchemaModel schemaModel = tx(() -> {
+		SchemaUpdateModel schemaModel = tx(() -> {
 			JsonObject setting = new JsonObject().put("test", "123");
 			SchemaContainerVersion version = schemaContainer("content").getLatestVersion();
-			SchemaModel schema = version.getSchema();
+			SchemaUpdateModel schema = version.getSchema();
 			schema.getField("slug").setElasticsearch(setting);
 			version.setJson(schema.toJson());
 			return schema;
@@ -339,10 +339,10 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		assertEquals("1.0", beforeSchema.getVersion());
 
 		// Add elasticsearch setting to schema
-		SchemaModel schemaModel = tx(() -> {
+		SchemaUpdateModel schemaModel = tx(() -> {
 			JsonObject setting = new JsonObject().put("test", "123");
 			SchemaContainerVersion version = schemaContainer("content").getLatestVersion();
-			SchemaModel schema = version.getSchema();
+			SchemaUpdateModel schema = version.getSchema();
 			schema.setElasticsearch(setting);
 			version.setJson(schema.toJson());
 			return schema;
@@ -954,7 +954,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			// create micronode based on the old schema
 			String english = english();
 			firstNode = folder("2015");
-			SchemaModel schema = firstNode.getSchemaContainer().getLatestVersion().getSchema();
+			SchemaUpdateModel schema = firstNode.getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(new MicronodeFieldSchemaImpl().setName(micronodeFieldName).setLabel("Micronode Field"));
 			schema.getField(micronodeFieldName, MicronodeFieldSchema.class).setAllowedMicroSchemas(versionA.getName());
 			firstNode.getSchemaContainer().getLatestVersion().setSchema(schema);
@@ -1055,7 +1055,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			// create micronode based on the old schema
 			String en = english();
 			firstNode = folder("2015");
-			SchemaModel schema = firstNode.getSchemaContainer().getLatestVersion().getSchema();
+			SchemaUpdateModel schema = firstNode.getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(new ListFieldSchemaImpl().setListType("micronode").setAllowedSchemas(versionA.getName()).setName(micronodeFieldName)
 				.setLabel("Micronode List Field"));
 			firstNode.getSchemaContainer().getLatestVersion().setSchema(schema);
@@ -1177,7 +1177,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			// create micronode based on the old schema
 			String english = english();
 			firstNode = folder("2015");
-			SchemaModel schema = firstNode.getSchemaContainer().getLatestVersion().getSchema();
+			SchemaUpdateModel schema = firstNode.getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(new ListFieldSchemaImpl().setListType("micronode").setAllowedSchemas(versionA.getName(), "vcard").setName(
 				micronodeFieldName).setLabel("Micronode List Field"));
 			firstNode.getSchemaContainer().getLatestVersion().setSchema(schema);
@@ -1242,7 +1242,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 		// create version 1 of the schema
 		SchemaContainerVersion versionA = Tx.get().getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
-		SchemaModel schemaA = new SchemaModelImpl();
+		SchemaUpdateModel schemaA = new SchemaModelImpl();
 		schemaA.setName("migratedSchema");
 		schemaA.setVersion("1.0");
 		FieldSchema oldField = FieldUtil.createStringFieldSchema(oldFieldName);
@@ -1258,7 +1258,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 		// create version 2 of the schema (with the field renamed)
 		SchemaContainerVersion versionB = Tx.get().getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
-		SchemaModel schemaB = new SchemaModelImpl();
+		SchemaUpdateModel schemaB = new SchemaModelImpl();
 		schemaB.setName("migratedSchema");
 		schemaB.setVersion("2.0");
 		FieldSchema newField = FieldUtil.createStringFieldSchema(newFieldName);

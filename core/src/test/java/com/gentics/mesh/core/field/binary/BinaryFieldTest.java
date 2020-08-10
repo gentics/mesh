@@ -35,7 +35,7 @@ import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.TestSize;
@@ -95,7 +95,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 		Node node = folder("2015");
 		try (Tx tx = tx()) {
 			// Update the schema and add a binary field
-			SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
+			SchemaUpdateModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 
 			schema.addField(createFieldSchema(true));
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);

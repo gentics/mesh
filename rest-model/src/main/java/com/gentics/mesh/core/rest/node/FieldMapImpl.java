@@ -49,7 +49,7 @@ import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.json.JsonUtil;
 import com.google.common.collect.Lists;
 
@@ -603,7 +603,7 @@ public class FieldMapImpl implements FieldMap {
 	}
 
 	@Override
-	public Set<String> getUrlFieldValues(Schema schema) {
+	public Set<String> getUrlFieldValues(SchemaModel schema) {
 		Set<String> urlFieldValues = new HashSet<>();
 		for (String urlField : schema.getUrlFields()) {
 			FieldSchema fieldSchema = schema.getField(urlField);

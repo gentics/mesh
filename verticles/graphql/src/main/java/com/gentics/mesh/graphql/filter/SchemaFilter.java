@@ -1,22 +1,23 @@
 package com.gentics.mesh.graphql.filter;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
 import com.gentics.graphqlfilter.filter.BooleanFilter;
 import com.gentics.graphqlfilter.filter.FilterField;
 import com.gentics.graphqlfilter.filter.MainFilter;
 import com.gentics.graphqlfilter.filter.MappedFilter;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.json.JsonUtil;
+
 import graphql.schema.GraphQLEnumType;
 import graphql.schema.GraphQLEnumValueDefinition;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 /**
  * Filter schemas.
@@ -58,7 +59,7 @@ public class SchemaFilter extends MainFilter<SchemaContainer> {
 		return filters;
 	}
 
-	private SchemaModel getLatestVersion(SchemaContainer schema) {
+	private SchemaUpdateModel getLatestVersion(SchemaContainer schema) {
 		return JsonUtil.readValue(schema.getLatestVersion().getJson(), SchemaModelImpl.class);
 	}
 }

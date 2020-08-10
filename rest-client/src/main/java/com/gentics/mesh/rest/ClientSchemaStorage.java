@@ -7,23 +7,23 @@ import java.util.Map.Entry;
 import java.util.Optional;
 
 import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaStorage;
+import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
 
 public class ClientSchemaStorage implements SchemaStorage {
 
-	private Map<String, Map<String, SchemaModel>> schemaMap = new HashMap<>();
+	private Map<String, Map<String, SchemaUpdateModel>> schemaMap = new HashMap<>();
 
 	private Map<String, Map<String, MicroschemaModel>> microschemaMap = new HashMap<>();
 
 	@Override
-	public void addSchema(SchemaModel schema) {
+	public void addSchema(SchemaUpdateModel schema) {
 		schemaMap.computeIfAbsent(schema.getName(), k -> new HashMap<>()).put(schema.getVersion(), schema);
 	}
 
 	@Override
-	public SchemaModel getSchema(String name) {
-		Optional<Entry<String, SchemaModel>> maxVersion = schemaMap.getOrDefault(name, Collections.emptyMap()).entrySet().stream()
+	public SchemaUpdateModel getSchema(String name) {
+		Optional<Entry<String, SchemaUpdateModel>> maxVersion = schemaMap.getOrDefault(name, Collections.emptyMap()).entrySet().stream()
 				.max((entry1, entry2) -> {
 					Double v1 = Double.valueOf(entry1.getKey());
 					Double v2 = Double.valueOf(entry2.getKey());
@@ -33,7 +33,7 @@ public class ClientSchemaStorage implements SchemaStorage {
 	}
 
 	@Override
-	public SchemaModel getSchema(String name, String version) {
+	public SchemaUpdateModel getSchema(String name, String version) {
 		return schemaMap.getOrDefault(name, Collections.emptyMap()).get(version);
 	}
 

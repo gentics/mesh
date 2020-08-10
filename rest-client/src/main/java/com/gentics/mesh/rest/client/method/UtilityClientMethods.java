@@ -1,7 +1,7 @@
 package com.gentics.mesh.rest.client.method;
 
 import com.gentics.mesh.core.rest.schema.Microschema;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.validation.SchemaValidationResponse;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshRequest;
@@ -24,7 +24,7 @@ public interface UtilityClientMethods {
 	 * @param schema
 	 * @return
 	 */
-	MeshRequest<SchemaValidationResponse> validateSchema(Schema schema);
+	MeshRequest<SchemaValidationResponse> validateSchema(SchemaModel schema);
 
 	/**
 	 * Validate the microschema.

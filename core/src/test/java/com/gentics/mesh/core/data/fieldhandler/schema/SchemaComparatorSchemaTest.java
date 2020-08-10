@@ -12,7 +12,6 @@ import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.TY
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.CHANGEFIELDTYPE;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATESCHEMA;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
@@ -22,7 +21,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -35,17 +34,17 @@ public class SchemaComparatorSchemaTest extends AbstractMeshTest {
 
 	@Test
 	public void testEmptySchema() throws IOException {
-		Schema schemaA = FieldUtil.createMinimalValidSchema();
-		Schema schemaB = FieldUtil.createMinimalValidSchema();
+		SchemaModel schemaA = FieldUtil.createMinimalValidSchema();
+		SchemaModel schemaB = FieldUtil.createMinimalValidSchema();
 		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
 		assertThat(changes).isEmpty();
 	}
 
 	@Test
 	public void testChangeFieldType() throws IOException {
-		Schema schemaA = FieldUtil.createMinimalValidSchema();
+		SchemaModel schemaA = FieldUtil.createMinimalValidSchema();
 		schemaA.addField(FieldUtil.createStringFieldSchema("content"));
-		Schema schemaB = FieldUtil.createMinimalValidSchema();
+		SchemaModel schemaB = FieldUtil.createMinimalValidSchema();
 		schemaB.addField(FieldUtil.createNumberFieldSchema("content"));
 
 		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
@@ -55,11 +54,11 @@ public class SchemaComparatorSchemaTest extends AbstractMeshTest {
 
 	@Test
 	public void testSchemaFieldReorder() throws IOException {
-		Schema schemaA = FieldUtil.createMinimalValidSchema();
+		SchemaModel schemaA = FieldUtil.createMinimalValidSchema();
 		schemaA.addField(FieldUtil.createHtmlFieldSchema("first"));
 		schemaA.addField(FieldUtil.createHtmlFieldSchema("second"));
 
-		Schema schemaB = FieldUtil.createMinimalValidSchema();
+		SchemaModel schemaB = FieldUtil.createMinimalValidSchema();
 		schemaB.addField(FieldUtil.createHtmlFieldSchema("second"));
 		schemaB.addField(FieldUtil.createHtmlFieldSchema("first"));
 		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
@@ -69,11 +68,11 @@ public class SchemaComparatorSchemaTest extends AbstractMeshTest {
 
 	@Test
 	public void testSegmentFieldAdded() throws IOException {
-		Schema schemaA = FieldUtil.createMinimalValidSchema();
+		SchemaModel schemaA = FieldUtil.createMinimalValidSchema();
 		schemaA.setDisplayField("displayFieldName");
 		schemaA.addField(FieldUtil.createStringFieldSchema("displayFieldName"));
 
-		Schema schemaB = FieldUtil.createMinimalValidSchema();
+		SchemaModel schemaB = FieldUtil.createMinimalValidSchema();
 		schemaB.setDisplayField("displayFieldName");
 		schemaB.addField(FieldUtil.createStringFieldSchema("displayFieldName"));
 		schemaB.setSegmentField(schemaB.getFields().get(0).getName());
@@ -83,12 +82,12 @@ public class SchemaComparatorSchemaTest extends AbstractMeshTest {
 
 	@Test
 	public void testSegmentFieldRemoved() throws IOException {
-		Schema schemaA = FieldUtil.createMinimalValidSchema();
+		SchemaModel schemaA = FieldUtil.createMinimalValidSchema();
 		schemaA.setDisplayField("displayFieldName");
 		schemaA.addField(FieldUtil.createStringFieldSchema("displayFieldName"));
 		schemaA.setSegmentField(schemaA.getFields().get(0).getName());
 
-		Schema schemaB = FieldUtil.createMinimalValidSchema();
+		SchemaModel schemaB = FieldUtil.createMinimalValidSchema();
 		schemaB.setDisplayField("displayFieldName");
 		schemaB.addField(FieldUtil.createStringFieldSchema("displayFieldName"));
 		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
@@ -97,11 +96,11 @@ public class SchemaComparatorSchemaTest extends AbstractMeshTest {
 
 	@Test
 	public void testSchemaFieldNoReorder() throws IOException {
-		Schema schemaA = FieldUtil.createMinimalValidSchema();
+		SchemaModel schemaA = FieldUtil.createMinimalValidSchema();
 		schemaA.addField(FieldUtil.createHtmlFieldSchema("first"));
 		schemaA.addField(FieldUtil.createHtmlFieldSchema("second"));
 
-		Schema schemaB = FieldUtil.createMinimalValidSchema();
+		SchemaModel schemaB = FieldUtil.createMinimalValidSchema();
 		schemaB.addField(FieldUtil.createHtmlFieldSchema("first"));
 		schemaB.addField(FieldUtil.createHtmlFieldSchema("second"));
 		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
@@ -110,12 +109,12 @@ public class SchemaComparatorSchemaTest extends AbstractMeshTest {
 
 	@Test
 	public void testSegmentFieldSame() throws IOException {
-		Schema schemaA = FieldUtil.createMinimalValidSchema();
+		SchemaModel schemaA = FieldUtil.createMinimalValidSchema();
 		schemaA.setDisplayField("displayFieldName");
 		schemaA.addField(FieldUtil.createStringFieldSchema("displayFieldName"));
 
 		schemaA.setSegmentField(schemaA.getFields().get(0).getName());
-		Schema schemaB = FieldUtil.createMinimalValidSchema();
+		SchemaModel schemaB = FieldUtil.createMinimalValidSchema();
 		schemaB.setDisplayField("displayFieldName");
 		schemaB.addField(FieldUtil.createStringFieldSchema("displayFieldName"));
 		schemaB.setSegmentField(schemaA.getSegmentField());
@@ -125,14 +124,14 @@ public class SchemaComparatorSchemaTest extends AbstractMeshTest {
 
 	@Test
 	public void testSegmentFieldUpdated() throws IOException {
-		Schema schemaA = FieldUtil.createMinimalValidSchema();
+		SchemaModel schemaA = FieldUtil.createMinimalValidSchema();
 		schemaA.addField(FieldUtil.createStringFieldSchema("someExtraField"));
 		schemaA.addField(FieldUtil.createStringFieldSchema("displayFieldName"));
 		schemaA.setSegmentField("someExtraField");
 		schemaA.validate();
 
 		// Change segment field from the extrafield to the displayfield
-		Schema schemaB = FieldUtil.createMinimalValidSchema();
+		SchemaModel schemaB = FieldUtil.createMinimalValidSchema();
 		schemaB.addField(FieldUtil.createStringFieldSchema("someExtraField"));
 		schemaB.addField(FieldUtil.createStringFieldSchema("displayFieldName"));
 		schemaB.setSegmentField("displayFieldName");
@@ -144,12 +143,12 @@ public class SchemaComparatorSchemaTest extends AbstractMeshTest {
 
 	@Test
 	public void testDisplayFieldUpdated() throws IOException {
-		Schema schemaA = FieldUtil.createMinimalValidSchema();
+		SchemaModel schemaA = FieldUtil.createMinimalValidSchema();
 		schemaA.addField(FieldUtil.createStringFieldSchema("someExtraField"));
 		schemaA.addField(FieldUtil.createStringFieldSchema("displayFieldName"));
 		schemaA.setDisplayField("displayFieldName");
 
-		Schema schemaB = FieldUtil.createMinimalValidSchema();
+		SchemaModel schemaB = FieldUtil.createMinimalValidSchema();
 		schemaB.addField(FieldUtil.createStringFieldSchema("someExtraField"));
 		schemaB.addField(FieldUtil.createStringFieldSchema("displayFieldName"));
 		schemaB.setDisplayField("someExtraField");
@@ -160,16 +159,16 @@ public class SchemaComparatorSchemaTest extends AbstractMeshTest {
 
 	@Test
 	public void testDisplayFieldSame() throws IOException {
-		Schema schemaA = FieldUtil.createMinimalValidSchema();
-		Schema schemaB = FieldUtil.createMinimalValidSchema();
+		SchemaModel schemaA = FieldUtil.createMinimalValidSchema();
+		SchemaModel schemaB = FieldUtil.createMinimalValidSchema();
 		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
 		assertThat(changes).isEmpty();
 	}
 
 	@Test
 	public void testContainerFlagUpdated() throws IOException {
-		Schema schemaA = FieldUtil.createMinimalValidSchema();
-		Schema schemaB = FieldUtil.createMinimalValidSchema();
+		SchemaModel schemaA = FieldUtil.createMinimalValidSchema();
+		SchemaModel schemaB = FieldUtil.createMinimalValidSchema();
 		schemaA.setContainer(true);
 		schemaB.setContainer(false);
 		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
@@ -179,8 +178,8 @@ public class SchemaComparatorSchemaTest extends AbstractMeshTest {
 
 	@Test
 	public void testContainerFlagSame() throws IOException {
-		Schema schemaA = FieldUtil.createMinimalValidSchema();
-		Schema schemaB = FieldUtil.createMinimalValidSchema();
+		SchemaModel schemaA = FieldUtil.createMinimalValidSchema();
+		SchemaModel schemaB = FieldUtil.createMinimalValidSchema();
 		schemaA.setContainer(true);
 		schemaB.setContainer(true);
 		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
@@ -194,8 +193,8 @@ public class SchemaComparatorSchemaTest extends AbstractMeshTest {
 
 	@Test
 	public void testAutoPurgeFlagUpdated() throws IOException {
-		Schema schemaA = FieldUtil.createMinimalValidSchema();
-		Schema schemaB = FieldUtil.createMinimalValidSchema();
+		SchemaModel schemaA = FieldUtil.createMinimalValidSchema();
+		SchemaModel schemaB = FieldUtil.createMinimalValidSchema();
 		schemaA.setAutoPurge(true);
 		schemaB.setAutoPurge(false);
 		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
@@ -205,8 +204,8 @@ public class SchemaComparatorSchemaTest extends AbstractMeshTest {
 
 	@Test
 	public void testAutoPurgeFlagSame() throws IOException {
-		Schema schemaA = FieldUtil.createMinimalValidSchema();
-		Schema schemaB = FieldUtil.createMinimalValidSchema();
+		SchemaModel schemaA = FieldUtil.createMinimalValidSchema();
+		SchemaModel schemaB = FieldUtil.createMinimalValidSchema();
 		schemaA.setAutoPurge(true);
 		schemaB.setAutoPurge(true);
 		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
@@ -220,8 +219,8 @@ public class SchemaComparatorSchemaTest extends AbstractMeshTest {
 
 	@Test
 	public void testAutoPurgeFlagNull() throws IOException {
-		Schema schemaA = FieldUtil.createMinimalValidSchema();
-		Schema schemaB = FieldUtil.createMinimalValidSchema();
+		SchemaModel schemaA = FieldUtil.createMinimalValidSchema();
+		SchemaModel schemaB = FieldUtil.createMinimalValidSchema();
 		schemaA.setAutoPurge(true);
 		schemaB.setAutoPurge(null);
 		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
@@ -231,8 +230,8 @@ public class SchemaComparatorSchemaTest extends AbstractMeshTest {
 
 	@Test
 	public void testSameDescription() throws IOException {
-		Schema schemaA = FieldUtil.createMinimalValidSchema();
-		Schema schemaB = FieldUtil.createMinimalValidSchema();
+		SchemaModel schemaA = FieldUtil.createMinimalValidSchema();
+		SchemaModel schemaB = FieldUtil.createMinimalValidSchema();
 		schemaA.setDescription("test123");
 		schemaB.setDescription("test123");
 		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
@@ -241,8 +240,8 @@ public class SchemaComparatorSchemaTest extends AbstractMeshTest {
 
 	@Test
 	public void testDescriptionUpdated() throws IOException {
-		Schema schemaA = FieldUtil.createMinimalValidSchema();
-		Schema schemaB = FieldUtil.createMinimalValidSchema();
+		SchemaModel schemaA = FieldUtil.createMinimalValidSchema();
+		SchemaModel schemaB = FieldUtil.createMinimalValidSchema();
 		schemaA.setDescription("test123");
 		schemaB.setDescription("test123-changed");
 		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
@@ -252,8 +251,8 @@ public class SchemaComparatorSchemaTest extends AbstractMeshTest {
 
 	@Test
 	public void testDescriptionUpdatedToNull() throws IOException {
-		Schema schemaA = FieldUtil.createMinimalValidSchema();
-		Schema schemaB = FieldUtil.createMinimalValidSchema();
+		SchemaModel schemaA = FieldUtil.createMinimalValidSchema();
+		SchemaModel schemaB = FieldUtil.createMinimalValidSchema();
 		schemaA.setDescription("test123");
 		schemaB.setDescription(null);
 		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
@@ -263,8 +262,8 @@ public class SchemaComparatorSchemaTest extends AbstractMeshTest {
 
 	@Test
 	public void testSameName() throws IOException {
-		Schema schemaA = FieldUtil.createMinimalValidSchema();
-		Schema schemaB = FieldUtil.createMinimalValidSchema();
+		SchemaModel schemaA = FieldUtil.createMinimalValidSchema();
+		SchemaModel schemaB = FieldUtil.createMinimalValidSchema();
 		schemaA.setName("test123");
 		schemaB.setName("test123");
 		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
@@ -273,8 +272,8 @@ public class SchemaComparatorSchemaTest extends AbstractMeshTest {
 
 	@Test
 	public void testNameUpdated() throws IOException {
-		Schema schemaA = FieldUtil.createMinimalValidSchema();
-		Schema schemaB = FieldUtil.createMinimalValidSchema();
+		SchemaModel schemaA = FieldUtil.createMinimalValidSchema();
+		SchemaModel schemaB = FieldUtil.createMinimalValidSchema();
 		schemaA.setName("test123");
 		schemaB.setName("test123_changed");
 		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);

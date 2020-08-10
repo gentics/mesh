@@ -6,19 +6,19 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.fieldhandler.AbstractComparatorBinaryTest;
 import com.gentics.mesh.core.data.schema.handler.AbstractFieldSchemaContainerComparator;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MeshTestSetting(testSize = FULL, startServer = false)
-public class SchemaComparatorBinaryTest extends AbstractComparatorBinaryTest<Schema> {
+public class SchemaComparatorBinaryTest extends AbstractComparatorBinaryTest<SchemaModel> {
 
 	@Override
-	public AbstractFieldSchemaContainerComparator<Schema> getComparator() {
+	public AbstractFieldSchemaContainerComparator<SchemaModel> getComparator() {
 		return new SchemaComparator();
 	}
 
 	@Override
-	public Schema createContainer() {
+	public SchemaModel createContainer() {
 		return FieldUtil.createMinimalValidSchema();
 	}
 }

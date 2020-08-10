@@ -26,8 +26,8 @@ import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.list.FieldList;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -44,7 +44,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 		SchemaContainerVersionImpl version = Tx.get().getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 		version.setSchemaContainer(container);
 		container.setLatestVersion(version);
-		SchemaModel schema = new SchemaModelImpl();
+		SchemaUpdateModel schema = new SchemaModelImpl();
 		schema.setName("dummySchema");
 		schema.addField(createFieldSchema(isRequiredField));
 		if (segmentField != null) {
@@ -68,8 +68,8 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 		return response;
 	}
 
-	protected Schema prepareNode(Node node, String listName, String listType) {
-		SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
+	protected SchemaModel prepareNode(Node node, String listName, String listType) {
+		SchemaUpdateModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		ListFieldSchema nodeListFieldSchema = new ListFieldSchemaImpl();
 		nodeListFieldSchema.setName(listName);
 		nodeListFieldSchema.setListType(listType);

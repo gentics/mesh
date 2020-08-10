@@ -1,5 +1,14 @@
 package com.gentics.mesh.search;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
 import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
 import com.gentics.mesh.core.data.search.bulk.UpdateBulkEntry;
@@ -9,7 +18,7 @@ import com.gentics.mesh.core.data.search.request.Bulkable;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.DeleteDocumentRequest;
 import com.gentics.mesh.core.data.search.request.UpdateDocumentRequest;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.reactivex.Completable;
@@ -17,15 +26,6 @@ import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 /**
  * Search provider which just logs interacts with the search provider. This is useful when debugging or writing tests.
@@ -92,7 +92,7 @@ public class TrackingSearchProvider implements SearchProvider {
 		});
 	}
 
-	public Completable setNodeIndexMapping(String indexName, String type, Schema schema) {
+	public Completable setNodeIndexMapping(String indexName, String type, SchemaModel schema) {
 		return Completable.complete();
 	}
 

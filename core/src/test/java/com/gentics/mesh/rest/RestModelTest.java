@@ -24,10 +24,10 @@ import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceInfo;
 import com.gentics.mesh.core.rest.schema.SchemaStorage;
+import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
@@ -129,8 +129,8 @@ public class RestModelTest extends AbstractMeshTest {
 	@Test
 	public void testNodeList() throws Exception {
 		try (Tx tx = tx()) {
-			SchemaModel folderSchema = schemaContainer("folder").getLatestVersion().getSchema();
-			SchemaModel contentSchema = schemaContainer("content").getLatestVersion().getSchema();
+			SchemaUpdateModel folderSchema = schemaContainer("folder").getLatestVersion().getSchema();
+			SchemaUpdateModel contentSchema = schemaContainer("content").getLatestVersion().getSchema();
 
 			NodeResponse folder = new NodeResponse();
 			FieldMap folderFields = new FieldMapImpl();
@@ -163,7 +163,7 @@ public class RestModelTest extends AbstractMeshTest {
 	@Test
 	public void testSchema() throws JsonParseException, JsonMappingException, IOException {
 
-		Schema schemaCreateRequest = new SchemaModelImpl();
+		SchemaModel schemaCreateRequest = new SchemaModelImpl();
 		schemaCreateRequest.setName("blogpost");
 		schemaCreateRequest.setDisplayField("name");
 
@@ -213,7 +213,7 @@ public class RestModelTest extends AbstractMeshTest {
 		assertNotNull(json);
 
 		// Deserialize the object
-		Schema loadedRequest = JsonUtil.readValue(json, SchemaModelImpl.class);
+		SchemaModel loadedRequest = JsonUtil.readValue(json, SchemaModelImpl.class);
 		assertNotNull(loadedRequest);
 
 		// Serialize the object
@@ -224,7 +224,7 @@ public class RestModelTest extends AbstractMeshTest {
 
 	@Test
 	public void testNodeSchema2() {
-		Schema schema = new SchemaModelImpl();
+		SchemaModel schema = new SchemaModelImpl();
 
 		schema.setName("blogpost");
 		schema.setDisplayField("name");

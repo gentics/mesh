@@ -16,7 +16,7 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.util.CompareUtils;
@@ -230,7 +230,7 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 	 * @return
 	 */
 	private SchemaChangeModel createFieldContainerUpdateChange(Class<? extends FC> classOfFC) {
-		if (Schema.class.isAssignableFrom(classOfFC)) {
+		if (SchemaModel.class.isAssignableFrom(classOfFC)) {
 			return SchemaChangeModel.createUpdateSchemaChange();
 		} else if (Microschema.class.isAssignableFrom(classOfFC)) {
 			return SchemaChangeModel.createUpdateMicroschemaChange();

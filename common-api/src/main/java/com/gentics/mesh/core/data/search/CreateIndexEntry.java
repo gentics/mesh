@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.search;
 
 import com.gentics.mesh.core.data.search.context.GenericEntryContext;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 
 /**
  * Entry which instructs the index handler to create the index using the provided information.
@@ -13,7 +13,7 @@ public interface CreateIndexEntry extends SeperateSearchQueueEntry<GenericEntryC
 	 * 
 	 * @return
 	 */
-	Schema getSchema();
+	SchemaModel getSchema();
 
 	/**
 	 * Set the optional schema for the index create request.
@@ -21,7 +21,7 @@ public interface CreateIndexEntry extends SeperateSearchQueueEntry<GenericEntryC
 	 * @param schema
 	 * @return Fluent API
 	 */
-	CreateIndexEntry setSchema(Schema schema);
+	CreateIndexEntry setSchema(SchemaModel schema);
 
 	/**
 	 * Name of the index which should be created.

@@ -36,8 +36,8 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.branch.BranchSchemaAssignEventModel;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
@@ -55,7 +55,7 @@ import io.vertx.core.logging.LoggerFactory;
  * @see SchemaContainerVersion
  */
 public class SchemaContainerVersionImpl extends
-	AbstractGraphFieldSchemaContainerVersion<SchemaResponse, SchemaModel, SchemaReference, SchemaContainerVersion, SchemaContainer> implements
+	AbstractGraphFieldSchemaContainerVersion<SchemaResponse, SchemaUpdateModel, SchemaReference, SchemaContainerVersion, SchemaContainer> implements
 	SchemaContainerVersion {
 
 	private static final Logger log = LoggerFactory.getLogger(SchemaContainerVersionImpl.class);
@@ -104,8 +104,8 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public SchemaModel getSchema() {
-		SchemaModel schema = mesh().serverSchemaStorage().getSchema(getName(), getVersion());
+	public SchemaUpdateModel getSchema() {
+		SchemaUpdateModel schema = mesh().serverSchemaStorage().getSchema(getName(), getVersion());
 		if (schema == null) {
 			schema = JsonUtil.readValue(getJson(), SchemaModelImpl.class);
 			mesh().serverSchemaStorage().addSchema(schema);
@@ -129,7 +129,7 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public void setSchema(SchemaModel schema) {
+	public void setSchema(SchemaUpdateModel schema) {
 		mesh().serverSchemaStorage().removeSchema(schema.getName(), schema.getVersion());
 		mesh().serverSchemaStorage().addSchema(schema);
 		String json = schema.toJson();

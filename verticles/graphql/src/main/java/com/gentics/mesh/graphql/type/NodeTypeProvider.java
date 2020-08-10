@@ -47,7 +47,7 @@ import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
@@ -682,7 +682,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		List<GraphQLObjectType> schemaTypes = new ArrayList<>();
 		for (SchemaContainer container : project.getSchemaContainerRoot().findAll()) {
 			SchemaContainerVersion version = container.getLatestVersion();
-			Schema schema = version.getSchema();
+			SchemaModel schema = version.getSchema();
 			GraphQLObjectType.Builder root = newObject();
 			// TODO remove this workaround
 			root.name(schema.getName().replaceAll("-", "_"));
@@ -733,7 +733,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 		return project.getSchemaContainerRoot().findAll().stream().map(container -> {
 			SchemaContainerVersion version = container.getLatestVersion();
-			Schema schema = version.getSchema();
+			SchemaModel schema = version.getSchema();
 			GraphQLObjectType.Builder root = newObject();
 			root.withInterface(GraphQLTypeReference.typeRef(NODE_TYPE_NAME));
 			root.name(schema.getName());

@@ -79,8 +79,8 @@ import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
@@ -143,7 +143,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	@Override
 	public void updateDisplayFieldValue() {
 		// TODO use schema storage instead
-		Schema schema = getSchemaContainerVersion().getSchema();
+		SchemaModel schema = getSchemaContainerVersion().getSchema();
 		String displayFieldName = schema.getDisplayField();
 		FieldSchema fieldSchema = schema.getField(displayFieldName);
 		// Only update the display field value if the field can be located
@@ -227,7 +227,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public Set<String> getUrlFieldValues() {
-		SchemaModel schema = getSchemaContainerVersion().getSchema();
+		SchemaUpdateModel schema = getSchemaContainerVersion().getSchema();
 
 		Set<String> urlFieldValues = new HashSet<>();
 		if (schema.getUrlFields() != null) {
@@ -521,7 +521,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public void validate() {
-		Schema schema = getSchemaContainerVersion().getSchema();
+		SchemaModel schema = getSchemaContainerVersion().getSchema();
 		Map<String, GraphField> fieldsMap = getFields().stream().collect(Collectors.toMap(GraphField::getFieldKey, Function.identity()));
 
 		schema.getFields().stream().forEach(fieldSchema -> {
@@ -539,7 +539,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	public List<FieldContainerChange> compareTo(FieldMap fieldMap) {
 		List<FieldContainerChange> changes = new ArrayList<>();
 
-		Schema schemaA = getSchemaContainerVersion().getSchema();
+		SchemaModel schemaA = getSchemaContainerVersion().getSchema();
 		Map<String, FieldSchema> fieldSchemaMap = schemaA.getFieldsAsMap();
 
 		// Handle all fields
@@ -571,9 +571,9 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	public List<FieldContainerChange> compareTo(NodeGraphFieldContainer container) {
 		List<FieldContainerChange> changes = new ArrayList<>();
 
-		Schema schemaA = getSchemaContainerVersion().getSchema();
+		SchemaModel schemaA = getSchemaContainerVersion().getSchema();
 		Map<String, FieldSchema> fieldMapA = schemaA.getFieldsAsMap();
-		Schema schemaB = container.getSchemaContainerVersion().getSchema();
+		SchemaModel schemaB = container.getSchemaContainerVersion().getSchema();
 		Map<String, FieldSchema> fieldMapB = schemaB.getFieldsAsMap();
 		// Generate a structural diff first. This way it is easy to determine
 		// which fields have been added or removed.

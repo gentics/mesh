@@ -13,8 +13,8 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 
@@ -23,7 +23,7 @@ import com.gentics.mesh.madl.traversal.TraversalResult;
  * versions.
  */
 public interface SchemaContainerVersion
-		extends GraphFieldSchemaContainerVersion<SchemaResponse, SchemaModel, SchemaReference, SchemaContainerVersion, SchemaContainer> {
+		extends GraphFieldSchemaContainerVersion<SchemaResponse, SchemaUpdateModel, SchemaReference, SchemaContainerVersion, SchemaContainer> {
 
 	static final TypeInfo TYPE_INFO = new TypeInfo(SCHEMAVERSION, SCHEMA_CREATED, SCHEMA_UPDATED, SCHEMA_DELETED);
 

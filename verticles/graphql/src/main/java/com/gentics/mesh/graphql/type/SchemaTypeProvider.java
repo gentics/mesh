@@ -18,7 +18,7 @@ import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
@@ -73,25 +73,25 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 
 		// .isContainer
 		schemaType.field(newFieldDefinition().name("isContainer").type(GraphQLBoolean).dataFetcher((env) -> {
-			SchemaModel model = loadModelWithFallback(env);
+			SchemaUpdateModel model = loadModelWithFallback(env);
 			return model != null ? model.getContainer() : null;
 		}));
 
 		// .isAutoPurge
 		schemaType.field(newFieldDefinition().name("isAutoPurge").type(GraphQLBoolean).dataFetcher((env) -> {
-			SchemaModel model = loadModelWithFallback(env);
+			SchemaUpdateModel model = loadModelWithFallback(env);
 			return model != null ? model.getAutoPurge() : null;
 		}));
 
 		// .displayField
 		schemaType.field(newFieldDefinition().name("displayField").type(GraphQLString).dataFetcher((env) -> {
-			SchemaModel model = loadModelWithFallback(env);
+			SchemaUpdateModel model = loadModelWithFallback(env);
 			return model != null ? model.getDisplayField() : null;
 		}));
 
 		// .segmentField
 		schemaType.field(newFieldDefinition().name("segmentField").type(GraphQLString).dataFetcher((env) -> {
-			SchemaModel model = loadModelWithFallback(env);
+			SchemaUpdateModel model = loadModelWithFallback(env);
 			return model != null ? model.getSegmentField() : null;
 		}));
 
@@ -153,16 +153,16 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 		}
 	}
 
-	private SchemaModel loadModelWithFallback(DataFetchingEnvironment env) {
+	private SchemaUpdateModel loadModelWithFallback(DataFetchingEnvironment env) {
 		Object source = env.getSource();
 		if (source instanceof SchemaContainer) {
 			SchemaContainer schema = env.getSource();
-			SchemaModel model = JsonUtil.readValue(schema.getLatestVersion().getJson(), SchemaModelImpl.class);
+			SchemaUpdateModel model = JsonUtil.readValue(schema.getLatestVersion().getJson(), SchemaModelImpl.class);
 			return model;
 		}
 		if (source instanceof SchemaContainerVersion) {
 			SchemaContainerVersion schema = env.getSource();
-			SchemaModel model = JsonUtil.readValue(schema.getJson(), SchemaModelImpl.class);
+			SchemaUpdateModel model = JsonUtil.readValue(schema.getJson(), SchemaModelImpl.class);
 			return model;
 		}
 		log.error("Invalid type {" + source + "}.");

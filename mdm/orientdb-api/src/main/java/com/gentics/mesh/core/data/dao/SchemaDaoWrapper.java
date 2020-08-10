@@ -7,8 +7,8 @@ import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.madl.traversal.TraversalResult;
@@ -53,7 +53,7 @@ public interface SchemaDaoWrapper extends SchemaDao {
 	 * @return Created schema container
 	 * @throws MeshSchemaException
 	 */
-	SchemaContainer create(SchemaModel schema, User creator, String uuid) throws MeshSchemaException;
+	SchemaContainer create(SchemaUpdateModel schema, User creator, String uuid) throws MeshSchemaException;
 
 	/**
 	 * Create new schema container.
@@ -65,7 +65,7 @@ public interface SchemaDaoWrapper extends SchemaDao {
 	 * @return Created schema container
 	 * @throws MeshSchemaException
 	 */
-	default SchemaContainer create(SchemaModel schema, User creator) throws MeshSchemaException {
+	default SchemaContainer create(SchemaUpdateModel schema, User creator) throws MeshSchemaException {
 		return create(schema, creator, null);
 	}
 
@@ -83,7 +83,7 @@ public interface SchemaDaoWrapper extends SchemaDao {
 	 * @return Created schema container
 	 * @throws MeshSchemaException
 	 */
-	SchemaContainer create(SchemaModel schema, User creator, String uuid, boolean validate) throws MeshSchemaException;
+	SchemaContainer create(SchemaUpdateModel schema, User creator, String uuid, boolean validate) throws MeshSchemaException;
 
 	SchemaContainer findByName(Project project, String schemaName);
 

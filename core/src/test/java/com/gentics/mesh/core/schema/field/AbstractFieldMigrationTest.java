@@ -48,7 +48,7 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -964,7 +964,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 * @return schema container
 	 */
 	protected SchemaContainerVersion createSchemaVersion(SchemaContainer container, String name, String version, FieldSchema... fields) {
-		SchemaModel schema = new SchemaModelImpl();
+		SchemaUpdateModel schema = new SchemaModelImpl();
 		schema.setName(name);
 		schema.setVersion(version);
 		for (FieldSchema field : fields) {
@@ -1029,7 +1029,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		SchemaContainerVersion latestVersion = node.getSchemaContainer().getLatestVersion();
 
 		// Add a micronode field to the schema of the node.
-		SchemaModel schema = latestVersion.getSchema();
+		SchemaUpdateModel schema = latestVersion.getSchema();
 		if (schema.getField(micronodeFieldName) == null) {
 			schema.addField(new MicronodeFieldSchemaImpl().setName(micronodeFieldName).setLabel("Micronode Field"));
 		}

@@ -24,8 +24,8 @@ import com.gentics.mesh.core.data.root.impl.SchemaContainerRootImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.madl.traversal.TraversalResult;
@@ -35,7 +35,7 @@ import com.tinkerpop.blueprints.Vertex;
  * @see SchemaContainer
  */
 public class SchemaContainerImpl extends
-		AbstractGraphFieldSchemaContainer<SchemaResponse, SchemaModel, SchemaReference, SchemaContainer, SchemaContainerVersion> implements
+		AbstractGraphFieldSchemaContainer<SchemaResponse, SchemaUpdateModel, SchemaReference, SchemaContainer, SchemaContainerVersion> implements
 		SchemaContainer {
 
 	@Override

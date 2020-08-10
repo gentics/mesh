@@ -18,7 +18,6 @@ import static com.gentics.mesh.example.ExampleUuids.UUID_2;
 import static com.gentics.mesh.example.ExampleUuids.UUID_3;
 import static com.gentics.mesh.example.ExampleUuids.UUID_4;
 import static com.gentics.mesh.example.ExampleUuids.UUID_5;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -61,7 +60,7 @@ import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
 import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
@@ -254,8 +253,8 @@ public final class TestMocks {
 		return container;
 	}
 
-	public static SchemaModel mockContentSchema() {
-		SchemaModel schema = new SchemaModelImpl();
+	public static SchemaUpdateModel mockContentSchema() {
+		SchemaUpdateModel schema = new SchemaModelImpl();
 		schema.setName("content");
 		schema.setDescription("Content schema");
 		schema.setDisplayField("string");

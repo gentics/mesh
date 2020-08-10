@@ -28,7 +28,7 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
@@ -59,7 +59,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 			SchemaModelImpl schema = new SchemaModelImpl();
 			version.setSchema(schema);
-			Schema updatedSchema = mutator.apply(version);
+			SchemaModel updatedSchema = mutator.apply(version);
 			assertNotNull(updatedSchema);
 			assertEquals("No changes were specified. No modification should happen.", schema, updatedSchema);
 		}
@@ -88,7 +88,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 			version.setNextChange(fieldTypeChange);
 
 			// 3. Apply the changes
-			Schema updatedSchema = mutator.apply(version);
+			SchemaModel updatedSchema = mutator.apply(version);
 
 			StringFieldSchema stringFieldSchema = updatedSchema.getField("testField", StringFieldSchemaImpl.class);
 			assertNotNull(stringFieldSchema);
@@ -119,7 +119,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 			version.setNextChange(stringFieldUpdate);
 
 			// 3. Apply the changes
-			Schema updatedSchema = mutator.apply(version);
+			SchemaModel updatedSchema = mutator.apply(version);
 
 			StringFieldSchema stringFieldSchema = updatedSchema.getField("stringField", StringFieldSchemaImpl.class);
 			assertNotNull(stringFieldSchema);
@@ -241,7 +241,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 			micronodeFieldUpdate.setNextChange(listFieldUpdate);
 
 			// 3. Apply the changes
-			Schema updatedSchema = mutator.apply(version);
+			SchemaModel updatedSchema = mutator.apply(version);
 
 			// Binary
 			BinaryFieldSchema binaryFieldSchema = updatedSchema.getField("binaryField", BinaryFieldSchemaImpl.class);

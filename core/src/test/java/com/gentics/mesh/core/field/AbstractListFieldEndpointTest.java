@@ -6,7 +6,7 @@ import org.junit.Before;
 
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 
 public abstract class AbstractListFieldEndpointTest extends AbstractFieldEndpointTest implements FieldEndpointTestcases, ListFieldEndpointTestcases {
@@ -23,7 +23,7 @@ public abstract class AbstractListFieldEndpointTest extends AbstractFieldEndpoin
 	}
 
 	protected void setSchema(String listType) throws IOException {
-		SchemaModel schema = schemaContainer("folder").getLatestVersion().getSchema();
+		SchemaUpdateModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 		ListFieldSchema listFieldSchema = new ListFieldSchemaImpl();
 		listFieldSchema.setName(FIELD_NAME);
 		listFieldSchema.setLabel("Some label");

@@ -7,15 +7,15 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
 
 import io.vertx.core.json.JsonObject;
 
 /**
- * @see Schema
+ * @see SchemaModel
  */
-public class SchemaModelImpl implements SchemaModel {
+public class SchemaModelImpl implements SchemaUpdateModel {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Name of the display field.")

@@ -27,7 +27,7 @@ import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.core.rest.event.node.SchemaMigrationCause;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -77,7 +77,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 
 			// Prepare the migration - Collect the migration scripts
 			Set<String> touchedFields = new HashSet<>();
-			SchemaModel newSchema = db.tx(() -> toVersion.getSchema());
+			SchemaUpdateModel newSchema = db.tx(() -> toVersion.getSchema());
 
 			try {
 				db.tx(() -> {
@@ -152,7 +152,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	 * @return
 	 */
 	private void migrateContainer(NodeMigrationActionContextImpl ac, EventQueueBatch batch, NodeGraphFieldContainer container,
-		GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion, SchemaModel newSchema, List<Exception> errorsDetected,
+		GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion, SchemaUpdateModel newSchema, List<Exception> errorsDetected,
 		Set<String> touchedFields) {
 
 		String containerUuid = container.getUuid();
@@ -219,7 +219,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	private void migrateDraftContainer(NodeMigrationActionContextImpl ac, EventQueueBatch sqb, Branch branch, Node node,
 		NodeGraphFieldContainer container, GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion, SchemaContainerVersion toVersion,
 		Set<String> touchedFields,
-		SchemaModel newSchema, VersionNumber nextDraftVersion)
+		SchemaUpdateModel newSchema, VersionNumber nextDraftVersion)
 		throws Exception {
 
 		String branchUuid = branch.getUuid();
@@ -278,7 +278,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	 */
 	private VersionNumber migratePublishedContainer(NodeMigrationActionContextImpl ac, EventQueueBatch sqb, Branch branch, Node node,
 		NodeGraphFieldContainer container, GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion, SchemaContainerVersion toVersion,
-		Set<String> touchedFields, SchemaModel newSchema) throws Exception {
+		Set<String> touchedFields, SchemaUpdateModel newSchema) throws Exception {
 
 		String languageTag = container.getLanguageTag();
 		String branchUuid = branch.getUuid();

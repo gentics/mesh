@@ -16,11 +16,10 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.AbstractRestException;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.Microschema;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.validation.SchemaValidationResponse;
 import com.gentics.mesh.core.rest.validation.ValidationStatus;
-import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -84,7 +83,7 @@ public class UtilityHandler extends AbstractHandler {
 	 */
 	public void validateSchema(InternalActionContext ac) {
 		db.asyncTx(() -> {
-			Schema schema = JsonUtil.readValue(ac.getBodyAsString(), SchemaModelImpl.class);
+			SchemaModel schema = JsonUtil.readValue(ac.getBodyAsString(), SchemaModelImpl.class);
 			JsonObject fullSettings = nodeIndexHandler.createIndexSettings(schema);
 			SchemaValidationResponse response = new SchemaValidationResponse();
 			response.setElasticsearch(fullSettings);

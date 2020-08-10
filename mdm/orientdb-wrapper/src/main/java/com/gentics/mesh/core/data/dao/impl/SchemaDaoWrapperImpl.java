@@ -32,8 +32,8 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.error.GenericRestException;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
@@ -94,7 +94,7 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper implements SchemaDa
 		UserDaoWrapper userDao = Tx.get().data().userDao();
 		SchemaContainerRoot schemaRoot = boot.get().schemaContainerRoot();
 
-		SchemaModel requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModelImpl.class);
+		SchemaUpdateModel requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModelImpl.class);
 		requestModel.validate();
 
 		if (!userDao.hasPermission(requestUser, schemaRoot, CREATE_PERM)) {
@@ -169,12 +169,12 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper implements SchemaDa
 	}
 
 	@Override
-	public SchemaContainer create(SchemaModel schema, User creator, String uuid) {
+	public SchemaContainer create(SchemaUpdateModel schema, User creator, String uuid) {
 		return create(schema, creator, uuid, false);
 	}
 
 	@Override
-	public SchemaContainer create(SchemaModel schema, User creator, String uuid, boolean validate) {
+	public SchemaContainer create(SchemaUpdateModel schema, User creator, String uuid, boolean validate) {
 		SchemaContainerRoot schemaRoot = boot.get().schemaContainerRoot();
 		MicroschemaDaoWrapper microschemaDao = Tx.get().data().microschemaDao();
 
@@ -214,7 +214,7 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper implements SchemaDa
 		return container;
 	}
 
-	public static void validateSchema(NodeIndexHandler indexHandler, SchemaModel schema) {
+	public static void validateSchema(NodeIndexHandler indexHandler, SchemaUpdateModel schema) {
 		// TODO Maybe set the timeout to the configured search.timeout? But the default of 60 seconds is really long.
 		Throwable error = indexHandler.validate(schema).blockingGet(10, TimeUnit.SECONDS);
 

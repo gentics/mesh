@@ -9,7 +9,7 @@ import static org.junit.Assert.assertTrue;
 import com.gentics.mesh.assertj.AbstractMeshAssert;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 
 public class SchemaResponseAssert extends AbstractMeshAssert<SchemaResponseAssert, SchemaResponse> {
@@ -18,7 +18,7 @@ public class SchemaResponseAssert extends AbstractMeshAssert<SchemaResponseAsser
 		super(actual, SchemaResponseAssert.class);
 	}
 
-	public SchemaResponseAssert matches(Schema schema) {
+	public SchemaResponseAssert matches(SchemaModel schema) {
 		assertNotNull(schema);
 		assertNotNull(actual);
 		assertEquals("The name of the schemas do not match.", actual.getName(), schema.getName());
@@ -57,7 +57,7 @@ public class SchemaResponseAssert extends AbstractMeshAssert<SchemaResponseAsser
 		assertNotNull(version);
 		assertNotNull(actual);
 
-		Schema storedSchema = version.getSchema();
+		SchemaModel storedSchema = version.getSchema();
 		matches(storedSchema);
 		SchemaContainer container = version.getSchemaContainer();
 		matches(container);

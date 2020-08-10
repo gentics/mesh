@@ -3,8 +3,8 @@ package com.gentics.mesh.rest.client.method;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
@@ -65,7 +65,7 @@ public interface SchemaClientMethods {
 	 * @param request
 	 * @return
 	 */
-	MeshRequest<SchemaChangesListModel> diffSchema(String uuid, Schema request);
+	MeshRequest<SchemaChangesListModel> diffSchema(String uuid, SchemaModel request);
 
 	/**
 	 * Delete the given schema

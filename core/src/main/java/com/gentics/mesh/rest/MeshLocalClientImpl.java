@@ -84,8 +84,8 @@ import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
@@ -650,7 +650,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<SchemaChangesListModel> diffSchema(String uuid, Schema request) {
+	public MeshRequest<SchemaChangesListModel> diffSchema(String uuid, SchemaModel request) {
 		LocalActionContextImpl<SchemaChangesListModel> ac = createContext(SchemaChangesListModel.class);
 		ac.setPayloadObject(request);
 		schemaCrudHandler.handleDiff(ac, uuid);
@@ -1601,7 +1601,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<SchemaValidationResponse> validateSchema(Schema schema) {
+	public MeshRequest<SchemaValidationResponse> validateSchema(SchemaModel schema) {
 		return null;
 	}
 

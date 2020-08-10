@@ -10,7 +10,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
@@ -27,7 +27,7 @@ public class StringFieldEndpointTest extends AbstractMeshTest {
 		final String nodeUuid = tx(() -> contentUuid());
 
 		// 1. Update schema and set allowed property
-		Schema schema = tx(() -> schemaContainer("content").getLatestVersion().getSchema());
+		SchemaModel schema = tx(() -> schemaContainer("content").getLatestVersion().getSchema());
 		SchemaUpdateRequest request = JsonUtil.readValue(schema.toJson(), SchemaUpdateRequest.class);
 		request.addField(new StringFieldSchemaImpl().setAllowedValues("a", "b", "c").setName("extraString"));
 
