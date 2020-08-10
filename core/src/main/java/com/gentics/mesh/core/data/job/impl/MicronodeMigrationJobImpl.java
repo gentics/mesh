@@ -20,8 +20,8 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
-import com.gentics.mesh.core.endpoint.migration.impl.MigrationStatusHandlerImpl;
-import com.gentics.mesh.core.endpoint.migration.micronode.MicronodeMigrationHandler;
+import com.gentics.mesh.core.migration.impl.MicronodeMigrationImpl;
+import com.gentics.mesh.core.migration.impl.MigrationStatusHandlerImpl;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.migration.MicroschemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.MicroschemaMigrationCause;
@@ -121,7 +121,7 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 	protected Completable processTask() {
 		return Completable.defer(() -> {
 			MicronodeMigrationContext context = prepareContext();
-			MicronodeMigrationHandler handler = mesh().micronodeMigrationHandler();
+			MicronodeMigrationImpl handler = mesh().micronodeMigrationHandler();
 			return handler.migrateMicronodes(context)
 				.doOnComplete(() -> {
 					db().tx(() -> {

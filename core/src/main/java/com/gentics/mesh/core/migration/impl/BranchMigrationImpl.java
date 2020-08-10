@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.endpoint.migration.branch;
+package com.gentics.mesh.core.migration.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
@@ -19,9 +19,10 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.endpoint.migration.AbstractMigrationHandler;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
+import com.gentics.mesh.core.migration.AbstractMigrationHandler;
+import com.gentics.mesh.core.migration.BranchMigration;
 import com.gentics.mesh.core.rest.event.node.BranchMigrationCause;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -34,21 +35,16 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 @Singleton
-public class BranchMigrationHandler extends AbstractMigrationHandler {
+public class BranchMigrationImpl extends AbstractMigrationHandler implements BranchMigration {
 
-	private static final Logger log = LoggerFactory.getLogger(BranchMigrationHandler.class);
+	private static final Logger log = LoggerFactory.getLogger(BranchMigrationImpl.class);
 
 	@Inject
-	public BranchMigrationHandler(Database db, BinaryUploadHandler nodeFieldAPIHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider) {
+	public BranchMigrationImpl(Database db, BinaryUploadHandler nodeFieldAPIHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider) {
 		super(db, nodeFieldAPIHandler, metrics, batchProvider);
 	}
 
-	/**
-	 * Migrate all nodes from one branch to the other
-	 * 
-	 * @param context
-	 * @return
-	 */
+	@Override
 	public Completable migrateBranch(BranchMigrationContext context) {
 		context.validate();
 		return Completable.defer(() -> {

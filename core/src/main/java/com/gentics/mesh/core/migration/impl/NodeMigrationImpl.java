@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.endpoint.migration.node;
+package com.gentics.mesh.core.migration.impl;
 
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
@@ -16,15 +16,17 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.context.NodeMigrationActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
-import com.gentics.mesh.core.endpoint.migration.AbstractMigrationHandler;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
+import com.gentics.mesh.core.migration.AbstractMigrationHandler;
+import com.gentics.mesh.core.migration.NodeMigration;
 import com.gentics.mesh.core.rest.event.node.SchemaMigrationCause;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
@@ -44,29 +46,23 @@ import io.vertx.core.logging.LoggerFactory;
  * Handler for node migrations after schema updates.
  */
 @Singleton
-public class NodeMigrationHandler extends AbstractMigrationHandler {
+public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeMigration {
 
-	private static final Logger log = LoggerFactory.getLogger(NodeMigrationHandler.class);
+	private static final Logger log = LoggerFactory.getLogger(NodeMigrationImpl.class);
 
 	private final AtomicLong migrationGauge;
 	private final WriteLock writeLock;
 
 	@Inject
-	public NodeMigrationHandler(Database db, BinaryUploadHandler nodeFieldAPIHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider,
+	public NodeMigrationImpl(Database db, BinaryUploadHandler nodeFieldAPIHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider,
 		WriteLock writeLock) {
 		super(db, nodeFieldAPIHandler, metrics, batchProvider);
 		migrationGauge = metrics.longGauge(NODE_MIGRATION_PENDING);
 		this.writeLock = writeLock;
 	}
 
-	/**
-	 * Migrate all nodes of a branch referencing the given schema container to the latest version of the schema.
-	 *
-	 * @param context
-	 *            Migration context
-	 * @return Completable which is completed once the migration finishes
-	 */
-	public Completable migrateNodes(NodeMigrationActionContextImpl context) {
+	@Override
+	public Completable migrateNodes(NodeMigrationActionContext context) {
 		context.validate();
 		return Completable.defer(() -> {
 			SchemaVersion fromVersion = context.getFromVersion();
@@ -151,7 +147,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	 * @param touchedFields
 	 * @return
 	 */
-	private void migrateContainer(NodeMigrationActionContextImpl ac, EventQueueBatch batch, NodeGraphFieldContainer container,
+	private void migrateContainer(NodeMigrationActionContext ac, EventQueueBatch batch, NodeGraphFieldContainer container,
 		GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion, SchemaUpdateModel newSchema, List<Exception> errorsDetected,
 		Set<String> touchedFields) {
 
@@ -216,7 +212,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	 *            Suggested new draft version
 	 * @throws Exception
 	 */
-	private void migrateDraftContainer(NodeMigrationActionContextImpl ac, EventQueueBatch sqb, Branch branch, Node node,
+	private void migrateDraftContainer(NodeMigrationActionContext ac, EventQueueBatch sqb, Branch branch, Node node,
 		NodeGraphFieldContainer container, GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion, SchemaVersion toVersion,
 		Set<String> touchedFields,
 		SchemaUpdateModel newSchema, VersionNumber nextDraftVersion)
@@ -276,7 +272,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	 * @return Version of the new published container
 	 * @throws Exception
 	 */
-	private VersionNumber migratePublishedContainer(NodeMigrationActionContextImpl ac, EventQueueBatch sqb, Branch branch, Node node,
+	private VersionNumber migratePublishedContainer(NodeMigrationActionContext ac, EventQueueBatch sqb, Branch branch, Node node,
 		NodeGraphFieldContainer container, GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion, SchemaVersion toVersion,
 		Set<String> touchedFields, SchemaUpdateModel newSchema) throws Exception {
 

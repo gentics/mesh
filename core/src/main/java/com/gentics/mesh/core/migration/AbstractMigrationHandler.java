@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.endpoint.migration;
+package com.gentics.mesh.core.migration;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -9,15 +9,17 @@ import java.util.Set;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.inject.Provider;
 
-import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
+import com.gentics.mesh.context.NodeMigrationActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.RemoveFieldChange;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.impl.FieldTypeChangeImpl;
-import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
+import com.gentics.mesh.core.endpoint.migration.MigrationHandler;
+import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
+import com.gentics.mesh.core.endpoint.migration.TriConsumer;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.event.EventCauseInfo;
@@ -90,7 +92,7 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 	 *            set of touched fields
 	 * @throws Exception
 	 */
-	protected void migrate(NodeMigrationActionContextImpl ac, GraphFieldContainer newContainer, FieldContainer newContent,
+	protected void migrate(NodeMigrationActionContext ac, GraphFieldContainer newContainer, FieldContainer newContent,
 		   	GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion,
 		GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> newVersion, Set<String> touchedFields) throws Exception {
 

@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.endpoint.migration.micronode;
+package com.gentics.mesh.core.migration.impl;
 
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
@@ -22,9 +22,10 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
-import com.gentics.mesh.core.endpoint.migration.AbstractMigrationHandler;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
+import com.gentics.mesh.core.migration.AbstractMigrationHandler;
+import com.gentics.mesh.core.migration.MicronodeMigration;
 import com.gentics.mesh.core.rest.event.node.MicroschemaMigrationCause;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
@@ -39,24 +40,19 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 @Singleton
-public class MicronodeMigrationHandler extends AbstractMigrationHandler {
+public class MicronodeMigrationImpl extends AbstractMigrationHandler implements MicronodeMigration {
 
-	private static final Logger log = LoggerFactory.getLogger(MicronodeMigrationHandler.class);
+	private static final Logger log = LoggerFactory.getLogger(MicronodeMigrationImpl.class);
 
 	private final WriteLock writeLock;
 
 	@Inject
-	public MicronodeMigrationHandler(Database db, BinaryUploadHandler binaryFieldHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider, WriteLock writeLock) {
+	public MicronodeMigrationImpl(Database db, BinaryUploadHandler binaryFieldHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider, WriteLock writeLock) {
 		super(db, binaryFieldHandler, metrics, batchProvider);
 		this.writeLock = writeLock;
 	}
 
-	/**
-	 * Migrate all micronodes referencing the given microschema container to the latest version
-	 * 
-	 * @param context
-	 * @return Completable which will be completed once the migration has completed
-	 */
+	@Override
 	public Completable migrateMicronodes(MicronodeMigrationContext context) {
 		context.validate();
 		return Completable.defer(() -> {

@@ -15,8 +15,8 @@ import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.endpoint.migration.branch.BranchMigrationHandler;
-import com.gentics.mesh.core.endpoint.migration.impl.MigrationStatusHandlerImpl;
+import com.gentics.mesh.core.migration.impl.BranchMigrationImpl;
+import com.gentics.mesh.core.migration.impl.MigrationStatusHandlerImpl;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.migration.BranchMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.BranchMigrationCause;
@@ -97,7 +97,7 @@ public class BranchMigrationJobImpl extends JobImpl {
 
 	@Override
 	protected Completable processTask() {
-		BranchMigrationHandler handler = mesh().branchMigrationHandler();
+		BranchMigrationImpl handler = mesh().branchMigrationHandler();
 
 		return Completable.defer(() -> {
 			BranchMigrationContext context = prepareContext();

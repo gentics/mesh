@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.endpoint.migration.impl;
+package com.gentics.mesh.core.migration.impl;
 
 import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.job.JobStatus.FAILED;

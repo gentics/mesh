@@ -18,8 +18,8 @@ import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
-import com.gentics.mesh.core.endpoint.migration.impl.MigrationStatusHandlerImpl;
-import com.gentics.mesh.core.endpoint.migration.node.NodeMigrationHandler;
+import com.gentics.mesh.core.migration.impl.MigrationStatusHandlerImpl;
+import com.gentics.mesh.core.migration.impl.NodeMigrationImpl;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.SchemaMigrationCause;
@@ -126,7 +126,7 @@ public class NodeMigrationJobImpl extends JobImpl {
 	}
 
 	protected Completable processTask() {
-		NodeMigrationHandler handler = mesh().nodeMigrationHandler();
+		NodeMigrationImpl handler = mesh().nodeMigrationHandler();
 
 		return Completable.defer(() -> {
 			NodeMigrationActionContextImpl context = prepareContext();

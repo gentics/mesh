@@ -19,13 +19,13 @@ import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.generic.UserProperties;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
-import com.gentics.mesh.core.endpoint.migration.branch.BranchMigrationHandler;
-import com.gentics.mesh.core.endpoint.migration.micronode.MicronodeMigrationHandler;
-import com.gentics.mesh.core.endpoint.migration.node.NodeMigrationHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.core.endpoint.role.RoleCrudHandler;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
+import com.gentics.mesh.core.migration.impl.BranchMigrationImpl;
+import com.gentics.mesh.core.migration.impl.MicronodeMigrationImpl;
+import com.gentics.mesh.core.migration.impl.NodeMigrationImpl;
 import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandler;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
@@ -99,11 +99,11 @@ public interface MeshComponent {
 
 	NodeIndexHandlerImpl nodeContainerIndexHandler();
 
-	NodeMigrationHandler nodeMigrationHandler();
+	NodeMigrationImpl nodeMigrationHandler();
 
-	BranchMigrationHandler branchMigrationHandler();
+	BranchMigrationImpl branchMigrationHandler();
 
-	MicronodeMigrationHandler micronodeMigrationHandler();
+	MicronodeMigrationImpl micronodeMigrationHandler();
 
 	ProjectVersionPurgeHandler projectVersionPurgeHandler();
 

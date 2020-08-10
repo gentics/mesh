@@ -36,13 +36,13 @@ import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.endpoint.migration.micronode.MicronodeMigrationHandler;
-import com.gentics.mesh.core.endpoint.migration.node.NodeMigrationHandler;
 import com.gentics.mesh.core.field.DataAsserter;
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.FieldFetcher;
 import com.gentics.mesh.core.field.FieldSchemaCreator;
 import com.gentics.mesh.core.field.FieldTestHelper;
+import com.gentics.mesh.core.migration.impl.MicronodeMigrationImpl;
+import com.gentics.mesh.core.migration.impl.NodeMigrationImpl;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -72,9 +72,9 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 	protected final static String KILLERSCRIPT = "function migrate(node, fieldname) {var System = Java.type('java.lang.System'); System.exit(0);}";
 
-	protected NodeMigrationHandler nodeMigrationHandler;
+	protected NodeMigrationImpl nodeMigrationHandler;
 
-	protected MicronodeMigrationHandler micronodeMigrationHandler;
+	protected MicronodeMigrationImpl micronodeMigrationHandler;
 
 	@Before
 	public void setupDeps() {
