@@ -16,12 +16,12 @@ import com.gentics.mesh.etc.config.MeshUploadOptions;
  * Registry which holds all binary data processors.
  */
 @Singleton
-public class BinaryProcessorRegistry {
+public class BinaryProcessorRegistryImpl implements BinaryProcessorRegistry {
 
 	private List<BinaryDataProcessor> processors = new ArrayList<>();
 
 	@Inject
-	public BinaryProcessorRegistry(MeshOptions options, BasicImageDataProcessor imageProcessor,
+	public BinaryProcessorRegistryImpl(MeshOptions options, BasicImageDataProcessor imageProcessor,
 		TikaBinaryProcessor tikaProcessor) {
 		MeshUploadOptions uploadOptions = options.getUploadOptions();
 

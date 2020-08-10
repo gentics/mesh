@@ -19,7 +19,7 @@ import javax.inject.Inject;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.binary.BinaryDataProcessor;
-import com.gentics.mesh.core.binary.BinaryProcessorRegistry;
+import com.gentics.mesh.core.binary.BinaryProcessorRegistryImpl;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -74,7 +74,7 @@ public class BinaryUploadHandler extends AbstractHandler {
 
 	private final BinaryStorage binaryStorage;
 
-	private final BinaryProcessorRegistry binaryProcessorRegistry;
+	private final BinaryProcessorRegistryImpl binaryProcessorRegistry;
 
 	private final HandlerUtilities utils;
 
@@ -92,7 +92,7 @@ public class BinaryUploadHandler extends AbstractHandler {
 		Lazy<BootstrapInitializer> boot,
 		BinaryFieldResponseHandler binaryFieldResponseHandler,
 		BinaryStorage binaryStorage,
-		BinaryProcessorRegistry binaryProcessorRegistry,
+		BinaryProcessorRegistryImpl binaryProcessorRegistry,
 		HandlerUtilities utils, Vertx rxVertx,
 		MeshOptions options,
 		Binaries binaries,

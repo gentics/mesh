@@ -19,6 +19,8 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.impl.BulkActionContextImpl;
+import com.gentics.mesh.core.binary.BinaryProcessorRegistry;
+import com.gentics.mesh.core.binary.BinaryProcessorRegistryImpl;
 import com.gentics.mesh.core.data.PersistenceClassMap;
 import com.gentics.mesh.core.data.PersistenceClassMapImpl;
 import com.gentics.mesh.core.data.binary.Binaries;
@@ -194,4 +196,7 @@ public abstract class BindModule {
 
 	@Binds
 	abstract NodeIndexHandler bindNodeIndexHandler(NodeIndexHandlerImpl e);
+
+	@Binds
+	abstract BinaryProcessorRegistry bindBinaryProcessorRegistry(BinaryProcessorRegistryImpl e);
 }
