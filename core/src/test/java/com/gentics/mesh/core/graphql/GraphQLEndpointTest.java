@@ -39,8 +39,8 @@ import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
@@ -211,7 +211,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			call(() -> client.assignMicroschemaToProject(PROJECT_NAME, microschemaResponse.getUuid()));
 		} else {
 			try (Tx tx = tx()) {
-				for (MicroschemaContainer microschema : meshRoot().getMicroschemaContainerRoot().findAll()) {
+				for (Microschema microschema : meshRoot().getMicroschemaContainerRoot().findAll()) {
 					microschema.remove();
 				}
 				tx.success();
@@ -230,7 +230,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			Node node3 = folder("2014");
 
 			// Update the folder schema to contain all fields
-			SchemaContainer schemaContainer = schemaContainer("folder");
+			Schema schemaContainer = schemaContainer("folder");
 			safelySetUuid(tx, schemaContainer, FOLDER_SCHEMA_UUID);
 			SchemaUpdateModel schema = schemaContainer.getLatestVersion().getSchema();
 			schema.setUrlFields("niceUrl");
@@ -481,7 +481,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 	 * @param schemaContainer
 	 * @param uuid
 	 */
-	private void safelySetUuid(Tx tx, SchemaContainer schemaContainer, String uuid) {
+	private void safelySetUuid(Tx tx, Schema schemaContainer, String uuid) {
 		for (Vertex node : tx.getGraph().getVertices("schema", schemaContainer.getUuid())) {
 			node.setProperty("schema", uuid);
 		}

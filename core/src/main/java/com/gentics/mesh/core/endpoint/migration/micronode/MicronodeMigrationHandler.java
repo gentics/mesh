@@ -21,7 +21,7 @@ import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.endpoint.migration.AbstractMigrationHandler;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
@@ -61,8 +61,8 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 		context.validate();
 		return Completable.defer(() -> {
 			Branch branch = context.getBranch();
-			MicroschemaContainerVersion fromVersion = context.getFromVersion();
-			MicroschemaContainerVersion toVersion = context.getToVersion();
+			MicroschemaVersion fromVersion = context.getFromVersion();
+			MicroschemaVersion toVersion = context.getToVersion();
 			MigrationStatusHandler status = context.getStatus();
 			MicroschemaMigrationCause cause = context.getCause();
 
@@ -136,7 +136,7 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 	 * @throws Exception
 	 */
 	private void migrateDraftContainer(NodeMigrationActionContextImpl ac, EventQueueBatch sqb, Branch branch, Node node,
-		NodeGraphFieldContainer container, MicroschemaContainerVersion fromVersion, MicroschemaContainerVersion toVersion,
+		NodeGraphFieldContainer container, MicroschemaVersion fromVersion, MicroschemaVersion toVersion,
 		Set<String> touchedFields, VersionNumber nextDraftVersion)
 		throws Exception {
 
@@ -180,8 +180,8 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 	 * @param errorsDetected
 	 */
 	private void migrateMicronodeContainer(NodeMigrationActionContextImpl ac, EventQueueBatch batch, Branch branch,
-										   MicroschemaContainerVersion fromVersion,
-										   MicroschemaContainerVersion toVersion, NodeGraphFieldContainer container, Set<String> touchedFields,
+										   MicroschemaVersion fromVersion,
+										   MicroschemaVersion toVersion, NodeGraphFieldContainer container, Set<String> touchedFields,
 										   List<Exception> errorsDetected) {
 		String containerUuid = container.getUuid();
 
@@ -237,7 +237,7 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 	 * @throws Exception
 	 */
 	private VersionNumber migratePublishedContainer(NodeMigrationActionContextImpl ac, EventQueueBatch sqb, Branch branch, Node node,
-		NodeGraphFieldContainer container, MicroschemaContainerVersion fromVersion, MicroschemaContainerVersion toVersion,
+		NodeGraphFieldContainer container, MicroschemaVersion fromVersion, MicroschemaVersion toVersion,
 		Set<String> touchedFields) throws Exception {
 
 		String branchUuid = branch.getUuid();
@@ -269,7 +269,7 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 	 * @throws Exception
 	 */
 	protected void migrateMicronodeFields(NodeMigrationActionContextImpl ac, NodeGraphFieldContainer container,
-		MicroschemaContainerVersion fromVersion, MicroschemaContainerVersion toVersion, Set<String> touchedFields) throws Exception {
+		MicroschemaVersion fromVersion, MicroschemaVersion toVersion, Set<String> touchedFields) throws Exception {
 		// iterate over all fields with micronodes to migrate
 		for (MicronodeGraphField field : container.getMicronodeFields(fromVersion)) {
 			// clone the field (this will clone the micronode)

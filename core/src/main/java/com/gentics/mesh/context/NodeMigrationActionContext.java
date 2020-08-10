@@ -2,7 +2,7 @@ package com.gentics.mesh.context;
 
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.rest.event.node.SchemaMigrationCause;
 
@@ -27,14 +27,14 @@ public interface NodeMigrationActionContext extends InternalActionContext {
 	 * 
 	 * @return version
 	 */
-	SchemaContainerVersion getFromVersion();
+	SchemaVersion getFromVersion();
 
 	/**
 	 * Return the to schema version.
 	 * 
 	 * @return version
 	 */
-	SchemaContainerVersion getToVersion();
+	SchemaVersion getToVersion();
 
 	/**
 	 * Return migration cause.

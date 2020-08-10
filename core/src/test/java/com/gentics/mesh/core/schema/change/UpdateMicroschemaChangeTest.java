@@ -7,13 +7,13 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
+import com.gentics.mesh.core.data.container.impl.MicroschemaVersionImpl;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.UpdateMicroschemaChange;
 import com.gentics.mesh.core.data.schema.impl.UpdateMicroschemaChangeImpl;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
-import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
@@ -36,7 +36,7 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 	@Override
 	public void testApply() {
 		try (Tx tx = tx()) {
-			MicroschemaContainerVersion version = tx.getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
+			MicroschemaVersion version = tx.getGraph().addFramedVertex(MicroschemaVersionImpl.class);
 			MicroschemaModelImpl schema = new MicroschemaModelImpl();
 
 			UpdateMicroschemaChange change = tx.getGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
@@ -45,7 +45,7 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 			version.setSchema(schema);
 			version.setNextChange(change);
 
-			Microschema updatedSchema = mutator.apply(version);
+			MicroschemaModel updatedSchema = mutator.apply(version);
 			assertEquals("updated", updatedSchema.getName());
 			assertEquals("value", updatedSchema.getElasticsearch().getString("key"));
 

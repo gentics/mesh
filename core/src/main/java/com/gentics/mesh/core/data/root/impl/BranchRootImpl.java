@@ -35,10 +35,10 @@ import com.gentics.mesh.core.data.impl.BranchImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.BranchRoot;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchReference;
@@ -190,25 +190,25 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 	private void assignSchemas(User creator, Branch baseBranch, Branch newBranch, boolean migrate, EventQueueBatch batch) {
 		// Assign the same schema versions as the base branch, so that a migration can be started
 		if (baseBranch != null && migrate) {
-			for (SchemaContainerVersion schemaContainerVersion : baseBranch.findActiveSchemaVersions()) {
-				newBranch.assignSchemaVersion(creator, schemaContainerVersion, batch);
+			for (SchemaVersion schemaVersion : baseBranch.findActiveSchemaVersions()) {
+				newBranch.assignSchemaVersion(creator, schemaVersion, batch);
 			}
 		}
 
 		// assign the newest schema versions of all project schemas to the branch
-		for (SchemaContainer schemaContainer : getProject().getSchemaContainerRoot().findAll()) {
+		for (Schema schemaContainer : getProject().getSchemaContainerRoot().findAll()) {
 			newBranch.assignSchemaVersion(newBranch.getCreator(), schemaContainer.getLatestVersion(), batch);
 		}
 
 		// ... same for microschemas
 		if (baseBranch != null && migrate) {
-			for (MicroschemaContainerVersion microschemaContainerVersion : baseBranch.findActiveMicroschemaVersions()) {
-				newBranch.assignMicroschemaVersion(creator, microschemaContainerVersion, batch);
+			for (MicroschemaVersion microschemaVersion : baseBranch.findActiveMicroschemaVersions()) {
+				newBranch.assignMicroschemaVersion(creator, microschemaVersion, batch);
 			}
 		}
 
-		for (MicroschemaContainer microschemaContainer : getProject().getMicroschemaContainerRoot().findAll()) {
-			newBranch.assignMicroschemaVersion(newBranch.getCreator(), microschemaContainer.getLatestVersion(), batch);
+		for (Microschema microschema : getProject().getMicroschemaContainerRoot().findAll()) {
+			newBranch.assignMicroschemaVersion(newBranch.getCreator(), microschema.getLatestVersion(), batch);
 		}
 	}
 

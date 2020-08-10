@@ -7,7 +7,6 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -26,7 +25,7 @@ import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -118,7 +117,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 		SchemaUpdateRequest schema;
 		try (Tx tx = tx()) {
 			Node concorde = content("concorde");
-			SchemaContainerVersion schemaVersion = concorde.getSchemaContainer().getLatestVersion();
+			SchemaVersion schemaVersion = concorde.getSchemaContainer().getLatestVersion();
 			schema = JsonUtil.readValue(schemaVersion.getJson(), SchemaUpdateRequest.class);
 			schema.addField(FieldUtil.createStringFieldSchema("extraField"));
 			schemaUuid = concorde.getSchemaContainer().getUuid();
@@ -163,7 +162,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 			Project project = concorde.getProject();
 			Node parentNode = concorde.getParentNode(branchUuid);
-			SchemaContainerVersion schemaVersion = concorde.getSchemaContainer().getLatestVersion();
+			SchemaVersion schemaVersion = concorde.getSchemaContainer().getLatestVersion();
 
 			for (int i = 0; i < numAdditionalNodes; i++) {
 				Node node = parentNode.create(user, schemaVersion, project);

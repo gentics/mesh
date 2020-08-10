@@ -11,16 +11,16 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.event.EventQueueBatch;
 
 /**
  * Project specific implementation of microschema container root.
  */
-public class ProjectMicroschemaContainerRootImpl extends MicroschemaContainerRootImpl {
+public class ProjectMicroschemaRootImpl extends MicroschemaRootImpl {
 
 	public static void init(TypeHandler type, IndexHandler index) {
-		type.createVertexType(ProjectMicroschemaContainerRootImpl.class, MeshVertexImpl.class);
+		type.createVertexType(ProjectMicroschemaRootImpl.class, MeshVertexImpl.class);
 	}
 
 	/**
@@ -33,7 +33,7 @@ public class ProjectMicroschemaContainerRootImpl extends MicroschemaContainerRoo
 	}
 
 	@Override
-	public void addMicroschema(User user, MicroschemaContainer microschema, EventQueueBatch batch) {
+	public void addMicroschema(User user, Microschema microschema, EventQueueBatch batch) {
 		Project project = getProject();
 		batch.add(project.onMicroschemaAssignEvent(microschema, ASSIGNED));
 		super.addMicroschema(user, microschema, batch);
@@ -45,7 +45,7 @@ public class ProjectMicroschemaContainerRootImpl extends MicroschemaContainerRoo
 	}
 
 	@Override
-	public void removeMicroschema(MicroschemaContainer microschema, EventQueueBatch batch) {
+	public void removeMicroschema(Microschema microschema, EventQueueBatch batch) {
 		Project project = getProject();
 		batch.add(project.onMicroschemaAssignEvent(microschema, UNASSIGNED));
 		super.removeMicroschema(microschema, batch);

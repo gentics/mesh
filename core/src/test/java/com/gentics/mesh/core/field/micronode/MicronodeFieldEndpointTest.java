@@ -26,12 +26,12 @@ import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldEndpointTest;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
-import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -239,7 +239,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		String targetUuid = contentUuid();
 
 		String vcardUuid = tx(() -> microschemaContainers().get("vcard").getUuid());
-		MicroschemaModel vcard = tx(() -> microschemaContainers().get("vcard").getLatestVersion().getSchema());
+		MicroschemaVersionModel vcard = tx(() -> microschemaContainers().get("vcard").getLatestVersion().getSchema());
 		vcard.addField(new NodeFieldSchemaImpl().setName("node"));
 		MicroschemaUpdateRequest request = JsonUtil.readValue(vcard.toJson(), MicroschemaUpdateRequest.class);
 		call(() -> client().updateMicroschema(vcardUuid, request));
@@ -296,7 +296,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		String targetUuid = contentUuid();
 
 		String vcardUuid = tx(() -> microschemaContainers().get("vcard").getUuid());
-		MicroschemaModel vcard = tx(() -> microschemaContainers().get("vcard").getLatestVersion().getSchema());
+		MicroschemaVersionModel vcard = tx(() -> microschemaContainers().get("vcard").getLatestVersion().getSchema());
 		vcard.addField(new ListFieldSchemaImpl().setListType("node").setName("node"));
 		MicroschemaUpdateRequest request = JsonUtil.readValue(vcard.toJson(), MicroschemaUpdateRequest.class);
 		call(() -> client().updateMicroschema(vcardUuid, request));
@@ -380,7 +380,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	public void testReadNodeWithExistingField() throws IOException {
 		Node node = folder("2015");
 		try (Tx tx = tx()) {
-			MicroschemaContainerVersion microschema = microschemaContainers().get("vcard").getLatestVersion();
+			MicroschemaVersion microschema = microschemaContainers().get("vcard").getLatestVersion();
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			MicronodeGraphField micronodeField = container.createMicronode(FIELD_NAME, microschema);
 			micronodeField.getMicronode().createString("firstName").setString("Max");
@@ -406,7 +406,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	public void testExpandAllCyclicMicronodeWithNodeReference() {
 		Node node = folder("2015");
-		MicroschemaModel nodeMicroschema = new MicroschemaModelImpl();
+		MicroschemaVersionModel nodeMicroschema = new MicroschemaModelImpl();
 
 		try (Tx tx = tx()) {
 			MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
@@ -452,7 +452,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		Long date = System.currentTimeMillis();
 		Node newsOverview = content("news overview");
 		Node newsFolder = folder("news");
-		MicroschemaModel fullMicroschema = new MicroschemaModelImpl();
+		MicroschemaVersionModel fullMicroschema = new MicroschemaModelImpl();
 
 		try (Tx tx = tx()) {
 			MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();

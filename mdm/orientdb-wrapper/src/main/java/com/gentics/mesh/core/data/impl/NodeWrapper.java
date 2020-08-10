@@ -22,8 +22,8 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
@@ -520,15 +520,15 @@ public class NodeWrapper implements Node {
 		delegate.setParentNode(branchUuid, parentNode);
 	}
 
-	public NodeWrapper create(User creator, SchemaContainerVersion schemaVersion, Project project) {
+	public NodeWrapper create(User creator, SchemaVersion schemaVersion, Project project) {
 		return wrap(delegate.create(creator, schemaVersion, project));
 	}
 
-	public NodeWrapper create(User creator, SchemaContainerVersion schemaVersion, Project project, Branch branch) {
+	public NodeWrapper create(User creator, SchemaVersion schemaVersion, Project project, Branch branch) {
 		return wrap(delegate.create(creator, schemaVersion, project, branch));
 	}
 
-	public NodeWrapper create(User creator, SchemaContainerVersion schemaVersion, Project project, Branch branch, String uuid) {
+	public NodeWrapper create(User creator, SchemaVersion schemaVersion, Project project, Branch branch, String uuid) {
 		return wrap(delegate.create(creator, schemaVersion, project, branch, uuid));
 	}
 
@@ -642,7 +642,7 @@ public class NodeWrapper implements Node {
 		return SchemaWrapper.wrap(delegate.getSchemaContainer());
 	}
 
-	public void setSchemaContainer(SchemaContainer container) {
+	public void setSchemaContainer(Schema container) {
 		delegate.setSchemaContainer(container);
 	}
 
@@ -682,7 +682,7 @@ public class NodeWrapper implements Node {
 		return delegate.getBreadcrumbNodes(ac);
 	}
 
-	public NodeMeshEventModel onDeleted(String uuid, SchemaContainer schema, String branchUuid, ContainerType type, String languageTag) {
+	public NodeMeshEventModel onDeleted(String uuid, Schema schema, String branchUuid, ContainerType type, String languageTag) {
 		return delegate.onDeleted(uuid, schema, branchUuid, type, languageTag);
 	}
 

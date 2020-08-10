@@ -13,7 +13,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
@@ -34,7 +34,7 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 			Node node = content("news_2015");
 
 			// 1. Transform the node into a binary content
-			SchemaContainer container = schemaContainer("binary_content");
+			Schema container = schemaContainer("binary_content");
 			node.setSchemaContainer(container);
 			node.getLatestDraftFieldContainer(english()).setSchemaContainerVersion(container.getLatestVersion());
 			prepareSchema(node, "image/*", "binary");
@@ -64,7 +64,7 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			// 1. Transform the node into a binary content
-			SchemaContainer container = schemaContainer("binary_content");
+			Schema container = schemaContainer("binary_content");
 			node.setSchemaContainer(container);
 			node.getLatestDraftFieldContainer(english()).setSchemaContainerVersion(container.getLatestVersion());
 			prepareSchema(node, "image/*", "binary");

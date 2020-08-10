@@ -14,7 +14,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
@@ -52,7 +52,7 @@ public class MicroschemaTypeProvider extends AbstractTypeProvider {
 
 		schemaType.field(newPagingFieldWithFetcher("projects", "Projects that this schema is assigned to", (env) -> {
 			GraphQLContext gc = env.getContext();
-			MicroschemaContainer microschema = env.getSource();
+			Microschema microschema = env.getSource();
 			UserDaoWrapper userDao = Tx.get().data().userDao();
 			return microschema.findReferencedBranches().keySet().stream()
 				.map(Branch::getProject)

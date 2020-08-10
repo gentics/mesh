@@ -8,11 +8,11 @@ import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.root.impl.SchemaContainerRootImpl;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.root.impl.SchemaRootImpl;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
-import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
+import com.gentics.mesh.core.data.schema.impl.SchemaVersionImpl;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.consistency.AbstractConsistencyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
@@ -34,18 +34,18 @@ public class SchemaContainerCheck extends AbstractConsistencyCheck {
 			checkSchemaContainer(schema, result);
 		}, attemptRepair, tx);
 
-		ConsistencyCheckResult b = processForType(db, SchemaContainerVersionImpl.class, (version, result) -> {
+		ConsistencyCheckResult b = processForType(db, SchemaVersionImpl.class, (version, result) -> {
 			checkSchemaContainerVersion(version, result);
 		}, attemptRepair, tx);
 
 		return a.merge(b);
 	}
 
-	private void checkSchemaContainer(SchemaContainer schemaContainer, ConsistencyCheckResult result) {
+	private void checkSchemaContainer(Schema schemaContainer, ConsistencyCheckResult result) {
 		String uuid = schemaContainer.getUuid();
 
-		checkIn(schemaContainer, HAS_SCHEMA_CONTAINER_ITEM, SchemaContainerRootImpl.class, result, HIGH);
-		checkOut(schemaContainer, HAS_LATEST_VERSION, SchemaContainerVersionImpl.class, result, HIGH);
+		checkIn(schemaContainer, HAS_SCHEMA_CONTAINER_ITEM, SchemaRootImpl.class, result, HIGH);
+		checkOut(schemaContainer, HAS_LATEST_VERSION, SchemaVersionImpl.class, result, HIGH);
 
 		// checkOut(schemaContainer, HAS_CREATOR, UserImpl.class, response, MEDIUM);
 		// checkOut(schemaContainer, HAS_EDITOR, UserImpl.class, response, MEDIUM);
@@ -61,23 +61,23 @@ public class SchemaContainerCheck extends AbstractConsistencyCheck {
 		}
 	}
 
-	private void checkSchemaContainerVersion(SchemaContainerVersion schemaContainerVersion, ConsistencyCheckResult result) {
-		String uuid = schemaContainerVersion.getUuid();
+	private void checkSchemaContainerVersion(SchemaVersion schemaVersion, ConsistencyCheckResult result) {
+		String uuid = schemaVersion.getUuid();
 
-		checkIn(schemaContainerVersion, HAS_PARENT_CONTAINER, SchemaContainerImpl.class, result, HIGH);
+		checkIn(schemaVersion, HAS_PARENT_CONTAINER, SchemaContainerImpl.class, result, HIGH);
 
-		if (isEmpty(schemaContainerVersion.getName())) {
+		if (isEmpty(schemaVersion.getName())) {
 			result.addInconsistency("Schema container Version name is empty or null", uuid, MEDIUM);
 		}
-		if (isEmpty(schemaContainerVersion.getVersion())) {
+		if (isEmpty(schemaVersion.getVersion())) {
 			result.addInconsistency("Schema container version number is empty or null", uuid, MEDIUM);
 		} else {
 			try {
-				Double version = Double.valueOf(schemaContainerVersion.getVersion());
+				Double version = Double.valueOf(schemaVersion.getVersion());
 				if (version > 1) {
-					SchemaContainerVersion previousVersion = schemaContainerVersion.getPreviousVersion();
+					SchemaVersion previousVersion = schemaVersion.getPreviousVersion();
 					if (previousVersion == null) {
-						result.addInconsistency(String.format("Schema container version %s must have a previous version", schemaContainerVersion
+						result.addInconsistency(String.format("Schema container version %s must have a previous version", schemaVersion
 							.getVersion()), uuid, MEDIUM);
 					} else {
 						String expectedPrevious = String.valueOf(version - 1);
@@ -86,7 +86,7 @@ public class SchemaContainerCheck extends AbstractConsistencyCheck {
 								expectedPrevious, previousVersion.getVersion()), uuid, MEDIUM);
 						}
 
-						MeshVertex parent = in(HAS_PARENT_CONTAINER, SchemaContainerImpl.class).follow(schemaContainerVersion);
+						MeshVertex parent = in(HAS_PARENT_CONTAINER, SchemaContainerImpl.class).follow(schemaVersion);
 						if (parent != null) {
 							MeshVertex previousParent = in(HAS_PARENT_CONTAINER, SchemaContainerImpl.class).follow(previousVersion);
 							if (!parent.equals(previousParent)) {
@@ -96,7 +96,7 @@ public class SchemaContainerCheck extends AbstractConsistencyCheck {
 					}
 				}
 			} catch (NumberFormatException e) {
-				result.addInconsistency(String.format("Schema container version number %s is empty or null", schemaContainerVersion.getVersion()),
+				result.addInconsistency(String.format("Schema container version number %s is empty or null", schemaVersion.getVersion()),
 					uuid, MEDIUM);
 			}
 		}

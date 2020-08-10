@@ -17,8 +17,8 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.search.request.BulkRequest;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.DeleteDocumentRequest;
@@ -134,9 +134,9 @@ public class NodeContentEventHandler implements EventHandler {
 			.mapInTx(MeshElement::getUuid);
 	}
 
-	private Transactional<SchemaContainerVersion> findLatestSchemaVersion(NodeMeshEventModel message) {
+	private Transactional<SchemaVersion> findLatestSchemaVersion(NodeMeshEventModel message) {
 		return helper.getDb().transactional(tx -> {
-			SchemaContainer schema = tx.data().schemaDao().findByUuid(message.getSchema().getUuid());
+			Schema schema = tx.data().schemaDao().findByUuid(message.getSchema().getUuid());
 			return tx.data().projectDao().findByUuid(message.getProject().getUuid())
 				.getBranchRoot().findByUuid(message.getBranchUuid())
 				.findLatestSchemaVersion(schema);

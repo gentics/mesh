@@ -5,8 +5,8 @@ import java.util.HashMap;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
-import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
+import com.gentics.mesh.core.data.container.impl.MicroschemaImpl;
+import com.gentics.mesh.core.data.container.impl.MicroschemaVersionImpl;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.impl.BranchImpl;
 import com.gentics.mesh.core.data.impl.GroupImpl;
@@ -33,12 +33,12 @@ import com.gentics.mesh.core.data.root.impl.ProjectRootImpl;
 import com.gentics.mesh.core.data.root.impl.RoleRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.data.root.impl.UserRootImpl;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
-import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
+import com.gentics.mesh.core.data.schema.impl.SchemaVersionImpl;
 
 @Singleton
 public class PersistenceClassMapImpl extends HashMap<Class<?>, Class<?>> implements PersistenceClassMap {
@@ -59,11 +59,11 @@ public class PersistenceClassMapImpl extends HashMap<Class<?>, Class<?>> impleme
 		put(Tag.class, TagImpl.class);
 		put(Branch.class, BranchImpl.class);
 		put(Project.class, ProjectImpl.class);
-		put(MicroschemaContainer.class, MicroschemaContainerImpl.class);
-		put(SchemaContainer.class, SchemaContainerImpl.class);
+		put(Microschema.class, MicroschemaImpl.class);
+		put(Schema.class, SchemaContainerImpl.class);
 
-		put(MicroschemaContainerVersion.class, MicroschemaContainerVersionImpl.class);
-		put(SchemaContainerVersion.class, SchemaContainerVersionImpl.class);
+		put(MicroschemaVersion.class, MicroschemaVersionImpl.class);
+		put(SchemaVersion.class, SchemaVersionImpl.class);
 
 		put(UserRoot.class, UserRootImpl.class);
 		put(GroupRoot.class, GroupRootImpl.class);

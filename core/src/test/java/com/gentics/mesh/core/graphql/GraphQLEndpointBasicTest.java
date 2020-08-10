@@ -10,7 +10,7 @@ import java.io.IOException;
 import org.json.JSONException;
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
@@ -30,7 +30,7 @@ public class GraphQLEndpointBasicTest extends AbstractMeshTest {
 	@Test
 	public void testIntrospection() throws IOException {
 		try (Tx tx = tx()) {
-			for (MicroschemaContainer microschema : meshRoot().getMicroschemaContainerRoot().findAll()) {
+			for (Microschema microschema : meshRoot().getMicroschemaContainerRoot().findAll()) {
 				microschema.remove();
 			}
 			tx.success();

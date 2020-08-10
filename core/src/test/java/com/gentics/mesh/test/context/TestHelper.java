@@ -36,8 +36,8 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
@@ -212,11 +212,11 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return data().getTag(key);
 	}
 
-	default SchemaContainer schemaContainer(String key) {
+	default Schema schemaContainer(String key) {
 		return data().getSchemaContainer(key);
 	}
 
-	default Map<String, SchemaContainer> schemaContainers() {
+	default Map<String, Schema> schemaContainers() {
 		return data().getSchemaContainers();
 	}
 
@@ -240,11 +240,11 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return data().getGroups();
 	}
 
-	default Map<String, MicroschemaContainer> microschemaContainers() {
+	default Map<String, Microschema> microschemaContainers() {
 		return data().getMicroschemaContainers();
 	}
 
-	default MicroschemaContainer microschemaContainer(String key) {
+	default Microschema microschemaContainer(String key) {
 		return data().getMicroschemaContainers().get(key);
 	}
 
@@ -661,8 +661,8 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return client;
 	}
 
-	default public SchemaContainer getSchemaContainer() {
-		SchemaContainer container = data().getSchemaContainer("content");
+	default public Schema getSchemaContainer() {
+		Schema container = data().getSchemaContainer("content");
 		return container;
 	}
 

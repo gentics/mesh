@@ -16,7 +16,7 @@ import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.EditorTrackingVertex;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -36,7 +36,7 @@ public class NodeAssert extends AbstractAssert<NodeAssert, Node> {
 	 *            schema container
 	 * @return fluent API
 	 */
-	public NodeAssert isOf(SchemaContainer schemaContainer) {
+	public NodeAssert isOf(Schema schemaContainer) {
 		assertThat(actual.getSchemaContainer()).as(descriptionText() + " Schema").isEqualTo(schemaContainer);
 		return this;
 	}
@@ -145,7 +145,7 @@ public class NodeAssert extends AbstractAssert<NodeAssert, Node> {
 
 	public NodeAssert matches(NodeResponse restNode) {
 		assertGenericNode(actual, restNode);
-		SchemaContainer schema = actual.getSchemaContainer();
+		Schema schema = actual.getSchemaContainer();
 		assertNotNull("The schema of the test object should not be null. No further assertion can be verified.", schema);
 		assertEquals(schema.getName(), restNode.getSchema().getName());
 		assertEquals(schema.getUuid(), restNode.getSchema().getUuid());

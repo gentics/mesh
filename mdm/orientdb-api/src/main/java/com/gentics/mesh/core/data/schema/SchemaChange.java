@@ -7,7 +7,7 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
-import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
@@ -15,7 +15,7 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import io.vertx.core.json.JsonObject;
 
 /**
- * A schema change represents a single manipulation of a field container (e.g.: {@link SchemaModel}, {@link Microschema}).
+ * A schema change represents a single manipulation of a field container (e.g.: {@link SchemaModel}, {@link MicroschemaModel}).
  * 
  * <pre>
  * {@code
@@ -97,7 +97,7 @@ public interface SchemaChange<T extends FieldSchemaContainer> extends MeshVertex
 
 	/**
 	 *
-	 * Apply the current change on the field schema container (eg. {@link SchemaModel} or {@link Microschema}).
+	 * Apply the current change on the field schema container (eg. {@link SchemaModel} or {@link MicroschemaModel}).
 	 *
 	 * @param container
 	 *            Field container to be modified

@@ -45,11 +45,11 @@ import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
@@ -103,8 +103,8 @@ public class TestDataProvider {
 
 	private TestSize size;
 
-	private Map<String, SchemaContainer> schemaContainers = new HashMap<>();
-	private Map<String, MicroschemaContainer> microschemaContainers = new HashMap<>();
+	private Map<String, Schema> schemaContainers = new HashMap<>();
+	private Map<String, Microschema> microschemaContainers = new HashMap<>();
 	private Map<String, TagFamily> tagFamilies = new HashMap<>();
 	private long contentCount = 0;
 	private Map<String, Node> folders = new HashMap<>();
@@ -244,7 +244,7 @@ public class TestDataProvider {
 
 	private void addContents() {
 
-		SchemaContainer contentSchema = schemaContainers.get("content");
+		Schema contentSchema = schemaContainers.get("content");
 
 		addContent(folders.get("2014"), "News_2014", "News!", "Neuigkeiten!");
 		addContent(folders.get("march"), "New_in_March_2014", "This is new in march 2014.", "Das ist neu im März 2014");
@@ -430,15 +430,15 @@ public class TestDataProvider {
 		SchemaDaoWrapper schemaDao = Tx.get().data().schemaDao();
 
 		// folder
-		SchemaContainer folderSchemaContainer = schemaDao.findByName("folder");
+		Schema folderSchemaContainer = schemaDao.findByName("folder");
 		schemaContainers.put("folder", folderSchemaContainer);
 
 		// content
-		SchemaContainer contentSchemaContainer = schemaDao.findByName("content");
+		Schema contentSchemaContainer = schemaDao.findByName("content");
 		schemaContainers.put("content", contentSchemaContainer);
 
 		// binary_content
-		SchemaContainer binaryContentSchemaContainer = schemaDao.findByName("binary_content");
+		Schema binaryContentSchemaContainer = schemaDao.findByName("binary_content");
 		schemaContainers.put("binary_content", binaryContentSchemaContainer);
 
 	}
@@ -461,7 +461,7 @@ public class TestDataProvider {
 	private void addVCardMicroschema() throws MeshJsonException {
 		MicroschemaDaoWrapper microschemaDao = Tx.get().data().microschemaDao();
 
-		MicroschemaModel vcardMicroschema = new MicroschemaModelImpl();
+		MicroschemaVersionModel vcardMicroschema = new MicroschemaModelImpl();
 		vcardMicroschema.setName("vcard");
 		vcardMicroschema.setDescription("Microschema for a vcard");
 
@@ -491,7 +491,7 @@ public class TestDataProvider {
 		postcodeFieldSchema.setLabel("Post Code");
 		vcardMicroschema.addField(postcodeFieldSchema);
 
-		MicroschemaContainer vcardMicroschemaContainer = microschemaDao.create(vcardMicroschema, userInfo.getUser(), createBatch());
+		Microschema vcardMicroschemaContainer = microschemaDao.create(vcardMicroschema, userInfo.getUser(), createBatch());
 		microschemaContainers.put(vcardMicroschemaContainer.getName(), vcardMicroschemaContainer);
 		project.getMicroschemaContainerRoot().addMicroschema(user(), vcardMicroschemaContainer, createBatch());
 	}
@@ -504,7 +504,7 @@ public class TestDataProvider {
 	private void addCaptionedImageMicroschema() throws MeshJsonException {
 		MicroschemaDaoWrapper microschemaDao = Tx.get().data().microschemaDao();
 
-		MicroschemaModel captionedImageMicroschema = new MicroschemaModelImpl();
+		MicroschemaVersionModel captionedImageMicroschema = new MicroschemaModelImpl();
 		captionedImageMicroschema.setName("captionedImage");
 		captionedImageMicroschema.setDescription("Microschema for a captioned image");
 
@@ -521,9 +521,9 @@ public class TestDataProvider {
 		captionFieldSchema.setLabel("Caption");
 		captionedImageMicroschema.addField(captionFieldSchema);
 
-		MicroschemaContainer microschemaContainer = microschemaDao.create(captionedImageMicroschema, userInfo.getUser(), createBatch());
-		microschemaContainers.put(captionedImageMicroschema.getName(), microschemaContainer);
-		project.getMicroschemaContainerRoot().addMicroschema(user(), microschemaContainer, createBatch());
+		Microschema microschema = microschemaDao.create(captionedImageMicroschema, userInfo.getUser(), createBatch());
+		microschemaContainers.put(captionedImageMicroschema.getName(), microschema);
+		project.getMicroschemaContainerRoot().addMicroschema(user(), microschema, createBatch());
 	}
 
 	public Node addFolder(Node rootNode, String englishName, String germanName) {
@@ -532,7 +532,7 @@ public class TestDataProvider {
 
 	public Node addFolder(Node rootNode, String englishName, String germanName, String uuid) {
 		InternalActionContext ac = new NodeMigrationActionContextImpl();
-		SchemaContainerVersion schemaVersion = schemaContainers.get("folder").getLatestVersion();
+		SchemaVersion schemaVersion = schemaContainers.get("folder").getLatestVersion();
 		Branch branch = project.getLatestBranch();
 		Node folderNode;
 		if (uuid == null) {
@@ -670,7 +670,7 @@ public class TestDataProvider {
 		return tags.get(name);
 	}
 
-	public SchemaContainer getSchemaContainer(String name) {
+	public Schema getSchemaContainer(String name) {
 		return schemaContainers.get(name);
 	}
 
@@ -698,11 +698,11 @@ public class TestDataProvider {
 		return roles;
 	}
 
-	public Map<String, SchemaContainer> getSchemaContainers() {
+	public Map<String, Schema> getSchemaContainers() {
 		return schemaContainers;
 	}
 
-	public Map<String, MicroschemaContainer> getMicroschemaContainers() {
+	public Map<String, Microschema> getMicroschemaContainers() {
 		return microschemaContainers;
 	}
 

@@ -36,10 +36,10 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
+import com.gentics.mesh.core.data.root.MicroschemaRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
-import com.gentics.mesh.core.data.root.SchemaContainerRoot;
+import com.gentics.mesh.core.data.root.SchemaRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
@@ -64,8 +64,8 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	private LanguageRoot languageRoot;
 	private ProjectRoot projectRoot;
 
-	private SchemaContainerRoot schemaContainerRoot;
-	private MicroschemaContainerRoot microschemaContainerRoot;
+	private SchemaRoot schemaRoot;
+	private MicroschemaRoot microschemaRoot;
 	private JobRoot jobRoot;
 	private ChangelogRoot changelogRoot;
 
@@ -208,23 +208,23 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	}
 
 	@Override
-	public SchemaContainerRoot getSchemaContainerRoot() {
-		if (schemaContainerRoot == null) {
+	public SchemaRoot getSchemaContainerRoot() {
+		if (schemaRoot == null) {
 			synchronized (MeshRootImpl.class) {
-				SchemaContainerRoot foundSchemaContainerRoot = out(HAS_SCHEMA_ROOT).has(SchemaContainerRootImpl.class).nextOrDefaultExplicit(
-					SchemaContainerRootImpl.class, null);
-				if (foundSchemaContainerRoot == null) {
-					schemaContainerRoot = getGraph().addFramedVertex(SchemaContainerRootImpl.class);
-					linkOut(schemaContainerRoot, HAS_SCHEMA_ROOT);
+				SchemaRoot foundSchemaRoot = out(HAS_SCHEMA_ROOT).has(SchemaRootImpl.class).nextOrDefaultExplicit(
+					SchemaRootImpl.class, null);
+				if (foundSchemaRoot == null) {
+					schemaRoot = getGraph().addFramedVertex(SchemaRootImpl.class);
+					linkOut(schemaRoot, HAS_SCHEMA_ROOT);
 					if (log.isDebugEnabled()) {
-						log.debug("Created schema container root {" + schemaContainerRoot.getUuid() + "}");
+						log.debug("Created schema container root {" + schemaRoot.getUuid() + "}");
 					}
 				} else {
-					schemaContainerRoot = foundSchemaContainerRoot;
+					schemaRoot = foundSchemaRoot;
 				}
 			}
 		}
-		return schemaContainerRoot;
+		return schemaRoot;
 	}
 
 	@Override
@@ -286,23 +286,23 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	}
 
 	@Override
-	public MicroschemaContainerRoot getMicroschemaContainerRoot() {
-		if (microschemaContainerRoot == null) {
+	public MicroschemaRoot getMicroschemaContainerRoot() {
+		if (microschemaRoot == null) {
 			synchronized (MeshRootImpl.class) {
-				MicroschemaContainerRoot foundMicroschemaContainerRoot = out(HAS_MICROSCHEMA_ROOT).has(MicroschemaContainerRootImpl.class)
-					.nextOrDefaultExplicit(MicroschemaContainerRootImpl.class, null);
-				if (foundMicroschemaContainerRoot == null) {
-					microschemaContainerRoot = getGraph().addFramedVertex(MicroschemaContainerRootImpl.class);
-					linkOut(microschemaContainerRoot, HAS_MICROSCHEMA_ROOT);
+				MicroschemaRoot foundMicroschemaRoot = out(HAS_MICROSCHEMA_ROOT).has(MicroschemaRootImpl.class)
+					.nextOrDefaultExplicit(MicroschemaRootImpl.class, null);
+				if (foundMicroschemaRoot == null) {
+					microschemaRoot = getGraph().addFramedVertex(MicroschemaRootImpl.class);
+					linkOut(microschemaRoot, HAS_MICROSCHEMA_ROOT);
 					if (log.isDebugEnabled()) {
-						log.debug("Created microschema root {" + microschemaContainerRoot.getUuid() + "}");
+						log.debug("Created microschema root {" + microschemaRoot.getUuid() + "}");
 					}
 				} else {
-					microschemaContainerRoot = foundMicroschemaContainerRoot;
+					microschemaRoot = foundMicroschemaRoot;
 				}
 			}
 		}
-		return microschemaContainerRoot;
+		return microschemaRoot;
 	}
 
 	/**
@@ -316,9 +316,9 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 		groupRoot = null;
 		roleRoot = null;
 
-		schemaContainerRoot = null;
+		schemaRoot = null;
 		tagFamilyRoot = null;
-		microschemaContainerRoot = null;
+		microschemaRoot = null;
 		languageRoot = null;
 		jobRoot = null;
 		changelogRoot = null;
@@ -364,9 +364,9 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 				return root.getGroupRoot().resolveToElement(stack);
 			case RoleRoot.TYPE:
 				return root.getRoleRoot().resolveToElement(stack);
-			case MicroschemaContainerRoot.TYPE:
+			case MicroschemaRoot.TYPE:
 				return root.getMicroschemaContainerRoot().resolveToElement(stack);
-			case SchemaContainerRoot.TYPE:
+			case SchemaRoot.TYPE:
 				return root.getSchemaContainerRoot().resolveToElement(stack);
 			default:
 				// TOOO i18n

@@ -20,12 +20,12 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.root.BranchRoot;
-import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
+import com.gentics.mesh.core.data.root.MicroschemaRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
-import com.gentics.mesh.core.data.root.SchemaContainerRoot;
+import com.gentics.mesh.core.data.root.SchemaRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 
@@ -95,11 +95,11 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 				case TagFamilyRoot.TYPE:
 					TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();
 					return tagFamilyRoot.resolveToElement(stack);
-				case SchemaContainerRoot.TYPE:
-					SchemaContainerRoot schemaRoot = project.getSchemaContainerRoot();
+				case SchemaRoot.TYPE:
+					SchemaRoot schemaRoot = project.getSchemaContainerRoot();
 					return schemaRoot.resolveToElement(stack);
-				case MicroschemaContainerRoot.TYPE:
-					MicroschemaContainerRoot microschemaRoot = project.getMicroschemaContainerRoot();
+				case MicroschemaRoot.TYPE:
+					MicroschemaRoot microschemaRoot = project.getMicroschemaContainerRoot();
 					return microschemaRoot.resolveToElement(stack);
 				case NodeRoot.TYPE:
 					NodeRoot nodeRoot = project.getNodeRoot();
@@ -124,7 +124,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 
 	@Override
 	public Project create(String projectName, String hostname, Boolean ssl, String pathPrefix, User creator,
-		SchemaContainerVersion schemaContainerVersion, String uuid, EventQueueBatch batch) {
+		SchemaVersion schemaVersion, String uuid, EventQueueBatch batch) {
 		throw new RuntimeException("Wrong invocation. Use dao instead.");
 	}
 

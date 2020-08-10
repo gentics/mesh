@@ -15,7 +15,7 @@ import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.AbstractRestException;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
-import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.validation.SchemaValidationResponse;
@@ -123,7 +123,7 @@ public class UtilityHandler extends AbstractHandler {
 	 */
 	public void validateMicroschema(InternalActionContext ac) {
 		utils.syncTx(ac, tx -> {
-			Microschema model = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModelImpl.class);
+			MicroschemaModel model = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModelImpl.class);
 			model.validate();
 			return new SchemaValidationResponse();
 		}, msg -> ac.send(msg, OK));

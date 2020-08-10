@@ -5,8 +5,8 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
 import com.gentics.mesh.error.MeshSchemaException;
@@ -16,19 +16,19 @@ import com.gentics.mesh.parameter.PagingParameters;
 
 public interface SchemaDaoWrapper extends SchemaDao {
 
-	SchemaContainer findByUuid(String uuid);
+	Schema findByUuid(String uuid);
 
-	SchemaContainer findByName(String name);
+	Schema findByName(String name);
 
-	SchemaContainer loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm);
+	Schema loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm);
 
-	SchemaContainer loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound);
+	Schema loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound);
 
-	TraversalResult<? extends SchemaContainer> findAll();
+	TraversalResult<? extends Schema> findAll();
 
-	TransformablePage<? extends SchemaContainer> findAll(InternalActionContext ac, PagingParameters pagingInfo);
+	TransformablePage<? extends Schema> findAll(InternalActionContext ac, PagingParameters pagingInfo);
 
-	SchemaContainer create(InternalActionContext ac, EventQueueBatch batch, String uuid);
+	Schema create(InternalActionContext ac, EventQueueBatch batch, String uuid);
 
 	/**
 	 * Find the referenced schema container version. Throws an error, if the referenced schema container version can not be found
@@ -37,9 +37,9 @@ public interface SchemaDaoWrapper extends SchemaDao {
 	 *            reference
 	 * @return Resolved container version
 	 */
-	SchemaContainerVersion fromReference(SchemaReference reference);
+	SchemaVersion fromReference(SchemaReference reference);
 
-	SchemaContainerVersion fromReference(Project project, SchemaReference reference);
+	SchemaVersion fromReference(Project project, SchemaReference reference);
 
 	/**
 	 * Create new schema container.
@@ -53,7 +53,7 @@ public interface SchemaDaoWrapper extends SchemaDao {
 	 * @return Created schema container
 	 * @throws MeshSchemaException
 	 */
-	SchemaContainer create(SchemaUpdateModel schema, User creator, String uuid) throws MeshSchemaException;
+	Schema create(SchemaUpdateModel schema, User creator, String uuid) throws MeshSchemaException;
 
 	/**
 	 * Create new schema container.
@@ -65,7 +65,7 @@ public interface SchemaDaoWrapper extends SchemaDao {
 	 * @return Created schema container
 	 * @throws MeshSchemaException
 	 */
-	default SchemaContainer create(SchemaUpdateModel schema, User creator) throws MeshSchemaException {
+	default Schema create(SchemaUpdateModel schema, User creator) throws MeshSchemaException {
 		return create(schema, creator, null);
 	}
 
@@ -83,11 +83,11 @@ public interface SchemaDaoWrapper extends SchemaDao {
 	 * @return Created schema container
 	 * @throws MeshSchemaException
 	 */
-	SchemaContainer create(SchemaUpdateModel schema, User creator, String uuid, boolean validate) throws MeshSchemaException;
+	Schema create(SchemaUpdateModel schema, User creator, String uuid, boolean validate) throws MeshSchemaException;
 
-	SchemaContainer findByName(Project project, String schemaName);
+	Schema findByName(Project project, String schemaName);
 
-	SchemaContainer findByUuid(Project project, String schemaUuid);
+	Schema findByUuid(Project project, String schemaUuid);
 
 	long computeCount();
 

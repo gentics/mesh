@@ -1,7 +1,7 @@
 package com.gentics.mesh;
 
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
-import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
@@ -91,8 +91,8 @@ public final class FieldUtil {
 	 * 
 	 * @return
 	 */
-	public static MicroschemaModel createMinimalValidMicroschema() {
-		MicroschemaModel schema = new MicroschemaModelImpl();
+	public static MicroschemaVersionModel createMinimalValidMicroschema() {
+		MicroschemaVersionModel schema = new MicroschemaModelImpl();
 		schema.setName("test");
 		schema.validate();
 		return schema;

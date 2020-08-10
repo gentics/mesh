@@ -13,7 +13,7 @@ import org.apache.commons.lang.NotImplementedException;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
+import com.gentics.mesh.core.data.container.impl.MicroschemaImpl;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
@@ -24,7 +24,7 @@ import com.gentics.mesh.util.ETag;
 
 /**
  * The {@link AbstractGraphFieldSchemaContainer} contains the abstract graph element implementation for {@link GraphFieldSchemaContainer} implementations (e.g.:
- * {@link SchemaContainerImpl}, {@link MicroschemaContainerImpl}).
+ * {@link SchemaContainerImpl}, {@link MicroschemaImpl}).
  * 
  * @param <R>
  *            Field container rest model response type

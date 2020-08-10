@@ -3,7 +3,7 @@ package com.gentics.mesh.core.data.root;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 
@@ -41,15 +41,15 @@ public interface ProjectRoot extends RootVertex<Project>, TransformableElementRo
 	 *            Path prefix which will be assigned to the initial branch.
 	 * @param creator
 	 *            User that is being used to set the initial creator and editor references.
-	 * @param schemaContainerVersion
+	 * @param schemaVersion
 	 *            Schema container version which will be used to create the basenode
 	 * @param batch
 	 * @return
 	 */
 	@Deprecated
 	default Project create(String projectName, String hostname, Boolean ssl, String pathPrefix, User creator,
-		SchemaContainerVersion schemaContainerVersion, EventQueueBatch batch) {
-		return create(projectName, hostname, ssl, pathPrefix, creator, schemaContainerVersion, null, batch);
+		SchemaVersion schemaVersion, EventQueueBatch batch) {
+		return create(projectName, hostname, ssl, pathPrefix, creator, schemaVersion, null, batch);
 	}
 
 	/**
@@ -66,14 +66,14 @@ public interface ProjectRoot extends RootVertex<Project>, TransformableElementRo
 	 *            Path prefix which will be assigned to the initial branch.
 	 * @param creator
 	 *            User that is being used to set the initial creator and editor references.
-	 * @param schemaContainerVersion
+	 * @param schemaVersion
 	 *            Schema container version which will be used to create the basenode
 	 * @param uuid
 	 *            Optional uuid
 	 * @param batch
 	 * @return
 	 */
-	Project create(String projectName, String hostname, Boolean ssl, String pathPrefix, User creator, SchemaContainerVersion schemaContainerVersion,
+	Project create(String projectName, String hostname, Boolean ssl, String pathPrefix, User creator, SchemaVersion schemaVersion,
 		String uuid, EventQueueBatch batch);
 
 	/**

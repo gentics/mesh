@@ -23,12 +23,12 @@ import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.impl.MicroschemaWrapper;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.root.MicroschemaRoot;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -46,45 +46,45 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper implements Mic
 	}
 
 	@Override
-	public MicroschemaContainer create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
+	public Microschema create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		UserDaoWrapper userRoot = Tx.get().data().userDao();
-		MicroschemaContainerRoot microschemaRoot = boot.get().microschemaContainerRoot();
+		MicroschemaRoot microschemaRoot = boot.get().microschemaContainerRoot();
 
 		MeshAuthUser requestUser = ac.getUser();
-		MicroschemaModel microschema = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModelImpl.class);
+		MicroschemaVersionModel microschema = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModelImpl.class);
 		microschema.validate();
 		if (!userRoot.hasPermission(requestUser, microschemaRoot, GraphPermission.CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", microschemaRoot.getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
-		MicroschemaContainer container = create(microschema, requestUser, uuid, batch);
+		Microschema container = create(microschema, requestUser, uuid, batch);
 		userRoot.inheritRolePermissions(requestUser, microschemaRoot, container);
 		batch.add(container.onCreated());
 		return container;
 	}
 
 	@Override
-	public MicroschemaContainer create(MicroschemaModel microschema, User user, String uuid, EventQueueBatch batch) {
+	public Microschema create(MicroschemaVersionModel microschema, User user, String uuid, EventQueueBatch batch) {
 		microschema.validate();
 
 		SchemaDaoWrapper schemaDao = Tx.get().data().schemaDao();
-		MicroschemaContainerRoot microschemaRoot = boot.get().microschemaContainerRoot();
+		MicroschemaRoot microschemaRoot = boot.get().microschemaContainerRoot();
 
 		String name = microschema.getName();
-		MicroschemaContainer conflictingMicroSchema = findByName(name);
+		Microschema conflictingMicroSchema = findByName(name);
 		if (conflictingMicroSchema != null) {
 			throw conflict(conflictingMicroSchema.getUuid(), name, "microschema_conflicting_name", name);
 		}
 
-		SchemaContainer conflictingSchema = schemaDao.findByName(name);
+		Schema conflictingSchema = schemaDao.findByName(name);
 		if (conflictingSchema != null) {
 			throw conflict(conflictingSchema.getUuid(), name, "schema_conflicting_name", name);
 		}
 
-		MicroschemaContainer container = microschemaRoot.create();
+		Microschema container = microschemaRoot.create();
 		if (uuid != null) {
 			container.setUuid(uuid);
 		}
-		MicroschemaContainerVersion version = microschemaRoot.createVersion();
+		MicroschemaVersion version = microschemaRoot.createVersion();
 
 		microschema.setVersion("1.0");
 		container.setLatestVersion(version);
@@ -99,11 +99,11 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper implements Mic
 	}
 
 	@Override
-	public MicroschemaContainerVersion fromReference(Project project, MicroschemaReference reference, Branch branch) {
+	public MicroschemaVersion fromReference(Project project, MicroschemaReference reference, Branch branch) {
 		String microschemaName = reference.getName();
 		String microschemaUuid = reference.getUuid();
 		String version = branch == null ? reference.getVersion() : null;
-		MicroschemaContainer container = null;
+		Microschema container = null;
 		if (!isEmpty(microschemaName)) {
 			if (project != null) {
 				container = project.getMicroschemaContainerRoot().findByName(microschemaName);
@@ -123,7 +123,7 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper implements Mic
 				isEmpty(microschemaUuid) ? "-" : microschemaUuid, version == null ? "-" : version.toString());
 		}
 
-		MicroschemaContainerVersion foundVersion = null;
+		MicroschemaVersion foundVersion = null;
 
 		if (branch != null) {
 			foundVersion = branch.findLatestMicroschemaVersion(container);
@@ -141,40 +141,40 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper implements Mic
 	}
 
 	@Override
-	public MicroschemaContainer findByName(String name) {
-		MicroschemaContainerRoot microschemaRoot = boot.get().microschemaContainerRoot();
+	public Microschema findByName(String name) {
+		MicroschemaRoot microschemaRoot = boot.get().microschemaContainerRoot();
 		return MicroschemaWrapper.wrap(microschemaRoot.findByName(name));
 	}
 
 	@Override
-	public MicroschemaContainer findByUuid(String uuid) {
-		MicroschemaContainerRoot microschemaRoot = boot.get().microschemaContainerRoot();
+	public Microschema findByUuid(String uuid) {
+		MicroschemaRoot microschemaRoot = boot.get().microschemaContainerRoot();
 		return MicroschemaWrapper.wrap(microschemaRoot.findByUuid(uuid));
 	}
 
 	@Override
-	public TraversalResult<? extends MicroschemaContainer> findAll() {
-		MicroschemaContainerRoot microschemaRoot = boot.get().microschemaContainerRoot();
+	public TraversalResult<? extends Microschema> findAll() {
+		MicroschemaRoot microschemaRoot = boot.get().microschemaContainerRoot();
 		return microschemaRoot.findAll();
 	}
 
 	@Override
-	public TransformablePage<? extends MicroschemaContainer> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
-		MicroschemaContainerRoot microschemaRoot = boot.get().microschemaContainerRoot();
+	public TransformablePage<? extends Microschema> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
+		MicroschemaRoot microschemaRoot = boot.get().microschemaContainerRoot();
 		return microschemaRoot.findAll(ac, pagingInfo);
 	}
 
 	@Override
-	public MicroschemaContainer loadObjectByUuid(InternalActionContext ac, String schemaUuid, GraphPermission perm) {
+	public Microschema loadObjectByUuid(InternalActionContext ac, String schemaUuid, GraphPermission perm) {
 		// TODO check for project in context?
-		MicroschemaContainerRoot microschemaRoot = boot.get().microschemaContainerRoot();
+		MicroschemaRoot microschemaRoot = boot.get().microschemaContainerRoot();
 		return MicroschemaWrapper.wrap(microschemaRoot.loadObjectByUuid(ac, schemaUuid, perm));
 	}
 
 	@Override
-	public MicroschemaContainer loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+	public Microschema loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
 		// TODO check for project in context?
-		MicroschemaContainerRoot microschemaRoot = boot.get().microschemaContainerRoot();
+		MicroschemaRoot microschemaRoot = boot.get().microschemaContainerRoot();
 		return MicroschemaWrapper.wrap(microschemaRoot.loadObjectByUuid(ac, uuid, perm, errorIfNotFound));
 	}
 

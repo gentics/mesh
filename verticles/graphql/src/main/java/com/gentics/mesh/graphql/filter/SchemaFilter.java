@@ -10,7 +10,7 @@ import com.gentics.graphqlfilter.filter.FilterField;
 import com.gentics.graphqlfilter.filter.MainFilter;
 import com.gentics.graphqlfilter.filter.MappedFilter;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.graphql.context.GraphQLContext;
@@ -22,7 +22,7 @@ import graphql.schema.GraphQLEnumValueDefinition;
 /**
  * Filter schemas.
  */
-public class SchemaFilter extends MainFilter<SchemaContainer> {
+public class SchemaFilter extends MainFilter<Schema> {
 
 	private static final String NAME = "SchemaFilter";
 
@@ -49,8 +49,8 @@ public class SchemaFilter extends MainFilter<SchemaContainer> {
 	}
 
 	@Override
-	protected List<FilterField<SchemaContainer, ?>> getFilters() {
-		List<FilterField<SchemaContainer, ?>> filters = new ArrayList<>();
+	protected List<FilterField<Schema, ?>> getFilters() {
+		List<FilterField<Schema, ?>> filters = new ArrayList<>();
 		filters.add(FilterField.create("is", "Filters by schema", schemaEnum(), uuid -> schema -> schema.getUuid().equals(uuid)));
 		filters.add(new MappedFilter<>("isContainer", "Filters by schema container flag", BooleanFilter.filter(), schema -> getLatestVersion(schema).getContainer()));
 		filters.add(CommonFields.nameFilter());
@@ -59,7 +59,7 @@ public class SchemaFilter extends MainFilter<SchemaContainer> {
 		return filters;
 	}
 
-	private SchemaUpdateModel getLatestVersion(SchemaContainer schema) {
+	private SchemaUpdateModel getLatestVersion(Schema schema) {
 		return JsonUtil.readValue(schema.getLatestVersion().getJson(), SchemaModelImpl.class);
 	}
 }

@@ -329,7 +329,7 @@ Depending on the actual data, Gentics Mesh will store related meta data e.g., ``
 [[micronode]]
 == Micronode & Microschema
 
-A *micronode* is similar to a node. It also follows a schema - a *microschema*. It is bound to a node and thus is not directly accessible from within the project node tree structure.
+A *micronode* is similar to a node. It also follows a schema - a *microschemaModel*. It is bound to a node and thus is not directly accessible from within the project node tree structure.
 
 With micronodes it is possible to build complex object data structures as they are basically representing subnodes of nodes.
 
@@ -345,32 +345,32 @@ NOTE: Nodes can contain micronodes. Micronodes, however, can not contain further
 | Description
 | API endpoint
 
-| Create a microschema
+| Create a microschemaModel
 | link:++/docs/api#microschemas__post++[```POST {apiLatest}/microschemas/```]
 
 | Get all microschemas
 | link:++/docs/api#microschemas__get++[```GET {apiLatest}/microschemas/```]
 
-| Get a microschema
+| Get a microschemaModel
 | link:++/docs/api#microschemas__microschemaUuid__get++[```GET {apiLatest}/microschemas/:microschemaUuid```]
 
-| Update a microschema
+| Update a microschemaModel
 | link:++/docs/api#microschemas__microschemaUuid__post++[```POST {apiLatest}/microschemas/:microschemaUuid```]
 
-| Delete a microschema
+| Delete a microschemaModel
 | link:++/docs/api#microschemas__microschemaUuid__delete++[```DELETE {apiLatest}/microschemas/:microschemaUuid```]
 
-| Create a changeset for link:{{< relref "features.asciidoc" >}}#_schema_microschema_migration[migrating] a microschema and all affected nodes
+| Create a changeset for link:{{< relref "features.asciidoc" >}}#_schema_microschema_migration[migrating] a microschemaModel and all affected nodes
 | link:++/docs/api#microschemas__microschemaUuid__diff_post++[```POST {apiLatest}/microschemas/:microschemaUuid/diff```]
 
-| link:{{< relref "features.asciidoc" >}}#_schema_microschema_migration[Migrate] a microschema and all affected nodes with a set of changes
+| link:{{< relref "features.asciidoc" >}}#_schema_microschema_migration[Migrate] a microschemaModel and all affected nodes with a set of changes
 | link:++/docs/api#microschemas__microschemaUuid__changes_post++[```POST {apiLatest}/microschemas/:microschemaUuid/changes```]
 
 |======
 
 === Properties
 
-Microschemas share the same properties as schemas except for the properties ```displayField```, ```container```, and ```segmentField```, which are not available in a microschema.
+Microschemas share the same properties as schemas except for the properties ```displayField```, ```container```, and ```segmentField```, which are not available in a microschemaModel.
 
 === Schema Field Types
 

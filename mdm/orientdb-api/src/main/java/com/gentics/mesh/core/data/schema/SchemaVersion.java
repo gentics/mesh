@@ -22,8 +22,8 @@ import com.gentics.mesh.madl.traversal.TraversalResult;
  * Each schema update is stored within a dedicated schema container version in order to be able to keep track of changes in between different schema container
  * versions.
  */
-public interface SchemaContainerVersion
-		extends GraphFieldSchemaContainerVersion<SchemaResponse, SchemaUpdateModel, SchemaReference, SchemaContainerVersion, SchemaContainer> {
+public interface SchemaVersion
+		extends GraphFieldSchemaContainerVersion<SchemaResponse, SchemaUpdateModel, SchemaReference, SchemaVersion, Schema> {
 
 	static final TypeInfo TYPE_INFO = new TypeInfo(SCHEMAVERSION, SCHEMA_CREATED, SCHEMA_UPDATED, SCHEMA_DELETED);
 

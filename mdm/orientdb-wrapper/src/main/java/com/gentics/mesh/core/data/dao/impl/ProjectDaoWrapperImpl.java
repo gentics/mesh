@@ -31,8 +31,8 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.ProjectRoot;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.rest.error.NameConflictException;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
@@ -137,7 +137,7 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper implements Project
 	}
 
 	@Override
-	public Project create(String name, String hostname, Boolean ssl, String pathPrefix, User creator, SchemaContainerVersion schemaContainerVersion,
+	public Project create(String name, String hostname, Boolean ssl, String pathPrefix, User creator, SchemaVersion schemaVersion,
 		String uuid, EventQueueBatch batch) {
 		ProjectRoot root = boot.get().projectRoot();
 
@@ -163,13 +163,13 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper implements Project
 		} else {
 			branch.setPathPrefix("");
 		}
-		branch.assignSchemaVersion(creator, schemaContainerVersion, batch);
+		branch.assignSchemaVersion(creator, schemaVersion, batch);
 
 		// Assign the provided schema container to the project
-		project.getSchemaContainerRoot().addItem(schemaContainerVersion.getSchemaContainer());
+		project.getSchemaContainerRoot().addItem(schemaVersion.getSchemaContainer());
 		// project.getLatestBranch().assignSchemaVersion(creator,
 		// schemaContainerVersion);
-		project.createBaseNode(creator, schemaContainerVersion);
+		project.createBaseNode(creator, schemaVersion);
 
 		project.setCreated(creator);
 		project.setEditor(creator);
@@ -211,12 +211,12 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper implements Project
 		if (requestModel.getSchema() == null || !requestModel.getSchema().isSet()) {
 			throw error(BAD_REQUEST, "project_error_no_schema_reference");
 		}
-		SchemaContainerVersion schemaContainerVersion = schemaDao.fromReference(requestModel.getSchema());
+		SchemaVersion schemaVersion = schemaDao.fromReference(requestModel.getSchema());
 
 		String hostname = requestModel.getHostname();
 		Boolean ssl = requestModel.getSsl();
 		String pathPrefix = requestModel.getPathPrefix();
-		Project project = create(projectName, hostname, ssl, pathPrefix, creator, schemaContainerVersion, uuid, batch);
+		Project project = create(projectName, hostname, ssl, pathPrefix, creator, schemaVersion, uuid, batch);
 		Branch initialBranch = project.getInitialBranch();
 		String branchUuid = initialBranch.getUuid();
 
@@ -266,7 +266,7 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper implements Project
 		project.getNodeRoot().delete(bac);
 
 		// Unassign the schema from the container
-		for (SchemaContainer container : project.getSchemaContainerRoot().findAll()) {
+		for (Schema container : project.getSchemaContainerRoot().findAll()) {
 			project.getSchemaContainerRoot().removeSchemaContainer(container, bac.batch());
 		}
 

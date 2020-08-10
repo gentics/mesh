@@ -16,7 +16,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -275,7 +275,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 			String english = english();
 			Node parentNode = folder("2015");
 
-			SchemaContainerVersion schemaVersion = schemaContainer("content").getLatestVersion();
+			SchemaVersion schemaVersion = schemaContainer("content").getLatestVersion();
 			// Create some dummy content
 			Node content = parentNode.create(user(), schemaVersion, project());
 			NodeGraphFieldContainer germanContainer = content.createGraphFieldContainer(german, content.getProject().getLatestBranch(), user());

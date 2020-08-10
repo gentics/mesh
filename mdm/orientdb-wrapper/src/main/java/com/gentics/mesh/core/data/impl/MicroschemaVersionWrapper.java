@@ -15,15 +15,15 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModelImpl;
-import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
@@ -48,15 +48,15 @@ import com.tinkerpop.blueprints.Vertex;
 import io.reactivex.Single;
 import io.vertx.core.Vertx;
 
-public class MicroschemaVersionWrapper implements MicroschemaContainerVersion, HibMicroschemaVersion {
+public class MicroschemaVersionWrapper implements MicroschemaVersion, HibMicroschemaVersion {
 
-	private final MicroschemaContainerVersion delegate;
+	private final MicroschemaVersion delegate;
 
-	public MicroschemaVersionWrapper(MicroschemaContainerVersion delegate) {
+	public MicroschemaVersionWrapper(MicroschemaVersion delegate) {
 		this.delegate = delegate;
 	}
 
-	public static MicroschemaVersionWrapper wrap(MicroschemaContainerVersion version) {
+	public static MicroschemaVersionWrapper wrap(MicroschemaVersion version) {
 		if (version == null) {
 			return null;
 		} else {
@@ -269,7 +269,7 @@ public class MicroschemaVersionWrapper implements MicroschemaContainerVersion, H
 		return delegate.addFramedEdgeExplicit(label, inVertex, initializer);
 	}
 
-	public MicroschemaModel getSchema() {
+	public MicroschemaVersionModel getSchema() {
 		return delegate.getSchema();
 	}
 
@@ -285,7 +285,7 @@ public class MicroschemaVersionWrapper implements MicroschemaContainerVersion, H
 		delegate.setProperty(name, value);
 	}
 
-	public void setSchema(MicroschemaModel schema) {
+	public void setSchema(MicroschemaVersionModel schema) {
 		delegate.setSchema(schema);
 	}
 
@@ -365,19 +365,19 @@ public class MicroschemaVersionWrapper implements MicroschemaContainerVersion, H
 		return delegate.getGraphAttribute(key);
 	}
 
-	public MicroschemaContainerVersion getNextVersion() {
+	public MicroschemaVersion getNextVersion() {
 		return wrap(delegate.getNextVersion());
 	}
 
-	public void setNextVersion(MicroschemaContainerVersion container) {
+	public void setNextVersion(MicroschemaVersion container) {
 		delegate.setNextVersion(container);
 	}
 
-	public MicroschemaContainerVersion getPreviousVersion() {
+	public MicroschemaVersion getPreviousVersion() {
 		return wrap(delegate.getPreviousVersion());
 	}
 
-	public Stream<MicroschemaContainerVersion> getPreviousVersions() {
+	public Stream<MicroschemaVersion> getPreviousVersions() {
 		return delegate.getPreviousVersions();
 	}
 
@@ -397,7 +397,7 @@ public class MicroschemaVersionWrapper implements MicroschemaContainerVersion, H
 		delegate.linkOut(vertex, labels);
 	}
 
-	public void setPreviousVersion(MicroschemaContainerVersion container) {
+	public void setPreviousVersion(MicroschemaVersion container) {
 		delegate.setPreviousVersion(container);
 	}
 
@@ -413,7 +413,7 @@ public class MicroschemaVersionWrapper implements MicroschemaContainerVersion, H
 		delegate.unlinkOut(vertex, labels);
 	}
 
-	public MicroschemaContainerVersion applyChanges(InternalActionContext ac, EventQueueBatch batch) {
+	public MicroschemaVersion applyChanges(InternalActionContext ac, EventQueueBatch batch) {
 		return wrap(delegate.applyChanges(ac, batch));
 	}
 
@@ -441,7 +441,7 @@ public class MicroschemaVersionWrapper implements MicroschemaContainerVersion, H
 		return delegate.toJson();
 	}
 
-	public void setSchemaContainer(MicroschemaContainer container) {
+	public void setSchemaContainer(Microschema container) {
 		delegate.setSchemaContainer(container);
 	}
 
@@ -465,7 +465,7 @@ public class MicroschemaVersionWrapper implements MicroschemaContainerVersion, H
 		delegate.setJson(json);
 	}
 
-	public int compareTo(MicroschemaContainerVersion version) {
+	public int compareTo(MicroschemaVersion version) {
 		return delegate.compareTo(version);
 	}
 

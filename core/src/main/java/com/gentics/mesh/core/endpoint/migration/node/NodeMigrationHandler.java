@@ -21,7 +21,7 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.endpoint.migration.AbstractMigrationHandler;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
@@ -69,8 +69,8 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	public Completable migrateNodes(NodeMigrationActionContextImpl context) {
 		context.validate();
 		return Completable.defer(() -> {
-			SchemaContainerVersion fromVersion = context.getFromVersion();
-			SchemaContainerVersion toVersion = context.getToVersion();
+			SchemaVersion fromVersion = context.getFromVersion();
+			SchemaVersion toVersion = context.getToVersion();
 			SchemaMigrationCause cause = context.getCause();
 			Branch branch = context.getBranch();
 			MigrationStatusHandler status = context.getStatus();
@@ -162,7 +162,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 		}
 
 		Branch branch = ac.getBranch();
-		SchemaContainerVersion toVersion = ac.getToVersion();
+		SchemaVersion toVersion = ac.getToVersion();
 		try {
 			Node node = container.getParentNode();
 			String languageTag = container.getLanguageTag();
@@ -217,7 +217,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	 * @throws Exception
 	 */
 	private void migrateDraftContainer(NodeMigrationActionContextImpl ac, EventQueueBatch sqb, Branch branch, Node node,
-		NodeGraphFieldContainer container, GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion, SchemaContainerVersion toVersion,
+		NodeGraphFieldContainer container, GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion, SchemaVersion toVersion,
 		Set<String> touchedFields,
 		SchemaUpdateModel newSchema, VersionNumber nextDraftVersion)
 		throws Exception {
@@ -277,7 +277,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	 * @throws Exception
 	 */
 	private VersionNumber migratePublishedContainer(NodeMigrationActionContextImpl ac, EventQueueBatch sqb, Branch branch, Node node,
-		NodeGraphFieldContainer container, GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion, SchemaContainerVersion toVersion,
+		NodeGraphFieldContainer container, GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion, SchemaVersion toVersion,
 		Set<String> touchedFields, SchemaUpdateModel newSchema) throws Exception {
 
 		String languageTag = container.getLanguageTag();

@@ -9,20 +9,20 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.event.EventQueueBatch;
 
 /**
  * Project specific implementation of schema container root
  */
-public class ProjectSchemaContainerRootImpl extends SchemaContainerRootImpl {
+public class ProjectSchemaRootImpl extends SchemaRootImpl {
 
 	public static void init(TypeHandler type, IndexHandler index) {
-		type.createVertexType(ProjectSchemaContainerRootImpl.class, MeshVertexImpl.class);
+		type.createVertexType(ProjectSchemaRootImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override
-	public void addSchemaContainer(User user, SchemaContainer schema, EventQueueBatch batch) {
+	public void addSchemaContainer(User user, Schema schema, EventQueueBatch batch) {
 		Project project = getProject();
 		batch.add(project.onSchemaAssignEvent(schema, ASSIGNED));
 		super.addSchemaContainer(user, schema, batch);
@@ -34,7 +34,7 @@ public class ProjectSchemaContainerRootImpl extends SchemaContainerRootImpl {
 	}
 
 	@Override
-	public void removeSchemaContainer(SchemaContainer schema, EventQueueBatch batch) {
+	public void removeSchemaContainer(Schema schema, EventQueueBatch batch) {
 		Project project = getProject();
 		batch.add(project.onSchemaAssignEvent(schema, UNASSIGNED));
 		super.removeSchemaContainer(schema, batch);

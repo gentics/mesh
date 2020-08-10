@@ -5,7 +5,7 @@ import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.search.index.AbstractTransformer;
 import com.gentics.mesh.util.ETag;
 
@@ -15,19 +15,19 @@ import io.vertx.core.json.JsonObject;
  * Transformer for microschema search index documents.
  */
 @Singleton
-public class MicroschemaTransformer extends AbstractTransformer<MicroschemaContainer> {
+public class MicroschemaTransformer extends AbstractTransformer<Microschema> {
 
 	@Inject
 	public MicroschemaTransformer() {
 	}
 
-	public String generateVersion(MicroschemaContainer microschema) {
+	public String generateVersion(Microschema microschema) {
 		// No need to add users since the creator/editor edge affects the microschema version
 		return ETag.hash(microschema.getElementVersion());
 	}
 
 	@Override
-	public JsonObject toDocument(MicroschemaContainer microschema) {
+	public JsonObject toDocument(Microschema microschema) {
 		JsonObject document = new JsonObject();
 		addBasicReferences(document, microschema);
 		document.put(NAME_KEY, microschema.getName());

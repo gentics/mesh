@@ -11,7 +11,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
@@ -29,7 +29,7 @@ import io.reactivex.Flowable;
  * Handler for the elastic search microschema index.
  */
 @Singleton
-public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<MicroschemaContainer> {
+public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Microschema> {
 
 	@Inject
 	MicroschemaTransformer transformer;
@@ -53,17 +53,17 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 
 	@Override
 	protected String composeIndexNameFromEntry(UpdateDocumentEntry entry) {
-		return MicroschemaContainer.composeIndexName();
+		return Microschema.composeIndexName();
 	}
 
 	@Override
 	protected String composeDocumentIdFromEntry(UpdateDocumentEntry entry) {
-		return MicroschemaContainer.composeDocumentId(entry.getElementUuid());
+		return Microschema.composeDocumentId(entry.getElementUuid());
 	}
 
 	@Override
 	public Class<?> getElementClass() {
-		return MicroschemaContainer.class;
+		return Microschema.class;
 	}
 
 	@Override
@@ -78,32 +78,32 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 
 	@Override
 	public Flowable<SearchRequest> syncIndices() {
-		return diffAndSync(MicroschemaContainer.composeIndexName(), null);
+		return diffAndSync(Microschema.composeIndexName(), null);
 	}
 
 	@Override
 	public Set<String> filterUnknownIndices(Set<String> indices) {
-		return filterIndicesByType(indices, MicroschemaContainer.composeIndexName());
+		return filterIndicesByType(indices, Microschema.composeIndexName());
 	}
 
 	@Override
 	public Set<String> getIndicesForSearch(InternalActionContext ac) {
-		return Collections.singleton(MicroschemaContainer.composeIndexName());
+		return Collections.singleton(Microschema.composeIndexName());
 	}
 
 	@Override
-	public Function<String, MicroschemaContainer> elementLoader() {
+	public Function<String, Microschema> elementLoader() {
 		return (uuid) -> boot.meshRoot().getMicroschemaContainerRoot().findByUuid(uuid);
 	}
 
 	@Override
-	public Stream<? extends MicroschemaContainer> loadAllElements(Tx tx) {
+	public Stream<? extends Microschema> loadAllElements(Tx tx) {
 		return tx.data().microschemaDao().findAll().stream();
 	}
 
 	@Override
 	public Map<String, IndexInfo> getIndices() {
-		String indexName = MicroschemaContainer.composeIndexName();
+		String indexName = Microschema.composeIndexName();
 		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping(), "microschema");
 		return Collections.singletonMap(indexName, info);
 	}

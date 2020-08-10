@@ -10,14 +10,14 @@ import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.BranchRoot;
-import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
+import com.gentics.mesh.core.data.root.MicroschemaRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
-import com.gentics.mesh.core.data.root.SchemaContainerRoot;
+import com.gentics.mesh.core.data.root.SchemaRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
 import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.project.ProjectReference;
@@ -66,12 +66,12 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	 * 
 	 * @param creator
 	 *            Creator of the base node
-	 * @param schemaContainerVersion
+	 * @param schemaVersion
 	 *            Schema version used for the basenode creation
 	 * 
 	 * @return Created base node
 	 */
-	Node createBaseNode(User creator, SchemaContainerVersion schemaContainerVersion);
+	Node createBaseNode(User creator, SchemaVersion schemaVersion);
 
 	/**
 	 * Return the base node of the project.
@@ -99,14 +99,14 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	 * 
 	 * @return
 	 */
-	SchemaContainerRoot getSchemaContainerRoot();
+	SchemaRoot getSchemaContainerRoot();
 
 	/**
 	 * Return the microschema container root for the project.
 	 *
 	 * @return
 	 */
-	MicroschemaContainerRoot getMicroschemaContainerRoot();
+	MicroschemaRoot getMicroschemaContainerRoot();
 
 	/**
 	 * Return a traversal result of languages that were assigned to the project.
@@ -164,7 +164,7 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	 * @param assigned
 	 * @return
 	 */
-	ProjectSchemaEventModel onSchemaAssignEvent(SchemaContainer schema, Assignment assigned);
+	ProjectSchemaEventModel onSchemaAssignEvent(Schema schema, Assignment assigned);
 
 	/**
 	 * Create a project microschema assignment event.
@@ -173,7 +173,7 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	 * @param assigned
 	 * @return
 	 */
-	ProjectMicroschemaEventModel onMicroschemaAssignEvent(MicroschemaContainer microschema, Assignment assigned);
+	ProjectMicroschemaEventModel onMicroschemaAssignEvent(Microschema microschema, Assignment assigned);
 
 	/**
 	 * Find the branch via name or uuid that belongs to the project.

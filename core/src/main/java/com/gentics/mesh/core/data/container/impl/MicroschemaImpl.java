@@ -11,33 +11,33 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.impl.AbstractGraphFieldSchemaContainer;
-import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 
 /**
- * See {@link MicroschemaContainer}
+ * See {@link Microschema}
  */
-public class MicroschemaContainerImpl extends
-	AbstractGraphFieldSchemaContainer<MicroschemaResponse, MicroschemaModel, MicroschemaReference, MicroschemaContainer, MicroschemaContainerVersion>
-	implements MicroschemaContainer {
+public class MicroschemaImpl extends
+	AbstractGraphFieldSchemaContainer<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, Microschema, MicroschemaVersion>
+	implements Microschema {
 
 	@Override
-	protected Class<MicroschemaContainerImpl> getContainerClass() {
-		return MicroschemaContainerImpl.class;
+	protected Class<MicroschemaImpl> getContainerClass() {
+		return MicroschemaImpl.class;
 	}
 
 	@Override
-	protected Class<? extends MicroschemaContainerVersion> getContainerVersionClass() {
-		return MicroschemaContainerVersionImpl.class;
+	protected Class<? extends MicroschemaVersion> getContainerVersionClass() {
+		return MicroschemaVersionImpl.class;
 	}
 
 	public static void init(TypeHandler type, IndexHandler index) {
-		type.createVertexType(MicroschemaContainerImpl.class, MeshVertexImpl.class);
+		type.createVertexType(MicroschemaImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override
@@ -46,13 +46,13 @@ public class MicroschemaContainerImpl extends
 	}
 
 	@Override
-	public RootVertex<MicroschemaContainer> getRoot() {
+	public RootVertex<Microschema> getRoot() {
 		return mesh().boot().meshRoot().getMicroschemaContainerRoot();
 	}
 
 	@Override
 	public void delete(BulkActionContext bac) {
-		for (MicroschemaContainerVersion version : findAll()) {
+		for (MicroschemaVersion version : findAll()) {
 			if (version.findMicronodes().hasNext()) {
 				throw error(BAD_REQUEST, "microschema_delete_still_in_use", getUuid());
 			}

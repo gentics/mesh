@@ -7,8 +7,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import com.gentics.mesh.assertj.AbstractMeshAssert;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 
@@ -34,7 +34,7 @@ public class SchemaResponseAssert extends AbstractMeshAssert<SchemaResponseAsser
 		return this;
 	}
 
-	public SchemaResponseAssert matches(SchemaContainer schema) {
+	public SchemaResponseAssert matches(Schema schema) {
 		// TODO make schemas extends generic nodes?
 		// assertGenericNode(schema, restSchema);
 		assertNotNull(schema);
@@ -53,13 +53,13 @@ public class SchemaResponseAssert extends AbstractMeshAssert<SchemaResponseAsser
 		return this;
 	}
 
-	public SchemaResponseAssert matches(SchemaContainerVersion version) {
+	public SchemaResponseAssert matches(SchemaVersion version) {
 		assertNotNull(version);
 		assertNotNull(actual);
 
 		SchemaModel storedSchema = version.getSchema();
 		matches(storedSchema);
-		SchemaContainer container = version.getSchemaContainer();
+		Schema container = version.getSchemaContainer();
 		matches(container);
 		return this;
 	}

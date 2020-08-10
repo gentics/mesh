@@ -26,10 +26,10 @@ import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.impl.SchemaWrapper;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.SchemaContainerRoot;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.root.SchemaRoot;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
@@ -60,20 +60,20 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper implements SchemaDa
 	}
 
 	@Override
-	public SchemaContainer findByName(String name) {
-		SchemaContainerRoot schemaRoot = boot.get().schemaContainerRoot();
+	public Schema findByName(String name) {
+		SchemaRoot schemaRoot = boot.get().schemaContainerRoot();
 		return SchemaWrapper.wrap(schemaRoot.findByName(name));
 	}
 
 	@Override
-	public SchemaContainer findByUuid(String uuid) {
-		SchemaContainerRoot schemaRoot = boot.get().schemaContainerRoot();
+	public Schema findByUuid(String uuid) {
+		SchemaRoot schemaRoot = boot.get().schemaContainerRoot();
 		return SchemaWrapper.wrap(schemaRoot.findByUuid(uuid));
 	}
 
 	@Override
-	public TraversalResult<? extends SchemaContainer> findAll() {
-		SchemaContainerRoot schemaRoot = boot.get().schemaContainerRoot();
+	public TraversalResult<? extends Schema> findAll() {
+		SchemaRoot schemaRoot = boot.get().schemaContainerRoot();
 		return schemaRoot.findAll();
 	}
 
@@ -83,16 +83,16 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper implements SchemaDa
 	}
 
 	@Override
-	public TransformablePage<? extends SchemaContainer> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
-		SchemaContainerRoot schemaRoot = boot.get().schemaContainerRoot();
+	public TransformablePage<? extends Schema> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
+		SchemaRoot schemaRoot = boot.get().schemaContainerRoot();
 		return schemaRoot.findAll(ac, pagingInfo);
 	}
 
 	@Override
-	public SchemaContainer create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
+	public Schema create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		MeshAuthUser requestUser = ac.getUser();
 		UserDaoWrapper userDao = Tx.get().data().userDao();
-		SchemaContainerRoot schemaRoot = boot.get().schemaContainerRoot();
+		SchemaRoot schemaRoot = boot.get().schemaContainerRoot();
 
 		SchemaUpdateModel requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModelImpl.class);
 		requestModel.validate();
@@ -100,7 +100,7 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper implements SchemaDa
 		if (!userDao.hasPermission(requestUser, schemaRoot, CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", schemaRoot.getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
-		SchemaContainer container = create(requestModel, requestUser, uuid, ac.getSchemaUpdateParameters().isStrictValidation());
+		Schema container = create(requestModel, requestUser, uuid, ac.getSchemaUpdateParameters().isStrictValidation());
 		userDao.inheritRolePermissions(requestUser, schemaRoot, container);
 		batch.add(container.onCreated());
 		return container;
@@ -108,7 +108,7 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper implements SchemaDa
 	}
 
 	@Override
-	public SchemaContainerVersion fromReference(Project project, SchemaReference reference) {
+	public SchemaVersion fromReference(Project project, SchemaReference reference) {
 		if (reference == null) {
 			throw error(INTERNAL_SERVER_ERROR, "Missing schema reference");
 		}
@@ -117,7 +117,7 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper implements SchemaDa
 		String schemaVersion = reference.getVersion();
 
 		// Prefer the name over the uuid
-		SchemaContainer schemaContainer = null;
+		Schema schemaContainer = null;
 		if (!isEmpty(schemaName)) {
 			if (project != null) {
 				schemaContainer = findByName(project, schemaName);
@@ -140,7 +140,7 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper implements SchemaDa
 		if (schemaVersion == null) {
 			return schemaContainer.getLatestVersion();
 		} else {
-			SchemaContainerVersion foundVersion = schemaContainer.findVersionByRev(schemaVersion);
+			SchemaVersion foundVersion = schemaContainer.findVersionByRev(schemaVersion);
 			if (foundVersion == null) {
 				throw error(BAD_REQUEST, "error_schema_reference_not_found", isEmpty(schemaName) ? "-" : schemaName, isEmpty(schemaUuid) ? "-"
 					: schemaUuid, schemaVersion == null ? "-" : schemaVersion.toString());
@@ -152,30 +152,30 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper implements SchemaDa
 	}
 
 	@Override
-	public SchemaContainer findByUuid(Project project, String schemaUuid) {
-		SchemaContainer schema = project.getSchemaContainerRoot().findByUuid(schemaUuid);
+	public Schema findByUuid(Project project, String schemaUuid) {
+		Schema schema = project.getSchemaContainerRoot().findByUuid(schemaUuid);
 		return SchemaWrapper.wrap(schema);
 	}
 
 	@Override
-	public SchemaContainer findByName(Project project, String schemaName) {
-		SchemaContainer schema = project.getSchemaContainerRoot().findByName(schemaName);
+	public Schema findByName(Project project, String schemaName) {
+		Schema schema = project.getSchemaContainerRoot().findByName(schemaName);
 		return SchemaWrapper.wrap(schema);
 	}
 
 	@Override
-	public SchemaContainerVersion fromReference(SchemaReference reference) {
+	public SchemaVersion fromReference(SchemaReference reference) {
 		return fromReference(null, reference);
 	}
 
 	@Override
-	public SchemaContainer create(SchemaUpdateModel schema, User creator, String uuid) {
+	public Schema create(SchemaUpdateModel schema, User creator, String uuid) {
 		return create(schema, creator, uuid, false);
 	}
 
 	@Override
-	public SchemaContainer create(SchemaUpdateModel schema, User creator, String uuid, boolean validate) {
-		SchemaContainerRoot schemaRoot = boot.get().schemaContainerRoot();
+	public Schema create(SchemaUpdateModel schema, User creator, String uuid, boolean validate) {
+		SchemaRoot schemaRoot = boot.get().schemaContainerRoot();
 		MicroschemaDaoWrapper microschemaDao = Tx.get().data().microschemaDao();
 
 		// TODO FIXME - We need to skip the validation check if the instance is creating a clustered instance because vert.x is not yet ready.
@@ -185,21 +185,21 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper implements SchemaDa
 		}
 
 		String name = schema.getName();
-		SchemaContainer conflictingSchema = findByName(name);
+		Schema conflictingSchema = findByName(name);
 		if (conflictingSchema != null) {
 			throw conflict(conflictingSchema.getUuid(), name, "schema_conflicting_name", name);
 		}
 
-		MicroschemaContainer conflictingMicroschema = microschemaDao.findByName(name);
+		Microschema conflictingMicroschema = microschemaDao.findByName(name);
 		if (conflictingMicroschema != null) {
 			throw conflict(conflictingMicroschema.getUuid(), name, "microschema_conflicting_name", name);
 		}
 
-		SchemaContainer container = schemaRoot.create();
+		Schema container = schemaRoot.create();
 		if (uuid != null) {
 			container.setUuid(uuid);
 		}
-		SchemaContainerVersion version = schemaRoot.createVersion();
+		SchemaVersion version = schemaRoot.createVersion();
 		container.setLatestVersion(version);
 
 		// set the initial version
@@ -228,16 +228,16 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper implements SchemaDa
 	}
 
 	@Override
-	public SchemaContainer loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
+	public Schema loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
 		// TODO check for project in context?
-		SchemaContainerRoot schemaRoot = boot.get().schemaContainerRoot();
+		SchemaRoot schemaRoot = boot.get().schemaContainerRoot();
 		return SchemaWrapper.wrap(schemaRoot.loadObjectByUuid(ac, uuid, perm));
 	}
 
 	@Override
-	public SchemaContainer loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+	public Schema loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
 		// TODO check for project in context?
-		SchemaContainerRoot schemaRoot = boot.get().schemaContainerRoot();
+		SchemaRoot schemaRoot = boot.get().schemaContainerRoot();
 		return SchemaWrapper.wrap(schemaRoot.loadObjectByUuid(ac, uuid, perm, errorIfNotFound));
 	}
 

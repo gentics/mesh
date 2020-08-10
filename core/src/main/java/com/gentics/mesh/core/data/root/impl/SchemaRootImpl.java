@@ -15,32 +15,32 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
-import com.gentics.mesh.core.data.root.SchemaContainerRoot;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.root.SchemaRoot;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
-import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
+import com.gentics.mesh.core.data.schema.impl.SchemaVersionImpl;
 import com.gentics.mesh.event.EventQueueBatch;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 /**
- * @see SchemaContainerRoot
+ * @see SchemaRoot
  */
-public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer> implements SchemaContainerRoot {
+public class SchemaRootImpl extends AbstractRootVertex<Schema> implements SchemaRoot {
 
-	private static final Logger log = LoggerFactory.getLogger(SchemaContainerRootImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(SchemaRootImpl.class);
 
 	public static void init(TypeHandler type, IndexHandler index) {
-		type.createVertexType(SchemaContainerRootImpl.class, MeshVertexImpl.class);
+		type.createVertexType(SchemaRootImpl.class, MeshVertexImpl.class);
 		type.createType(edgeType(HAS_SCHEMA_ROOT));
 		type.createType(edgeType(HAS_SCHEMA_CONTAINER_ITEM));
 		index.createIndex(edgeIndex(HAS_SCHEMA_CONTAINER_ITEM).withInOut().withOut());
 	}
 
 	@Override
-	public Class<? extends SchemaContainer> getPersistanceClass() {
+	public Class<? extends Schema> getPersistanceClass() {
 		return SchemaContainerImpl.class;
 	}
 
@@ -50,17 +50,17 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	}
 
 	@Override
-	public void addSchemaContainer(User user, SchemaContainer schema, EventQueueBatch batch) {
+	public void addSchemaContainer(User user, Schema schema, EventQueueBatch batch) {
 		addItem(schema);
 	}
 
 	@Override
-	public void removeSchemaContainer(SchemaContainer schemaContainer, EventQueueBatch batch) {
+	public void removeSchemaContainer(Schema schemaContainer, EventQueueBatch batch) {
 		removeItem(schemaContainer);
 	}
 
 	@Override
-	public boolean contains(SchemaContainer schema) {
+	public boolean contains(Schema schema) {
 		if (findByUuid(schema.getUuid()) == null) {
 			return false;
 		} else {
@@ -81,18 +81,18 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	}
 
 	@Override
-	public SchemaContainer create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
+	public Schema create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		throw new RuntimeException("Wrong invocation. Use dao instead");
 	}
 
 	@Override
-	public SchemaContainer create() {
+	public Schema create() {
 		return getGraph().addFramedVertex(SchemaContainerImpl.class);
 	}
 
 	@Override
-	public SchemaContainerVersion createVersion() {
-		return getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+	public SchemaVersion createVersion() {
+		return getGraph().addFramedVertex(SchemaVersionImpl.class);
 	}
 
 	/**

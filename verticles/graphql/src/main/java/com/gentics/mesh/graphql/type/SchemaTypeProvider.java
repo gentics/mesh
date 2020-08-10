@@ -15,8 +15,8 @@ import javax.inject.Singleton;
 import com.gentics.mesh.core.data.NamedElement;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.NodeContent;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
@@ -142,12 +142,12 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 		return schemaType.build();
 	}
 
-	private SchemaContainerVersion getSchemaContainerVersion(DataFetchingEnvironment env) {
+	private SchemaVersion getSchemaContainerVersion(DataFetchingEnvironment env) {
 		Object source = env.getSource();
-		if (source instanceof SchemaContainerVersion) {
-			return (SchemaContainerVersion) source;
-		} else if (source instanceof SchemaContainer) {
-			return ((SchemaContainer) source).getLatestVersion();
+		if (source instanceof SchemaVersion) {
+			return (SchemaVersion) source;
+		} else if (source instanceof Schema) {
+			return ((Schema) source).getLatestVersion();
 		} else {
 			throw new RuntimeException("Invalid type {" + source + "}.");
 		}
@@ -155,13 +155,13 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 
 	private SchemaUpdateModel loadModelWithFallback(DataFetchingEnvironment env) {
 		Object source = env.getSource();
-		if (source instanceof SchemaContainer) {
-			SchemaContainer schema = env.getSource();
+		if (source instanceof Schema) {
+			Schema schema = env.getSource();
 			SchemaUpdateModel model = JsonUtil.readValue(schema.getLatestVersion().getJson(), SchemaModelImpl.class);
 			return model;
 		}
-		if (source instanceof SchemaContainerVersion) {
-			SchemaContainerVersion schema = env.getSource();
+		if (source instanceof SchemaVersion) {
+			SchemaVersion schema = env.getSource();
 			SchemaUpdateModel model = JsonUtil.readValue(schema.getJson(), SchemaModelImpl.class);
 			return model;
 		}

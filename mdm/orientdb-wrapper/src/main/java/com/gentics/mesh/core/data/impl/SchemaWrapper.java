@@ -15,9 +15,9 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.root.SchemaContainerRoot;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.root.SchemaRoot;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
@@ -44,11 +44,11 @@ import com.tinkerpop.blueprints.Vertex;
 import io.reactivex.Single;
 import io.vertx.core.Vertx;
 
-public class SchemaWrapper implements SchemaContainer, HibSchema {
+public class SchemaWrapper implements Schema, HibSchema {
 
-	private final SchemaContainer delegate;
+	private final Schema delegate;
 
-	public static SchemaWrapper wrap(SchemaContainer schema) {
+	public static SchemaWrapper wrap(Schema schema) {
 		if (schema == null) {
 			return null;
 		} else {
@@ -56,7 +56,7 @@ public class SchemaWrapper implements SchemaContainer, HibSchema {
 		}
 	}
 
-	public SchemaWrapper(SchemaContainer delegate) {
+	public SchemaWrapper(Schema delegate) {
 		this.delegate = delegate;
 	}
 
@@ -228,7 +228,7 @@ public class SchemaWrapper implements SchemaContainer, HibSchema {
 		delegate.property(key, value);
 	}
 
-	public SchemaContainerVersion findVersionByUuid(String uuid) {
+	public SchemaVersion findVersionByUuid(String uuid) {
 		return delegate.findVersionByUuid(uuid);
 	}
 
@@ -269,7 +269,7 @@ public class SchemaWrapper implements SchemaContainer, HibSchema {
 		delegate.removeProperty(key);
 	}
 
-	public SchemaContainerVersion findVersionByRev(String version) {
+	public SchemaVersion findVersionByRev(String version) {
 		return delegate.findVersionByRev(version);
 	}
 
@@ -301,7 +301,7 @@ public class SchemaWrapper implements SchemaContainer, HibSchema {
 		return delegate.getETag(ac);
 	}
 
-	public Iterable<? extends SchemaContainerVersion> findAll() {
+	public Iterable<? extends SchemaVersion> findAll() {
 		return delegate.findAll();
 	}
 
@@ -309,7 +309,7 @@ public class SchemaWrapper implements SchemaContainer, HibSchema {
 		return delegate.vertx();
 	}
 
-	public TraversalResult<? extends SchemaContainerRoot> getRoots() {
+	public TraversalResult<? extends SchemaRoot> getRoots() {
 		return delegate.getRoots();
 	}
 
@@ -317,7 +317,7 @@ public class SchemaWrapper implements SchemaContainer, HibSchema {
 		return delegate.hasPublishPermissions();
 	}
 
-	public SchemaContainerVersion getLatestVersion() {
+	public SchemaVersion getLatestVersion() {
 		return delegate.getLatestVersion();
 	}
 
@@ -329,7 +329,7 @@ public class SchemaWrapper implements SchemaContainer, HibSchema {
 		return delegate.addFramedEdgeExplicit(label, inVertex, initializer);
 	}
 
-	public void setLatestVersion(SchemaContainerVersion version) {
+	public void setLatestVersion(SchemaVersion version) {
 		delegate.setLatestVersion(version);
 	}
 
@@ -345,7 +345,7 @@ public class SchemaWrapper implements SchemaContainer, HibSchema {
 		delegate.setProperty(name, value);
 	}
 
-	public RootVertex<SchemaContainer> getRoot() {
+	public RootVertex<Schema> getRoot() {
 		return delegate.getRoot();
 	}
 
@@ -353,7 +353,7 @@ public class SchemaWrapper implements SchemaContainer, HibSchema {
 		return delegate.onUpdated();
 	}
 
-	public Map<Branch, SchemaContainerVersion> findReferencedBranches() {
+	public Map<Branch, SchemaVersion> findReferencedBranches() {
 		return delegate.findReferencedBranches();
 	}
 

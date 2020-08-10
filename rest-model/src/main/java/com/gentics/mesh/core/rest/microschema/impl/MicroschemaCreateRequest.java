@@ -7,11 +7,11 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 
 import io.vertx.core.json.JsonObject;
 
-public class MicroschemaCreateRequest implements Microschema {
+public class MicroschemaCreateRequest implements MicroschemaModel {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Description of the microschema")

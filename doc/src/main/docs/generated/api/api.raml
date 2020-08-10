@@ -6628,22 +6628,22 @@ mediaType: application/json
     description: Endpoint which provides methods to manipulate microschemas.
     /: 
         post: 
-            description: Create a new microschema.
+            description: Create a new microschemaModel.
             body: 
                 application/json: 
                     schema: |
                         {
                           "type" : "object",
-                          "id" : "urn:jsonschema:com:gentics:mesh:core:rest:microschema:impl:MicroschemaCreateRequest",
+                          "id" : "urn:jsonschema:com:gentics:mesh:core:rest:microschemaModel:impl:MicroschemaCreateRequest",
                           "properties" : {
                             "description" : {
                               "type" : "string",
-                              "description" : "Description of the microschema"
+                              "description" : "Description of the microschemaModel"
                             },
                             "name" : {
                               "type" : "string",
                               "required" : true,
-                              "description" : "Name of the microschema"
+                              "description" : "Name of the microschemaModel"
                             },
                             "elasticsearch" : {
                               "type" : "object",
@@ -6663,7 +6663,7 @@ mediaType: application/json
                             },
                             "fields" : {
                               "type" : "array",
-                              "description" : "List of microschema fields",
+                              "description" : "List of microschemaModel fields",
                               "items" : {
                                 "type" : "object",
                                 "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
@@ -6712,13 +6712,13 @@ mediaType: application/json
                         }
             responses: 
                 "201": 
-                    description: Created microschema.
+                    description: Created microschemaModel.
                     body: 
                         application/json: 
                             schema: |
                                 {
                                   "type" : "object",
-                                  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:microschema:impl:MicroschemaResponse",
+                                  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:microschemaModel:impl:MicroschemaResponse",
                                   "properties" : {
                                     "uuid" : {
                                       "type" : "string",
@@ -6764,16 +6764,16 @@ mediaType: application/json
                                     "version" : {
                                       "type" : "string",
                                       "required" : true,
-                                      "description" : "Version of the microschema"
+                                      "description" : "Version of the microschemaModel"
                                     },
                                     "description" : {
                                       "type" : "string",
-                                      "description" : "Description of the microschema"
+                                      "description" : "Description of the microschemaModel"
                                     },
                                     "name" : {
                                       "type" : "string",
                                       "required" : true,
-                                      "description" : "Name of the microschema"
+                                      "description" : "Name of the microschemaModel"
                                     },
                                     "elasticsearch" : {
                                       "type" : "object",
@@ -6794,7 +6794,7 @@ mediaType: application/json
                                     "fields" : {
                                       "type" : "array",
                                       "required" : true,
-                                      "description" : "List of microschema fields",
+                                      "description" : "List of microschemaModel fields",
                                       "items" : {
                                         "type" : "object",
                                         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
@@ -6923,7 +6923,7 @@ mediaType: application/json
                                       "description" : "Array which contains the found elements.",
                                       "items" : {
                                         "type" : "object",
-                                        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:microschema:impl:MicroschemaResponse",
+                                        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:microschemaModel:impl:MicroschemaResponse",
                                         "properties" : {
                                           "uuid" : {
                                             "type" : "string",
@@ -6969,16 +6969,16 @@ mediaType: application/json
                                           "version" : {
                                             "type" : "string",
                                             "required" : true,
-                                            "description" : "Version of the microschema"
+                                            "description" : "Version of the microschemaModel"
                                           },
                                           "description" : {
                                             "type" : "string",
-                                            "description" : "Description of the microschema"
+                                            "description" : "Description of the microschemaModel"
                                           },
                                           "name" : {
                                             "type" : "string",
                                             "required" : true,
-                                            "description" : "Name of the microschema"
+                                            "description" : "Name of the microschemaModel"
                                           },
                                           "elasticsearch" : {
                                             "type" : "object",
@@ -6999,7 +6999,7 @@ mediaType: application/json
                                           "fields" : {
                                             "type" : "array",
                                             "required" : true,
-                                            "description" : "List of microschema fields",
+                                            "description" : "List of microschemaModel fields",
                                             "items" : {
                                               "type" : "object",
                                               "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
@@ -7163,13 +7163,13 @@ mediaType: application/json
         uriParameters: 
             microschemaUuid: 
                 displayName: microschemaUuid
-                description: Uuid of the microschema.
+                description: Uuid of the microschemaModel.
                 type: string
                 required: true
                 repeat: false
                 example: "2715307deafc4ecc95307deafccecc10"
         get: 
-            description: Read the microschema with the given uuid.
+            description: Read the microschemaModel with the given uuid.
             queryParameters: 
                 branch: 
                     description: Specifies the branch to be used for loading data. The latest project branch will be used if this parameter is omitted.
@@ -7186,13 +7186,13 @@ mediaType: application/json
                     example: "1.1"
             responses: 
                 "200": 
-                    description: Loaded microschema.
+                    description: Loaded microschemaModel.
                     body: 
                         application/json: 
                             schema: |
                                 {
                                   "type" : "object",
-                                  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:microschema:impl:MicroschemaResponse",
+                                  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:microschemaModel:impl:MicroschemaResponse",
                                   "properties" : {
                                     "uuid" : {
                                       "type" : "string",
@@ -7238,16 +7238,16 @@ mediaType: application/json
                                     "version" : {
                                       "type" : "string",
                                       "required" : true,
-                                      "description" : "Version of the microschema"
+                                      "description" : "Version of the microschemaModel"
                                     },
                                     "description" : {
                                       "type" : "string",
-                                      "description" : "Description of the microschema"
+                                      "description" : "Description of the microschemaModel"
                                     },
                                     "name" : {
                                       "type" : "string",
                                       "required" : true,
-                                      "description" : "Name of the microschema"
+                                      "description" : "Name of the microschemaModel"
                                     },
                                     "elasticsearch" : {
                                       "type" : "object",
@@ -7268,7 +7268,7 @@ mediaType: application/json
                                     "fields" : {
                                       "type" : "array",
                                       "required" : true,
-                                      "description" : "List of microschema fields",
+                                      "description" : "List of microschemaModel fields",
                                       "items" : {
                                         "type" : "object",
                                         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
@@ -7366,25 +7366,25 @@ mediaType: application/json
                                   }
                                 }
         post: 
-            description: Update the microschema with the given uuid.
+            description: Update the microschemaModel with the given uuid.
             body: 
                 application/json: 
                     schema: |
                         {
                           "type" : "object",
-                          "id" : "urn:jsonschema:com:gentics:mesh:core:rest:microschema:impl:MicroschemaUpdateRequest",
+                          "id" : "urn:jsonschema:com:gentics:mesh:core:rest:microschemaModel:impl:MicroschemaUpdateRequest",
                           "properties" : {
                             "version" : {
                               "type" : "string",
-                              "description" : "Version of the microschema"
+                              "description" : "Version of the microschemaModel"
                             },
                             "description" : {
                               "type" : "string",
-                              "description" : "Description of the microschema"
+                              "description" : "Description of the microschemaModel"
                             },
                             "name" : {
                               "type" : "string",
-                              "description" : "Name of the microschema"
+                              "description" : "Name of the microschemaModel"
                             },
                             "elasticsearch" : {
                               "type" : "object",
@@ -7404,7 +7404,7 @@ mediaType: application/json
                             },
                             "fields" : {
                               "type" : "array",
-                              "description" : "List of microschema fields",
+                              "description" : "List of microschemaModel fields",
                               "items" : {
                                 "type" : "object",
                                 "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
@@ -7474,7 +7474,7 @@ mediaType: application/json
                                   "message" : "I18n message"
                                 }
         delete: 
-            description: Delete the microschema with the given uuid.
+            description: Delete the microschemaModel with the given uuid.
             responses: 
                 "204": 
                     description: Microschema was deleted.
@@ -7482,7 +7482,7 @@ mediaType: application/json
         uriParameters: 
             microschemaUuid: 
                 displayName: microschemaUuid
-                description: Uuid of the microschema.
+                description: Uuid of the microschemaModel.
                 type: string
                 required: true
                 repeat: false
@@ -7592,7 +7592,7 @@ mediaType: application/json
         uriParameters: 
             microschemaUuid: 
                 displayName: microschemaUuid
-                description: Uuid of the microschema.
+                description: Uuid of the microschemaModel.
                 type: string
                 required: true
                 repeat: false
@@ -7604,16 +7604,16 @@ mediaType: application/json
                     schema: |
                         {
                           "type" : "object",
-                          "id" : "urn:jsonschema:com:gentics:mesh:core:rest:microschema:impl:MicroschemaCreateRequest",
+                          "id" : "urn:jsonschema:com:gentics:mesh:core:rest:microschemaModel:impl:MicroschemaCreateRequest",
                           "properties" : {
                             "description" : {
                               "type" : "string",
-                              "description" : "Description of the microschema"
+                              "description" : "Description of the microschemaModel"
                             },
                             "name" : {
                               "type" : "string",
                               "required" : true,
-                              "description" : "Name of the microschema"
+                              "description" : "Name of the microschemaModel"
                             },
                             "elasticsearch" : {
                               "type" : "object",
@@ -7633,7 +7633,7 @@ mediaType: application/json
                             },
                             "fields" : {
                               "type" : "array",
-                              "description" : "List of microschema fields",
+                              "description" : "List of microschemaModel fields",
                               "items" : {
                                 "type" : "object",
                                 "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
@@ -8533,7 +8533,7 @@ mediaType: application/json
                                             "type" : "string",
                                             "required" : true,
                                             "description" : "The type of the job.",
-                                            "enum" : [ "schema", "microschema", "branch", "versionpurge" ]
+                                            "enum" : [ "schema", "microschemaModel", "branch", "versionpurge" ]
                                           },
                                           "status" : {
                                             "type" : "string",
@@ -8714,7 +8714,7 @@ mediaType: application/json
                                       "type" : "string",
                                       "required" : true,
                                       "description" : "The type of the job.",
-                                      "enum" : [ "schema", "microschema", "branch", "versionpurge" ]
+                                      "enum" : [ "schema", "microschemaModel", "branch", "versionpurge" ]
                                     },
                                     "status" : {
                                       "type" : "string",
@@ -9711,7 +9711,7 @@ mediaType: application/json
                                       "description" : "Array which contains the found elements.",
                                       "items" : {
                                         "type" : "object",
-                                        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:microschema:impl:MicroschemaResponse",
+                                        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:microschemaModel:impl:MicroschemaResponse",
                                         "properties" : {
                                           "uuid" : {
                                             "type" : "string",
@@ -9757,16 +9757,16 @@ mediaType: application/json
                                           "version" : {
                                             "type" : "string",
                                             "required" : true,
-                                            "description" : "Version of the microschema"
+                                            "description" : "Version of the microschemaModel"
                                           },
                                           "description" : {
                                             "type" : "string",
-                                            "description" : "Description of the microschema"
+                                            "description" : "Description of the microschemaModel"
                                           },
                                           "name" : {
                                             "type" : "string",
                                             "required" : true,
-                                            "description" : "Name of the microschema"
+                                            "description" : "Name of the microschemaModel"
                                           },
                                           "elasticsearch" : {
                                             "type" : "object",
@@ -9787,7 +9787,7 @@ mediaType: application/json
                                           "fields" : {
                                             "type" : "array",
                                             "required" : true,
-                                            "description" : "List of microschema fields",
+                                            "description" : "List of microschemaModel fields",
                                             "items" : {
                                               "type" : "object",
                                               "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
@@ -10407,7 +10407,7 @@ mediaType: application/json
                                         }
                                       },
                                       "location" : {
-                                        "microschema" : {
+                                        "microschemaModel" : {
                                           "name" : "geolocation"
                                         },
                                         "fields" : {
@@ -10416,7 +10416,7 @@ mediaType: application/json
                                         }
                                       },
                                       "locations" : [ {
-                                        "microschema" : {
+                                        "microschemaModel" : {
                                           "name" : "geolocation"
                                         },
                                         "fields" : {
@@ -10424,7 +10424,7 @@ mediaType: application/json
                                           "longitude" : 16.373063840833
                                         }
                                       }, {
-                                        "microschema" : {
+                                        "microschemaModel" : {
                                           "name" : "geolocation"
                                         },
                                         "fields" : {
@@ -11520,7 +11520,7 @@ mediaType: application/json
                                         "pending" : 0
                                       }
                                     },
-                                    "microschema" : {
+                                    "microschemaModel" : {
                                       "insert" : {
                                         "synced" : 0,
                                         "pending" : 0
@@ -12590,22 +12590,22 @@ mediaType: application/json
                     description: Some text before /api/v2/dummy/webroot/flower.jpg and after
     /validateMicroschema: 
         post: 
-            description: Validate the posted microschema and report errors.
+            description: Validate the posted microschemaModel and report errors.
             body: 
                 application/json: 
                     schema: |
                         {
                           "type" : "object",
-                          "id" : "urn:jsonschema:com:gentics:mesh:core:rest:microschema:impl:MicroschemaCreateRequest",
+                          "id" : "urn:jsonschema:com:gentics:mesh:core:rest:microschemaModel:impl:MicroschemaCreateRequest",
                           "properties" : {
                             "description" : {
                               "type" : "string",
-                              "description" : "Description of the microschema"
+                              "description" : "Description of the microschemaModel"
                             },
                             "name" : {
                               "type" : "string",
                               "required" : true,
-                              "description" : "Name of the microschema"
+                              "description" : "Name of the microschemaModel"
                             },
                             "elasticsearch" : {
                               "type" : "object",
@@ -12625,7 +12625,7 @@ mediaType: application/json
                             },
                             "fields" : {
                               "type" : "array",
-                              "description" : "List of microschema fields",
+                              "description" : "List of microschemaModel fields",
                               "items" : {
                                 "type" : "object",
                                 "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
@@ -14395,7 +14395,7 @@ mediaType: application/json
                                       }
                                     },
                                     "location" : {
-                                      "microschema" : {
+                                      "microschemaModel" : {
                                         "name" : "geolocation"
                                       },
                                       "fields" : {
@@ -14404,7 +14404,7 @@ mediaType: application/json
                                       }
                                     },
                                     "locations" : [ {
-                                      "microschema" : {
+                                      "microschemaModel" : {
                                         "name" : "geolocation"
                                       },
                                       "fields" : {
@@ -14412,7 +14412,7 @@ mediaType: application/json
                                         "longitude" : 16.373063840833
                                       }
                                     }, {
-                                      "microschema" : {
+                                      "microschemaModel" : {
                                         "name" : "geolocation"
                                       },
                                       "fields" : {
@@ -14930,7 +14930,7 @@ mediaType: application/json
                                         }
                                       },
                                       "location" : {
-                                        "microschema" : {
+                                        "microschemaModel" : {
                                           "name" : "geolocation"
                                         },
                                         "fields" : {
@@ -14939,7 +14939,7 @@ mediaType: application/json
                                         }
                                       },
                                       "locations" : [ {
-                                        "microschema" : {
+                                        "microschemaModel" : {
                                           "name" : "geolocation"
                                         },
                                         "fields" : {
@@ -14947,7 +14947,7 @@ mediaType: application/json
                                           "longitude" : 16.373063840833
                                         }
                                       }, {
-                                        "microschema" : {
+                                        "microschemaModel" : {
                                           "name" : "geolocation"
                                         },
                                         "fields" : {
@@ -15523,7 +15523,7 @@ mediaType: application/json
                                       }
                                     },
                                     "location" : {
-                                      "microschema" : {
+                                      "microschemaModel" : {
                                         "name" : "geolocation"
                                       },
                                       "fields" : {
@@ -15532,7 +15532,7 @@ mediaType: application/json
                                       }
                                     },
                                     "locations" : [ {
-                                      "microschema" : {
+                                      "microschemaModel" : {
                                         "name" : "geolocation"
                                       },
                                       "fields" : {
@@ -15540,7 +15540,7 @@ mediaType: application/json
                                         "longitude" : 16.373063840833
                                       }
                                     }, {
-                                      "microschema" : {
+                                      "microschemaModel" : {
                                         "name" : "geolocation"
                                       },
                                       "fields" : {
@@ -15655,7 +15655,7 @@ mediaType: application/json
                             "names" : [ "Jack", "Joe", "Mary", "Tom" ],
                             "categoryIds" : [ 1, 42, 133, 7 ],
                             "location" : {
-                              "microschema" : {
+                              "microschemaModel" : {
                                 "name" : "geolocation"
                               },
                               "fields" : {
@@ -15664,7 +15664,7 @@ mediaType: application/json
                               }
                             },
                             "locations" : [ {
-                              "microschema" : {
+                              "microschemaModel" : {
                                 "name" : "geolocation"
                               },
                               "fields" : {
@@ -15672,7 +15672,7 @@ mediaType: application/json
                                 "longitude" : 16.373063840833
                               }
                             }, {
-                              "microschema" : {
+                              "microschemaModel" : {
                                 "name" : "geolocation"
                               },
                               "fields" : {
@@ -16611,7 +16611,7 @@ mediaType: application/json
                                       }
                                     },
                                     "location" : {
-                                      "microschema" : {
+                                      "microschemaModel" : {
                                         "name" : "geolocation"
                                       },
                                       "fields" : {
@@ -16620,7 +16620,7 @@ mediaType: application/json
                                       }
                                     },
                                     "locations" : [ {
-                                      "microschema" : {
+                                      "microschemaModel" : {
                                         "name" : "geolocation"
                                       },
                                       "fields" : {
@@ -16628,7 +16628,7 @@ mediaType: application/json
                                         "longitude" : 16.373063840833
                                       }
                                     }, {
-                                      "microschema" : {
+                                      "microschemaModel" : {
                                         "name" : "geolocation"
                                       },
                                       "fields" : {
@@ -17259,7 +17259,7 @@ mediaType: application/json
                                       }
                                     },
                                     "location" : {
-                                      "microschema" : {
+                                      "microschemaModel" : {
                                         "name" : "geolocation"
                                       },
                                       "fields" : {
@@ -17268,7 +17268,7 @@ mediaType: application/json
                                       }
                                     },
                                     "locations" : [ {
-                                      "microschema" : {
+                                      "microschemaModel" : {
                                         "name" : "geolocation"
                                       },
                                       "fields" : {
@@ -17276,7 +17276,7 @@ mediaType: application/json
                                         "longitude" : 16.373063840833
                                       }
                                     }, {
-                                      "microschema" : {
+                                      "microschemaModel" : {
                                         "name" : "geolocation"
                                       },
                                       "fields" : {
@@ -17826,7 +17826,7 @@ mediaType: application/json
                                         }
                                       },
                                       "location" : {
-                                        "microschema" : {
+                                        "microschemaModel" : {
                                           "name" : "geolocation"
                                         },
                                         "fields" : {
@@ -17835,7 +17835,7 @@ mediaType: application/json
                                         }
                                       },
                                       "locations" : [ {
-                                        "microschema" : {
+                                        "microschemaModel" : {
                                           "name" : "geolocation"
                                         },
                                         "fields" : {
@@ -17843,7 +17843,7 @@ mediaType: application/json
                                           "longitude" : 16.373063840833
                                         }
                                       }, {
-                                        "microschema" : {
+                                        "microschemaModel" : {
                                           "name" : "geolocation"
                                         },
                                         "fields" : {
@@ -21981,7 +21981,7 @@ mediaType: application/json
                                         }
                                       },
                                       "location" : {
-                                        "microschema" : {
+                                        "microschemaModel" : {
                                           "name" : "geolocation"
                                         },
                                         "fields" : {
@@ -21990,7 +21990,7 @@ mediaType: application/json
                                         }
                                       },
                                       "locations" : [ {
-                                        "microschema" : {
+                                        "microschemaModel" : {
                                           "name" : "geolocation"
                                         },
                                         "fields" : {
@@ -21998,7 +21998,7 @@ mediaType: application/json
                                           "longitude" : 16.373063840833
                                         }
                                       }, {
-                                        "microschema" : {
+                                        "microschemaModel" : {
                                           "name" : "geolocation"
                                         },
                                         "fields" : {
@@ -22558,7 +22558,7 @@ mediaType: application/json
                                         }
                                       },
                                       "location" : {
-                                        "microschema" : {
+                                        "microschemaModel" : {
                                           "name" : "geolocation"
                                         },
                                         "fields" : {
@@ -22567,7 +22567,7 @@ mediaType: application/json
                                         }
                                       },
                                       "locations" : [ {
-                                        "microschema" : {
+                                        "microschemaModel" : {
                                           "name" : "geolocation"
                                         },
                                         "fields" : {
@@ -22575,7 +22575,7 @@ mediaType: application/json
                                           "longitude" : 16.373063840833
                                         }
                                       }, {
-                                        "microschema" : {
+                                        "microschemaModel" : {
                                           "name" : "geolocation"
                                         },
                                         "fields" : {
@@ -22708,7 +22708,7 @@ mediaType: application/json
                                           }
                                         },
                                         "location" : {
-                                          "microschema" : {
+                                          "microschemaModel" : {
                                             "name" : "geolocation"
                                           },
                                           "fields" : {
@@ -22717,7 +22717,7 @@ mediaType: application/json
                                           }
                                         },
                                         "locations" : [ {
-                                          "microschema" : {
+                                          "microschemaModel" : {
                                             "name" : "geolocation"
                                           },
                                           "fields" : {
@@ -22725,7 +22725,7 @@ mediaType: application/json
                                             "longitude" : 16.373063840833
                                           }
                                         }, {
-                                          "microschema" : {
+                                          "microschemaModel" : {
                                             "name" : "geolocation"
                                           },
                                           "fields" : {
@@ -22922,7 +22922,7 @@ mediaType: application/json
                             "names" : [ "Jack", "Joe", "Mary", "Tom" ],
                             "categoryIds" : [ 1, 42, 133, 7 ],
                             "location" : {
-                              "microschema" : {
+                              "microschemaModel" : {
                                 "name" : "geolocation"
                               },
                               "fields" : {
@@ -22931,7 +22931,7 @@ mediaType: application/json
                               }
                             },
                             "locations" : [ {
-                              "microschema" : {
+                              "microschemaModel" : {
                                 "name" : "geolocation"
                               },
                               "fields" : {
@@ -22939,7 +22939,7 @@ mediaType: application/json
                                 "longitude" : 16.373063840833
                               }
                             }, {
-                              "microschema" : {
+                              "microschemaModel" : {
                                 "name" : "geolocation"
                               },
                               "fields" : {
@@ -24919,7 +24919,7 @@ mediaType: application/json
                                   "properties" : {
                                     "microschemas" : {
                                       "type" : "array",
-                                      "description" : "List of microschema references.",
+                                      "description" : "List of microschemaModel references.",
                                       "items" : {
                                         "type" : "object",
                                         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:branch:info:BranchMicroschemaInfo",
@@ -24936,11 +24936,11 @@ mediaType: application/json
                                           "version" : {
                                             "type" : "string",
                                             "required" : true,
-                                            "description" : "The version of the microschema."
+                                            "description" : "The version of the microschemaModel."
                                           },
                                           "migrationStatus" : {
                                             "type" : "string",
-                                            "description" : "Status of the migration which was triggered when the schema/microschema was added to the branch.",
+                                            "description" : "Status of the migration which was triggered when the schema/microschemaModel was added to the branch.",
                                             "enum" : [ "IDLE", "UNKNOWN", "QUEUED", "STARTING", "RUNNING", "COMPLETED", "FAILED" ]
                                           },
                                           "jobUuid" : {
@@ -24968,7 +24968,7 @@ mediaType: application/json
                                   } ]
                                 }
         post: 
-            description: Assign a microschema version to the branch.
+            description: Assign a microschemaModel version to the branch.
             body: 
                 application/json: 
                     schema: |
@@ -24978,7 +24978,7 @@ mediaType: application/json
                           "properties" : {
                             "microschemas" : {
                               "type" : "array",
-                              "description" : "List of microschema references.",
+                              "description" : "List of microschemaModel references.",
                               "items" : {
                                 "type" : "object",
                                 "id" : "urn:jsonschema:com:gentics:mesh:core:rest:branch:info:BranchMicroschemaInfo",
@@ -24995,11 +24995,11 @@ mediaType: application/json
                                   "version" : {
                                     "type" : "string",
                                     "required" : true,
-                                    "description" : "The version of the microschema."
+                                    "description" : "The version of the microschemaModel."
                                   },
                                   "migrationStatus" : {
                                     "type" : "string",
-                                    "description" : "Status of the migration which was triggered when the schema/microschema was added to the branch.",
+                                    "description" : "Status of the migration which was triggered when the schema/microschemaModel was added to the branch.",
                                     "enum" : [ "IDLE", "UNKNOWN", "QUEUED", "STARTING", "RUNNING", "COMPLETED", "FAILED" ]
                                   },
                                   "jobUuid" : {
@@ -25028,7 +25028,7 @@ mediaType: application/json
                         }
             responses: 
                 "200": 
-                    description: Updated microschema list.
+                    description: Updated microschemaModel list.
                     body: 
                         application/json: 
                             schema: |
@@ -25038,7 +25038,7 @@ mediaType: application/json
                                   "properties" : {
                                     "microschemas" : {
                                       "type" : "array",
-                                      "description" : "List of microschema references.",
+                                      "description" : "List of microschemaModel references.",
                                       "items" : {
                                         "type" : "object",
                                         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:branch:info:BranchMicroschemaInfo",
@@ -25055,11 +25055,11 @@ mediaType: application/json
                                           "version" : {
                                             "type" : "string",
                                             "required" : true,
-                                            "description" : "The version of the microschema."
+                                            "description" : "The version of the microschemaModel."
                                           },
                                           "migrationStatus" : {
                                             "type" : "string",
-                                            "description" : "Status of the migration which was triggered when the schema/microschema was added to the branch.",
+                                            "description" : "Status of the migration which was triggered when the schema/microschemaModel was added to the branch.",
                                             "enum" : [ "IDLE", "UNKNOWN", "QUEUED", "STARTING", "RUNNING", "COMPLETED", "FAILED" ]
                                           },
                                           "jobUuid" : {
@@ -25228,11 +25228,11 @@ mediaType: application/json
                                           "version" : {
                                             "type" : "string",
                                             "required" : true,
-                                            "description" : "The version of the microschema."
+                                            "description" : "The version of the microschemaModel."
                                           },
                                           "migrationStatus" : {
                                             "type" : "string",
-                                            "description" : "Status of the migration which was triggered when the schema/microschema was added to the branch.",
+                                            "description" : "Status of the migration which was triggered when the schema/microschemaModel was added to the branch.",
                                             "enum" : [ "IDLE", "UNKNOWN", "QUEUED", "STARTING", "RUNNING", "COMPLETED", "FAILED" ]
                                           },
                                           "jobUuid" : {
@@ -25291,11 +25291,11 @@ mediaType: application/json
                                   "version" : {
                                     "type" : "string",
                                     "required" : true,
-                                    "description" : "The version of the microschema."
+                                    "description" : "The version of the microschemaModel."
                                   },
                                   "migrationStatus" : {
                                     "type" : "string",
-                                    "description" : "Status of the migration which was triggered when the schema/microschema was added to the branch.",
+                                    "description" : "Status of the migration which was triggered when the schema/microschemaModel was added to the branch.",
                                     "enum" : [ "IDLE", "UNKNOWN", "QUEUED", "STARTING", "RUNNING", "COMPLETED", "FAILED" ]
                                   },
                                   "jobUuid" : {
@@ -25355,11 +25355,11 @@ mediaType: application/json
                                           "version" : {
                                             "type" : "string",
                                             "required" : true,
-                                            "description" : "The version of the microschema."
+                                            "description" : "The version of the microschemaModel."
                                           },
                                           "migrationStatus" : {
                                             "type" : "string",
-                                            "description" : "Status of the migration which was triggered when the schema/microschema was added to the branch.",
+                                            "description" : "Status of the migration which was triggered when the schema/microschemaModel was added to the branch.",
                                             "enum" : [ "IDLE", "UNKNOWN", "QUEUED", "STARTING", "RUNNING", "COMPLETED", "FAILED" ]
                                           },
                                           "jobUuid" : {
@@ -26681,7 +26681,7 @@ mediaType: application/json
                                         }
                                       },
                                       "location" : {
-                                        "microschema" : {
+                                        "microschemaModel" : {
                                           "name" : "geolocation"
                                         },
                                         "fields" : {
@@ -26690,7 +26690,7 @@ mediaType: application/json
                                         }
                                       },
                                       "locations" : [ {
-                                        "microschema" : {
+                                        "microschemaModel" : {
                                           "name" : "geolocation"
                                         },
                                         "fields" : {
@@ -26698,7 +26698,7 @@ mediaType: application/json
                                           "longitude" : 16.373063840833
                                         }
                                       }, {
-                                        "microschema" : {
+                                        "microschemaModel" : {
                                           "name" : "geolocation"
                                         },
                                         "fields" : {
@@ -28117,7 +28117,7 @@ mediaType: application/json
                                       "description" : "Array which contains the found elements.",
                                       "items" : {
                                         "type" : "object",
-                                        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:microschema:impl:MicroschemaResponse",
+                                        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:microschemaModel:impl:MicroschemaResponse",
                                         "properties" : {
                                           "uuid" : {
                                             "type" : "string",
@@ -28163,16 +28163,16 @@ mediaType: application/json
                                           "version" : {
                                             "type" : "string",
                                             "required" : true,
-                                            "description" : "Version of the microschema"
+                                            "description" : "Version of the microschemaModel"
                                           },
                                           "description" : {
                                             "type" : "string",
-                                            "description" : "Description of the microschema"
+                                            "description" : "Description of the microschemaModel"
                                           },
                                           "name" : {
                                             "type" : "string",
                                             "required" : true,
-                                            "description" : "Name of the microschema"
+                                            "description" : "Name of the microschemaModel"
                                           },
                                           "elasticsearch" : {
                                             "type" : "object",
@@ -28193,7 +28193,7 @@ mediaType: application/json
                                           "fields" : {
                                             "type" : "array",
                                             "required" : true,
-                                            "description" : "List of microschema fields",
+                                            "description" : "List of microschemaModel fields",
                                             "items" : {
                                               "type" : "object",
                                               "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
@@ -28357,13 +28357,13 @@ mediaType: application/json
         uriParameters: 
             microschemaUuid: 
                 displayName: microschemaUuid
-                description: Uuid of the microschema.
+                description: Uuid of the microschemaModel.
                 type: string
                 required: true
                 repeat: false
                 example: "2715307deafc4ecc95307deafccecc10"
         post: 
-            description: Add the microschema to the project.
+            description: Add the microschemaModel to the project.
             responses: 
                 "200": 
                     description: Microschema was added to the project.
@@ -28372,7 +28372,7 @@ mediaType: application/json
                             schema: |
                                 {
                                   "type" : "object",
-                                  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:microschema:impl:MicroschemaResponse",
+                                  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:microschemaModel:impl:MicroschemaResponse",
                                   "properties" : {
                                     "uuid" : {
                                       "type" : "string",
@@ -28418,16 +28418,16 @@ mediaType: application/json
                                     "version" : {
                                       "type" : "string",
                                       "required" : true,
-                                      "description" : "Version of the microschema"
+                                      "description" : "Version of the microschemaModel"
                                     },
                                     "description" : {
                                       "type" : "string",
-                                      "description" : "Description of the microschema"
+                                      "description" : "Description of the microschemaModel"
                                     },
                                     "name" : {
                                       "type" : "string",
                                       "required" : true,
-                                      "description" : "Name of the microschema"
+                                      "description" : "Name of the microschemaModel"
                                     },
                                     "elasticsearch" : {
                                       "type" : "object",
@@ -28448,7 +28448,7 @@ mediaType: application/json
                                     "fields" : {
                                       "type" : "array",
                                       "required" : true,
-                                      "description" : "List of microschema fields",
+                                      "description" : "List of microschemaModel fields",
                                       "items" : {
                                         "type" : "object",
                                         "id" : "urn:jsonschema:com:gentics:mesh:core:rest:schema:FieldSchema",
@@ -28546,7 +28546,7 @@ mediaType: application/json
                                   }
                                 }
         delete: 
-            description: Remove the microschema from the project.
+            description: Remove the microschemaModel from the project.
             responses: 
                 "204": 
                     description: Microschema was removed from project.

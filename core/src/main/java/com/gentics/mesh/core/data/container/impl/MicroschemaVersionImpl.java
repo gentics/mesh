@@ -20,12 +20,12 @@ import com.gentics.mesh.core.data.impl.BranchImpl;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.impl.AbstractGraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
-import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
@@ -36,24 +36,22 @@ import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.syncleus.ferma.ElementFrame;
 
-import io.reactivex.Single;
-
-public class MicroschemaContainerVersionImpl extends
-	AbstractGraphFieldSchemaContainerVersion<MicroschemaResponse, MicroschemaModel, MicroschemaReference, MicroschemaContainerVersion, MicroschemaContainer>
-	implements MicroschemaContainerVersion {
+public class MicroschemaVersionImpl extends
+	AbstractGraphFieldSchemaContainerVersion<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, MicroschemaVersion, Microschema>
+	implements MicroschemaVersion {
 
 	public static void init(TypeHandler type, IndexHandler index) {
-		type.createVertexType(MicroschemaContainerVersionImpl.class, MeshVertexImpl.class);
+		type.createVertexType(MicroschemaVersionImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override
-	protected Class<? extends MicroschemaContainerVersion> getContainerVersionClass() {
-		return MicroschemaContainerVersionImpl.class;
+	protected Class<? extends MicroschemaVersion> getContainerVersionClass() {
+		return MicroschemaVersionImpl.class;
 	}
 
 	@Override
-	protected Class<? extends MicroschemaContainer> getContainerClass() {
-		return MicroschemaContainerImpl.class;
+	protected Class<? extends Microschema> getContainerClass() {
+		return MicroschemaImpl.class;
 	}
 
 	@Override
@@ -78,8 +76,8 @@ public class MicroschemaContainerVersionImpl extends
 	}
 
 	@Override
-	public MicroschemaModel getSchema() {
-		MicroschemaModel microschema = mesh().serverSchemaStorage().getMicroschema(getName(), getVersion());
+	public MicroschemaVersionModel getSchema() {
+		MicroschemaVersionModel microschema = mesh().serverSchemaStorage().getMicroschema(getName(), getVersion());
 		if (microschema == null) {
 			microschema = JsonUtil.readValue(getJson(), MicroschemaModelImpl.class);
 			mesh().serverSchemaStorage().addMicroschema(microschema);
@@ -88,7 +86,7 @@ public class MicroschemaContainerVersionImpl extends
 	}
 
 	@Override
-	public void setSchema(MicroschemaModel microschema) {
+	public void setSchema(MicroschemaVersionModel microschema) {
 		mesh().serverSchemaStorage().removeMicroschema(microschema.getName(), microschema.getVersion());
 		mesh().serverSchemaStorage().addMicroschema(microschema);
 		String json = microschema.toJson();
@@ -106,7 +104,7 @@ public class MicroschemaContainerVersionImpl extends
 		// TODO apply fields filtering here
 
 		// Role permissions
-		MicroschemaContainer container = getSchemaContainer();
+		Microschema container = getSchemaContainer();
 		microschema.setRolePerms(container.getRolePermissions(ac, ac.getRolePermissionParameters().getRoleUuid()));
 		container.fillCommonRestFields(ac, fields, microschema);
 

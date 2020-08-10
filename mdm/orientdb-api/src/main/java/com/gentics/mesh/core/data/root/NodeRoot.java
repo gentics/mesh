@@ -3,7 +3,7 @@ package com.gentics.mesh.core.data.root;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 
 /**
  * Aggregation node for nodes.
@@ -23,7 +23,7 @@ public interface NodeRoot extends RootVertex<Node> {
 	 *            Project to which the node should be assigned to
 	 * @return Created node
 	 */
-	default Node create(User user, SchemaContainerVersion container, Project project) {
+	default Node create(User user, SchemaVersion container, Project project) {
 		return create(user, container, project, null);
 	}
 
@@ -40,6 +40,6 @@ public interface NodeRoot extends RootVertex<Node> {
 	 *            Optional uuid
 	 * @return Created node
 	 */
-	Node create(User user, SchemaContainerVersion container, Project project, String uuid);
+	Node create(User user, SchemaVersion container, Project project, String uuid);
 
 }

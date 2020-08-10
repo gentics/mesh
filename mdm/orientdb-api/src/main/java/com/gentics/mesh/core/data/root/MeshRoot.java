@@ -110,14 +110,14 @@ public interface MeshRoot extends MeshVertex {
 	 * 
 	 * @return
 	 */
-	SchemaContainerRoot getSchemaContainerRoot();
+	SchemaRoot getSchemaContainerRoot();
 
 	/**
 	 * Returns the microschema container aggregation vertex.
 	 * 
 	 * @return
 	 */
-	MicroschemaContainerRoot getMicroschemaContainerRoot();
+	MicroschemaRoot getMicroschemaContainerRoot();
 
 	/**
 	 * This method will try to resolve the given path and return the element that is matching the path.

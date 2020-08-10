@@ -10,9 +10,9 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
-import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
+import com.gentics.mesh.core.data.schema.impl.SchemaVersionImpl;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
@@ -25,8 +25,8 @@ public class AbstractFieldContainerDiffTest extends AbstractMeshTest {
 	protected NodeGraphFieldContainer createContainer(FieldSchema field) {
 		FramedGraph graph = Tx.getActive().getGraph();
 		// 1. Setup schema
-		SchemaContainer schemaContainer = graph.addFramedVertex(SchemaContainerImpl.class);
-		SchemaContainerVersionImpl version = graph.addFramedVertex(SchemaContainerVersionImpl.class);
+		Schema schemaContainer = graph.addFramedVertex(SchemaContainerImpl.class);
+		SchemaVersionImpl version = graph.addFramedVertex(SchemaVersionImpl.class);
 		version.setSchemaContainer(schemaContainer);
 
 		SchemaUpdateModel schema = createSchema(field);

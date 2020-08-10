@@ -17,9 +17,9 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaChange;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
@@ -51,15 +51,15 @@ import com.tinkerpop.blueprints.Vertex;
 import io.reactivex.Single;
 import io.vertx.core.Vertx;
 
-public class SchemaVersionWrapper implements SchemaContainerVersion, HibSchemaVersion {
+public class SchemaVersionWrapper implements SchemaVersion, HibSchemaVersion {
 
-	private SchemaContainerVersion delegate;
+	private SchemaVersion delegate;
 
-	public SchemaVersionWrapper(SchemaContainerVersion delegate) {
+	public SchemaVersionWrapper(SchemaVersion delegate) {
 		this.delegate = delegate;
 	}
 
-	public static SchemaVersionWrapper wrap(SchemaContainerVersion version) {
+	public static SchemaVersionWrapper wrap(SchemaVersion version) {
 		if (version == null) {
 			return null;
 		} else {
@@ -376,19 +376,19 @@ public class SchemaVersionWrapper implements SchemaContainerVersion, HibSchemaVe
 		return delegate.getGraphAttribute(key);
 	}
 
-	public SchemaContainerVersion getNextVersion() {
+	public SchemaVersion getNextVersion() {
 		return delegate.getNextVersion();
 	}
 
-	public void setNextVersion(SchemaContainerVersion container) {
+	public void setNextVersion(SchemaVersion container) {
 		delegate.setNextVersion(container);
 	}
 
-	public SchemaContainerVersion getPreviousVersion() {
+	public SchemaVersion getPreviousVersion() {
 		return delegate.getPreviousVersion();
 	}
 
-	public Stream<SchemaContainerVersion> getPreviousVersions() {
+	public Stream<SchemaVersion> getPreviousVersions() {
 		return delegate.getPreviousVersions();
 	}
 
@@ -408,7 +408,7 @@ public class SchemaVersionWrapper implements SchemaContainerVersion, HibSchemaVe
 		delegate.linkOut(vertex, labels);
 	}
 
-	public void setPreviousVersion(SchemaContainerVersion container) {
+	public void setPreviousVersion(SchemaVersion container) {
 		delegate.setPreviousVersion(container);
 	}
 
@@ -424,7 +424,7 @@ public class SchemaVersionWrapper implements SchemaContainerVersion, HibSchemaVe
 		delegate.unlinkOut(vertex, labels);
 	}
 
-	public SchemaContainerVersion applyChanges(InternalActionContext ac, EventQueueBatch batch) {
+	public SchemaVersion applyChanges(InternalActionContext ac, EventQueueBatch batch) {
 		return delegate.applyChanges(ac, batch);
 	}
 
@@ -436,7 +436,7 @@ public class SchemaVersionWrapper implements SchemaContainerVersion, HibSchemaVe
 		delegate.setLinkOut(vertex, labels);
 	}
 
-	public SchemaContainerVersion applyChanges(InternalActionContext ac, SchemaChangesListModel listOfChanges, EventQueueBatch batch) {
+	public SchemaVersion applyChanges(InternalActionContext ac, SchemaChangesListModel listOfChanges, EventQueueBatch batch) {
 		return delegate.applyChanges(ac, listOfChanges, batch);
 	}
 
@@ -444,7 +444,7 @@ public class SchemaVersionWrapper implements SchemaContainerVersion, HibSchemaVe
 		return delegate.traversal();
 	}
 
-	public SchemaContainer getSchemaContainer() {
+	public Schema getSchemaContainer() {
 		return delegate.getSchemaContainer();
 	}
 
@@ -452,7 +452,7 @@ public class SchemaVersionWrapper implements SchemaContainerVersion, HibSchemaVe
 		return delegate.toJson();
 	}
 
-	public void setSchemaContainer(SchemaContainer container) {
+	public void setSchemaContainer(Schema container) {
 		delegate.setSchemaContainer(container);
 	}
 
@@ -476,7 +476,7 @@ public class SchemaVersionWrapper implements SchemaContainerVersion, HibSchemaVe
 		delegate.setJson(json);
 	}
 
-	public int compareTo(SchemaContainerVersion version) {
+	public int compareTo(SchemaVersion version) {
 		return delegate.compareTo(version);
 	}
 

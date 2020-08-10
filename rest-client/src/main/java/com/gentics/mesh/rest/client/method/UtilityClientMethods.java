@@ -1,6 +1,6 @@
 package com.gentics.mesh.rest.client.method;
 
-import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.validation.SchemaValidationResponse;
 import com.gentics.mesh.parameter.ParameterProvider;
@@ -29,8 +29,8 @@ public interface UtilityClientMethods {
 	/**
 	 * Validate the microschema.
 	 * 
-	 * @param microschema
+	 * @param microschemaModel
 	 * @return
 	 */
-	MeshRequest<SchemaValidationResponse> validateMicroschema(Microschema microschema);
+	MeshRequest<SchemaValidationResponse> validateMicroschema(MicroschemaModel microschemaModel);
 }

@@ -19,7 +19,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.root.ProjectRoot;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
@@ -53,7 +53,7 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 	public void testAddSchemaToExtraProject() {
 		final String name = "test12345";
 		try (Tx tx = tx()) {
-			SchemaContainer schema = schemaContainer("content");
+			Schema schema = schemaContainer("content");
 
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setSchema(new SchemaReferenceImpl().setName("folder"));
@@ -83,7 +83,7 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 
 			Project extraProject = projectDao.findByUuid(created.getUuid());
 			// Add only read perms
-			SchemaContainer schema = schemaContainer("content");
+			Schema schema = schemaContainer("content");
 			roleDao.grantPermissions(role(), schema, READ_PERM);
 			roleDao.grantPermissions(role(), extraProject, UPDATE_PERM);
 			tx.success();
@@ -135,7 +135,7 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			// Reload the schema and check for expected changes
-			SchemaContainer schema = schemaContainer("content");
+			Schema schema = schemaContainer("content");
 			assertFalse("The schema should not have been added to the extra project but it was",
 				extraProject.getSchemaContainerRoot().contains(schema));
 		}
@@ -146,7 +146,7 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testRemoveSchemaFromProjectWithPerm() throws Exception {
 		Project project = project();
-		SchemaContainer schema = schemaContainer("content");
+		Schema schema = schemaContainer("content");
 		String schemaUuid = tx(() -> schema.getUuid());
 
 		try (Tx tx = tx()) {
@@ -180,7 +180,7 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testRemoveSchemaFromProjectWithoutPerm() throws Exception {
-		SchemaContainer schema = schemaContainer("content");
+		Schema schema = schemaContainer("content");
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			assertTrue("The schema should be assigned to the project.", project().getSchemaContainerRoot().contains(schema));

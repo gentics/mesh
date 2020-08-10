@@ -28,8 +28,8 @@ import com.gentics.mesh.core.data.Taggable;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.page.TransformablePage;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeTaggedEventModel;
@@ -323,7 +323,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param project
 	 * @return
 	 */
-	Node create(User creator, SchemaContainerVersion schemaVersion, Project project);
+	Node create(User creator, SchemaVersion schemaVersion, Project project);
 
 	/**
 	 * Create a child node in this node in the given branch
@@ -334,7 +334,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param branch
 	 * @return
 	 */
-	default Node create(User creator, SchemaContainerVersion schemaVersion, Project project, Branch branch) {
+	default Node create(User creator, SchemaVersion schemaVersion, Project project, Branch branch) {
 		return create(creator, schemaVersion, project, branch, null);
 	}
 
@@ -348,7 +348,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param uuid
 	 * @return
 	 */
-	Node create(User creator, SchemaContainerVersion schemaVersion, Project project, Branch branch, String uuid);
+	Node create(User creator, SchemaVersion schemaVersion, Project project, Branch branch, String uuid);
 
 	/**
 	 * Return a page with child nodes that are visible to the given user.
@@ -646,14 +646,14 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *
 	 * @return
 	 */
-	SchemaContainer getSchemaContainer();
+	Schema getSchemaContainer();
 
 	/**
 	 * Set the schema container of the node.
 	 *
 	 * @param container
 	 */
-	void setSchemaContainer(SchemaContainer container);
+	void setSchemaContainer(Schema container);
 
 	/**
 	 * Check the publish consistency by validating the following constraints:
@@ -763,7 +763,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param languageTag
 	 * @return Created event
 	 */
-	NodeMeshEventModel onDeleted(String uuid, SchemaContainer schema, String branchUuid, ContainerType type, String languageTag);
+	NodeMeshEventModel onDeleted(String uuid, Schema schema, String branchUuid, ContainerType type, String languageTag);
 
 	/**
 	 * Create a node tagged / untagged event.

@@ -38,19 +38,19 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.BranchRoot;
-import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
+import com.gentics.mesh.core.data.root.MicroschemaRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
-import com.gentics.mesh.core.data.root.SchemaContainerRoot;
+import com.gentics.mesh.core.data.root.SchemaRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.impl.BranchRootImpl;
 import com.gentics.mesh.core.data.root.impl.NodeRootImpl;
-import com.gentics.mesh.core.data.root.impl.ProjectMicroschemaContainerRootImpl;
-import com.gentics.mesh.core.data.root.impl.ProjectSchemaContainerRootImpl;
+import com.gentics.mesh.core.data.root.impl.ProjectMicroschemaRootImpl;
+import com.gentics.mesh.core.data.root.impl.ProjectSchemaRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
 import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
@@ -121,20 +121,20 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
-	public SchemaContainerRoot getSchemaContainerRoot() {
-		SchemaContainerRoot root = out(HAS_SCHEMA_ROOT, ProjectSchemaContainerRootImpl.class).nextOrNull();
+	public SchemaRoot getSchemaContainerRoot() {
+		SchemaRoot root = out(HAS_SCHEMA_ROOT, ProjectSchemaRootImpl.class).nextOrNull();
 		if (root == null) {
-			root = getGraph().addFramedVertex(ProjectSchemaContainerRootImpl.class);
+			root = getGraph().addFramedVertex(ProjectSchemaRootImpl.class);
 			linkOut(root, HAS_SCHEMA_ROOT);
 		}
 		return root;
 	}
 
 	@Override
-	public MicroschemaContainerRoot getMicroschemaContainerRoot() {
-		MicroschemaContainerRoot root = out(HAS_MICROSCHEMA_ROOT, ProjectMicroschemaContainerRootImpl.class).nextOrNull();
+	public MicroschemaRoot getMicroschemaContainerRoot() {
+		MicroschemaRoot root = out(HAS_MICROSCHEMA_ROOT, ProjectMicroschemaRootImpl.class).nextOrNull();
 		if (root == null) {
-			root = getGraph().addFramedVertex(ProjectMicroschemaContainerRootImpl.class);
+			root = getGraph().addFramedVertex(ProjectMicroschemaRootImpl.class);
 			linkOut(root, HAS_MICROSCHEMA_ROOT);
 		}
 		return root;
@@ -171,11 +171,11 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
-	public Node createBaseNode(User creator, SchemaContainerVersion schemaContainerVersion) {
+	public Node createBaseNode(User creator, SchemaVersion schemaVersion) {
 		Node baseNode = getBaseNode();
 		if (baseNode == null) {
 			baseNode = getGraph().addFramedVertex(NodeImpl.class);
-			baseNode.setSchemaContainer(schemaContainerVersion.getSchemaContainer());
+			baseNode.setSchemaContainer(schemaVersion.getSchemaContainer());
 			baseNode.setProject(this);
 			baseNode.setCreated(creator);
 			Language language = mesh().boot().languageRoot().findByLanguageTag(mesh().boot().mesh().getOptions().getDefaultLanguage());
@@ -265,7 +265,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
-	public ProjectSchemaEventModel onSchemaAssignEvent(SchemaContainer schema, Assignment assigned) {
+	public ProjectSchemaEventModel onSchemaAssignEvent(Schema schema, Assignment assigned) {
 		ProjectSchemaEventModel model = new ProjectSchemaEventModel();
 		switch (assigned) {
 		case ASSIGNED:
@@ -281,7 +281,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
-	public ProjectMicroschemaEventModel onMicroschemaAssignEvent(MicroschemaContainer microschema, Assignment assigned) {
+	public ProjectMicroschemaEventModel onMicroschemaAssignEvent(Microschema microschema, Assignment assigned) {
 		ProjectMicroschemaEventModel model = new ProjectMicroschemaEventModel();
 		switch (assigned) {
 		case ASSIGNED:

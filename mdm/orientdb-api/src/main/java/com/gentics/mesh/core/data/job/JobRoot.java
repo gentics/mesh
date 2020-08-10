@@ -6,8 +6,8 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 
 import io.reactivex.Completable;
 
@@ -25,7 +25,7 @@ public interface JobRoot extends RootVertex<Job> {
 	 * @param toVersion
 	 * @return Created job
 	 */
-	Job enqueueSchemaMigration(User creator, Branch branch, SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion);
+	Job enqueueSchemaMigration(User creator, Branch branch, SchemaVersion fromVersion, SchemaVersion toVersion);
 
 	/**
 	 * Enqueue a branch migration job.
@@ -36,7 +36,7 @@ public interface JobRoot extends RootVertex<Job> {
 	 * @param toVersion
 	 * @return
 	 */
-	Job enqueueBranchMigration(User creator, Branch branch, SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion);
+	Job enqueueBranchMigration(User creator, Branch branch, SchemaVersion fromVersion, SchemaVersion toVersion);
 
 	/**
 	 * Enqueue a microschema migration.
@@ -47,7 +47,7 @@ public interface JobRoot extends RootVertex<Job> {
 	 * @param toVersion
 	 * @return
 	 */
-	Job enqueueMicroschemaMigration(User creator, Branch branch, MicroschemaContainerVersion fromVersion, MicroschemaContainerVersion toVersion);
+	Job enqueueMicroschemaMigration(User creator, Branch branch, MicroschemaVersion fromVersion, MicroschemaVersion toVersion);
 
 	/**
 	 * Enqueue a branch migration.

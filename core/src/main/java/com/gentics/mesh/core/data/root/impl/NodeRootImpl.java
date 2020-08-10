@@ -44,9 +44,8 @@ import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformableStreamPageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.NodeRoot;
-import com.gentics.mesh.core.data.root.UserRoot;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -208,7 +207,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public Node create(User creator, SchemaContainerVersion version, Project project, String uuid) {
+	public Node create(User creator, SchemaVersion version, Project project, String uuid) {
 		// TODO check whether the mesh node is in fact a folder node.
 		NodeImpl node = getGraph().addFramedVertex(NodeImpl.class);
 		if (uuid != null) {
@@ -240,7 +239,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	 * @return
 	 */
 	// TODO use schema container version instead of container
-	private Node createNode(InternalActionContext ac, SchemaContainerVersion schemaVersion, EventQueueBatch batch,
+	private Node createNode(InternalActionContext ac, SchemaVersion schemaVersion, EventQueueBatch batch,
 		String uuid) {
 		Project project = ac.getProject();
 		MeshAuthUser requestUser = ac.getUser();
@@ -317,9 +316,9 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 		if (!isEmpty(schemaInfo.getSchema().getUuid())) {
 			// 2. Use schema reference by uuid first
-			SchemaContainer schemaByUuid = project.getSchemaContainerRoot().loadObjectByUuid(ac,
+			Schema schemaByUuid = project.getSchemaContainerRoot().loadObjectByUuid(ac,
 				schemaInfo.getSchema().getUuid(), READ_PERM);
-			SchemaContainerVersion schemaVersion = branch.findLatestSchemaVersion(schemaByUuid);
+			SchemaVersion schemaVersion = branch.findLatestSchemaVersion(schemaByUuid);
 			if (schemaVersion == null) {
 				throw error(BAD_REQUEST, "schema_error_schema_not_linked_to_branch", schemaByUuid.getName(), branch.getName(), project.getName());
 			}
@@ -328,13 +327,13 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 		// 3. Or just schema reference by name
 		if (!isEmpty(schemaInfo.getSchema().getName())) {
-			SchemaContainer schemaByName = project.getSchemaContainerRoot()
+			Schema schemaByName = project.getSchemaContainerRoot()
 				.findByName(schemaInfo.getSchema().getName());
 			if (schemaByName != null) {
 				String schemaName = schemaByName.getName();
 				String schemaUuid = schemaByName.getUuid();
 				if (userDao.hasPermission(requestUser, schemaByName, READ_PERM)) {
-					SchemaContainerVersion schemaVersion = branch.findLatestSchemaVersion(schemaByName);
+					SchemaVersion schemaVersion = branch.findLatestSchemaVersion(schemaByName);
 					if (schemaVersion == null) {
 						throw error(BAD_REQUEST, "schema_error_schema_not_linked_to_branch", schemaByName.getName(), branch.getName(),
 							project.getName());

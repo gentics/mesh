@@ -40,8 +40,8 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -680,8 +680,8 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	private List<GraphQLObjectType> generateSchemaFieldTypesV1(GraphQLContext context) {
 		Project project = context.getProject();
 		List<GraphQLObjectType> schemaTypes = new ArrayList<>();
-		for (SchemaContainer container : project.getSchemaContainerRoot().findAll()) {
-			SchemaContainerVersion version = container.getLatestVersion();
+		for (Schema container : project.getSchemaContainerRoot().findAll()) {
+			SchemaVersion version = container.getLatestVersion();
 			SchemaModel schema = version.getSchema();
 			GraphQLObjectType.Builder root = newObject();
 			// TODO remove this workaround
@@ -732,7 +732,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		Project project = context.getProject();
 
 		return project.getSchemaContainerRoot().findAll().stream().map(container -> {
-			SchemaContainerVersion version = container.getLatestVersion();
+			SchemaVersion version = container.getLatestVersion();
 			SchemaModel schema = version.getSchema();
 			GraphQLObjectType.Builder root = newObject();
 			root.withInterface(GraphQLTypeReference.typeRef(NODE_TYPE_NAME));

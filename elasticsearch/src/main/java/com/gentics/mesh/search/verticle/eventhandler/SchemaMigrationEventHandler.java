@@ -17,8 +17,8 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.DropIndexRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
@@ -87,18 +87,18 @@ public class SchemaMigrationEventHandler implements EventHandler {
 		Map<String, IndexInfo> map = helper.getDb().transactional(tx -> {
 			Project project = Tx.get().data().projectDao().findByUuid(model.getProject().getUuid());
 			Branch branch = project.getBranchRoot().findByUuid(model.getBranch().getUuid());
-			SchemaContainerVersion schema = getNewSchemaVersion(model).runInExistingTx(tx);
+			SchemaVersion schema = getNewSchemaVersion(model).runInExistingTx(tx);
 			return nodeIndexHandler.getIndices(project, branch, schema).runInExistingTx(tx);
 		}).runInNewTx();
 
 		return toRequests(map);
 	}
 
-	private Transactional<SchemaContainerVersion> getNewSchemaVersion(BranchSchemaAssignEventModel model) {
+	private Transactional<SchemaVersion> getNewSchemaVersion(BranchSchemaAssignEventModel model) {
 		return helper.getDb().transactional(tx -> {
 			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 			SchemaReference schema = model.getSchema();
-			SchemaContainer container = schemaDao.findByUuid(schema.getUuid());
+			Schema container = schemaDao.findByUuid(schema.getUuid());
 			return container.findVersionByUuid(schema.getVersionUuid());
 		});
 	}

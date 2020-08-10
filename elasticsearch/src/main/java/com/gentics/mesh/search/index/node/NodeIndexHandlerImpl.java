@@ -29,7 +29,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.search.MoveDocumentEntry;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.bulk.BulkEntry;
@@ -146,14 +146,14 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 		return db.transactional(tx -> {
 			Map<String, IndexInfo> indexInfo = new HashMap<>();
 			// Each branch specific index has also document type specific mappings
-			for (SchemaContainerVersion containerVersion : branch.findActiveSchemaVersions()) {
+			for (SchemaVersion containerVersion : branch.findActiveSchemaVersions()) {
 				indexInfo.putAll(getIndices(project, branch, containerVersion).runInExistingTx(tx));
 			}
 			return indexInfo;
 		});
 	}
 
-	public Transactional<Map<String, IndexInfo>> getIndices(Project project, Branch branch, SchemaContainerVersion containerVersion) {
+	public Transactional<Map<String, IndexInfo>> getIndices(Project project, Branch branch, SchemaVersion containerVersion) {
 		return db.transactional(tx -> {
 			Map<String, IndexInfo> indexInfos = new HashMap<>();
 			SchemaUpdateModel schema = containerVersion.getSchema();
@@ -193,7 +193,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 		db.tx(() -> {
 			for (Project currentProject : boot.meshRoot().getProjectRoot().findAll()) {
 				for (Branch branch : currentProject.getBranchRoot().findAll()) {
-					for (SchemaContainerVersion version : branch.findActiveSchemaVersions()) {
+					for (SchemaVersion version : branch.findActiveSchemaVersions()) {
 						if (log.isDebugEnabled()) {
 							log.debug("Found active schema version {}-{} in branch {}", version.getSchema().getName(), version.getVersion(),
 								branch.getName());
@@ -242,7 +242,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 	 * @param type
 	 * @return indexName -> documentName -> NodeGraphFieldContainer
 	 */
-	private Map<String, Map<String, NodeGraphFieldContainer>> loadVersionsFromGraph(Branch branch, SchemaContainerVersion version, ContainerType type) {
+	private Map<String, Map<String, NodeGraphFieldContainer>> loadVersionsFromGraph(Branch branch, SchemaVersion version, ContainerType type) {
 		Map<String, Map<String, NodeGraphFieldContainer>> tx = db.tx(() -> {
 			String branchUuid = branch.getUuid();
 			List<String> indexLanguages = version.getSchema().findOverriddenSearchLanguages().collect(Collectors.toList());
@@ -283,7 +283,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 		}
 	}
 
-	private Flowable<SearchRequest> diffAndSync(Project project, Branch branch, SchemaContainerVersion version, ContainerType type) {
+	private Flowable<SearchRequest> diffAndSync(Project project, Branch branch, SchemaVersion version, ContainerType type) {
 		return Flowable.defer(() -> {
 			Map<String, Map<String, NodeGraphFieldContainer>> sourceNodesPerIndex = loadVersionsFromGraph(branch, version, type);
 			return Flowable.fromIterable(getIndexNames(project, branch, version, type))
@@ -331,7 +331,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 		});
 	}
 
-	private List<String> getIndexNames(Project project, Branch branch, SchemaContainerVersion version, ContainerType type) {
+	private List<String> getIndexNames(Project project, Branch branch, SchemaVersion version, ContainerType type) {
 		return db.tx(() -> {
 			Stream<String> languageIndices = version.getSchema().findOverriddenSearchLanguages()
 				.map(lang -> NodeGraphFieldContainer.composeIndexName(

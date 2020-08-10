@@ -13,9 +13,9 @@ import org.mockito.Mockito;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
-import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
+import com.gentics.mesh.core.data.schema.impl.SchemaVersionImpl;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -40,8 +40,8 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 	abstract protected FS createFieldSchema(boolean isRequired);
 
 	protected Tuple<Node, NodeGraphFieldContainer> createNode(boolean isRequiredField, String segmentField) {
-		SchemaContainer container = Tx.get().getGraph().addFramedVertex(SchemaContainerImpl.class);
-		SchemaContainerVersionImpl version = Tx.get().getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+		Schema container = Tx.get().getGraph().addFramedVertex(SchemaContainerImpl.class);
+		SchemaVersionImpl version = Tx.get().getGraph().addFramedVertex(SchemaVersionImpl.class);
 		version.setSchemaContainer(container);
 		container.setLatestVersion(version);
 		SchemaUpdateModel schema = new SchemaModelImpl();

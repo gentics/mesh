@@ -20,11 +20,11 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
@@ -309,7 +309,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		// Assert deletion
 		tx(tx -> {
 			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
-			SchemaContainer schema = schemaDao.findByName("schema_3");
+			Schema schema = schemaDao.findByName("schema_3");
 			schema.getLatestVersion().remove();
 			schema.remove();
 		});
@@ -322,7 +322,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		// Assert insert
 		tx(() -> {
 			for (int i = 0; i < 400; i++) {
-				MicroschemaModel model = new MicroschemaModelImpl();
+				MicroschemaVersionModel model = new MicroschemaModelImpl();
 				model.setName("microschema_" + i);
 				createMicroschema(model);
 			}
@@ -340,7 +340,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		// Assert deletion
 		tx(tx -> {
 			MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
-			MicroschemaContainer microschema = microschemaDao.findByName("microschema_101");
+			Microschema microschema = microschemaDao.findByName("microschema_101");
 			microschema.getLatestVersion().remove();
 			microschema.remove();
 		});

@@ -12,10 +12,10 @@ import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.root.BranchRoot;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.event.branch.BranchMicroschemaAssignModel;
@@ -191,11 +191,11 @@ public interface Branch
 	 * Assign the given schema version to the branch and queue a job which will trigger the migration.
 	 * 
 	 * @param user
-	 * @param schemaContainerVersion
+	 * @param schemaVersion
 	 * @param batch
 	 * @return Job which was created to trigger the migration or null if no job was created because the version has already been assigned before
 	 */
-	Job assignSchemaVersion(User user, SchemaContainerVersion schemaContainerVersion, EventQueueBatch batch);
+	Job assignSchemaVersion(User user, SchemaVersion schemaVersion, EventQueueBatch batch);
 
 	/**
 	 * Unassign all schema versions of the given schema from this branch.
@@ -203,7 +203,7 @@ public interface Branch
 	 * @param schemaContainer
 	 * @return Fluent API
 	 */
-	Branch unassignSchema(SchemaContainer schemaContainer);
+	Branch unassignSchema(Schema schemaContainer);
 
 	/**
 	 * Check whether a version of this schema container is assigned to this branch.
@@ -212,42 +212,42 @@ public interface Branch
 	 *            schema
 	 * @return true iff assigned
 	 */
-	boolean contains(SchemaContainer schema);
+	boolean contains(Schema schema);
 
 	/**
 	 * Check whether the given schema container version is assigned to this branch.
 	 *
-	 * @param schemaContainerVersion
+	 * @param schemaVersion
 	 *            schema container version
 	 * @return true if assigned
 	 */
-	boolean contains(SchemaContainerVersion schemaContainerVersion);
+	boolean contains(SchemaVersion schemaVersion);
 
 	/**
 	 * Get an traversal result of all schema container versions.
 	 * 
 	 * @return
 	 */
-	TraversalResult<? extends SchemaContainerVersion> findAllSchemaVersions();
+	TraversalResult<? extends SchemaVersion> findAllSchemaVersions();
 
 	/**
 	 * Assign the given microschema version to the branch and queue a job which executes the migration.
 	 * 
 	 * @param user
 	 * 
-	 * @param microschemaContainerVersion
+	 * @param microschemaVersion
 	 * @param batch
 	 * @return Job which has been created if the version has not yet been assigned. Otherwise null will be returned.
 	 */
-	Job assignMicroschemaVersion(User user, MicroschemaContainerVersion microschemaContainerVersion, EventQueueBatch batch);
+	Job assignMicroschemaVersion(User user, MicroschemaVersion microschemaVersion, EventQueueBatch batch);
 
 	/**
 	 * Unassigns all versions of the given microschema from this branch.
 	 * 
-	 * @param microschemaContainer
+	 * @param microschema
 	 * @return Fluent API
 	 */
-	Branch unassignMicroschema(MicroschemaContainer microschemaContainer);
+	Branch unassignMicroschema(Microschema microschema);
 
 	/**
 	 * Check whether a version of this microschema container is assigned to this branch.
@@ -256,23 +256,23 @@ public interface Branch
 	 *            microschema
 	 * @return true iff assigned
 	 */
-	boolean contains(MicroschemaContainer microschema);
+	boolean contains(Microschema microschema);
 
 	/**
 	 * Check whether the given microschema container version is assigned to this branch.
 	 *
-	 * @param microschemaContainerVersion
+	 * @param microschemaVersion
 	 *            microschema container version
 	 * @return true iff assigned
 	 */
-	boolean contains(MicroschemaContainerVersion microschemaContainerVersion);
+	boolean contains(MicroschemaVersion microschemaVersion);
 
 	/**
 	 * Get an iterable of all microschema container versions.
 	 * 
 	 * @return Iterable
 	 */
-	TraversalResult<? extends MicroschemaContainerVersion> findAllMicroschemaVersions();
+	TraversalResult<? extends MicroschemaVersion> findAllMicroschemaVersions();
 
 	/**
 	 * Get an iterable of all latest microschema container versions.
@@ -287,7 +287,7 @@ public interface Branch
 	 * 
 	 * @return Iterable
 	 */
-	TraversalResult<? extends SchemaContainerVersion> findActiveSchemaVersions();
+	TraversalResult<? extends SchemaVersion> findActiveSchemaVersions();
 
 	/**
 	 * Get an iterable over all active microschema container versions. An active version is one which still contains {@link NodeGraphFieldContainer}'s or one
@@ -295,7 +295,7 @@ public interface Branch
 	 *
 	 * @return Iterable
 	 */
-	Iterable<? extends MicroschemaContainerVersion> findActiveMicroschemaVersions();
+	Iterable<? extends MicroschemaVersion> findActiveMicroschemaVersions();
 
 	/**
 	 * Get an iterable of all latest schema container versions.
@@ -329,18 +329,18 @@ public interface Branch
 	/**
 	 * Find the branch schema edge for the given version.
 	 * 
-	 * @param schemaContainerVersion
+	 * @param schemaVersion
 	 * @return Found edge between branch and version
 	 */
-	BranchSchemaEdge findBranchSchemaEdge(SchemaContainerVersion schemaContainerVersion);
+	BranchSchemaEdge findBranchSchemaEdge(SchemaVersion schemaVersion);
 
 	/**
 	 * Find the branch microschema edge for the given version.
 	 * 
-	 * @param microschemaContainerVersion
+	 * @param microschemaVersion
 	 * @return Found edge between branch and version
 	 */
-	BranchMicroschemaEdge findBranchMicroschemaEdge(MicroschemaContainerVersion microschemaContainerVersion);
+	BranchMicroschemaEdge findBranchMicroschemaEdge(MicroschemaVersion microschemaVersion);
 
 	/**
 	 * Find the latest schema version which is assigned to the branch which matches the provided schema container
@@ -348,7 +348,7 @@ public interface Branch
 	 * @param schemaContainer
 	 * @return Found version or null if no version could be found.
 	 */
-	SchemaContainerVersion findLatestSchemaVersion(SchemaContainer schemaContainer);
+	SchemaVersion findLatestSchemaVersion(Schema schemaContainer);
 
 	/**
 	 * Find the latest microschema version which is assigned to the branch which matches the provided microschema container
@@ -356,7 +356,7 @@ public interface Branch
 	 * @param schemaContainer
 	 * @return Found version or null if no version could be found.
 	 */
-	MicroschemaContainerVersion findLatestMicroschemaVersion(MicroschemaContainer schemaContainer);
+	MicroschemaVersion findLatestMicroschemaVersion(Microschema schemaContainer);
 
 	/**
 	 * Add the given tag to the list of tags for this branch.
@@ -429,22 +429,22 @@ public interface Branch
 	/**
 	 * Create a project schema assignment event.
 	 *
-	 * @param schemaContainerVersion
+	 * @param schemaVersion
 	 * @param assigned
 	 * @param status
 	 * @return
 	 */
-	BranchSchemaAssignEventModel onSchemaAssignEvent(SchemaContainerVersion schemaContainerVersion, Assignment assigned, JobStatus status);
+	BranchSchemaAssignEventModel onSchemaAssignEvent(SchemaVersion schemaVersion, Assignment assigned, JobStatus status);
 
 	/**
 	 * Create a project microschema assignment event.
 	 *
-	 * @param microschemaContainerVersion
+	 * @param microschemaVersion
 	 * @param assigned
 	 * @param status
 	 * @return
 	 */
-	BranchMicroschemaAssignModel onMicroschemaAssignEvent(MicroschemaContainerVersion microschemaContainerVersion, Assignment assigned, JobStatus status);
+	BranchMicroschemaAssignModel onMicroschemaAssignEvent(MicroschemaVersion microschemaVersion, Assignment assigned, JobStatus status);
 
 	/**
 	 * Load the tag with the given uuid that was used to tag the branch.

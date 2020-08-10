@@ -10,7 +10,7 @@ import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.list.FieldList;
 import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 
 public class MicronodeResponseAssert extends AbstractAssert<MicronodeResponseAssert, MicronodeResponse> {
 
@@ -18,7 +18,7 @@ public class MicronodeResponseAssert extends AbstractAssert<MicronodeResponseAss
 		super(actual, MicronodeResponseAssert.class);
 	}
 
-	public MicronodeResponseAssert matches(MicronodeResponse expected, Microschema schema) {
+	public MicronodeResponseAssert matches(MicronodeResponse expected, MicroschemaModel schema) {
 		if (expected == null) {
 			assertNull(descriptionText() + " must be null", actual);
 			return this;

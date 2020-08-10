@@ -54,7 +54,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.Permission;
@@ -1545,7 +1545,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			// Create node with nl language
 			Node parentNode = folder("products");
 			Language languageNl = meshRoot().getLanguageRoot().findByLanguageTag("nl");
-			SchemaContainerVersion version = schemaContainer("content").getLatestVersion();
+			SchemaVersion version = schemaContainer("content").getLatestVersion();
 			node = parentNode.create(user(), version, project());
 			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(languageNl.getLanguageTag(),
 				node.getProject().getLatestBranch(), user());

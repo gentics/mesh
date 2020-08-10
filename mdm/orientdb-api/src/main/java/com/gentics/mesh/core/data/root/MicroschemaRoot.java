@@ -1,12 +1,11 @@
 package com.gentics.mesh.core.data.root;
 
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.event.EventQueueBatch;
 
-public interface MicroschemaContainerRoot extends RootVertex<MicroschemaContainer> {
+public interface MicroschemaRoot extends RootVertex<Microschema> {
 
 	public static final String TYPE = "microschemas";
 
@@ -18,7 +17,7 @@ public interface MicroschemaContainerRoot extends RootVertex<MicroschemaContaine
 	 * @param container
 	 * @param batch
 	 */
-	void addMicroschema(User user, MicroschemaContainer container, EventQueueBatch batch);
+	void addMicroschema(User user, Microschema container, EventQueueBatch batch);
 
 	/**
 	 * Remove the microschema container from the aggregation node.
@@ -26,7 +25,7 @@ public interface MicroschemaContainerRoot extends RootVertex<MicroschemaContaine
 	 * @param container
 	 * @param batch
 	 */
-	void removeMicroschema(MicroschemaContainer container, EventQueueBatch batch);
+	void removeMicroschema(Microschema container, EventQueueBatch batch);
 
 	/**
 	 * Check whether the given microschema is assigned to this root node.
@@ -34,10 +33,10 @@ public interface MicroschemaContainerRoot extends RootVertex<MicroschemaContaine
 	 * @param microschema
 	 * @return
 	 */
-	boolean contains(MicroschemaContainer microschema);
+	boolean contains(Microschema microschema);
 
 
-	MicroschemaContainer create();
+	Microschema create();
 
-	MicroschemaContainerVersion createVersion();
+	MicroschemaVersion createVersion();
 }

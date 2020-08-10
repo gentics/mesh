@@ -38,7 +38,7 @@ import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
 import com.gentics.mesh.core.data.branch.BranchVersionEdge;
 import com.gentics.mesh.core.data.branch.impl.BranchMicroschemaEdgeImpl;
 import com.gentics.mesh.core.data.branch.impl.BranchSchemaEdgeImpl;
-import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
+import com.gentics.mesh.core.data.container.impl.MicroschemaVersionImpl;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.job.Job;
@@ -48,11 +48,11 @@ import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.root.impl.BranchRootImpl;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.schema.impl.SchemaVersionImpl;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
@@ -250,14 +250,14 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
-	public Branch unassignSchema(SchemaContainer schemaContainer) {
+	public Branch unassignSchema(Schema schemaContainer) {
 		unassign(schemaContainer);
 		return this;
 	}
 
 	@Override
-	public boolean contains(SchemaContainer schemaContainer) {
-		return out(HAS_SCHEMA_VERSION, SchemaContainerVersionImpl.class)
+	public boolean contains(Schema schemaContainer) {
+		return out(HAS_SCHEMA_VERSION, SchemaVersionImpl.class)
 			.stream()
 			.filter(version -> {
 				return schemaContainer.getUuid().equals(version.getSchemaContainer().getUuid());
@@ -265,17 +265,17 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
-	public boolean contains(SchemaContainerVersion schemaContainerVersion) {
-		return out(HAS_SCHEMA_VERSION, SchemaContainerVersionImpl.class)
+	public boolean contains(SchemaVersion schemaVersion) {
+		return out(HAS_SCHEMA_VERSION, SchemaVersionImpl.class)
 			.stream()
 			.filter(version -> {
-				return schemaContainerVersion.getUuid().equals(version.getUuid());
+				return schemaVersion.getUuid().equals(version.getUuid());
 			}).findAny().isPresent();
 	}
 
 	@Override
-	public SchemaContainerVersion findLatestSchemaVersion(SchemaContainer schemaContainer) {
-		return out(HAS_SCHEMA_VERSION, SchemaContainerVersionImpl.class)
+	public SchemaVersion findLatestSchemaVersion(Schema schemaContainer) {
+		return out(HAS_SCHEMA_VERSION, SchemaVersionImpl.class)
 			.stream()
 			.filter(version -> {
 				return schemaContainer.getUuid().equals(version.getSchemaContainer().getUuid());
@@ -287,8 +287,8 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
-	public MicroschemaContainerVersion findLatestMicroschemaVersion(MicroschemaContainer schemaContainer) {
-		return out(HAS_MICROSCHEMA_VERSION, MicroschemaContainerVersionImpl.class)
+	public MicroschemaVersion findLatestMicroschemaVersion(Microschema schemaContainer) {
+		return out(HAS_MICROSCHEMA_VERSION, MicroschemaVersionImpl.class)
 			.stream()
 			.filter(version -> {
 				return schemaContainer.getUuid().equals(version.getSchemaContainer().getUuid());
@@ -300,20 +300,20 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
-	public TraversalResult<? extends SchemaContainerVersion> findAllSchemaVersions() {
-		return out(HAS_SCHEMA_VERSION, SchemaContainerVersionImpl.class);
+	public TraversalResult<? extends SchemaVersion> findAllSchemaVersions() {
+		return out(HAS_SCHEMA_VERSION, SchemaVersionImpl.class);
 	}
 
 	@Override
-	public TraversalResult<? extends SchemaContainerVersion> findActiveSchemaVersions() {
+	public TraversalResult<? extends SchemaVersion> findActiveSchemaVersions() {
 		return new TraversalResult<>(
-			outE(HAS_SCHEMA_VERSION).has(BranchVersionEdge.ACTIVE_PROPERTY_KEY, true).inV().frameExplicit(SchemaContainerVersionImpl.class));
+			outE(HAS_SCHEMA_VERSION).has(BranchVersionEdge.ACTIVE_PROPERTY_KEY, true).inV().frameExplicit(SchemaVersionImpl.class));
 	}
 
 	@Override
-	public Iterable<? extends MicroschemaContainerVersion> findActiveMicroschemaVersions() {
+	public Iterable<? extends MicroschemaVersion> findActiveMicroschemaVersions() {
 		return outE(HAS_MICROSCHEMA_VERSION).has(BranchVersionEdge.ACTIVE_PROPERTY_KEY, true).inV()
-			.frameExplicit(MicroschemaContainerVersionImpl.class);
+			.frameExplicit(MicroschemaVersionImpl.class);
 	}
 
 	@Override
@@ -350,53 +350,53 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
-	public Job assignSchemaVersion(User user, SchemaContainerVersion schemaContainerVersion, EventQueueBatch batch) {
-		BranchSchemaEdge edge = findBranchSchemaEdge(schemaContainerVersion);
+	public Job assignSchemaVersion(User user, SchemaVersion schemaVersion, EventQueueBatch batch) {
+		BranchSchemaEdge edge = findBranchSchemaEdge(schemaVersion);
 		Job job = null;
 		// Don't remove any existing edge. Otherwise the edge properties are lost
 		if (edge == null) {
-			SchemaContainerVersion currentVersion = findLatestSchemaVersion(schemaContainerVersion.getSchemaContainer());
-			edge = addFramedEdgeExplicit(HAS_SCHEMA_VERSION, schemaContainerVersion, BranchSchemaEdgeImpl.class);
+			SchemaVersion currentVersion = findLatestSchemaVersion(schemaVersion.getSchemaContainer());
+			edge = addFramedEdgeExplicit(HAS_SCHEMA_VERSION, schemaVersion, BranchSchemaEdgeImpl.class);
 			// Enqueue the schema migration for each found schema version
 			edge.setActive(true);
 			if (currentVersion != null) {
-				job = mesh().boot().jobRoot().enqueueSchemaMigration(user, this, currentVersion, schemaContainerVersion);
+				job = mesh().boot().jobRoot().enqueueSchemaMigration(user, this, currentVersion, schemaVersion);
 				edge.setMigrationStatus(QUEUED);
 				edge.setJobUuid(job.getUuid());
 			} else {
 				// No migration needed since there was no previous version assigned.
 				edge.setMigrationStatus(COMPLETED);
 			}
-			batch.add(onSchemaAssignEvent(schemaContainerVersion, ASSIGNED, edge.getMigrationStatus()));
+			batch.add(onSchemaAssignEvent(schemaVersion, ASSIGNED, edge.getMigrationStatus()));
 		}
 		return job;
 	}
 
 	@Override
-	public Job assignMicroschemaVersion(User user, MicroschemaContainerVersion microschemaContainerVersion, EventQueueBatch batch) {
-		BranchMicroschemaEdge edge = findBranchMicroschemaEdge(microschemaContainerVersion);
+	public Job assignMicroschemaVersion(User user, MicroschemaVersion microschemaVersion, EventQueueBatch batch) {
+		BranchMicroschemaEdge edge = findBranchMicroschemaEdge(microschemaVersion);
 		Job job = null;
 		// Don't remove any existing edge. Otherwise the edge properties are lost
 		if (edge == null) {
-			MicroschemaContainerVersion currentVersion = findLatestMicroschemaVersion(microschemaContainerVersion.getSchemaContainer());
-			edge = addFramedEdgeExplicit(HAS_MICROSCHEMA_VERSION, microschemaContainerVersion, BranchMicroschemaEdgeImpl.class);
+			MicroschemaVersion currentVersion = findLatestMicroschemaVersion(microschemaVersion.getSchemaContainer());
+			edge = addFramedEdgeExplicit(HAS_MICROSCHEMA_VERSION, microschemaVersion, BranchMicroschemaEdgeImpl.class);
 			// Enqueue the job so that the worker can process it later on
 			edge.setActive(true);
 			if (currentVersion != null) {
-				job = mesh().boot().jobRoot().enqueueMicroschemaMigration(user, this, currentVersion, microschemaContainerVersion);
+				job = mesh().boot().jobRoot().enqueueMicroschemaMigration(user, this, currentVersion, microschemaVersion);
 				edge.setMigrationStatus(QUEUED);
 				edge.setJobUuid(job.getUuid());
 			} else {
 				// No migration needed since there was no previous version assigned.
 				edge.setMigrationStatus(COMPLETED);
 			}
-			batch.add(onMicroschemaAssignEvent(microschemaContainerVersion, ASSIGNED, edge.getMigrationStatus()));
+			batch.add(onMicroschemaAssignEvent(microschemaVersion, ASSIGNED, edge.getMigrationStatus()));
 		}
 		return job;
 	}
 
 	@Override
-	public BranchSchemaAssignEventModel onSchemaAssignEvent(SchemaContainerVersion schemaContainerVersion, Assignment assigned, JobStatus status) {
+	public BranchSchemaAssignEventModel onSchemaAssignEvent(SchemaVersion schemaVersion, Assignment assigned, JobStatus status) {
 		BranchSchemaAssignEventModel model = new BranchSchemaAssignEventModel();
 		model.setOrigin(options().getNodeName());
 		switch (assigned) {
@@ -407,7 +407,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 			model.setEvent(SCHEMA_BRANCH_UNASSIGN);
 			break;
 		}
-		model.setSchema(schemaContainerVersion.transformToReference());
+		model.setSchema(schemaVersion.transformToReference());
 		model.setStatus(status);
 		model.setBranch(transformToReference());
 		model.setProject(getProject().transformToReference());
@@ -415,7 +415,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
-	public BranchMicroschemaAssignModel onMicroschemaAssignEvent(MicroschemaContainerVersion microschemaContainerVersion, Assignment assigned,
+	public BranchMicroschemaAssignModel onMicroschemaAssignEvent(MicroschemaVersion microschemaVersion, Assignment assigned,
 		JobStatus status) {
 		BranchMicroschemaAssignModel model = new BranchMicroschemaAssignModel();
 		model.setOrigin(mesh().options().getNodeName());
@@ -427,7 +427,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 			model.setEvent(MICROSCHEMA_BRANCH_UNASSIGN);
 			break;
 		}
-		model.setSchema(microschemaContainerVersion.transformToReference());
+		model.setSchema(microschemaVersion.transformToReference());
 		model.setStatus(status);
 		model.setBranch(transformToReference());
 		model.setProject(getProject().transformToReference());
@@ -435,32 +435,32 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
-	public Branch unassignMicroschema(MicroschemaContainer microschemaContainer) {
-		unassign(microschemaContainer);
+	public Branch unassignMicroschema(Microschema microschema) {
+		unassign(microschema);
 		return this;
 	}
 
 	@Override
-	public boolean contains(MicroschemaContainer microschemaContainer) {
-		return out(HAS_MICROSCHEMA_VERSION, MicroschemaContainerVersionImpl.class)
+	public boolean contains(Microschema microschema) {
+		return out(HAS_MICROSCHEMA_VERSION, MicroschemaVersionImpl.class)
 			.stream()
 			.filter(version -> {
-				return microschemaContainer.getUuid().equals(version.getSchemaContainer().getUuid());
+				return microschema.getUuid().equals(version.getSchemaContainer().getUuid());
 			}).findAny().isPresent();
 	}
 
 	@Override
-	public boolean contains(MicroschemaContainerVersion microschemaContainerVersion) {
-		return out(HAS_MICROSCHEMA_VERSION, MicroschemaContainerVersionImpl.class)
+	public boolean contains(MicroschemaVersion microschemaVersion) {
+		return out(HAS_MICROSCHEMA_VERSION, MicroschemaVersionImpl.class)
 			.stream()
 			.filter(version -> {
-				return microschemaContainerVersion.getUuid().equals(version.getUuid());
+				return microschemaVersion.getUuid().equals(version.getUuid());
 			}).findAny().isPresent();
 	}
 
 	@Override
-	public TraversalResult<? extends MicroschemaContainerVersion> findAllMicroschemaVersions() {
-		return out(HAS_MICROSCHEMA_VERSION, MicroschemaContainerVersionImpl.class);
+	public TraversalResult<? extends MicroschemaVersion> findAllMicroschemaVersions() {
+		return out(HAS_MICROSCHEMA_VERSION, MicroschemaVersionImpl.class);
 	}
 
 	/**
@@ -473,10 +473,10 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 		GraphFieldSchemaContainer<R, RE, SC, SCV> container) {
 		SCV version = container.getLatestVersion();
 		String edgeLabel = null;
-		if (version instanceof SchemaContainerVersion) {
+		if (version instanceof SchemaVersion) {
 			edgeLabel = HAS_SCHEMA_VERSION;
 		}
-		if (version instanceof MicroschemaContainerVersion) {
+		if (version instanceof MicroschemaVersion) {
 			edgeLabel = HAS_MICROSCHEMA_VERSION;
 		}
 
@@ -521,13 +521,13 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
-	public BranchSchemaEdge findBranchSchemaEdge(SchemaContainerVersion schemaContainerVersion) {
-		return outE(HAS_SCHEMA_VERSION).mark().inV().retain(schemaContainerVersion).back().nextOrDefaultExplicit(BranchSchemaEdgeImpl.class, null);
+	public BranchSchemaEdge findBranchSchemaEdge(SchemaVersion schemaVersion) {
+		return outE(HAS_SCHEMA_VERSION).mark().inV().retain(schemaVersion).back().nextOrDefaultExplicit(BranchSchemaEdgeImpl.class, null);
 	}
 
 	@Override
-	public BranchMicroschemaEdge findBranchMicroschemaEdge(MicroschemaContainerVersion microschemaContainerVersion) {
-		return outE(HAS_MICROSCHEMA_VERSION).mark().inV().retain(microschemaContainerVersion).back().nextOrDefaultExplicit(
+	public BranchMicroschemaEdge findBranchMicroschemaEdge(MicroschemaVersion microschemaVersion) {
+		return outE(HAS_MICROSCHEMA_VERSION).mark().inV().retain(microschemaVersion).back().nextOrDefaultExplicit(
 			BranchMicroschemaEdgeImpl.class, null);
 	}
 

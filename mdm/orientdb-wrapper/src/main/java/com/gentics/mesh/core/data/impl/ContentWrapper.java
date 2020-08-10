@@ -37,8 +37,8 @@ import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -379,7 +379,7 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		delegate.linkIn(vertex, labels);
 	}
 
-	public MicronodeGraphField createMicronode(String key, MicroschemaContainerVersion microschemaVersion) {
+	public MicronodeGraphField createMicronode(String key, MicroschemaVersion microschemaVersion) {
 		return delegate.createMicronode(key, microschemaVersion);
 	}
 
@@ -627,15 +627,15 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		return delegate.compareTo(fieldMap);
 	}
 
-	public SchemaContainerVersion getSchemaContainerVersion() {
+	public SchemaVersion getSchemaContainerVersion() {
 		return delegate.getSchemaContainerVersion();
 	}
 
-	public List<? extends MicronodeGraphField> getMicronodeFields(MicroschemaContainerVersion version) {
+	public List<? extends MicronodeGraphField> getMicronodeFields(MicroschemaVersion version) {
 		return delegate.getMicronodeFields(version);
 	}
 
-	public TraversalResult<? extends MicronodeGraphFieldList> getMicronodeListFields(MicroschemaContainerVersion version) {
+	public TraversalResult<? extends MicronodeGraphFieldList> getMicronodeListFields(MicroschemaVersion version) {
 		return delegate.getMicronodeListFields(version);
 	}
 

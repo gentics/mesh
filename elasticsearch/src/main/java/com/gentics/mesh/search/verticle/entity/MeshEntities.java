@@ -25,8 +25,8 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
@@ -70,8 +70,8 @@ public class MeshEntities {
 	public final MeshEntity<Project> project;
 	public final MeshEntity<Tag> tag;
 	public final MeshEntity<TagFamily> tagFamily;
-	public final MeshEntity<SchemaContainer> schema;
-	public final MeshEntity<MicroschemaContainer> microschema;
+	public final MeshEntity<Schema> schema;
+	public final MeshEntity<Microschema> microschema;
 	public final MeshEntity<NodeGraphFieldContainer> nodeContent;
 	private final Map<ElementType, MeshEntity<?>> entities;
 
@@ -92,8 +92,8 @@ public class MeshEntities {
 		this.options = options;
 		this.complianceMode = options.getSearchOptions().getComplianceMode();
 
-		schema = new SimpleMeshEntity<>(schemaTransformer, SchemaContainer.TYPE_INFO, byUuid(uuid -> boot.schemaDao().findByUuid(uuid)));
-		microschema = new SimpleMeshEntity<>(microschemaTransformer, MicroschemaContainer.TYPE_INFO, byUuid(uuid -> boot.microschemaDao().findByUuid(uuid)));
+		schema = new SimpleMeshEntity<>(schemaTransformer, Schema.TYPE_INFO, byUuid(uuid -> boot.schemaDao().findByUuid(uuid)));
+		microschema = new SimpleMeshEntity<>(microschemaTransformer, Microschema.TYPE_INFO, byUuid(uuid -> boot.microschemaDao().findByUuid(uuid)));
 		user = new SimpleMeshEntity<>(userTransformer, User.TYPE_INFO, byUuid(uuid -> boot.userDao().findByUuid(uuid)));
 		group = new SimpleMeshEntity<>(groupTransformer, Group.TYPE_INFO, byUuid(uuid -> boot.groupDao().findByUuid(uuid)));
 		role = new SimpleMeshEntity<>(roleTransformer, Role.TYPE_INFO, byUuid(uuid -> boot.roleDao().findByUuid(uuid)));
@@ -170,7 +170,7 @@ public class MeshEntities {
 	 * The Schema {@link MeshEntity}.
 	 * @return
 	 */
-	public MeshEntity<SchemaContainer> getSchema() {
+	public MeshEntity<Schema> getSchema() {
 		return schema;
 	}
 
@@ -178,7 +178,7 @@ public class MeshEntities {
 	 * The Microschema {@link MeshEntity}.
 	 * @return
 	 */
-	public MeshEntity<MicroschemaContainer> getMicroschema() {
+	public MeshEntity<Microschema> getMicroschema() {
 		return microschema;
 	}
 

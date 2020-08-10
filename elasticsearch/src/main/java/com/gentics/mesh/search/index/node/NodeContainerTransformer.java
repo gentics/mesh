@@ -43,8 +43,8 @@ import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
@@ -84,15 +84,15 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	 * Transform the given schema and add it to the source map.
 	 * 
 	 * @param document
-	 * @param schemaContainerVersion
+	 * @param schemaVersion
 	 */
-	private void addSchema(JsonObject document, SchemaContainerVersion schemaContainerVersion) {
-		String name = schemaContainerVersion.getName();
-		String uuid = schemaContainerVersion.getSchemaContainer().getUuid();
+	private void addSchema(JsonObject document, SchemaVersion schemaVersion) {
+		String name = schemaVersion.getName();
+		String uuid = schemaVersion.getSchemaContainer().getUuid();
 		Map<String, String> schemaFields = new HashMap<>();
 		schemaFields.put(NAME_KEY, name);
 		schemaFields.put(UUID_KEY, uuid);
-		schemaFields.put(VERSION_KEY, schemaContainerVersion.getVersion());
+		schemaFields.put(VERSION_KEY, schemaVersion.getVersion());
 		document.put("schema", schemaFields);
 	}
 
@@ -321,7 +321,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 							fieldsMap.put(fieldSchema.getName(), Observable.fromIterable(micronodeGraphFieldList.getList()).map(item -> {
 								JsonObject itemMap = new JsonObject();
 								Micronode micronode = item.getMicronode();
-								MicroschemaContainerVersion microschameContainerVersion = micronode.getSchemaContainerVersion();
+								MicroschemaVersion microschameContainerVersion = micronode.getSchemaContainerVersion();
 								addMicroschema(itemMap, microschameContainerVersion);
 								addFields(itemMap, "fields-" + microschameContainerVersion.getName(), micronode,
 									microschameContainerVersion.getSchema().getFields());
@@ -399,12 +399,12 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	 * Transform the given microschema container and add it to the source map.
 	 * 
 	 * @param map
-	 * @param microschemaContainerVersion
+	 * @param microschemaVersion
 	 */
-	private void addMicroschema(JsonObject document, MicroschemaContainerVersion microschemaContainerVersion) {
+	private void addMicroschema(JsonObject document, MicroschemaVersion microschemaVersion) {
 		JsonObject info = new JsonObject();
-		info.put(NAME_KEY, microschemaContainerVersion.getName());
-		info.put(UUID_KEY, microschemaContainerVersion.getUuid());
+		info.put(NAME_KEY, microschemaVersion.getName());
+		info.put(UUID_KEY, microschemaVersion.getUuid());
 		// TODO add version
 		document.put("microschema", info);
 	}

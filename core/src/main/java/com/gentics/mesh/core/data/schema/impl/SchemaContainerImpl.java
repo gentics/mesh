@@ -19,10 +19,10 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.root.SchemaContainerRoot;
-import com.gentics.mesh.core.data.root.impl.SchemaContainerRootImpl;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.root.SchemaRoot;
+import com.gentics.mesh.core.data.root.impl.SchemaRootImpl;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
@@ -32,20 +32,20 @@ import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.tinkerpop.blueprints.Vertex;
 
 /**
- * @see SchemaContainer
+ * @see Schema
  */
 public class SchemaContainerImpl extends
-		AbstractGraphFieldSchemaContainer<SchemaResponse, SchemaUpdateModel, SchemaReference, SchemaContainer, SchemaContainerVersion> implements
-		SchemaContainer {
+		AbstractGraphFieldSchemaContainer<SchemaResponse, SchemaUpdateModel, SchemaReference, Schema, SchemaVersion> implements
+	Schema {
 
 	@Override
-	protected Class<? extends SchemaContainer> getContainerClass() {
+	protected Class<? extends Schema> getContainerClass() {
 		return SchemaContainerImpl.class;
 	}
 
 	@Override
-	protected Class<? extends SchemaContainerVersion> getContainerVersionClass() {
-		return SchemaContainerVersionImpl.class;
+	protected Class<? extends SchemaVersion> getContainerVersionClass() {
+		return SchemaVersionImpl.class;
 	}
 
 	public static void init(TypeHandler type, IndexHandler index) {
@@ -58,12 +58,12 @@ public class SchemaContainerImpl extends
 	}
 
 	@Override
-	public TraversalResult<? extends SchemaContainerRoot> getRoots() {
-		return in(HAS_SCHEMA_CONTAINER_ITEM, SchemaContainerRootImpl.class);
+	public TraversalResult<? extends SchemaRoot> getRoots() {
+		return in(HAS_SCHEMA_CONTAINER_ITEM, SchemaRootImpl.class);
 	}
 
 	@Override
-	public RootVertex<SchemaContainer> getRoot() {
+	public RootVertex<Schema> getRoot() {
 		return mesh().boot().meshRoot().getSchemaContainerRoot();
 	}
 
@@ -86,7 +86,7 @@ public class SchemaContainerImpl extends
 			unassignEvents().forEach(bac::add);
 			bac.add(onDeleted());
 
-			for(SchemaContainerVersion v : findAll()) {
+			for(SchemaVersion v : findAll()) {
 				v.delete(bac);
 			}
 			remove();
@@ -101,7 +101,7 @@ public class SchemaContainerImpl extends
 	 */
 	private Stream<ProjectSchemaEventModel> unassignEvents() {
 		return getRoots().stream()
-			.map(SchemaContainerRoot::getProject)
+			.map(SchemaRoot::getProject)
 			.filter(Objects::nonNull)
 			.map(project -> project.onSchemaAssignEvent(this, UNASSIGNED));
 	}

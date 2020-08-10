@@ -13,8 +13,8 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
@@ -41,11 +41,11 @@ import com.tinkerpop.blueprints.Vertex;
 import io.reactivex.Single;
 import io.vertx.core.Vertx;
 
-public class MicroschemaWrapper implements MicroschemaContainer {
+public class MicroschemaWrapper implements Microschema {
 
-	private final MicroschemaContainer delegate;
+	private final Microschema delegate;
 
-	public static MicroschemaWrapper wrap(MicroschemaContainer microschema) {
+	public static MicroschemaWrapper wrap(Microschema microschema) {
 		if (microschema == null) {
 			return null;
 		} else {
@@ -53,7 +53,7 @@ public class MicroschemaWrapper implements MicroschemaContainer {
 		}
 	}
 
-	public MicroschemaWrapper(MicroschemaContainer delegate) {
+	public MicroschemaWrapper(Microschema delegate) {
 		this.delegate = delegate;
 	}
 
@@ -229,7 +229,7 @@ public class MicroschemaWrapper implements MicroschemaContainer {
 		delegate.property(key, value);
 	}
 
-	public MicroschemaContainerVersion findVersionByUuid(String uuid) {
+	public MicroschemaVersion findVersionByUuid(String uuid) {
 		return delegate.findVersionByUuid(uuid);
 	}
 
@@ -270,7 +270,7 @@ public class MicroschemaWrapper implements MicroschemaContainer {
 		delegate.removeProperty(key);
 	}
 
-	public MicroschemaContainerVersion findVersionByRev(String version) {
+	public MicroschemaVersion findVersionByRev(String version) {
 		return delegate.findVersionByRev(version);
 	}
 
@@ -294,7 +294,7 @@ public class MicroschemaWrapper implements MicroschemaContainer {
 		return delegate.getETag(ac);
 	}
 
-	public Iterable<? extends MicroschemaContainerVersion> findAll() {
+	public Iterable<? extends MicroschemaVersion> findAll() {
 		return delegate.findAll();
 	}
 
@@ -306,7 +306,7 @@ public class MicroschemaWrapper implements MicroschemaContainer {
 		return delegate.hasPublishPermissions();
 	}
 
-	public MicroschemaContainerVersion getLatestVersion() {
+	public MicroschemaVersion getLatestVersion() {
 		return MicroschemaVersionWrapper.wrap(delegate.getLatestVersion());
 	}
 
@@ -318,7 +318,7 @@ public class MicroschemaWrapper implements MicroschemaContainer {
 		return delegate.addFramedEdgeExplicit(label, inVertex, initializer);
 	}
 
-	public void setLatestVersion(MicroschemaContainerVersion version) {
+	public void setLatestVersion(MicroschemaVersion version) {
 		delegate.setLatestVersion(version);
 	}
 
@@ -334,7 +334,7 @@ public class MicroschemaWrapper implements MicroschemaContainer {
 		delegate.setProperty(name, value);
 	}
 
-	public RootVertex<MicroschemaContainer> getRoot() {
+	public RootVertex<Microschema> getRoot() {
 		return delegate.getRoot();
 	}
 
@@ -342,7 +342,7 @@ public class MicroschemaWrapper implements MicroschemaContainer {
 		return delegate.onUpdated();
 	}
 
-	public Map<Branch, MicroschemaContainerVersion> findReferencedBranches() {
+	public Map<Branch, MicroschemaVersion> findReferencedBranches() {
 		return delegate.findReferencedBranches();
 	}
 

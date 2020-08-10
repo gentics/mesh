@@ -17,7 +17,6 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -35,7 +34,7 @@ import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
@@ -156,14 +155,14 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 
 			// Add permission on own role
 			roleDao.grantPermissions(role(), role(), GraphPermission.UPDATE_PERM);
-			MicroschemaContainer vcard = microschemaContainer("vcard");
+			Microschema vcard = microschemaContainer("vcard");
 
 			// Revoke all permissions to vcard microschema
 			roleDao.revokePermissions(role(), vcard, GraphPermission.values());
 			tx.success();
 		}
 
-		MicroschemaContainer vcard;
+		Microschema vcard;
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 

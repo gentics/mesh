@@ -20,4 +20,4 @@ Each change is implemented using a java class. These classes are located within 
 
 * Ensure that your change also works on older systems which may not contain the graph structures which were added in later versions. It is a good practice to check whether the needed vertices exist before actually proceeding with the change.
 
-* Some schema model changes must also be applied to the JSON data which is stored within the schema / microschema versions graph elements.
+* Some schema model changes must also be applied to the JSON data which is stored within the schema / microschemaModel versions graph elements.

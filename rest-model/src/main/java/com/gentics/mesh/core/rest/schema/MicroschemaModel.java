@@ -8,7 +8,7 @@ import java.util.Optional;
 /**
  * Interface for a Microschema. A microschema can be used to create objects that are embedded into other objects.
  */
-public interface Microschema extends FieldSchemaContainer {
+public interface MicroschemaModel extends FieldSchemaContainer {
 
 	@Override
 	default void validate() {

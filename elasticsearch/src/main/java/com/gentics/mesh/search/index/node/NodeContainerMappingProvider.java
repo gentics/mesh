@@ -26,9 +26,9 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.branch.BranchMicroschemaEdge;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.rest.common.FieldTypes;
-import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -464,8 +464,8 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 
 		if (shouldFilter) {
 			for (BranchMicroschemaEdge edge : branch.findAllLatestMicroschemaVersionEdges()) {
-				MicroschemaContainerVersion version = edge.getMicroschemaContainerVersion();
-				MicroschemaModel microschema = version.getSchema();
+				MicroschemaVersion version = edge.getMicroschemaContainerVersion();
+				MicroschemaVersionModel microschema = version.getSchema();
 				String microschemaName = microschema.getName();
 
 				// Check if the microschema is contained in the whitelist

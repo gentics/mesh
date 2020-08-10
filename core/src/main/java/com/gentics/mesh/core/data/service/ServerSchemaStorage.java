@@ -12,12 +12,12 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.SchemaStorage;
 import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
@@ -42,7 +42,7 @@ public class ServerSchemaStorage implements SchemaStorage {
 	 */
 	private Map<String, Map<String, SchemaUpdateModel>> schemas = Collections.synchronizedMap(new HashMap<>());
 
-	private Map<String, Map<String, MicroschemaModel>> microschemas = Collections.synchronizedMap(new HashMap<>());
+	private Map<String, Map<String, MicroschemaVersionModel>> microschemas = Collections.synchronizedMap(new HashMap<>());
 
 	@Inject
 	public ServerSchemaStorage(Lazy<BootstrapInitializer> boot) {
@@ -54,17 +54,17 @@ public class ServerSchemaStorage implements SchemaStorage {
 		SchemaDaoWrapper schemaDao = Tx.get().data().schemaDao();
 		MicroschemaDaoWrapper microschemaDao = Tx.get().data().microschemaDao();
 
-		for (SchemaContainer container : schemaDao.findAll()) {
-			for (SchemaContainerVersion version : container.findAll()) {
+		for (Schema container : schemaDao.findAll()) {
+			for (SchemaVersion version : container.findAll()) {
 				SchemaUpdateModel restSchema = version.getSchema();
 				schemas.computeIfAbsent(restSchema.getName(), k -> new HashMap<>()).put(restSchema.getVersion(), restSchema);
 			}
 		}
 
 		// load all microschemas and add to storage
-		for (MicroschemaContainer container : microschemaDao.findAll()) {
-			for (MicroschemaContainerVersion version : container.findAll()) {
-				MicroschemaModel restMicroschema = version.getSchema();
+		for (Microschema container : microschemaDao.findAll()) {
+			for (MicroschemaVersion version : container.findAll()) {
+				MicroschemaVersionModel restMicroschema = version.getSchema();
 				microschemas.computeIfAbsent(restMicroschema.getName(), k -> new HashMap<>()).put(restMicroschema.getVersion(), restMicroschema);
 			}
 		}
@@ -134,12 +134,12 @@ public class ServerSchemaStorage implements SchemaStorage {
 	}
 
 	@Override
-	public MicroschemaModel getMicroschema(String name) {
-		Map<String, MicroschemaModel> microschemaMap = microschemas.get(name);
+	public MicroschemaVersionModel getMicroschema(String name) {
+		Map<String, MicroschemaVersionModel> microschemaMap = microschemas.get(name);
 		if (microschemaMap == null) {
 			return null;
 		}
-		Optional<Entry<String, MicroschemaModel>> maxVersion = microschemaMap.entrySet().stream().max((entry1, entry2) -> {
+		Optional<Entry<String, MicroschemaVersionModel>> maxVersion = microschemaMap.entrySet().stream().max((entry1, entry2) -> {
 			Double v1 = Double.valueOf(entry1.getKey());
 			Double v2 = Double.valueOf(entry2.getKey());
 			return Double.compare(v1, v2);
@@ -152,8 +152,8 @@ public class ServerSchemaStorage implements SchemaStorage {
 	}
 
 	@Override
-	public MicroschemaModel getMicroschema(String name, String version) {
-		Map<String, MicroschemaModel> microschemaMap = microschemas.get(name);
+	public MicroschemaVersionModel getMicroschema(String name, String version) {
+		Map<String, MicroschemaVersionModel> microschemaMap = microschemas.get(name);
 		if (microschemaMap == null) {
 			return null;
 		} else {
@@ -162,8 +162,8 @@ public class ServerSchemaStorage implements SchemaStorage {
 	}
 
 	@Override
-	public void addMicroschema(MicroschemaModel microschema) {
-		Map<String, MicroschemaModel> microschemaMap = microschemas.computeIfAbsent(microschema.getName(), k -> new HashMap<>());
+	public void addMicroschema(MicroschemaVersionModel microschema) {
+		Map<String, MicroschemaVersionModel> microschemaMap = microschemas.computeIfAbsent(microschema.getName(), k -> new HashMap<>());
 		if (microschemaMap.containsKey(microschema.getVersion())) {
 			log.error("Microschema " + microschema.getName() + ", version " + microschema.getVersion() + " is already stored.");
 			return;
@@ -179,7 +179,7 @@ public class ServerSchemaStorage implements SchemaStorage {
 
 	@Override
 	public void removeMicroschema(String name, String version) {
-		Map<String, MicroschemaModel> microschemaMap = microschemas.get(name);
+		Map<String, MicroschemaVersionModel> microschemaMap = microschemas.get(name);
 		if (microschemaMap != null) {
 			microschemaMap.remove(version);
 		}
@@ -195,8 +195,8 @@ public class ServerSchemaStorage implements SchemaStorage {
 		if (container instanceof SchemaUpdateModel) {
 			SchemaUpdateModel schemaModel = (SchemaUpdateModel) container;
 			removeSchema(schemaModel.getName(), schemaModel.getVersion());
-		} else if (container instanceof MicroschemaModel) {
-			MicroschemaModel schemaModel = (MicroschemaModel) container;
+		} else if (container instanceof MicroschemaVersionModel) {
+			MicroschemaVersionModel schemaModel = (MicroschemaVersionModel) container;
 			removeMicroschema(schemaModel.getName(), schemaModel.getVersion());
 		}
 	}

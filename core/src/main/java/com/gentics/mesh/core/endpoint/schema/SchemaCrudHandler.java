@@ -23,10 +23,10 @@ import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.dao.impl.SchemaDaoWrapperImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.SchemaContainerRoot;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.root.SchemaRoot;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -50,7 +50,7 @@ import com.gentics.mesh.util.UUIDUtil;
 
 import dagger.Lazy;
 
-public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, SchemaResponse> {
+public class SchemaCrudHandler extends AbstractCrudHandler<Schema, SchemaResponse> {
 
 	private SchemaComparator comparator;
 
@@ -68,28 +68,28 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 	}
 
 	@Override
-	public LoadAction<SchemaContainer> loadAction() {
+	public LoadAction<Schema> loadAction() {
 		return (tx, ac, uuid, perm, errorIfNotFound) -> {
 			return tx.data().schemaDao().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
 		};
 	}
 
 	@Override
-	public LoadAllAction<SchemaContainer> loadAllAction() {
+	public LoadAllAction<Schema> loadAllAction() {
 		return (tx, ac, pagingInfo) -> {
 			return tx.data().schemaDao().findAll(ac, pagingInfo);
 		};
 	}
 
 	@Override
-	public CreateAction<SchemaContainer> createAction() {
+	public CreateAction<Schema> createAction() {
 		return (tx, ac, batch, uuid) -> {
 			return tx.data().schemaDao().create(ac, batch, uuid);
 		};
 	}
 
 	@Override
-	public UpdateAction<SchemaContainer> updateAction() {
+	public UpdateAction<Schema> updateAction() {
 		// Schemas can't be directly updated. Update is handled via migrations
 		return null;
 	}
@@ -112,7 +112,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 				if (!UUIDUtil.isUUID(uuid)) {
 					return false;
 				}
-				SchemaContainer schemaContainer = tx.data().schemaDao().findByUuid(uuid);
+				Schema schemaContainer = tx.data().schemaDao().findByUuid(uuid);
 				return schemaContainer == null;
 			});
 
@@ -126,7 +126,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 			utils.syncTx(ac, tx1 -> {
 
 				// 1. Load the schema container with update permissions
-				SchemaContainer schemaContainer = tx1.data().schemaDao().loadObjectByUuid(ac, uuid, UPDATE_PERM);
+				Schema schemaContainer = tx1.data().schemaDao().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 				SchemaUpdateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaUpdateRequest.class);
 
 				UserDaoWrapper userDao = tx1.data().userDao();
@@ -163,7 +163,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 							for (String microschemaName : allowedSchemas) {
 
 								// schema_error_microschema_reference_no_perm
-								MicroschemaContainer microschema = boot.get().microschemaContainerRoot().findByName(microschemaName);
+								Microschema microschema = boot.get().microschemaContainerRoot().findByName(microschemaName);
 								if (microschema == null) {
 									throw error(BAD_REQUEST, "schema_error_microschema_reference_not_found", microschemaName, field.getName());
 								}
@@ -172,7 +172,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 								}
 
 								// Locate the projects to which the schema was linked - We need to ensure that the microschema is also linked to those projects
-								for (SchemaContainerRoot roots : schemaContainer.getRoots()) {
+								for (SchemaRoot roots : schemaContainer.getRoots()) {
 									Project project = roots.getProject();
 									if (project != null) {
 										project.getMicroschemaContainerRoot().addMicroschema(user, microschema, batch);
@@ -183,15 +183,15 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 					}
 
 					// 3. Apply the found changes to the schema
-					SchemaContainerVersion createdVersion = schemaContainer.getLatestVersion().applyChanges(ac, model, batch);
+					SchemaVersion createdVersion = schemaContainer.getLatestVersion().applyChanges(ac, model, batch);
 
 					// Check whether the assigned branches of the schema should also directly be updated.
 					// This will trigger a node migration.
 					if (updateParams.getUpdateAssignedBranches()) {
-						Map<Branch, SchemaContainerVersion> referencedBranches = schemaContainer.findReferencedBranches();
+						Map<Branch, SchemaVersion> referencedBranches = schemaContainer.findReferencedBranches();
 
 						// Assign the created version to the found branches
-						for (Map.Entry<Branch, SchemaContainerVersion> branchEntry : referencedBranches.entrySet()) {
+						for (Map.Entry<Branch, SchemaVersion> branchEntry : referencedBranches.entrySet()) {
 							Branch branch = branchEntry.getKey();
 
 							// Check whether a list of branch names was specified and skip branches which were not included in the list.
@@ -229,7 +229,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 		validateParameter(uuid, "uuid");
 
 		utils.syncTx(ac, tx -> {
-			SchemaContainer schema = tx.data().schemaDao().loadObjectByUuid(ac, uuid, READ_PERM);
+			Schema schema = tx.data().schemaDao().loadObjectByUuid(ac, uuid, READ_PERM);
 			SchemaModel requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaUpdateRequest.class);
 			requestModel.validate();
 			return schema.getLatestVersion().diff(ac, comparator, requestModel);
@@ -265,8 +265,8 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 					throw error(FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
 				}
 				SchemaDaoWrapper schemaDao = tx.data().schemaDao();
-				SchemaContainer schema = schemaDao.loadObjectByUuid(ac, schemaUuid, READ_PERM);
-				SchemaContainerRoot root = project.getSchemaContainerRoot();
+				Schema schema = schemaDao.loadObjectByUuid(ac, schemaUuid, READ_PERM);
+				SchemaRoot root = project.getSchemaContainerRoot();
 				if (root.contains(schema)) {
 					// Schema has already been assigned. No need to create indices
 					return schema.transformToRestSync(ac, 0);
@@ -302,7 +302,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 					throw error(FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
 				}
 
-				SchemaContainer schema = schemaDao.loadObjectByUuid(ac, schemaUuid, READ_PERM);
+				Schema schema = schemaDao.loadObjectByUuid(ac, schemaUuid, READ_PERM);
 
 				// No need to invoke the removal if the schema is not assigned
 				if (!project.getSchemaContainerRoot().contains(schema)) {
@@ -336,9 +336,9 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				SchemaDaoWrapper schemaDao = tx.data().schemaDao();
-				SchemaContainer schema = schemaDao.loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
+				Schema schema = schemaDao.loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
 				String version = utils.eventAction(batch -> {
-					SchemaContainerVersion newVersion = schema.getLatestVersion().applyChanges(ac, batch);
+					SchemaVersion newVersion = schema.getLatestVersion().applyChanges(ac, batch);
 					return newVersion.getVersion();
 				});
 				return message(ac, "schema_changes_applied", schema.getName(), version);

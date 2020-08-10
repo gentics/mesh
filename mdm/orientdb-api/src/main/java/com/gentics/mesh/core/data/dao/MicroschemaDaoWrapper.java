@@ -6,9 +6,9 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
-import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.madl.traversal.TraversalResult;
@@ -16,9 +16,9 @@ import com.gentics.mesh.parameter.PagingParameters;
 
 public interface MicroschemaDaoWrapper extends MicroschemaDao {
 
-	MicroschemaContainer loadObjectByUuid(InternalActionContext ac, String schemaUuid, GraphPermission perm);
+	Microschema loadObjectByUuid(InternalActionContext ac, String schemaUuid, GraphPermission perm);
 
-	MicroschemaContainer findByUuid(String uuid);
+	Microschema findByUuid(String uuid);
 
 //	boolean update(MicroschemaContainer microschema, InternalActionContext ac, EventQueueBatch batch);
 
@@ -31,7 +31,7 @@ public interface MicroschemaDaoWrapper extends MicroschemaDao {
 	 * @param batch
 	 * @return
 	 */
-	default MicroschemaContainer create(MicroschemaModel microschema, User user, EventQueueBatch batch) {
+	default Microschema create(MicroschemaVersionModel microschema, User user, EventQueueBatch batch) {
 		return create(microschema, user, null, batch);
 	}
 
@@ -46,19 +46,19 @@ public interface MicroschemaDaoWrapper extends MicroschemaDao {
 	 * @param batch
 	 * @return
 	 */
-	MicroschemaContainer create(MicroschemaModel microschema, User user, String uuid, EventQueueBatch batch);
+	Microschema create(MicroschemaVersionModel microschema, User user, String uuid, EventQueueBatch batch);
 
-	MicroschemaContainer create(InternalActionContext ac, EventQueueBatch batch, String uuid);
+	Microschema create(InternalActionContext ac, EventQueueBatch batch, String uuid);
 
-	TransformablePage<? extends MicroschemaContainer> findAll(InternalActionContext ac, PagingParameters pagingInfo);
+	TransformablePage<? extends Microschema> findAll(InternalActionContext ac, PagingParameters pagingInfo);
 
-	MicroschemaContainer loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound);
+	Microschema loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound);
 
-	MicroschemaContainer findByName(String name);
+	Microschema findByName(String name);
 
-	TraversalResult<? extends MicroschemaContainer> findAll();
+	TraversalResult<? extends Microschema> findAll();
 
-	default MicroschemaContainerVersion fromReference(MicroschemaReference reference) {
+	default MicroschemaVersion fromReference(MicroschemaReference reference) {
 		return fromReference(null, reference);
 	}
 
@@ -69,7 +69,7 @@ public interface MicroschemaDaoWrapper extends MicroschemaDao {
 	 *            reference
 	 * @return
 	 */
-	default MicroschemaContainerVersion fromReference(Project project, MicroschemaReference reference) {
+	default MicroschemaVersion fromReference(Project project, MicroschemaReference reference) {
 		return fromReference(project, reference, null);
 	}
 
@@ -84,6 +84,6 @@ public interface MicroschemaDaoWrapper extends MicroschemaDao {
 	 *            branch
 	 * @return
 	 */
-	MicroschemaContainerVersion fromReference(Project project, MicroschemaReference reference, Branch branch);
+	MicroschemaVersion fromReference(Project project, MicroschemaReference reference, Branch branch);
 
 }

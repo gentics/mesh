@@ -37,10 +37,9 @@ import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
@@ -150,8 +149,8 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 
 					// Resolve the list of references to graph schema container versions
 					for (SchemaReference reference : schemaReferenceList.getSchemas()) {
-						SchemaContainerVersion version = schemaDao.fromReference(project, reference);
-						SchemaContainerVersion assignedVersion = branch.findLatestSchemaVersion(version.getSchemaContainer());
+						SchemaVersion version = schemaDao.fromReference(project, reference);
+						SchemaVersion assignedVersion = branch.findLatestSchemaVersion(version.getSchemaContainer());
 						if (assignedVersion != null && Double.valueOf(assignedVersion.getVersion()) > Double.valueOf(version.getVersion())) {
 							throw error(BAD_REQUEST, "branch_error_downgrade_schema_version", version.getName(), assignedVersion.getVersion(),
 								version.getVersion());
@@ -211,9 +210,9 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 				utils.eventAction(batch -> {
 					// Transform the list of references into microschema container version vertices
 					for (MicroschemaReference reference : microschemaReferenceList.getMicroschemas()) {
-						MicroschemaContainerVersion version = microschemaDao.fromReference(ac.getProject(), reference);
+						MicroschemaVersion version = microschemaDao.fromReference(ac.getProject(), reference);
 
-						MicroschemaContainerVersion assignedVersion = branch.findLatestMicroschemaVersion(version.getSchemaContainer());
+						MicroschemaVersion assignedVersion = branch.findLatestMicroschemaVersion(version.getSchemaContainer());
 						if (assignedVersion != null && Double.valueOf(assignedVersion.getVersion()) > Double.valueOf(version.getVersion())) {
 							throw error(BAD_REQUEST, "branch_error_downgrade_microschema_version", version.getName(), assignedVersion.getVersion(),
 								version.getVersion());

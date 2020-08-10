@@ -16,7 +16,7 @@ Possible use cases are:
 * Invoking multiple search requests to find a set of specific nodes.
 * Resolve links within the content of a node.
 * Load users, roles, groups
-* Load tags, tag families, schema and microschema information
+* Load tags, tag families, schema and microschemaModel information
 
 == Live Examples
 

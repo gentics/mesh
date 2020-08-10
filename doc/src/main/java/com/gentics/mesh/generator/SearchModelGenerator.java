@@ -33,8 +33,8 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.dagger.DaggerMeshComponent;
@@ -210,7 +210,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 
 	private void writeSchemaDocumentExample() throws Exception {
 		User user = mockUser("joe1", "Joe", "Doe");
-		SchemaContainer schemaContainer = mockSchemaContainer("content", user);
+		Schema schemaContainer = mockSchemaContainer("content", user);
 
 		SchemaContainerIndexHandler searchIndexHandler = meshDagger.schemaContainerIndexHandler();
 		searchIndexHandler.store(schemaContainer, mockUpdateDocumentEntry()).blockingAwait();
@@ -219,10 +219,10 @@ public class SearchModelGenerator extends AbstractGenerator {
 
 	private void writeMicroschemaDocumentExample() throws Exception {
 		User user = mockUser("joe1", "Joe", "Doe");
-		MicroschemaContainer microschemaContainer = mockMicroschemaContainer("geolocation", user);
+		Microschema microschema = mockMicroschemaContainer("geolocation", user);
 
 		MicroschemaContainerIndexHandler searchIndexHandler = meshDagger.microschemaContainerIndexHandler();
-		searchIndexHandler.store(microschemaContainer, mockUpdateDocumentEntry()).blockingAwait();
+		searchIndexHandler.store(microschema, mockUpdateDocumentEntry()).blockingAwait();
 		writeStoreEvent("microschema.search");
 	}
 

@@ -65,15 +65,15 @@ import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
+import com.gentics.mesh.core.data.root.MicroschemaRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
-import com.gentics.mesh.core.data.root.SchemaContainerRoot;
+import com.gentics.mesh.core.data.root.SchemaRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.db.Tx;
@@ -787,7 +787,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
-	public SchemaContainerRoot schemaContainerRoot() {
+	public SchemaRoot schemaContainerRoot() {
 		return meshRoot().getSchemaContainerRoot();
 	}
 
@@ -797,7 +797,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
-	public MicroschemaContainerRoot microschemaContainerRoot() {
+	public MicroschemaRoot microschemaContainerRoot() {
 		return meshRoot().getMicroschemaContainerRoot();
 	}
 
@@ -960,7 +960,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			}
 
 			// Content
-			SchemaContainer contentSchemaContainer = schemaDao.findByName("content");
+			Schema contentSchemaContainer = schemaDao.findByName("content");
 			if (contentSchemaContainer == null) {
 				SchemaUpdateModel schema = new SchemaModelImpl();
 				schema.setName("content");
@@ -996,7 +996,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			}
 
 			// Folder
-			SchemaContainer folderSchemaContainer = schemaDao.findByName("folder");
+			Schema folderSchemaContainer = schemaDao.findByName("folder");
 			if (folderSchemaContainer == null) {
 				SchemaUpdateModel schema = new SchemaModelImpl();
 				schema.setName("folder");
@@ -1020,7 +1020,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			}
 
 			// Binary content for images and other downloads
-			SchemaContainer binarySchemaContainer = schemaDao.findByName("binary_content");
+			Schema binarySchemaContainer = schemaDao.findByName("binary_content");
 			if (binarySchemaContainer == null) {
 
 				SchemaUpdateModel schema = new SchemaModelImpl();

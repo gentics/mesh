@@ -20,10 +20,10 @@ import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.BranchRoot;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
@@ -495,8 +495,8 @@ public class BranchWrapper implements Branch, HibBranch {
 		return delegate.traversal();
 	}
 
-	public Job assignSchemaVersion(User user, SchemaContainerVersion schemaContainerVersion, EventQueueBatch batch) {
-		return delegate.assignSchemaVersion(user, schemaContainerVersion, batch);
+	public Job assignSchemaVersion(User user, SchemaVersion schemaVersion, EventQueueBatch batch) {
+		return delegate.assignSchemaVersion(user, schemaVersion, batch);
 	}
 
 	public JsonObject toJson() {
@@ -507,7 +507,7 @@ public class BranchWrapper implements Branch, HibBranch {
 		return delegate.reframe(kind);
 	}
 
-	public Branch unassignSchema(SchemaContainer schemaContainer) {
+	public Branch unassignSchema(Schema schemaContainer) {
 		return wrap(delegate.unassignSchema(schemaContainer));
 	}
 
@@ -515,12 +515,12 @@ public class BranchWrapper implements Branch, HibBranch {
 		return delegate.reframeExplicit(kind);
 	}
 
-	public boolean contains(SchemaContainer schema) {
+	public boolean contains(Schema schema) {
 		return delegate.contains(schema);
 	}
 
-	public boolean contains(SchemaContainerVersion schemaContainerVersion) {
-		return delegate.contains(schemaContainerVersion);
+	public boolean contains(SchemaVersion schemaVersion) {
+		return delegate.contains(schemaVersion);
 	}
 
 	@Override
@@ -528,27 +528,27 @@ public class BranchWrapper implements Branch, HibBranch {
 		return delegate.findTagByUuid(uuid);
 	}
 
-	public TraversalResult<? extends SchemaContainerVersion> findAllSchemaVersions() {
+	public TraversalResult<? extends SchemaVersion> findAllSchemaVersions() {
 		return delegate.findAllSchemaVersions();
 	}
 
-	public Job assignMicroschemaVersion(User user, MicroschemaContainerVersion microschemaContainerVersion, EventQueueBatch batch) {
-		return delegate.assignMicroschemaVersion(user, microschemaContainerVersion, batch);
+	public Job assignMicroschemaVersion(User user, MicroschemaVersion microschemaVersion, EventQueueBatch batch) {
+		return delegate.assignMicroschemaVersion(user, microschemaVersion, batch);
 	}
 
-	public Branch unassignMicroschema(MicroschemaContainer microschemaContainer) {
-		return delegate.unassignMicroschema(microschemaContainer);
+	public Branch unassignMicroschema(Microschema microschema) {
+		return delegate.unassignMicroschema(microschema);
 	}
 
-	public boolean contains(MicroschemaContainer microschema) {
+	public boolean contains(Microschema microschema) {
 		return delegate.contains(microschema);
 	}
 
-	public boolean contains(MicroschemaContainerVersion microschemaContainerVersion) {
-		return delegate.contains(microschemaContainerVersion);
+	public boolean contains(MicroschemaVersion microschemaVersion) {
+		return delegate.contains(microschemaVersion);
 	}
 
-	public TraversalResult<? extends MicroschemaContainerVersion> findAllMicroschemaVersions() {
+	public TraversalResult<? extends MicroschemaVersion> findAllMicroschemaVersions() {
 		return delegate.findAllMicroschemaVersions();
 	}
 
@@ -556,11 +556,11 @@ public class BranchWrapper implements Branch, HibBranch {
 		return delegate.findAllLatestMicroschemaVersionEdges();
 	}
 
-	public TraversalResult<? extends SchemaContainerVersion> findActiveSchemaVersions() {
+	public TraversalResult<? extends SchemaVersion> findActiveSchemaVersions() {
 		return delegate.findActiveSchemaVersions();
 	}
 
-	public Iterable<? extends MicroschemaContainerVersion> findActiveMicroschemaVersions() {
+	public Iterable<? extends MicroschemaVersion> findActiveMicroschemaVersions() {
 		return delegate.findActiveMicroschemaVersions();
 	}
 
@@ -580,19 +580,19 @@ public class BranchWrapper implements Branch, HibBranch {
 		return delegate.findAllMicroschemaVersionEdges();
 	}
 
-	public BranchSchemaEdge findBranchSchemaEdge(SchemaContainerVersion schemaContainerVersion) {
-		return delegate.findBranchSchemaEdge(schemaContainerVersion);
+	public BranchSchemaEdge findBranchSchemaEdge(SchemaVersion schemaVersion) {
+		return delegate.findBranchSchemaEdge(schemaVersion);
 	}
 
-	public BranchMicroschemaEdge findBranchMicroschemaEdge(MicroschemaContainerVersion microschemaContainerVersion) {
-		return delegate.findBranchMicroschemaEdge(microschemaContainerVersion);
+	public BranchMicroschemaEdge findBranchMicroschemaEdge(MicroschemaVersion microschemaVersion) {
+		return delegate.findBranchMicroschemaEdge(microschemaVersion);
 	}
 
-	public SchemaContainerVersion findLatestSchemaVersion(SchemaContainer schemaContainer) {
+	public SchemaVersion findLatestSchemaVersion(Schema schemaContainer) {
 		return delegate.findLatestSchemaVersion(schemaContainer);
 	}
 
-	public MicroschemaContainerVersion findLatestMicroschemaVersion(MicroschemaContainer schemaContainer) {
+	public MicroschemaVersion findLatestMicroschemaVersion(Microschema schemaContainer) {
 		return delegate.findLatestMicroschemaVersion(schemaContainer);
 	}
 
@@ -632,13 +632,13 @@ public class BranchWrapper implements Branch, HibBranch {
 		return delegate.onTagged(tag, assignment);
 	}
 
-	public BranchSchemaAssignEventModel onSchemaAssignEvent(SchemaContainerVersion schemaContainerVersion, Assignment assigned, JobStatus status) {
-		return delegate.onSchemaAssignEvent(schemaContainerVersion, assigned, status);
+	public BranchSchemaAssignEventModel onSchemaAssignEvent(SchemaVersion schemaVersion, Assignment assigned, JobStatus status) {
+		return delegate.onSchemaAssignEvent(schemaVersion, assigned, status);
 	}
 
-	public BranchMicroschemaAssignModel onMicroschemaAssignEvent(MicroschemaContainerVersion microschemaContainerVersion, Assignment assigned,
+	public BranchMicroschemaAssignModel onMicroschemaAssignEvent(MicroschemaVersion microschemaVersion, Assignment assigned,
 		JobStatus status) {
-		return delegate.onMicroschemaAssignEvent(microschemaContainerVersion, assigned, status);
+		return delegate.onMicroschemaAssignEvent(microschemaVersion, assigned, status);
 	}
 
 }

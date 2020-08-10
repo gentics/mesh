@@ -1,27 +1,28 @@
 package com.gentics.mesh.core.data.fieldhandler.microschema;
 
+import static com.gentics.mesh.test.TestSize.FULL;
+
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.fieldhandler.AbstractComparatorListSchemaTest;
 import com.gentics.mesh.core.data.schema.handler.AbstractFieldSchemaContainerComparator;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
-import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(testSize = FULL, startServer = false)
-public class MicroschemaComparatorListSchemaTest extends AbstractComparatorListSchemaTest<Microschema> {
+public class MicroschemaComparatorListSchemaTest extends AbstractComparatorListSchemaTest<MicroschemaModel> {
 
 	@Override
-	public AbstractFieldSchemaContainerComparator<Microschema> getComparator() {
+	public AbstractFieldSchemaContainerComparator<MicroschemaModel> getComparator() {
 		return new MicroschemaComparator();
 	}
 
 	@Override
-	public Microschema createContainer() {
-		Microschema microschema = FieldUtil.createMinimalValidMicroschema();
-		microschema.addField(FieldUtil.createStringFieldSchema("fieldA"));
-		microschema.addField(FieldUtil.createStringFieldSchema("fieldB"));
-		return microschema;
+	public MicroschemaModel createContainer() {
+		MicroschemaModel microschemaModel = FieldUtil.createMinimalValidMicroschema();
+		microschemaModel.addField(FieldUtil.createStringFieldSchema("fieldA"));
+		microschemaModel.addField(FieldUtil.createStringFieldSchema("fieldB"));
+		return microschemaModel;
 	}
 
 }

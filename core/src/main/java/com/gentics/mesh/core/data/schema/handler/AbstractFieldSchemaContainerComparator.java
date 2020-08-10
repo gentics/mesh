@@ -14,7 +14,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
-import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
@@ -232,7 +232,7 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 	private SchemaChangeModel createFieldContainerUpdateChange(Class<? extends FC> classOfFC) {
 		if (SchemaModel.class.isAssignableFrom(classOfFC)) {
 			return SchemaChangeModel.createUpdateSchemaChange();
-		} else if (Microschema.class.isAssignableFrom(classOfFC)) {
+		} else if (MicroschemaModel.class.isAssignableFrom(classOfFC)) {
 			return SchemaChangeModel.createUpdateMicroschemaChange();
 		} else {
 			throw error(INTERNAL_SERVER_ERROR, "Unknown field container type {" + classOfFC.getName() + "}");

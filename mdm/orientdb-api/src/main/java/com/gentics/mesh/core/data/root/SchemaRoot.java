@@ -2,14 +2,14 @@ package com.gentics.mesh.core.data.root;
 
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.event.EventQueueBatch;
 
 /**
  * A schema container root is an aggregation vertex which is used to aggregate schema container vertices.
  */
-public interface SchemaContainerRoot extends RootVertex<SchemaContainer> {
+public interface SchemaRoot extends RootVertex<Schema> {
 
 	public static final String TYPE = "schemas";
 
@@ -22,7 +22,7 @@ public interface SchemaContainerRoot extends RootVertex<SchemaContainer> {
 	 * @param schemaContainer
 	 * @param batch
 	 */
-	void addSchemaContainer(User user, SchemaContainer schemaContainer, EventQueueBatch batch);
+	void addSchemaContainer(User user, Schema schemaContainer, EventQueueBatch batch);
 
 	/**
 	 * Remove the schema container from the aggregation node.
@@ -30,7 +30,7 @@ public interface SchemaContainerRoot extends RootVertex<SchemaContainer> {
 	 * @param schemaContainer
 	 * @param batch
 	 */
-	void removeSchemaContainer(SchemaContainer schemaContainer, EventQueueBatch batch);
+	void removeSchemaContainer(Schema schemaContainer, EventQueueBatch batch);
 
 	/**
 	 * Check whether the given schema is assigned to this root node.
@@ -38,7 +38,7 @@ public interface SchemaContainerRoot extends RootVertex<SchemaContainer> {
 	 * @param schema
 	 * @return
 	 */
-	boolean contains(SchemaContainer schema);
+	boolean contains(Schema schema);
 
 	/**
 	 * Returns the project to which the schema container root belongs.
@@ -47,8 +47,8 @@ public interface SchemaContainerRoot extends RootVertex<SchemaContainer> {
 	 */
 	Project getProject();
 
-	SchemaContainer create();
+	Schema create();
 
-	SchemaContainerVersion createVersion();
+	SchemaVersion createVersion();
 
 }

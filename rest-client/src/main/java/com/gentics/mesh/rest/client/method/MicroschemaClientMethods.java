@@ -4,7 +4,7 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
-import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshRequest;
@@ -77,6 +77,6 @@ public interface MicroschemaClientMethods {
 	 * @param request
 	 * @return
 	 */
-	MeshRequest<SchemaChangesListModel> diffMicroschema(String uuid, Microschema request);
+	MeshRequest<SchemaChangesListModel> diffMicroschema(String uuid, MicroschemaModel request);
 
 }

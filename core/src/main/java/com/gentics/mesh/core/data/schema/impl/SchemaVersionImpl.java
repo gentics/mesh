@@ -29,9 +29,9 @@ import com.gentics.mesh.core.data.impl.BranchImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaChange;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
@@ -52,25 +52,25 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 /**
- * @see SchemaContainerVersion
+ * @see SchemaVersion
  */
-public class SchemaContainerVersionImpl extends
-	AbstractGraphFieldSchemaContainerVersion<SchemaResponse, SchemaUpdateModel, SchemaReference, SchemaContainerVersion, SchemaContainer> implements
-	SchemaContainerVersion {
+public class SchemaVersionImpl extends
+	AbstractGraphFieldSchemaContainerVersion<SchemaResponse, SchemaUpdateModel, SchemaReference, SchemaVersion, Schema> implements
+	SchemaVersion {
 
-	private static final Logger log = LoggerFactory.getLogger(SchemaContainerVersionImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(SchemaVersionImpl.class);
 
 	public static void init(TypeHandler type, IndexHandler index) {
-		type.createVertexType(SchemaContainerVersionImpl.class, MeshVertexImpl.class);
+		type.createVertexType(SchemaVersionImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override
-	protected Class<? extends SchemaContainerVersion> getContainerVersionClass() {
-		return SchemaContainerVersionImpl.class;
+	protected Class<? extends SchemaVersion> getContainerVersionClass() {
+		return SchemaVersionImpl.class;
 	}
 
 	@Override
-	protected Class<? extends SchemaContainer> getContainerClass() {
+	protected Class<? extends Schema> getContainerClass() {
 		return SchemaContainerImpl.class;
 	}
 
@@ -121,7 +121,7 @@ public class SchemaContainerVersionImpl extends
 		// Load the schema and add/overwrite some properties
 		// Use getSchema to utilise the schema storage
 		SchemaResponse restSchema = JsonUtil.readValue(getJson(), SchemaResponse.class);
-		SchemaContainer container = getSchemaContainer();
+		Schema container = getSchemaContainer();
 		container.fillCommonRestFields(ac, fields, restSchema);
 		restSchema.setRolePerms(container.getRolePermissions(ac, ac.getRolePermissionParameters().getRoleUuid()));
 		return restSchema;
