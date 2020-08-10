@@ -130,6 +130,6 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<Schema> implemen
 
 	@Override
 	public Iterable<? extends SchemaVersion> findAllVersions(Schema schema) {
-		return out(HAS_PARENT_CONTAINER).frameExplicit(SchemaContainerVersionImpl.class);
+		return schema.out(HAS_PARENT_CONTAINER).frameExplicit(SchemaContainerVersionImpl.class);
 	}
 }
