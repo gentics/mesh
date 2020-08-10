@@ -27,7 +27,7 @@ import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
-import com.gentics.mesh.core.data.schema.impl.SchemaVersionImpl;
+import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchReference;
@@ -255,7 +255,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			List<SchemaVersion> versions = project.getSchemaContainerRoot().findAll().stream().filter(v -> !v.getName().equals("content"))
 				.map(Schema::getLatestVersion).collect(Collectors.toList());
 
-			SchemaVersionImpl newVersion = tx.getGraph().addFramedVertexExplicit(SchemaVersionImpl.class);
+			SchemaContainerVersionImpl newVersion = tx.getGraph().addFramedVertexExplicit(SchemaContainerVersionImpl.class);
 			newVersion.setVersion("4.0");
 			newVersion.setName("content");
 			versions.add(newVersion);

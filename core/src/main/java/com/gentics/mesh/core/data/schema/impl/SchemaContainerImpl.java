@@ -20,7 +20,7 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.SchemaRoot;
-import com.gentics.mesh.core.data.root.impl.SchemaRootImpl;
+import com.gentics.mesh.core.data.root.impl.SchemaContainerRootImpl;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
@@ -45,7 +45,7 @@ public class SchemaContainerImpl extends
 
 	@Override
 	protected Class<? extends SchemaVersion> getContainerVersionClass() {
-		return SchemaVersionImpl.class;
+		return SchemaContainerVersionImpl.class;
 	}
 
 	public static void init(TypeHandler type, IndexHandler index) {
@@ -59,7 +59,7 @@ public class SchemaContainerImpl extends
 
 	@Override
 	public TraversalResult<? extends SchemaRoot> getRoots() {
-		return in(HAS_SCHEMA_CONTAINER_ITEM, SchemaRootImpl.class);
+		return in(HAS_SCHEMA_CONTAINER_ITEM, SchemaContainerRootImpl.class);
 	}
 
 	@Override

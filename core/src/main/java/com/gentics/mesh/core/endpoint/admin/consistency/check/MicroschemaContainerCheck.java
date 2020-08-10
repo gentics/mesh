@@ -2,7 +2,7 @@ package com.gentics.mesh.core.endpoint.admin.consistency.check;
 
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.MEDIUM;
 
-import com.gentics.mesh.core.data.container.impl.MicroschemaImpl;
+import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.consistency.AbstractConsistencyCheck;
@@ -21,7 +21,7 @@ public class MicroschemaContainerCheck extends AbstractConsistencyCheck {
 
 	@Override
 	public ConsistencyCheckResult invoke(Database db, Tx tx, boolean attemptRepair) {
-		return processForType(db, MicroschemaImpl.class, (schema, result) -> {
+		return processForType(db, MicroschemaContainerImpl.class, (schema, result) -> {
 			checkMicroschemaContainer(schema, result);
 		}, attemptRepair, tx);
 	}

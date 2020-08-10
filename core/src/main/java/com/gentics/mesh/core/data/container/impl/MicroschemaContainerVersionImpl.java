@@ -36,22 +36,22 @@ import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.syncleus.ferma.ElementFrame;
 
-public class MicroschemaVersionImpl extends
+public class MicroschemaContainerVersionImpl extends
 	AbstractGraphFieldSchemaContainerVersion<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, MicroschemaVersion, Microschema>
 	implements MicroschemaVersion {
 
 	public static void init(TypeHandler type, IndexHandler index) {
-		type.createVertexType(MicroschemaVersionImpl.class, MeshVertexImpl.class);
+		type.createVertexType(MicroschemaContainerVersionImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override
 	protected Class<? extends MicroschemaVersion> getContainerVersionClass() {
-		return MicroschemaVersionImpl.class;
+		return MicroschemaContainerVersionImpl.class;
 	}
 
 	@Override
 	protected Class<? extends Microschema> getContainerClass() {
-		return MicroschemaImpl.class;
+		return MicroschemaContainerImpl.class;
 	}
 
 	@Override

@@ -19,7 +19,7 @@ import com.gentics.mesh.core.data.root.SchemaRoot;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
-import com.gentics.mesh.core.data.schema.impl.SchemaVersionImpl;
+import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.event.EventQueueBatch;
 
 import io.vertx.core.logging.Logger;
@@ -28,12 +28,12 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * @see SchemaRoot
  */
-public class SchemaRootImpl extends AbstractRootVertex<Schema> implements SchemaRoot {
+public class SchemaContainerRootImpl extends AbstractRootVertex<Schema> implements SchemaRoot {
 
-	private static final Logger log = LoggerFactory.getLogger(SchemaRootImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(SchemaContainerRootImpl.class);
 
 	public static void init(TypeHandler type, IndexHandler index) {
-		type.createVertexType(SchemaRootImpl.class, MeshVertexImpl.class);
+		type.createVertexType(SchemaContainerRootImpl.class, MeshVertexImpl.class);
 		type.createType(edgeType(HAS_SCHEMA_ROOT));
 		type.createType(edgeType(HAS_SCHEMA_CONTAINER_ITEM));
 		index.createIndex(edgeIndex(HAS_SCHEMA_CONTAINER_ITEM).withInOut().withOut());
@@ -92,7 +92,7 @@ public class SchemaRootImpl extends AbstractRootVertex<Schema> implements Schema
 
 	@Override
 	public SchemaVersion createVersion() {
-		return getGraph().addFramedVertex(SchemaVersionImpl.class);
+		return getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 	}
 
 	/**

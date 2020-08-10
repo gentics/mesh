@@ -8,8 +8,8 @@ import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.container.impl.MicroschemaImpl;
-import com.gentics.mesh.core.data.container.impl.MicroschemaVersionImpl;
+import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
+import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.Microschema;
@@ -20,7 +20,7 @@ import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.RemoveFieldChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
-import com.gentics.mesh.core.data.schema.impl.SchemaVersionImpl;
+import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -33,9 +33,9 @@ public class SchemaChangeTest extends AbstractMeshTest{
 		try (Tx tx = tx()) {
 			Schema container = tx.getGraph().addFramedVertex(SchemaContainerImpl.class);
 
-			SchemaVersion versionA = tx.getGraph().addFramedVertex(SchemaVersionImpl.class);
-			SchemaVersion versionB = tx.getGraph().addFramedVertex(SchemaVersionImpl.class);
-			SchemaVersion versionC = tx.getGraph().addFramedVertex(SchemaVersionImpl.class);
+			SchemaVersion versionA = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaVersion versionB = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaVersion versionC = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			RemoveFieldChange change = tx.getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
 			assertNull("Initially no version should have been set", container.getLatestVersion());
@@ -65,10 +65,10 @@ public class SchemaChangeTest extends AbstractMeshTest{
 	@Test
 	public void testMicroschemaChanges() {
 		try (Tx tx = tx()) {
-			Microschema container = tx.getGraph().addFramedVertex(MicroschemaImpl.class);
+			Microschema container = tx.getGraph().addFramedVertex(MicroschemaContainerImpl.class);
 
-			MicroschemaVersion versionA = tx.getGraph().addFramedVertex(MicroschemaVersionImpl.class);
-			MicroschemaVersion versionB = tx.getGraph().addFramedVertex(MicroschemaVersionImpl.class);
+			MicroschemaVersion versionA = tx.getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
+			MicroschemaVersion versionB = tx.getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
 			container.setLatestVersion(versionB);
 			SchemaChange<?> oldChange = chainChanges(versionA, versionB);
 			validate(container, versionA, versionB, oldChange);
@@ -79,8 +79,8 @@ public class SchemaChangeTest extends AbstractMeshTest{
 	public void testChangeChain() {
 		try (Tx tx = tx()) {
 			Schema container = tx.getGraph().addFramedVertex(SchemaContainerImpl.class);
-			SchemaVersion versionA = tx.getGraph().addFramedVertex(SchemaVersionImpl.class);
-			SchemaVersion versionB = tx.getGraph().addFramedVertex(SchemaVersionImpl.class);
+			SchemaVersion versionA = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaVersion versionB = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 			container.setLatestVersion(versionA);
 			SchemaChange<?> oldChange = chainChanges(versionA, versionB);
 			validate(container, versionA, versionB, oldChange);
@@ -142,7 +142,7 @@ public class SchemaChangeTest extends AbstractMeshTest{
 				lastChange.getNextContainerVersion().getPreviousChange().getUuid());
 
 		// Link the chain root to another schema container instead.
-		SchemaVersion versionC = Tx.getActive().getGraph().addFramedVertex(SchemaVersionImpl.class);
+		SchemaVersion versionC = Tx.getActive().getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 		SchemaChange<?> firstChange = versionA.getNextChange();
 		firstChange.setPreviousContainerVersion(versionC);
 		assertNotEquals("The first change should no longer be connected to containerA", versionA.getUuid(),

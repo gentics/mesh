@@ -10,8 +10,8 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.container.impl.MicroschemaImpl;
-import com.gentics.mesh.core.data.container.impl.MicroschemaVersionImpl;
+import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
+import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
@@ -95,8 +95,8 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 
 			// Create microschema vcard 
 			FramedGraph graph = tx.getGraph();
-			Microschema schemaContainer = graph.addFramedVertex(MicroschemaImpl.class);
-			MicroschemaVersionImpl version = graph.addFramedVertex(MicroschemaVersionImpl.class);
+			Microschema schemaContainer = graph.addFramedVertex(MicroschemaContainerImpl.class);
+			MicroschemaContainerVersionImpl version = graph.addFramedVertex(MicroschemaContainerVersionImpl.class);
 			schemaContainer.setLatestVersion(version);
 			version.setSchemaContainer(schemaContainer);
 			MicroschemaVersionModel microschema = new MicroschemaModelImpl();

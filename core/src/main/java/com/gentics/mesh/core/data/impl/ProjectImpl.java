@@ -45,8 +45,8 @@ import com.gentics.mesh.core.data.root.SchemaRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.impl.BranchRootImpl;
 import com.gentics.mesh.core.data.root.impl.NodeRootImpl;
-import com.gentics.mesh.core.data.root.impl.ProjectMicroschemaRootImpl;
-import com.gentics.mesh.core.data.root.impl.ProjectSchemaRootImpl;
+import com.gentics.mesh.core.data.root.impl.ProjectMicroschemaContainerRootImpl;
+import com.gentics.mesh.core.data.root.impl.ProjectSchemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.Schema;
@@ -122,9 +122,9 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public SchemaRoot getSchemaContainerRoot() {
-		SchemaRoot root = out(HAS_SCHEMA_ROOT, ProjectSchemaRootImpl.class).nextOrNull();
+		SchemaRoot root = out(HAS_SCHEMA_ROOT, ProjectSchemaContainerRootImpl.class).nextOrNull();
 		if (root == null) {
-			root = getGraph().addFramedVertex(ProjectSchemaRootImpl.class);
+			root = getGraph().addFramedVertex(ProjectSchemaContainerRootImpl.class);
 			linkOut(root, HAS_SCHEMA_ROOT);
 		}
 		return root;
@@ -132,9 +132,9 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public MicroschemaRoot getMicroschemaContainerRoot() {
-		MicroschemaRoot root = out(HAS_MICROSCHEMA_ROOT, ProjectMicroschemaRootImpl.class).nextOrNull();
+		MicroschemaRoot root = out(HAS_MICROSCHEMA_ROOT, ProjectMicroschemaContainerRootImpl.class).nextOrNull();
 		if (root == null) {
-			root = getGraph().addFramedVertex(ProjectMicroschemaRootImpl.class);
+			root = getGraph().addFramedVertex(ProjectMicroschemaContainerRootImpl.class);
 			linkOut(root, HAS_MICROSCHEMA_ROOT);
 		}
 		return root;

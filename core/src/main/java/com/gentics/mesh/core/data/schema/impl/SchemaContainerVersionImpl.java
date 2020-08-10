@@ -54,19 +54,19 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * @see SchemaVersion
  */
-public class SchemaVersionImpl extends
+public class SchemaContainerVersionImpl extends
 	AbstractGraphFieldSchemaContainerVersion<SchemaResponse, SchemaUpdateModel, SchemaReference, SchemaVersion, Schema> implements
 	SchemaVersion {
 
-	private static final Logger log = LoggerFactory.getLogger(SchemaVersionImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(SchemaContainerVersionImpl.class);
 
 	public static void init(TypeHandler type, IndexHandler index) {
-		type.createVertexType(SchemaVersionImpl.class, MeshVertexImpl.class);
+		type.createVertexType(SchemaContainerVersionImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override
 	protected Class<? extends SchemaVersion> getContainerVersionClass() {
-		return SchemaVersionImpl.class;
+		return SchemaContainerVersionImpl.class;
 	}
 
 	@Override

@@ -15,10 +15,10 @@ import com.gentics.mesh.event.EventQueueBatch;
 /**
  * Project specific implementation of schema container root
  */
-public class ProjectSchemaRootImpl extends SchemaRootImpl {
+public class ProjectSchemaContainerRootImpl extends SchemaContainerRootImpl {
 
 	public static void init(TypeHandler type, IndexHandler index) {
-		type.createVertexType(ProjectSchemaRootImpl.class, MeshVertexImpl.class);
+		type.createVertexType(ProjectSchemaContainerRootImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

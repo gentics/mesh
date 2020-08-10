@@ -211,10 +211,10 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	public SchemaRoot getSchemaContainerRoot() {
 		if (schemaRoot == null) {
 			synchronized (MeshRootImpl.class) {
-				SchemaRoot foundSchemaRoot = out(HAS_SCHEMA_ROOT).has(SchemaRootImpl.class).nextOrDefaultExplicit(
-					SchemaRootImpl.class, null);
+				SchemaRoot foundSchemaRoot = out(HAS_SCHEMA_ROOT).has(SchemaContainerRootImpl.class).nextOrDefaultExplicit(
+					SchemaContainerRootImpl.class, null);
 				if (foundSchemaRoot == null) {
-					schemaRoot = getGraph().addFramedVertex(SchemaRootImpl.class);
+					schemaRoot = getGraph().addFramedVertex(SchemaContainerRootImpl.class);
 					linkOut(schemaRoot, HAS_SCHEMA_ROOT);
 					if (log.isDebugEnabled()) {
 						log.debug("Created schema container root {" + schemaRoot.getUuid() + "}");
@@ -289,10 +289,10 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	public MicroschemaRoot getMicroschemaContainerRoot() {
 		if (microschemaRoot == null) {
 			synchronized (MeshRootImpl.class) {
-				MicroschemaRoot foundMicroschemaRoot = out(HAS_MICROSCHEMA_ROOT).has(MicroschemaRootImpl.class)
-					.nextOrDefaultExplicit(MicroschemaRootImpl.class, null);
+				MicroschemaRoot foundMicroschemaRoot = out(HAS_MICROSCHEMA_ROOT).has(MicroschemaContainerRootImpl.class)
+					.nextOrDefaultExplicit(MicroschemaContainerRootImpl.class, null);
 				if (foundMicroschemaRoot == null) {
-					microschemaRoot = getGraph().addFramedVertex(MicroschemaRootImpl.class);
+					microschemaRoot = getGraph().addFramedVertex(MicroschemaContainerRootImpl.class);
 					linkOut(microschemaRoot, HAS_MICROSCHEMA_ROOT);
 					if (log.isDebugEnabled()) {
 						log.debug("Created microschema root {" + microschemaRoot.getUuid() + "}");

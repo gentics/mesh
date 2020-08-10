@@ -7,7 +7,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.container.impl.MicroschemaVersionImpl;
+import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.UpdateMicroschemaChange;
 import com.gentics.mesh.core.data.schema.impl.UpdateMicroschemaChangeImpl;
@@ -36,7 +36,7 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 	@Override
 	public void testApply() {
 		try (Tx tx = tx()) {
-			MicroschemaVersion version = tx.getGraph().addFramedVertex(MicroschemaVersionImpl.class);
+			MicroschemaVersion version = tx.getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
 			MicroschemaModelImpl schema = new MicroschemaModelImpl();
 
 			UpdateMicroschemaChange change = tx.getGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);

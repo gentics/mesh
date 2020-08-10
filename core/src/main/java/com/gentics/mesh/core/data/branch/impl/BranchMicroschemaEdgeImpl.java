@@ -7,7 +7,7 @@ import com.gentics.madl.annotations.GraphElement;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.data.branch.BranchMicroschemaEdge;
-import com.gentics.mesh.core.data.container.impl.MicroschemaVersionImpl;
+import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 
 /**
@@ -23,7 +23,7 @@ public class BranchMicroschemaEdgeImpl extends AbstractVersionEdge implements Br
 
 	@Override
 	public MicroschemaVersion getMicroschemaContainerVersion() {
-		return inV().nextOrDefaultExplicit(MicroschemaVersionImpl.class, null);
+		return inV().nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class, null);
 	}
 
 }

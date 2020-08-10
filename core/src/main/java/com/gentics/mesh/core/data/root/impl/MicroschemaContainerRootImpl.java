@@ -11,8 +11,8 @@ import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.container.impl.MicroschemaImpl;
-import com.gentics.mesh.core.data.container.impl.MicroschemaVersionImpl;
+import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
+import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.root.MicroschemaRoot;
 import com.gentics.mesh.core.data.schema.Microschema;
@@ -22,17 +22,17 @@ import com.gentics.mesh.event.EventQueueBatch;
 /**
  * @see MicroschemaRoot
  */
-public class MicroschemaRootImpl extends AbstractRootVertex<Microschema> implements MicroschemaRoot {
+public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema> implements MicroschemaRoot {
 
 	public static void init(TypeHandler type, IndexHandler index) {
-		type.createVertexType(MicroschemaRootImpl.class, MeshVertexImpl.class);
+		type.createVertexType(MicroschemaContainerRootImpl.class, MeshVertexImpl.class);
 		type.createType(edgeType(HAS_SCHEMA_CONTAINER_ITEM));
 		index.createIndex(edgeIndex(HAS_SCHEMA_CONTAINER_ITEM).withInOut().withOut());
 	}
 
 	@Override
 	public Class<? extends Microschema> getPersistanceClass() {
-		return MicroschemaImpl.class;
+		return MicroschemaContainerImpl.class;
 	}
 
 	@Override
@@ -66,12 +66,12 @@ public class MicroschemaRootImpl extends AbstractRootVertex<Microschema> impleme
 
 	@Override
 	public Microschema create() {
-		return getGraph().addFramedVertex(MicroschemaImpl.class);
+		return getGraph().addFramedVertex(MicroschemaContainerImpl.class);
 	}
 
 	@Override
 	public MicroschemaVersion createVersion() {
-		return getGraph().addFramedVertex(MicroschemaVersionImpl.class);
+		return getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
 	}
 
 	@Override

@@ -22,22 +22,22 @@ import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 /**
  * See {@link Microschema}
  */
-public class MicroschemaImpl extends
+public class MicroschemaContainerImpl extends
 	AbstractGraphFieldSchemaContainer<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, Microschema, MicroschemaVersion>
 	implements Microschema {
 
 	@Override
-	protected Class<MicroschemaImpl> getContainerClass() {
-		return MicroschemaImpl.class;
+	protected Class<MicroschemaContainerImpl> getContainerClass() {
+		return MicroschemaContainerImpl.class;
 	}
 
 	@Override
 	protected Class<? extends MicroschemaVersion> getContainerVersionClass() {
-		return MicroschemaVersionImpl.class;
+		return MicroschemaContainerVersionImpl.class;
 	}
 
 	public static void init(TypeHandler type, IndexHandler index) {
-		type.createVertexType(MicroschemaImpl.class, MeshVertexImpl.class);
+		type.createVertexType(MicroschemaContainerImpl.class, MeshVertexImpl.class);
 	}
 
 	@Override

@@ -38,7 +38,7 @@ import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
 import com.gentics.mesh.core.data.branch.BranchVersionEdge;
 import com.gentics.mesh.core.data.branch.impl.BranchMicroschemaEdgeImpl;
 import com.gentics.mesh.core.data.branch.impl.BranchSchemaEdgeImpl;
-import com.gentics.mesh.core.data.container.impl.MicroschemaVersionImpl;
+import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.job.Job;
@@ -52,7 +52,7 @@ import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
-import com.gentics.mesh.core.data.schema.impl.SchemaVersionImpl;
+import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
@@ -257,7 +257,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public boolean contains(Schema schemaContainer) {
-		return out(HAS_SCHEMA_VERSION, SchemaVersionImpl.class)
+		return out(HAS_SCHEMA_VERSION, SchemaContainerVersionImpl.class)
 			.stream()
 			.filter(version -> {
 				return schemaContainer.getUuid().equals(version.getSchemaContainer().getUuid());
@@ -266,7 +266,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public boolean contains(SchemaVersion schemaVersion) {
-		return out(HAS_SCHEMA_VERSION, SchemaVersionImpl.class)
+		return out(HAS_SCHEMA_VERSION, SchemaContainerVersionImpl.class)
 			.stream()
 			.filter(version -> {
 				return schemaVersion.getUuid().equals(version.getUuid());
@@ -275,7 +275,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public SchemaVersion findLatestSchemaVersion(Schema schemaContainer) {
-		return out(HAS_SCHEMA_VERSION, SchemaVersionImpl.class)
+		return out(HAS_SCHEMA_VERSION, SchemaContainerVersionImpl.class)
 			.stream()
 			.filter(version -> {
 				return schemaContainer.getUuid().equals(version.getSchemaContainer().getUuid());
@@ -288,7 +288,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public MicroschemaVersion findLatestMicroschemaVersion(Microschema schemaContainer) {
-		return out(HAS_MICROSCHEMA_VERSION, MicroschemaVersionImpl.class)
+		return out(HAS_MICROSCHEMA_VERSION, MicroschemaContainerVersionImpl.class)
 			.stream()
 			.filter(version -> {
 				return schemaContainer.getUuid().equals(version.getSchemaContainer().getUuid());
@@ -301,19 +301,19 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public TraversalResult<? extends SchemaVersion> findAllSchemaVersions() {
-		return out(HAS_SCHEMA_VERSION, SchemaVersionImpl.class);
+		return out(HAS_SCHEMA_VERSION, SchemaContainerVersionImpl.class);
 	}
 
 	@Override
 	public TraversalResult<? extends SchemaVersion> findActiveSchemaVersions() {
 		return new TraversalResult<>(
-			outE(HAS_SCHEMA_VERSION).has(BranchVersionEdge.ACTIVE_PROPERTY_KEY, true).inV().frameExplicit(SchemaVersionImpl.class));
+			outE(HAS_SCHEMA_VERSION).has(BranchVersionEdge.ACTIVE_PROPERTY_KEY, true).inV().frameExplicit(SchemaContainerVersionImpl.class));
 	}
 
 	@Override
 	public Iterable<? extends MicroschemaVersion> findActiveMicroschemaVersions() {
 		return outE(HAS_MICROSCHEMA_VERSION).has(BranchVersionEdge.ACTIVE_PROPERTY_KEY, true).inV()
-			.frameExplicit(MicroschemaVersionImpl.class);
+			.frameExplicit(MicroschemaContainerVersionImpl.class);
 	}
 
 	@Override
@@ -442,7 +442,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public boolean contains(Microschema microschema) {
-		return out(HAS_MICROSCHEMA_VERSION, MicroschemaVersionImpl.class)
+		return out(HAS_MICROSCHEMA_VERSION, MicroschemaContainerVersionImpl.class)
 			.stream()
 			.filter(version -> {
 				return microschema.getUuid().equals(version.getSchemaContainer().getUuid());
@@ -451,7 +451,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public boolean contains(MicroschemaVersion microschemaVersion) {
-		return out(HAS_MICROSCHEMA_VERSION, MicroschemaVersionImpl.class)
+		return out(HAS_MICROSCHEMA_VERSION, MicroschemaContainerVersionImpl.class)
 			.stream()
 			.filter(version -> {
 				return microschemaVersion.getUuid().equals(version.getUuid());
@@ -460,7 +460,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public TraversalResult<? extends MicroschemaVersion> findAllMicroschemaVersions() {
-		return out(HAS_MICROSCHEMA_VERSION, MicroschemaVersionImpl.class);
+		return out(HAS_MICROSCHEMA_VERSION, MicroschemaContainerVersionImpl.class);
 	}
 
 	/**

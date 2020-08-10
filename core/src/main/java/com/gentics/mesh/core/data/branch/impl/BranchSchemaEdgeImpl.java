@@ -8,7 +8,7 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
-import com.gentics.mesh.core.data.schema.impl.SchemaVersionImpl;
+import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 
 /**
  * @see BranchSchemaEdge
@@ -23,7 +23,7 @@ public class BranchSchemaEdgeImpl extends AbstractVersionEdge implements BranchS
 
 	@Override
 	public SchemaVersion getSchemaContainerVersion() {
-		return inV().nextOrDefaultExplicit(SchemaVersionImpl.class, null);
+		return inV().nextOrDefaultExplicit(SchemaContainerVersionImpl.class, null);
 	}
 
 }

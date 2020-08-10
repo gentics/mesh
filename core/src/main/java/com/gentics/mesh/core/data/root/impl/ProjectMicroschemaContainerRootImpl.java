@@ -17,10 +17,10 @@ import com.gentics.mesh.event.EventQueueBatch;
 /**
  * Project specific implementation of microschema container root.
  */
-public class ProjectMicroschemaRootImpl extends MicroschemaRootImpl {
+public class ProjectMicroschemaContainerRootImpl extends MicroschemaContainerRootImpl {
 
 	public static void init(TypeHandler type, IndexHandler index) {
-		type.createVertexType(ProjectMicroschemaRootImpl.class, MeshVertexImpl.class);
+		type.createVertexType(ProjectMicroschemaContainerRootImpl.class, MeshVertexImpl.class);
 	}
 
 	/**

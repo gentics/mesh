@@ -17,7 +17,7 @@ import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.UpdateFieldChange;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerMutator;
 import com.gentics.mesh.core.data.schema.impl.FieldTypeChangeImpl;
-import com.gentics.mesh.core.data.schema.impl.SchemaVersionImpl;
+import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
@@ -56,7 +56,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 	@Test
 	public void testNullOperation() {
 		try (Tx tx = tx()) {
-			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaVersionImpl.class);
+			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 			SchemaModelImpl schema = new SchemaModelImpl();
 			version.setSchema(schema);
 			SchemaModel updatedSchema = mutator.apply(version);
@@ -68,7 +68,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 	@Test
 	public void testUpdateTypeAndAllowProperty() {
 		try (Tx tx = tx()) {
-			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaVersionImpl.class);
+			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
 			SchemaModelImpl schema = new SchemaModelImpl("testschema");
@@ -99,7 +99,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 	@Test
 	public void testUpdateLabel() {
 		try (Tx tx = tx()) {
-			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaVersionImpl.class);
+			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
 			SchemaModelImpl schema = new SchemaModelImpl("testschema");
@@ -130,7 +130,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 	@Test
 	public void testAUpdateFields() {
 		try (Tx tx = tx()) {
-			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaVersionImpl.class);
+			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
 			SchemaModelImpl schema = new SchemaModelImpl("testschema");

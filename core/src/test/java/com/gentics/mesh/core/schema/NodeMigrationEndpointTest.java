@@ -30,8 +30,8 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
-import com.gentics.mesh.core.data.container.impl.MicroschemaImpl;
-import com.gentics.mesh.core.data.container.impl.MicroschemaVersionImpl;
+import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
+import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.dao.JobDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
@@ -44,7 +44,7 @@ import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
-import com.gentics.mesh.core.data.schema.impl.SchemaVersionImpl;
+import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -915,9 +915,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 			User user = user();
 			// create version 1 of the microschema
-			container = tx.getGraph().addFramedVertex(MicroschemaImpl.class);
+			container = tx.getGraph().addFramedVertex(MicroschemaContainerImpl.class);
 			container.setCreated(user());
-			versionA = tx.getGraph().addFramedVertex(MicroschemaVersionImpl.class);
+			versionA = tx.getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
 			container.setLatestVersion(versionA);
 			versionA.setSchemaContainer(container);
 
@@ -932,7 +932,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			boot().microschemaContainerRoot().addMicroschema(user, container, batch);
 
 			// create version 2 of the microschema (with the field renamed)
-			versionB = tx.getGraph().addFramedVertex(MicroschemaVersionImpl.class);
+			versionB = tx.getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
 			versionB.setSchemaContainer(container);
 			MicroschemaModelImpl microschemaB = new MicroschemaModelImpl();
 			microschemaB.setName("migratedSchema");
@@ -1017,9 +1017,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			// create version 1 of the microschema
-			container = tx.getGraph().addFramedVertex(MicroschemaImpl.class);
+			container = tx.getGraph().addFramedVertex(MicroschemaContainerImpl.class);
 			container.setCreated(user());
-			versionA = tx.getGraph().addFramedVertex(MicroschemaVersionImpl.class);
+			versionA = tx.getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
 			container.setLatestVersion(versionA);
 			versionA.setSchemaContainer(container);
 
@@ -1033,7 +1033,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			boot().microschemaContainerRoot().addMicroschema(user(), container, createBatch());
 
 			// create version 2 of the microschema (with the field renamed)
-			versionB = tx.getGraph().addFramedVertex(MicroschemaVersionImpl.class);
+			versionB = tx.getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
 			versionB.setSchemaContainer(container);
 			MicroschemaModelImpl microschemaB = new MicroschemaModelImpl();
 			microschemaB.setName("migratedSchema");
@@ -1139,9 +1139,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			// create version 1 of the microschema
-			container = tx.getGraph().addFramedVertex(MicroschemaImpl.class);
+			container = tx.getGraph().addFramedVertex(MicroschemaContainerImpl.class);
 			container.setCreated(user());
-			versionA = tx.getGraph().addFramedVertex(MicroschemaVersionImpl.class);
+			versionA = tx.getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
 			container.setLatestVersion(versionA);
 			versionA.setSchemaContainer(container);
 
@@ -1155,7 +1155,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			boot().microschemaContainerRoot().addMicroschema(user(), container, createBatch());
 
 			// create version 2 of the microschema (with the field renamed)
-			versionB = tx.getGraph().addFramedVertex(MicroschemaVersionImpl.class);
+			versionB = tx.getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
 			versionB.setSchemaContainer(container);
 			MicroschemaModelImpl microschemaB = new MicroschemaModelImpl();
 			microschemaB.setName("migratedSchema");
@@ -1241,7 +1241,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		boot().schemaContainerRoot().addSchemaContainer(user(), container, batch);
 
 		// create version 1 of the schema
-		SchemaVersion versionA = Tx.get().getGraph().addFramedVertex(SchemaVersionImpl.class);
+		SchemaVersion versionA = Tx.get().getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 		SchemaUpdateModel schemaA = new SchemaModelImpl();
 		schemaA.setName("migratedSchema");
 		schemaA.setVersion("1.0");
@@ -1257,7 +1257,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		versionA.setSchemaContainer(container);
 
 		// create version 2 of the schema (with the field renamed)
-		SchemaVersion versionB = Tx.get().getGraph().addFramedVertex(SchemaVersionImpl.class);
+		SchemaVersion versionB = Tx.get().getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 		SchemaUpdateModel schemaB = new SchemaModelImpl();
 		schemaB.setName("migratedSchema");
 		schemaB.setVersion("2.0");

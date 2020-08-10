@@ -8,11 +8,11 @@ import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.root.impl.SchemaRootImpl;
+import com.gentics.mesh.core.data.root.impl.SchemaContainerRootImpl;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
-import com.gentics.mesh.core.data.schema.impl.SchemaVersionImpl;
+import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.consistency.AbstractConsistencyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
@@ -34,7 +34,7 @@ public class SchemaContainerCheck extends AbstractConsistencyCheck {
 			checkSchemaContainer(schema, result);
 		}, attemptRepair, tx);
 
-		ConsistencyCheckResult b = processForType(db, SchemaVersionImpl.class, (version, result) -> {
+		ConsistencyCheckResult b = processForType(db, SchemaContainerVersionImpl.class, (version, result) -> {
 			checkSchemaContainerVersion(version, result);
 		}, attemptRepair, tx);
 
@@ -44,8 +44,8 @@ public class SchemaContainerCheck extends AbstractConsistencyCheck {
 	private void checkSchemaContainer(Schema schemaContainer, ConsistencyCheckResult result) {
 		String uuid = schemaContainer.getUuid();
 
-		checkIn(schemaContainer, HAS_SCHEMA_CONTAINER_ITEM, SchemaRootImpl.class, result, HIGH);
-		checkOut(schemaContainer, HAS_LATEST_VERSION, SchemaVersionImpl.class, result, HIGH);
+		checkIn(schemaContainer, HAS_SCHEMA_CONTAINER_ITEM, SchemaContainerRootImpl.class, result, HIGH);
+		checkOut(schemaContainer, HAS_LATEST_VERSION, SchemaContainerVersionImpl.class, result, HIGH);
 
 		// checkOut(schemaContainer, HAS_CREATOR, UserImpl.class, response, MEDIUM);
 		// checkOut(schemaContainer, HAS_EDITOR, UserImpl.class, response, MEDIUM);
