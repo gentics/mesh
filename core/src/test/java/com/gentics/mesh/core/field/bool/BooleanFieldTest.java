@@ -27,7 +27,7 @@ import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.TestSize;
@@ -54,7 +54,7 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 
 		try (Tx tx = tx()) {
 			// Update the schema and add a boolean field
-			SchemaUpdateModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
+			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 			BooleanFieldSchemaImpl booleanFieldSchema = new BooleanFieldSchemaImpl();
 			booleanFieldSchema.setName(BOOLEAN_FIELD);
 			booleanFieldSchema.setLabel("Some boolean field");

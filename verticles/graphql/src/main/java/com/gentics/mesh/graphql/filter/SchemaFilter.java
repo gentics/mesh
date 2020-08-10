@@ -11,7 +11,7 @@ import com.gentics.graphqlfilter.filter.MainFilter;
 import com.gentics.graphqlfilter.filter.MappedFilter;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.schema.Schema;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.json.JsonUtil;
@@ -59,7 +59,7 @@ public class SchemaFilter extends MainFilter<Schema> {
 		return filters;
 	}
 
-	private SchemaUpdateModel getLatestVersion(Schema schema) {
+	private SchemaVersionModel getLatestVersion(Schema schema) {
 		return JsonUtil.readValue(schema.getLatestVersion().getJson(), SchemaModelImpl.class);
 	}
 }

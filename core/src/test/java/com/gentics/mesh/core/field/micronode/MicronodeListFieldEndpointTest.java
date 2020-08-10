@@ -52,7 +52,7 @@ import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
@@ -69,7 +69,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	@Before
 	public void updateSchema() throws IOException {
 		try (Tx tx = tx()) {
-			SchemaUpdateModel schema = schemaContainer("folder").getLatestVersion().getSchema();
+			SchemaVersionModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 			ListFieldSchema listFieldSchema = new ListFieldSchemaImpl();
 			listFieldSchema.setName(FIELD_NAME);
 			listFieldSchema.setLabel("Some label");

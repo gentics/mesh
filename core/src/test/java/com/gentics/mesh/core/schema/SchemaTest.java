@@ -27,7 +27,7 @@ import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.error.MeshSchemaException;
@@ -80,7 +80,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 
 			long nSchemasBefore = schemaDao.computeCount();
-			SchemaUpdateModel schema = FieldUtil.createMinimalValidSchema();
+			SchemaVersionModel schema = FieldUtil.createMinimalValidSchema();
 			assertNotNull(schemaDao.create(schema, user()));
 			long nSchemasAfter = schemaDao.computeCount();
 			assertEquals(nSchemasBefore + 1, nSchemasAfter);
@@ -137,9 +137,10 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Override
 	public void testDelete() throws Exception {
 		try (Tx tx = tx()) {
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 			BulkActionContext context = createBulkContext();
 			String uuid = getSchemaContainer().getUuid();
-			for (Node node : getSchemaContainer().getNodes()) {
+			for (Node node : schemaDao.getNodes(getSchemaContainer())) {
 				node.delete(context);
 			}
 			getSchemaContainer().delete(context);
@@ -152,7 +153,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 	public void testTransformation() throws IOException {
 		try (Tx tx = tx()) {
 			Schema container = getSchemaContainer();
-			SchemaUpdateModel schema = container.getLatestVersion().getSchema();
+			SchemaVersionModel schema = container.getLatestVersion().getSchema();
 			assertNotNull(schema);
 			String json = schema.toJson();
 			assertNotNull(json);
@@ -167,7 +168,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 		try (Tx tx = tx()) {
 			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 
-			SchemaUpdateModel schema = FieldUtil.createMinimalValidSchema();
+			SchemaVersionModel schema = FieldUtil.createMinimalValidSchema();
 			Schema newContainer = schemaDao.create(schema, user());
 			assertNotNull(newContainer);
 			String uuid = newContainer.getUuid();
@@ -184,7 +185,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 			UserDaoWrapper userDao = tx.data().userDao();
 			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 
-			SchemaUpdateModel schema = FieldUtil.createMinimalValidSchema();
+			SchemaVersionModel schema = FieldUtil.createMinimalValidSchema();
 			Schema newContainer = schemaDao.create(schema, user());
 			assertFalse(roleDao.hasPermission(role(), GraphPermission.CREATE_PERM, newContainer));
 			userDao.inheritRolePermissions(getRequestUser(), meshRoot().getSchemaContainerRoot(), newContainer);
@@ -218,7 +219,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 		try (Tx tx = tx()) {
 			Schema schemaContainer = meshRoot().getSchemaContainerRoot().findByName("content");
 			SchemaVersion currentVersion = schemaContainer.getLatestVersion();
-			SchemaUpdateModel schema = currentVersion.getSchema();
+			SchemaVersionModel schema = currentVersion.getSchema();
 			schema.setName("changed");
 			currentVersion.setSchema(schema);
 			assertEquals("changed", currentVersion.getSchema().getName());
@@ -248,7 +249,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 	public void testReadPermission() throws MeshSchemaException {
 		try (Tx tx = tx()) {
 			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
-			SchemaUpdateModel schema = FieldUtil.createMinimalValidSchema();
+			SchemaVersionModel schema = FieldUtil.createMinimalValidSchema();
 			Schema newContainer = schemaDao.create(schema, user());
 			testPermission(GraphPermission.READ_PERM, newContainer);
 		}
@@ -259,7 +260,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 	public void testDeletePermission() throws MeshSchemaException {
 		try (Tx tx = tx()) {
 			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
-			SchemaUpdateModel schema = FieldUtil.createMinimalValidSchema();
+			SchemaVersionModel schema = FieldUtil.createMinimalValidSchema();
 			Schema newContainer = schemaDao.create(schema, user());
 			testPermission(GraphPermission.DELETE_PERM, newContainer);
 		}
@@ -270,7 +271,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 	public void testUpdatePermission() throws MeshSchemaException {
 		try (Tx tx = tx()) {
 			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
-			SchemaUpdateModel schema = FieldUtil.createMinimalValidSchema();
+			SchemaVersionModel schema = FieldUtil.createMinimalValidSchema();
 			Schema newContainer = schemaDao.create(schema, user());
 			testPermission(GraphPermission.UPDATE_PERM, newContainer);
 		}
@@ -281,7 +282,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 	public void testCreatePermission() throws MeshSchemaException {
 		try (Tx tx = tx()) {
 			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
-			SchemaUpdateModel schema = FieldUtil.createMinimalValidSchema();
+			SchemaVersionModel schema = FieldUtil.createMinimalValidSchema();
 			Schema newContainer = schemaDao.create(schema, user());
 			testPermission(GraphPermission.CREATE_PERM, newContainer);
 		}

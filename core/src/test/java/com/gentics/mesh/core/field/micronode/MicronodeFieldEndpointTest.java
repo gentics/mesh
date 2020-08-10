@@ -44,7 +44,7 @@ import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
@@ -66,7 +66,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Before
 	public void updateSchema() throws IOException {
 		try (Tx tx = tx()) {
-			SchemaUpdateModel schema = schemaContainer("folder").getLatestVersion().getSchema();
+			SchemaVersionModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 			MicronodeFieldSchema microschemaFieldSchema = new MicronodeFieldSchemaImpl();
 			microschemaFieldSchema.setName(FIELD_NAME);
 			microschemaFieldSchema.setLabel("Some label");
@@ -420,7 +420,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			microschemaContainers().put("noderef", microschemaDao.create(nodeMicroschema, getRequestUser(), createBatch()));
 
 			// 2. Update the folder schema and add a micronode field
-			SchemaUpdateModel schema = schemaContainer("folder").getLatestVersion().getSchema();
+			SchemaVersionModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 			MicronodeFieldSchema microschemaFieldSchema = new MicronodeFieldSchemaImpl();
 			microschemaFieldSchema.setName("noderef");
 			microschemaFieldSchema.setLabel("Micronode field");
@@ -481,7 +481,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			microschemaContainers().put("full", microschemaDao.create(fullMicroschema, getRequestUser(), createBatch()));
 
 			// 3. Update the folder schema and inject a micronode field which uses the full schema
-			SchemaUpdateModel schema = schemaContainer("folder").getLatestVersion().getSchema();
+			SchemaVersionModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 			MicronodeFieldSchema microschemaFieldSchema = new MicronodeFieldSchemaImpl();
 			microschemaFieldSchema.setName("full");
 			microschemaFieldSchema.setLabel("Micronode field");

@@ -44,7 +44,7 @@ import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.Transactional;
@@ -156,7 +156,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 	public Transactional<Map<String, IndexInfo>> getIndices(Project project, Branch branch, SchemaVersion containerVersion) {
 		return db.transactional(tx -> {
 			Map<String, IndexInfo> indexInfos = new HashMap<>();
-			SchemaUpdateModel schema = containerVersion.getSchema();
+			SchemaVersionModel schema = containerVersion.getSchema();
 
 			// Add all language specific indices (might be none)
 			schema.findOverriddenSearchLanguages().forEach(language -> Stream.of(DRAFT, PUBLISHED).forEach(version -> {

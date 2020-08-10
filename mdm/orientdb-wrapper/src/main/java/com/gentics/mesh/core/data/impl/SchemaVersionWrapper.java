@@ -28,7 +28,7 @@ import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModelImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -276,7 +276,7 @@ public class SchemaVersionWrapper implements SchemaVersion, HibSchemaVersion {
 		return delegate.addFramedEdgeExplicit(label, inVertex, initializer);
 	}
 
-	public SchemaUpdateModel getSchema() {
+	public SchemaVersionModel getSchema() {
 		return delegate.getSchema();
 	}
 
@@ -292,7 +292,7 @@ public class SchemaVersionWrapper implements SchemaVersion, HibSchemaVersion {
 		delegate.setProperty(name, value);
 	}
 
-	public void setSchema(SchemaUpdateModel schema) {
+	public void setSchema(SchemaVersionModel schema) {
 		delegate.setSchema(schema);
 	}
 

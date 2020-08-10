@@ -27,7 +27,7 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
@@ -160,7 +160,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 	private Node createMicronodeNode() {
 
 		// 1. Update folder schema
-		SchemaUpdateModel schema = schemaContainer("folder").getLatestVersion().getSchema();
+		SchemaVersionModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 		MicronodeFieldSchema microschemaFieldSchema = new MicronodeFieldSchemaImpl();
 		microschemaFieldSchema.setName("micronodeField");
 		microschemaFieldSchema.setLabel("Some label");

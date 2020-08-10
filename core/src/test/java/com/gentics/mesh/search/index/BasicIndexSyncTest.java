@@ -27,7 +27,7 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
@@ -289,7 +289,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		tx(tx -> {
 			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 			for (int i = 0; i < 400; i++) {
-				SchemaUpdateModel model = new SchemaModelImpl();
+				SchemaVersionModel model = new SchemaModelImpl();
 				model.setName("schema_" + i);
 				schemaDao.create(model, user());
 			}

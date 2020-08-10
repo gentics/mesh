@@ -68,7 +68,7 @@ import com.gentics.mesh.core.rest.node.NodeUpsertRequest;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
@@ -1369,7 +1369,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		Node node = folder("news");
 		try (Tx tx = tx()) {
 			// Update the schema
-			SchemaUpdateModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
+			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 			schema.setSegmentField(null);
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
 			mesh().serverSchemaStorage().clear();

@@ -41,7 +41,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.client.NodeParametersImpl;
@@ -170,7 +170,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			Node node = folder("news");
 
 			// Add a schema called nonBinary
-			SchemaUpdateModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
+			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(new StringFieldSchemaImpl().setName("nonBinary").setLabel("No Binary content"));
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
@@ -190,7 +190,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			Node node = folder("news");
 
 			// Add a schema called nonBinary
-			SchemaUpdateModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
+			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 			for (String fieldName : fields) {
 				schema.addField(FieldUtil.createBinaryFieldSchema(fieldName));
 			}
@@ -236,7 +236,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		// Prepare schema
 		try (Tx tx = tx()) {
 			Node node = folder("news");
-			SchemaUpdateModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
+			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(FieldUtil.createBinaryFieldSchema("image"));
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
 		}
@@ -271,7 +271,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			Node node = folder("news");
 
 			// Add a schema called nonBinary
-			SchemaUpdateModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
+			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(FieldUtil.createBinaryFieldSchema("image"));
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
@@ -295,7 +295,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 
 		// Add a schema called nonBinary
 		try (Tx tx = tx()) {
-			SchemaUpdateModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
+			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(FieldUtil.createBinaryFieldSchema("image"));
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
 			tx.success();
@@ -687,7 +687,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			prepareSchema(folder2014, "", "binary");
 
 			// make binary field the segment field
-			SchemaUpdateModel schema = folder2014.getSchemaContainer().getLatestVersion().getSchema();
+			SchemaVersionModel schema = folder2014.getSchemaContainer().getLatestVersion().getSchema();
 			schema.setSegmentField("binary");
 			folder2014.getSchemaContainer().getLatestVersion().setSchema(schema);
 			tx.success();

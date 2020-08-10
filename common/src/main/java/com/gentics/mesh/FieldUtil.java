@@ -34,7 +34,7 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
@@ -67,8 +67,8 @@ public final class FieldUtil {
 		return request;
 	}
 
-	public static SchemaUpdateModel createMinimalValidSchema() {
-		SchemaUpdateModel request = new SchemaModelImpl();
+	public static SchemaVersionModel createMinimalValidSchema() {
+		SchemaVersionModel request = new SchemaModelImpl();
 		request.setName("test");
 		request.validate();
 		return request;

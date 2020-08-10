@@ -19,7 +19,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -32,7 +32,7 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Before
 	public void updateSchema() throws IOException {
 		try (Tx tx = tx()) {
-			SchemaUpdateModel schema = schemaContainer("folder").getLatestVersion().getSchema();
+			SchemaVersionModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 			HtmlFieldSchema htmlFieldSchema = new HtmlFieldSchemaImpl();
 			htmlFieldSchema.setName(FIELD_NAME);
 			htmlFieldSchema.setLabel("Some label");

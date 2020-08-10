@@ -20,7 +20,7 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.SchemaStorage;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 
 import dagger.Lazy;
 import io.vertx.core.logging.Logger;
@@ -40,7 +40,7 @@ public class ServerSchemaStorage implements SchemaStorage {
 	/**
 	 * Map holding the schemas per name and version
 	 */
-	private Map<String, Map<String, SchemaUpdateModel>> schemas = Collections.synchronizedMap(new HashMap<>());
+	private Map<String, Map<String, SchemaVersionModel>> schemas = Collections.synchronizedMap(new HashMap<>());
 
 	private Map<String, Map<String, MicroschemaVersionModel>> microschemas = Collections.synchronizedMap(new HashMap<>());
 
@@ -56,7 +56,7 @@ public class ServerSchemaStorage implements SchemaStorage {
 
 		for (Schema container : schemaDao.findAll()) {
 			for (SchemaVersion version : container.findAll()) {
-				SchemaUpdateModel restSchema = version.getSchema();
+				SchemaVersionModel restSchema = version.getSchema();
 				schemas.computeIfAbsent(restSchema.getName(), k -> new HashMap<>()).put(restSchema.getVersion(), restSchema);
 			}
 		}
@@ -82,12 +82,12 @@ public class ServerSchemaStorage implements SchemaStorage {
 	}
 
 	@Override
-	public SchemaUpdateModel getSchema(String name) {
-		Map<String, SchemaUpdateModel> schemaMap = schemas.get(name);
+	public SchemaVersionModel getSchema(String name) {
+		Map<String, SchemaVersionModel> schemaMap = schemas.get(name);
 		if (schemaMap == null) {
 			return null;
 		}
-		Optional<Entry<String, SchemaUpdateModel>> maxVersion = schemaMap.entrySet().stream().max((entry1, entry2) -> {
+		Optional<Entry<String, SchemaVersionModel>> maxVersion = schemaMap.entrySet().stream().max((entry1, entry2) -> {
 			Double v1 = Double.valueOf(entry1.getKey());
 			Double v2 = Double.valueOf(entry2.getKey());
 			return Double.compare(v1, v2);
@@ -100,8 +100,8 @@ public class ServerSchemaStorage implements SchemaStorage {
 	}
 
 	@Override
-	public SchemaUpdateModel getSchema(String name, String version) {
-		Map<String, SchemaUpdateModel> schemaMap = schemas.get(name);
+	public SchemaVersionModel getSchema(String name, String version) {
+		Map<String, SchemaVersionModel> schemaMap = schemas.get(name);
 		if (schemaMap == null) {
 			return null;
 		} else {
@@ -116,15 +116,15 @@ public class ServerSchemaStorage implements SchemaStorage {
 
 	@Override
 	public void removeSchema(String name, String version) {
-		Map<String, SchemaUpdateModel> schemaMap = schemas.get(name);
+		Map<String, SchemaVersionModel> schemaMap = schemas.get(name);
 		if (schemaMap != null) {
 			schemaMap.remove(version);
 		}
 	}
 
 	@Override
-	public void addSchema(SchemaUpdateModel schema) {
-		Map<String, SchemaUpdateModel> schemaMap = schemas.computeIfAbsent(schema.getName(), k -> new HashMap<>());
+	public void addSchema(SchemaVersionModel schema) {
+		Map<String, SchemaVersionModel> schemaMap = schemas.computeIfAbsent(schema.getName(), k -> new HashMap<>());
 		if (schemaMap.containsKey(schema.getVersion())) {
 			log.error("Schema " + schema.getName() + ", version " + schema.getVersion() + " is already stored.");
 			return;
@@ -192,8 +192,8 @@ public class ServerSchemaStorage implements SchemaStorage {
 	 *            Schema or microschema container which is used to identify the elements which should be removed from the storage
 	 */
 	public void remove(FieldSchemaContainer container) {
-		if (container instanceof SchemaUpdateModel) {
-			SchemaUpdateModel schemaModel = (SchemaUpdateModel) container;
+		if (container instanceof SchemaVersionModel) {
+			SchemaVersionModel schemaModel = (SchemaVersionModel) container;
 			removeSchema(schemaModel.getName(), schemaModel.getVersion());
 		} else if (container instanceof MicroschemaVersionModel) {
 			MicroschemaVersionModel schemaModel = (MicroschemaVersionModel) container;

@@ -20,7 +20,7 @@ import com.gentics.mesh.core.data.node.field.HtmlGraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 
 /**
@@ -42,13 +42,13 @@ public class FieldFilter extends MainFilter<GraphFieldContainer> {
 	 * @param container
 	 *            The schema model to create the filter for
 	 */
-	public static FieldFilter filter(GraphQLContext context, SchemaUpdateModel container) {
+	public static FieldFilter filter(GraphQLContext context, SchemaVersionModel container) {
 		return context.getOrStore(NAME_PREFIX + container.getName(), () -> new FieldFilter(container));
 	}
 
-	private final SchemaUpdateModel schema;
+	private final SchemaVersionModel schema;
 
-	private FieldFilter(SchemaUpdateModel container) {
+	private FieldFilter(SchemaVersionModel container) {
 		super(container.getName() + "FieldFilter", "Filters by fields");
 		this.schema = container;
 	}

@@ -28,7 +28,7 @@ import com.gentics.mesh.core.migration.AbstractMigrationHandler;
 import com.gentics.mesh.core.migration.NodeMigration;
 import com.gentics.mesh.core.rest.event.node.SchemaMigrationCause;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -72,7 +72,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 
 			// Prepare the migration - Collect the migration scripts
 			Set<String> touchedFields = new HashSet<>();
-			SchemaUpdateModel newSchema = db.tx(() -> toVersion.getSchema());
+			SchemaVersionModel newSchema = db.tx(() -> toVersion.getSchema());
 
 			try {
 				db.tx(() -> {
@@ -147,7 +147,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 	 * @return
 	 */
 	private void migrateContainer(NodeMigrationActionContext ac, EventQueueBatch batch, NodeGraphFieldContainer container,
-		GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion, SchemaUpdateModel newSchema, List<Exception> errorsDetected,
+		GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion, SchemaVersionModel newSchema, List<Exception> errorsDetected,
 		Set<String> touchedFields) {
 
 		String containerUuid = container.getUuid();
@@ -214,7 +214,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 	private void migrateDraftContainer(NodeMigrationActionContext ac, EventQueueBatch sqb, Branch branch, Node node,
 		NodeGraphFieldContainer container, GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion, SchemaVersion toVersion,
 		Set<String> touchedFields,
-		SchemaUpdateModel newSchema, VersionNumber nextDraftVersion)
+		SchemaVersionModel newSchema, VersionNumber nextDraftVersion)
 		throws Exception {
 
 		String branchUuid = branch.getUuid();
@@ -273,7 +273,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 	 */
 	private VersionNumber migratePublishedContainer(NodeMigrationActionContext ac, EventQueueBatch sqb, Branch branch, Node node,
 		NodeGraphFieldContainer container, GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion, SchemaVersion toVersion,
-		Set<String> touchedFields, SchemaUpdateModel newSchema) throws Exception {
+		Set<String> touchedFields, SchemaVersionModel newSchema) throws Exception {
 
 		String languageTag = container.getLanguageTag();
 		String branchUuid = branch.getUuid();

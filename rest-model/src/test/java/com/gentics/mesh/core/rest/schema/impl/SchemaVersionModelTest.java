@@ -4,18 +4,18 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.json.JsonUtil;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-public class SchemaUpdateModelTest {
+public class SchemaVersionModelTest {
 
 	@Test
 	public void testIndexConfig() {
-		SchemaUpdateModel model = new SchemaModelImpl();
+		SchemaVersionModel model = new SchemaModelImpl();
 		model.setElasticsearch(new JsonObject().put("key", "value").put("array", new JsonArray().add("A").add("B")));
 		StringFieldSchema stringField = new StringFieldSchemaImpl();
 		stringField.setName("someName");
@@ -26,7 +26,7 @@ public class SchemaUpdateModelTest {
 		String json = model.toJson();
 		System.out.println(json);
 
-		SchemaUpdateModel readModel = JsonUtil.readValue(json, SchemaModelImpl.class);
+		SchemaVersionModel readModel = JsonUtil.readValue(json, SchemaModelImpl.class);
 		assertEquals("value", readModel.getElasticsearch().getString("key"));
 
 	}

@@ -27,7 +27,7 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceInfo;
 import com.gentics.mesh.core.rest.schema.SchemaStorage;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
@@ -129,8 +129,8 @@ public class RestModelTest extends AbstractMeshTest {
 	@Test
 	public void testNodeList() throws Exception {
 		try (Tx tx = tx()) {
-			SchemaUpdateModel folderSchema = schemaContainer("folder").getLatestVersion().getSchema();
-			SchemaUpdateModel contentSchema = schemaContainer("content").getLatestVersion().getSchema();
+			SchemaVersionModel folderSchema = schemaContainer("folder").getLatestVersion().getSchema();
+			SchemaVersionModel contentSchema = schemaContainer("content").getLatestVersion().getSchema();
 
 			NodeResponse folder = new NodeResponse();
 			FieldMap folderFields = new FieldMapImpl();

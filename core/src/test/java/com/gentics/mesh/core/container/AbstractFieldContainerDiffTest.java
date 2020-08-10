@@ -15,7 +15,7 @@ import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.syncleus.ferma.FramedGraph;
@@ -29,7 +29,7 @@ public class AbstractFieldContainerDiffTest extends AbstractMeshTest {
 		SchemaContainerVersionImpl version = graph.addFramedVertex(SchemaContainerVersionImpl.class);
 		version.setSchemaContainer(schemaContainer);
 
-		SchemaUpdateModel schema = createSchema(field);
+		SchemaVersionModel schema = createSchema(field);
 		version.setSchema(schema);
 
 		NodeGraphFieldContainerImpl container = graph.addFramedVertex(NodeGraphFieldContainerImpl.class);
@@ -37,8 +37,8 @@ public class AbstractFieldContainerDiffTest extends AbstractMeshTest {
 		return container;
 	}
 
-	protected SchemaUpdateModel createSchema(FieldSchema field) {
-		SchemaUpdateModel schema = new SchemaModelImpl();
+	protected SchemaVersionModel createSchema(FieldSchema field) {
+		SchemaVersionModel schema = new SchemaModelImpl();
 		schema.setName("dummySchema");
 		if (field != null) {
 			schema.addField(field);

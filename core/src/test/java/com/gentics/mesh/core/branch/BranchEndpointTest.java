@@ -75,7 +75,7 @@ import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
@@ -1218,7 +1218,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Test
 	public void testAssignUnassignedMicroschemaVersion() throws Exception {
 		try (Tx tx = tx()) {
-			SchemaUpdateModel schema = createSchema("microschemaname");
+			SchemaVersionModel schema = createSchema("microschemaname");
 
 			call(() -> client().assignBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid(), new MicroschemaReferenceImpl().setName(schema
 				.getName()).setVersion(schema.getVersion())), BAD_REQUEST, "error_microschema_reference_not_found", schema.getName(), "-", schema

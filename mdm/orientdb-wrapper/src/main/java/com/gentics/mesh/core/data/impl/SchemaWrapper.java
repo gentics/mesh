@@ -12,10 +12,8 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.HibSchema;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.root.SchemaRoot;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
@@ -281,10 +279,6 @@ public class SchemaWrapper implements Schema, HibSchema {
 		return delegate.inE(label, clazz);
 	}
 
-	public TraversalResult<? extends Node> getNodes() {
-		return delegate.getNodes();
-	}
-
 	public <T extends RawTraversalResult<?>> T traverse(Function<GraphTraversal<Vertex, Vertex>, GraphTraversal<?, ?>> traverser) {
 		return delegate.traverse(traverser);
 	}
@@ -307,10 +301,6 @@ public class SchemaWrapper implements Schema, HibSchema {
 
 	public Vertx vertx() {
 		return delegate.vertx();
-	}
-
-	public TraversalResult<? extends SchemaRoot> getRoots() {
-		return delegate.getRoots();
 	}
 
 	public boolean hasPublishPermissions() {

@@ -34,7 +34,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
@@ -69,7 +69,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	private void setSchema(boolean isRequired) {
 		try (Tx tx = tx()) {
-			SchemaUpdateModel schema = schemaContainer("folder").getLatestVersion().getSchema();
+			SchemaVersionModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 
 			// add non restricted string field
 			BinaryFieldSchema binaryFieldSchema = new BinaryFieldSchemaImpl();

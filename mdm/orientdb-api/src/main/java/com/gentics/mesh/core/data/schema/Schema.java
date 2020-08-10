@@ -8,11 +8,8 @@ import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_UPDATED;
 import java.util.Objects;
 
 import com.gentics.mesh.core.TypeInfo;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.root.SchemaRoot;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 
 /**
  * A schema container is a graph element which stores the JSON schema data.
@@ -45,19 +42,5 @@ public interface Schema extends GraphFieldSchemaContainer<SchemaResponse, Schema
 	default TypeInfo getTypeInfo() {
 		return TYPE_INFO;
 	}
-
-	/**
-	 * Returns an iterable of nodes which are referencing the schema container.
-	 * 
-	 * @return
-	 */
-	TraversalResult<? extends Node> getNodes();
-
-	/**
-	 * Return a list of all schema container roots to which the schema container was added.
-	 * 
-	 * @return
-	 */
-	TraversalResult<? extends SchemaRoot> getRoots();
 
 }

@@ -15,7 +15,7 @@ import com.gentics.mesh.core.data.schema.impl.RemoveFieldChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -41,7 +41,7 @@ public class RemoveFieldChangeTest extends AbstractChangeTest {
 			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema with field
-			SchemaUpdateModel schema = new SchemaModelImpl();
+			SchemaVersionModel schema = new SchemaModelImpl();
 			schema.addField(FieldUtil.createStringFieldSchema("test"));
 
 			// 2. Create remove field change

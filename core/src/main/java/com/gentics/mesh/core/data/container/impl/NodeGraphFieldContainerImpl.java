@@ -81,7 +81,7 @@ import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
@@ -228,7 +228,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public Set<String> getUrlFieldValues() {
-		SchemaUpdateModel schema = getSchemaContainerVersion().getSchema();
+		SchemaVersionModel schema = getSchemaContainerVersion().getSchema();
 
 		Set<String> urlFieldValues = new HashSet<>();
 		if (schema.getUrlFields() != null) {

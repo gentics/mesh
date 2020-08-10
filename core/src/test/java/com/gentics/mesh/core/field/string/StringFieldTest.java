@@ -24,7 +24,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
@@ -52,7 +52,7 @@ public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 
 		try (Tx tx = tx()) {
 			// Add a new string field to the schema
-			SchemaUpdateModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
+			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 			StringFieldSchemaImpl stringFieldSchema = new StringFieldSchemaImpl();
 			stringFieldSchema.setName("stringField");
 			stringFieldSchema.setLabel("Some string field");

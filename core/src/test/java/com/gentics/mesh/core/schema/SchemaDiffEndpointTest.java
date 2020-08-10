@@ -29,7 +29,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
@@ -180,7 +180,7 @@ public class SchemaDiffEndpointTest extends AbstractMeshTest {
 		// Add allowed property to slug
 		try (Tx tx = tx()) {
 			SchemaVersion version = schemaContainer("content").getLatestVersion();
-			SchemaUpdateModel schema = version.getSchema();
+			SchemaVersionModel schema = version.getSchema();
 			schema.getField("slug", StringFieldSchema.class).setAllowedValues("A", "B", "C");
 			version.setJson(schema.toJson());
 			tx.success();
@@ -203,7 +203,7 @@ public class SchemaDiffEndpointTest extends AbstractMeshTest {
 		// Add allowed property to slug
 		try (Tx tx = tx()) {
 			SchemaVersion version = schemaContainer("content").getLatestVersion();
-			SchemaUpdateModel schema = version.getSchema();
+			SchemaVersionModel schema = version.getSchema();
 			schema.getField("slug", StringFieldSchema.class).setAllowedValues("A", "B", "C");
 			version.setJson(schema.toJson());
 			tx.success();
@@ -225,7 +225,7 @@ public class SchemaDiffEndpointTest extends AbstractMeshTest {
 		// Add allowed property to slug
 		try (Tx tx = tx()) {
 			SchemaVersion version = schemaContainer("content").getLatestVersion();
-			SchemaUpdateModel schema = version.getSchema();
+			SchemaVersionModel schema = version.getSchema();
 			schema.getField("slug", StringFieldSchema.class).setAllowedValues("A", "B", "C");
 			version.setJson(schema.toJson());
 			tx.success();
@@ -277,7 +277,7 @@ public class SchemaDiffEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			JsonObject setting = new JsonObject().put("test", "123");
 			SchemaVersion version = schemaContainer("content").getLatestVersion();
-			SchemaUpdateModel schema = version.getSchema();
+			SchemaVersionModel schema = version.getSchema();
 			schema.getField("slug").setElasticsearch(setting);
 			version.setJson(schema.toJson());
 			tx.success();

@@ -10,7 +10,7 @@ import org.junit.Test;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.user.NodeReference;
@@ -25,7 +25,7 @@ public class UserRestTest {
 	@Test
 	public void testUserJson() throws JsonParseException, JsonMappingException, IOException {
 
-		SchemaUpdateModel schema = new SchemaModelImpl();
+		SchemaVersionModel schema = new SchemaModelImpl();
 		schema.setName("content");
 
 		ClientSchemaStorage clientSchemaStorage = new ClientSchemaStorage();

@@ -22,7 +22,7 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
@@ -80,7 +80,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 
 	protected void addNumberSpeedFieldToOneNode(Number number) {
 		Node node = content("concorde");
-		SchemaUpdateModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
+		SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		schema.addField(new NumberFieldSchemaImpl().setName("speed"));
 		node.getSchemaContainer().getLatestVersion().setSchema(schema);
 

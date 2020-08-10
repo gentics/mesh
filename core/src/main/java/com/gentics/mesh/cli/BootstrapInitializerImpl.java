@@ -80,7 +80,7 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
@@ -962,7 +962,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			// Content
 			Schema contentSchemaContainer = schemaDao.findByName("content");
 			if (contentSchemaContainer == null) {
-				SchemaUpdateModel schema = new SchemaModelImpl();
+				SchemaVersionModel schema = new SchemaModelImpl();
 				schema.setName("content");
 				schema.setDescription("Content schema for blogposts");
 				schema.setDisplayField("title");
@@ -998,7 +998,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			// Folder
 			Schema folderSchemaContainer = schemaDao.findByName("folder");
 			if (folderSchemaContainer == null) {
-				SchemaUpdateModel schema = new SchemaModelImpl();
+				SchemaVersionModel schema = new SchemaModelImpl();
 				schema.setName("folder");
 				schema.setDescription("Folder schema to create containers for other nodes.");
 				schema.setDisplayField("name");
@@ -1023,7 +1023,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			Schema binarySchemaContainer = schemaDao.findByName("binary_content");
 			if (binarySchemaContainer == null) {
 
-				SchemaUpdateModel schema = new SchemaModelImpl();
+				SchemaVersionModel schema = new SchemaModelImpl();
 				schema.setDescription("Binary content schema used to store images and other binary data.");
 				schema.setName("binary_content");
 				schema.setDisplayField("name");

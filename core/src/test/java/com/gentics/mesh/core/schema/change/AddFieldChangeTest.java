@@ -24,7 +24,7 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
@@ -70,7 +70,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	public void testApplyStringFieldAtEndPosition() {
 		try (Tx tx = tx()) {
 			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
-			SchemaUpdateModel schema = new SchemaModelImpl();
+			SchemaVersionModel schema = new SchemaModelImpl();
 			schema.addField(FieldUtil.createStringFieldSchema("firstField"));
 			schema.addField(FieldUtil.createStringFieldSchema("secondField"));
 			schema.addField(FieldUtil.createStringFieldSchema("thirdField"));

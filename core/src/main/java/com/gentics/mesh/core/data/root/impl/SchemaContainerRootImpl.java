@@ -1,11 +1,15 @@
 package com.gentics.mesh.core.data.root.impl;
 
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_ITEM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_ROOT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.SCHEMA_CONTAINER_KEY_PROPERTY;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static com.gentics.mesh.madl.type.EdgeTypeDefinition.edgeType;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+
+import java.util.Iterator;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
@@ -15,12 +19,16 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.root.SchemaRoot;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.madl.traversal.TraversalResult;
+import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -105,4 +113,23 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<Schema> implemen
 		return in(HAS_SCHEMA_ROOT).has(ProjectImpl.class).nextOrDefaultExplicit(ProjectImpl.class, null);
 	}
 
+	@Override
+	public TraversalResult<? extends SchemaRoot> getRoots(Schema schema) {
+		return schema.in(HAS_SCHEMA_CONTAINER_ITEM, SchemaContainerRootImpl.class);
+	}
+
+	@Override
+	public TraversalResult<? extends Node> getNodes(Schema schema) {
+		Iterator<Vertex> vertices = mesh().database().getVertices(
+			NodeImpl.class,
+			new String[]{SCHEMA_CONTAINER_KEY_PROPERTY},
+			new Object[]{schema.getUuid()}
+		);
+		return new TraversalResult<>(graph.frameExplicit(vertices, NodeImpl.class));
+	}
+
+	@Override
+	public Iterable<? extends SchemaVersion> findAllVersions(Schema schema) {
+		return out(HAS_PARENT_CONTAINER).frameExplicit(SchemaContainerVersionImpl.class);
+	}
 }

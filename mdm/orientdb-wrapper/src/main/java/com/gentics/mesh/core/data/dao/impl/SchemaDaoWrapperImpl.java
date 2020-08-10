@@ -3,17 +3,22 @@ package com.gentics.mesh.core.data.dao.impl;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.util.Iterator;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
@@ -24,6 +29,7 @@ import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.impl.SchemaWrapper;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.SchemaRoot;
@@ -32,8 +38,9 @@ import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
@@ -94,7 +101,7 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper implements SchemaDa
 		UserDaoWrapper userDao = Tx.get().data().userDao();
 		SchemaRoot schemaRoot = boot.get().schemaContainerRoot();
 
-		SchemaUpdateModel requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModelImpl.class);
+		SchemaVersionModel requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModelImpl.class);
 		requestModel.validate();
 
 		if (!userDao.hasPermission(requestUser, schemaRoot, CREATE_PERM)) {
@@ -169,12 +176,12 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper implements SchemaDa
 	}
 
 	@Override
-	public Schema create(SchemaUpdateModel schema, User creator, String uuid) {
+	public Schema create(SchemaVersionModel schema, User creator, String uuid) {
 		return create(schema, creator, uuid, false);
 	}
 
 	@Override
-	public Schema create(SchemaUpdateModel schema, User creator, String uuid, boolean validate) {
+	public Schema create(SchemaVersionModel schema, User creator, String uuid, boolean validate) {
 		SchemaRoot schemaRoot = boot.get().schemaContainerRoot();
 		MicroschemaDaoWrapper microschemaDao = Tx.get().data().microschemaDao();
 
@@ -214,7 +221,7 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper implements SchemaDa
 		return container;
 	}
 
-	public static void validateSchema(NodeIndexHandler indexHandler, SchemaUpdateModel schema) {
+	public static void validateSchema(NodeIndexHandler indexHandler, SchemaVersionModel schema) {
 		// TODO Maybe set the timeout to the configured search.timeout? But the default of 60 seconds is really long.
 		Throwable error = indexHandler.validate(schema).blockingGet(10, TimeUnit.SECONDS);
 
@@ -239,6 +246,51 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper implements SchemaDa
 		// TODO check for project in context?
 		SchemaRoot schemaRoot = boot.get().schemaContainerRoot();
 		return SchemaWrapper.wrap(schemaRoot.loadObjectByUuid(ac, uuid, perm, errorIfNotFound));
+	}
+
+
+	@Override
+	public TraversalResult<? extends SchemaRoot> getRoots(Schema schema) {
+		return boot.get().schemaContainerRoot().getRoots(schema);
+	}
+
+	@Override
+	public Iterable<? extends SchemaVersion> findAllVersions(Schema schema) {
+		return boot.get().schemaContainerRoot().findAllVersions(schema);
+	}
+
+	@Override
+	public TraversalResult<? extends Node> getNodes(Schema schema) {
+		return boot.get().schemaContainerRoot().getNodes(schema);
+	}
+
+	@Override
+	public void delete(Schema schema, BulkActionContext bac) {
+		// Check whether the schema is currently being referenced by nodes.
+		Iterator<? extends Node> it = getNodes(schema).iterator();
+		if (!it.hasNext()) {
+
+			unassignEvents(schema).forEach(bac::add);
+			bac.add(schema.onDeleted());
+
+			for(SchemaVersion v : findAllVersions(schema)) {
+				v.delete(bac);
+			}
+			schema.remove();
+		} else {
+			throw error(BAD_REQUEST, "schema_delete_still_in_use", schema.getUuid());
+		}
+	}
+
+	/**
+	 * Returns events for unassignment on deletion.
+	 * @return
+	 */
+	private Stream<ProjectSchemaEventModel> unassignEvents(Schema schema) {
+		return getRoots(schema).stream()
+			.map(SchemaRoot::getProject)
+			.filter(Objects::nonNull)
+			.map(project -> project.onSchemaAssignEvent(schema, UNASSIGNED));
 	}
 
 }

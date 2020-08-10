@@ -40,7 +40,7 @@ import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.parameter.LinkType;
@@ -59,7 +59,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Before
 	public void updateSchema() throws Exception {
 		try (Tx tx = tx()) {
-			SchemaUpdateModel schema = schemaContainer("folder").getLatestVersion().getSchema();
+			SchemaVersionModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 			NodeFieldSchema nodeFieldSchema = new NodeFieldSchemaImpl();
 			nodeFieldSchema.setName(FIELD_NAME);
 			nodeFieldSchema.setLabel("Some label");

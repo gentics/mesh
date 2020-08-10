@@ -65,7 +65,7 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
@@ -232,7 +232,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			// Update the folder schema to contain all fields
 			Schema schemaContainer = schemaContainer("folder");
 			safelySetUuid(tx, schemaContainer, FOLDER_SCHEMA_UUID);
-			SchemaUpdateModel schema = schemaContainer.getLatestVersion().getSchema();
+			SchemaVersionModel schema = schemaContainer.getLatestVersion().getSchema();
 			schema.setUrlFields("niceUrl");
 			schema.setAutoPurge(true);
 			NodeFieldSchema nodeFieldSchema = new NodeFieldSchemaImpl();

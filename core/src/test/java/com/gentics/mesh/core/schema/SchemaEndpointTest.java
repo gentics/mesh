@@ -72,7 +72,7 @@ import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
@@ -217,10 +217,10 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 
 			// Create schema with no read permission
-			SchemaUpdateModel schema = FieldUtil.createMinimalValidSchema();
+			SchemaVersionModel schema = FieldUtil.createMinimalValidSchema();
 			schema.setName("No_Perm_Schema");
 			Schema noPermSchema = schemaDao.create(schema, user());
-			SchemaUpdateModel dummySchema = new SchemaModelImpl();
+			SchemaVersionModel dummySchema = new SchemaModelImpl();
 			dummySchema.setName("dummy");
 			dummySchema.setVersion("1.0");
 			noPermSchema.getLatestVersion().setSchema(dummySchema);
@@ -588,8 +588,9 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Override
 	public void testDeleteByUUID() throws Exception {
 		try (Tx tx = tx()) {
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 			Schema schema = schemaContainer("content");
-			assertThat(schema.getNodes()).isNotEmpty();
+			assertThat(schemaDao.getNodes(schema)).isNotEmpty();
 		}
 
 		String uuid = db().tx(() -> schemaContainer("content").getUuid());
@@ -612,12 +613,12 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 			assertNotNull("The schema should not have been deleted.", reloaded);
 			// Validate and delete all remaining nodes that use the schema
-			assertThat(reloaded.getNodes()).isNotEmpty();
+			assertThat(schemaDao.getNodes(reloaded)).isNotEmpty();
 			BulkActionContext context = createBulkContext();
-			for (Node node : reloaded.getNodes()) {
+			for (Node node : schemaDao.getNodes(reloaded)) {
 				node.delete(context);
 			}
-			assertThat(reloaded.getNodes()).isEmpty();
+			assertThat(schemaDao.getNodes(reloaded)).isEmpty();
 			tx.success();
 		}
 

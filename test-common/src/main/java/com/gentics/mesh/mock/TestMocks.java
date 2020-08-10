@@ -60,7 +60,7 @@ import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
@@ -253,8 +253,8 @@ public final class TestMocks {
 		return container;
 	}
 
-	public static SchemaUpdateModel mockContentSchema() {
-		SchemaUpdateModel schema = new SchemaModelImpl();
+	public static SchemaVersionModel mockContentSchema() {
+		SchemaVersionModel schema = new SchemaModelImpl();
 		schema.setName("content");
 		schema.setDescription("Content schema");
 		schema.setDisplayField("string");

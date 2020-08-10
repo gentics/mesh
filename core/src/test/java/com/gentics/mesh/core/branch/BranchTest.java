@@ -35,7 +35,7 @@ import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -478,7 +478,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	 * @throws Exception
 	 */
 	protected Schema createSchemaDirect(String name) throws Exception {
-		SchemaUpdateModel schema = new SchemaModelImpl();
+		SchemaVersionModel schema = new SchemaModelImpl();
 		schema.setName(name);
 		schema.addField(FieldUtil.createStringFieldSchema("name"));
 		schema.setDisplayField("name");

@@ -8,11 +8,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 
 import io.vertx.core.json.JsonObject;
 
-public class SchemaResponse extends AbstractGenericRestResponse implements SchemaUpdateModel {
+public class SchemaResponse extends AbstractGenericRestResponse implements SchemaVersionModel {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Name of the display field.")

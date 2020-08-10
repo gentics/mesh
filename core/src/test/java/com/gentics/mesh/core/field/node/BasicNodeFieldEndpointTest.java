@@ -16,7 +16,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
@@ -30,7 +30,7 @@ public class BasicNodeFieldEndpointTest extends AbstractMeshTest {
 	public void testUpdateNodeAndOmitRequiredField() throws IOException {
 		try (Tx tx = tx()) {
 			// 1. create required field
-			SchemaUpdateModel schema = schemaContainer("folder").getLatestVersion().getSchema();
+			SchemaVersionModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 			HtmlFieldSchema htmlFieldSchema = new HtmlFieldSchemaImpl();
 			htmlFieldSchema.setName("htmlField");
 			htmlFieldSchema.setLabel("Some label");

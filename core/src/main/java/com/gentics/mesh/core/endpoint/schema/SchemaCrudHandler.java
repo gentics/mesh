@@ -124,12 +124,13 @@ public class SchemaCrudHandler extends AbstractCrudHandler<Schema, SchemaRespons
 			}
 
 			utils.syncTx(ac, tx1 -> {
+				UserDaoWrapper userDao = tx1.data().userDao();
+				SchemaDaoWrapper schemaDao = tx1.data().schemaDao();
 
 				// 1. Load the schema container with update permissions
-				Schema schemaContainer = tx1.data().schemaDao().loadObjectByUuid(ac, uuid, UPDATE_PERM);
+				Schema schemaContainer = schemaDao.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 				SchemaUpdateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaUpdateRequest.class);
 
-				UserDaoWrapper userDao = tx1.data().userDao();
 
 				if (ac.getSchemaUpdateParameters().isStrictValidation()) {
 					SchemaDaoWrapperImpl.validateSchema(nodeIndexHandler, requestModel);
@@ -172,7 +173,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<Schema, SchemaRespons
 								}
 
 								// Locate the projects to which the schema was linked - We need to ensure that the microschema is also linked to those projects
-								for (SchemaRoot roots : schemaContainer.getRoots()) {
+								for (SchemaRoot roots : schemaDao.getRoots(schemaContainer)) {
 									Project project = roots.getProject();
 									if (project != null) {
 										project.getMicroschemaContainerRoot().addMicroschema(user, microschema, batch);

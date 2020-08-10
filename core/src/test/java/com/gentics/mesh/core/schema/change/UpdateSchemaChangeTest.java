@@ -21,7 +21,7 @@ import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateSchemaChangeImpl;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
-import com.gentics.mesh.core.rest.schema.SchemaUpdateModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -65,7 +65,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 	public void testApply() {
 		try (Tx tx = tx()) {
 			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
-			SchemaUpdateModel schema = new SchemaModelImpl();
+			SchemaVersionModel schema = new SchemaModelImpl();
 			UpdateSchemaChange change = tx.getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
 			change.setIndexOptions(new JsonObject().put("key", "value"));
 			change.setName("updated");
@@ -89,7 +89,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 			// 1. Create the schema container
 			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
-			SchemaUpdateModel schema = new SchemaModelImpl();
+			SchemaVersionModel schema = new SchemaModelImpl();
 			schema.setSegmentField("someField");
 			schema.addField(FieldUtil.createHtmlFieldSchema("first"));
 			schema.addField(FieldUtil.createHtmlFieldSchema("second"));
@@ -116,7 +116,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
-			SchemaUpdateModel schema = new SchemaModelImpl();
+			SchemaVersionModel schema = new SchemaModelImpl();
 			schema.setSegmentField("someField");
 
 			// 2. Create schema update change
@@ -138,7 +138,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
-			SchemaUpdateModel schema = new SchemaModelImpl();
+			SchemaVersionModel schema = new SchemaModelImpl();
 
 			// 2. Create schema update change
 			UpdateSchemaChange change = tx.getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
