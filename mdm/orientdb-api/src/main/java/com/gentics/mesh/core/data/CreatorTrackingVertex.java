@@ -25,7 +25,7 @@ public interface CreatorTrackingVertex extends MeshVertex {
 	 * @param user
 	 *            Creator
 	 */
-	default void setCreator(User user) {
+	default void setCreator(HibUser user) {
 		if (user == null) {
 			removeProperty(CREATOR_UUID_PROPERTY_KEY);
 		} else {
@@ -74,7 +74,7 @@ public interface CreatorTrackingVertex extends MeshVertex {
 	 * @param creator
 	 *            Creator
 	 */
-	default void setCreated(User creator) {
+	default void setCreated(HibUser creator) {
 		setCreator(creator);
 		setCreationTimestamp(System.currentTimeMillis());
 	}

@@ -63,7 +63,7 @@ public class UserWrapper implements User, HibUser {
 		return delegate.id();
 	}
 
-	public void setCreated(User creator) {
+	public void setCreated(HibUser creator) {
 		delegate.setCreated(creator);
 	}
 
@@ -99,11 +99,13 @@ public class UserWrapper implements User, HibUser {
 		return delegate.getAPIPath(ac);
 	}
 
-	public void setEditor(User user) {
+	@Override
+	public void setEditor(HibUser user) {
 		delegate.setEditor(user);
 	}
 
-	public void setCreator(User user) {
+	@Override
+	public void setCreator(HibUser user) {
 		delegate.setCreator(user);
 	}
 
@@ -111,10 +113,12 @@ public class UserWrapper implements User, HibUser {
 		return delegate.getRolesWithPerm(perm);
 	}
 
+	@Override
 	public String getUuid() {
 		return delegate.getUuid();
 	}
 
+	@Override
 	public void setName(String name) {
 		delegate.setName(name);
 	}

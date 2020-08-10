@@ -9,6 +9,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.HibUser;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.User;
 
@@ -33,11 +34,11 @@ public class UserProperties {
 		setUser(vertex, user, CREATOR_UUID_PROPERTY_KEY);
 	}
 
-	public void setEditor(MeshVertex vertex, User user) {
+	public void setEditor(MeshVertex vertex, HibUser user) {
 		setUser(vertex, user, EDITOR_UUID_PROPERTY_KEY);
 	}
 
-	private void setUser(MeshVertex vertex, User user, String propertyKey) {
+	private void setUser(MeshVertex vertex, HibUser user, String propertyKey) {
 		if (user == null) {
 			vertex.removeProperty(propertyKey);
 		} else {
