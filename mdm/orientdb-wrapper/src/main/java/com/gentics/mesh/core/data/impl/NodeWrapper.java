@@ -12,7 +12,6 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
@@ -24,6 +23,8 @@ import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
@@ -94,8 +95,8 @@ public class NodeWrapper implements Node {
 		return delegate.getRolePermissions(ac, roleUuid);
 	}
 
-	public UserWrapper getCreator() {
-		return UserWrapper.wrap(delegate.getCreator());
+	public HibUser getCreator() {
+		return delegate.getCreator();
 	}
 
 	public void setUuid(String uuid) {
@@ -110,7 +111,7 @@ public class NodeWrapper implements Node {
 		return delegate.getAPIPath(ac);
 	}
 
-	public void setCreator(UserWrapper user) {
+	public void setCreator(HibUser user) {
 		delegate.setCreator(user);
 	}
 
@@ -403,7 +404,7 @@ public class NodeWrapper implements Node {
 		return TagWrapper.wrap(delegate.getTags(branch));
 	}
 
-	public TransformablePage<? extends Tag> getTags(User user, PagingParameters params, Branch branch) {
+	public TransformablePage<? extends Tag> getTags(HibUser user, PagingParameters params, Branch branch) {
 		return delegate.getTags(user, params, branch);
 	}
 
@@ -451,7 +452,7 @@ public class NodeWrapper implements Node {
 		return delegate.reframe(kind);
 	}
 
-	public ContentWrapper createGraphFieldContainer(String languageTag, Branch branch, User user) {
+	public ContentWrapper createGraphFieldContainer(String languageTag, Branch branch, HibUser user) {
 		return ContentWrapper.wrap(delegate.createGraphFieldContainer(languageTag, branch, user));
 	}
 
@@ -459,7 +460,7 @@ public class NodeWrapper implements Node {
 		return delegate.reframeExplicit(kind);
 	}
 
-	public NodeGraphFieldContainer createGraphFieldContainer(String languageTag, Branch branch, User editor, NodeGraphFieldContainer original,
+	public NodeGraphFieldContainer createGraphFieldContainer(String languageTag, Branch branch, HibUser editor, NodeGraphFieldContainer original,
 		boolean handleDraftEdge) {
 		return delegate.createGraphFieldContainer(languageTag, branch, editor, original, handleDraftEdge);
 	}
@@ -520,15 +521,15 @@ public class NodeWrapper implements Node {
 		delegate.setParentNode(branchUuid, parentNode);
 	}
 
-	public NodeWrapper create(User creator, SchemaVersion schemaVersion, Project project) {
+	public NodeWrapper create(HibUser creator, SchemaVersion schemaVersion, Project project) {
 		return wrap(delegate.create(creator, schemaVersion, project));
 	}
 
-	public NodeWrapper create(User creator, SchemaVersion schemaVersion, Project project, Branch branch) {
+	public NodeWrapper create(HibUser creator, SchemaVersion schemaVersion, Project project, Branch branch) {
 		return wrap(delegate.create(creator, schemaVersion, project, branch));
 	}
 
-	public NodeWrapper create(User creator, SchemaVersion schemaVersion, Project project, Branch branch, String uuid) {
+	public NodeWrapper create(HibUser creator, SchemaVersion schemaVersion, Project project, Branch branch, String uuid) {
 		return wrap(delegate.create(creator, schemaVersion, project, branch, uuid));
 	}
 
@@ -650,7 +651,7 @@ public class NodeWrapper implements Node {
 		delegate.assertPublishConsistency(ac, branch);
 	}
 
-	public ContentWrapper publish(InternalActionContext ac, String languageTag, Branch branch, User user) {
+	public ContentWrapper publish(InternalActionContext ac, String languageTag, Branch branch, HibUser user) {
 		return ContentWrapper.wrap(delegate.publish(ac, languageTag, branch, user));
 	}
 

@@ -31,7 +31,7 @@ import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
@@ -264,7 +264,7 @@ public class AdminHandler extends AbstractHandler {
 
 	public void handleClusterStatus(InternalActionContext ac) {
 		utils.syncTx(ac, tx -> {
-			User user = ac.getUser();
+			HibUser user = ac.getUser();
 			if (user != null && !user.isAdmin()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
@@ -310,7 +310,7 @@ public class AdminHandler extends AbstractHandler {
 
 	public void handleLoadClusterConfig(InternalActionContext ac) {
 		utils.syncTx(ac, tx -> {
-			User user = ac.getUser();
+			HibUser user = ac.getUser();
 			if (user != null && !user.isAdmin()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
@@ -321,7 +321,7 @@ public class AdminHandler extends AbstractHandler {
 	public void handleUpdateClusterConfig(InternalActionContext ac) {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				User user = ac.getUser();
+				HibUser user = ac.getUser();
 				if (user != null && !user.isAdmin()) {
 					throw error(FORBIDDEN, "error_admin_permission_required");
 				}
@@ -334,7 +334,7 @@ public class AdminHandler extends AbstractHandler {
 
 	public void handleLoadCoordinationMaster(InternalActionContext ac) {
 		utils.syncTx(ac, tx -> {
-			User user = ac.getUser();
+			HibUser user = ac.getUser();
 			if (user != null && !user.isAdmin()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
@@ -349,7 +349,7 @@ public class AdminHandler extends AbstractHandler {
 	public void handleSetCoordinationMaster(InternalActionContext ac) {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				User user = ac.getUser();
+				HibUser user = ac.getUser();
 				if (user != null && !user.isAdmin()) {
 					throw error(FORBIDDEN, "error_admin_permission_required");
 				}
@@ -372,7 +372,7 @@ public class AdminHandler extends AbstractHandler {
 
 	public void handleLoadCoordinationConfig(InternalActionContext ac) {
 		utils.syncTx(ac, tx -> {
-			User user = ac.getUser();
+			HibUser user = ac.getUser();
 			if (user != null && !user.isAdmin()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
@@ -383,7 +383,7 @@ public class AdminHandler extends AbstractHandler {
 	public void handleUpdateCoordinationConfig(InternalActionContext ac) {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				User user = ac.getUser();
+				HibUser user = ac.getUser();
 				if (user != null && !user.isAdmin()) {
 					throw error(FORBIDDEN, "error_admin_permission_required");
 				}

@@ -17,6 +17,7 @@ import com.gentics.mesh.ElementType;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -28,6 +29,7 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.ProjectEvent;
@@ -64,7 +66,7 @@ public class MeshEntities {
 	private final MeshOptions options;
 	private final ComplianceMode complianceMode;
 
-	public final MeshEntity<User> user;
+	public final MeshEntity<HibUser> user;
 	public final MeshEntity<Group> group;
 	public final MeshEntity<Role> role;
 	public final MeshEntity<Project> project;
@@ -122,7 +124,7 @@ public class MeshEntities {
 	 * The User {@link MeshEntity}.
 	 * @return
 	 */
-	public MeshEntity<User> getUser() {
+	public MeshEntity<HibUser> getUser() {
 		return user;
 	}
 
@@ -236,6 +238,10 @@ public class MeshEntities {
 		return event -> Optional.ofNullable(elementLoader.apply(event.getUuid()));
 	}
 
+	private <T extends HibElement> EventVertexMapper<T> byHibElementUuid(Function<String, T> elementLoader) {
+		return event -> Optional.ofNullable(elementLoader.apply(event.getUuid()));
+	}
+
 	/**
 	 * Creates a {@link CreateDocumentRequest} for the given element.
 	 * @param element
@@ -250,7 +256,7 @@ public class MeshEntities {
 	 * @param element
 	 * @return
 	 */
-	public CreateDocumentRequest createRequest(User element) {
+	public CreateDocumentRequest createRequest(HibUser element) {
 		return helper.createDocumentRequest(User.composeIndexName(), element.getUuid(), user.transform(element), complianceMode);
 	}
 

@@ -3,10 +3,10 @@ package com.gentics.mesh.core.data.dao;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.madl.traversal.TraversalResult;
@@ -38,12 +38,12 @@ public interface ProjectDaoWrapper extends ProjectDao, DaoTransformable<Project,
 
 	Project create(InternalActionContext ac, EventQueueBatch batch, String uuid);
 
-	default Project create(String projectName, String hostname, Boolean ssl, String pathPrefix, User creator,
+	default Project create(String projectName, String hostname, Boolean ssl, String pathPrefix, HibUser creator,
 		SchemaVersion schemaVersion, EventQueueBatch batch) {
 		return create(projectName, hostname, ssl, pathPrefix, creator, schemaVersion, null, batch);
 	}
 
-	Project create(String name, String hostname, Boolean ssl, String pathPrefix, User creator, SchemaVersion schemaVersion,
+	Project create(String name, String hostname, Boolean ssl, String pathPrefix, HibUser creator, SchemaVersion schemaVersion,
 		String uuid, EventQueueBatch batch);
 
 }

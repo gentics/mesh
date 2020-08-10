@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.data.root;
 
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.event.EventQueueBatch;
 
 public interface MicroschemaRoot extends RootVertex<Microschema> {
@@ -17,7 +17,7 @@ public interface MicroschemaRoot extends RootVertex<Microschema> {
 	 * @param container
 	 * @param batch
 	 */
-	void addMicroschema(User user, Microschema container, EventQueueBatch batch);
+	void addMicroschema(HibUser user, Microschema container, EventQueueBatch batch);
 
 	/**
 	 * Remove the microschema container from the aggregation node.

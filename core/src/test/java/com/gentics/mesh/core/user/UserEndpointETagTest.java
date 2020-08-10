@@ -10,8 +10,8 @@ import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
@@ -64,9 +64,9 @@ public class UserEndpointETagTest extends AbstractMeshTest {
 	public void testReadOne() {
 		String etag;
 		try (Tx tx = tx()) {
-			User user = user();
+			HibUser user = user();
 
-			etag = user().getETag(mockActionContext());
+			etag = user().toUser().getETag(mockActionContext());
 			callETag(() -> client().findUserByUuid(user.getUuid()), etag, true, 304);
 
 			// Check whether 304 is returned for correct etag

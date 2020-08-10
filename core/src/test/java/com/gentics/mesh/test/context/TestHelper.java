@@ -28,16 +28,16 @@ import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
@@ -103,7 +103,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	}
 
 	default MeshAuthUser getRequestUser() {
-		return data().getUserInfo().getUser().reframe(MeshAuthUserImpl.class);
+		return data().getUserInfo().getUser().toUser().reframe(MeshAuthUserImpl.class);
 	}
 
 	default Role anonymousRole() {
@@ -670,7 +670,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return mesh().bulkProvider().get();
 	}
 
-	default public Map<String, User> users() {
+	default public Map<String, HibUser> users() {
 		return data().getUsers();
 	}
 

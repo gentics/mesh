@@ -28,7 +28,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
@@ -40,6 +39,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
@@ -49,11 +49,7 @@ import com.gentics.mesh.core.rest.branch.info.BranchMicroschemaInfo;
 import com.gentics.mesh.core.rest.branch.info.BranchSchemaInfo;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.verticle.handler.CreateAction;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.core.verticle.handler.LoadAction;
-import com.gentics.mesh.core.verticle.handler.LoadAllAction;
-import com.gentics.mesh.core.verticle.handler.UpdateAction;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.PentaFunction;
@@ -78,31 +74,8 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	}
 
 	@Override
-	public LoadAction<Branch> loadAction() {
-		return (tx, ac, uuid, perm, errorIfNotFound) -> {
-			return ac.getProject().getBranchRoot().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
-		};
-	}
-
-	@Override
-	public LoadAllAction<Branch> loadAllAction() {
-		return (tx, ac, pagingInfo) -> {
-			return ac.getProject().getBranchRoot().findAll(ac, pagingInfo);
-		};
-	}
-
-	@Override
-	public CreateAction<Branch> createAction() {
-		return (tx, ac, batch, uuid) -> {
-			return ac.getProject().getBranchRoot().create(ac, batch, uuid);
-		};
-	}
-
-	@Override
-	public UpdateAction<Branch> updateAction() {
-		return (tx, element, ac, batch) -> {
-			return element.update(ac, batch);
-		};
+	public BranchCrudActions crudActions() {
+		return new BranchCrudActions();
 	}
 
 	@Override
@@ -206,7 +179,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 				BranchInfoMicroschemaList microschemaReferenceList = ac.fromJson(BranchInfoMicroschemaList.class);
 				MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
 
-				User user = ac.getUser();
+				HibUser user = ac.getUser();
 				utils.eventAction(batch -> {
 					// Transform the list of references into microschema container version vertices
 					for (MicroschemaReference reference : microschemaReferenceList.getMicroschemas()) {
@@ -299,7 +272,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	 *            The type of the schema version (either schema version or microschema version)
 	 */
 	private <T extends GraphFieldSchemaContainerVersion> void handleMigrateRemaining(InternalActionContext ac, String branchUuid,
-		Function<Branch, Iterable<T>> activeSchemas, PentaFunction<JobRoot, User, Branch, T, T, Job> enqueueMigration) {
+		Function<Branch, Iterable<T>> activeSchemas, PentaFunction<JobRoot, HibUser, Branch, T, T, Job> enqueueMigration) {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				Project project = ac.getProject();

@@ -33,11 +33,8 @@ import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.verticle.handler.CreateAction;
+import com.gentics.mesh.core.verticle.handler.CRUDActions;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.core.verticle.handler.LoadAction;
-import com.gentics.mesh.core.verticle.handler.LoadAllAction;
-import com.gentics.mesh.core.verticle.handler.UpdateAction;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -68,36 +65,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	}
 
 	@Override
-	public LoadAction<Node> loadAction() {
-		return (tx, ac, uuid, perm, errorIfNotFound) -> {
-			if (perm == null) {
-				return ac.getProject().getNodeRoot().findByUuid(uuid);
-			} else {
-				return ac.getProject().getNodeRoot().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
-			}
-		};
-	}
-
-	@Override
-	public LoadAllAction<Node> loadAllAction() {
-		return (tx, ac, pagingInfo) -> {
-			return ac.getProject().getNodeRoot().findAll(ac, pagingInfo);
-		};
-	}
-
-	@Override
-	public CreateAction<Node> createAction() {
-		return (tx, ac, batch, uuid) -> {
-			return ac.getProject().getNodeRoot().create(ac, batch, uuid);
-		};
-	}
-
-	@Override
-	public UpdateAction<Node> updateAction() {
-		return (tx, element, ac, batch) -> {
-			return element.update(ac, batch);
-			//return ac.getProject().getNodeRoot().update(element, ac, batch);
-		};
+	public NodeCrudActions crudActions() {
+		return new NodeCrudActions();
 	}
 
 	@Override
@@ -133,7 +102,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				Node node = loadAction().load(tx, ac, uuid, DELETE_PERM, true);
+				Node node = crudActions().load(tx, ac, uuid, DELETE_PERM, true);
 				Language language = boot.meshRoot().getLanguageRoot().findByLanguageTag(languageTag);
 				if (language == null) {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
@@ -193,7 +162,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		validateParameter(uuid, "uuid");
 
 		Node node = db.tx(tx -> {
-			return loadAction().load(tx, ac, uuid, READ_PERM, true);
+			return crudActions().load(tx, ac, uuid, READ_PERM, true);
 		});
 		node.transformToNavigation(ac).subscribe(model -> ac.send(model, OK), ac::fail);
 
@@ -235,9 +204,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleRead(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 		GraphPermission requiredPermission = "published".equals(ac.getVersioningParameters().getVersion()) ? READ_PUBLISHED_PERM : READ_PERM;
-		utils.readElement(ac, uuid,
-			(tx, ac2, uuid2, perm, errorIfNotFound) -> ac.getProject().getNodeRoot().loadObjectByUuid(ac, uuid, requiredPermission, errorIfNotFound),
-			requiredPermission);
+		utils.readElement(ac, uuid, crudActions(), requiredPermission);
 	}
 
 	/**

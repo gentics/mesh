@@ -2,7 +2,7 @@ package com.gentics.mesh.core.data.root;
 
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -31,7 +31,7 @@ public interface BranchRoot extends RootVertex<Branch>, TransformableElementRoot
 	 * @param batch
 	 * @return new Branch
 	 */
-	default Branch create(String name, User creator, EventQueueBatch batch) {
+	default Branch create(String name, HibUser creator, EventQueueBatch batch) {
 		return create(name, creator, null, true, getLatestBranch(), batch);
 	}
 
@@ -51,7 +51,7 @@ public interface BranchRoot extends RootVertex<Branch>, TransformableElementRoot
 	 * @param batch
 	 * @return new Branch
 	 */
-	Branch create(String name, User creator, String uuid, boolean setLatest, Branch baseBranch, EventQueueBatch batch);
+	Branch create(String name, HibUser creator, String uuid, boolean setLatest, Branch baseBranch, EventQueueBatch batch);
 
 	/**
 	 * Get the initial branch of this root.

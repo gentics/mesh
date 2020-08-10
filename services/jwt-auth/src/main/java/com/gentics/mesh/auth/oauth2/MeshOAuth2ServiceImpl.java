@@ -25,7 +25,6 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
@@ -33,6 +32,8 @@ import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -225,7 +226,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 				String lastSeenTokenId = TOKEN_ID_LOG.getIfPresent(user.getUuid());
 				if (lastSeenTokenId == null || !lastSeenTokenId.equals(cachingId)) {
 					return assertReadOnlyDeactivated().andThen(db.singleTx(() -> {
-						com.gentics.mesh.core.data.User admin = boot.userDao().findByUsername("admin");
+						HibUser admin = boot.userDao().findByUsername("admin");
 						runPlugins(rc, batch, admin, user, uuid, token);
 						TOKEN_ID_LOG.put(uuid, cachingId);
 						return user;
@@ -240,9 +241,9 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 					.andThen(db.singleTxWriteLock(tx -> {
 						UserDaoWrapper userDao = tx.data().userDao();
 						UserRoot userRoot = boot.userRoot();
-						com.gentics.mesh.core.data.User admin = userDao.findByUsername("admin");
-						com.gentics.mesh.core.data.User createdUser = userDao.create(username, admin);
-						userDao.inheritRolePermissions(admin, userRoot, createdUser);
+						HibUser admin = userDao.findByUsername("admin");
+						HibUser createdUser = userDao.create(username, admin);
+						userDao.inheritRolePermissions(admin, userRoot, createdUser.toUser());
 
 						MeshAuthUser user = userDao.findMeshAuthUserByUsername(username);
 						String uuid = user.getUuid();
@@ -334,7 +335,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 	 *             If a change is required but this instance cannot be written to because of cluster coordination.
 	 * @return
 	 */
-	private void runPlugins(RoutingContext rc, EventQueueBatch batch, com.gentics.mesh.core.data.User admin, MeshAuthUser user, String userUuid,
+	private void runPlugins(RoutingContext rc, EventQueueBatch batch, HibUser admin, MeshAuthUser user, String userUuid,
 		JsonObject token) throws CannotWriteException {
 		List<AuthServicePlugin> plugins = authPluginRegistry.getPlugins();
 		// Only load the needed data for plugins if there are any plugins
@@ -360,11 +361,11 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 					if (mappedUser != null) {
 						InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 						ac.setBody(mappedUser);
-						ac.setUser(admin.toAuthUser());
+						ac.setUser(admin.toUser().toAuthUser());
 						if (!delegator.canWrite() && userDao.updateDry(user, ac)) {
 							throw new CannotWriteException();
 						}
-						user.update(ac, batch);
+						userDao.update(user, ac, batch);
 					} else {
 						defaultUserMapper(batch, user, token);
 						continue;

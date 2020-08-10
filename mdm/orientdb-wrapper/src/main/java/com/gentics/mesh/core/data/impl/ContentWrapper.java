@@ -39,6 +39,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -94,7 +95,7 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		delegate.setLanguageTag(languageTag);
 	}
 
-	public User getEditor() {
+	public HibUser getEditor() {
 		return delegate.getEditor();
 	}
 
@@ -106,7 +107,7 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		delegate.setUniqueLinkOutTo(vertex, labels);
 	}
 
-	public void setEditor(User user) {
+	public void setEditor(HibUser user) {
 		delegate.setEditor(user);
 	}
 

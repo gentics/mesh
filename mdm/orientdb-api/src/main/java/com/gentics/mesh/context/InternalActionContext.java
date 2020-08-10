@@ -5,8 +5,8 @@ import java.util.function.BiConsumer;
 
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.handler.VersionHandler;

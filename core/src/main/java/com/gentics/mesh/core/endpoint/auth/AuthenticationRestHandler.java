@@ -10,7 +10,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.auth.LoginRequest;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -39,7 +39,7 @@ public class AuthenticationRestHandler extends AbstractHandler {
 		utils.syncTx(ac, tx -> {
 			// TODO add permission check
 			MeshAuthUser requestUser = ac.getUser();
-			return requestUser.transformToRestSync(ac, 0);
+			return tx.data().userDao().transformToRestSync(requestUser, ac, 0);
 		}, model -> ac.send(model, OK));
 	}
 

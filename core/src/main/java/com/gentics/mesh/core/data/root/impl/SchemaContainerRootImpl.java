@@ -16,7 +16,6 @@ import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.node.Node;
@@ -26,6 +25,7 @@ import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.tinkerpop.blueprints.Vertex;
@@ -58,7 +58,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<Schema> implemen
 	}
 
 	@Override
-	public void addSchemaContainer(User user, Schema schema, EventQueueBatch batch) {
+	public void addSchemaContainer(HibUser user, Schema schema, EventQueueBatch batch) {
 		addItem(schema);
 	}
 

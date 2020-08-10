@@ -63,7 +63,6 @@ import com.gentics.mesh.core.data.BranchParentEntry;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.Language;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
@@ -92,6 +91,8 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
+import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -401,12 +402,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public NodeGraphFieldContainer createGraphFieldContainer(String languageTag, Branch branch, User editor) {
+	public NodeGraphFieldContainer createGraphFieldContainer(String languageTag, Branch branch, HibUser editor) {
 		return createGraphFieldContainer(languageTag, branch, editor, null, true);
 	}
 
 	@Override
-	public NodeGraphFieldContainer createGraphFieldContainer(String languageTag, Branch branch, User editor, NodeGraphFieldContainer original,
+	public NodeGraphFieldContainer createGraphFieldContainer(String languageTag, Branch branch, HibUser editor, NodeGraphFieldContainer original,
 		boolean handleDraftEdge) {
 		NodeGraphFieldContainerImpl previous = null;
 		EdgeFrame draftEdge = null;
@@ -592,7 +593,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Node create(User creator, SchemaVersion schemaVersion, Project project) {
+	public Node create(HibUser creator, SchemaVersion schemaVersion, Project project) {
 		return create(creator, schemaVersion, project, project.getLatestBranch());
 	}
 
@@ -600,7 +601,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * Create a new node and make sure to delegate the creation request to the main node root aggregation node.
 	 */
 	@Override
-	public Node create(User creator, SchemaVersion schemaVersion, Project project, Branch branch, String uuid) {
+	public Node create(HibUser creator, SchemaVersion schemaVersion, Project project, Branch branch, String uuid) {
 		if (!isBaseNode() && !isVisibleInBranch(branch.getUuid())) {
 			log.error(String.format("Error while creating node in branch {%s}: requested parent node {%s} exists, but is not visible in branch.",
 				branch.getName(), getUuid()));
@@ -807,7 +808,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			// editor and edited
 			if (fieldsSet.has("editor")) {
-				User editor = fieldContainer.getEditor();
+				HibUser editor = fieldContainer.getEditor();
 				if (editor != null) {
 					restNode.setEditor(editor.transformToReference());
 				}
@@ -1172,7 +1173,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			PublishStatusModel status = new PublishStatusModel();
 			status.setPublished(true);
 			status.setVersion(c.getVersion().toString());
-			User editor = c.getEditor();
+			HibUser editor = c.getEditor();
 			if (editor != null) {
 				status.setPublisher(editor.transformToReference());
 			}
@@ -1277,7 +1278,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			PublishStatusModel status = new PublishStatusModel();
 			status.setPublished(true);
 			status.setVersion(container.getVersion().toString());
-			User editor = container.getEditor();
+			HibUser editor = container.getEditor();
 			if (editor != null) {
 				status.setPublisher(editor.transformToReference());
 			}
@@ -1369,7 +1370,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public NodeGraphFieldContainer publish(InternalActionContext ac, String languageTag, Branch branch, User user) {
+	public NodeGraphFieldContainer publish(InternalActionContext ac, String languageTag, Branch branch, HibUser user) {
 		String branchUuid = branch.getUuid();
 
 		// create published version
@@ -1578,7 +1579,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public TransformablePage<? extends Tag> getTags(User user, PagingParameters params, Branch branch) {
+	public TransformablePage<? extends Tag> getTags(HibUser user, PagingParameters params, Branch branch) {
 		VertexTraversal<?, ?, ?> traversal = TagEdgeImpl.getTagTraversal(this, branch);
 		return new DynamicTransformablePageImpl<Tag>(user, traversal, params, READ_PERM, TagImpl.class);
 	}
@@ -1782,7 +1783,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		List<Tag> tags = getTagsToSet(ac, batch);
 		Branch branch = ac.getBranch();
 		applyTags(branch, tags, batch);
-		User user = ac.getUser();
+		HibUser user = ac.getUser();
 		return getTags(user, ac.getPagingParameters(), branch);
 	}
 
@@ -2130,7 +2131,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public User getCreator() {
+	public HibUser getCreator() {
 		return mesh().userProperties().getCreator(this);
 	}
 

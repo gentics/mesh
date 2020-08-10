@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.root;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
 import com.gentics.mesh.core.data.job.JobRoot;
@@ -125,7 +127,7 @@ public interface MeshRoot extends MeshVertex {
 	 * @param pathToElement
 	 * @return Resolved element or null if no element could be found
 	 */
-	MeshVertex resolvePathToElement(String pathToElement);
+	HibElement resolvePathToElement(String pathToElement);
 
 	void clearReferences();
 

@@ -21,7 +21,6 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
@@ -33,6 +32,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
@@ -87,7 +87,7 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public TraversalResult<? extends Node> getNodes(String branchUuid, User user, ContainerType type) {
+	public TraversalResult<? extends Node> getNodes(String branchUuid, HibUser user, ContainerType type) {
 		UserDaoWrapper userDao = Tx.get().data().userDao();
 		SchemaDaoWrapper schemaDao = Tx.get().data().schemaDao();
 		return new TraversalResult<>(schemaDao.getNodes(getSchemaContainer()).stream()

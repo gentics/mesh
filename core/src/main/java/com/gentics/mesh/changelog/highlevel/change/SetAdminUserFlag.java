@@ -6,8 +6,8 @@ import com.gentics.mesh.changelog.highlevel.AbstractHighLevelChange;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
+import com.gentics.mesh.core.data.user.HibUser;
 
 import dagger.Lazy;
 import io.vertx.core.logging.Logger;
@@ -48,7 +48,7 @@ public class SetAdminUserFlag extends AbstractHighLevelChange {
 				continue;
 			}
 			for (Group group : role.getGroups()) {
-				for (User user : groupDao.getUsers(group)) {
+				for (HibUser user : groupDao.getUsers(group)) {
 					log.info("Setting admin flag for user " + user.getUsername());
 					user.setAdmin(true);
 				}

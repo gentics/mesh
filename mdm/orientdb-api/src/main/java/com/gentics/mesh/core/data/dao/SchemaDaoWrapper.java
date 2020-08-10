@@ -3,13 +3,13 @@ package com.gentics.mesh.core.data.dao;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.SchemaRoot;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.error.MeshSchemaException;
@@ -56,7 +56,7 @@ public interface SchemaDaoWrapper extends SchemaDao {
 	 * @return Created schema container
 	 * @throws MeshSchemaException
 	 */
-	Schema create(SchemaVersionModel schema, User creator, String uuid) throws MeshSchemaException;
+	Schema create(SchemaVersionModel schema, HibUser creator, String uuid) throws MeshSchemaException;
 
 	/**
 	 * Create new schema container.
@@ -68,7 +68,7 @@ public interface SchemaDaoWrapper extends SchemaDao {
 	 * @return Created schema container
 	 * @throws MeshSchemaException
 	 */
-	default Schema create(SchemaVersionModel schema, User creator) throws MeshSchemaException {
+	default Schema create(SchemaVersionModel schema, HibUser creator) throws MeshSchemaException {
 		return create(schema, creator, null);
 	}
 
@@ -86,7 +86,7 @@ public interface SchemaDaoWrapper extends SchemaDao {
 	 * @return Created schema container
 	 * @throws MeshSchemaException
 	 */
-	Schema create(SchemaVersionModel schema, User creator, String uuid, boolean validate) throws MeshSchemaException;
+	Schema create(SchemaVersionModel schema, HibUser creator, String uuid, boolean validate) throws MeshSchemaException;
 
 	Schema findByName(Project project, String schemaName);
 

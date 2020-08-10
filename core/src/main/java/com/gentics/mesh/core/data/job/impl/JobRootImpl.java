@@ -34,6 +34,7 @@ import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.root.impl.AbstractRootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.job.JobType;
@@ -97,7 +98,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	}
 
 	@Override
-	public Job enqueueSchemaMigration(User creator, Branch branch, SchemaVersion fromVersion, SchemaVersion toVersion) {
+	public Job enqueueSchemaMigration(HibUser creator, Branch branch, SchemaVersion fromVersion, SchemaVersion toVersion) {
 		NodeMigrationJobImpl job = getGraph().addFramedVertex(NodeMigrationJobImpl.class);
 		job.setType(JobType.schema);
 		job.setBranch(branch);
@@ -112,7 +113,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	}
 
 	@Override
-	public Job enqueueMicroschemaMigration(User creator, Branch branch, MicroschemaVersion fromVersion,
+	public Job enqueueMicroschemaMigration(HibUser creator, Branch branch, MicroschemaVersion fromVersion,
 		MicroschemaVersion toVersion) {
 		MicronodeMigrationJobImpl job = getGraph().addFramedVertex(MicronodeMigrationJobImpl.class);
 		job.setType(JobType.microschema);
@@ -129,7 +130,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	}
 
 	@Override
-	public Job enqueueBranchMigration(User creator, Branch branch, SchemaVersion fromVersion, SchemaVersion toVersion) {
+	public Job enqueueBranchMigration(HibUser creator, Branch branch, SchemaVersion fromVersion, SchemaVersion toVersion) {
 		Job job = getGraph().addFramedVertex(BranchMigrationJobImpl.class);
 		job.setType(JobType.branch);
 		job.setBranch(branch);
@@ -144,7 +145,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	}
 
 	@Override
-	public Job enqueueBranchMigration(User creator, Branch branch) {
+	public Job enqueueBranchMigration(HibUser creator, Branch branch) {
 		Job job = getGraph().addFramedVertex(BranchMigrationJobImpl.class);
 		job.setType(JobType.branch);
 		job.setStatus(QUEUED);
@@ -157,7 +158,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	}
 
 	@Override
-	public Job enqueueVersionPurge(User user, Project project, ZonedDateTime before) {
+	public Job enqueueVersionPurge(HibUser user, Project project, ZonedDateTime before) {
 		VersionPurgeJobImpl job = getGraph().addFramedVertex(VersionPurgeJobImpl.class);
 		// TODO Don't add the user to reduce contention
 		// job.setCreated(user);
@@ -173,7 +174,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	}
 
 	@Override
-	public Job enqueueVersionPurge(User user, Project project) {
+	public Job enqueueVersionPurge(HibUser user, Project project) {
 		return enqueueVersionPurge(user, project, null);
 	}
 

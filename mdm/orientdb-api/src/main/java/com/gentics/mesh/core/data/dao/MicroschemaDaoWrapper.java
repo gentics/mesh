@@ -8,6 +8,7 @@ import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -31,7 +32,7 @@ public interface MicroschemaDaoWrapper extends MicroschemaDao {
 	 * @param batch
 	 * @return
 	 */
-	default Microschema create(MicroschemaVersionModel microschema, User user, EventQueueBatch batch) {
+	default Microschema create(MicroschemaVersionModel microschema, HibUser user, EventQueueBatch batch) {
 		return create(microschema, user, null, batch);
 	}
 
@@ -46,7 +47,7 @@ public interface MicroschemaDaoWrapper extends MicroschemaDao {
 	 * @param batch
 	 * @return
 	 */
-	Microschema create(MicroschemaVersionModel microschema, User user, String uuid, EventQueueBatch batch);
+	Microschema create(MicroschemaVersionModel microschema, HibUser user, String uuid, EventQueueBatch batch);
 
 	Microschema create(InternalActionContext ac, EventQueueBatch batch, String uuid);
 

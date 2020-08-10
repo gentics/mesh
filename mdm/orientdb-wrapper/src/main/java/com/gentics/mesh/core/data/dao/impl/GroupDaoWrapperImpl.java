@@ -27,7 +27,6 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
@@ -38,6 +37,8 @@ import com.gentics.mesh.core.data.impl.GroupWrapper;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.GroupRoot;
+import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.group.GroupRoleAssignModel;
 import com.gentics.mesh.core.rest.event.group.GroupUserAssignModel;
@@ -120,18 +121,18 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper implements GroupDaoW
 	}
 
 	@Override
-	public void addUser(Group group, User user) {
-		group.setUniqueLinkInTo(user, HAS_USER);
+	public void addUser(Group group, HibUser user) {
+		group.setUniqueLinkInTo(user.toUser(), HAS_USER);
 
 		// Add shortcut edge from user to roles of this group
 		for (Role role : getRoles(group)) {
-			user.setUniqueLinkOutTo(role, ASSIGNED_TO_ROLE);
+			user.toUser().setUniqueLinkOutTo(role, ASSIGNED_TO_ROLE);
 		}
 	}
 
 	@Override
-	public void removeUser(Group group, User user) {
-		group.unlinkIn(user, HAS_USER);
+	public void removeUser(Group group, HibUser user) {
+		group.unlinkIn(user.toUser(), HAS_USER);
 
 		// The user does no longer belong to the group so lets update the shortcut edges
 		user.updateShortcutEdges();
@@ -139,7 +140,7 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper implements GroupDaoW
 	}
 
 	@Override
-	public TraversalResult<? extends User> getUsers(Group group) {
+	public TraversalResult<? extends HibUser> getUsers(Group group) {
 		GroupRoot groupRoot = boot.get().groupRoot();
 		return groupRoot.getUsers(group);
 	}
@@ -155,8 +156,8 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper implements GroupDaoW
 		group.setUniqueLinkInTo(role, HAS_ROLE);
 
 		// Add shortcut edges from role to users of this group
-		for (User user : getUsers(group)) {
-			user.setUniqueLinkOutTo(role, ASSIGNED_TO_ROLE);
+		for (HibUser user : getUsers(group)) {
+			((User)user).setUniqueLinkOutTo(role, ASSIGNED_TO_ROLE);
 		}
 
 	}
@@ -166,7 +167,7 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper implements GroupDaoW
 		group.unlinkIn(role, HAS_ROLE);
 
 		// Update the shortcut edges since the role does no longer belong to the group
-		for (User user : getUsers(group)) {
+		for (HibUser user : getUsers(group)) {
 			user.updateShortcutEdges();
 		}
 		permissionCache.get().clear();
@@ -178,18 +179,18 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper implements GroupDaoW
 	}
 
 	@Override
-	public boolean hasUser(Group group, User user) {
-		return group.in(HAS_USER).retain(user).hasNext();
+	public boolean hasUser(Group group, HibUser user) {
+		return group.in(HAS_USER).retain((User)user).hasNext();
 	}
 
 	@Override
-	public TransformablePage<? extends User> getVisibleUsers(Group group, MeshAuthUser user, PagingParameters pagingInfo) {
+	public TransformablePage<? extends HibUser> getVisibleUsers(Group group, MeshAuthUser user, PagingParameters pagingInfo) {
 		GroupRoot groupRoot = boot.get().groupRoot();
 		return groupRoot.getVisibleUsers(group, user, pagingInfo);
 	}
 
 	@Override
-	public TransformablePage<? extends Role> getRoles(Group group, User user, PagingParameters pagingInfo) {
+	public TransformablePage<? extends Role> getRoles(Group group, HibUser user, PagingParameters pagingInfo) {
 		GroupRoot groupRoot = boot.get().groupRoot();
 		return groupRoot.getRoles(group, user, pagingInfo);
 	}
@@ -211,7 +212,7 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper implements GroupDaoW
 	}
 
 	@Override
-	public GroupUserAssignModel createUserAssignmentEvent(Group group, User user, Assignment assignment) {
+	public GroupUserAssignModel createUserAssignmentEvent(Group group, HibUser user, Assignment assignment) {
 		GroupUserAssignModel model = new GroupUserAssignModel();
 		model.setGroup(group.transformToReference());
 		model.setUser(user.transformToReference());
@@ -276,9 +277,9 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper implements GroupDaoW
 		// TODO don't allow deletion of the admin group
 		bac.batch().add(group.onDeleted());
 
-		Set<? extends User> affectedUsers = getUsers(group).stream().collect(Collectors.toSet());
+		Set<? extends HibUser> affectedUsers = getUsers(group).stream().collect(Collectors.toSet());
 		group.getElement().remove();
-		for (User user : affectedUsers) {
+		for (HibUser user : affectedUsers) {
 			user.updateShortcutEdges();
 			bac.add(user.onUpdated());
 			bac.inc();
@@ -288,7 +289,7 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper implements GroupDaoW
 	}
 
 	@Override
-	public Group create(String name, User creator, String uuid) {
+	public Group create(String name, HibUser creator, String uuid) {
 		GroupRoot groupRoot = boot.get().groupRoot();
 		Group group = groupRoot.create();
 		if (uuid != null) {

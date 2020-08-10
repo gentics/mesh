@@ -7,6 +7,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -20,7 +21,7 @@ public class MultithreadGraphTest extends AbstractMeshTest {
 		runAndWait(() -> {
 			try (Tx tx = tx()) {
 				UserDaoWrapper userDao = tx.data().userDao();
-				User user = userDao.create("test", null);
+				HibUser user = userDao.create("test", null);
 				user.setCreated(user());
 				assertNotNull(user);
 				tx.success();

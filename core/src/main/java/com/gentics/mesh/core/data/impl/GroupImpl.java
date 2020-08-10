@@ -15,6 +15,7 @@ import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -65,8 +66,8 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 		Set<GraphPermission> permissionsToRevoke) {
 		GroupDaoWrapper groupDao = Tx.get().data().groupDao();
 		if (recursive) {
-			for (User user : groupDao.getUsers(this)) {
-				user.applyPermissions(batch, role, false, permissionsToGrant, permissionsToRevoke);
+			for (HibUser user : groupDao.getUsers(this)) {
+				user.toUser().applyPermissions(batch, role, false, permissionsToGrant, permissionsToRevoke);
 			}
 		}
 		super.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
@@ -83,12 +84,12 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	@Override
-	public User getCreator() {
+	public HibUser getCreator() {
 		return mesh().userProperties().getCreator(this);
 	}
 
 	@Override
-	public User getEditor() {
+	public HibUser getEditor() {
 		return mesh().userProperties().getEditor(this);
 	}
 

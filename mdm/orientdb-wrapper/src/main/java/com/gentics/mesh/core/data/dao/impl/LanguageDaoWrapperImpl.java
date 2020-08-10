@@ -13,6 +13,7 @@ import com.gentics.madl.traversal.RawTraversalResult;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
@@ -359,7 +360,7 @@ public class LanguageDaoWrapperImpl extends AbstractDaoWrapper implements Langua
 		return boot.get().languageRoot().loadObjectByUuidNoPerm(uuid, errorIfNotFound);
 	}
 
-	public MeshVertex resolveToElement(Stack<String> stack) {
+	public HibElement resolveToElement(Stack<String> stack) {
 		return boot.get().languageRoot().resolveToElement(stack);
 	}
 

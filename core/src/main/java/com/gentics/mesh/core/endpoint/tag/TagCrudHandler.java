@@ -8,18 +8,14 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.tag.TagResponse;
-import com.gentics.mesh.core.verticle.handler.CreateAction;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ResultInfo;
@@ -40,10 +36,8 @@ public class TagCrudHandler extends AbstractHandler {
 		this.globalLock = writeLock;
 	}
 
-	public TagFamily getTagFamily(InternalActionContext ac, String tagFamilyUuid) {
-		validateParameter(tagFamilyUuid, "tagFamilyUuid");
-
-		return ac.getProject().getTagFamilyRoot().findByUuid(tagFamilyUuid);
+	private TagCrudActions crudActions() {
+		return new TagCrudActions();
 	}
 
 	/**
@@ -64,7 +58,7 @@ public class TagCrudHandler extends AbstractHandler {
 			utils.syncTx(ac, tx -> {
 				PagingParameters pagingParams = ac.getPagingParameters();
 				NodeParameters nodeParams = ac.getNodeParameters();
-				Tag tag = getTagFamily(ac, tagFamilyUuid).loadObjectByUuid(ac, tagUuid, READ_PERM);
+				Tag tag =crudActions().load(tx, ac, tagUuid, READ_PERM, true);
 				TransformablePage<? extends Node> page = tag.findTaggedNodes(ac.getUser(), ac.getBranch(), nodeParams.getLanguageList(options),
 					ContainerType.forVersion(ac.getVersioningParameters().getVersion()), pagingParams);
 				return page.transformToRestSync(ac, 0);
@@ -82,9 +76,7 @@ public class TagCrudHandler extends AbstractHandler {
 	public void handleReadTagList(InternalActionContext ac, String tagFamilyUuid) {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 
-		utils.readElementList(ac, (tx, ac2, pagingInfo) -> {
-			return getTagFamily(ac2, tagFamilyUuid).findAll(ac2, pagingInfo);
-		});
+		utils.readElementList(ac, crudActions());
 	}
 
 	/**
@@ -101,7 +93,7 @@ public class TagCrudHandler extends AbstractHandler {
 		try (WriteLock lock = globalLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				ResultInfo info = utils.eventAction(batch -> {
-					Tag tag = getTagFamily(ac, tagFamilyUuid).create(ac, batch);
+					Tag tag = crudActions().create(tx, ac, batch, null);
 					TagResponse model = tag.transformToRestSync(ac, 0);
 					String path = tag.getAPIPath(ac);
 					ResultInfo resultInfo = new ResultInfo(model);
@@ -131,17 +123,7 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 		validateParameter(tagUuid, "tagUuid");
 
-		utils.updateElement(ac, tagUuid,
-			(tx, ac2, uuid, perm, errorIfNotFound) -> {
-				return getTagFamily(ac, tagFamilyUuid).loadObjectByUuid(ac, tagUuid, perm, errorIfNotFound);
-			},
-			(tx, ac4, batch, uuid) -> {
-				//return tx.data().tagDao().create(ac, batch)
-				return getTagFamily(ac, tagFamilyUuid).create(ac, batch, tagUuid);
-			},
-			(tx, element, ac3, batch) -> {
-				return tx.data().tagDao().update(element, ac, batch);
-			});
+		utils.updateElement(ac, tagUuid, crudActions());
 
 	}
 
@@ -159,9 +141,7 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 		validateParameter(tagUuid, "tagUuid");
 
-		utils.readElement(ac, tagUuid, (tx, ac2, uuid, perm, errorIfNotFound) -> {
-			return getTagFamily(ac2, tagFamilyUuid).loadObjectByUuid(ac, tagUuid, perm, errorIfNotFound);
-		}, READ_PERM);
+		utils.readElement(ac, tagUuid, crudActions(), READ_PERM);
 
 	}
 
@@ -179,9 +159,7 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 		validateParameter(tagUuid, "tagUuid");
 
-		utils.deleteElement(ac, (tx, ac2, uuid, perm, errorIfNotFound) -> {
-			return getTagFamily(ac, tagFamilyUuid).loadObjectByUuid(ac, tagUuid, perm, errorIfNotFound);
-		}, tagUuid);
+		utils.deleteElement(ac, crudActions(), tagUuid);
 
 	}
 

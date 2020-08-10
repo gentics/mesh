@@ -17,10 +17,10 @@ import com.gentics.mesh.core.data.NamedElement;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.ProjectElement;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
@@ -75,7 +75,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 			EditorTrackingVertex edited = (EditorTrackingVertex) this;
 
 			if (fields.has("editor")) {
-				User editor = edited.getEditor();
+				HibUser editor = edited.getEditor();
 				if (editor != null) {
 					model.setEditor(editor.transformToReference());
 				} else {
@@ -92,7 +92,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 		if (this instanceof CreatorTrackingVertex) {
 			CreatorTrackingVertex created = (CreatorTrackingVertex) this;
 			if (fields.has("creator")) {
-				User creator = created.getCreator();
+				HibUser creator = created.getCreator();
 				if (creator != null) {
 					model.setCreator(creator.transformToReference());
 				}

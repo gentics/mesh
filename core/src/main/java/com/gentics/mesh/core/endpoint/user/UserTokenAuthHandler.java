@@ -10,14 +10,13 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
-import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.UserParameters;
 
@@ -62,7 +61,7 @@ public class UserTokenAuthHandler extends AuthHandlerImpl {
 			MeshAuthUser lastEditor = db.tx(tx -> {
 				// 1. Load the element from the root element using the given uuid
 				UserDaoWrapper userDao = tx.data().userDao();
-				User element = userDao.findByUuid(uuid);
+				HibUser element = userDao.findByUuid(uuid);
 
 				if (element == null) {
 					throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);
@@ -79,7 +78,7 @@ public class UserTokenAuthHandler extends AuthHandlerImpl {
 
 				// TODO it would be better to store the designated token
 				// requester instead and use that user
-				return (MeshAuthUser) element.getEditor().reframeExplicit(MeshAuthUserImpl.class);
+				return (MeshAuthUser) ((User)element.getEditor()).reframeExplicit(MeshAuthUserImpl.class);
 			});
 			if (lastEditor == null) {
 				throw error(UNAUTHORIZED, "user_error_provided_token_invalid");

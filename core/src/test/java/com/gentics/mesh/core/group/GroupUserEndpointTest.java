@@ -29,6 +29,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.event.group.GroupUserAssignModel;
@@ -51,7 +52,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 			GroupDaoWrapper groupDao = tx.data().groupDao();
 			UserDaoWrapper userDao = tx.data().userDao();
 
-			User extraUser = userDao.create("extraUser", user());
+			HibUser extraUser = userDao.create("extraUser", user());
 			groupDao.addUser(group(), extraUser);
 			extraUserUuid = extraUser.getUuid();
 			roleDao.grantPermissions(role(), extraUser, READ_PERM);
@@ -80,7 +81,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			UserDaoWrapper userDao = tx.data().userDao();
 
-			User extraUser = userDao.create("extraUser", user());
+			HibUser extraUser = userDao.create("extraUser", user());
 			userUuid = extraUser.getUuid();
 			roleDao.grantPermissions(role(), extraUser, READ_PERM);
 			tx.success();
@@ -96,12 +97,12 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 		final String userLastname = "Einstein";
 		final String groupUuid = groupUuid();
 		final String groupName = tx(() -> group().getName());
-		User extraUser = tx(tx -> {
+		HibUser extraUser = tx(tx -> {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			UserDaoWrapper userDao = tx.data().userDao();
 			GroupDaoWrapper groupDao = tx.data().groupDao();
 
-			User user = userDao.create("extraUser", user());
+			HibUser user = userDao.create("extraUser", user());
 			user.setFirstname(userFirstname);
 			user.setLastname(userLastname);
 			roleDao.grantPermissions(role(), user, READ_PERM);
@@ -143,7 +144,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddUserToGroupWithoutPermOnGroup() throws Exception {
-		User extraUser;
+		HibUser extraUser;
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			UserDaoWrapper userDao = tx.data().userDao();
@@ -166,7 +167,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddUserToGroupWithoutPermOnUser() throws Exception {
-		User extraUser;
+		HibUser extraUser;
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			UserDaoWrapper userDao = tx.data().userDao();
@@ -209,12 +210,12 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 		final String userFirstname = "Albert";
 		final String userLastname = "Einstein";
 
-		User extraUser = tx(tx -> {
+		HibUser extraUser = tx(tx -> {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			UserDaoWrapper userDao = tx.data().userDao();
 			GroupDaoWrapper groupRoot = tx.data().groupDao();
 
-			User user = userDao.create("extraUser", user());
+			HibUser user = userDao.create("extraUser", user());
 			user.setFirstname(userFirstname);
 			user.setLastname(userLastname);
 			roleDao.grantPermissions(role(), user, READ_PERM);

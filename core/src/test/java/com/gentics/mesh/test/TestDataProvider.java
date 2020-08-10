@@ -27,7 +27,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
@@ -48,6 +48,7 @@ import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
@@ -110,7 +111,7 @@ public class TestDataProvider {
 	private Map<String, Node> folders = new HashMap<>();
 	private Map<String, Node> contents = new HashMap<>();
 	private Map<String, Tag> tags = new HashMap<>();
-	private Map<String, User> users = new HashMap<>();
+	private Map<String, HibUser> users = new HashMap<>();
 	private Map<String, Role> roles = new HashMap<>();
 	private Map<String, Group> groups = new HashMap<>();
 
@@ -207,21 +208,21 @@ public class TestDataProvider {
 		boot.userDao().findByUsername("admin").setPasswordHash(hash);
 	}
 
-	private void addPermissions(MeshVertex vertex) {
-		addPermissions(Arrays.asList(vertex));
+	private void addPermissions(HibElement element) {
+		addPermissions(Arrays.asList(element));
 	}
 
 	public TestSize getSize() {
 		return size;
 	}
 
-	private void addPermissions(Collection<? extends MeshVertex> elements) {
+	private void addPermissions(Collection<? extends HibElement> elements) {
 		RoleDaoWrapper roleDao = Tx.get().data().roleDao();
 
 		Role role = userInfo.getRole();
-		for (MeshVertex meshVertex : elements) {
+		for (HibElement meshVertex : elements) {
 			if (log.isTraceEnabled()) {
-				log.trace("Granting CRUD permissions on {" + meshVertex.getElement().getId() + "} with role {" + role.getElement().getId() + "}");
+				log.trace("Granting CRUD permissions on {" + meshVertex.getId() + "} with role {" + role.getElement().getId() + "}");
 			}
 			roleDao.grantPermissions(role, meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM, READ_PUBLISHED_PERM, PUBLISH_PERM);
 		}
@@ -330,7 +331,7 @@ public class TestDataProvider {
 		log.debug("Creating user with username: " + username + " and password: " + password);
 
 		String email = firstname.toLowerCase().substring(0, 1) + "." + lastname.toLowerCase() + "@spam.gentics.com";
-		User user = userDao.create(username, null);
+		HibUser user = userDao.create(username, null);
 		// Precomputed hash since hashing takes some time and we want to keep out tests fast
 		user.setPasswordHash(hashedPassword);
 		user.setFirstname(firstname);
@@ -375,7 +376,7 @@ public class TestDataProvider {
 		ProjectDaoWrapper projectDao = boot.projectDao();
 		EventQueueBatch batch = Mockito.mock(EventQueueBatch.class);
 		project = projectDao.create(PROJECT_NAME, null, null, null, userInfo.getUser(), getSchemaContainer("folder").getLatestVersion(), batch);
-		User jobUser = userInfo.getUser();
+		HibUser jobUser = userInfo.getUser();
 		project.getSchemaContainerRoot().addSchemaContainer(jobUser, getSchemaContainer("folder"), batch);
 		project.getSchemaContainerRoot().addSchemaContainer(jobUser, getSchemaContainer("content"), batch);
 		project.getSchemaContainerRoot().addSchemaContainer(jobUser, getSchemaContainer("binary_content"), batch);
@@ -392,7 +393,7 @@ public class TestDataProvider {
 			roles.put(guestRole.getName(), guestRole);
 
 			// Extra User
-			User user = userDao.create("guest", userInfo.getUser());
+			HibUser user = userDao.create("guest", userInfo.getUser());
 			user.addGroup(guestGroup);
 			user.setFirstname("Guest Firstname");
 			user.setLastname("Guest Lastname");
@@ -686,7 +687,7 @@ public class TestDataProvider {
 		return folders;
 	}
 
-	public Map<String, User> getUsers() {
+	public Map<String, HibUser> getUsers() {
 		return users;
 	}
 
@@ -723,7 +724,7 @@ public class TestDataProvider {
 		return getUserInfo().getRole();
 	}
 
-	public User user() {
+	public HibUser user() {
 		return getUserInfo().getUser();
 	}
 

@@ -29,7 +29,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.DummyEventQueueBatch;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.HasPermissions;
-import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.NodeMigrationUser;
@@ -42,12 +42,13 @@ import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
-import com.gentics.mesh.core.data.impl.UserWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
@@ -113,7 +114,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWra
 		}
 		String groupUuid = requestModel.getGroupUuid();
 		String userName = requestModel.getUsername();
-		User conflictingUser = findByUsername(userName);
+		HibUser conflictingUser = findByUsername(userName);
 		if (conflictingUser != null) {
 			throw conflict(conflictingUser.getUuid(), userName, "user_conflicting_username");
 		}
@@ -173,21 +174,21 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWra
 	}
 
 	@Override
-	public boolean updateDry(User user, InternalActionContext ac) {
+	public boolean updateDry(HibUser user, InternalActionContext ac) {
 		return update(user, ac, new DummyEventQueueBatch(), true);
 	}
 
 	@Override
-	public boolean update(User user, InternalActionContext ac, EventQueueBatch batch) {
+	public boolean update(HibUser user, InternalActionContext ac, EventQueueBatch batch) {
 		return update(user, ac, batch, false);
 	}
 
-	private boolean update(User user, InternalActionContext ac, EventQueueBatch batch, boolean dry) {
+	private boolean update(HibUser user, InternalActionContext ac, EventQueueBatch batch, boolean dry) {
 		UserRoot userRoot = boot.get().userRoot();
 		UserUpdateRequest requestModel = ac.fromJson(UserUpdateRequest.class);
 		boolean modified = false;
 		if (shouldUpdate(requestModel.getUsername(), user.getUsername())) {
-			User conflictingUser = findByUsername(requestModel.getUsername());
+			HibUser conflictingUser = findByUsername(requestModel.getUsername());
 			if (conflictingUser != null && !conflictingUser.getUuid().equals(user.getUuid())) {
 				throw conflict(conflictingUser.getUuid(), requestModel.getUsername(), "user_conflicting_username");
 			}
@@ -294,7 +295,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWra
 	}
 
 	@Override
-	public UserResponse transformToRestSync(User user, InternalActionContext ac, int level, String... languageTags) {
+	public UserResponse transformToRestSync(HibUser user, InternalActionContext ac, int level, String... languageTags) {
 		UserRoot userRoot = boot.get().userRoot();
 		GenericParameters generic = ac.getGenericParameters();
 		FieldsSet fields = generic.getFields();
@@ -330,8 +331,8 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWra
 		if (fields.has("forcedPasswordChange")) {
 			restUser.setForcedPasswordChange(user.isForcedPasswordChange());
 		}
-		user.fillCommonRestFields(ac, fields, restUser);
-		setRolePermissions(user, ac, restUser);
+		user.toUser().fillCommonRestFields(ac, fields, restUser);
+		setRolePermissions(user.toUser(), ac, restUser);
 
 		return restUser;
 	}
@@ -344,11 +345,11 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWra
 	 * @param level
 	 *            Current depth level of transformation
 	 */
-	private void setNodeReference(User user, InternalActionContext ac, UserResponse restUser, int level) {
+	private void setNodeReference(HibUser user, InternalActionContext ac, UserResponse restUser, int level) {
 		NodeParameters parameters = ac.getNodeParameters();
 
 		// Check whether a node reference was set.
-		Node node = user.getReferencedNode();
+		Node node = ((User)user).getReferencedNode();
 		if (node == null) {
 			return;
 		}
@@ -370,7 +371,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWra
 	 * @param ac
 	 * @param restUser
 	 */
-	private void setGroups(User user, InternalActionContext ac, UserResponse restUser) {
+	private void setGroups(HibUser user, InternalActionContext ac, UserResponse restUser) {
 		// TODO filter by permissions
 		for (Group group : user.getGroups()) {
 			GroupReference reference = group.transformToReference();
@@ -386,13 +387,14 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWra
 	 * @return Fluent API
 	 */
 	@Override
-	public User setPassword(User user, String password) {
+	public HibUser setPassword(HibUser user, String password) {
 		user.setPasswordHash(passwordEncoder.encode(password));
 		return user;
 	}
 
 	@Override
-	public boolean hasPermission(User user, MeshVertex vertex, GraphPermission permission) {
+	@Deprecated
+	public boolean hasPermission(HibUser user, MeshVertex vertex, GraphPermission permission) {
 		if (log.isTraceEnabled()) {
 			log.debug("Checking permissions for vertex {" + vertex.getUuid() + "}");
 		}
@@ -400,14 +402,22 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWra
 	}
 
 	@Override
-	public boolean hasPermissionForId(User user, Object elementId, GraphPermission permission) {
-		if (permissionCache.get().hasPermission(user.id(), permission, elementId)) {
+	public boolean hasPermission(HibUser user, HibElement element, GraphPermission permission) {
+		if (log.isTraceEnabled()) {
+			log.debug("Checking permissions for vertex {" + element.getUuid() + "}");
+		}
+		return hasPermissionForId(user, element.getId(), permission);
+	}
+	
+	@Override
+	public boolean hasPermissionForId(HibUser user, Object elementId, GraphPermission permission) {
+		if (permissionCache.get().hasPermission(user.getId(), permission, elementId)) {
 			return true;
 		} else {
 			// Admin users have all permissions
 			if (user.isAdmin()) {
 				for (GraphPermission perm : GraphPermission.values()) {
-					permissionCache.get().store(user.id(), perm, elementId);
+					permissionCache.get().store(user.getId(), perm, elementId);
 				}
 				return true;
 			}
@@ -416,7 +426,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWra
 			// Find all roles that are assigned to the user by checking the
 			// shortcut edge from the index
 			String idxKey = "e." + ASSIGNED_TO_ROLE + "_out";
-			Iterable<Edge> roleEdges = graph.getEdges(idxKey.toLowerCase(), user.id());
+			Iterable<Edge> roleEdges = graph.getEdges(idxKey.toLowerCase(), user.getId());
 			Vertex vertex = graph.getVertex(elementId);
 			for (Edge roleEdge : roleEdges) {
 				Vertex role = roleEdge.getVertex(Direction.IN);
@@ -428,7 +438,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWra
 					// reduce the invalidation calls.
 					// This way we do not need to invalidate the cache if a role
 					// is removed from a group or a role is deleted.
-					permissionCache.get().store(user.id(), permission, elementId);
+					permissionCache.get().store(user.getId(), permission, elementId);
 					return true;
 				}
 			}
@@ -461,27 +471,27 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWra
 	}
 
 	@Override
-	public User findByUsername(String username) {
+	public HibUser findByUsername(String username) {
 		UserRoot userRoot = boot.get().userRoot();
-		return UserWrapper.wrap(userRoot.findByUsername(username));
+		return userRoot.findByUsername(username);
 	}
 
 	@Override
-	public User findByUuid(String uuid) {
+	public HibUser findByUuid(String uuid) {
 		UserRoot userRoot = boot.get().userRoot();
-		return UserWrapper.wrap(userRoot.findByUuid(uuid));
+		return userRoot.findByUuid(uuid);
 	}
 
 	@Override
-	public User loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
+	public HibUser loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
 		UserRoot userRoot = boot.get().userRoot();
-		return UserWrapper.wrap(userRoot.loadObjectByUuid(ac, uuid, perm));
+		return userRoot.loadObjectByUuid(ac, uuid, perm);
 	}
 
 	@Override
-	public User loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+	public HibUser loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
 		UserRoot userRoot = boot.get().userRoot();
-		return UserWrapper.wrap(userRoot.loadObjectByUuid(ac, uuid, perm, errorIfNotFound));
+		return userRoot.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
 	}
 
 	@Override
@@ -497,7 +507,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWra
 	}
 
 	@Override
-	public void delete(User user, BulkActionContext bac) {
+	public void delete(HibUser user, BulkActionContext bac) {
 		// TODO don't allow this for the admin user
 		// disable();
 		// TODO we should not really delete users. Instead we should remove
@@ -508,13 +518,13 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWra
 		// }
 		// outE(HAS_USER).removeAll();
 		bac.add(user.onDeleted());
-		user.getElement().remove();
+		user.remove();
 		bac.process();
 		permissionCache.get().clear();
 	}
 
 	@Override
-	public User create(String username, User creator, String uuid) {
+	public User create(String username, HibUser creator, String uuid) {
 		UserRoot userRoot = boot.get().userRoot();
 		User user = userRoot.create();
 		if (uuid != null) {
@@ -534,7 +544,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWra
 	}
 
 	@Override
-	public User inheritRolePermissions(User user, MeshVertex sourceNode, MeshVertex targetNode) {
+	public HibUser inheritRolePermissions(HibUser user, MeshVertex sourceNode, MeshVertex targetNode) {
 		for (GraphPermission perm : GraphPermission.values()) {
 			String key = perm.propertyKey();
 			targetNode.property(key, sourceNode.property(key));
@@ -543,7 +553,12 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWra
 	}
 
 	@Override
-	public boolean canReadNode(User user, InternalActionContext ac, Node node) {
+	public HibUser inheritRolePermissions(HibUser user, HibElement source, HibElement target) {
+		return inheritRolePermissions(user, (MeshVertex)source, (MeshVertex)target);
+	}
+
+	@Override
+	public boolean canReadNode(HibUser user, InternalActionContext ac, Node node) {
 		if (user instanceof NodeMigrationUser) {
 			return true;
 		}
@@ -556,7 +571,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWra
 	}
 
 	@Override
-	public String getSubETag(User user, InternalActionContext ac) {
+	public String getSubETag(HibUser user, InternalActionContext ac) {
 		StringBuilder keyBuilder = new StringBuilder();
 		keyBuilder.append(user.getLastEditedTimestamp());
 
@@ -581,7 +596,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWra
 	}
 
 	@Override
-	public boolean hasReadPermission(User user, NodeGraphFieldContainer container, String branchUuid, String requestedVersion) {
+	public boolean hasReadPermission(HibUser user, NodeGraphFieldContainer container, String branchUuid, String requestedVersion) {
 		Node node = container.getParentNode();
 		if (hasPermission(user, node, READ_PERM)) {
 			return true;
@@ -594,7 +609,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWra
 	}
 
 	@Override
-	public PermissionInfo getPermissionInfo(User user, MeshVertex vertex) {
+	public PermissionInfo getPermissionInfo(HibUser user, MeshVertex vertex) {
 		PermissionInfo info = new PermissionInfo();
 		Set<GraphPermission> permissions = getPermissions(user, vertex);
 		for (GraphPermission perm : permissions) {
@@ -606,7 +621,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWra
 	}
 
 	@Override
-	public Set<GraphPermission> getPermissions(User user, MeshVertex vertex) {
+	public Set<GraphPermission> getPermissions(HibUser user, MeshVertex vertex) {
 		Predicate<? super GraphPermission> isValidPermission = perm -> perm != READ_PUBLISHED_PERM && perm != PUBLISH_PERM
 			|| vertex.hasPublishPermissions();
 
@@ -618,14 +633,14 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWra
 	}
 	
 	@Override
-	public User addCRUDPermissionOnRole(User user, HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode) {
+	public HibUser addCRUDPermissionOnRole(HibUser user, HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode) {
 		addPermissionsOnRole(user, sourceNode, permission, targetNode, CREATE_PERM, READ_PERM, UPDATE_PERM, DELETE_PERM, PUBLISH_PERM,
 			READ_PUBLISHED_PERM);
 		return user;
 	}
 
 	@Override
-	public User addPermissionsOnRole(User user, HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode,
+	public HibUser addPermissionsOnRole(HibUser user, HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode,
 		GraphPermission... toGrant) {
 		//TODO inject dao via DI
 		RoleDaoWrapper roleDao = Tx.get().data().roleDao();

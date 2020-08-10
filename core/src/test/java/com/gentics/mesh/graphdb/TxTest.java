@@ -21,13 +21,13 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -75,7 +75,7 @@ public class TxTest extends AbstractMeshTest {
 
 	@Test
 	public void testMultiThreadedModifications() throws InterruptedException {
-		User user = db().tx(() -> user());
+		HibUser user = db().tx(() -> user());
 
 		Runnable task2 = () -> {
 			try (Tx tx = tx()) {
@@ -160,7 +160,7 @@ public class TxTest extends AbstractMeshTest {
 			TagFamily tagFamily = tagFamily("colors");
 			List<Thread> threads = new ArrayList<>();
 			Project project = project();
-			User user = user();
+			HibUser user = user();
 
 			for (int i = 0; i < nThreads; i++) {
 				final int threadNo = i;
@@ -184,7 +184,7 @@ public class TxTest extends AbstractMeshTest {
 								// Load used elements
 								TagFamily reloadedTagFamily = tx.getGraph().getFramedVertexExplicit(TagFamilyImpl.class, tagFamily.getId());
 								Node reloadedNode = tx.getGraph().getFramedVertexExplicit(NodeImpl.class, node.getId());
-								User reloadedUser = tx.getGraph().getFramedVertexExplicit(UserImpl.class, user.getId());
+								HibUser reloadedUser = tx.getGraph().getFramedVertexExplicit(UserImpl.class, user.getId());
 								Project reloadedProject = tx.getGraph().getFramedVertexExplicit(ProjectImpl.class, project.getId());
 
 								Tag tag = reloadedTagFamily.create("bogus_" + threadNo + "_" + currentRun, project(), reloadedUser);

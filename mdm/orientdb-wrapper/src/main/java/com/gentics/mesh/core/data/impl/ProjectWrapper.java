@@ -22,6 +22,7 @@ import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
@@ -83,12 +84,12 @@ public class ProjectWrapper implements Project {
 		return delegate.getRolePermissions(ac, roleUuid);
 	}
 
-	public UserWrapper getEditor() {
-		return UserWrapper.wrap(delegate.getEditor());
+	public HibUser getEditor() {
+		return delegate.getEditor();
 	}
 
-	public UserWrapper getCreator() {
-		return UserWrapper.wrap(delegate.getCreator());
+	public HibUser getCreator() {
+		return delegate.getCreator();
 	}
 
 	public void setUuid(String uuid) {
@@ -107,11 +108,11 @@ public class ProjectWrapper implements Project {
 		return delegate.getAPIPath(ac);
 	}
 
-	public void setEditor(UserWrapper user) {
+	public void setEditor(HibUser user) {
 		delegate.setEditor(user);
 	}
 
-	public void setCreator(UserWrapper user) {
+	public void setCreator(HibUser user) {
 		delegate.setCreator(user);
 	}
 
@@ -356,7 +357,7 @@ public class ProjectWrapper implements Project {
 		delegate.removeTypeResolution();
 	}
 
-	public Node createBaseNode(User creator, SchemaVersion schemaVersion) {
+	public Node createBaseNode(HibUser creator, SchemaVersion schemaVersion) {
 		return delegate.createBaseNode(creator, schemaVersion);
 	}
 

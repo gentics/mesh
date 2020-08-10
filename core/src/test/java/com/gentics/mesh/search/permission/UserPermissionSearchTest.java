@@ -7,9 +7,10 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
@@ -28,7 +29,7 @@ public class UserPermissionSearchTest extends AbstractMeshTest {
 		UserResponse response = createUser(username);
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
-			User user = meshRoot().getUserRoot().findByUuid(response.getUuid());
+			HibUser user = meshRoot().getUserRoot().findByUuid(response.getUuid());
 			System.out.println("User Uuid:" + response.getUuid());
 			for (Role role : user().getRoles()) {
 				roleDao.revokePermissions(role, user, GraphPermission.READ_PERM);
@@ -48,7 +49,8 @@ public class UserPermissionSearchTest extends AbstractMeshTest {
 		// Now add the perm
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
-			User user = meshRoot().getUserRoot().findByUuid(response.getUuid());
+			UserDaoWrapper userDao = tx.data().userDao();
+			HibUser user = userDao.findByUuid(response.getUuid());
 			System.out.println("User Uuid:" + response.getUuid());
 			roleDao.grantPermissions(role(), user, GraphPermission.READ_PERM);
 			tx.success();

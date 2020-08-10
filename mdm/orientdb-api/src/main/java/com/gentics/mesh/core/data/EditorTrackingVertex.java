@@ -2,12 +2,14 @@ package com.gentics.mesh.core.data;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.EDITOR_UUID_PROPERTY_KEY;
 
+import com.gentics.mesh.core.data.user.HibEditorTracking;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.util.DateUtils;
 
 /**
  * Interface for vertices that track their editor and editing time
  */
-public interface EditorTrackingVertex extends MeshVertex {
+public interface EditorTrackingVertex extends MeshVertex, HibEditorTracking {
 
 	String LAST_EDIT_TIMESTAMP_PROPERTY_KEY = "last_edited_timestamp";
 
@@ -16,7 +18,7 @@ public interface EditorTrackingVertex extends MeshVertex {
 	 * 
 	 * @return Editor
 	 */
-	User getEditor();
+	HibUser getEditor();
 
 	/**
 	 * Set the editor of the vertex.

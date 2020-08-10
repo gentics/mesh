@@ -10,8 +10,8 @@ import java.util.stream.Stream;
 
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
@@ -57,7 +57,7 @@ public interface SchemaVersion
 	 * @param type Container type
 	 * @return
 	 */
-	TraversalResult<? extends Node> getNodes(String branchUuid, User user, ContainerType type);
+	TraversalResult<? extends Node> getNodes(String branchUuid, HibUser user, ContainerType type);
 
 	/**
 	 * Check whether versioning is disabled by default or via the schema setting.

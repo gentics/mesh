@@ -15,21 +15,17 @@ import javax.inject.Singleton;
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserResetTokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.core.verticle.handler.CreateAction;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.core.verticle.handler.LoadAction;
-import com.gentics.mesh.core.verticle.handler.LoadAllAction;
-import com.gentics.mesh.core.verticle.handler.UpdateAction;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.DateUtils;
@@ -42,7 +38,7 @@ import io.vertx.core.logging.LoggerFactory;
  * Handler which contains methods for user related requests.
  */
 @Singleton
-public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
+public class UserCrudHandler extends AbstractCrudHandler<HibUser, UserResponse> {
 
 	private static final Logger log = LoggerFactory.getLogger(UserCrudHandler.class);
 
@@ -58,31 +54,8 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 	}
 
 	@Override
-	public LoadAction<User> loadAction() {
-		return (tx, ac, uuid, perm, errorIfNotFound) -> {
-			return tx.data().userDao().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
-		};
-	}
-
-	@Override
-	public LoadAllAction<User> loadAllAction() {
-		return (tx, ac, pagingInfo) -> {
-			return tx.data().userDao().findAll(ac, pagingInfo);
-		};
-	}
-
-	@Override
-	public CreateAction<User> createAction() {
-		return (tx, ac, batch, uuid) -> {
-			return tx.data().userDao().create(ac, batch, uuid);
-		};
-	}
-
-	@Override
-	public UpdateAction<User> updateAction() {
-		return (tx, user, ac, batch) -> {
-			return tx.data().userDao().update(user, ac, batch);
-		};
+	public UserCrudActions crudActions() {
+		return new UserCrudActions();
 	}
 
 	/**
@@ -106,10 +79,10 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 
 				// 1. Load the user that should be used - read perm implies that the
 				// user is able to read the attached permissions
-				User user = userDao.loadObjectByUuid(ac, userUuid, READ_PERM);
+				HibUser user = userDao.loadObjectByUuid(ac, userUuid, READ_PERM);
 
 				// 2. Resolve the path to element that is targeted
-				MeshVertex targetElement = boot.meshRoot().resolvePathToElement(pathToElement);
+				HibElement targetElement = boot.meshRoot().resolvePathToElement(pathToElement);
 				if (targetElement == null) {
 					throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
 				}
@@ -141,7 +114,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				// 1. Load the user that should be used
-				User user = tx.data().userDao().loadObjectByUuid(ac, userUuid, CREATE_PERM);
+				HibUser user = tx.data().userDao().loadObjectByUuid(ac, userUuid, CREATE_PERM);
 
 				// 2. Generate a new token and store it for the user
 				UserResetTokenResponse tokenResponse = db.tx(() -> {
@@ -174,7 +147,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				// 1. Load the user that should be used
-				User user = tx.data().userDao().loadObjectByUuid(ac, userUuid, UPDATE_PERM);
+				HibUser user = tx.data().userDao().loadObjectByUuid(ac, userUuid, UPDATE_PERM);
 
 				// 2. Generate the API key for the user
 				UserAPITokenResponse apiKeyRespose = db.tx(() -> {
@@ -206,7 +179,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				// 1. Load the user that should be used
-				User user = tx.data().userDao().loadObjectByUuid(ac, userUuid, UPDATE_PERM);
+				HibUser user = tx.data().userDao().loadObjectByUuid(ac, userUuid, UPDATE_PERM);
 
 				// 2. Generate the API key for the user
 				GenericMessageResponse message = db.tx(() -> {

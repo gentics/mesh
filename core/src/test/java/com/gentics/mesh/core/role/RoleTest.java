@@ -19,7 +19,6 @@ import org.junit.Test;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
@@ -32,6 +31,8 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
+import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
@@ -102,7 +103,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testIsPermitted() throws Exception {
 		try (Tx tx = tx()) {
 			UserDaoWrapper userDao = tx.data().userDao();
-			User user = user();
+			HibUser user = user();
 			int nRuns = 2000;
 			for (int i = 0; i < nRuns; i++) {
 				userDao.hasPermission(user, folder("news"), READ_PERM);
@@ -162,7 +163,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			UserDaoWrapper userDao = tx.data().userDao();
 			roleDao.revokePermissions(role(), meshRoot().getGroupRoot(), CREATE_PERM);
-			User user = user();
+			HibUser user = user();
 			assertFalse("The create permission to the groups root node should have been revoked.", userDao.hasPermission(user, meshRoot().getGroupRoot(), CREATE_PERM));
 		}
 	}
@@ -188,7 +189,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			UserDaoWrapper userDao = tx.data().userDao();
-			MeshAuthUser requestUser = user().reframe(MeshAuthUserImpl.class);
+			MeshAuthUser requestUser = ((User)user()).reframe(MeshAuthUserImpl.class);
 			// userRoot.findMeshAuthUserByUsername(requestUser.getUsername())
 			Node parentNode = folder("news");
 			assertNotNull(parentNode);

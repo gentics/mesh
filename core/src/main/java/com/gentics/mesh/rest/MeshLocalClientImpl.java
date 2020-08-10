@@ -13,8 +13,8 @@ import org.apache.commons.io.IOUtils;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.gentics.mesh.context.impl.LocalActionContextImpl;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.endpoint.admin.AdminHandler;
 import com.gentics.mesh.core.endpoint.admin.plugin.PluginHandler;
 import com.gentics.mesh.core.endpoint.auth.AuthenticationRestHandler;

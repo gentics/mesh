@@ -6,7 +6,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.MeshCoreVertex;
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.bulk.DeleteBulkEntry;
 import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
@@ -26,7 +26,7 @@ import io.reactivex.Observable;
  *
  * @param <T>
  */
-public interface IndexHandler<T extends MeshCoreVertex<?, T>> {
+public interface IndexHandler<T extends HibElement> {
 
 	/**
 	 * Initialise the search index by creating the index first and setting the mapping afterwards.

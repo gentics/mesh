@@ -8,10 +8,10 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.event.EventQueueBatch;
 
 /**
@@ -33,7 +33,7 @@ public class ProjectMicroschemaContainerRootImpl extends MicroschemaContainerRoo
 	}
 
 	@Override
-	public void addMicroschema(User user, Microschema microschema, EventQueueBatch batch) {
+	public void addMicroschema(HibUser user, Microschema microschema, EventQueueBatch batch) {
 		Project project = getProject();
 		batch.add(project.onMicroschemaAssignEvent(microschema, ASSIGNED));
 		super.addMicroschema(user, microschema, batch);

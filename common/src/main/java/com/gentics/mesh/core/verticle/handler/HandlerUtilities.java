@@ -21,7 +21,8 @@ import javax.inject.Singleton;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.MeshCoreVertex;
+import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.db.Tx;
@@ -75,30 +76,30 @@ public class HandlerUtilities {
 	 * @param createAction
 	 * @param updateAction 
 	 */
-	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createElement(InternalActionContext ac, LoadAction<T> loadAction, CreateAction<T> createAction, UpdateAction<T> updateAction) {
-		createOrUpdateElement(ac, null, loadAction, createAction, updateAction);
+	public <T extends HibCoreElement, RM extends RestModel> void createElement(InternalActionContext ac, CRUDActions<T, RM> actions) {
+		createOrUpdateElement(ac, null, actions);
 	}
 
 	/**
 	 * Delete the specified element.
 	 * 
 	 * @param ac
-	 * @param loadAction
+	 * @param actions
 	 *            Handler which provides the root vertex which will be used to load the element
 	 * @param uuid
 	 *            Uuid of the element which should be deleted
 	 */
-	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void deleteElement(InternalActionContext ac, LoadAction<T> loadAction,
+	public <T extends HibCoreElement, RM extends RestModel> void deleteElement(InternalActionContext ac, CRUDActions<T, RM> actions,
 		String uuid) {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			syncTx(ac, tx -> {
-				T element = loadAction.load(tx, ac, uuid, DELETE_PERM, true);
+				T element = actions.load(tx, ac, uuid, DELETE_PERM, true);
 
 				// Load the name and uuid of the element. We need this info after deletion.
 				String elementUuid = element.getUuid();
 				bulkableAction(bac -> {
 					bac.setRootCause(element.getTypeInfo().getType(), elementUuid, DELETE);
-					element.delete(bac);
+					actions.delete(tx, element, bac);
 				});
 				log.info("Deleted element {" + elementUuid + "} for type {" + element.getClass().getSimpleName() + "}");
 			}, () -> ac.send(NO_CONTENT));
@@ -112,13 +113,13 @@ public class HandlerUtilities {
 	 * @param ac
 	 * @param uuid
 	 *            Uuid of the element which should be updated
-	 * @param loadAction
+	 * @param actions
 	 *            Handler which provides the root vertex which should be used when loading the element
 	 * @param createAction
 	 */
-	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void updateElement(InternalActionContext ac, String uuid,
-		LoadAction<T> loadAction, CreateAction<T> createAction, UpdateAction<T> updateAction) {
-		createOrUpdateElement(ac, uuid, loadAction, createAction, updateAction);
+	public <T extends HibCoreElement, RM extends RestModel> void updateElement(InternalActionContext ac, String uuid,
+		CRUDActions<T, RM> actions) {
+		createOrUpdateElement(ac, uuid, actions);
 	}
 
 	/**
@@ -127,11 +128,10 @@ public class HandlerUtilities {
 	 * @param ac
 	 * @param uuid
 	 *            Uuid of the element to create or update. If null, an element will be created with random Uuid
-	 * @param loadAction
-	 * @param createAction
+	 * @param actions
 	 */
-	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createOrUpdateElement(InternalActionContext ac, String uuid,
-		LoadAction<T> loadAction, CreateAction<T> createAction, UpdateAction<T> updateAction) {
+	public <T extends HibCoreElement, RM extends RestModel> void createOrUpdateElement(InternalActionContext ac, String uuid,
+		CRUDActions<T, RM> actions) {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			AtomicBoolean created = new AtomicBoolean(false);
 			syncTx(ac, tx -> {
@@ -141,22 +141,23 @@ public class HandlerUtilities {
 					if (!UUIDUtil.isUUID(uuid)) {
 						throw error(BAD_REQUEST, "error_illegal_uuid", uuid);
 					}
-					element = loadAction.load(tx, ac, uuid, GraphPermission.UPDATE_PERM, false);
+					element = actions.load(tx, ac, uuid, GraphPermission.UPDATE_PERM, false);
 				}
 
 				// Check whether we need to update a found element or whether we need to create a new one.
 				if (element != null) {
 					final T updateElement = element;
 					eventAction(batch -> {
-						return updateAction.update(tx, updateElement, ac, batch);
+						return actions.update(tx, updateElement, ac, batch);
 					});
-					return updateElement.transformToRestSync(ac, 0);
+					RM model =  actions.transformToRestSync(tx, updateElement, ac);
+					return model;
 				} else {
 					T createdElement = eventAction(batch -> {
 						created.set(true);
-						return createAction.create(tx, ac, batch, uuid);
+						return actions.create(tx, ac, batch, uuid);
 					});
-					RM model = createdElement.transformToRestSync(ac, 0);
+					RM model = actions.transformToRestSync(tx, createdElement, ac);
 					String path = createdElement.getAPIPath(ac);
 					ResultInfo info = new ResultInfo(model);
 					info.setProperty("path", path);
@@ -179,11 +180,11 @@ public class HandlerUtilities {
 	 * @param perm
 	 *            Permission to check against when loading the element
 	 */
-	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElement(InternalActionContext ac, String uuid,
-		LoadAction<T> action, GraphPermission perm) {
+	public <T extends HibCoreElement, RM extends RestModel> void readElement(InternalActionContext ac, String uuid,
+		CRUDActions<T, RM> actions, GraphPermission perm) {
 
 		syncTx(ac, tx -> {
-			T element = action.load(tx, ac, uuid, perm, true);
+			T element = actions.load(tx, ac, uuid, perm, true);
 
 			// Handle etag
 			if (ac.getGenericParameters().getETag()) {
@@ -193,7 +194,7 @@ public class HandlerUtilities {
 					throw new NotModifiedException();
 				}
 			}
-			return element.transformToRestSync(ac, 0);
+			return actions.transformToRestSync(tx, element, ac);
 		}, model -> ac.send(model, OK));
 	}
 
@@ -201,14 +202,14 @@ public class HandlerUtilities {
 	 * Read a list of elements of the given root vertex and respond with a list response.
 	 * 
 	 * @param ac
-	 * @param loadAllAction
+	 * @param actions
 	 *            Handler which provides the root vertex which should be used when loading the element
 	 */
-	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElementList(InternalActionContext ac, LoadAllAction<T> loadAllAction) {
+	public <T extends HibCoreElement, RM extends RestModel> void readElementList(InternalActionContext ac, CRUDActions<T, RM> actions) {
 
 		syncTx(ac, tx -> {
 			PagingParameters pagingInfo = ac.getPagingParameters();
-			TransformablePage<? extends T> page = loadAllAction.loadAll(tx, ac, pagingInfo);
+			TransformablePage<? extends T> page = actions.loadAll(tx, ac, pagingInfo);
 
 			// Handle etag
 			if (ac.getGenericParameters().getETag()) {

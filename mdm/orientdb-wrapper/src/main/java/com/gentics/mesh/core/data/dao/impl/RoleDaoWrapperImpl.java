@@ -20,10 +20,9 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
@@ -33,6 +32,8 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RoleRoot;
+import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
@@ -84,28 +85,28 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper implements RoleDaoWra
 	}
 
 	@Override
-	public Set<GraphPermission> getPermissions(Role role, MeshVertex vertex) {
+	public Set<GraphPermission> getPermissions(Role role, HibCoreElement element) {
 		Set<GraphPermission> permissions = new HashSet<>();
-		GraphPermission[] possiblePermissions = vertex.hasPublishPermissions()
+		GraphPermission[] possiblePermissions = element.hasPublishPermissions()
 			? GraphPermission.values()
 			: GraphPermission.basicPermissions();
 
 		for (GraphPermission permission : possiblePermissions) {
-			if (hasPermission(role, permission, vertex)) {
+			if (hasPermission(role, permission, element)) {
 				permissions.add(permission);
 			}
 		}
 		return permissions;
 	}
-
+	
 	@Override
-	public boolean hasPermission(Role role, GraphPermission permission, MeshVertex vertex) {
+	public boolean hasPermission(Role role, GraphPermission permission, HibCoreElement vertex) {
 		Set<String> allowedUuids = vertex.property(permission.propertyKey());
 		return allowedUuids != null && allowedUuids.contains(role.getUuid());
 	}
 
 	@Override
-	public void grantPermissions(Role role, MeshVertex vertex, GraphPermission... permissions) {
+	public void grantPermissions(Role role, HibElement vertex, GraphPermission... permissions) {
 		for (GraphPermission permission : permissions) {
 			Set<String> allowedRoles = vertex.property(permission.propertyKey());
 			if (allowedRoles == null) {
@@ -118,7 +119,7 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper implements RoleDaoWra
 	}
 
 	@Override
-	public void revokePermissions(Role role, MeshVertex vertex, GraphPermission... permissions) {
+	public void revokePermissions(Role role, HibElement vertex, GraphPermission... permissions) {
 		boolean permissionRevoked = false;
 		for (GraphPermission permission : permissions) {
 			Set<String> allowedRoles = vertex.property(permission.propertyKey());
@@ -171,13 +172,13 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper implements RoleDaoWra
 	}
 
 	@Override
-	public Page<? extends Group> getGroups(Role role, User user, PagingParameters pagingInfo) {
+	public Page<? extends Group> getGroups(Role role, HibUser user, PagingParameters pagingInfo) {
 		RoleRoot roleRoot = boot.get().roleRoot();
 		return roleRoot.getGroups(role, user, pagingInfo);
 	}
 
 	@Override
-	public Role create(String name, User creator, String uuid) {
+	public Role create(String name, HibUser creator, String uuid) {
 		RoleRoot roleRoot = boot.get().roleRoot();
 
 		Role role = roleRoot.create();

@@ -12,14 +12,14 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 
@@ -54,7 +54,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 	}
 
 	@Override
-	public TagFamily create(String name, User creator, String uuid) {
+	public TagFamily create(String name, HibUser creator, String uuid) {
 		TagFamilyImpl tagFamily = getGraph().addFramedVertex(TagFamilyImpl.class);
 		if (uuid != null) {
 			tagFamily.setUuid(uuid);
@@ -100,7 +100,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 	}
 
 	@Override
-	public MeshVertex resolveToElement(Stack<String> stack) {
+	public HibElement resolveToElement(Stack<String> stack) {
 		if (stack.isEmpty()) {
 			return this;
 		} else {

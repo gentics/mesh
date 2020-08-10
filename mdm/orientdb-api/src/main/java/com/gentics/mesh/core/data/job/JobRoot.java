@@ -4,10 +4,10 @@ import java.time.ZonedDateTime;
 
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.user.HibUser;
 
 import io.reactivex.Completable;
 
@@ -25,7 +25,7 @@ public interface JobRoot extends RootVertex<Job> {
 	 * @param toVersion
 	 * @return Created job
 	 */
-	Job enqueueSchemaMigration(User creator, Branch branch, SchemaVersion fromVersion, SchemaVersion toVersion);
+	Job enqueueSchemaMigration(HibUser creator, Branch branch, SchemaVersion fromVersion, SchemaVersion toVersion);
 
 	/**
 	 * Enqueue a branch migration job.
@@ -36,7 +36,7 @@ public interface JobRoot extends RootVertex<Job> {
 	 * @param toVersion
 	 * @return
 	 */
-	Job enqueueBranchMigration(User creator, Branch branch, SchemaVersion fromVersion, SchemaVersion toVersion);
+	Job enqueueBranchMigration(HibUser creator, Branch branch, SchemaVersion fromVersion, SchemaVersion toVersion);
 
 	/**
 	 * Enqueue a microschema migration.
@@ -47,7 +47,7 @@ public interface JobRoot extends RootVertex<Job> {
 	 * @param toVersion
 	 * @return
 	 */
-	Job enqueueMicroschemaMigration(User creator, Branch branch, MicroschemaVersion fromVersion, MicroschemaVersion toVersion);
+	Job enqueueMicroschemaMigration(HibUser creator, Branch branch, MicroschemaVersion fromVersion, MicroschemaVersion toVersion);
 
 	/**
 	 * Enqueue a branch migration.
@@ -56,7 +56,7 @@ public interface JobRoot extends RootVertex<Job> {
 	 * @param branch
 	 * @return
 	 */
-	Job enqueueBranchMigration(User creator, Branch branch);
+	Job enqueueBranchMigration(HibUser creator, Branch branch);
 
 	/**
 	 * Enqueue a project version purge job that is limited to the given date.
@@ -66,7 +66,7 @@ public interface JobRoot extends RootVertex<Job> {
 	 * @param before
 	 * @return
 	 */
-	Job enqueueVersionPurge(User user, Project project, ZonedDateTime before);
+	Job enqueueVersionPurge(HibUser user, Project project, ZonedDateTime before);
 
 	/**
 	 * Enqueue a project version purge job.
@@ -74,7 +74,7 @@ public interface JobRoot extends RootVertex<Job> {
 	 * @param project
 	 * @return
 	 */
-	Job enqueueVersionPurge(User user, Project project);
+	Job enqueueVersionPurge(HibUser user, Project project);
 
 	/**
 	 * Process all remaining jobs.

@@ -24,11 +24,7 @@ import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.job.JobStatus;
-import com.gentics.mesh.core.verticle.handler.CreateAction;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.core.verticle.handler.LoadAction;
-import com.gentics.mesh.core.verticle.handler.LoadAllAction;
-import com.gentics.mesh.core.verticle.handler.UpdateAction;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.core.verticle.handler.WriteLockImpl;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -48,35 +44,11 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 	public JobHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, WriteLockImpl writeLock) {
 		super(db, utils, writeLock);
 		this.boot = boot;
-
 	}
 
 	@Override
-	public LoadAction<Job> loadAction() {
-		return (tx, ac, uuid, perm, errorIfNotFound) -> {
-			return tx.data().jobDao().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
-		};
-	}
-
-	@Override
-	public LoadAllAction<Job> loadAllAction() {
-		return (tx, ac, pagingInfo) -> {
-			return tx.data().jobDao().findAll(ac, pagingInfo);
-		};
-	}
-
-	@Override
-	public CreateAction<Job> createAction() {
-		return (tx, ac, batch, uuid) -> {
-			return tx.data().jobDao().create(ac, batch, uuid);
-		};
-	}
-
-	@Override
-	public UpdateAction<Job> updateAction() {
-		return (tx, element, ac, batch) -> {
-			return tx.data().jobDao().update(element, ac, batch);
-		};
+	public JobCrudActions crudActions() {
+		return new JobCrudActions();
 	}
 
 	@Override

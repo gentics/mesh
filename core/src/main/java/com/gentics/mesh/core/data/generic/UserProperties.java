@@ -9,9 +9,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.HibUser;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.user.HibUser;
 
 @Singleton
 public class UserProperties {
@@ -22,15 +22,15 @@ public class UserProperties {
 		this.boot = boot;
 	}
 
-	public User getCreator(MeshVertex vertex) {
+	public HibUser getCreator(MeshVertex vertex) {
 		return getUser(vertex, CREATOR_UUID_PROPERTY_KEY);
 	}
 
-	public User getEditor(MeshVertex vertex) {
+	public HibUser getEditor(MeshVertex vertex) {
 		return getUser(vertex, EDITOR_UUID_PROPERTY_KEY);
 	}
 
-	public void setCreator(MeshVertex vertex, User user) {
+	public void setCreator(MeshVertex vertex, HibUser user) {
 		setUser(vertex, user, CREATOR_UUID_PROPERTY_KEY);
 	}
 
@@ -46,7 +46,7 @@ public class UserProperties {
 		}
 	}
 
-	private User getUser(MeshVertex vertex, String propertyKey) {
+	private HibUser getUser(MeshVertex vertex, String propertyKey) {
 		return Optional.ofNullable(vertex)
 			.map(v -> v.<String>getProperty(propertyKey))
 			.map(boot.userDao()::findByUuid)

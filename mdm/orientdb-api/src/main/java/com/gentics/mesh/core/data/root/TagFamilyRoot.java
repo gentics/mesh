@@ -2,7 +2,7 @@ package com.gentics.mesh.core.data.root;
 
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 
 /**
@@ -21,7 +21,7 @@ public interface TagFamilyRoot extends RootVertex<TagFamily>, TransformableEleme
 	 *            User that should be used to set creator and editor references
 	 * @return Created tag family
 	 */
-	default TagFamily create(String name, User user) {
+	default TagFamily create(String name, HibUser user) {
 		return create(name, user, null);
 	}
 
@@ -36,7 +36,7 @@ public interface TagFamilyRoot extends RootVertex<TagFamily>, TransformableEleme
 	 *            Optional uuid
 	 * @return Created tag family
 	 */
-	TagFamily create(String name, User user, String uuid);
+	TagFamily create(String name, HibUser user, String uuid);
 
 	/**
 	 * Remove the tag family from the aggregation node.

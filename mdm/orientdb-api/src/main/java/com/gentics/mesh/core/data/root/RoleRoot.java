@@ -2,10 +2,9 @@ package com.gentics.mesh.core.data.root;
 
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.role.RoleResponse;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 
 /**
@@ -15,7 +14,7 @@ public interface RoleRoot extends RootVertex<Role>, TransformableElementRoot<Rol
 
 	public static final String TYPE = "roles";
 
-	Page<? extends Group> getGroups(Role role, User user, PagingParameters pagingInfo);
+	Page<? extends Group> getGroups(Role role, HibUser user, PagingParameters pagingInfo);
 
 	void addRole(Role role);
 

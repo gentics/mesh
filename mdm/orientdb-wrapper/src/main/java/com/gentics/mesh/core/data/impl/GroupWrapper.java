@@ -11,6 +11,7 @@ import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
@@ -73,12 +74,12 @@ public class GroupWrapper implements Group {
 		return delete.getRolePermissions(ac, roleUuid);
 	}
 
-	public UserWrapper getEditor() {
-		return UserWrapper.wrap(delete.getEditor());
+	public HibUser getEditor() {
+		return delete.getEditor();
 	}
 
-	public UserWrapper getCreator() {
-		return UserWrapper.wrap(delete.getCreator());
+	public HibUser getCreator() {
+		return delete.getCreator();
 	}
 
 	public void setUuid(String uuid) {

@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.event.branch.BranchMicroschemaAssignModel;
@@ -49,7 +50,7 @@ import com.gentics.mesh.parameter.PagingParameters;
  * 
  */
 public interface Branch
-	extends MeshCoreVertex<BranchResponse, Branch>, NamedElement, ReferenceableElement<BranchReference>, UserTrackingVertex, Taggable, ProjectElement {
+	extends MeshCoreVertex<BranchResponse, Branch>, NamedElement, ReferenceableElement<BranchReference>, UserTrackingVertex, Taggable, ProjectElement, HibCoreElement {
 
 	TypeInfo TYPE_INFO = new TypeInfo(BRANCH, BRANCH_CREATED, BRANCH_UPDATED, BRANCH_DELETED);
 
@@ -195,7 +196,7 @@ public interface Branch
 	 * @param batch
 	 * @return Job which was created to trigger the migration or null if no job was created because the version has already been assigned before
 	 */
-	Job assignSchemaVersion(User user, SchemaVersion schemaVersion, EventQueueBatch batch);
+	Job assignSchemaVersion(HibUser user, SchemaVersion schemaVersion, EventQueueBatch batch);
 
 	/**
 	 * Unassign all schema versions of the given schema from this branch.
@@ -239,7 +240,7 @@ public interface Branch
 	 * @param batch
 	 * @return Job which has been created if the version has not yet been assigned. Otherwise null will be returned.
 	 */
-	Job assignMicroschemaVersion(User user, MicroschemaVersion microschemaVersion, EventQueueBatch batch);
+	Job assignMicroschemaVersion(HibUser user, MicroschemaVersion microschemaVersion, EventQueueBatch batch);
 
 	/**
 	 * Unassigns all versions of the given microschema from this branch.
@@ -391,7 +392,7 @@ public interface Branch
 	 * @param params
 	 * @return Page which contains the result
 	 */
-	TransformablePage<? extends Tag> getTags(User user, PagingParameters params);
+	TransformablePage<? extends Tag> getTags(HibUser user, PagingParameters params);
 
 	/**
 	 * Tests if the branch is tagged with the given tag.

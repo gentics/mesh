@@ -76,6 +76,7 @@ import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
@@ -603,7 +604,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		if (password != null) {
 			db.tx(tx -> {
 				UserDaoWrapper userDao = tx.data().userDao();
-				User adminUser = userDao.findByName(ADMIN_USERNAME);
+				HibUser adminUser = userDao.findByName(ADMIN_USERNAME);
 				if (adminUser != null) {
 					userDao.setPassword(adminUser, password);
 					adminUser.setAdmin(true);
@@ -926,7 +927,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 
 			// Verify that an admin user exists
-			User adminUser = userDao.findByUsername(ADMIN_USERNAME);
+			HibUser adminUser = userDao.findByUsername(ADMIN_USERNAME);
 			if (adminUser == null) {
 				adminUser = userDao.create(ADMIN_USERNAME, adminUser);
 				adminUser.setAdmin(true);
@@ -1079,9 +1080,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 				meshRoot = meshRoot();
 
-				UserRoot userRoot = meshRoot().getUserRoot();
 				// Verify that an anonymous user exists
-				User anonymousUser = userRoot.findByUsername("anonymous");
+				HibUser anonymousUser = userDao.findByUsername("anonymous");
 				if (anonymousUser == null) {
 					anonymousUser = userDao.create("anonymous", anonymousUser);
 					anonymousUser.setCreator(anonymousUser);

@@ -24,6 +24,7 @@ import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
@@ -90,11 +91,11 @@ public class BranchWrapper implements Branch, HibBranch {
 		return delegate.getRolePermissions(ac, roleUuid);
 	}
 
-	public User getEditor() {
+	public HibUser getEditor() {
 		return delegate.getEditor();
 	}
 
-	public User getCreator() {
+	public HibUser getCreator() {
 		return delegate.getCreator();
 	}
 
@@ -495,7 +496,7 @@ public class BranchWrapper implements Branch, HibBranch {
 		return delegate.traversal();
 	}
 
-	public Job assignSchemaVersion(User user, SchemaVersion schemaVersion, EventQueueBatch batch) {
+	public Job assignSchemaVersion(HibUser user, SchemaVersion schemaVersion, EventQueueBatch batch) {
 		return delegate.assignSchemaVersion(user, schemaVersion, batch);
 	}
 
@@ -532,7 +533,7 @@ public class BranchWrapper implements Branch, HibBranch {
 		return delegate.findAllSchemaVersions();
 	}
 
-	public Job assignMicroschemaVersion(User user, MicroschemaVersion microschemaVersion, EventQueueBatch batch) {
+	public Job assignMicroschemaVersion(HibUser user, MicroschemaVersion microschemaVersion, EventQueueBatch batch) {
 		return delegate.assignMicroschemaVersion(user, microschemaVersion, batch);
 	}
 
@@ -612,7 +613,7 @@ public class BranchWrapper implements Branch, HibBranch {
 		return delegate.getTags();
 	}
 
-	public TransformablePage<? extends Tag> getTags(User user, PagingParameters params) {
+	public TransformablePage<? extends Tag> getTags(HibUser user, PagingParameters params) {
 		return delegate.getTags(user, params);
 	}
 

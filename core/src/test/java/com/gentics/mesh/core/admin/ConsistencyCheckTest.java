@@ -13,6 +13,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyRating;
@@ -34,7 +35,7 @@ public class ConsistencyCheckTest extends AbstractMeshTest {
 		assertEquals(CONSISTENT, response.getResult());
 
 		tx(() -> {
-			user().getVertex().removeProperty(UserImpl.USERNAME_PROPERTY_KEY);
+			((User)user()).getVertex().removeProperty(UserImpl.USERNAME_PROPERTY_KEY);
 		});
 		response = call(() -> client().checkConsistency());
 		assertThat(response.getInconsistencies()).hasSize(1);
@@ -43,7 +44,7 @@ public class ConsistencyCheckTest extends AbstractMeshTest {
 
 		// Now fix the inconsistency. Otherwise the asserter of the test (within @After) would fail.
 		tx(() -> {
-			user().getVertex().setProperty(UserImpl.USERNAME_PROPERTY_KEY, "blub");
+			((User)user()).getVertex().setProperty(UserImpl.USERNAME_PROPERTY_KEY, "blub");
 		});
 	}
 

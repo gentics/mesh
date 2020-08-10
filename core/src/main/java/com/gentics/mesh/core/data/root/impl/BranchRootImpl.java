@@ -24,10 +24,8 @@ import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -39,6 +37,8 @@ import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchReference;
@@ -64,11 +64,11 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 	}
 
 	@Override
-	public Branch create(String name, User creator, String uuid, boolean setLatest, Branch baseBranch, EventQueueBatch batch) {
+	public Branch create(String name, HibUser creator, String uuid, boolean setLatest, Branch baseBranch, EventQueueBatch batch) {
 		return create(name, creator, uuid, setLatest, baseBranch, true, batch);
 	}
 
-	private Branch create(String name, User creator, String uuid, boolean setLatest, Branch baseBranch, boolean assignSchemas,
+	private Branch create(String name, HibUser creator, String uuid, boolean setLatest, Branch baseBranch, boolean assignSchemas,
 		EventQueueBatch batch) {
 		Branch branch = getGraph().addFramedVertex(BranchImpl.class);
 		UserDaoWrapper userRoot = mesh().boot().userDao();
@@ -167,7 +167,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 		if (request.getSsl() != null) {
 			branch.setSsl(request.getSsl());
 		}
-		User creator = branch.getCreator();
+		HibUser creator = branch.getCreator();
 		mesh().boot().jobRoot().enqueueBranchMigration(creator, branch);
 		assignSchemas(creator, baseBranch, branch, true, batch);
 
@@ -187,7 +187,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 	 *            The newly created branch
 	 * @param batch
 	 */
-	private void assignSchemas(User creator, Branch baseBranch, Branch newBranch, boolean migrate, EventQueueBatch batch) {
+	private void assignSchemas(HibUser creator, Branch baseBranch, Branch newBranch, boolean migrate, EventQueueBatch batch) {
 		// Assign the same schema versions as the base branch, so that a migration can be started
 		if (baseBranch != null && migrate) {
 			for (SchemaVersion schemaVersion : baseBranch.findActiveSchemaVersions()) {

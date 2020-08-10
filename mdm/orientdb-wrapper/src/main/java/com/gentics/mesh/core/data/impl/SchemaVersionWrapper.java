@@ -13,7 +13,6 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.HibSchemaVersion;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -21,6 +20,7 @@ import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
@@ -300,7 +300,7 @@ public class SchemaVersionWrapper implements SchemaVersion, HibSchemaVersion {
 		return delegate.onUpdated();
 	}
 
-	public TraversalResult<? extends Node> getNodes(String branchUuid, User user, ContainerType type) {
+	public TraversalResult<? extends Node> getNodes(String branchUuid, HibUser user, ContainerType type) {
 		return delegate.getNodes(branchUuid, user, type);
 	}
 

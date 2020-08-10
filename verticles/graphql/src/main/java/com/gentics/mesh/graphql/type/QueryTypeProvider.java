@@ -48,13 +48,13 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.service.WebRootService;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.PermissionException;
 import com.gentics.mesh.core.rest.error.UuidNotFoundException;
@@ -300,7 +300,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 */
 	public Object userMeFetcher(DataFetchingEnvironment env) {
 		GraphQLContext gc = env.getContext();
-		User requestUser = gc.getUser();
+		HibUser requestUser = gc.getUser();
 		// No need to check for permissions. The user should always be able to read himself
 		return requestUser;
 	}

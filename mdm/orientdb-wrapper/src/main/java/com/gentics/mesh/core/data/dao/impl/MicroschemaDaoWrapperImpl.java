@@ -12,9 +12,7 @@ import javax.inject.Inject;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
@@ -27,6 +25,8 @@ import com.gentics.mesh.core.data.root.MicroschemaRoot;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
@@ -63,7 +63,7 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper implements Mic
 	}
 
 	@Override
-	public Microschema create(MicroschemaVersionModel microschema, User user, String uuid, EventQueueBatch batch) {
+	public Microschema create(MicroschemaVersionModel microschema, HibUser user, String uuid, EventQueueBatch batch) {
 		microschema.validate();
 
 		SchemaDaoWrapper schemaDao = Tx.get().data().schemaDao();

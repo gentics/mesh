@@ -10,6 +10,8 @@ import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.madl.traversal.TraversalResult;
@@ -84,7 +86,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 *            Username
 	 * @return Fluent API
 	 */
-	User setUsername(String string);
+	HibUser setUsername(String string);
 
 	/**
 	 * Return the email address.
@@ -146,7 +148,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 *            Password hash
 	 * @return Fluent API
 	 */
-	User setPasswordHash(String hash);
+	HibUser setPasswordHash(String hash);
 
 	/**
 	 * Return the referenced node which was assigned to the user.
@@ -170,7 +172,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @param params
 	 * @return
 	 */
-	Page<? extends Group> getGroups(User user, PagingParameters params);
+	Page<? extends Group> getGroups(HibUser user, PagingParameters params);
 
 	/**
 	 * Return a traversal result of groups to which the user was assigned.
@@ -185,7 +187,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @param group
 	 * @return Fluent API
 	 */
-	User addGroup(Group group);
+	HibUser addGroup(Group group);
 
 	/**
 	 * A CRC32 hash of the users {@link #getRoles roles}.
@@ -215,7 +217,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @param params
 	 * @return
 	 */
-	Page<? extends Role> getRolesViaShortcut(User user, PagingParameters params);
+	Page<? extends Role> getRolesViaShortcut(HibUser user, PagingParameters params);
 
 	/**
 	 * Update all shortcut edges.
@@ -225,7 +227,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	/**
 	 * Disable the user.
 	 */
-	User disable();
+	HibUser disable();
 
 	/**
 	 * Check whether the user is enabled.
@@ -237,7 +239,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	/**
 	 * Enable the user.
 	 */
-	User enable();
+	HibUser enable();
 
 	/**
 	 * Set the reset token for the user.
@@ -245,7 +247,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @param token
 	 * @return Fluent API
 	 */
-	User setResetToken(String token);
+	HibUser setResetToken(String token);
 
 	/**
 	 * Return the currently stored reset token.
@@ -267,7 +269,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @param force
 	 * @return
 	 */
-	User setForcedPasswordChange(boolean force);
+	HibUser setForcedPasswordChange(boolean force);
 
 	/**
 	 * Return the timestamp on which the token code was issued.
@@ -282,14 +284,14 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @param timestamp
 	 * @return Fluent API
 	 */
-	User setResetTokenIssueTimestamp(Long timestamp);
+	HibUser setResetTokenIssueTimestamp(Long timestamp);
 
 	/**
 	 * Invalidate the reset token.
 	 *
 	 * @return Fluent API
 	 */
-	default User invalidateResetToken() {
+	default HibUser invalidateResetToken() {
 		setResetToken(null);
 		setResetTokenIssueTimestamp(null);
 		return this;
@@ -308,7 +310,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @param code
 	 * @return Fluent API
 	 */
-	User setAPITokenId(String code);
+	HibUser setAPITokenId(String code);
 
 	/**
 	 * Return the timestamp when the api key token code was last issued.
@@ -324,7 +326,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 *
 	 * @return Fluent API
 	 */
-	User setAPITokenIssueTimestamp();
+	HibUser setAPITokenIssueTimestamp();
 
 	/**
 	 * Set the API token issue timestamp.
@@ -332,7 +334,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @param timestamp
 	 * @return Fluent API
 	 */
-	User setAPITokenIssueTimestamp(Long timestamp);
+	HibUser setAPITokenIssueTimestamp(Long timestamp);
 
 	/**
 	 * Return the API token issue date.

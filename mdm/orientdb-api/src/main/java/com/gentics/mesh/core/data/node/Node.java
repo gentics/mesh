@@ -18,7 +18,6 @@ import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.Language;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -30,6 +29,8 @@ import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeTaggedEventModel;
@@ -116,7 +117,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param branch
 	 * @return Page which contains the result
 	 */
-	TransformablePage<? extends Tag> getTags(User user, PagingParameters params, Branch branch);
+	TransformablePage<? extends Tag> getTags(HibUser user, PagingParameters params, Branch branch);
 
 	/**
 	 * Tests if the node is tagged with the given tag.
@@ -176,7 +177,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *            user
 	 * @return
 	 */
-	NodeGraphFieldContainer createGraphFieldContainer(String languageTag, Branch branch, User user);
+	NodeGraphFieldContainer createGraphFieldContainer(String languageTag, Branch branch, HibUser user);
 
 	/**
 	 * Like {@link #createGraphFieldContainer(Language, Branch, User)}, but let the new graph field container be a clone of the given original (if not null).
@@ -191,7 +192,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *            Whether to move the existing draft edge or create a new draft edge to the new container
 	 * @return Created container
 	 */
-	NodeGraphFieldContainer createGraphFieldContainer(String languageTag, Branch branch, User editor, NodeGraphFieldContainer original,
+	NodeGraphFieldContainer createGraphFieldContainer(String languageTag, Branch branch, HibUser editor, NodeGraphFieldContainer original,
 		boolean handleDraftEdge);
 
 	/**
@@ -323,7 +324,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param project
 	 * @return
 	 */
-	Node create(User creator, SchemaVersion schemaVersion, Project project);
+	Node create(HibUser creator, SchemaVersion schemaVersion, Project project);
 
 	/**
 	 * Create a child node in this node in the given branch
@@ -334,7 +335,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param branch
 	 * @return
 	 */
-	default Node create(User creator, SchemaVersion schemaVersion, Project project, Branch branch) {
+	default Node create(HibUser creator, SchemaVersion schemaVersion, Project project, Branch branch) {
 		return create(creator, schemaVersion, project, branch, null);
 	}
 
@@ -348,7 +349,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param uuid
 	 * @return
 	 */
-	Node create(User creator, SchemaVersion schemaVersion, Project project, Branch branch, String uuid);
+	Node create(HibUser creator, SchemaVersion schemaVersion, Project project, Branch branch, String uuid);
 
 	/**
 	 * Return a page with child nodes that are visible to the given user.
@@ -684,7 +685,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *            user
 	 * @return published field container
 	 */
-	NodeGraphFieldContainer publish(InternalActionContext ac, String languageTag, Branch branch, User user);
+	NodeGraphFieldContainer publish(InternalActionContext ac, String languageTag, Branch branch, HibUser user);
 
 	/**
 	 * Publish the node for the specified branch.

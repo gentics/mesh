@@ -14,17 +14,13 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
-import com.gentics.mesh.core.verticle.handler.CreateAction;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.core.verticle.handler.LoadAction;
-import com.gentics.mesh.core.verticle.handler.LoadAllAction;
-import com.gentics.mesh.core.verticle.handler.UpdateAction;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.ProjectPurgeParameters;
@@ -43,35 +39,8 @@ public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResp
 	}
 
 	@Override
-	public LoadAction<Project> loadAction() {
-		return (tx, ac, uuid, perm, errorIfNotFound) -> {
-			if (perm == null) {
-				return tx.data().projectDao().findByUuid(uuid);
-			} else {
-				return tx.data().projectDao().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
-			}
-		};
-	}
-
-	@Override
-	public LoadAllAction<Project> loadAllAction() {
-		return (tx, ac, pagingInfo) -> {
-			return tx.data().projectDao().findAll(ac, pagingInfo);
-		};
-	}
-
-	@Override
-	public CreateAction<Project> createAction() {
-		return (tx, ac, batch, uuid) -> {
-			return tx.data().projectDao().create(ac, batch, uuid);
-		};
-	}
-
-	@Override
-	public UpdateAction<Project> updateAction() {
-		return (tx, element, ac, batch) -> {
-			return tx.data().projectDao().update(element, ac, batch);
-		};
+	public ProjectCrudActions crudActions() {
+		return new ProjectCrudActions();
 	}
 
 	/**
@@ -84,7 +53,7 @@ public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResp
 	public void handleReadByName(InternalActionContext ac, String projectName) {
 		utils.syncTx(ac, tx -> {
 			Project project = tx.data().projectDao().findByName(ac, projectName, READ_PERM);
-			return project.transformToRestSync(ac, 0);
+			return crudActions().transformToRestSync(tx, project, ac);
 		}, model -> ac.send(model, OK));
 	}
 

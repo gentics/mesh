@@ -14,7 +14,7 @@ import java.util.List;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
-import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.tag.TagListUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagReference;
@@ -56,7 +56,7 @@ public interface Taggable {
 		Project project = getProject();
 		TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();
 		UserDaoWrapper userDao = Tx.get().data().userDao();
-		User user = ac.getUser();
+		HibUser user = ac.getUser();
 		for (TagReference tagReference : list) {
 			if (!tagReference.isSet()) {
 				throw error(BAD_REQUEST, "tag_error_name_or_uuid_missing");

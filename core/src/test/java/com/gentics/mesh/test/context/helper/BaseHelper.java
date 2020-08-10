@@ -3,7 +3,7 @@ package com.gentics.mesh.test.context.helper;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.db.TxAction;
 import com.gentics.mesh.core.db.TxAction0;
@@ -42,7 +42,7 @@ public interface BaseHelper {
 		return getTestContext().getData();
 	}
 
-	default User user() {
+	default HibUser user() {
 		return data().user();
 	}
 

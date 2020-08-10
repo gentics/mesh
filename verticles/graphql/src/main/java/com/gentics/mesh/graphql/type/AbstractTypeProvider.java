@@ -21,6 +21,7 @@ import java.util.stream.StreamSupport;
 import com.gentics.graphqlfilter.filter.StartFilter;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.GraphFieldContainer;
+import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
@@ -398,7 +399,7 @@ public abstract class AbstractTypeProvider {
 	 * @param filterProvider
 	 * @return
 	 */
-	protected <T extends MeshCoreVertex<? extends RestModel, T>> GraphQLFieldDefinition newPagingSearchField(String name, String description,
+	protected <T extends HibCoreElement> GraphQLFieldDefinition newPagingSearchField(String name, String description,
 		Function<GraphQLContext, RootVertex<T>> rootProvider,
 		String pageTypeName, SearchHandler<?, ?> searchHandler, StartFilter<T, Map<String, ?>> filterProvider) {
 		Builder fieldDefBuilder = newFieldDefinition()

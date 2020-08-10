@@ -14,14 +14,13 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -53,14 +52,14 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 			GroupDaoWrapper groupDao = tx.data().groupDao();
 
 			Group group = groupDao.create("test group", user());
-			User user = userDao.create("testuser", user());
+			HibUser user = userDao.create("testuser", user());
 			groupDao.addUser(group, user);
 			groupDao.addUser(group, user);
 			groupDao.addUser(group, user);
 
 			assertEquals("The group should contain one member.", 1, groupDao.getUsers(group).count());
 
-			User userOfGroup = groupDao.getUsers(group).iterator().next();
+			HibUser userOfGroup = groupDao.getUsers(group).iterator().next();
 			assertEquals("Username did not match the expected one.", user.getUsername(), userOfGroup.getUsername());
 		}
 	}
@@ -159,7 +158,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 			MeshRoot root = meshRoot();
 			UserDaoWrapper userDao = tx.data().userDao();
 			GroupDaoWrapper groupDao = tx.data().groupDao();
-			User user = user();
+			HibUser user = user();
 			InternalActionContext ac = mockActionContext();
 			Group group = groupDao.create("newGroup", user);
 			assertFalse(userDao.hasPermission(user, group, GraphPermission.CREATE_PERM));

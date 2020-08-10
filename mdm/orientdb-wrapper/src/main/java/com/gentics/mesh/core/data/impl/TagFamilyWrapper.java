@@ -10,8 +10,7 @@ import com.gentics.madl.traversal.RawTraversalResult;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
-import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
@@ -21,6 +20,8 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
+import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
@@ -84,12 +85,12 @@ public class TagFamilyWrapper implements TagFamily {
 		return delegate.getRolePermissions(ac, roleUuid);
 	}
 
-	public UserWrapper getEditor() {
-		return UserWrapper.wrap(delegate.getEditor());
+	public HibUser getEditor() {
+		return delegate.getEditor();
 	}
 
-	public User getCreator() {
-		return UserWrapper.wrap(delegate.getCreator());
+	public HibUser getCreator() {
+		return delegate.getCreator();
 	}
 
 	public void setUuid(String uuid) {
@@ -361,7 +362,7 @@ public class TagFamilyWrapper implements TagFamily {
 		delegate.setDescription(description);
 	}
 
-	public Tag create(String name, Project project, User creator) {
+	public Tag create(String name, Project project, HibUser creator) {
 		return delegate.create(name, project, creator);
 	}
 
@@ -389,7 +390,7 @@ public class TagFamilyWrapper implements TagFamily {
 		return delegate.e(ids);
 	}
 
-	public Tag create(String name, Project project, User creator, String uuid) {
+	public Tag create(String name, Project project, HibUser creator, String uuid) {
 		return delegate.create(name, project, creator, uuid);
 	}
 
@@ -513,7 +514,7 @@ public class TagFamilyWrapper implements TagFamily {
 		return delegate.loadObjectByUuidNoPerm(uuid, errorIfNotFound);
 	}
 
-	public MeshVertex resolveToElement(Stack<String> stack) {
+	public HibElement resolveToElement(Stack<String> stack) {
 		return delegate.resolveToElement(stack);
 	}
 

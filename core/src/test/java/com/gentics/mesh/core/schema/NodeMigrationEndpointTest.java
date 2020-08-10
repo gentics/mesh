@@ -10,6 +10,7 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -28,7 +29,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
@@ -46,6 +46,7 @@ import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.job.JobListResponse;
@@ -411,7 +412,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			versionB = container.getLatestVersion();
 			versionA = versionB.getPreviousVersion();
 
-			User user = user();
+			HibUser user = user();
 			EventQueueBatch batch = createBatch();
 			assertNull("No job should be scheduled since this is the first time we assigned the schema to the branch. No need for a migration",
 				project().getLatestBranch().assignSchemaVersion(user, versionA, batch));
@@ -540,7 +541,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			versionB = container.getLatestVersion();
 			versionA = versionB.getPreviousVersion();
 
-			User user = user();
+			HibUser user = user();
 			EventQueueBatch batch = createBatch();
 			assertNull("No job should be scheduled since this is the first time we assigned the schema to the branch. No need for a migration",
 				project().getLatestBranch().assignSchemaVersion(user, versionA, batch));
@@ -913,7 +914,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParametersImpl().setRecursive(true)));
 
-			User user = user();
+			HibUser user = user();
 			// create version 1 of the microschema
 			container = tx.getGraph().addFramedVertex(MicroschemaContainerImpl.class);
 			container.setCreated(user());

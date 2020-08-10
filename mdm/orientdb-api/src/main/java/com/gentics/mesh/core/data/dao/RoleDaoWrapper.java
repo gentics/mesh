@@ -5,20 +5,18 @@ import java.util.Set;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 
-import io.vertx.core.json.JsonObject;
-
-public interface RoleDaoWrapper extends RoleDao, DaoWrapper<Role>, DaoTransformable<Role,RoleResponse> {
+public interface RoleDaoWrapper extends RoleDao, DaoWrapper<Role>, DaoTransformable<Role, RoleResponse> {
 
 	/**
 	 * Create a new role with the given name.
@@ -29,7 +27,7 @@ public interface RoleDaoWrapper extends RoleDao, DaoWrapper<Role>, DaoTransforma
 	 *            User that is being used to set the reference fields
 	 * @return Created role
 	 */
-	default Role create(String name, User creator) {
+	default Role create(String name, HibUser creator) {
 		return create(name, creator, null);
 	}
 
@@ -44,7 +42,7 @@ public interface RoleDaoWrapper extends RoleDao, DaoWrapper<Role>, DaoTransforma
 	 *            Optional uuid
 	 * @return Created role
 	 */
-	Role create(String name, User creator, String uuid);
+	Role create(String name, HibUser creator, String uuid);
 
 	Role create(InternalActionContext ac, EventQueueBatch batch, String uuid);
 
@@ -55,7 +53,7 @@ public interface RoleDaoWrapper extends RoleDao, DaoWrapper<Role>, DaoTransforma
 	 * @param vertex
 	 * @param permissions
 	 */
-	void grantPermissions(Role role, MeshVertex vertex, GraphPermission... permissions);
+	void grantPermissions(Role role, HibElement element, GraphPermission... permissions);
 
 	/**
 	 * Revoke the given permissions on the vertex.
@@ -64,7 +62,7 @@ public interface RoleDaoWrapper extends RoleDao, DaoWrapper<Role>, DaoTransforma
 	 * @param vertex
 	 * @param permissions
 	 */
-	void revokePermissions(Role role, MeshVertex vertex, GraphPermission... permissions);
+	void revokePermissions(Role role, HibElement element, GraphPermission... permissions);
 
 	/**
 	 * Return a set of permissions which the role is granting to the given element.
@@ -73,7 +71,7 @@ public interface RoleDaoWrapper extends RoleDao, DaoWrapper<Role>, DaoTransforma
 	 * @param element
 	 * @return Set of permissions of the element
 	 */
-	Set<GraphPermission> getPermissions(Role role, MeshVertex element);
+	Set<GraphPermission> getPermissions(Role role, HibElement element);
 
 	/**
 	 * Add the given role to this aggregation vertex.
@@ -99,7 +97,7 @@ public interface RoleDaoWrapper extends RoleDao, DaoWrapper<Role>, DaoTransforma
 	 * @param params
 	 * @return Loaded page
 	 */
-	Page<? extends Group> getGroups(Role role, User user, PagingParameters params);
+	Page<? extends Group> getGroups(Role role, HibUser user, PagingParameters params);
 
 	/**
 	 * Check whether the role grants the given permission on the given element.
@@ -109,7 +107,7 @@ public interface RoleDaoWrapper extends RoleDao, DaoWrapper<Role>, DaoTransforma
 	 * @param element
 	 * @return
 	 */
-	boolean hasPermission(Role role, GraphPermission permission, MeshVertex element);
+	boolean hasPermission(Role role, GraphPermission permission, HibElement element);
 
 	Role findByUuid(String uuid);
 

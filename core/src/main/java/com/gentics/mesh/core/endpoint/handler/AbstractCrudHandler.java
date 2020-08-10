@@ -7,13 +7,10 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.MeshCoreVertex;
+import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.core.verticle.handler.CreateAction;
+import com.gentics.mesh.core.verticle.handler.CRUDActions;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.core.verticle.handler.LoadAction;
-import com.gentics.mesh.core.verticle.handler.LoadAllAction;
-import com.gentics.mesh.core.verticle.handler.UpdateAction;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.graphdb.spi.Database;
 
@@ -23,7 +20,7 @@ import io.vertx.ext.web.RoutingContext;
 /**
  * Abstract class for CRUD REST handlers. The abstract class provides handler methods for create, read (one), read (multiple) and delete.
  */
-public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM extends RestModel> extends AbstractHandler {
+public abstract class AbstractCrudHandler<T extends HibCoreElement, RM extends RestModel> extends AbstractHandler {
 
 	public static final String TAGFAMILY_ELEMENT_CONTEXT_DATA_KEY = "rootElement";
 
@@ -37,13 +34,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 		this.writeLock = writeLock;
 	}
 
-	abstract public LoadAction<T> loadAction();
-
-	abstract public LoadAllAction<T> loadAllAction();
-
-	abstract public CreateAction<T> createAction();
-
-	abstract public UpdateAction<T> updateAction();
+	abstract public CRUDActions<T, RM> crudActions();
 
 	/**
 	 * Handle create requests.
@@ -51,7 +42,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 	 * @param ac
 	 */
 	public void handleCreate(InternalActionContext ac) {
-		utils.createElement(ac, loadAction(), createAction(), updateAction());
+		utils.createElement(ac, crudActions());
 	}
 
 	/**
@@ -63,7 +54,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 	 */
 	public void handleDelete(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		utils.deleteElement(ac, loadAction(), uuid);
+		utils.deleteElement(ac, crudActions(), uuid);
 	}
 
 	/**
@@ -75,7 +66,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 	 */
 	public void handleRead(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		utils.readElement(ac, uuid, loadAction(), READ_PERM);
+		utils.readElement(ac, uuid, crudActions(), READ_PERM);
 	}
 
 	/**
@@ -87,7 +78,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 	 */
 	public void handleUpdate(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		utils.updateElement(ac, uuid, loadAction(), createAction(), updateAction());
+		utils.updateElement(ac, uuid, crudActions());
 	}
 
 	/**
@@ -96,7 +87,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 	 * @param ac
 	 */
 	public void handleReadList(InternalActionContext ac) {
-		utils.readElementList(ac, loadAllAction());
+		utils.readElementList(ac, crudActions());
 	}
 
 	/**
@@ -114,7 +105,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 			if (!isEmpty(uuid)) {
 				boolean result = db.tx(tx -> {
 					//TODO Calling load is not correct. The findByUuid method should be used here instead or the loadObject
-					T foundElement = loadAction().load(tx, ac, uuid, null, false);
+					T foundElement = crudActions().load(tx, ac, uuid, null, false);
 					if (foundElement == null) {
 						throw error(NOT_FOUND, i18nNotFoundMessage, uuid);
 					} else {

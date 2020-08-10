@@ -15,7 +15,7 @@ import java.util.stream.StreamSupport;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HasPermissions;
-import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
@@ -23,6 +23,7 @@ import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -268,7 +269,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 *            Stack which contains the remaining path elements which should be resolved starting with the current graph element
 	 * @return
 	 */
-	default MeshVertex resolveToElement(Stack<String> stack) {
+	default HibElement resolveToElement(Stack<String> stack) {
 		if (log.isDebugEnabled()) {
 			log.debug("Resolving for {" + getPersistanceClass().getSimpleName() + "}.");
 			if (stack.isEmpty()) {

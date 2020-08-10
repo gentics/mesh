@@ -19,7 +19,6 @@ import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
@@ -30,6 +29,8 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
+import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
@@ -203,7 +204,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public Page<? extends Group> getGroups(User user, PagingParameters params) {
+	public Page<? extends Group> getGroups(HibUser user, PagingParameters params) {
 		VertexTraversal<?, ?, ?> traversal = out(HAS_USER);
 		return new DynamicTransformablePageImpl<Group>(user, traversal, params, READ_PERM, GroupImpl.class);
 	}
@@ -237,7 +238,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public Page<? extends Role> getRolesViaShortcut(User user, PagingParameters params) {
+	public Page<? extends Role> getRolesViaShortcut(HibUser user, PagingParameters params) {
 		String indexName = "e." + ASSIGNED_TO_ROLE + "_out";
 		return new DynamicTransformablePageImpl<>(user, indexName.toLowerCase(), id(), Direction.IN, RoleImpl.class, params, READ_PERM, null, true);
 	}
@@ -320,12 +321,12 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public User getCreator() {
+	public HibUser getCreator() {
 		return mesh().userProperties().getCreator(this);
 	}
 
 	@Override
-	public User getEditor() {
+	public HibUser getEditor() {
 		return mesh().userProperties().getEditor(this);
 	}
 
@@ -360,6 +361,11 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	public User setAPITokenIssueTimestamp(Long timestamp) {
 		property(API_TOKEN_ISSUE_TIMESTAMP, timestamp);
 		return this;
+	}
+
+	@Override
+	public void remove() {
+		getElement().remove();
 	}
 
 }

@@ -32,7 +32,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.branch.BranchMicroschemaEdge;
 import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
 import com.gentics.mesh.core.data.branch.BranchVersionEdge;
@@ -53,6 +52,7 @@ import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
@@ -350,7 +350,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
-	public Job assignSchemaVersion(User user, SchemaVersion schemaVersion, EventQueueBatch batch) {
+	public Job assignSchemaVersion(HibUser user, SchemaVersion schemaVersion, EventQueueBatch batch) {
 		BranchSchemaEdge edge = findBranchSchemaEdge(schemaVersion);
 		Job job = null;
 		// Don't remove any existing edge. Otherwise the edge properties are lost
@@ -373,7 +373,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
-	public Job assignMicroschemaVersion(User user, MicroschemaVersion microschemaVersion, EventQueueBatch batch) {
+	public Job assignMicroschemaVersion(HibUser user, MicroschemaVersion microschemaVersion, EventQueueBatch batch) {
 		BranchMicroschemaEdge edge = findBranchMicroschemaEdge(microschemaVersion);
 		Job job = null;
 		// Don't remove any existing edge. Otherwise the edge properties are lost
@@ -511,12 +511,12 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
-	public User getCreator() {
+	public HibUser getCreator() {
 		return mesh().userProperties().getCreator(this);
 	}
 
 	@Override
-	public User getEditor() {
+	public HibUser getEditor() {
 		return mesh().userProperties().getEditor(this);
 	}
 
@@ -612,7 +612,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
-	public TransformablePage<? extends Tag> getTags(User user, PagingParameters params) {
+	public TransformablePage<? extends Tag> getTags(HibUser user, PagingParameters params) {
 		VertexTraversal<?, ?, ?> traversal = outE(HAS_BRANCH_TAG).inV();
 		return new DynamicTransformablePageImpl<Tag>(user, traversal, params, READ_PERM, TagImpl.class);
 	}

@@ -18,7 +18,6 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.dao.impl.SchemaDaoWrapperImpl;
@@ -28,6 +27,7 @@ import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -36,11 +36,7 @@ import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
-import com.gentics.mesh.core.verticle.handler.CreateAction;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.core.verticle.handler.LoadAction;
-import com.gentics.mesh.core.verticle.handler.LoadAllAction;
-import com.gentics.mesh.core.verticle.handler.UpdateAction;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
@@ -68,30 +64,8 @@ public class SchemaCrudHandler extends AbstractCrudHandler<Schema, SchemaRespons
 	}
 
 	@Override
-	public LoadAction<Schema> loadAction() {
-		return (tx, ac, uuid, perm, errorIfNotFound) -> {
-			return tx.data().schemaDao().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
-		};
-	}
-
-	@Override
-	public LoadAllAction<Schema> loadAllAction() {
-		return (tx, ac, pagingInfo) -> {
-			return tx.data().schemaDao().findAll(ac, pagingInfo);
-		};
-	}
-
-	@Override
-	public CreateAction<Schema> createAction() {
-		return (tx, ac, batch, uuid) -> {
-			return tx.data().schemaDao().create(ac, batch, uuid);
-		};
-	}
-
-	@Override
-	public UpdateAction<Schema> updateAction() {
-		// Schemas can't be directly updated. Update is handled via migrations
-		return null;
+	public SchemaCrudActions crudActions() {
+		return new SchemaCrudActions();
 	}
 
 	/**
@@ -131,7 +105,6 @@ public class SchemaCrudHandler extends AbstractCrudHandler<Schema, SchemaRespons
 				Schema schemaContainer = schemaDao.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 				SchemaUpdateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaUpdateRequest.class);
 
-
 				if (ac.getSchemaUpdateParameters().isStrictValidation()) {
 					SchemaDaoWrapperImpl.validateSchema(nodeIndexHandler, requestModel);
 				}
@@ -147,7 +120,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<Schema, SchemaRespons
 				}
 
 				SchemaUpdateParameters updateParams = ac.getSchemaUpdateParameters();
-				User user = ac.getUser();
+				HibUser user = ac.getUser();
 				String version = utils.eventAction(batch -> {
 
 					// Check whether there are any microschemas which are referenced by the schema
@@ -243,7 +216,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<Schema, SchemaRespons
 	 * @param ac
 	 */
 	public void handleReadProjectList(InternalActionContext ac) {
-		utils.readElementList(ac, (tx, ac2, pagingInfo) -> ac2.getProject().getSchemaContainerRoot().findAll(ac, pagingInfo));
+		utils.readElementList(ac, crudActions());
 	}
 
 	/**

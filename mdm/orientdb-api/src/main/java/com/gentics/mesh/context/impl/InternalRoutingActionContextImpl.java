@@ -11,8 +11,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.gentics.mesh.context.AbstractInternalActionContext;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.shared.SharedKeys;

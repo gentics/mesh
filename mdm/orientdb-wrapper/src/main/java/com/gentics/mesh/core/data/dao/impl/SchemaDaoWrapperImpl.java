@@ -20,9 +20,7 @@ import javax.inject.Provider;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
@@ -36,6 +34,8 @@ import com.gentics.mesh.core.data.root.SchemaRoot;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
@@ -176,12 +176,12 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper implements SchemaDa
 	}
 
 	@Override
-	public Schema create(SchemaVersionModel schema, User creator, String uuid) {
+	public Schema create(SchemaVersionModel schema, HibUser creator, String uuid) {
 		return create(schema, creator, uuid, false);
 	}
 
 	@Override
-	public Schema create(SchemaVersionModel schema, User creator, String uuid, boolean validate) {
+	public Schema create(SchemaVersionModel schema, HibUser creator, String uuid, boolean validate) {
 		SchemaRoot schemaRoot = boot.get().schemaContainerRoot();
 		MicroschemaDaoWrapper microschemaDao = Tx.get().data().microschemaDao();
 

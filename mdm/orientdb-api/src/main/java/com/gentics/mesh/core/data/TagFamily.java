@@ -12,6 +12,8 @@ import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
+import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -84,7 +86,7 @@ public interface TagFamily extends MeshCoreVertex<TagFamilyResponse, TagFamily>,
 	 *            User that is used to assign creator and editor references of the new tag.
 	 * @return
 	 */
-	default Tag create(String name, Project project, User creator) {
+	default Tag create(String name, Project project, HibUser creator) {
 		return create(name, project, creator, null);
 	}
 
@@ -102,7 +104,7 @@ public interface TagFamily extends MeshCoreVertex<TagFamilyResponse, TagFamily>,
 	 *            Optional uuid
 	 * @return
 	 */
-	Tag create(String name, Project project, User creator, String uuid);
+	Tag create(String name, Project project, HibUser creator, String uuid);
 
 	/**
 	 * Return a page of all tags which are visible to the given user. Use the paging parameters from the action context.

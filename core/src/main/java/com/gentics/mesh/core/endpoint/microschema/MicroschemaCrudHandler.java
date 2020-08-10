@@ -17,24 +17,20 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.root.MicroschemaRoot;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
-import com.gentics.mesh.core.verticle.handler.CreateAction;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.core.verticle.handler.LoadAction;
-import com.gentics.mesh.core.verticle.handler.LoadAllAction;
-import com.gentics.mesh.core.verticle.handler.UpdateAction;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
@@ -58,30 +54,8 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<Microschema, Mic
 	}
 
 	@Override
-	public LoadAction<Microschema> loadAction() {
-		return (tx, ac, uuid, perm, errorIfNotFound) -> {
-			return tx.data().microschemaDao().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
-		};
-	}
-
-	@Override
-	public LoadAllAction<Microschema> loadAllAction() {
-		return (tx, ac, pagingInfo) -> {
-			return tx.data().microschemaDao().findAll(ac, pagingInfo);
-		};
-	}
-
-	@Override
-	public CreateAction<Microschema> createAction() {
-		return (tx, ac, batch, uuid) -> {
-			return tx.data().microschemaDao().create(ac, batch, uuid);
-		};
-	}
-
-	@Override
-	public UpdateAction<Microschema> updateAction() {
-		// Microschemas are updated via migrations
-		return null;
+	public MicroschemaCrudActions crudActions() {
+		return new MicroschemaCrudActions();
 	}
 
 	@Override
@@ -124,7 +98,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<Microschema, Mic
 				if (model.getChanges().isEmpty()) {
 					return message(ac, "schema_update_no_difference_detected", name);
 				}
-				User user = ac.getUser();
+				HibUser user = ac.getUser();
 				SchemaUpdateParameters updateParams = ac.getSchemaUpdateParameters();
 				String version = utils.eventAction(batch -> {
 					MicroschemaVersion createdVersion = schemaContainer.getLatestVersion().applyChanges(ac, model, batch);
@@ -203,9 +177,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<Microschema, Mic
 	 * @param ac
 	 */
 	public void handleReadMicroschemaList(InternalActionContext ac) {
-		utils.readElementList(ac, (tx, ac2, pagingInfo) -> {
-			return ac.getProject().getMicroschemaContainerRoot().findAll(ac2, pagingInfo);
-		});
+		utils.readElementList(ac, crudActions());
 	}
 
 	/**

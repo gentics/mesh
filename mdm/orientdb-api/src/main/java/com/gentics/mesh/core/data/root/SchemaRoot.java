@@ -3,8 +3,10 @@ package com.gentics.mesh.core.data.root;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 
@@ -24,7 +26,7 @@ public interface SchemaRoot extends RootVertex<Schema> {
 	 * @param schemaContainer
 	 * @param batch
 	 */
-	void addSchemaContainer(User user, Schema schemaContainer, EventQueueBatch batch);
+	void addSchemaContainer(HibUser user, Schema schemaContainer, EventQueueBatch batch);
 
 	/**
 	 * Remove the schema container from the aggregation node.

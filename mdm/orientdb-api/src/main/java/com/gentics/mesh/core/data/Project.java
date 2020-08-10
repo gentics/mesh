@@ -18,6 +18,8 @@ import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.HibUserTracking;
 import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
 import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.project.ProjectReference;
@@ -32,7 +34,7 @@ import com.gentics.mesh.madl.traversal.TraversalResult;
  * (called basenode). Additionally languages and schemas can be assigned to projects to make them available for node creation. Various root vertices (eg.:
  * {@link NodeRoot}, {@link TagRoot}, {@link TagFamilyRoot} ) are linked to the project to store references to basic building blocks.
  */
-public interface Project extends MeshCoreVertex<ProjectResponse, Project>, ReferenceableElement<ProjectReference>, UserTrackingVertex {
+public interface Project extends MeshCoreVertex<ProjectResponse, Project>, ReferenceableElement<ProjectReference>, UserTrackingVertex, HibUserTracking {
 
 	TypeInfo TYPE_INFO = new TypeInfo(ElementType.PROJECT, PROJECT_CREATED, PROJECT_UPDATED, PROJECT_DELETED);
 
@@ -71,7 +73,7 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	 * 
 	 * @return Created base node
 	 */
-	Node createBaseNode(User creator, SchemaVersion schemaVersion);
+	Node createBaseNode(HibUser creator, SchemaVersion schemaVersion);
 
 	/**
 	 * Return the base node of the project.

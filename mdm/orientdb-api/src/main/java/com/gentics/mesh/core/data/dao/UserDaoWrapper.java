@@ -10,13 +10,15 @@ import java.util.Set;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HasPermissions;
-import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -24,11 +26,11 @@ import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 
 // TODO move the contents of this to UserDao once migration is done
-public interface UserDaoWrapper extends UserDao, DaoWrapper<User>, DaoTransformable<User,UserResponse> {
+public interface UserDaoWrapper extends UserDao, DaoWrapper<HibUser>, DaoTransformable<HibUser, UserResponse> {
 
-	String getSubETag(User user, InternalActionContext ac);
+	String getSubETag(HibUser user, InternalActionContext ac);
 
-	TraversalResult<? extends User> findAll();
+	TraversalResult<? extends HibUser> findAll();
 
 	/**
 	 * Check whether the user has the given permission on the given element.
@@ -37,8 +39,12 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<User>, DaoTransforma
 	 * @param element
 	 * @param permission
 	 * @return
+	 * @deprecated Use {@link #hasPermission(HibUser, HibElement, GraphPermission)} instead.
 	 */
-	boolean hasPermission(User user, MeshVertex element, GraphPermission permission);
+	@Deprecated
+	boolean hasPermission(HibUser user, MeshVertex element, GraphPermission permission);
+
+	boolean hasPermission(HibUser user, HibElement element, GraphPermission permission);
 
 	/**
 	 * Check whether the user has the given permission on the element with the given id.
@@ -48,7 +54,7 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<User>, DaoTransforma
 	 * @param permission
 	 * @return
 	 */
-	boolean hasPermissionForId(User user, Object elementId, GraphPermission permission);
+	boolean hasPermissionForId(HibUser user, Object elementId, GraphPermission permission);
 
 	/**
 	 * Check the read permission on the given container and return false if the needed permission to read the container is not set. This method will not return
@@ -59,7 +65,7 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<User>, DaoTransforma
 	 * @param branchUuid
 	 * @param requestedVersion
 	 */
-	boolean hasReadPermission(User user, NodeGraphFieldContainer container, String branchUuid, String requestedVersion);
+	boolean hasReadPermission(HibUser user, NodeGraphFieldContainer container, String branchUuid, String requestedVersion);
 
 	/**
 	 * Check the read permission on the given container and fail if the needed permission to read the container is not set. This method will not fail if the
@@ -69,7 +75,7 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<User>, DaoTransforma
 	 * @param branchUuid
 	 * @param requestedVersion
 	 */
-	default void failOnNoReadPermission(User user, NodeGraphFieldContainer container, String branchUuid, String requestedVersion) {
+	default void failOnNoReadPermission(HibUser user, NodeGraphFieldContainer container, String branchUuid, String requestedVersion) {
 		Node node = container.getParentNode();
 		if (!hasReadPermission(user, container, branchUuid, requestedVersion)) {
 			throw error(FORBIDDEN, "error_missing_perm", node.getUuid(),
@@ -88,13 +94,13 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<User>, DaoTransforma
 	 * @param node
 	 * @return
 	 */
-	boolean canReadNode(User user, InternalActionContext ac, Node node);
+	boolean canReadNode(HibUser user, InternalActionContext ac, Node node);
 
-	User loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound);
+	HibUser loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound);
 
-	TransformablePage<? extends User> findAll(InternalActionContext ac, PagingParameters pagingInfo);
+	TransformablePage<? extends HibUser> findAll(InternalActionContext ac, PagingParameters pagingInfo);
 
-	User loadObjectByUuid(InternalActionContext ac, String userUuid, GraphPermission perm);
+	HibUser loadObjectByUuid(InternalActionContext ac, String userUuid, GraphPermission perm);
 
 	/**
 	 * Return the permission info object for the given vertex.
@@ -103,7 +109,7 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<User>, DaoTransforma
 	 * @param vertex
 	 * @return
 	 */
-	PermissionInfo getPermissionInfo(User user, MeshVertex vertex);
+	PermissionInfo getPermissionInfo(HibUser user, MeshVertex vertex);
 
 	/**
 	 * Return a set of permissions which the user got for the given vertex.
@@ -111,7 +117,7 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<User>, DaoTransforma
 	 * @param vertex
 	 * @return
 	 */
-	Set<GraphPermission> getPermissions(User user, MeshVertex vertex);
+	Set<GraphPermission> getPermissions(HibUser user, MeshVertex vertex);
 
 	/**
 	 * Update the vertex using the action context information.
@@ -122,7 +128,7 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<User>, DaoTransforma
 	 *            Batch to which entries will be added in order to update the search index.
 	 * @return true if the element was updated. Otherwise false
 	 */
-	boolean update(User user, InternalActionContext ac, EventQueueBatch batch);
+	boolean update(HibUser user, InternalActionContext ac, EventQueueBatch batch);
 
 	/**
 	 * Same as {@link User#update(InternalActionContext, EventQueueBatch)}, but does not actually perform any changes.
@@ -133,9 +139,9 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<User>, DaoTransforma
 	 * @param ac
 	 * @return true if the user would have been modified
 	 */
-	boolean updateDry(User user, InternalActionContext ac);
+	boolean updateDry(HibUser user, InternalActionContext ac);
 
-	User create(InternalActionContext ac, EventQueueBatch batch, String uuid);
+	HibUser create(InternalActionContext ac, EventQueueBatch batch, String uuid);
 
 	/**
 	 * Create a new user with the given username and assign it to this aggregation node.
@@ -146,7 +152,7 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<User>, DaoTransforma
 	 *            User that is used to create creator and editor references
 	 * @return
 	 */
-	default User create(String username, User creator) {
+	default HibUser create(String username, HibUser creator) {
 		return create(username, creator, null);
 	}
 
@@ -161,7 +167,7 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<User>, DaoTransforma
 	 *            Optional uuid
 	 * @return
 	 */
-	User create(String username, User creator, String uuid);
+	HibUser create(String username, HibUser creator, String uuid);
 
 	/**
 	 * This method will set CRUD permissions to the target node for all roles that would grant the given permission on the node. The method is most often used
@@ -181,7 +187,7 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<User>, DaoTransforma
 	 *            Node to which the CRUD permissions will be assigned.
 	 * @return Fluent API
 	 */
-	User addCRUDPermissionOnRole(User user, HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode);
+	HibUser addCRUDPermissionOnRole(HibUser user, HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode);
 
 	/**
 	 * This method adds additional permissions to the target node. The roles are selected like in method
@@ -198,7 +204,8 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<User>, DaoTransforma
 	 *            permissions to grant
 	 * @return Fluent API
 	 */
-	User addPermissionsOnRole(User user, HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode, GraphPermission... toGrant);
+	HibUser addPermissionsOnRole(HibUser user, HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode,
+		GraphPermission... toGrant);
 
 	/**
 	 * Inherit permissions edges from the source node and assign those permissions to the target node.
@@ -207,8 +214,12 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<User>, DaoTransforma
 	 * @param sourceNode
 	 * @param targetNode
 	 * @return Fluent API
+	 * @deprecated Use {@link #inheritRolePermissions(HibUser, HibElement, HibElement)} instead.
 	 */
-	User inheritRolePermissions(User user, MeshVertex sourceNode, MeshVertex targetNode);
+	@Deprecated
+	HibUser inheritRolePermissions(HibUser user, MeshVertex sourceNode, MeshVertex targetNode);
+
+	HibUser inheritRolePermissions(HibUser user, HibElement source, HibElement target);
 
 	/**
 	 * Set the plaintext password. Internally the password string will be hashed and the password hash will be set. This will also set
@@ -220,11 +231,11 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<User>, DaoTransforma
 	 */
 	// TODO change this to an async call since hashing of the password is
 	// blocking
-	User setPassword(User user, String password);
+	HibUser setPassword(HibUser user, String password);
 
-	User findByUuid(String uuid);
+	HibUser findByUuid(String uuid);
 
-	User findByName(String name);
+	HibUser findByName(String name);
 
 	/**
 	 * Find the user with the given username.
@@ -232,9 +243,9 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<User>, DaoTransforma
 	 * @param username
 	 * @return
 	 */
-	User findByUsername(String username);
+	HibUser findByUsername(String username);
 
-	void delete(User user, BulkActionContext bac);
+	void delete(HibUser user, BulkActionContext bac);
 
 	/**
 	 * Find the mesh auth user with the given username.
@@ -261,7 +272,7 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<User>, DaoTransforma
 	 *            maximum allowed token age in minutes
 	 * @return
 	 */
-	default boolean isResetTokenValid(User user, String token, int maxTokenAgeMins) {
+	default boolean isResetTokenValid(HibUser user, String token, int maxTokenAgeMins) {
 		Long resetTokenIssueTimestamp = user.getResetTokenIssueTimestamp();
 		if (token == null || resetTokenIssueTimestamp == null) {
 			return false;
