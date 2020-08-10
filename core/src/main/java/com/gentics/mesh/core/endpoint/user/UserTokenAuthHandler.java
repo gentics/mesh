@@ -38,13 +38,11 @@ import io.vertx.ext.web.handler.impl.AuthHandlerImpl;
 public class UserTokenAuthHandler extends AuthHandlerImpl {
 
 	public static final int DEFAULT_MAX_TOKEN_AGE_IN_MINS = 30;
-	private BootstrapInitializer boot;
 	private Database db;
 
 	@Inject
-	public UserTokenAuthHandler(MeshJWTAuthProvider authProvider, BootstrapInitializer boot, Database db) {
+	public UserTokenAuthHandler(MeshJWTAuthProvider authProvider, Database db) {
 		super(authProvider);
-		this.boot = boot;
 		this.db = db;
 	}
 
