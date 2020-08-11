@@ -468,8 +468,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWra
 	@Override
 	public Page<? extends HibUser> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibUser> extraFilter) {
 		UserRoot userRoot = boot.get().userRoot();
-		Page<? extends User> page = userRoot.findAll(ac, pagingInfo, extraFilter);
-		return page;
+		return userRoot.findAllWrapped(ac, pagingInfo, extraFilter);
 	}
 
 	@Override

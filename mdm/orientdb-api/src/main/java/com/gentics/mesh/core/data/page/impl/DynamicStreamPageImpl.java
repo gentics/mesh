@@ -23,7 +23,7 @@ public class DynamicStreamPageImpl<T> extends AbstractDynamicPage<T> {
 	 * @param filter
 	 *            the filter to be applied to the stream
 	 */
-	public DynamicStreamPageImpl(Stream<? extends T> stream, PagingParameters pagingInfo, Predicate<T> filter) {
+	public DynamicStreamPageImpl(Stream<? extends T> stream, PagingParameters pagingInfo, Predicate<? super T> filter) {
 		super(pagingInfo);
 		init(stream.filter(filter));
 	}
