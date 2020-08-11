@@ -7,7 +7,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.actions.NodeDAOActions;
+import com.gentics.mesh.core.action.NodeDAOActions;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -24,11 +24,21 @@ public class NodeDAOActionsImpl implements NodeDAOActions {
 	}
 
 	@Override
-	public Node load(Tx tx, InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+	public Node loadByUuid(Tx tx, InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
 		if (perm == null) {
 			return ac.getProject().getNodeRoot().findByUuid(uuid);
 		} else {
 			return ac.getProject().getNodeRoot().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+		}
+	}
+	
+	@Override
+	public Node loadByName(Tx tx, InternalActionContext ac, String name, GraphPermission perm, boolean errorIfNotFound) {
+		//NodeDaoWrapper nodeDao = tx.data().nodeDao();
+		if (perm == null) {
+			return ac.getProject().getNodeRoot().findByName(name);
+		} else {
+			throw new RuntimeException("Not supported");
 		}
 	}
 
@@ -63,6 +73,16 @@ public class NodeDAOActionsImpl implements NodeDAOActions {
 	public NodeResponse transformToRestSync(Tx tx, Node node, InternalActionContext ac, int level, String... languageTags) {
 		// tx.data().nodeDao()
 		return node.transformToRestSync(ac, level, languageTags);
+	}
+
+	@Override
+	public String getAPIPath(Tx tx, InternalActionContext ac, Node node) {
+		return node.getAPIPath(ac);
+	}
+
+	@Override
+	public String getETag(Tx tx, InternalActionContext ac, Node node) {
+		return node.getETag(ac);
 	}
 
 }

@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.verticle.handler;
+package com.gentics.mesh.core.action;
 
 import java.util.function.Predicate;
 
@@ -23,7 +23,9 @@ import com.gentics.mesh.parameter.PagingParameters;
  */
 public interface DAOActions<T extends HibCoreElement, RM extends RestModel> {
 
-	T load(Tx tx, InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound);
+	T loadByUuid(Tx tx, InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound);
+
+	T loadByName(Tx tx, InternalActionContext ac, String name, GraphPermission perm, boolean errorIfNotFound);
 
 	TransformablePage<? extends T> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo);
 
@@ -36,4 +38,9 @@ public interface DAOActions<T extends HibCoreElement, RM extends RestModel> {
 	void delete(Tx tx, T element, BulkActionContext bac);
 
 	RM transformToRestSync(Tx tx, T element, InternalActionContext ac, int level, String... languageTags);
+
+	String getETag(Tx tx, InternalActionContext ac, T element);
+
+	String getAPIPath(Tx tx, InternalActionContext ac, T element);
+
 }

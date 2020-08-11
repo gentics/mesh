@@ -19,24 +19,21 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import com.gentics.graphqlfilter.filter.StartFilter;
+import com.gentics.mesh.core.action.DAOActions;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibElement;
-import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.data.root.NodeRoot;
-import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.PermissionException;
-import com.gentics.mesh.core.verticle.handler.DAOActions;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
@@ -326,7 +323,7 @@ public abstract class AbstractTypeProvider {
 	 */
 	protected HibCoreElement handleUuidNameArgs(DataFetchingEnvironment env, DAOActions<?,?> actions) {
 		GraphQLContext gc = env.getContext();
-		HibCoreElement element = handleUuidNameArgsNoPerm(env, actions::findByUuid, actions::findByName);
+		HibCoreElement element = handleUuidNameArgsNoPerm(env, uuid -> actions.loadByUuid(Tx.get(), gc, uuid, null, false), name -> actions.loadByName(Tx.get(), gc, name, null, false));
 		if (element == null) {
 			return null;
 		} else {

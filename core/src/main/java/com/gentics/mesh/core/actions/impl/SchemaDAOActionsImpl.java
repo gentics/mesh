@@ -7,7 +7,8 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.actions.SchemaDAOActions;
+import com.gentics.mesh.core.action.SchemaDAOActions;
+import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.Schema;
@@ -24,8 +25,23 @@ public class SchemaDAOActionsImpl implements SchemaDAOActions {
 	}
 
 	@Override
-	public Schema load(Tx tx, InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
-		return tx.data().schemaDao().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+	public Schema loadByUuid(Tx tx, InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+		SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+		if (perm == null) {
+			return schemaDao.findByUuid(uuid);
+		} else {
+			return schemaDao.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+		}
+	}
+
+	@Override
+	public Schema loadByName(Tx tx, InternalActionContext ac, String name, GraphPermission perm, boolean errorIfNotFound) {
+		SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+		if (perm == null) {
+			return schemaDao.findByName(name);
+		} else {
+			throw new RuntimeException("Not supported");
+		}
 	}
 
 	@Override
@@ -62,6 +78,16 @@ public class SchemaDAOActionsImpl implements SchemaDAOActions {
 	public SchemaResponse transformToRestSync(Tx tx, Schema schema, InternalActionContext ac, int level, String... languageTags) {
 		// return tx.data().schemaDao().
 		return schema.transformToRestSync(ac, level, languageTags);
+	}
+
+	@Override
+	public String getAPIPath(Tx tx, InternalActionContext ac, Schema element) {
+		return element.getAPIPath(ac);
+	}
+
+	@Override
+	public String getETag(Tx tx, InternalActionContext ac, Schema element) {
+		return element.getETag(ac);
 	}
 
 }

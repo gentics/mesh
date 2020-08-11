@@ -7,9 +7,9 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
+import com.gentics.mesh.core.action.DAOActions;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.core.verticle.handler.DAOActions;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -105,7 +105,7 @@ public abstract class AbstractCrudHandler<T extends HibCoreElement, RM extends R
 			if (!isEmpty(uuid)) {
 				boolean result = db.tx(tx -> {
 					//TODO Calling load is not correct. The findByUuid method should be used here instead or the loadObject
-					T foundElement = crudActions().load(tx, ac, uuid, null, false);
+					T foundElement = crudActions().loadByUuid(tx, ac, uuid, null, false);
 					if (foundElement == null) {
 						throw error(NOT_FOUND, i18nNotFoundMessage, uuid);
 					} else {

@@ -45,11 +45,14 @@ public class TagFamilyTypeProvider extends AbstractTypeProvider {
 
 		// .tag
 		tagFamilyType.field(
-				newFieldDefinition().name("tag").description("Load a specific tag by name or uuid.").argument(createUuidArg("Uuid of the tag."))
-						.argument(createNameArg("Name of the tag.")).type(new GraphQLTypeReference(TAG_TYPE_NAME)).dataFetcher(env -> {
-							TagFamily tagFamily = env.getSource();
-							return handleUuidNameArgs(env, tagFamily);
-						}).build());
+			newFieldDefinition().name("tag").description("Load a specific tag by name or uuid.").argument(createUuidArg("Uuid of the tag."))
+				.argument(createNameArg("Name of the tag.")).type(new GraphQLTypeReference(TAG_TYPE_NAME)).dataFetcher(env -> {
+					TagFamily tagFamily = env.getSource();
+					if (true) {
+						throw new RuntimeException("We need to find a way to use the actions in this situation.");
+					}
+					return handleUuidNameArgs(env, null);
+				}).build());
 
 		// .tags
 		tagFamilyType.field(newPagingFieldWithFetcher("tags", "Tags which are assigned to the tagfamily.", (env) -> {

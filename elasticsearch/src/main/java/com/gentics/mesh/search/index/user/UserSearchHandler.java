@@ -3,7 +3,7 @@ package com.gentics.mesh.search.index.user;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.actions.UserDAOActions;
+import com.gentics.mesh.core.action.UserDAOActions;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.etc.config.MeshOptions;

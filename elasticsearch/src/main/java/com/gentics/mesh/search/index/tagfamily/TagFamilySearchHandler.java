@@ -3,7 +3,7 @@ package com.gentics.mesh.search.index.tagfamily;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.actions.TagFamilyDAOActions;
+import com.gentics.mesh.core.action.TagFamilyDAOActions;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.etc.config.MeshOptions;

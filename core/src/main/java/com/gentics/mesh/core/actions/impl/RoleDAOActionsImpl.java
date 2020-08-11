@@ -7,8 +7,9 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.actions.RoleDAOActions;
+import com.gentics.mesh.core.action.RoleDAOActions;
 import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.db.Tx;
@@ -24,8 +25,23 @@ public class RoleDAOActionsImpl implements RoleDAOActions {
 	}
 
 	@Override
-	public Role load(Tx tx, InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
-		return tx.data().roleDao().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+	public Role loadByUuid(Tx tx, InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+		RoleDaoWrapper roleDao = tx.data().roleDao();
+		if (perm == null) {
+			return roleDao.findByUuid(uuid);
+		} else {
+			return roleDao.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+		}
+	}
+
+	@Override
+	public Role loadByName(Tx tx, InternalActionContext ac, String name, GraphPermission perm, boolean errorIfNotFound) {
+		RoleDaoWrapper roleDao = tx.data().roleDao();
+		if (perm == null) {
+			return roleDao.findByName(name);
+		} else {
+			throw new RuntimeException("Not supported");
+		}
 	}
 
 	@Override
@@ -56,6 +72,16 @@ public class RoleDAOActionsImpl implements RoleDAOActions {
 	@Override
 	public RoleResponse transformToRestSync(Tx tx, Role element, InternalActionContext ac, int level, String... languageTags) {
 		return tx.data().roleDao().transformToRestSync(element, ac, 0);
+	}
+
+	@Override
+	public String getAPIPath(Tx tx, InternalActionContext ac, Role role) {
+		return role.getAPIPath(ac);
+	}
+
+	@Override
+	public String getETag(Tx tx, InternalActionContext ac, Role role) {
+		return role.getETag(ac);
 	}
 
 }

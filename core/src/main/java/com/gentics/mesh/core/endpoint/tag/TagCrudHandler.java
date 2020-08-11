@@ -59,7 +59,7 @@ public class TagCrudHandler extends AbstractHandler {
 			utils.syncTx(ac, tx -> {
 				PagingParameters pagingParams = ac.getPagingParameters();
 				NodeParameters nodeParams = ac.getNodeParameters();
-				Tag tag =crudActions().load(tx, ac, tagUuid, READ_PERM, true);
+				Tag tag =crudActions().loadByUuid(tx, ac, tagUuid, READ_PERM, true);
 				TransformablePage<? extends Node> page = tag.findTaggedNodes(ac.getUser(), ac.getBranch(), nodeParams.getLanguageList(options),
 					ContainerType.forVersion(ac.getVersioningParameters().getVersion()), pagingParams);
 				return page.transformToRestSync(ac, 0);

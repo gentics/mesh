@@ -3,7 +3,7 @@ package com.gentics.mesh.search.index.group;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.actions.GroupDAOActions;
+import com.gentics.mesh.core.action.GroupDAOActions;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.etc.config.MeshOptions;

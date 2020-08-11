@@ -1,8 +1,8 @@
-package com.gentics.mesh.core.actions;
+package com.gentics.mesh.core.action;
 
+import com.gentics.mesh.core.action.DAOActions;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.verticle.handler.DAOActions;
 
 public interface NodeDAOActions extends DAOActions<Node, NodeResponse> {
 

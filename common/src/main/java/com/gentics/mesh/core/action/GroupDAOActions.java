@@ -1,8 +1,8 @@
-package com.gentics.mesh.core.actions;
+package com.gentics.mesh.core.action;
 
+import com.gentics.mesh.core.action.DAOActions;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.rest.group.GroupResponse;
-import com.gentics.mesh.core.verticle.handler.DAOActions;
 
 public interface GroupDAOActions extends DAOActions<Group, GroupResponse> {
 

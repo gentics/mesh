@@ -7,7 +7,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.actions.TagFamilyDAOActions;
+import com.gentics.mesh.core.action.TagFamilyDAOActions;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.page.TransformablePage;
@@ -25,11 +25,20 @@ public class TagFamilyDAOActionsImpl implements TagFamilyDAOActions {
 	}
 
 	@Override
-	public TagFamily load(Tx tx, InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+	public TagFamily loadByUuid(Tx tx, InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
 		if (perm == null) {
 			return ac.getProject().getTagFamilyRoot().findByUuid(uuid);
 		} else {
 			return ac.getProject().getTagFamilyRoot().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+		}
+	}
+
+	@Override
+	public TagFamily loadByName(Tx tx, InternalActionContext ac, String name, GraphPermission perm, boolean errorIfNotFound) {
+		if (perm == null) {
+			return ac.getProject().getTagFamilyRoot().findByName(name);
+		} else {
+			throw new RuntimeException("Not supported");
 		}
 	}
 
@@ -66,6 +75,16 @@ public class TagFamilyDAOActionsImpl implements TagFamilyDAOActions {
 	public TagFamilyResponse transformToRestSync(Tx tx, TagFamily element, InternalActionContext ac, int level, String... languageTags) {
 		TagFamilyDaoWrapper tagFamilyDao = tx.data().tagFamilyDao();
 		return tagFamilyDao.transformToRestSync(element, ac, level, languageTags);
+	}
+
+	@Override
+	public String getAPIPath(Tx tx, InternalActionContext ac, TagFamily tagFamily) {
+		return tagFamily.getAPIPath(ac);
+	}
+
+	@Override
+	public String getETag(Tx tx, InternalActionContext ac, TagFamily tagFamily) {
+		return tagFamily.getETag(ac);
 	}
 
 }

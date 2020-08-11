@@ -7,7 +7,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.actions.TagDAOActions;
+import com.gentics.mesh.core.action.TagDAOActions;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.page.TransformablePage;
@@ -26,7 +26,7 @@ public class TagDAOActionsImpl implements TagDAOActions {
 	}
 
 	@Override
-	public Tag load(Tx tx, InternalActionContext ac, String tagUuid, GraphPermission perm, boolean errorIfNotFound) {
+	public Tag loadByUuid(Tx tx, InternalActionContext ac, String tagUuid, GraphPermission perm, boolean errorIfNotFound) {
 		String tagFamilyUuid = PathParameters.getTagFamilyUuid(ac);
 
 		TagFamily tagFamily = getTagFamily(tx, ac, tagFamilyUuid);
@@ -37,6 +37,19 @@ public class TagDAOActionsImpl implements TagDAOActions {
 			// return tagDao.findByUuid(tagFamily, tagUuid);
 		} else {
 			return tagFamily.loadObjectByUuid(ac, tagUuid, perm, errorIfNotFound);
+		}
+	}
+
+	@Override
+	public Tag loadByName(Tx tx, InternalActionContext ac, String name, GraphPermission perm, boolean errorIfNotFound) {
+		String tagFamilyUuid = PathParameters.getTagFamilyUuid(ac);
+
+		TagFamily tagFamily = getTagFamily(tx, ac, tagFamilyUuid);
+		// TODO throw 404 if tagFamily can't be found?
+		if (perm == null) {
+			return tagFamily.findByName(name);
+		} else {
+			throw new RuntimeException("Not supported");
 		}
 	}
 
@@ -73,6 +86,7 @@ public class TagDAOActionsImpl implements TagDAOActions {
 	@Override
 	public void delete(Tx tx, Tag tag, BulkActionContext bac) {
 		// TagDaoWrapper tagDao = tx.data().tagDao();
+		// TODO use dao
 		tag.delete(bac);
 	}
 
@@ -82,7 +96,17 @@ public class TagDAOActionsImpl implements TagDAOActions {
 		return tag.transformToRestSync(ac, level, languageTags);
 	}
 
-	public TagFamily getTagFamily(Tx tx, InternalActionContext ac, String tagFamilyUuid) {
+	@Override
+	public String getAPIPath(Tx tx, InternalActionContext ac, Tag tag) {
+		return tag.getAPIPath(ac);
+	}
+
+	@Override
+	public String getETag(Tx tx, InternalActionContext ac, Tag tag) {
+		return tag.getETag(ac);
+	}
+
+	private TagFamily getTagFamily(Tx tx, InternalActionContext ac, String tagFamilyUuid) {
 		return tx.data().tagFamilyDao().findByUuid(ac.getProject(), tagFamilyUuid);
 	}
 

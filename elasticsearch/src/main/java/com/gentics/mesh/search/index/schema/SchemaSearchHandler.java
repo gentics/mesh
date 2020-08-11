@@ -3,7 +3,7 @@ package com.gentics.mesh.search.index.schema;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.actions.SchemaDAOActions;
+import com.gentics.mesh.core.action.SchemaDAOActions;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.etc.config.MeshOptions;

@@ -7,8 +7,9 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.actions.ProjectDAOActions;
+import com.gentics.mesh.core.action.ProjectDAOActions;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.db.Tx;
@@ -24,11 +25,21 @@ public class ProjectDAOActionsImpl implements ProjectDAOActions {
 	}
 
 	@Override
-	public Project load(Tx tx, InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+	public Project loadByUuid(Tx tx, InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+		ProjectDaoWrapper projectDao = tx.data().projectDao();
 		if (perm == null) {
-			return tx.data().projectDao().findByUuid(uuid);
+			return projectDao.findByUuid(uuid);
 		} else {
-			return tx.data().projectDao().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+			return projectDao.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+		}
+	}
+
+	@Override
+	public Project loadByName(Tx tx, InternalActionContext ac, String name, GraphPermission perm, boolean errorIfNotFound) {
+		if (perm == null) {
+			return tx.data().projectDao().findByName(name);
+		} else {
+			throw new RuntimeException("Not supported");
 		}
 	}
 
@@ -61,4 +72,15 @@ public class ProjectDAOActionsImpl implements ProjectDAOActions {
 	public ProjectResponse transformToRestSync(Tx tx, Project project, InternalActionContext ac, int level, String... languageTags) {
 		return tx.data().projectDao().transformToRestSync(project, ac, level, languageTags);
 	}
+
+	@Override
+	public String getAPIPath(Tx tx, InternalActionContext ac, Project project) {
+		return project.getAPIPath(ac);
+	}
+
+	@Override
+	public String getETag(Tx tx, InternalActionContext ac, Project project) {
+		return project.getETag(ac);
+	}
+
 }

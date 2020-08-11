@@ -7,8 +7,9 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.actions.GroupDAOActions;
+import com.gentics.mesh.core.action.GroupDAOActions;
 import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.db.Tx;
@@ -24,8 +25,23 @@ public class GroupDAOActionsImpl implements GroupDAOActions {
 	}
 
 	@Override
-	public Group load(Tx tx, InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
-		return tx.data().groupDao().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+	public Group loadByUuid(Tx tx, InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+		GroupDaoWrapper groupDao = tx.data().groupDao();
+		if (perm == null) {
+			return groupDao.findByUuid(uuid);
+		} else {
+			return groupDao.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+		}
+	}
+
+	@Override
+	public Group loadByName(Tx tx, InternalActionContext ac, String name, GraphPermission perm, boolean errorIfNotFound) {
+		GroupDaoWrapper groupDao = tx.data().groupDao();
+		if (perm == null) {
+			return groupDao.findByName(name);
+		} else {
+			throw new RuntimeException("Not supported");
+		}
 	}
 
 	@Override
@@ -58,4 +74,13 @@ public class GroupDAOActionsImpl implements GroupDAOActions {
 		return tx.data().groupDao().transformToRestSync(group, ac, level, languageTags);
 	}
 
+	@Override
+	public String getAPIPath(Tx tx, InternalActionContext ac, Group group) {
+		return group.getAPIPath(ac);
+	}
+
+	@Override
+	public String getETag(Tx tx, InternalActionContext ac, Group group) {
+		return group.getETag(ac);
+	}
 }

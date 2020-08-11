@@ -7,7 +7,8 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.actions.UserDAOActions;
+import com.gentics.mesh.core.action.UserDAOActions;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -24,8 +25,23 @@ public class UserDAOActionsImpl implements UserDAOActions {
 	}
 
 	@Override
-	public HibUser load(Tx tx, InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
-		return tx.data().userDao().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+	public HibUser loadByUuid(Tx tx, InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+		UserDaoWrapper userDao = tx.data().userDao();
+		if (perm == null) {
+			return userDao.findByUuid(uuid);
+		} else {
+			return userDao.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+		}
+	}
+
+	@Override
+	public HibUser loadByName(Tx tx, InternalActionContext ac, String name, GraphPermission perm, boolean errorIfNotFound) {
+		UserDaoWrapper userDao = tx.data().userDao();
+		if (perm == null) {
+			return userDao.findByName(name);
+		} else {
+			throw new RuntimeException("Not supported");
+		}
 	}
 
 	@Override
@@ -58,4 +74,16 @@ public class UserDAOActionsImpl implements UserDAOActions {
 	public UserResponse transformToRestSync(Tx tx, HibUser user, InternalActionContext ac, int level, String... languageTags) {
 		return tx.data().userDao().transformToRestSync(user, ac, level, languageTags);
 	}
+
+	@Override
+	public String getAPIPath(Tx tx, InternalActionContext ac, HibUser user) {
+		// UserDaoWrapper userDao = tx.data().userDao();
+		return user.toUser().getAPIPath(ac);
+	}
+
+	@Override
+	public String getETag(Tx tx, InternalActionContext ac, HibUser user) {
+		return user.toUser().getETag(ac);
+	}
+
 }

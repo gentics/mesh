@@ -21,8 +21,8 @@ import javax.inject.Singleton;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
+import com.gentics.mesh.core.action.DAOActions;
 import com.gentics.mesh.core.data.HibCoreElement;
-import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.db.Tx;
@@ -93,7 +93,7 @@ public class HandlerUtilities {
 		String uuid) {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			syncTx(ac, tx -> {
-				T element = actions.load(tx, ac, uuid, DELETE_PERM, true);
+				T element = actions.loadByUuid(tx, ac, uuid, DELETE_PERM, true);
 
 				// Load the name and uuid of the element. We need this info after deletion.
 				String elementUuid = element.getUuid();
@@ -141,7 +141,7 @@ public class HandlerUtilities {
 					if (!UUIDUtil.isUUID(uuid)) {
 						throw error(BAD_REQUEST, "error_illegal_uuid", uuid);
 					}
-					element = actions.load(tx, ac, uuid, GraphPermission.UPDATE_PERM, false);
+					element = actions.loadByUuid(tx, ac, uuid, GraphPermission.UPDATE_PERM, false);
 				}
 
 				// Check whether we need to update a found element or whether we need to create a new one.
@@ -158,7 +158,7 @@ public class HandlerUtilities {
 						return actions.create(tx, ac, batch, uuid);
 					});
 					RM model = actions.transformToRestSync(tx, createdElement, ac, 0);
-					String path = createdElement.getAPIPath(ac);
+					String path = actions.getAPIPath(tx, ac, createdElement);
 					ResultInfo info = new ResultInfo(model);
 					info.setProperty("path", path);
 					createdElement.onCreated();
@@ -184,11 +184,11 @@ public class HandlerUtilities {
 		DAOActions<T, RM> actions, GraphPermission perm) {
 
 		syncTx(ac, tx -> {
-			T element = actions.load(tx, ac, uuid, perm, true);
+			T element = actions.loadByUuid(tx, ac, uuid, perm, true);
 
 			// Handle etag
 			if (ac.getGenericParameters().getETag()) {
-				String etag = element.getETag(ac);
+				String etag = actions.getETag(tx, ac, element);
 				ac.setEtag(etag, true);
 				if (ac.matches(etag, true)) {
 					throw new NotModifiedException();
