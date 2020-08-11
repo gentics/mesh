@@ -161,6 +161,7 @@ public final class TestMocks {
 
 	public static User mockUser(String username, String firstname, String lastname, User creator) {
 		User user = mock(User.class);
+		when(user.toUser()).thenReturn(user);
 		when(user.getUsername()).thenReturn(username);
 		when(user.getFirstname()).thenReturn(firstname);
 		when(user.getLastname()).thenReturn(lastname);
