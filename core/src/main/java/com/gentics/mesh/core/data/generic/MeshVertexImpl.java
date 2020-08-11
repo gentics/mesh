@@ -2,7 +2,9 @@ package com.gentics.mesh.core.data.generic;
 
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -176,7 +178,12 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 
 	@Override
 	public Set<String> getRoleUuidsForPerm(GraphPermission permission) {
-		return property(permission.propertyKey());
+		Set<String> oset = property(permission.propertyKey());
+		if (oset == null) {
+			return new HashSet<>(10);
+		} else {
+			return new HashSet<>(oset);
+		}
 	}
 
 	@Override

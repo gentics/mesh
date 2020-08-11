@@ -118,7 +118,8 @@ public abstract class AbstractTransformer<T> implements Transformer<T> {
 	 */
 	protected void addPermissionInfo(JsonObject document, HibElement element) {
 		Set<String> roleUuids = element.getRoleUuidsForPerm(GraphPermission.READ_PERM);
-		document.put("_roleUuids", roleUuids);
+		List<String> roleUuidsList = new ArrayList<>(roleUuids);
+		document.put("_roleUuids", roleUuidsList);
 	}
 
 	@Override
