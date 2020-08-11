@@ -42,6 +42,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -208,6 +209,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		List<? extends Node> nodes;
 
 		try (Tx tx = tx()) {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			String tagName = tag.getName();
 			assertNotNull(tag.getEditor());
 			TagResponse restTag = call(() -> client().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), tag.getUuid()));
@@ -224,7 +226,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 
 			// 3. Send the request to the server
 			trackingSearchProvider().clear().blockingAwait();
-			nodes = tag.getNodes(project().getLatestBranch()).list();
+			nodes = tagDao.getNodes(tag, project().getLatestBranch()).list();
 			tx.success();
 		}
 
@@ -345,8 +347,9 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 				.hasTagFamily("basic", parentTagFamilyUuid);
 		}).one();
 
-		tx(() -> {
-			tag.getNodes(initialBranch()).forEach(n -> {
+		tx(tx -> {
+			TagDaoWrapper tagDao = tx.data().tagDao();
+			tagDao.getNodes(tag, initialBranch()).forEach(n -> {
 				String uuid = n.getUuid();
 				expect(NODE_UNTAGGED).match(1, NodeTaggedEventModel.class, event -> {
 					assertEquals(uuid, event.getNode().getUuid());
@@ -355,7 +358,10 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			});
 		});
 
-		List<? extends Node> nodes = tx(() -> tag.getNodes(project().getLatestBranch()).list());
+		List<? extends Node> nodes = tx(tx -> {
+			TagDaoWrapper tagDao = tx.data().tagDao();
+			return tagDao.getNodes(tag, project().getLatestBranch()).list();
+		});
 		call(() -> client().deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid));
 
 		awaitEvents();

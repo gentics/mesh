@@ -1,30 +1,24 @@
 package com.gentics.mesh.core.data.dao.impl;
 
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import java.util.Set;
-import java.util.Stack;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
+import java.util.List;
 
 import javax.inject.Inject;
 
-import com.gentics.madl.traversal.RawTraversalResult;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
@@ -33,31 +27,17 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagRoot;
-import com.gentics.mesh.core.rest.common.PermissionInfo;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.madl.frame.EdgeFrame;
-import com.gentics.mesh.madl.frame.ElementFrame;
-import com.gentics.mesh.madl.frame.VertexFrame;
-import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
-import com.google.gson.JsonObject;
-import com.syncleus.ferma.ClassInitializer;
-import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.TEdge;
-import com.syncleus.ferma.traversals.EdgeTraversal;
-import com.syncleus.ferma.traversals.VertexTraversal;
-import com.tinkerpop.blueprints.Vertex;
 
 import dagger.Lazy;
-import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -191,13 +171,33 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper implements TagDaoWrapp
 
 		// For node which have been previously tagged we need to fire the untagged event.
 		for (Branch branch : tag.getProject().getBranchRoot().findAll()) {
-			for (Node node : tag.getNodes(branch)) {
+			for (Node node : getNodes(tag, branch)) {
 				bac.add(node.onTagged(tag, branch, UNASSIGNED));
 			}
 		}
 		tag.getElement().remove();
 		bac.process();
 
+	}
+
+	@Override
+	public TransformablePage<? extends Node> findTaggedNodes(Tag tag, MeshAuthUser requestUser, Branch branch, List<String> languageTags, ContainerType type, PagingParameters pagingInfo) {
+		return boot.get().tagRoot().findTaggedNodes(tag, requestUser, branch, languageTags, type, pagingInfo);
+	}
+
+	@Override
+	public TraversalResult<? extends Node> findTaggedNodes(Tag tag, InternalActionContext ac) {
+		return boot.get().tagRoot().findTaggedNodes(tag, ac);
+	}
+
+	@Override
+	public TraversalResult<? extends Node> getNodes(Tag tag, Branch branch) {
+		return boot.get().tagRoot().getNodes(tag, branch);
+	}
+
+	@Override
+	public void removeNode(Tag tag, Node node) {
+		tag.unlinkIn(node, HAS_TAG);
 	}
 
 }

@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data.impl;
 
-import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -8,18 +7,12 @@ import com.gentics.madl.traversal.RawTraversalResult;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
-import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
@@ -34,7 +27,6 @@ import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.madl.frame.VertexFrame;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
 import com.gentics.mesh.madl.traversal.TraversalResult;
-import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.google.gson.JsonObject;
 import com.syncleus.ferma.ClassInitializer;
@@ -332,10 +324,6 @@ public class TagWrapper implements Tag {
 		return delegate.getTagFamily();
 	}
 
-	public void removeNode(Node node) {
-		delegate.removeNode(node);
-	}
-
 	public MeshElementEventModel onDeleted() {
 		return delegate.onDeleted();
 	}
@@ -344,21 +332,12 @@ public class TagWrapper implements Tag {
 		return delegate.getTypeResolution();
 	}
 
-	public TraversalResult<? extends Node> getNodes(Branch branch) {
-		return delegate.getNodes(branch);
-	}
-
 	public PermissionChangedEventModelImpl onPermissionChanged(Role role) {
 		return delegate.onPermissionChanged(role);
 	}
 
 	public void setTypeResolution(Class<?> type) {
 		delegate.setTypeResolution(type);
-	}
-
-	public TransformablePage<? extends Node> findTaggedNodes(MeshAuthUser requestUser, Branch branch, List<String> languageTags, ContainerType type,
-		PagingParameters pagingInfo) {
-		return delegate.findTaggedNodes(requestUser, branch, languageTags, type, pagingInfo);
 	}
 
 	public void fillPermissionChanged(PermissionChangedEventModelImpl model, Role role) {
@@ -389,10 +368,6 @@ public class TagWrapper implements Tag {
 		delegate.setTagFamily(tagFamily);
 	}
 
-	public void setProject(Project project) {
-		delegate.setProject(project);
-	}
-
 	public TEdge addFramedEdge(String label, com.syncleus.ferma.VertexFrame inVertex) {
 		return delegate.addFramedEdge(label, inVertex);
 	}
@@ -403,10 +378,6 @@ public class TagWrapper implements Tag {
 
 	public Project getProject() {
 		return delegate.getProject();
-	}
-
-	public TraversalResult<? extends Node> findTaggedNodes(InternalActionContext ac) {
-		return delegate.findTaggedNodes(ac);
 	}
 
 	public VertexTraversal<?, ?, ?> in(String... labels) {

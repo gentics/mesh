@@ -25,6 +25,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
@@ -118,6 +119,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testNodeTagging() throws Exception {
 		try (Tx tx = tx()) {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			// 1. Create the tag
 			TagFamily root = tagFamily("basic");
 			Project project = project();
@@ -141,8 +143,8 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			// 4. Reload the tag and inspect the tagged nodes
 			Tag reloadedTag = meshRoot().getTagRoot().findByUuid(tag.getUuid());
-			assertEquals("The tag should have exactly one node.", 1, reloadedTag.getNodes(branch).count());
-			Node contentFromTag = reloadedTag.getNodes(branch).iterator().next();
+			assertEquals("The tag should have exactly one node.", 1, tagDao.getNodes(reloadedTag, branch).count());
+			Node contentFromTag = tagDao.getNodes(reloadedTag, branch).iterator().next();
 			NodeGraphFieldContainer fieldContainer = contentFromTag.getLatestDraftFieldContainer(german);
 
 			assertNotNull(contentFromTag);
@@ -151,9 +153,9 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertEquals("The name of the file from the loaded tag did not match the expected one.", GERMAN_TEST_FILENAME, filename);
 
 			// Remove the file/content and check whether the content was really removed
-			reloadedTag.removeNode(contentFromTag);
+			tagDao.removeNode(reloadedTag, contentFromTag);
 			// TODO verify for removed node
-			assertEquals("The tag should not have any file.", 0, reloadedTag.getNodes(branch).count());
+			assertEquals("The tag should not have any file.", 0, tagDao.getNodes(reloadedTag, branch).count());
 		}
 
 	}
@@ -161,6 +163,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testNodeTaggingInBranch() throws Exception {
 		try (Tx tx = tx()) {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			// 1. Create the tag
 			TagFamily root = tagFamily("basic");
 			Project project = project();
@@ -186,13 +189,13 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertThat(new ArrayList<Tag>(node.getTags(initialBranch).list())).as("Tags in initial Release")
 				.usingElementComparatorOnFields("uuid", "name")
 				.containsOnly(tag);
-			assertThat(new ArrayList<Node>(tag.getNodes(initialBranch).list())).as("Nodes with tag in initial Release")
+			assertThat(new ArrayList<Node>(tagDao.getNodes(tag, initialBranch).list())).as("Nodes with tag in initial Release")
 				.usingElementComparatorOnFields(
 					"uuid")
 				.containsOnly(node);
 
 			assertThat(node.getTags(newBranch).list()).as("Tags in new Branch").isEmpty();
-			assertThat(new ArrayList<Node>(tag.getNodes(newBranch).list())).as("Nodes with tag in new Branch").isEmpty();
+			assertThat(new ArrayList<Node>(tagDao.getNodes(tag, newBranch).list())).as("Nodes with tag in new Branch").isEmpty();
 
 			// 6. Tag in new branch
 			node.addTag(tag, newBranch);
@@ -201,14 +204,14 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertThat(new ArrayList<Tag>(node.getTags(initialBranch).list())).as("Tags in initial Release")
 				.usingElementComparatorOnFields("uuid", "name")
 				.containsOnly(tag);
-			assertThat(new ArrayList<Node>(tag.getNodes(initialBranch).list())).as("Nodes with tag in initial Release")
+			assertThat(new ArrayList<Node>(tagDao.getNodes(tag, initialBranch).list())).as("Nodes with tag in initial Release")
 				.usingElementComparatorOnFields(
 					"uuid")
 				.containsOnly(node);
 
 			assertThat(new ArrayList<Tag>(node.getTags(newBranch).list())).as("Tags in new Release").usingElementComparatorOnFields("uuid", "name")
 				.containsOnly(tag);
-			assertThat(new ArrayList<Node>(tag.getNodes(newBranch).list())).as("Nodes with tag in new Release").usingElementComparatorOnFields("uuid")
+			assertThat(new ArrayList<Node>(tagDao.getNodes(tag, newBranch).list())).as("Nodes with tag in new Release").usingElementComparatorOnFields("uuid")
 				.containsOnly(node);
 		}
 	}
@@ -216,6 +219,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testMigrateTagsForBranch() throws Exception {
 		try (Tx tx = tx()) {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			// 1. Create the tag
 			TagFamily root = tagFamily("basic");
 			Project project = project();
@@ -241,12 +245,12 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 5. Assert
 			assertThat(new ArrayList<Tag>(node.getTags(initialBranch).list())).as("Tags in initial Branch")
 				.usingElementComparatorOnFields("uuid", "name").containsOnly(tag);
-			assertThat(new ArrayList<Node>(tag.getNodes(initialBranch).list())).as("Nodes with tag in initial Branch").usingElementComparatorOnFields(
+			assertThat(new ArrayList<Node>(tagDao.getNodes(tag, initialBranch).list())).as("Nodes with tag in initial Branch").usingElementComparatorOnFields(
 				"uuid").containsOnly(node);
 
 			assertThat(new ArrayList<Tag>(node.getTags(newBranch).list())).as("Tags in new Branch").usingElementComparatorOnFields("uuid", "name")
 				.containsOnly(tag);
-			assertThat(new ArrayList<Node>(tag.getNodes(newBranch).list())).as("Nodes with tag in new Branch").usingElementComparatorOnFields("uuid")
+			assertThat(new ArrayList<Node>(tagDao.getNodes(tag, newBranch).list())).as("Nodes with tag in new Branch").usingElementComparatorOnFields("uuid")
 				.containsOnly(node);
 		}
 	}
@@ -284,16 +288,17 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 		branchMigrationHandler.migrateBranch(context).blockingAwait();
 
 		try (Tx tx = tx()) {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			// 5. Untag in initial branch
 			node.removeTag(tag, initialBranch);
 
 			// 6. Assert
 			assertThat(node.getTags(initialBranch).list()).as("Tags in initial Branch").isEmpty();
-			assertThat(new ArrayList<Node>(tag.getNodes(initialBranch).list())).as("Nodes with tag in initial Branch").isEmpty();
+			assertThat(new ArrayList<Node>(tagDao.getNodes(tag, initialBranch).list())).as("Nodes with tag in initial Branch").isEmpty();
 
 			assertThat(new ArrayList<Tag>(node.getTags(newBranch).list())).as("Tags in new Branch").usingElementComparatorOnFields("uuid", "name")
 				.containsOnly(tag);
-			assertThat(new ArrayList<Node>(tag.getNodes(newBranch).list())).as("Nodes with tag in new Branch").usingElementComparatorOnFields("uuid")
+			assertThat(new ArrayList<Node>(tagDao.getNodes(tag, newBranch).list())).as("Nodes with tag in new Branch").usingElementComparatorOnFields("uuid")
 				.containsOnly(node);
 		}
 	}
