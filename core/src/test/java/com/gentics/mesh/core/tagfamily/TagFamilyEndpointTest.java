@@ -47,6 +47,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
@@ -327,9 +328,10 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 
 		Set<String> taggedDraftContentUuids = new HashSet<>();
 		Set<String> taggedPublishedContentUuids = new HashSet<>();
-		tx(() -> {
+		tx(tx -> {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			tags.forEach(t -> {
-				t.getNodes(initialBranch()).forEach(n -> {
+				tagDao.getNodes(t, initialBranch()).forEach(n -> {
 					n.getGraphFieldContainers(initialBranch(), DRAFT).forEach(c -> {
 						taggedDraftContentUuids.add(c.getUuid());
 					});
@@ -454,12 +456,13 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		awaitEvents();
 
 		try (Tx tx = tx()) {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			// Multiple tags of the same family can be tagged on same node. This should still trigger only 1 update for that node.
 			HashSet<String> taggedNodes = new HashSet<>();
 			int storeCount = 0;
 			for (Tag tag : tagfamily.findAll()) {
 				storeCount++;
-				for (Node node : tag.getNodes(branch)) {
+				for (Node node : tagDao.getNodes(tag, branch)) {
 					if (!taggedNodes.contains(node.getUuid())) {
 						taggedNodes.add(node.getUuid());
 						for (ContainerType containerType : Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED)) {

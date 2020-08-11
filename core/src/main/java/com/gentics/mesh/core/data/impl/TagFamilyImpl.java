@@ -1,18 +1,12 @@
 package com.gentics.mesh.core.data.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_FAMILY;
-import static com.gentics.mesh.core.rest.error.Errors.conflict;
-import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.Set;
 
@@ -24,9 +18,8 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.dao.TagDaoWrapper;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.page.Page;
@@ -41,7 +34,6 @@ import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedProjectElementEventModel;
 import com.gentics.mesh.core.rest.event.tagfamily.TagFamilyMeshEventModel;
 import com.gentics.mesh.core.rest.project.ProjectReference;
-import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -114,35 +106,12 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public Tag create(InternalActionContext ac, EventQueueBatch batch) {
-		return create(ac, batch, null);
+		return mesh().boot().tagDao().create(this, ac, batch);
 	}
 
 	@Override
 	public Tag create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		Project project = ac.getProject();
-		TagCreateRequest requestModel = ac.fromJson(TagCreateRequest.class);
-		String tagName = requestModel.getName();
-		if (isEmpty(tagName)) {
-			throw error(BAD_REQUEST, "tag_name_not_set");
-		}
-
-		UserDaoWrapper userDao= Tx.get().data().userDao();
-		MeshAuthUser requestUser = ac.getUser();
-		if (!userDao.hasPermission(requestUser, this, CREATE_PERM)) {
-			throw error(FORBIDDEN, "error_missing_perm", getUuid(), CREATE_PERM.getRestPerm().getName());
-		}
-
-		Tag conflictingTag = findByName(tagName);
-		if (conflictingTag != null) {
-			throw conflict(conflictingTag.getUuid(), tagName, "tag_create_tag_with_same_name_already_exists", tagName, getName());
-		}
-
-		Tag newTag = create(requestModel.getName(), project, requestUser, uuid);
-		userDao.inheritRolePermissions(ac.getUser(), this, newTag);
-		addTag(newTag);
-
-		batch.add(newTag.onCreated());
-		return newTag;
+		return mesh().boot().tagDao().create(this, ac, batch, uuid);
 	}
 
 	@Override
@@ -153,23 +122,8 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public void delete(BulkActionContext bac) {
-		TagDaoWrapper tagDao = Tx.get().data().tagDao();
-		// TagFamilyDaoWrapper tagFamilyDao = Tx.get().data().tagFamilyDao();
-
-		if (log.isDebugEnabled()) {
-			log.debug("Deleting tagFamily {" + getName() + "}");
-		}
-
-		// Delete all the tags of the tag root
-		for (Tag tag : findAll()) {
-			tagDao.delete(tag, bac);
-		}
-
-		bac.add(onDeleted());
-
-		// Now delete the tag root element
-		getElement().remove();
-		bac.process();
+		TagFamilyDaoWrapper tagFamilyDao = Tx.get().data().tagFamilyDao();
+		tagFamilyDao.delete(this, bac);
 	}
 
 	@Override
@@ -229,31 +183,6 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	@Override
 	public void removeTag(Tag tag) {
 		removeItem(tag);
-	}
-
-	@Override
-	public Tag findByName(String name) {
-		return out(getRootLabel()).mark().has(TagImpl.TAG_VALUE_KEY, name).back().nextOrDefaultExplicit(TagImpl.class, null);
-	}
-
-	@Override
-	public Tag create(String name, Project project, HibUser creator, String uuid) {
-		TagImpl tag = getGraph().addFramedVertex(TagImpl.class);
-		if (uuid != null) {
-			tag.setUuid(uuid);
-		}
-		tag.setName(name);
-		tag.setCreated(creator);
-		tag.setProject(project);
-
-		// Add the tag to the global tag root
-		mesh().boot().meshRoot().getTagRoot().addTag(tag);
-		// And to the tag family
-		addTag(tag);
-
-		// Set the tag family for the tag
-		tag.setTagFamily(this);
-		return tag;
 	}
 
 	@Override

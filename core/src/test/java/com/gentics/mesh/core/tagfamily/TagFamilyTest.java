@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -23,8 +24,9 @@ public class TagFamilyTest extends AbstractMeshTest {
 		Long nTags = tx(() -> tagFamily.findAll().count());
 		int nExtraTags = 100;
 		try (Tx tx = tx()) {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			for (int i = 0; i < nExtraTags; i++) {
-				tagFamily.create("green" + i, project(), user());
+				tagDao.create(tagFamily, "green" + i, project(), user());
 			}
 			tx.success();
 		}

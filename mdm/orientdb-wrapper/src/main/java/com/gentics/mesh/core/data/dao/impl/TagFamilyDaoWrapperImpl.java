@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.vertx.core.logging.LoggerFactory.getLogger;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import javax.inject.Inject;
@@ -12,17 +13,21 @@ import javax.inject.Inject;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.impl.TagFamilyWrapper;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
@@ -33,9 +38,11 @@ import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 
 import dagger.Lazy;
+import io.vertx.core.logging.Logger;
 
 // TODO there is no tag family root since the tag itself is the root. 
 public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper implements TagFamilyDaoWrapper {
+	private static final Logger log = getLogger(TagFamilyDaoWrapperImpl.class);
 
 	@Inject
 	public TagFamilyDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionProperties> permissions) {
@@ -161,4 +168,23 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper implements TagFa
 		return project.getTagFamilyRoot().findAll();
 	}
 
+	@Override
+	public void delete(TagFamily tagFamily, BulkActionContext bac) {
+		TagDaoWrapper tagDao = Tx.get().data().tagDao();
+
+		if (log.isDebugEnabled()) {
+			log.debug("Deleting tagFamily {" + tagFamily.getName() + "}");
+		}
+
+		// Delete all the tags of the tag root
+		for (Tag tag : tagDao.findAll(tagFamily)) {
+			tagDao.delete(tag, bac);
+		}
+
+		bac.add(tagFamily.onDeleted());
+
+		// Now delete the tag root element
+		tagFamily.getElement().remove();
+		bac.process();
+	}
 }

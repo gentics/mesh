@@ -19,6 +19,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.Schema;
@@ -166,9 +167,10 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 	@Ignore("Currently fails due to https://github.com/gentics/mesh/issues/606")
 	public void testTagSync() throws Exception {
 		// Assert insert
-		tx(() -> {
+		tx(tx -> {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			for (int i = 0; i < 400; i++) {
-				tagFamily("colors").create("tag_" + i, project(), user());
+				tagDao.create(tagFamily("colors"), "tag_" + i, project(), user());
 			}
 		});
 		syncIndex();

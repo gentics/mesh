@@ -1,7 +1,24 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_UPDATED;
+import static com.gentics.mesh.search.verticle.entity.MeshEntities.findElementByUuidStream;
+import static com.gentics.mesh.search.verticle.eventhandler.Util.concat;
+import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
+import static com.gentics.mesh.util.StreamUtil.toStream;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.stream.Stream;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -10,21 +27,8 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.entity.MeshEntities;
-import io.reactivex.Flowable;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.stream.Stream;
 
-import static com.gentics.mesh.core.rest.MeshEvent.TAG_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.TAG_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.TAG_UPDATED;
-import static com.gentics.mesh.search.verticle.entity.MeshEntities.findElementByUuidStream;
-import static com.gentics.mesh.search.verticle.eventhandler.Util.concat;
-import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
-import static com.gentics.mesh.util.StreamUtil.toStream;
+import io.reactivex.Flowable;
 
 @Singleton
 public class TagEventHandler implements EventHandler {
@@ -81,9 +85,10 @@ public class TagEventHandler implements EventHandler {
 	}
 
 	private Stream<CreateDocumentRequest> taggedNodes(MeshProjectElementEventModel model, Tag tag) {
+		TagDaoWrapper tagDao = helper.getBoot().tagDao();
 		return findElementByUuidStream(helper.getBoot().projectRoot(), model.getProject().getUuid())
 			.flatMap(project -> project.getBranchRoot().findAll().stream()
-			.flatMap(branch -> tag.getNodes(branch).stream()
+			.flatMap(branch -> tagDao.getNodes(tag, branch).stream()
 			.flatMap(node -> entities.generateNodeRequests(node.getUuid(), project, branch))));
 	}
 }

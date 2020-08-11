@@ -21,6 +21,7 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.TagFamilyImpl;
@@ -170,7 +171,7 @@ public class TxTest extends AbstractMeshTest {
 					for (int retry = 0; retry < maxRetry; retry++) {
 						try {
 							try (Tx tx = tx()) {
-
+								TagDaoWrapper tagDao = tx.data().tagDao();
 								if (retry == 0) {
 									try {
 										System.out.println("Thread [" + threadNo + "] Waiting..");
@@ -187,7 +188,7 @@ public class TxTest extends AbstractMeshTest {
 								HibUser reloadedUser = tx.getGraph().getFramedVertexExplicit(UserImpl.class, user.getId());
 								Project reloadedProject = tx.getGraph().getFramedVertexExplicit(ProjectImpl.class, project.getId());
 
-								Tag tag = reloadedTagFamily.create("bogus_" + threadNo + "_" + currentRun, project(), reloadedUser);
+								Tag tag = tagDao.create(reloadedTagFamily, "bogus_" + threadNo + "_" + currentRun, project(), reloadedUser);
 								// Reload the node
 								reloadedNode.addTag(tag, reloadedProject.getLatestBranch());
 								tx.success();

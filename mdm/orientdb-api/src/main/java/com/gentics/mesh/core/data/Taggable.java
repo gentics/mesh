@@ -12,9 +12,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.tag.TagListUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagReference;
@@ -57,6 +59,7 @@ public interface Taggable {
 		TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();
 		UserDaoWrapper userDao = Tx.get().data().userDao();
 		HibUser user = ac.getUser();
+		TagDaoWrapper tagDao = Tx.get().data().tagDao();
 		for (TagReference tagReference : list) {
 			if (!tagReference.isSet()) {
 				throw error(BAD_REQUEST, "tag_error_name_or_uuid_missing");
@@ -85,7 +88,7 @@ public interface Taggable {
 				// Tag with name could not be found so create it
 				if (tag == null) {
 					if (userDao.hasPermission(user, tagFamily, CREATE_PERM)) {
-						tag = tagFamily.create(tagReference.getName(), project, user);
+						tag = tagDao.create(tagFamily, tagReference.getName(), project, user);
 						userDao.inheritRolePermissions(user, tagFamily, tag);
 						batch.add(tag.onCreated());
 					} else {

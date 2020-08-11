@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.dao;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
@@ -23,4 +24,5 @@ public interface TagFamilyDaoWrapper extends TagFamilyDao, DaoWrapper<TagFamily>
 
 	TagFamily findByUuid(Project project, String uuid);
 
+	void delete(TagFamily tagFamily, BulkActionContext bac);
 }

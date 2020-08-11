@@ -1,12 +1,20 @@
 package com.gentics.mesh.core.data.root;
 
+import java.util.List;
+
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.madl.traversal.TraversalResult;
+import com.gentics.mesh.parameter.PagingParameters;
 
 /**
  * Aggregation node for tags.
@@ -45,9 +53,51 @@ public interface TagRoot extends RootVertex<Tag>, TransformableElementRoot<Tag, 
 	 *            Creator of the tag
 	 * @return
 	 */
-	Tag create(String name, Project project, TagFamily tagFamily, User creator);
+	Tag create(String name, Project project, TagFamily tagFamily, HibUser creator);
 
+	/**
+	 * Create a new tag with the given name and creator. Note that this method will not check for any tag name collisions. Note that the created tag will also
+	 * be assigned to the global root vertex.
+	 *
+	 * @param name
+	 *            Name of the new tag.
+	 * @param project
+	 *            Root project of the tag.
+	 * @param creator
+	 *            User that is used to assign creator and editor references of the new tag.
+	 * @param uuid
+	 *            Optional uuid
+	 * @return
+	 */
+	Tag create(TagFamily tagFamily, String name, Project project, HibUser creator, String uuid);
 
-	boolean update(Tag tag, InternalActionContext ac, EventQueueBatch batch); 
+	boolean update(Tag tag, InternalActionContext ac, EventQueueBatch batch);
 
+	/**
+	 * Return a page of nodes that are visible to the user and which are tagged by this tag. Use the paging and language information provided.
+	 *
+	 * @param tag
+	 * @param requestUser
+	 * @param branch
+	 * @param languageTags
+	 * @param type
+	 * @param pagingInfo
+	 * @return
+	 */
+	TransformablePage<? extends Node> findTaggedNodes(Tag tag, HibUser requestUser, Branch branch, List<String> languageTags, ContainerType type,
+		PagingParameters pagingInfo);
+
+	TraversalResult<? extends Node> findTaggedNodes(Tag tag, InternalActionContext ac);
+
+	/**
+	 * Return a traversal result of nodes that were tagged by this tag in the given branch
+	 *
+	 * @param branch
+	 *            branch
+	 *
+	 * @return Result
+	 */
+	TraversalResult<? extends Node> getNodes(Tag tag, Branch branch);
+
+	Tag findByName(TagFamily tagFamily, String name);
 }

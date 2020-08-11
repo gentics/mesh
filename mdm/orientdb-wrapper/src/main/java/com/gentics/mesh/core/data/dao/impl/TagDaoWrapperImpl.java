@@ -1,63 +1,49 @@
 package com.gentics.mesh.core.data.dao.impl;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import java.util.Set;
-import java.util.Stack;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
+import java.util.List;
 
 import javax.inject.Inject;
 
-import com.gentics.madl.traversal.RawTraversalResult;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.impl.TagWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagRoot;
-import com.gentics.mesh.core.rest.common.PermissionInfo;
+import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
+import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.madl.frame.EdgeFrame;
-import com.gentics.mesh.madl.frame.ElementFrame;
-import com.gentics.mesh.madl.frame.VertexFrame;
-import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
-import com.google.gson.JsonObject;
-import com.syncleus.ferma.ClassInitializer;
-import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.TEdge;
-import com.syncleus.ferma.traversals.EdgeTraversal;
-import com.syncleus.ferma.traversals.VertexTraversal;
-import com.tinkerpop.blueprints.Vertex;
 
 import dagger.Lazy;
-import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -197,7 +183,7 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper implements TagDaoWrapp
 
 		// For node which have been previously tagged we need to fire the untagged event.
 		for (Branch branch : tag.getProject().getBranchRoot().findAll()) {
-			for (Node node : tag.getNodes(branch)) {
+			for (Node node : getNodes(tag, branch)) {
 				bac.add(node.onTagged(tag, branch, UNASSIGNED));
 			}
 		}
@@ -207,8 +193,70 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper implements TagDaoWrapp
 	}
 
 	@Override
+	public TransformablePage<? extends Node> findTaggedNodes(Tag tag, HibUser requestUser, Branch branch, List<String> languageTags, ContainerType type, PagingParameters pagingInfo) {
+		return boot.get().tagRoot().findTaggedNodes(tag, requestUser, branch, languageTags, type, pagingInfo);
+	}
+
+	@Override
+	public TraversalResult<? extends Node> findTaggedNodes(Tag tag, InternalActionContext ac) {
+		return boot.get().tagRoot().findTaggedNodes(tag, ac);
+	}
+
+	@Override
+	public TraversalResult<? extends Node> getNodes(Tag tag, Branch branch) {
+		return boot.get().tagRoot().getNodes(tag, branch);
+	}
+
+	@Override
+	public void removeNode(Tag tag, Node node) {
+		tag.unlinkIn(node, HAS_TAG);
+	}
+
+	@Override
+	public Tag create(TagFamily tagFamily, InternalActionContext ac, EventQueueBatch batch) {
+		return create(tagFamily, ac, batch, null);
+	}
+
+	@Override
+	public Tag create(TagFamily tagFamily, InternalActionContext ac, EventQueueBatch batch, String uuid) {
+		Project project = ac.getProject();
+		TagCreateRequest requestModel = ac.fromJson(TagCreateRequest.class);
+		String tagName = requestModel.getName();
+		if (isEmpty(tagName)) {
+			throw error(BAD_REQUEST, "tag_name_not_set");
+		}
+
+		UserDaoWrapper userDao= Tx.get().data().userDao();
+		MeshAuthUser requestUser = ac.getUser();
+		if (!userDao.hasPermission(requestUser, tagFamily, CREATE_PERM)) {
+			throw error(FORBIDDEN, "error_missing_perm", tagFamily.getUuid(), CREATE_PERM.getRestPerm().getName());
+		}
+
+		Tag conflictingTag = findByName(tagFamily, tagName);
+		if (conflictingTag != null) {
+			throw conflict(conflictingTag.getUuid(), tagName, "tag_create_tag_with_same_name_already_exists", tagName, tagFamily.getName());
+		}
+
+		Tag newTag = create(tagFamily, requestModel.getName(), project, requestUser, uuid);
+		userDao.inheritRolePermissions(ac.getUser(), tagFamily, newTag);
+		tagFamily.addTag(newTag);
+
+		batch.add(newTag.onCreated());
+		return newTag;
+	}
+
+	@Override
+	public Tag create(TagFamily tagFamily, String name, Project project, HibUser creator) {
+		return create(tagFamily, name, project, creator, null);
+	}
+
+	@Override
+	public Tag create(TagFamily tagFamily, String name, Project project, HibUser creator, String uuid) {
+		return boot.get().tagRoot().create(tagFamily, name, project, creator, uuid);
+	}
+
+	@Override
 	public long computeGlobalCount() {
 		return boot.get().tagRoot().computeCount();
 	}
-
 }
