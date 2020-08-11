@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
@@ -300,7 +301,7 @@ public class LanguageDaoWrapperImpl extends AbstractDaoWrapper implements Langua
 		boot.get().languageRoot().linkIn(vertex, labels);
 	}
 
-	public TransformablePage<? extends Language> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Language> extraFilter) {
+	public Page<? extends Language> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Language> extraFilter) {
 		return boot.get().languageRoot().findAll(ac, pagingInfo, extraFilter);
 	}
 

@@ -10,6 +10,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.GroupDAOActions;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.db.Tx;
@@ -50,7 +51,7 @@ public class GroupDAOActionsImpl implements GroupDAOActions {
 	}
 
 	@Override
-	public TransformablePage<? extends Group> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo, Predicate<Group> extraFilter) {
+	public Page<? extends Group> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo, Predicate<Group> extraFilter) {
 		return tx.data().groupDao().findAll(ac, pagingInfo, extraFilter);
 	}
 

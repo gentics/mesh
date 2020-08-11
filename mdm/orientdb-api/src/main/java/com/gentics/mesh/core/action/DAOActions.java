@@ -5,6 +5,7 @@ import java.util.function.Predicate;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.db.Tx;
@@ -29,7 +30,7 @@ public interface DAOActions<T extends HibCoreElement, RM extends RestModel> {
 
 	TransformablePage<? extends T> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo);
 
-	TransformablePage<? extends T> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo, Predicate<T> extraFilter);
+	Page<? extends T> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo, Predicate<T> extraFilter);
 
 	boolean update(Tx tx, T element, InternalActionContext ac, EventQueueBatch batch);
 

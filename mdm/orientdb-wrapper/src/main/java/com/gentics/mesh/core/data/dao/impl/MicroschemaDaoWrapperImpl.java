@@ -21,6 +21,7 @@ import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.impl.MicroschemaWrapper;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MicroschemaRoot;
@@ -167,7 +168,7 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper implements Mic
 	}
 
 	@Override
-	public TransformablePage<? extends Microschema> findAll(InternalActionContext ac, PagingParameters pagingInfo,
+	public Page<? extends Microschema> findAll(InternalActionContext ac, PagingParameters pagingInfo,
 		Predicate<Microschema> extraFilter) {
 		MicroschemaRoot microschemaRoot = boot.get().microschemaContainerRoot();
 		return microschemaRoot.findAll(ac, pagingInfo, extraFilter);

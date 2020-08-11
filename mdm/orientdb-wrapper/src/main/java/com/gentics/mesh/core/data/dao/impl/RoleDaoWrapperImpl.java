@@ -249,7 +249,7 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper implements RoleDaoWra
 	}
 
 	@Override
-	public TransformablePage<? extends Role> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Role> extraFilter) {
+	public Page<? extends Role> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Role> extraFilter) {
 		RoleRoot roleRoot = boot.get().roleRoot();
 		return roleRoot.findAll(ac, pagingInfo, extraFilter);
 	}

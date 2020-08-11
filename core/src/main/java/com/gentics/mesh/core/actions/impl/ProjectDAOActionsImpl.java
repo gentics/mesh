@@ -10,6 +10,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.ProjectDAOActions;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.db.Tx;
@@ -49,7 +50,7 @@ public class ProjectDAOActionsImpl implements ProjectDAOActions {
 	}
 
 	@Override
-	public TransformablePage<? extends Project> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo,
+	public Page<? extends Project> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo,
 		Predicate<Project> extraFilter) {
 		return tx.data().projectDao().findAll(ac, pagingInfo, extraFilter);
 	}

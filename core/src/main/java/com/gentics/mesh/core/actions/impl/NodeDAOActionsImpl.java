@@ -9,6 +9,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.NodeDAOActions;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.db.Tx;
@@ -48,7 +49,7 @@ public class NodeDAOActionsImpl implements NodeDAOActions {
 	}
 
 	@Override
-	public TransformablePage<? extends Node> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo, Predicate<Node> extraFilter) {
+	public Page<? extends Node> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo, Predicate<Node> extraFilter) {
 		return ac.getProject().getNodeRoot().findAll(ac, pagingInfo, extraFilter);
 	}
 

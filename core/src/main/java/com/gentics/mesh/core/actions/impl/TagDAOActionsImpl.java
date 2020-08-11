@@ -10,6 +10,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.TagDAOActions;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.db.Tx;
@@ -61,7 +62,7 @@ public class TagDAOActionsImpl implements TagDAOActions {
 	}
 
 	@Override
-	public TransformablePage<? extends Tag> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo, Predicate<Tag> extraFilter) {
+	public Page<? extends Tag> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo, Predicate<Tag> extraFilter) {
 		String tagFamilyUuid = PathParameters.getTagFamilyUuid(ac);
 		return getTagFamily(tx, ac, tagFamilyUuid).findAll(ac, pagingInfo, extraFilter);
 	}

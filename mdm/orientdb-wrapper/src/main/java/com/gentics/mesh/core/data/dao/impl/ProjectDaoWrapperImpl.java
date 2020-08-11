@@ -27,6 +27,7 @@ import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.impl.ProjectWrapper;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.ProjectRoot;
@@ -101,10 +102,10 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper implements Project
 		// TODO wrap the page
 		return nativePage;
 	}
-	
+
 	@Override
-	public TransformablePage<? extends Project> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Project> extraFilter) {
-		TransformablePage<? extends Project> nativePage = boot.get().projectRoot().findAll(ac, pagingInfo, extraFilter);
+	public Page<? extends Project> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Project> extraFilter) {
+		Page<? extends Project> nativePage = boot.get().projectRoot().findAll(ac, pagingInfo, extraFilter);
 		return nativePage;
 	}
 

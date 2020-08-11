@@ -9,6 +9,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.UserDAOActions;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -50,7 +51,7 @@ public class UserDAOActionsImpl implements UserDAOActions {
 	}
 
 	@Override
-	public TransformablePage<? extends HibUser> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo,
+	public Page<? extends HibUser> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo,
 		Predicate<HibUser> extraFilter) {
 		return tx.data().userDao().findAll(ac, pagingInfo, extraFilter);
 	}

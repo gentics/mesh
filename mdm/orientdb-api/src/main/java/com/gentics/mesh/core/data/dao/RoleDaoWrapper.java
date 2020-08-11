@@ -126,6 +126,6 @@ public interface RoleDaoWrapper extends RoleDao, DaoWrapper<Role>, DaoTransforma
 
 	TransformablePage<? extends Role> findAll(InternalActionContext ac, PagingParameters pagingInfo);
 
-	TransformablePage<? extends Role> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Role> extraFilter);
+	Page<? extends Role> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Role> extraFilter);
 
 }

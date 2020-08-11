@@ -6,6 +6,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -27,7 +28,7 @@ public interface GroupDaoWrapper extends GroupDao, DaoWrapper<Group>, DaoTransfo
 
 	TransformablePage<? extends Group> findAll(InternalActionContext ac, PagingParameters pagingInfo);
 
-	TransformablePage<? extends Group> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Group> extraFilter);
+	Page<? extends Group> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Group> extraFilter);
 
 	Group findByName(String name);
 

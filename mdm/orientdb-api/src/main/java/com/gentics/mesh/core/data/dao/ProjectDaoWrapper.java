@@ -5,6 +5,7 @@ import java.util.function.Predicate;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
@@ -24,7 +25,7 @@ public interface ProjectDaoWrapper extends ProjectDao, DaoWrapper<Project>, DaoT
 
 	TransformablePage<? extends Project> findAll(InternalActionContext ac, PagingParameters pagingInfo);
 
-	TransformablePage<? extends Project> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Project> extraFilter);
+	Page<? extends Project> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Project> extraFilter);
 
 	Project findByName(String name);
 

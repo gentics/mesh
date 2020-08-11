@@ -9,6 +9,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.SchemaDAOActions;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.Schema;
@@ -52,7 +53,7 @@ public class SchemaDAOActionsImpl implements SchemaDAOActions {
 	}
 
 	@Override
-	public TransformablePage<? extends Schema> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo, Predicate<Schema> extraFilter) {
+	public Page<? extends Schema> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo, Predicate<Schema> extraFilter) {
 		return ac.getProject().getSchemaContainerRoot().findAll(ac, pagingInfo, extraFilter);
 		// TODO scope to project
 		// return tx.data().schemaDao().findAll(ac, pagingInfo, extraFilter);

@@ -22,6 +22,7 @@ import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.JobDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.job.Job;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
@@ -327,7 +328,7 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper implements JobDaoWrapp
 		boot.get().jobRoot().linkIn(vertex, labels);
 	}
 
-	public TransformablePage<? extends Job> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Job> extraFilter) {
+	public Page<? extends Job> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Job> extraFilter) {
 		return boot.get().jobRoot().findAll(ac, pagingInfo, extraFilter);
 	}
 

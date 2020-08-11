@@ -7,6 +7,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.DAOActions;
 import com.gentics.mesh.core.data.dao.JobDaoWrapper;
 import com.gentics.mesh.core.data.job.Job;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.db.Tx;
@@ -42,7 +43,7 @@ public class JobCrudActions implements DAOActions<Job, JobResponse> {
 	}
 
 	@Override
-	public TransformablePage<? extends Job> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo, Predicate<Job> extraFilter) {
+	public Page<? extends Job> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo, Predicate<Job> extraFilter) {
 		return tx.data().jobDao().findAll(ac, pagingInfo, extraFilter);
 	}
 

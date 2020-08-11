@@ -10,6 +10,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.BranchDAOActions;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.db.Tx;
@@ -52,7 +53,7 @@ public class BranchDAOActionsImpl implements BranchDAOActions {
 	}
 
 	@Override
-	public TransformablePage<? extends Branch> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo, Predicate<Branch> extraFilter) {
+	public Page<? extends Branch> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo, Predicate<Branch> extraFilter) {
 		// BranchDaoWrapper branchDao = tx.data().branchDao();
 		// TODO use DAO
 		return ac.getProject().getBranchRoot().findAll(ac, pagingInfo, extraFilter);

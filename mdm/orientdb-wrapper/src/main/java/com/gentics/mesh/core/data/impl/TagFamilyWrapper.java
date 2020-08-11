@@ -442,7 +442,7 @@ public class TagFamilyWrapper implements TagFamily {
 		delegate.setProject(project);
 	}
 
-	public TransformablePage<? extends Tag> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Tag> extraFilter) {
+	public Page<? extends Tag> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Tag> extraFilter) {
 		return delegate.findAll(ac, pagingInfo, extraFilter);
 	}
 
