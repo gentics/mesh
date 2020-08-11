@@ -12,9 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
-import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.tag.TagListUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagReference;
@@ -56,6 +56,7 @@ public interface Taggable {
 		Project project = getProject();
 		TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();
 		UserDaoWrapper userDao = Tx.get().data().userDao();
+		TagDaoWrapper tagDao = Tx.get().data().tagDao();
 		User user = ac.getUser();
 		for (TagReference tagReference : list) {
 			if (!tagReference.isSet()) {
@@ -85,7 +86,7 @@ public interface Taggable {
 				// Tag with name could not be found so create it
 				if (tag == null) {
 					if (userDao.hasPermission(user, tagFamily, CREATE_PERM)) {
-						tag = tagFamily.create(tagReference.getName(), project, user);
+						tag = tagDao.create(tagFamily, tagReference.getName(), project, user);
 						userDao.inheritRolePermissions(user, tagFamily, tag);
 						batch.add(tag.onCreated());
 					} else {

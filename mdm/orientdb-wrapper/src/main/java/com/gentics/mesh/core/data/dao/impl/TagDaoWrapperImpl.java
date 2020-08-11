@@ -1,10 +1,12 @@
 package com.gentics.mesh.core.data.dao.impl;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.List;
@@ -19,15 +21,19 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.impl.TagWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagRoot;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
@@ -200,4 +206,46 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper implements TagDaoWrapp
 		tag.unlinkIn(node, HAS_TAG);
 	}
 
+	@Override
+	public Tag create(TagFamily tagFamily, InternalActionContext ac, EventQueueBatch batch) {
+		return create(tagFamily, ac, batch, null);
+	}
+
+	@Override
+	public Tag create(TagFamily tagFamily, InternalActionContext ac, EventQueueBatch batch, String uuid) {
+		Project project = ac.getProject();
+		TagCreateRequest requestModel = ac.fromJson(TagCreateRequest.class);
+		String tagName = requestModel.getName();
+		if (isEmpty(tagName)) {
+			throw error(BAD_REQUEST, "tag_name_not_set");
+		}
+
+		UserDaoWrapper userDao= Tx.get().data().userDao();
+		MeshAuthUser requestUser = ac.getUser();
+		if (!userDao.hasPermission(requestUser, tagFamily, CREATE_PERM)) {
+			throw error(FORBIDDEN, "error_missing_perm", tagFamily.getUuid(), CREATE_PERM.getRestPerm().getName());
+		}
+
+		Tag conflictingTag = findByName(tagFamily, tagName);
+		if (conflictingTag != null) {
+			throw conflict(conflictingTag.getUuid(), tagName, "tag_create_tag_with_same_name_already_exists", tagName, tagFamily.getName());
+		}
+
+		Tag newTag = create(tagFamily, requestModel.getName(), project, requestUser, uuid);
+		userDao.inheritRolePermissions(ac.getUser(), tagFamily, newTag);
+		tagFamily.addTag(newTag);
+
+		batch.add(newTag.onCreated());
+		return newTag;
+	}
+
+	@Override
+	public Tag create(TagFamily tagFamily, String name, Project project, User creator) {
+		return create(tagFamily, name, project, creator, null);
+	}
+
+	@Override
+	public Tag create(TagFamily tagFamily, String name, Project project, User creator, String uuid) {
+		return boot.get().tagRoot().create(tagFamily, name, project, creator, uuid);
+	}
 }

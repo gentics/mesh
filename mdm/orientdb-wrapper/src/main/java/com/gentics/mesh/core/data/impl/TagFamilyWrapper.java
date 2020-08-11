@@ -361,10 +361,6 @@ public class TagFamilyWrapper implements TagFamily {
 		delegate.setDescription(description);
 	}
 
-	public Tag create(String name, Project project, User creator) {
-		return delegate.create(name, project, creator);
-	}
-
 	public void fillPermissionChanged(PermissionChangedEventModelImpl model, Role role) {
 		delegate.fillPermissionChanged(model, role);
 	}
@@ -387,10 +383,6 @@ public class TagFamilyWrapper implements TagFamily {
 
 	public EdgeTraversal<?, ?, ?> e(Object... ids) {
 		return delegate.e(ids);
-	}
-
-	public Tag create(String name, Project project, User creator, String uuid) {
-		return delegate.create(name, project, creator, uuid);
 	}
 
 	public TEdge addFramedEdge(String label, com.syncleus.ferma.VertexFrame inVertex) {

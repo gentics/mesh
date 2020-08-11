@@ -213,4 +213,34 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 		traversal = GraphFieldContainerEdgeImpl.filterLanguages(traversal, languageTags);
 		return traversal.outV().back();
 	}
+
+	@Override
+	public Tag create(TagFamily tagFamily, String name, Project project, User creator, String uuid) {
+		TagImpl tag = getGraph().addFramedVertex(TagImpl.class);
+		if (uuid != null) {
+			tag.setUuid(uuid);
+		}
+		tag.setName(name);
+		tag.setCreated(creator);
+		tag.setProject(project);
+
+		// Add the tag to the global tag root
+		mesh().boot().meshRoot().getTagRoot().addTag(tag);
+		// And to the tag family
+		tagFamily.addTag(tag);
+
+		// Set the tag family for the tag
+		tag.setTagFamily(tagFamily);
+		return tag;
+
+	}
+
+	@Override
+	public Tag findByName(TagFamily tagFamily, String name) {
+		return tagFamily.out(getRootLabel())
+			.mark()
+			.has(TagImpl.TAG_VALUE_KEY, name)
+			.back()
+			.nextOrDefaultExplicit(TagImpl.class, null);
+	}
 }

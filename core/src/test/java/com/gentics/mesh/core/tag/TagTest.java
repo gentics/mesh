@@ -75,6 +75,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testTagFamilyTagCreation() {
 		try (Tx tx = tx()) {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			final String TAG_FAMILY_NAME = "mycustomtagFamily";
 			TagFamily tagFamily = project().getTagFamilyRoot().create(TAG_FAMILY_NAME, user());
 			assertNotNull(tagFamily);
@@ -83,7 +84,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			tagFamily.setDescription("description");
 			assertEquals("description", tagFamily.getDescription());
 			assertEquals(0, tagFamily.computeCount());
-			assertNotNull(tagFamily.create(GERMAN_NAME, project(), user()));
+			assertNotNull(tagDao.create(tagFamily, GERMAN_NAME, project(), user()));
 			assertEquals(1, tagFamily.computeCount());
 		}
 	}
@@ -99,8 +100,9 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testSimpleTag() {
 		try (Tx tx = tx()) {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			TagFamily root = tagFamily("basic");
-			Tag tag = root.create("test", project(), user());
+			Tag tag = tagDao.create(root, "test", project(), user());
 			assertEquals("test", tag.getName());
 			tag.setName("test2");
 			assertEquals("test2", tag.getName());
@@ -110,8 +112,9 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testProjectTag() {
 		try (Tx tx = tx()) {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			TagFamily root = tagFamily("basic");
-			Tag tag = root.create("test", project(), user());
+			Tag tag = tagDao.create(root, "test", project(), user());
 			assertEquals(project(), tag.getProject());
 		}
 	}
@@ -124,7 +127,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			TagFamily root = tagFamily("basic");
 			Project project = project();
 			Branch branch = project.getLatestBranch();
-			Tag tag = root.create(ENGLISH_NAME, project, user());
+			Tag tag = tagDao.create(root, ENGLISH_NAME, project, user());
 			String uuid = tag.getUuid();
 			assertNotNull(meshRoot().getTagRoot().findByUuid(uuid));
 
@@ -167,7 +170,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 1. Create the tag
 			TagFamily root = tagFamily("basic");
 			Project project = project();
-			Tag tag = root.create(ENGLISH_NAME, project, user());
+			Tag tag = tagDao.create(root, ENGLISH_NAME, project, user());
 			String uuid = tag.getUuid();
 			assertNotNull(root.findByUuid(uuid));
 
@@ -224,7 +227,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			TagFamily root = tagFamily("basic");
 			Project project = project();
 			Branch initialBranch = project.getInitialBranch();
-			Tag tag = root.create(ENGLISH_NAME, project, user());
+			Tag tag = tagDao.create(root, ENGLISH_NAME, project, user());
 			String uuid = tag.getUuid();
 			assertNotNull(meshRoot().getTagRoot().findByUuid(uuid));
 
@@ -264,10 +267,11 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 		Tag tag = null;
 
 		try (Tx tx = tx()) {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			// 1. Create the tag
 			TagFamily root = tagFamily("basic");
 			initialBranch = project.getInitialBranch();
-			tag = root.create(ENGLISH_NAME, project, user());
+			tag = tagDao.create(root, ENGLISH_NAME, project, user());
 			String uuid = tag.getUuid();
 			assertNotNull(root.findByUuid(uuid));
 
@@ -322,11 +326,12 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
 			TagFamily basicTagFamily = tagFamily("basic");
 			long beforeCount = basicTagFamily.computeCount();
-			Tag noPermTag = basicTagFamily.create("noPermTag", project(), user());
+			Tag noPermTag = tagDao.create(basicTagFamily, "noPermTag", project(), user());
 			basicTagFamily.addTag(noPermTag);
 			assertNotNull(noPermTag.getUuid());
 			assertEquals(beforeCount + 1, basicTagFamily.computeCount());
@@ -400,8 +405,9 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testCreate() throws Exception {
 		try (Tx tx = tx()) {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			TagFamily tagFamily = tagFamily("basic");
-			Tag tag = tagFamily.create(GERMAN_NAME, project(), user());
+			Tag tag = tagDao.create(tagFamily, GERMAN_NAME, project(), user());
 			assertNotNull(tag);
 			String uuid = tag.getUuid();
 			CountDownLatch latch = new CountDownLatch(1);
@@ -448,8 +454,9 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testCreateDelete() throws Exception {
 		try (Tx tx = tx()) {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			TagFamily tagFamily = tagFamily("basic");
-			Tag tag = tagFamily.create("someTag", project(), user());
+			Tag tag = tagDao.create(tagFamily, "someTag", project(), user());
 			String uuid = tag.getUuid();
 			assertNotNull(meshRoot().getTagRoot().findByUuid(uuid));
 			tag.delete(createBulkContext());
@@ -461,9 +468,10 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testCRUDPermissions() {
 		try (Tx tx = tx()) {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			UserDaoWrapper userDao = tx.data().userDao();
 			TagFamily tagFamily = tagFamily("basic");
-			Tag tag = tagFamily.create("someTag", project(), user());
+			Tag tag = tagDao.create(tagFamily, "someTag", project(), user());
 			assertTrue(userDao.hasPermission(user(), tagFamily, GraphPermission.READ_PERM));
 			assertFalse(userDao.hasPermission(user(), tag, GraphPermission.READ_PERM));
 			userDao.inheritRolePermissions(getRequestUser(), tagFamily, tag);

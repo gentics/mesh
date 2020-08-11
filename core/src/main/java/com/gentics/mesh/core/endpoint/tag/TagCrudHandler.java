@@ -135,8 +135,8 @@ public class TagCrudHandler extends AbstractHandler {
 				return getTagFamily(ac, tagFamilyUuid).loadObjectByUuid(ac, tagUuid, perm, errorIfNotFound);
 			},
 			(tx, ac4, batch, uuid) -> {
-				//return tx.data().tagDao().create(ac, batch)
-				return getTagFamily(ac, tagFamilyUuid).create(ac, batch, tagUuid);
+				TagDaoWrapper tagDao = tx.data().tagDao();
+				return tagDao.create(getTagFamily(ac, tagFamilyUuid), ac, batch, tagUuid);
 			},
 			(tx, element, ac3, batch) -> {
 				return tx.data().tagDao().update(element, ac, batch);

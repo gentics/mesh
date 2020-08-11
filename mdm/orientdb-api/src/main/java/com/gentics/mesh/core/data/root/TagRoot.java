@@ -56,6 +56,21 @@ public interface TagRoot extends RootVertex<Tag>, TransformableElementRoot<Tag, 
 	 */
 	Tag create(String name, Project project, TagFamily tagFamily, User creator);
 
+	/**
+	 * Create a new tag with the given name and creator. Note that this method will not check for any tag name collisions. Note that the created tag will also
+	 * be assigned to the global root vertex.
+	 *
+	 * @param name
+	 *            Name of the new tag.
+	 * @param project
+	 *            Root project of the tag.
+	 * @param creator
+	 *            User that is used to assign creator and editor references of the new tag.
+	 * @param uuid
+	 *            Optional uuid
+	 * @return
+	 */
+	Tag create(TagFamily tagFamily, String name, Project project, User creator, String uuid);
 
 	boolean update(Tag tag, InternalActionContext ac, EventQueueBatch batch);
 
@@ -84,4 +99,6 @@ public interface TagRoot extends RootVertex<Tag>, TransformableElementRoot<Tag, 
 	 * @return Result
 	 */
 	TraversalResult<? extends Node> getNodes(Tag tag, Branch branch);
+
+	Tag findByName(TagFamily tagFamily, String name);
 }
