@@ -16,6 +16,7 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.actions.impl.SchemaDAOActionsImpl;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
@@ -64,8 +65,8 @@ public class SchemaCrudHandler extends AbstractCrudHandler<Schema, SchemaRespons
 	}
 
 	@Override
-	public SchemaCrudActions crudActions() {
-		return new SchemaCrudActions();
+	public SchemaDAOActionsImpl crudActions() {
+		return new SchemaDAOActionsImpl();
 	}
 
 	/**

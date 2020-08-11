@@ -1,17 +1,27 @@
-package com.gentics.mesh.core.endpoint.node;
+package com.gentics.mesh.core.actions.impl;
+
+import java.util.function.Predicate;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.actions.NodeDAOActions;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.verticle.handler.CRUDActions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
-public class NodeCrudActions implements CRUDActions<Node, NodeResponse> {
+@Singleton
+public class NodeDAOActionsImpl implements NodeDAOActions {
+
+	@Inject
+	public NodeDAOActionsImpl() {
+	}
 
 	@Override
 	public Node load(Tx tx, InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
@@ -25,6 +35,11 @@ public class NodeCrudActions implements CRUDActions<Node, NodeResponse> {
 	@Override
 	public TransformablePage<? extends Node> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo) {
 		return ac.getProject().getNodeRoot().findAll(ac, pagingInfo);
+	}
+
+	@Override
+	public TransformablePage<? extends Node> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo, Predicate<Node> extraFilter) {
+		return ac.getProject().getNodeRoot().findAll(ac, pagingInfo, extraFilter);
 	}
 
 	@Override
@@ -45,9 +60,9 @@ public class NodeCrudActions implements CRUDActions<Node, NodeResponse> {
 	}
 
 	@Override
-	public NodeResponse transformToRestSync(Tx tx, Node node, InternalActionContext ac) {
+	public NodeResponse transformToRestSync(Tx tx, Node node, InternalActionContext ac, int level, String... languageTags) {
 		// tx.data().nodeDao()
-		return node.transformToRestSync(ac, 0);
+		return node.transformToRestSync(ac, level, languageTags);
 	}
 
 }

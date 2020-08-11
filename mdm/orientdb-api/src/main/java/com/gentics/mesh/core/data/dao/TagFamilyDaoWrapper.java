@@ -7,7 +7,7 @@ import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 
-public interface TagFamilyDaoWrapper extends TagFamilyDao, DaoTransformable<TagFamily, TagFamilyResponse> {
+public interface TagFamilyDaoWrapper extends TagFamilyDao, DaoWrapper<TagFamily>, DaoTransformable<TagFamily, TagFamilyResponse> {
 
 	boolean update(TagFamily tagFamily, InternalActionContext ac, EventQueueBatch batch);
 

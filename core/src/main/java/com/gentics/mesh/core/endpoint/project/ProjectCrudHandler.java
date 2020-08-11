@@ -14,6 +14,7 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.actions.impl.ProjectDAOActionsImpl;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
@@ -39,8 +40,8 @@ public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResp
 	}
 
 	@Override
-	public ProjectCrudActions crudActions() {
-		return new ProjectCrudActions();
+	public ProjectDAOActionsImpl crudActions() {
+		return new ProjectDAOActionsImpl();
 	}
 
 	/**
@@ -53,7 +54,7 @@ public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResp
 	public void handleReadByName(InternalActionContext ac, String projectName) {
 		utils.syncTx(ac, tx -> {
 			Project project = tx.data().projectDao().findByName(ac, projectName, READ_PERM);
-			return crudActions().transformToRestSync(tx, project, ac);
+			return crudActions().transformToRestSync(tx, project, ac, 0);
 		}, model -> ac.send(model, OK));
 	}
 

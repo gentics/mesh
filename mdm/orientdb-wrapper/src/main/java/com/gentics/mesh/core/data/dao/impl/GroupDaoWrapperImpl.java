@@ -15,6 +15,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -157,7 +158,7 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper implements GroupDaoW
 
 		// Add shortcut edges from role to users of this group
 		for (HibUser user : getUsers(group)) {
-			((User)user).setUniqueLinkOutTo(role, ASSIGNED_TO_ROLE);
+			((User) user).setUniqueLinkOutTo(role, ASSIGNED_TO_ROLE);
 		}
 
 	}
@@ -180,7 +181,7 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper implements GroupDaoW
 
 	@Override
 	public boolean hasUser(Group group, HibUser user) {
-		return group.in(HAS_USER).retain((User)user).hasNext();
+		return group.in(HAS_USER).retain((User) user).hasNext();
 	}
 
 	@Override
@@ -315,6 +316,11 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper implements GroupDaoW
 	}
 
 	@Override
+	public Group findByUuidGlobal(String uuid) {
+		return findByUuid(uuid);
+	}
+
+	@Override
 	public TraversalResult<? extends Group> findAll() {
 		GroupRoot groupRoot = boot.get().groupRoot();
 		return groupRoot.findAll();
@@ -327,9 +333,20 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper implements GroupDaoW
 	}
 
 	@Override
+	public long computeGlobalCount() {
+		return computeCount();
+	}
+
+	@Override
 	public TransformablePage<? extends Group> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 		GroupRoot groupRoot = boot.get().groupRoot();
 		return groupRoot.findAll(ac, pagingInfo);
+	}
+	
+	@Override
+	public TransformablePage<? extends Group> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Group> extraFilter) {
+		GroupRoot groupRoot = boot.get().groupRoot();
+		return groupRoot.findAll(ac, pagingInfo, extraFilter);
 	}
 
 	@Override

@@ -17,7 +17,7 @@ import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 
-public interface SchemaDaoWrapper extends SchemaDao {
+public interface SchemaDaoWrapper extends SchemaDao, DaoWrapper<Schema> {
 
 	Schema findByUuid(String uuid);
 

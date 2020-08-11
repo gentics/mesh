@@ -15,6 +15,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.actions.impl.UserDAOActionsImpl;
 import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -54,8 +55,8 @@ public class UserCrudHandler extends AbstractCrudHandler<HibUser, UserResponse> 
 	}
 
 	@Override
-	public UserCrudActions crudActions() {
-		return new UserCrudActions();
+	public UserDAOActionsImpl crudActions() {
+		return new UserDAOActionsImpl();
 	}
 
 	/**

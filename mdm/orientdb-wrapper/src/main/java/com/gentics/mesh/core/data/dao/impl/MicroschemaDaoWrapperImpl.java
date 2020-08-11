@@ -7,6 +7,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.util.function.Predicate;
+
 import javax.inject.Inject;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -162,6 +164,13 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper implements Mic
 	public TransformablePage<? extends Microschema> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 		MicroschemaRoot microschemaRoot = boot.get().microschemaContainerRoot();
 		return microschemaRoot.findAll(ac, pagingInfo);
+	}
+
+	@Override
+	public TransformablePage<? extends Microschema> findAll(InternalActionContext ac, PagingParameters pagingInfo,
+		Predicate<Microschema> extraFilter) {
+		MicroschemaRoot microschemaRoot = boot.get().microschemaContainerRoot();
+		return microschemaRoot.findAll(ac, pagingInfo, extraFilter);
 	}
 
 	@Override

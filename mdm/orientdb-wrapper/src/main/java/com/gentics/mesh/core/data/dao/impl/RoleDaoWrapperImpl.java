@@ -9,6 +9,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -97,7 +98,7 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper implements RoleDaoWra
 		}
 		return permissions;
 	}
-	
+
 	@Override
 	public boolean hasPermission(Role role, GraphPermission permission, HibElement vertex) {
 		Set<String> allowedUuids = vertex.getRoleUuidsForPerm(permission);
@@ -162,6 +163,11 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper implements RoleDaoWra
 	public Role findByUuid(String uuid) {
 		RoleRoot roleRoot = boot.get().roleRoot();
 		return RoleWrapper.wrap(roleRoot.findByUuid(uuid));
+	}
+
+	@Override
+	public Role findByUuidGlobal(String uuid) {
+		return findByUuid(uuid);
 	}
 
 	@Override
@@ -243,6 +249,12 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper implements RoleDaoWra
 	}
 
 	@Override
+	public TransformablePage<? extends Role> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Role> extraFilter) {
+		RoleRoot roleRoot = boot.get().roleRoot();
+		return roleRoot.findAll(ac, pagingInfo, extraFilter);
+	}
+
+	@Override
 	public Role loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
 		RoleRoot roleRoot = boot.get().roleRoot();
 		return RoleWrapper.wrap(roleRoot.loadObjectByUuid(ac, uuid, perm));
@@ -253,4 +265,11 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper implements RoleDaoWra
 		RoleRoot roleRoot = boot.get().roleRoot();
 		return RoleWrapper.wrap(roleRoot.loadObjectByUuid(ac, uuid, perm, errorIfNotFound));
 	}
+
+	@Override
+	public long computeGlobalCount() {
+		RoleRoot roleRoot = boot.get().roleRoot();
+		return roleRoot.computeCount();
+	}
+
 }

@@ -79,6 +79,11 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper implements SchemaDa
 	}
 
 	@Override
+	public Schema findByUuidGlobal(String uuid) {
+		return findByUuid(uuid);
+	}
+
+	@Override
 	public TraversalResult<? extends Schema> findAll() {
 		SchemaRoot schemaRoot = boot.get().schemaContainerRoot();
 		return schemaRoot.findAll();
@@ -87,6 +92,11 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper implements SchemaDa
 	@Override
 	public long computeCount() {
 		return boot.get().schemaContainerRoot().computeCount();
+	}
+
+	@Override
+	public long computeGlobalCount() {
+		return computeCount();
 	}
 
 	@Override
@@ -248,7 +258,6 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper implements SchemaDa
 		return SchemaWrapper.wrap(schemaRoot.loadObjectByUuid(ac, uuid, perm, errorIfNotFound));
 	}
 
-
 	@Override
 	public TraversalResult<? extends SchemaRoot> getRoots(Schema schema) {
 		return boot.get().schemaContainerRoot().getRoots(schema);
@@ -273,7 +282,7 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper implements SchemaDa
 			unassignEvents(schema).forEach(bac::add);
 			bac.add(schema.onDeleted());
 
-			for(SchemaVersion v : findAllVersions(schema)) {
+			for (SchemaVersion v : findAllVersions(schema)) {
 				v.delete(bac);
 			}
 			schema.remove();
@@ -284,6 +293,7 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper implements SchemaDa
 
 	/**
 	 * Returns events for unassignment on deletion.
+	 * 
 	 * @return
 	 */
 	private Stream<ProjectSchemaEventModel> unassignEvents(Schema schema) {

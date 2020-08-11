@@ -349,7 +349,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWra
 		NodeParameters parameters = ac.getNodeParameters();
 
 		// Check whether a node reference was set.
-		Node node = ((User)user).getReferencedNode();
+		Node node = ((User) user).getReferencedNode();
 		if (node == null) {
 			return;
 		}
@@ -408,7 +408,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWra
 		}
 		return hasPermissionForId(user, element.getId(), permission);
 	}
-	
+
 	@Override
 	public boolean hasPermissionForId(HibUser user, Object elementId, GraphPermission permission) {
 		if (permissionCache.get().hasPermission(user.getId(), permission, elementId)) {
@@ -465,6 +465,12 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWra
 	}
 
 	@Override
+	public TransformablePage<? extends HibUser> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibUser> extraFilter) {
+		UserRoot userRoot = boot.get().userRoot();
+		return userRoot.findAll(ac, pagingInfo, extraFilter);
+	}
+
+	@Override
 	public User findByName(String name) {
 		UserRoot userRoot = boot.get().userRoot();
 		return userRoot.findByName(name);
@@ -480,6 +486,11 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWra
 	public HibUser findByUuid(String uuid) {
 		UserRoot userRoot = boot.get().userRoot();
 		return userRoot.findByUuid(uuid);
+	}
+
+	@Override
+	public HibUser findByUuidGlobal(String uuid) {
+		return findByUuid(uuid);
 	}
 
 	@Override
@@ -554,7 +565,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWra
 
 	@Override
 	public HibUser inheritRolePermissions(HibUser user, HibElement source, HibElement target) {
-		return inheritRolePermissions(user, (MeshVertex)source, (MeshVertex)target);
+		return inheritRolePermissions(user, (MeshVertex) source, (MeshVertex) target);
 	}
 
 	@Override
@@ -631,7 +642,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWra
 			.filter(perm -> hasPermission(user, element, perm))
 			.collect(Collectors.toSet());
 	}
-	
+
 	@Override
 	public HibUser addCRUDPermissionOnRole(HibUser user, HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode) {
 		addPermissionsOnRole(user, sourceNode, permission, targetNode, CREATE_PERM, READ_PERM, UPDATE_PERM, DELETE_PERM, PUBLISH_PERM,
@@ -642,14 +653,19 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWra
 	@Override
 	public HibUser addPermissionsOnRole(HibUser user, HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode,
 		GraphPermission... toGrant) {
-		//TODO inject dao via DI
+		// TODO inject dao via DI
 		RoleDaoWrapper roleDao = Tx.get().data().roleDao();
-		
+
 		// 2. Add CRUD permission to identified roles and target node
 		for (Role role : sourceNode.getRolesWithPerm(permission)) {
 			roleDao.grantPermissions(role, targetNode, toGrant);
 		}
 		return user;
+	}
+
+	public long computeGlobalCount() {
+		// TODO impl me
+		throw new RuntimeException("Not implemented");
 	}
 
 }

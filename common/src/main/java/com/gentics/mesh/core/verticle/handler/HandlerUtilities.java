@@ -76,7 +76,7 @@ public class HandlerUtilities {
 	 * @param createAction
 	 * @param updateAction 
 	 */
-	public <T extends HibCoreElement, RM extends RestModel> void createElement(InternalActionContext ac, CRUDActions<T, RM> actions) {
+	public <T extends HibCoreElement, RM extends RestModel> void createElement(InternalActionContext ac, DAOActions<T, RM> actions) {
 		createOrUpdateElement(ac, null, actions);
 	}
 
@@ -89,7 +89,7 @@ public class HandlerUtilities {
 	 * @param uuid
 	 *            Uuid of the element which should be deleted
 	 */
-	public <T extends HibCoreElement, RM extends RestModel> void deleteElement(InternalActionContext ac, CRUDActions<T, RM> actions,
+	public <T extends HibCoreElement, RM extends RestModel> void deleteElement(InternalActionContext ac, DAOActions<T, RM> actions,
 		String uuid) {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			syncTx(ac, tx -> {
@@ -118,7 +118,7 @@ public class HandlerUtilities {
 	 * @param createAction
 	 */
 	public <T extends HibCoreElement, RM extends RestModel> void updateElement(InternalActionContext ac, String uuid,
-		CRUDActions<T, RM> actions) {
+		DAOActions<T, RM> actions) {
 		createOrUpdateElement(ac, uuid, actions);
 	}
 
@@ -131,7 +131,7 @@ public class HandlerUtilities {
 	 * @param actions
 	 */
 	public <T extends HibCoreElement, RM extends RestModel> void createOrUpdateElement(InternalActionContext ac, String uuid,
-		CRUDActions<T, RM> actions) {
+		DAOActions<T, RM> actions) {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			AtomicBoolean created = new AtomicBoolean(false);
 			syncTx(ac, tx -> {
@@ -150,14 +150,14 @@ public class HandlerUtilities {
 					eventAction(batch -> {
 						return actions.update(tx, updateElement, ac, batch);
 					});
-					RM model =  actions.transformToRestSync(tx, updateElement, ac);
+					RM model =  actions.transformToRestSync(tx, updateElement, ac, 0);
 					return model;
 				} else {
 					T createdElement = eventAction(batch -> {
 						created.set(true);
 						return actions.create(tx, ac, batch, uuid);
 					});
-					RM model = actions.transformToRestSync(tx, createdElement, ac);
+					RM model = actions.transformToRestSync(tx, createdElement, ac, 0);
 					String path = createdElement.getAPIPath(ac);
 					ResultInfo info = new ResultInfo(model);
 					info.setProperty("path", path);
@@ -181,7 +181,7 @@ public class HandlerUtilities {
 	 *            Permission to check against when loading the element
 	 */
 	public <T extends HibCoreElement, RM extends RestModel> void readElement(InternalActionContext ac, String uuid,
-		CRUDActions<T, RM> actions, GraphPermission perm) {
+		DAOActions<T, RM> actions, GraphPermission perm) {
 
 		syncTx(ac, tx -> {
 			T element = actions.load(tx, ac, uuid, perm, true);
@@ -194,7 +194,7 @@ public class HandlerUtilities {
 					throw new NotModifiedException();
 				}
 			}
-			return actions.transformToRestSync(tx, element, ac);
+			return actions.transformToRestSync(tx, element, ac, 0);
 		}, model -> ac.send(model, OK));
 	}
 
@@ -205,7 +205,7 @@ public class HandlerUtilities {
 	 * @param actions
 	 *            Handler which provides the root vertex which should be used when loading the element
 	 */
-	public <T extends HibCoreElement, RM extends RestModel> void readElementList(InternalActionContext ac, CRUDActions<T, RM> actions) {
+	public <T extends HibCoreElement, RM extends RestModel> void readElementList(InternalActionContext ac, DAOActions<T, RM> actions) {
 
 		syncTx(ac, tx -> {
 			PagingParameters pagingInfo = ac.getPagingParameters();

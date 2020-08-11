@@ -48,6 +48,11 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper implements TagFa
 	}
 
 	@Override
+	public long computeGlobalCount() {
+		return boot.get().tagFamilyRoot().computeCount();
+	}
+
+	@Override
 	public TagFamilyWrapper findByName(Project project, String name) {
 		TagFamilyRoot root = project.getTagFamilyRoot();
 		TagFamily tagFamily = root.findByName(name);
@@ -59,6 +64,12 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper implements TagFa
 		TagFamilyRoot root = project.getTagFamilyRoot();
 		TagFamily tagFamily = root.findByUuid(uuid);
 		return TagFamilyWrapper.wrap(tagFamily);
+	}
+
+	@Override
+	public TagFamily findByUuidGlobal(String uuid) {
+		TagFamilyRoot globalTagFamilyRoot = boot.get().tagFamilyRoot();
+		return globalTagFamilyRoot.findByUuid(uuid);
 	}
 
 	@Override

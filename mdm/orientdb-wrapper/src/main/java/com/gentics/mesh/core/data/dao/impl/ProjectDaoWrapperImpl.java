@@ -7,6 +7,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -100,6 +101,12 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper implements Project
 		// TODO wrap the page
 		return nativePage;
 	}
+	
+	@Override
+	public TransformablePage<? extends Project> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Project> extraFilter) {
+		TransformablePage<? extends Project> nativePage = boot.get().projectRoot().findAll(ac, pagingInfo, extraFilter);
+		return nativePage;
+	}
 
 	@Override
 	public ProjectWrapper findByName(String name) {
@@ -120,6 +127,11 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper implements Project
 		ProjectRoot root = boot.get().projectRoot();
 		Project project = root.findByUuid(uuid);
 		return ProjectWrapper.wrap(project);
+	}
+
+	@Override
+	public Project findByUuidGlobal(String uuid) {
+		return findByUuid(uuid);
 	}
 
 	@Override
@@ -304,6 +316,12 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper implements Project
 
 		return restProject;
 
+	}
+
+	@Override
+	public long computeGlobalCount() {
+		ProjectRoot projectRoot = boot.get().projectRoot();
+		return projectRoot.computeCount();
 	}
 
 }

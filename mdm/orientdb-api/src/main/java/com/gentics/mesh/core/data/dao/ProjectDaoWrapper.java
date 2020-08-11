@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.dao;
 
+import java.util.function.Predicate;
+
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
@@ -16,11 +18,13 @@ import com.gentics.mesh.parameter.PagingParameters;
  * Temporary in-between interface that helps test removal of project root deps.
  */
 // TODO move the contents of this to ProjectDao once migration is done
-public interface ProjectDaoWrapper extends ProjectDao, DaoTransformable<Project,ProjectResponse> {
+public interface ProjectDaoWrapper extends ProjectDao, DaoWrapper<Project>, DaoTransformable<Project, ProjectResponse> {
 
 	TraversalResult<? extends Project> findAll();
 
 	TransformablePage<? extends Project> findAll(InternalActionContext ac, PagingParameters pagingInfo);
+
+	TransformablePage<? extends Project> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Project> extraFilter);
 
 	Project findByName(String name);
 

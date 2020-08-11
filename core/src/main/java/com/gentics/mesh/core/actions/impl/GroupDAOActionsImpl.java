@@ -1,17 +1,27 @@
-package com.gentics.mesh.core.endpoint.group;
+package com.gentics.mesh.core.actions.impl;
+
+import java.util.function.Predicate;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.actions.GroupDAOActions;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.group.GroupResponse;
-import com.gentics.mesh.core.verticle.handler.CRUDActions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
-public class GroupCrudActions implements CRUDActions<Group, GroupResponse> {
+@Singleton
+public class GroupDAOActionsImpl implements GroupDAOActions {
+
+	@Inject
+	public GroupDAOActionsImpl() {
+	}
 
 	@Override
 	public Group load(Tx tx, InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
@@ -21,6 +31,11 @@ public class GroupCrudActions implements CRUDActions<Group, GroupResponse> {
 	@Override
 	public TransformablePage<? extends Group> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo) {
 		return tx.data().groupDao().findAll(ac, pagingInfo);
+	}
+
+	@Override
+	public TransformablePage<? extends Group> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo, Predicate<Group> extraFilter) {
+		return tx.data().groupDao().findAll(ac, pagingInfo, extraFilter);
 	}
 
 	@Override
@@ -39,8 +54,8 @@ public class GroupCrudActions implements CRUDActions<Group, GroupResponse> {
 	}
 
 	@Override
-	public GroupResponse transformToRestSync(Tx tx, Group group, InternalActionContext ac) {
-		return tx.data().groupDao().transformToRestSync(group, ac, 0);
+	public GroupResponse transformToRestSync(Tx tx, Group group, InternalActionContext ac, int level, String... languageTags) {
+		return tx.data().groupDao().transformToRestSync(group, ac, level, languageTags);
 	}
 
 }

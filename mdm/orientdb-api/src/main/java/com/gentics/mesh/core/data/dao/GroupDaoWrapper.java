@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.dao;
 
+import java.util.function.Predicate;
+
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
@@ -17,11 +19,15 @@ import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 
 // TODO move the contents of this to GroupDao once migration is done
-public interface GroupDaoWrapper extends GroupDao, DaoTransformable<Group, GroupResponse> {
+public interface GroupDaoWrapper extends GroupDao, DaoWrapper<Group>, DaoTransformable<Group, GroupResponse> {
 
 	Group loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm);
 
 	TraversalResult<? extends Group> findAll();
+
+	TransformablePage<? extends Group> findAll(InternalActionContext ac, PagingParameters pagingInfo);
+
+	TransformablePage<? extends Group> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Group> extraFilter);
 
 	Group findByName(String name);
 
@@ -187,8 +193,6 @@ public interface GroupDaoWrapper extends GroupDao, DaoTransformable<Group, Group
 	String getETag(Group element, InternalActionContext ac);
 
 	Group loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound);
-
-	TransformablePage<? extends Group> findAll(InternalActionContext ac, PagingParameters pagingInfo);
 
 	Group create(InternalActionContext ac, EventQueueBatch batch, String uuid);
 

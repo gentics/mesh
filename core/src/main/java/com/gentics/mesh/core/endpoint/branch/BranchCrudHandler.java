@@ -25,6 +25,7 @@ import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.actions.impl.BranchDAOActionsImpl;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
@@ -74,8 +75,8 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	}
 
 	@Override
-	public BranchCrudActions crudActions() {
-		return new BranchCrudActions();
+	public BranchDAOActionsImpl crudActions() {
+		return new BranchDAOActionsImpl();
 	}
 
 	@Override

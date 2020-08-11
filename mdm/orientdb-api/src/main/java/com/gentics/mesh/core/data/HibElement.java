@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data;
 import java.util.Set;
 
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.event.EventQueueBatch;
 
 public interface HibElement {
 
@@ -44,5 +45,17 @@ public interface HibElement {
 	default boolean hasPublishPermissions() {
 		return false;
 	}
+
+	/**
+	 * Grant the set of permissions and revoke the other set of permissions to this element using the role.
+	 * 
+	 * @param batch
+	 * @param role
+	 * @param recursive
+	 * @param permissionsToGrant
+	 * @param permissionsToRevoke
+	 */
+	void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
+		Set<GraphPermission> permissionsToRevoke);
 
 }

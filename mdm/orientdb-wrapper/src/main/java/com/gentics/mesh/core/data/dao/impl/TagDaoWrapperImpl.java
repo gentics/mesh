@@ -149,6 +149,12 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper implements TagDaoWrapp
 	}
 
 	@Override
+	public Tag findByUuidGlobal(String uuid) {
+		TagRoot globalTagRoot = boot.get().tagRoot();
+		return globalTagRoot.findByUuid(uuid);
+	}
+
+	@Override
 	public TagResponse transformToRestSync(Tag tag, InternalActionContext ac, int level, String... languageTags) {
 		GenericParameters generic = ac.getGenericParameters();
 		FieldsSet fields = generic.getFields();
@@ -198,6 +204,11 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper implements TagDaoWrapp
 		tag.getElement().remove();
 		bac.process();
 
+	}
+
+	@Override
+	public long computeGlobalCount() {
+		return boot.get().tagRoot().computeCount();
 	}
 
 }

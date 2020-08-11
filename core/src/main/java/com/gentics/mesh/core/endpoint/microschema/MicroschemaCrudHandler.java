@@ -15,6 +15,7 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.actions.impl.MicroschemaDAOActionsImpl;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
@@ -54,8 +55,8 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<Microschema, Mic
 	}
 
 	@Override
-	public MicroschemaCrudActions crudActions() {
-		return new MicroschemaCrudActions();
+	public MicroschemaDAOActionsImpl crudActions() {
+		return new MicroschemaDAOActionsImpl();
 	}
 
 	@Override

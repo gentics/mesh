@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 
 import java.util.Set;
+import java.util.function.Predicate;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -99,6 +100,8 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<HibUser>, DaoTransfo
 	HibUser loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound);
 
 	TransformablePage<? extends HibUser> findAll(InternalActionContext ac, PagingParameters pagingInfo);
+
+	TransformablePage<? extends HibUser> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibUser> extraFilter);
 
 	HibUser loadObjectByUuid(InternalActionContext ac, String userUuid, GraphPermission perm);
 

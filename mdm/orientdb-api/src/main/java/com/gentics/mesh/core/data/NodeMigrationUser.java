@@ -12,6 +12,7 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.user.UserReference;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 
@@ -341,6 +342,12 @@ public class NodeMigrationUser implements MeshAuthUser {
 	@Override
 	public TypeInfo getTypeInfo() {
 		return null;
+	}
+
+	@Override
+	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
+		Set<GraphPermission> permissionsToRevoke) {
+
 	}
 
 }

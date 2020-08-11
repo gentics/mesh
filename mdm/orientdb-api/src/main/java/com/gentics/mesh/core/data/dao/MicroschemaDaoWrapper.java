@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.dao;
 
+import java.util.function.Predicate;
+
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
@@ -21,7 +23,7 @@ public interface MicroschemaDaoWrapper extends MicroschemaDao {
 
 	Microschema findByUuid(String uuid);
 
-//	boolean update(MicroschemaContainer microschema, InternalActionContext ac, EventQueueBatch batch);
+	// boolean update(MicroschemaContainer microschema, InternalActionContext ac, EventQueueBatch batch);
 
 	/**
 	 * Create a new microschema container.
@@ -52,6 +54,8 @@ public interface MicroschemaDaoWrapper extends MicroschemaDao {
 	Microschema create(InternalActionContext ac, EventQueueBatch batch, String uuid);
 
 	TransformablePage<? extends Microschema> findAll(InternalActionContext ac, PagingParameters pagingInfo);
+
+	TransformablePage<? extends Microschema> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Microschema> extraFilter);
 
 	Microschema loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound);
 

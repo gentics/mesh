@@ -1,10 +1,13 @@
-package com.gentics.mesh.core.endpoint.tag;
+package com.gentics.mesh.core.actions.impl;
+
+import java.util.function.Predicate;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.actions.TagDAOActions;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.page.TransformablePage;
@@ -12,15 +15,14 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.PathParameters;
 import com.gentics.mesh.core.rest.tag.TagResponse;
-import com.gentics.mesh.core.verticle.handler.CRUDActions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
 @Singleton
-public class TagCrudActions implements CRUDActions<Tag, TagResponse> {
+public class TagDAOActionsImpl implements TagDAOActions {
 
 	@Inject
-	public TagCrudActions() {
+	public TagDAOActionsImpl() {
 	}
 
 	@Override
@@ -43,6 +45,12 @@ public class TagCrudActions implements CRUDActions<Tag, TagResponse> {
 		// TagDaoWrapper tagDao = tx.data().tagDao();
 		String tagFamilyUuid = PathParameters.getTagFamilyUuid(ac);
 		return getTagFamily(tx, ac, tagFamilyUuid).findAll(ac, pagingInfo);
+	}
+
+	@Override
+	public TransformablePage<? extends Tag> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo, Predicate<Tag> extraFilter) {
+		String tagFamilyUuid = PathParameters.getTagFamilyUuid(ac);
+		return getTagFamily(tx, ac, tagFamilyUuid).findAll(ac, pagingInfo, extraFilter);
 	}
 
 	@Override
@@ -69,9 +77,9 @@ public class TagCrudActions implements CRUDActions<Tag, TagResponse> {
 	}
 
 	@Override
-	public TagResponse transformToRestSync(Tx tx, Tag tag, InternalActionContext ac) {
+	public TagResponse transformToRestSync(Tx tx, Tag tag, InternalActionContext ac, int level, String... languageTags) {
 		// TagDaoWrapper tagDao = tx.data().tagDao();
-		return tag.transformToRestSync(ac, 0);
+		return tag.transformToRestSync(ac, level, languageTags);
 	}
 
 	public TagFamily getTagFamily(Tx tx, InternalActionContext ac, String tagFamilyUuid) {

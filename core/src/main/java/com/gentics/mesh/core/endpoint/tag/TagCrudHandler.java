@@ -7,6 +7,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import javax.inject.Inject;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.actions.impl.TagDAOActionsImpl;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
@@ -36,8 +37,8 @@ public class TagCrudHandler extends AbstractHandler {
 		this.globalLock = writeLock;
 	}
 
-	private TagCrudActions crudActions() {
-		return new TagCrudActions();
+	private TagDAOActionsImpl crudActions() {
+		return new TagDAOActionsImpl();
 	}
 
 	/**

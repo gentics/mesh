@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.dao;
 
 import java.util.Set;
+import java.util.function.Predicate;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -124,5 +125,7 @@ public interface RoleDaoWrapper extends RoleDao, DaoWrapper<Role>, DaoTransforma
 	TraversalResult<? extends Role> findAll();
 
 	TransformablePage<? extends Role> findAll(InternalActionContext ac, PagingParameters pagingInfo);
+
+	TransformablePage<? extends Role> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Role> extraFilter);
 
 }

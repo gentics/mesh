@@ -19,8 +19,8 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.elasticsearch.client.okhttp.RequestBuilder;
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.actions.NodeDAOActions;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
@@ -52,13 +52,10 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 
 	private static final Logger log = LoggerFactory.getLogger(NodeSearchHandler.class);
 
-	private BootstrapInitializer boot;
-
 	@Inject
 	public NodeSearchHandler(SearchProvider searchProvider, Database db, NodeIndexHandlerImpl nodeIndexHandler,
-		MeshOptions options, BootstrapInitializer boot) {
-		super(db, searchProvider, options, nodeIndexHandler);
-		this.boot = boot;
+		MeshOptions options, NodeDAOActions actions) {
+		super(db, searchProvider, options, nodeIndexHandler, actions);
 	}
 
 	/**
@@ -132,7 +129,6 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 					String languageTag = pos > 0 ? id.substring(pos + 1) : null;
 					String uuid = pos > 0 ? id.substring(0, pos) : id;
 
-					
 					Node element = getIndexHandler().elementLoader().apply(uuid);
 					if (element == null) {
 						log.warn("Object could not be found for uuid {" + uuid + "}");

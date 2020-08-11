@@ -3,6 +3,7 @@ package com.gentics.mesh.core.endpoint.tagfamily;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.core.actions.impl.TagFamilyDAOActionsImpl;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
@@ -19,8 +20,8 @@ public class TagFamilyCrudHandler extends AbstractCrudHandler<TagFamily, TagFami
 	}
 
 	@Override
-	public TagFamilyCrudActions crudActions() {
-		return new TagFamilyCrudActions();
+	public TagFamilyDAOActionsImpl crudActions() {
+		return new TagFamilyDAOActionsImpl();
 	}
 
 }

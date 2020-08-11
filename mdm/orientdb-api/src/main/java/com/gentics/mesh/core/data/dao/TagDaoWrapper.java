@@ -11,7 +11,7 @@ import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 
-public interface TagDaoWrapper extends TagDao, DaoTransformable<Tag, TagResponse> {
+public interface TagDaoWrapper extends TagDao, DaoWrapper<Tag>, DaoTransformable<Tag, TagResponse> {
 
 	/**
 	 * Find all tags of the given tagfamily.

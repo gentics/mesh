@@ -22,6 +22,7 @@ import com.gentics.graphqlfilter.filter.StartFilter;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
@@ -34,9 +35,8 @@ import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.PermissionException;
-import com.gentics.mesh.core.verticle.handler.CRUDActions;
+import com.gentics.mesh.core.verticle.handler.DAOActions;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
@@ -324,9 +324,9 @@ public abstract class AbstractTypeProvider {
 	 * @param root
 	 * @return
 	 */
-	protected MeshVertex handleUuidNameArgs(DataFetchingEnvironment env, RootVertex<?> root) {
+	protected HibCoreElement handleUuidNameArgs(DataFetchingEnvironment env, DAOActions<?,?> actions) {
 		GraphQLContext gc = env.getContext();
-		MeshCoreVertex<?, ?> element = handleUuidNameArgsNoPerm(env, root::findByUuid, root::findByName);
+		HibCoreElement element = handleUuidNameArgsNoPerm(env, actions::findByUuid, actions::findByName);
 		if (element == null) {
 			return null;
 		} else {
@@ -342,10 +342,10 @@ public abstract class AbstractTypeProvider {
 	 * @param nameFetcher
 	 * @return
 	 */
-	protected MeshCoreVertex<?, ?> handleUuidNameArgsNoPerm(DataFetchingEnvironment env, Function<String, MeshCoreVertex<?, ?>> uuidFetcher,
-		Function<String, MeshCoreVertex<?, ?>> nameFetcher) {
+	protected HibCoreElement handleUuidNameArgsNoPerm(DataFetchingEnvironment env, Function<String, HibCoreElement> uuidFetcher,
+		Function<String, HibCoreElement> nameFetcher) {
 		String uuid = env.getArgument("uuid");
-		MeshCoreVertex<?, ?> element = null;
+		HibCoreElement element = null;
 		if (uuid != null) {
 			element = uuidFetcher.apply(uuid);
 		}
@@ -360,7 +360,7 @@ public abstract class AbstractTypeProvider {
 		return element;
 	}
 
-	protected MeshVertex handleBranchSchema(DataFetchingEnvironment env) {
+	protected HibElement handleBranchSchema(DataFetchingEnvironment env) {
 		GraphQLContext gc = env.getContext();
 		Branch branch = env.getSource();
 		Stream<? extends SchemaVersion> schemas = StreamSupport.stream(branch.findActiveSchemaVersions().spliterator(), false);
@@ -377,7 +377,7 @@ public abstract class AbstractTypeProvider {
 	protected Page<SchemaVersion> handleBranchSchemas(DataFetchingEnvironment env) {
 		GraphQLContext gc = env.getContext();
 		Branch branch = env.getSource();
-		UserDaoWrapper userDao= Tx.get().data().userDao();
+		UserDaoWrapper userDao = Tx.get().data().userDao();
 
 		Stream<? extends SchemaVersion> schemas = StreamSupport.stream(branch.findActiveSchemaVersions().spliterator(), false).filter(
 			schema -> userDao.hasPermission(gc.getUser(), schema.getSchemaContainer(), READ_PERM));
@@ -401,7 +401,7 @@ public abstract class AbstractTypeProvider {
 	 * @return
 	 */
 	protected <T extends HibCoreElement> GraphQLFieldDefinition newPagingSearchField(String name, String description,
-		Function<GraphQLContext, CRUDActions<T, ?>> actions,
+		DAOActions<T, ?> actions,
 		String pageTypeName, SearchHandler<?, ?> searchHandler, StartFilter<T, Map<String, ?>> filterProvider) {
 		Builder fieldDefBuilder = newFieldDefinition()
 			.name(name)
@@ -423,9 +423,9 @@ public abstract class AbstractTypeProvider {
 					}
 				} else {
 					if (filterProvider != null && filter != null) {
-						return actions.findAll(gc, getPagingInfo(env), filterProvider.createPredicate(filter));
+						return actions.loadAll(Tx.get(), gc, getPagingInfo(env), filterProvider.createPredicate(filter));
 					} else {
-						return actions.findAll(gc, getPagingInfo(env));
+						return actions.loadAll(Tx.get(), gc, getPagingInfo(env));
 					}
 				}
 			});
@@ -463,11 +463,11 @@ public abstract class AbstractTypeProvider {
 			.dataFetcher(dataFetcher);
 	}
 
-	protected GraphQLFieldDefinition newPagingField(String name, String description, Function<GraphQLContext, RootVertex<?>> rootProvider,
+	protected GraphQLFieldDefinition newPagingField(String name, String description, DAOActions<?,?> actions,
 		String referenceTypeName) {
 		return newPagingFieldWithFetcher(name, description, (env) -> {
 			GraphQLContext gc = env.getContext();
-			return rootProvider.apply(gc).findAll(gc, getPagingInfo(env));
+			return actions.loadAll(Tx.get(), gc, getPagingInfo(env));
 		}, referenceTypeName);
 	}
 
@@ -478,15 +478,15 @@ public abstract class AbstractTypeProvider {
 	 *            Name of the field
 	 * @param description
 	 *            Description of the field
-	 * @param rootProvider
-	 *            Function which will return the root vertex which is used to load the element
+	 * @param actions
+	 *            DAO actions for the type of elements
 	 * @param elementType
 	 *            Type name of the element which can be loaded
 	 * @return
 	 */
-	protected GraphQLFieldDefinition newElementField(String name, String description, Function<GraphQLContext, RootVertex<?>> rootProvider,
+	protected GraphQLFieldDefinition newElementField(String name, String description, DAOActions<?,?> actions,
 		String elementType) {
-		return newElementField(name, description, rootProvider, elementType, false);
+		return newElementField(name, description, actions, elementType, false);
 	}
 
 	/**
@@ -496,15 +496,15 @@ public abstract class AbstractTypeProvider {
 	 *            Name of the field
 	 * @param description
 	 *            Description of the field
-	 * @param rootProvider
-	 *            Function which will return the root vertex which is used to load the element
+	 * @param actions
+	 *            DAO Actions for the type of elements
 	 * @param elementType
 	 *            Type name of the element which can be loaded
 	 * @param hidePermissionsErrors
 	 *            Does not show errors if the permission is missing. Useful for sensitive data (ex. fetching users by name)
 	 * @return
 	 */
-	protected GraphQLFieldDefinition newElementField(String name, String description, Function<GraphQLContext, RootVertex<?>> rootProvider,
+	protected GraphQLFieldDefinition newElementField(String name, String description, DAOActions<?,?> actions,
 		String elementType, boolean hidePermissionsErrors) {
 		return newFieldDefinition()
 			.name(name)
@@ -515,12 +515,12 @@ public abstract class AbstractTypeProvider {
 				GraphQLContext gc = env.getContext();
 				if (hidePermissionsErrors) {
 					try {
-						return handleUuidNameArgs(env, rootProvider.apply(gc));
+						return handleUuidNameArgs(env, actions);
 					} catch (PermissionException e) {
 						return null;
 					}
 				} else {
-					return handleUuidNameArgs(env, rootProvider.apply(gc));
+					return handleUuidNameArgs(env, actions);
 				}
 			}).build();
 	}

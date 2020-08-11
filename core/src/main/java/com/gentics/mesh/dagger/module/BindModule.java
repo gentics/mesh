@@ -19,6 +19,28 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.impl.BulkActionContextImpl;
+import com.gentics.mesh.core.actions.BranchDAOActions;
+import com.gentics.mesh.core.actions.DAOActionsCollection;
+import com.gentics.mesh.core.actions.GroupDAOActions;
+import com.gentics.mesh.core.actions.MicroschemaDAOActions;
+import com.gentics.mesh.core.actions.NodeDAOActions;
+import com.gentics.mesh.core.actions.ProjectDAOActions;
+import com.gentics.mesh.core.actions.RoleDAOActions;
+import com.gentics.mesh.core.actions.SchemaDAOActions;
+import com.gentics.mesh.core.actions.TagDAOActions;
+import com.gentics.mesh.core.actions.TagFamilyDAOActions;
+import com.gentics.mesh.core.actions.UserDAOActions;
+import com.gentics.mesh.core.actions.impl.BranchDAOActionsImpl;
+import com.gentics.mesh.core.actions.impl.DAOActionsCollectionImpl;
+import com.gentics.mesh.core.actions.impl.GroupDAOActionsImpl;
+import com.gentics.mesh.core.actions.impl.MicroschemaDAOActionsImpl;
+import com.gentics.mesh.core.actions.impl.NodeDAOActionsImpl;
+import com.gentics.mesh.core.actions.impl.ProjectDAOActionsImpl;
+import com.gentics.mesh.core.actions.impl.RoleDAOActionsImpl;
+import com.gentics.mesh.core.actions.impl.SchemaDAOActionsImpl;
+import com.gentics.mesh.core.actions.impl.TagDAOActionsImpl;
+import com.gentics.mesh.core.actions.impl.TagFamilyDAOActionsImpl;
+import com.gentics.mesh.core.actions.impl.UserDAOActionsImpl;
 import com.gentics.mesh.core.binary.BinaryProcessorRegistry;
 import com.gentics.mesh.core.binary.BinaryProcessorRegistryImpl;
 import com.gentics.mesh.core.data.PersistenceClassMap;
@@ -199,4 +221,38 @@ public abstract class BindModule {
 
 	@Binds
 	abstract BinaryProcessorRegistry bindBinaryProcessorRegistry(BinaryProcessorRegistryImpl e);
+
+	@Binds
+	abstract DAOActionsCollection bindDaoCollection(DAOActionsCollectionImpl e);
+
+	@Binds
+	abstract UserDAOActions userDAOActions(UserDAOActionsImpl e);
+
+	@Binds
+	abstract GroupDAOActions grouDAOpActions(GroupDAOActionsImpl e);
+
+	@Binds
+	abstract RoleDAOActions roleDAOActions(RoleDAOActionsImpl e);
+
+	@Binds
+	abstract TagDAOActions tagADAOctions(TagDAOActionsImpl e);
+
+	@Binds
+	abstract TagFamilyDAOActions tagFDAOamilyActions(TagFamilyDAOActionsImpl e);
+
+	@Binds
+	abstract BranchDAOActions branDAOchActions(BranchDAOActionsImpl e);
+
+	@Binds
+	abstract ProjectDAOActions projDAOectActions(ProjectDAOActionsImpl e);
+
+	@Binds
+	abstract NodeDAOActions nodeDAOActions(NodeDAOActionsImpl e);
+
+	@Binds
+	abstract MicroschemaDAOActions micrDAOoschemaActions(MicroschemaDAOActionsImpl e);
+
+	@Binds
+	abstract SchemaDAOActions scheDAOmaActions(SchemaDAOActionsImpl e);
+
 }

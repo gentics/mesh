@@ -1,17 +1,27 @@
-package com.gentics.mesh.core.endpoint.user;
+package com.gentics.mesh.core.actions.impl;
+
+import java.util.function.Predicate;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.actions.UserDAOActions;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.core.verticle.handler.CRUDActions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
-public class UserCrudActions implements CRUDActions<HibUser, UserResponse> {
+@Singleton
+public class UserDAOActionsImpl implements UserDAOActions {
+
+	@Inject
+	public UserDAOActionsImpl() {
+	}
 
 	@Override
 	public HibUser load(Tx tx, InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
@@ -21,6 +31,12 @@ public class UserCrudActions implements CRUDActions<HibUser, UserResponse> {
 	@Override
 	public TransformablePage<? extends HibUser> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo) {
 		return tx.data().userDao().findAll(ac, pagingInfo);
+	}
+
+	@Override
+	public TransformablePage<? extends HibUser> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo,
+		Predicate<HibUser> extraFilter) {
+		return tx.data().userDao().findAll(ac, pagingInfo, extraFilter);
 	}
 
 	@Override
@@ -39,7 +55,7 @@ public class UserCrudActions implements CRUDActions<HibUser, UserResponse> {
 	}
 
 	@Override
-	public UserResponse transformToRestSync(Tx tx, HibUser user, InternalActionContext ac) {
-		return tx.data().userDao().transformToRestSync(user, ac, 0);
+	public UserResponse transformToRestSync(Tx tx, HibUser user, InternalActionContext ac, int level, String... languageTags) {
+		return tx.data().userDao().transformToRestSync(user, ac, level, languageTags);
 	}
 }

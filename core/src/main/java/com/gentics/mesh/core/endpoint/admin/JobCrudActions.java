@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.endpoint.admin;
 
+import java.util.function.Predicate;
+
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.job.Job;
@@ -7,11 +9,11 @@ import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.job.JobResponse;
-import com.gentics.mesh.core.verticle.handler.CRUDActions;
+import com.gentics.mesh.core.verticle.handler.DAOActions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
-public class JobCrudActions implements CRUDActions<Job, JobResponse> {
+public class JobCrudActions implements DAOActions<Job, JobResponse> {
 
 	@Override
 	public Job load(Tx tx, InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
@@ -21,6 +23,11 @@ public class JobCrudActions implements CRUDActions<Job, JobResponse> {
 	@Override
 	public TransformablePage<? extends Job> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo) {
 		return tx.data().jobDao().findAll(ac, pagingInfo);
+	}
+
+	@Override
+	public TransformablePage<? extends Job> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo, Predicate<Job> extraFilter) {
+		return tx.data().jobDao().findAll(ac, pagingInfo, extraFilter);
 	}
 
 	@Override
@@ -39,9 +46,9 @@ public class JobCrudActions implements CRUDActions<Job, JobResponse> {
 	}
 
 	@Override
-	public JobResponse transformToRestSync(Tx tx, Job job, InternalActionContext ac) {
-		//return tx.data().jobDao();
-		return job.transformToRestSync(ac, 0);
+	public JobResponse transformToRestSync(Tx tx, Job job, InternalActionContext ac, int level, String... languageTags) {
+		// return tx.data().jobDao();
+		return job.transformToRestSync(ac, level, languageTags);
 	}
 
 }

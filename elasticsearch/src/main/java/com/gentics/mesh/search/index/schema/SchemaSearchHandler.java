@@ -3,6 +3,7 @@ package com.gentics.mesh.search.index.schema;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.core.actions.SchemaDAOActions;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -14,8 +15,8 @@ import com.gentics.mesh.search.index.AbstractSearchHandler;
 public class SchemaSearchHandler extends AbstractSearchHandler<Schema, SchemaResponse> {
 
 	@Inject
-	public SchemaSearchHandler(Database db, SearchProvider searchProvider, SchemaContainerIndexHandler indexHandler, MeshOptions options) {
-		super(db, searchProvider, options, indexHandler);
+	public SchemaSearchHandler(Database db, SearchProvider searchProvider, SchemaContainerIndexHandler indexHandler, MeshOptions options, SchemaDAOActions actions) {
+		super(db, searchProvider, options, indexHandler, actions);
 	}
 
 }

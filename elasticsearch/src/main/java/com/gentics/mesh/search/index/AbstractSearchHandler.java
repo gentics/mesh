@@ -26,7 +26,6 @@ import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.elasticsearch.client.okhttp.RequestBuilder;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
-import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
@@ -36,6 +35,7 @@ import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.verticle.handler.DAOActions;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -72,6 +72,7 @@ public abstract class AbstractSearchHandler<T extends HibCoreElement, RM extends
 	protected final MeshOptions options;
 	protected final IndexHandler<T> indexHandler;
 	protected final ComplianceMode complianceMode;
+	protected final DAOActions<T, RM> actions;
 
 	@Inject
 	public SearchWaitUtil waitUtil;
@@ -86,12 +87,14 @@ public abstract class AbstractSearchHandler<T extends HibCoreElement, RM extends
 	 * @param options
 	 * @param indexHandler
 	 */
-	public AbstractSearchHandler(Database db, SearchProvider searchProvider, MeshOptions options, IndexHandler<T> indexHandler) {
+	public AbstractSearchHandler(Database db, SearchProvider searchProvider, MeshOptions options, IndexHandler<T> indexHandler,
+		DAOActions<T, RM> actions) {
 		this.db = db;
 		this.searchProvider = searchProvider;
 		this.options = options;
 		this.indexHandler = indexHandler;
 		this.complianceMode = options.getSearchOptions().getComplianceMode();
+		this.actions = actions;
 	}
 
 	/**
@@ -298,7 +301,10 @@ public abstract class AbstractSearchHandler<T extends HibCoreElement, RM extends
 			// This would be better than to just fail the whole request
 			// TODO maybe add extra permission filtering? This would not be very costly for smaller pages and ensure perm consistency?
 			// TODO it would be good to batch the transformation of the elements to save the overhead of creating transactions and use the L1 cache.
-			return db.tx(() -> Single.just(element.v1().transformToRestSync(ac, 0, element.v2())));
+			return db.tx(tx ->  {
+				RM model = actions.transformToRestSync(tx, element.v1(), ac, 0, element.v2());
+				return Single.just(model);
+			});
 		}).collect(() -> listResponse.getData(), (x, y) -> {
 			x.add(y);
 		}).subscribe(list -> {

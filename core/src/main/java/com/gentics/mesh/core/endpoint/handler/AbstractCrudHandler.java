@@ -9,7 +9,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.core.verticle.handler.CRUDActions;
+import com.gentics.mesh.core.verticle.handler.DAOActions;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -34,7 +34,7 @@ public abstract class AbstractCrudHandler<T extends HibCoreElement, RM extends R
 		this.writeLock = writeLock;
 	}
 
-	abstract public CRUDActions<T, RM> crudActions();
+	abstract public DAOActions<T, RM> crudActions();
 
 	/**
 	 * Handle create requests.

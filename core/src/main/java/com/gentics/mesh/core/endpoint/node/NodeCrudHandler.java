@@ -20,6 +20,7 @@ import org.apache.commons.lang3.math.NumberUtils;
 import com.gentics.madl.tx.TxAction1;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.actions.impl.NodeDAOActionsImpl;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Project;
@@ -33,7 +34,7 @@ import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.verticle.handler.CRUDActions;
+import com.gentics.mesh.core.verticle.handler.DAOActions;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -65,8 +66,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	}
 
 	@Override
-	public NodeCrudActions crudActions() {
-		return new NodeCrudActions();
+	public NodeDAOActionsImpl crudActions() {
+		return new NodeDAOActionsImpl();
 	}
 
 	@Override
