@@ -4,7 +4,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.SchemaRoot;
 import com.gentics.mesh.core.data.schema.Schema;
@@ -29,7 +29,9 @@ public interface SchemaDaoWrapper extends SchemaDao, DaoWrapper<Schema> {
 
 	TraversalResult<? extends Schema> findAll();
 
-	Page<? extends Schema> findAll(InternalActionContext ac, PagingParameters pagingInfo);
+	TransformablePage<? extends Schema> findAll(InternalActionContext ac, PagingParameters pagingInfo);
+
+	TransformablePage<? extends Schema> findAll(InternalActionContext ac, Project project, PagingParameters pagingInfo);
 
 	Schema create(InternalActionContext ac, EventQueueBatch batch, String uuid);
 
@@ -116,4 +118,5 @@ public interface SchemaDaoWrapper extends SchemaDao, DaoWrapper<Schema> {
 	 * @return
 	 */
 	Iterable<? extends SchemaVersion> findAllVersions(Schema schema);
+
 }

@@ -8,6 +8,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.SchemaDAOActions;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
@@ -45,11 +46,15 @@ public class SchemaDAOActionsImpl implements SchemaDAOActions {
 		}
 	}
 
+	public TransformablePage<? extends Schema> loadAll(Tx tx, Project project, InternalActionContext ac, PagingParameters pagingInfo) {
+		SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+		return schemaDao.findAll(ac, project, pagingInfo);
+	}
+
 	@Override
 	public TransformablePage<? extends Schema> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo) {
-		return ac.getProject().getSchemaContainerRoot().findAll(ac, pagingInfo);
-		// TODO scope to project
-		// return tx.data().schemaDao().findAll(ac, pagingInfo);
+		SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+		return tx.data().schemaDao().findAll(ac, pagingInfo);
 	}
 
 	@Override

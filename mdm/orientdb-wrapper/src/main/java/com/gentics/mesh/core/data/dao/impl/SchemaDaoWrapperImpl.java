@@ -106,6 +106,11 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper implements SchemaDa
 	}
 
 	@Override
+	public TransformablePage<? extends Schema> findAll(InternalActionContext ac, Project project, PagingParameters pagingInfo) {
+		return project.getSchemaContainerRoot().findAll(ac, pagingInfo);
+	}
+
+	@Override
 	public Schema create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		MeshAuthUser requestUser = ac.getUser();
 		UserDaoWrapper userDao = Tx.get().data().userDao();

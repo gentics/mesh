@@ -351,6 +351,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 		LocalActionContextImpl<TagResponse> ac = createContext(TagResponse.class);
 		ac.setProject(projectName);
 		ac.setPayloadObject(request);
+		ac.setParameter("tagFamilyUuid", tagFamilyUuid);
 		tagCrudHandler.handleCreate(ac, tagFamilyUuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
@@ -359,6 +360,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	public MeshRequest<TagResponse> findTagByUuid(String projectName, String tagFamilyUuid, String uuid, ParameterProvider... parameters) {
 		LocalActionContextImpl<TagResponse> ac = createContext(TagResponse.class, parameters);
 		ac.setProject(projectName);
+		ac.setParameter("tagUuid", uuid);
+		ac.setParameter("tagFamilyUuid", tagFamilyUuid);
 		tagCrudHandler.handleRead(ac, tagFamilyUuid, uuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
@@ -368,6 +371,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 		LocalActionContextImpl<TagResponse> ac = createContext(TagResponse.class);
 		ac.setProject(projectName);
 		ac.setPayloadObject(request);
+		ac.setParameter("tagUuid", uuid);
+		ac.setParameter("tagFamilyUuid", tagFamilyUuid);
 		tagCrudHandler.handleUpdate(ac, tagFamilyUuid, uuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
@@ -377,6 +382,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 		LocalActionContextImpl<TagResponse> ac = createContext(TagResponse.class);
 		ac.setProject(projectName);
 		ac.setPayloadObject(request);
+		ac.setParameter("tagUuid", uuid);
+		ac.setParameter("tagFamilyUuid", tagFamilyUuid);
 		tagCrudHandler.handleUpdate(ac, tagFamilyUuid, uuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
@@ -385,6 +392,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	public MeshRequest<EmptyResponse> deleteTag(String projectName, String tagFamilyUuid, String uuid) {
 		LocalActionContextImpl<EmptyResponse> ac = createContext(EmptyResponse.class);
 		ac.setProject(projectName);
+		ac.setParameter("tagUuid", uuid);
+		ac.setParameter("tagFamilyUuid", tagFamilyUuid);
 		tagCrudHandler.handleDelete(ac, tagFamilyUuid, uuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
@@ -393,6 +402,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	public MeshRequest<TagListResponse> findTags(String projectName, String tagFamilyUuid, ParameterProvider... parameters) {
 		LocalActionContextImpl<TagListResponse> ac = createContext(TagListResponse.class, parameters);
 		ac.setProject(projectName);
+		ac.setParameter("tagFamilyUuid", tagFamilyUuid);
 		tagCrudHandler.handleReadTagList(ac, tagFamilyUuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}

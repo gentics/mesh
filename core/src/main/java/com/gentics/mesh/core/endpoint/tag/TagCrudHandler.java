@@ -130,7 +130,6 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagUuid, "tagUuid");
 
 		utils.updateElement(ac, tagUuid, crudActions());
-
 	}
 
 	/**
