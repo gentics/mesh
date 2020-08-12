@@ -16,6 +16,7 @@ import javax.inject.Inject;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.actions.impl.MicroschemaDAOActionsImpl;
+import com.gentics.mesh.core.actions.impl.ProjectMicroschemaLoadAllActionImpl;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
@@ -46,12 +47,15 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<Microschema, Mic
 
 	private Lazy<BootstrapInitializer> boot;
 
+	private final ProjectMicroschemaLoadAllActionImpl projectMicroschemaLoadAllAction;
+
 	@Inject
 	public MicroschemaCrudHandler(Database db, MicroschemaComparator comparator, Lazy<BootstrapInitializer> boot, HandlerUtilities utils,
-		WriteLock writeLock) {
+		WriteLock writeLock, ProjectMicroschemaLoadAllActionImpl projectMicroschemaLoadAllAction) {
 		super(db, utils, writeLock);
 		this.comparator = comparator;
 		this.boot = boot;
+		this.projectMicroschemaLoadAllAction = projectMicroschemaLoadAllAction;
 	}
 
 	@Override
@@ -179,6 +183,15 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<Microschema, Mic
 	 */
 	public void handleReadMicroschemaList(InternalActionContext ac) {
 		utils.readElementList(ac, crudActions());
+	}
+
+	/**
+	 * Handle a read project list request.
+	 *
+	 * @param ac
+	 */
+	public void handleReadProjectList(InternalActionContext ac) {
+		utils.readElementList(ac, projectMicroschemaLoadAllAction);
 	}
 
 	/**

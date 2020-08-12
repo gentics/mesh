@@ -6,7 +6,6 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -22,13 +21,11 @@ import com.gentics.mesh.parameter.PagingParameters;
  * @param <T>
  * @param <RM>
  */
-public interface DAOActions<T extends HibCoreElement, RM extends RestModel> {
+public interface DAOActions<T extends HibCoreElement, RM extends RestModel> extends LoadAllAction<T> {
 
 	T loadByUuid(Tx tx, InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound);
 
 	T loadByName(Tx tx, InternalActionContext ac, String name, GraphPermission perm, boolean errorIfNotFound);
-
-	TransformablePage<? extends T> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo);
 
 	Page<? extends T> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo, Predicate<T> extraFilter);
 

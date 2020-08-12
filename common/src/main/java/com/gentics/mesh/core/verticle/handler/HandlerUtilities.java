@@ -22,6 +22,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.action.DAOActions;
+import com.gentics.mesh.core.action.LoadAllAction;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -205,7 +206,7 @@ public class HandlerUtilities {
 	 * @param actions
 	 *            Handler which provides the root vertex which should be used when loading the element
 	 */
-	public <T extends HibCoreElement, RM extends RestModel> void readElementList(InternalActionContext ac, DAOActions<T, RM> actions) {
+	public <T extends HibCoreElement, RM extends RestModel> void readElementList(InternalActionContext ac, LoadAllAction<T> actions) {
 
 		syncTx(ac, tx -> {
 			PagingParameters pagingInfo = ac.getPagingParameters();
