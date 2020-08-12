@@ -4,6 +4,7 @@ import java.util.function.Predicate;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.action.DAOActionContext;
 import com.gentics.mesh.core.action.DAOActions;
 import com.gentics.mesh.core.data.dao.JobDaoWrapper;
 import com.gentics.mesh.core.data.job.Job;
@@ -18,18 +19,18 @@ import com.gentics.mesh.parameter.PagingParameters;
 public class JobCrudActions implements DAOActions<Job, JobResponse> {
 
 	@Override
-	public Job loadByUuid(Tx tx, InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
-		JobDaoWrapper jobDao = tx.data().jobDao();
+	public Job loadByUuid(DAOActionContext ctx, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+		JobDaoWrapper jobDao = ctx.tx().data().jobDao();
 		if (perm == null) {
 			return jobDao.findByUuid(uuid);
 		} else {
-			return jobDao.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+			return jobDao.loadObjectByUuid(ctx.ac(), uuid, perm, errorIfNotFound);
 		}
 	}
 
 	@Override
-	public Job loadByName(Tx tx, InternalActionContext ac, String name, GraphPermission perm, boolean errorIfNotFound) {
-		JobDaoWrapper jobDao = tx.data().jobDao();
+	public Job loadByName(DAOActionContext ctx, String name, GraphPermission perm, boolean errorIfNotFound) {
+		JobDaoWrapper jobDao = ctx.tx().data().jobDao();
 		if (perm == null) {
 			return jobDao.findByName(name);
 		} else {
@@ -43,8 +44,8 @@ public class JobCrudActions implements DAOActions<Job, JobResponse> {
 	}
 
 	@Override
-	public Page<? extends Job> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo, Predicate<Job> extraFilter) {
-		return tx.data().jobDao().findAll(ac, pagingInfo, extraFilter);
+	public Page<? extends Job> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, Predicate<Job> extraFilter) {
+		return ctx.tx().data().jobDao().findAll(ctx.ac(), pagingInfo, extraFilter);
 	}
 
 	@Override

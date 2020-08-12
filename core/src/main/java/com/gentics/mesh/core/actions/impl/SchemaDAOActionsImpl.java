@@ -7,6 +7,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.action.DAOActionContext;
 import com.gentics.mesh.core.action.SchemaDAOActions;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
@@ -27,18 +28,18 @@ public class SchemaDAOActionsImpl implements SchemaDAOActions {
 	}
 
 	@Override
-	public Schema loadByUuid(Tx tx, InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
-		SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+	public Schema loadByUuid(DAOActionContext ctx, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+		SchemaDaoWrapper schemaDao = ctx.tx().data().schemaDao();
 		if (perm == null) {
 			return schemaDao.findByUuid(uuid);
 		} else {
-			return schemaDao.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+			return schemaDao.loadObjectByUuid(ctx.ac(), uuid, perm, errorIfNotFound);
 		}
 	}
 
 	@Override
-	public Schema loadByName(Tx tx, InternalActionContext ac, String name, GraphPermission perm, boolean errorIfNotFound) {
-		SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+	public Schema loadByName(DAOActionContext ctx, String name, GraphPermission perm, boolean errorIfNotFound) {
+		SchemaDaoWrapper schemaDao = ctx.tx().data().schemaDao();
 		if (perm == null) {
 			return schemaDao.findByName(name);
 		} else {
@@ -58,8 +59,8 @@ public class SchemaDAOActionsImpl implements SchemaDAOActions {
 	}
 
 	@Override
-	public Page<? extends Schema> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo, Predicate<Schema> extraFilter) {
-		return ac.getProject().getSchemaContainerRoot().findAll(ac, pagingInfo, extraFilter);
+	public Page<? extends Schema> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, Predicate<Schema> extraFilter) {
+		return ctx.project().getSchemaContainerRoot().findAll(ctx.ac(), pagingInfo, extraFilter);
 		// TODO scope to project
 		// return tx.data().schemaDao().findAll(ac, pagingInfo, extraFilter);
 	}

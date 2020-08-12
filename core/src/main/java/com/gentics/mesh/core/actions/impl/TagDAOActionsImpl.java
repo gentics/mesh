@@ -7,6 +7,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.action.DAOActionContext;
 import com.gentics.mesh.core.action.TagDAOActions;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
@@ -28,27 +29,21 @@ public class TagDAOActionsImpl implements TagDAOActions {
 	}
 
 	@Override
-	public Tag loadByUuid(Tx tx, InternalActionContext ac, String tagUuid, GraphPermission perm, boolean errorIfNotFound) {
-		String tagFamilyUuid = PathParameters.getTagFamilyUuid(ac);
-
-		TagFamily tagFamily = getTagFamily(tx, ac, tagFamilyUuid);
-		// TODO throw 404 if tagFamily can't be found?
+	public Tag loadByUuid(DAOActionContext ctx, String tagUuid, GraphPermission perm, boolean errorIfNotFound) {
+		TagFamily tagFamily = ctx.parent();
 		if (perm == null) {
 			return tagFamily.findByUuid(tagUuid);
 			// TagDaoWrapper tagDao = tx.data().tagDao();
 			// return tagDao.findByUuid(tagFamily, tagUuid);
 		} else {
-			return tagFamily.loadObjectByUuid(ac, tagUuid, perm, errorIfNotFound);
+			return tagFamily.loadObjectByUuid(ctx.ac(), tagUuid, perm, errorIfNotFound);
 		}
 	}
 
 	@Override
-	public Tag loadByName(Tx tx, InternalActionContext ac, String name, GraphPermission perm, boolean errorIfNotFound) {
-		String tagFamilyUuid = PathParameters.getTagFamilyUuid(ac);
-		TagDaoWrapper tagDao = tx.data().tagDao();
-
-		TagFamily tagFamily = getTagFamily(tx, ac, tagFamilyUuid);
-		// TODO throw 404 if tagFamily can't be found?
+	public Tag loadByName(DAOActionContext ctx, String name, GraphPermission perm, boolean errorIfNotFound) {
+		TagDaoWrapper tagDao = ctx.tx().data().tagDao();
+		TagFamily tagFamily = ctx.parent();
 		if (perm == null) {
 			return tagDao.findByName(tagFamily, name);
 		} else {
@@ -64,9 +59,9 @@ public class TagDAOActionsImpl implements TagDAOActions {
 	}
 
 	@Override
-	public Page<? extends Tag> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo, Predicate<Tag> extraFilter) {
-		String tagFamilyUuid = PathParameters.getTagFamilyUuid(ac);
-		return getTagFamily(tx, ac, tagFamilyUuid).findAll(ac, pagingInfo, extraFilter);
+	public Page<? extends Tag> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, Predicate<Tag> extraFilter) {
+		String tagFamilyUuid = PathParameters.getTagFamilyUuid(ctx.ac());
+		return getTagFamily(ctx.tx(), ctx.ac(), tagFamilyUuid).findAll(ctx.ac(), pagingInfo, extraFilter);
 	}
 
 	@Override

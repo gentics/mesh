@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.verticle.handler;
 
+import static com.gentics.mesh.core.action.DAOActionContext.context;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.event.EventCauseAction.DELETE;
@@ -94,7 +95,7 @@ public class HandlerUtilities {
 		String uuid) {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			syncTx(ac, tx -> {
-				T element = actions.loadByUuid(tx, ac, uuid, DELETE_PERM, true);
+				T element = actions.loadByUuid(context(tx, ac), uuid, DELETE_PERM, true);
 
 				// Load the name and uuid of the element. We need this info after deletion.
 				String elementUuid = element.getUuid();
@@ -142,7 +143,7 @@ public class HandlerUtilities {
 					if (!UUIDUtil.isUUID(uuid)) {
 						throw error(BAD_REQUEST, "error_illegal_uuid", uuid);
 					}
-					element = actions.loadByUuid(tx, ac, uuid, GraphPermission.UPDATE_PERM, false);
+					element = actions.loadByUuid(context(tx, ac), uuid, GraphPermission.UPDATE_PERM, false);
 				}
 
 				// Check whether we need to update a found element or whether we need to create a new one.
@@ -185,7 +186,7 @@ public class HandlerUtilities {
 		DAOActions<T, RM> actions, GraphPermission perm) {
 
 		syncTx(ac, tx -> {
-			T element = actions.loadByUuid(tx, ac, uuid, perm, true);
+			T element = actions.loadByUuid(context(tx, ac), uuid, perm, true);
 
 			// Handle etag
 			if (ac.getGenericParameters().getETag()) {

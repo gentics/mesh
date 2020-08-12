@@ -7,6 +7,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.action.DAOActionContext;
 import com.gentics.mesh.core.action.GroupDAOActions;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
@@ -26,18 +27,18 @@ public class GroupDAOActionsImpl implements GroupDAOActions {
 	}
 
 	@Override
-	public Group loadByUuid(Tx tx, InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
-		GroupDaoWrapper groupDao = tx.data().groupDao();
+	public Group loadByUuid(DAOActionContext ctx, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+		GroupDaoWrapper groupDao = ctx.tx().data().groupDao();
 		if (perm == null) {
 			return groupDao.findByUuid(uuid);
 		} else {
-			return groupDao.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+			return groupDao.loadObjectByUuid(ctx.ac(), uuid, perm, errorIfNotFound);
 		}
 	}
 
 	@Override
-	public Group loadByName(Tx tx, InternalActionContext ac, String name, GraphPermission perm, boolean errorIfNotFound) {
-		GroupDaoWrapper groupDao = tx.data().groupDao();
+	public Group loadByName(DAOActionContext ctx, String name, GraphPermission perm, boolean errorIfNotFound) {
+		GroupDaoWrapper groupDao = ctx.tx().data().groupDao();
 		if (perm == null) {
 			return groupDao.findByName(name);
 		} else {
@@ -51,8 +52,8 @@ public class GroupDAOActionsImpl implements GroupDAOActions {
 	}
 
 	@Override
-	public Page<? extends Group> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo, Predicate<Group> extraFilter) {
-		return tx.data().groupDao().findAll(ac, pagingInfo, extraFilter);
+	public Page<? extends Group> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, Predicate<Group> extraFilter) {
+		return ctx.tx().data().groupDao().findAll(ctx.ac(), pagingInfo, extraFilter);
 	}
 
 	@Override

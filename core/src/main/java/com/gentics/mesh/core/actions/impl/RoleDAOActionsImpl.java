@@ -7,6 +7,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.action.DAOActionContext;
 import com.gentics.mesh.core.action.RoleDAOActions;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
@@ -26,18 +27,18 @@ public class RoleDAOActionsImpl implements RoleDAOActions {
 	}
 
 	@Override
-	public Role loadByUuid(Tx tx, InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
-		RoleDaoWrapper roleDao = tx.data().roleDao();
+	public Role loadByUuid(DAOActionContext ctx, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+		RoleDaoWrapper roleDao = ctx.tx().data().roleDao();
 		if (perm == null) {
 			return roleDao.findByUuid(uuid);
 		} else {
-			return roleDao.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+			return roleDao.loadObjectByUuid(ctx.ac(), uuid, perm, errorIfNotFound);
 		}
 	}
 
 	@Override
-	public Role loadByName(Tx tx, InternalActionContext ac, String name, GraphPermission perm, boolean errorIfNotFound) {
-		RoleDaoWrapper roleDao = tx.data().roleDao();
+	public Role loadByName(DAOActionContext ctx, String name, GraphPermission perm, boolean errorIfNotFound) {
+		RoleDaoWrapper roleDao = ctx.tx().data().roleDao();
 		if (perm == null) {
 			return roleDao.findByName(name);
 		} else {
@@ -51,8 +52,8 @@ public class RoleDAOActionsImpl implements RoleDAOActions {
 	}
 
 	@Override
-	public Page<? extends Role> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo, Predicate<Role> extraFilter) {
-		return tx.data().roleDao().findAll(ac, pagingInfo, extraFilter);
+	public Page<? extends Role> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, Predicate<Role> extraFilter) {
+		return ctx.tx().data().roleDao().findAll(ctx.ac(), pagingInfo, extraFilter);
 	}
 
 	@Override

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.endpoint.node;
 
+import static com.gentics.mesh.core.action.DAOActionContext.context;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
@@ -20,7 +21,6 @@ import org.apache.commons.lang3.math.NumberUtils;
 import com.gentics.madl.tx.TxAction1;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.action.DAOActions;
 import com.gentics.mesh.core.actions.impl.NodeDAOActionsImpl;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Language;
@@ -103,7 +103,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				Node node = crudActions().loadByUuid(tx, ac, uuid, DELETE_PERM, true);
+				Node node = crudActions().loadByUuid(context(tx, ac), uuid, DELETE_PERM, true);
 				Language language = boot.meshRoot().getLanguageRoot().findByLanguageTag(languageTag);
 				if (language == null) {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
@@ -163,7 +163,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		validateParameter(uuid, "uuid");
 
 		Node node = db.tx(tx -> {
-			return crudActions().loadByUuid(tx, ac, uuid, READ_PERM, true);
+			return crudActions().loadByUuid(context(tx, ac), uuid, READ_PERM, true);
 		});
 		node.transformToNavigation(ac).subscribe(model -> ac.send(model, OK), ac::fail);
 

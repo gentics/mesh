@@ -19,19 +19,21 @@ import com.gentics.mesh.parameter.PagingParameters;
  * The TagDAOAction is for example aware of the tagFamilyUuid in the context parameters and uses the project in the context to scope the operation correctly.
  * 
  * @param <T>
+ *            Type of the element that this action targets
  * @param <RM>
+ *            Response REST Model for the element of this action
  */
 public interface DAOActions<T extends HibCoreElement, RM extends RestModel> extends LoadAllAction<T> {
 
-	T loadByUuid(Tx tx, InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound);
+	T create(Tx tx, InternalActionContext ac, EventQueueBatch batch, String uuid);
 
-	T loadByName(Tx tx, InternalActionContext ac, String name, GraphPermission perm, boolean errorIfNotFound);
+	T loadByUuid(DAOActionContext ctx, String uuid, GraphPermission perm, boolean errorIfNotFound);
 
-	Page<? extends T> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo, Predicate<T> extraFilter);
+	T loadByName(DAOActionContext ctx, String name, GraphPermission perm, boolean errorIfNotFound);
+
+	Page<? extends T> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, Predicate<T> extraFilter);
 
 	boolean update(Tx tx, T element, InternalActionContext ac, EventQueueBatch batch);
-
-	T create(Tx tx, InternalActionContext ac, EventQueueBatch batch, String uuid);
 
 	void delete(Tx tx, T element, BulkActionContext bac);
 

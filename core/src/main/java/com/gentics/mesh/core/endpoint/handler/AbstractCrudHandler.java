@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.endpoint.handler;
 
+import static com.gentics.mesh.core.action.DAOActionContext.context;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
@@ -105,7 +106,7 @@ public abstract class AbstractCrudHandler<T extends HibCoreElement, RM extends R
 			if (!isEmpty(uuid)) {
 				boolean result = db.tx(tx -> {
 					//TODO Calling load is not correct. The findByUuid method should be used here instead or the loadObject
-					T foundElement = crudActions().loadByUuid(tx, ac, uuid, null, false);
+					T foundElement = crudActions().loadByUuid(context(tx, ac), uuid, null, false);
 					if (foundElement == null) {
 						throw error(NOT_FOUND, i18nNotFoundMessage, uuid);
 					} else {

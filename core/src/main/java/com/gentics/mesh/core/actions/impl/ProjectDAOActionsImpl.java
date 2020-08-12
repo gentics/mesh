@@ -7,6 +7,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.action.DAOActionContext;
 import com.gentics.mesh.core.action.ProjectDAOActions;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
@@ -26,19 +27,19 @@ public class ProjectDAOActionsImpl implements ProjectDAOActions {
 	}
 
 	@Override
-	public Project loadByUuid(Tx tx, InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
-		ProjectDaoWrapper projectDao = tx.data().projectDao();
+	public Project loadByUuid(DAOActionContext ctx, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+		ProjectDaoWrapper projectDao = ctx.tx().data().projectDao();
 		if (perm == null) {
 			return projectDao.findByUuid(uuid);
 		} else {
-			return projectDao.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+			return projectDao.loadObjectByUuid(ctx.ac(), uuid, perm, errorIfNotFound);
 		}
 	}
 
 	@Override
-	public Project loadByName(Tx tx, InternalActionContext ac, String name, GraphPermission perm, boolean errorIfNotFound) {
+	public Project loadByName(DAOActionContext ctx, String name, GraphPermission perm, boolean errorIfNotFound) {
 		if (perm == null) {
-			return tx.data().projectDao().findByName(name);
+			return ctx.tx().data().projectDao().findByName(name);
 		} else {
 			throw new RuntimeException("Not supported");
 		}
@@ -50,9 +51,9 @@ public class ProjectDAOActionsImpl implements ProjectDAOActions {
 	}
 
 	@Override
-	public Page<? extends Project> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo,
+	public Page<? extends Project> loadAll(DAOActionContext ctx, PagingParameters pagingInfo,
 		Predicate<Project> extraFilter) {
-		return tx.data().projectDao().findAll(ac, pagingInfo, extraFilter);
+		return ctx.tx().data().projectDao().findAll(ctx.ac(), pagingInfo, extraFilter);
 	}
 
 	@Override

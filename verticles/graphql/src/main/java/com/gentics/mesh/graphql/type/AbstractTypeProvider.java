@@ -1,5 +1,6 @@
 package com.gentics.mesh.graphql.type;
 
+import static com.gentics.mesh.core.action.DAOActionContext.context;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static graphql.Scalars.GraphQLLong;
@@ -323,7 +324,7 @@ public abstract class AbstractTypeProvider {
 	 */
 	protected HibCoreElement handleUuidNameArgs(DataFetchingEnvironment env, DAOActions<?,?> actions) {
 		GraphQLContext gc = env.getContext();
-		HibCoreElement element = handleUuidNameArgsNoPerm(env, uuid -> actions.loadByUuid(Tx.get(), gc, uuid, null, false), name -> actions.loadByName(Tx.get(), gc, name, null, false));
+		HibCoreElement element = handleUuidNameArgsNoPerm(env, uuid -> actions.loadByUuid(context(Tx.get(), gc), uuid, null, false), name -> actions.loadByName(context(Tx.get(), gc), name, null, false));
 		if (element == null) {
 			return null;
 		} else {
@@ -420,7 +421,7 @@ public abstract class AbstractTypeProvider {
 					}
 				} else {
 					if (filterProvider != null && filter != null) {
-						return actions.loadAll(Tx.get(), gc, getPagingInfo(env), filterProvider.createPredicate(filter));
+						return actions.loadAll(context(Tx.get(), gc), getPagingInfo(env), filterProvider.createPredicate(filter));
 					} else {
 						return actions.loadAll(Tx.get(), gc, getPagingInfo(env));
 					}

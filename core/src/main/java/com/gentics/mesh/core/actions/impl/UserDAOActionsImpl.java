@@ -7,6 +7,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.action.DAOActionContext;
 import com.gentics.mesh.core.action.UserDAOActions;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
@@ -26,18 +27,18 @@ public class UserDAOActionsImpl implements UserDAOActions {
 	}
 
 	@Override
-	public HibUser loadByUuid(Tx tx, InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
-		UserDaoWrapper userDao = tx.data().userDao();
+	public HibUser loadByUuid(DAOActionContext ctx, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+		UserDaoWrapper userDao = ctx.tx().data().userDao();
 		if (perm == null) {
 			return userDao.findByUuid(uuid);
 		} else {
-			return userDao.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+			return userDao.loadObjectByUuid(ctx.ac(), uuid, perm, errorIfNotFound);
 		}
 	}
 
 	@Override
-	public HibUser loadByName(Tx tx, InternalActionContext ac, String name, GraphPermission perm, boolean errorIfNotFound) {
-		UserDaoWrapper userDao = tx.data().userDao();
+	public HibUser loadByName(DAOActionContext ctx, String name, GraphPermission perm, boolean errorIfNotFound) {
+		UserDaoWrapper userDao = ctx.tx().data().userDao();
 		if (perm == null) {
 			return userDao.findByName(name);
 		} else {
@@ -51,9 +52,9 @@ public class UserDAOActionsImpl implements UserDAOActions {
 	}
 
 	@Override
-	public Page<? extends HibUser> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo,
+	public Page<? extends HibUser> loadAll(DAOActionContext ctx, PagingParameters pagingInfo,
 		Predicate<HibUser> extraFilter) {
-		return tx.data().userDao().findAll(ac, pagingInfo, extraFilter);
+		return ctx.tx().data().userDao().findAll(ctx.ac(), pagingInfo, extraFilter);
 	}
 
 	@Override

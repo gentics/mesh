@@ -8,6 +8,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.BranchDAOActions;
+import com.gentics.mesh.core.action.DAOActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
@@ -26,20 +27,20 @@ public class BranchDAOActionsImpl implements BranchDAOActions {
 	}
 
 	@Override
-	public Branch loadByUuid(Tx tx, InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+	public Branch loadByUuid(DAOActionContext ctx, String uuid, GraphPermission perm, boolean errorIfNotFound) {
 		// BranchDaoWrapper branchDao = tx.data().branchDao();
 		// TODO use DAO
 		if (perm == null) {
-			return ac.getProject().getBranchRoot().findByUuid(uuid);
+			return ctx.project().getBranchRoot().findByUuid(uuid);
 		} else {
-			return ac.getProject().getBranchRoot().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+			return ctx.project().getBranchRoot().loadObjectByUuid(ctx.ac(), uuid, perm, errorIfNotFound);
 		}
 	}
 
 	@Override
-	public Branch loadByName(Tx tx, InternalActionContext ac, String name, GraphPermission perm, boolean errorIfNotFound) {
+	public Branch loadByName(DAOActionContext ctx, String name, GraphPermission perm, boolean errorIfNotFound) {
 		if (perm == null) {
-			return ac.getProject().getBranchRoot().findByName(name);
+			return ctx.project().getBranchRoot().findByName(name);
 		} else {
 			throw new RuntimeException("Not supported");
 		}
@@ -53,10 +54,10 @@ public class BranchDAOActionsImpl implements BranchDAOActions {
 	}
 
 	@Override
-	public Page<? extends Branch> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo, Predicate<Branch> extraFilter) {
+	public Page<? extends Branch> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, Predicate<Branch> extraFilter) {
 		// BranchDaoWrapper branchDao = tx.data().branchDao();
 		// TODO use DAO
-		return ac.getProject().getBranchRoot().findAll(ac, pagingInfo, extraFilter);
+		return ctx.project().getBranchRoot().findAll(ctx.ac(), pagingInfo, extraFilter);
 	}
 
 	@Override

@@ -7,6 +7,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.action.DAOActionContext;
 import com.gentics.mesh.core.action.MicroschemaDAOActions;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
@@ -26,18 +27,18 @@ public class MicroschemaDAOActionsImpl implements MicroschemaDAOActions {
 	}
 
 	@Override
-	public Microschema loadByUuid(Tx tx, InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
-		MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
+	public Microschema loadByUuid(DAOActionContext ctx, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+		MicroschemaDaoWrapper microschemaDao = ctx.tx().data().microschemaDao();
 		if (perm == null) {
 			return microschemaDao.findByUuid(uuid);
 		} else {
-			return microschemaDao.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+			return microschemaDao.loadObjectByUuid(ctx.ac(), uuid, perm, errorIfNotFound);
 		}
 	}
 	
 	@Override
-	public Microschema loadByName(Tx tx, InternalActionContext ac, String name, GraphPermission perm, boolean errorIfNotFound) {
-		MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
+	public Microschema loadByName(DAOActionContext ctx, String name, GraphPermission perm, boolean errorIfNotFound) {
+		MicroschemaDaoWrapper microschemaDao = ctx.tx().data().microschemaDao();
 		if (perm == null) {
 			return microschemaDao.findByName(name);
 		} else {
@@ -52,9 +53,9 @@ public class MicroschemaDAOActionsImpl implements MicroschemaDAOActions {
 	}
 
 	@Override
-	public Page<? extends Microschema> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo,
+	public Page<? extends Microschema> loadAll(DAOActionContext ctx, PagingParameters pagingInfo,
 		Predicate<Microschema> extraFilter) {
-		return tx.data().microschemaDao().findAll(ac, pagingInfo, extraFilter);
+		return ctx.tx().data().microschemaDao().findAll(ctx.ac(), pagingInfo, extraFilter);
 	}
 
 	@Override

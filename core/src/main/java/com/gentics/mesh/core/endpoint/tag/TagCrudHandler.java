@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.endpoint.tag;
 
+import static com.gentics.mesh.core.action.DAOActionContext.context;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -7,9 +8,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import javax.inject.Inject;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.actions.impl.TagDAOActionsImpl;
+import com.gentics.mesh.core.action.TagDAOActions;
+import com.gentics.mesh.core.action.TagFamilyDAOActions;
 import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
@@ -32,16 +33,16 @@ public class TagCrudHandler extends AbstractHandler {
 	private final HandlerUtilities utils;
 	private final MeshOptions options;
 	private final WriteLock globalLock;
+	private final TagDAOActions tagActions;
+	private final TagFamilyDAOActions tagFamilyActions;
 
 	@Inject
-	public TagCrudHandler(MeshOptions options, HandlerUtilities utils, WriteLock writeLock) {
+	public TagCrudHandler(MeshOptions options, HandlerUtilities utils, WriteLock writeLock, TagDAOActions tagActions, TagFamilyDAOActions tagFamilyActions) {
 		this.options = options;
 		this.utils = utils;
 		this.globalLock = writeLock;
-	}
-
-	private TagDAOActionsImpl crudActions() {
-		return new TagDAOActionsImpl();
+		this.tagActions = tagActions;
+		this.tagFamilyActions = tagFamilyActions;
 	}
 
 	/**
@@ -63,7 +64,8 @@ public class TagCrudHandler extends AbstractHandler {
 				TagDaoWrapper tagDao = tx.data().tagDao();
 				PagingParameters pagingParams = ac.getPagingParameters();
 				NodeParameters nodeParams = ac.getNodeParameters();
-				Tag tag = crudActions().loadByUuid(tx, ac, tagUuid, READ_PERM, true);
+				TagFamily tagFamily = tagFamilyActions.loadByUuid(context(tx, ac), tagFamilyUuid, READ_PERM, true);
+				Tag tag = tagActions.loadByUuid(context(tx, ac, tagFamily), tagUuid, READ_PERM, true);
 				TransformablePage<? extends Node> page = tagDao.findTaggedNodes(tag, ac.getUser(), ac.getBranch(),
 					nodeParams.getLanguageList(options),
 					ContainerType.forVersion(ac.getVersioningParameters().getVersion()), pagingParams);
@@ -82,7 +84,7 @@ public class TagCrudHandler extends AbstractHandler {
 	public void handleReadTagList(InternalActionContext ac, String tagFamilyUuid) {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 
-		utils.readElementList(ac, crudActions());
+		utils.readElementList(ac, tagActions);
 	}
 
 	/**
@@ -99,7 +101,7 @@ public class TagCrudHandler extends AbstractHandler {
 		try (WriteLock lock = globalLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				ResultInfo info = utils.eventAction(batch -> {
-					Tag tag = crudActions().create(tx, ac, batch, null);
+					Tag tag = tagActions.create(tx, ac, batch, null);
 					TagResponse model = tag.transformToRestSync(ac, 0);
 					String path = tag.getAPIPath(ac);
 					ResultInfo resultInfo = new ResultInfo(model);
@@ -129,7 +131,7 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 		validateParameter(tagUuid, "tagUuid");
 
-		utils.updateElement(ac, tagUuid, crudActions());
+		utils.updateElement(ac, tagUuid, tagActions);
 	}
 
 	/**
@@ -146,7 +148,7 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 		validateParameter(tagUuid, "tagUuid");
 
-		utils.readElement(ac, tagUuid, crudActions(), READ_PERM);
+		utils.readElement(ac, tagUuid, tagActions, READ_PERM);
 
 	}
 
@@ -164,7 +166,7 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 		validateParameter(tagUuid, "tagUuid");
 
-		utils.deleteElement(ac, crudActions(), tagUuid);
+		utils.deleteElement(ac, tagActions, tagUuid);
 
 	}
 
