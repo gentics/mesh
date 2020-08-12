@@ -76,26 +76,37 @@ public class HandlerUtilities {
 	 * @param ac
 	 * @param loadAction
 	 * @param createAction
-	 * @param updateAction 
+	 * @param updateAction
 	 */
 	public <T extends HibCoreElement, RM extends RestModel> void createElement(InternalActionContext ac, DAOActions<T, RM> actions) {
 		createOrUpdateElement(ac, null, actions);
+	}
+
+	public <T extends HibCoreElement, RM extends RestModel> void deleteElement(InternalActionContext ac, DAOActions<T, RM> actions,
+		String uuid) {
+		deleteElement(ac, null, actions, uuid);
 	}
 
 	/**
 	 * Delete the specified element.
 	 * 
 	 * @param ac
+	 * @param parentLoader
 	 * @param actions
 	 *            Handler which provides the root vertex which will be used to load the element
 	 * @param uuid
 	 *            Uuid of the element which should be deleted
 	 */
-	public <T extends HibCoreElement, RM extends RestModel> void deleteElement(InternalActionContext ac, DAOActions<T, RM> actions,
+	public <T extends HibCoreElement, RM extends RestModel> void deleteElement(InternalActionContext ac, Function<Tx, Object> parentLoader,
+		DAOActions<T, RM> actions,
 		String uuid) {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			syncTx(ac, tx -> {
-				T element = actions.loadByUuid(context(tx, ac), uuid, DELETE_PERM, true);
+				Object parent = null;
+				if (parentLoader != null) {
+					parent = parentLoader.apply(tx);
+				}
+				T element = actions.loadByUuid(context(tx, ac, parent), uuid, DELETE_PERM, true);
 
 				// Load the name and uuid of the element. We need this info after deletion.
 				String elementUuid = element.getUuid();
@@ -124,16 +135,23 @@ public class HandlerUtilities {
 		createOrUpdateElement(ac, uuid, actions);
 	}
 
+	public <T extends HibCoreElement, RM extends RestModel> void createOrUpdateElement(InternalActionContext ac, String uuid,
+		DAOActions<T, RM> actions) {
+		createOrUpdateElement(ac, null, uuid, actions);
+	}
+
 	/**
 	 * Either create or update an element with the given uuid.
 	 * 
 	 * @param ac
+	 * @param parentLoader
+	 *            Parent element to be used for the operation
 	 * @param uuid
 	 *            Uuid of the element to create or update. If null, an element will be created with random Uuid
 	 * @param actions
 	 */
-	public <T extends HibCoreElement, RM extends RestModel> void createOrUpdateElement(InternalActionContext ac, String uuid,
-		DAOActions<T, RM> actions) {
+	public <T extends HibCoreElement, RM extends RestModel> void createOrUpdateElement(InternalActionContext ac, Function<Tx, Object> parentLoader,
+		String uuid, DAOActions<T, RM> actions) {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			AtomicBoolean created = new AtomicBoolean(false);
 			syncTx(ac, tx -> {
@@ -143,7 +161,11 @@ public class HandlerUtilities {
 					if (!UUIDUtil.isUUID(uuid)) {
 						throw error(BAD_REQUEST, "error_illegal_uuid", uuid);
 					}
-					element = actions.loadByUuid(context(tx, ac), uuid, GraphPermission.UPDATE_PERM, false);
+					Object parent = null;
+					if (parentLoader != null) {
+						parent = parentLoader.apply(tx);
+					}
+					element = actions.loadByUuid(context(tx, ac, parent), uuid, GraphPermission.UPDATE_PERM, false);
 				}
 
 				// Check whether we need to update a found element or whether we need to create a new one.
@@ -152,7 +174,7 @@ public class HandlerUtilities {
 					eventAction(batch -> {
 						return actions.update(tx, updateElement, ac, batch);
 					});
-					RM model =  actions.transformToRestSync(tx, updateElement, ac, 0);
+					RM model = actions.transformToRestSync(tx, updateElement, ac, 0);
 					return model;
 				} else {
 					T createdElement = eventAction(batch -> {
@@ -171,10 +193,17 @@ public class HandlerUtilities {
 		}
 	}
 
+	public <T extends HibCoreElement, RM extends RestModel> void readElement(InternalActionContext ac, String uuid,
+		DAOActions<T, RM> actions, GraphPermission perm) {
+		readElement(ac, null, uuid, actions, perm);
+	}
+
 	/**
 	 * Read the element with the given element by loading it from the specified root vertex.
 	 * 
 	 * @param ac
+	 * @param parentLoader
+	 *            Loader for the parent element
 	 * @param uuid
 	 *            Uuid of the element which should be loaded
 	 * @param action
@@ -182,11 +211,15 @@ public class HandlerUtilities {
 	 * @param perm
 	 *            Permission to check against when loading the element
 	 */
-	public <T extends HibCoreElement, RM extends RestModel> void readElement(InternalActionContext ac, String uuid,
+	public <T extends HibCoreElement, RM extends RestModel> void readElement(InternalActionContext ac, Function<Tx, Object> parentLoader, String uuid,
 		DAOActions<T, RM> actions, GraphPermission perm) {
 
 		syncTx(ac, tx -> {
-			T element = actions.loadByUuid(context(tx, ac), uuid, perm, true);
+			Object parent = null;
+			if (parentLoader != null) {
+				parent = parentLoader.apply(tx);
+			}
+			T element = actions.loadByUuid(context(tx, ac, parent), uuid, perm, true);
 
 			// Handle etag
 			if (ac.getGenericParameters().getETag()) {

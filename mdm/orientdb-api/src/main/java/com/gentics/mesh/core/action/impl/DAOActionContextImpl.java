@@ -11,10 +11,10 @@ import com.gentics.mesh.core.db.Tx;
  */
 public class DAOActionContextImpl implements DAOActionContext {
 
-	private Tx tx;
-	private Project project;
-	private Branch branch;
-	private Object parent;
+	private final Tx tx;
+	private final Project project;
+	private final Branch branch;
+	private final Object parent;
 
 	private InternalActionContext ac;
 
@@ -22,7 +22,11 @@ public class DAOActionContextImpl implements DAOActionContext {
 		this.tx = tx;
 		this.ac = ac;
 		this.project = ac.getProject();
-		this.branch = ac.getBranch(project);
+		if (project != null) {
+			this.branch = ac.getBranch(project);
+		} else {
+			this.branch = null;
+		}
 		this.parent = parent;
 	}
 
