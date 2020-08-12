@@ -16,7 +16,6 @@ import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.tag.TagListUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagReference;
@@ -84,7 +83,7 @@ public interface Taggable {
 				}
 				tags.add(tag);
 			} else {
-				Tag tag = tagFamily.findByName(tagReference.getName());
+				Tag tag = tagDao.findByName(tagFamily, tagReference.getName());
 				// Tag with name could not be found so create it
 				if (tag == null) {
 					if (userDao.hasPermission(user, tagFamily, CREATE_PERM)) {

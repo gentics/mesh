@@ -10,6 +10,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.TagDAOActions;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -44,11 +45,12 @@ public class TagDAOActionsImpl implements TagDAOActions {
 	@Override
 	public Tag loadByName(Tx tx, InternalActionContext ac, String name, GraphPermission perm, boolean errorIfNotFound) {
 		String tagFamilyUuid = PathParameters.getTagFamilyUuid(ac);
+		TagDaoWrapper tagDao = tx.data().tagDao();
 
 		TagFamily tagFamily = getTagFamily(tx, ac, tagFamilyUuid);
 		// TODO throw 404 if tagFamily can't be found?
 		if (perm == null) {
-			return tagFamily.findByName(name);
+			return tagDao.findByName(tagFamily, name);
 		} else {
 			throw new RuntimeException("Not supported");
 		}

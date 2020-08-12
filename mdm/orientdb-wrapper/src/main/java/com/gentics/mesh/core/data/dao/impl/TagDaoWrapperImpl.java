@@ -112,7 +112,7 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper implements TagDaoWrapp
 			TagFamily tagFamily = tag.getTagFamily();
 
 			// Check for conflicts
-			Tag foundTagWithSameName = tagFamily.findByName(newTagName);
+			Tag foundTagWithSameName = findByName(tagFamily, newTagName);
 			if (foundTagWithSameName != null && !foundTagWithSameName.getUuid().equals(tag.getUuid())) {
 				throw conflict(foundTagWithSameName.getUuid(), newTagName, "tag_create_tag_with_same_name_already_exists", newTagName, tagFamily
 					.getName());
@@ -131,7 +131,7 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper implements TagDaoWrapp
 
 	@Override
 	public Tag findByName(TagFamily tagFamily, String name) {
-		return tagFamily.findByName(name);
+		return boot.get().tagRoot().findByName(name);
 	}
 
 	@Override

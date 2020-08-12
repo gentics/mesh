@@ -383,11 +383,12 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testFindByName() {
 		try (Tx tx = tx()) {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			Tag tag = tag("car");
-			Tag foundTag = tag.getTagFamily().findByName("Car");
+			Tag foundTag = tagDao.findByName(tag.getTagFamily(), "Car");
 			assertNotNull(foundTag);
 			assertEquals("Car", foundTag.getName());
-			assertNull("No tag with the name bogus should be found", tag.getTagFamily().findByName("bogus"));
+			assertNull("No tag with the name bogus should be found", tagDao.findByName(tag.getTagFamily(), "bogus"));
 		}
 	}
 
