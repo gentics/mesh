@@ -69,8 +69,7 @@ public class MicroschemaDAOActionsImpl implements MicroschemaDAOActions {
 	}
 
 	public void delete(Tx tx, Microschema element, BulkActionContext bac) {
-		// tx.data().microschemaDao()
-		throw new RuntimeException("Delete not implemented");
+		tx.data().microschemaDao().delete(element, bac);
 	}
 
 	@Override

@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.dao;
 
 import java.util.function.Predicate;
 
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
@@ -90,5 +91,7 @@ public interface MicroschemaDaoWrapper extends MicroschemaDao {
 	 * @return
 	 */
 	MicroschemaVersion fromReference(Project project, MicroschemaReference reference, Branch branch);
+
+	void delete(Microschema microschema, BulkActionContext bac);
 
 }

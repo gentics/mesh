@@ -1,12 +1,9 @@
 package com.gentics.mesh.core.data.container.impl;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -48,17 +45,6 @@ public class MicroschemaContainerImpl extends
 	@Override
 	public RootVertex<Microschema> getRoot() {
 		return mesh().boot().meshRoot().getMicroschemaContainerRoot();
-	}
-
-	@Override
-	public void delete(BulkActionContext bac) {
-		for (MicroschemaVersion version : findAll()) {
-			if (version.findMicronodes().hasNext()) {
-				throw error(BAD_REQUEST, "microschema_delete_still_in_use", getUuid());
-			}
-			version.delete(bac);
-		}
-		super.delete(bac);
 	}
 
 	@Override

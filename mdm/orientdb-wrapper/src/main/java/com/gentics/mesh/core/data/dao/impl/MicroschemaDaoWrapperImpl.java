@@ -12,6 +12,7 @@ import java.util.function.Predicate;
 import javax.inject.Inject;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
@@ -186,6 +187,17 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper implements Mic
 		// TODO check for project in context?
 		MicroschemaRoot microschemaRoot = boot.get().microschemaContainerRoot();
 		return MicroschemaWrapper.wrap(microschemaRoot.loadObjectByUuid(ac, uuid, perm, errorIfNotFound));
+	}
+	
+	@Override
+	public void delete(Microschema microschema, BulkActionContext bac) {
+		for (MicroschemaVersion version : microschema.findAll()) {
+			if (version.findMicronodes().hasNext()) {
+				throw error(BAD_REQUEST, "microschema_delete_still_in_use", microschema.getUuid());
+			}
+			version.delete(bac);
+		}
+		microschema.delete(bac);
 	}
 
 }
