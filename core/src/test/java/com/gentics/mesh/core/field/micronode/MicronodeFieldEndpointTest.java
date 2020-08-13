@@ -26,6 +26,7 @@ import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
+import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldEndpointTest;
@@ -273,11 +274,11 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 					.hasUuid(sourceUuid);
 			}).match(1, NodeMeshEventModel.class, event -> {
 				assertThat(event)
-				.hasBranchUuid(initialBranchUuid())
-				.hasLanguage("en")
-				.hasType(PUBLISHED)
-				.hasSchemaName("folder")
-				.hasUuid(sourceUuid);
+					.hasBranchUuid(initialBranchUuid())
+					.hasLanguage("en")
+					.hasType(PUBLISHED)
+					.hasSchemaName("folder")
+					.hasUuid(sourceUuid);
 			}).two();
 
 		call(() -> client().deleteNode(PROJECT_NAME, targetUuid));
@@ -325,23 +326,23 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 		expect(NODE_DELETED).one();
 		expect(NODE_REFERENCE_UPDATED)
-		.match(1, NodeMeshEventModel.class, event -> {
-			assertThat(event)
-				.hasBranchUuid(initialBranchUuid())
-				.hasLanguage("en")
-				.hasType(DRAFT)
-				.hasSchemaName("folder")
-				.hasUuid(sourceUuid);
-		}).match(1, NodeMeshEventModel.class, event -> {
-			assertThat(event)
-			.hasBranchUuid(initialBranchUuid())
-			.hasLanguage("en")
-			.hasType(PUBLISHED)
-			.hasSchemaName("folder")
-			.hasUuid(sourceUuid);
-			
-		})
-		.two();
+			.match(1, NodeMeshEventModel.class, event -> {
+				assertThat(event)
+					.hasBranchUuid(initialBranchUuid())
+					.hasLanguage("en")
+					.hasType(DRAFT)
+					.hasSchemaName("folder")
+					.hasUuid(sourceUuid);
+			}).match(1, NodeMeshEventModel.class, event -> {
+				assertThat(event)
+					.hasBranchUuid(initialBranchUuid())
+					.hasLanguage("en")
+					.hasType(PUBLISHED)
+					.hasSchemaName("folder")
+					.hasUuid(sourceUuid);
+
+			})
+			.two();
 
 		call(() -> client().deleteNode(PROJECT_NAME, targetUuid));
 
@@ -417,7 +418,10 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 				nodeMicroschema.addField(new NodeFieldSchemaImpl().setName("nodefield_" + i));
 			}
 			// TODO Maybe add project()
-			microschemaContainers().put("noderef", microschemaDao.create(nodeMicroschema, getRequestUser(), createBatch()));
+			Microschema microschemaContainer = microschemaDao.create(nodeMicroschema, getRequestUser(), createBatch());
+			microschemaContainers().put("noderef", microschemaContainer);
+			// TODO use dao instead
+			project().getMicroschemaContainerRoot().addMicroschema(user(), microschemaContainer, createBatch());
 
 			// 2. Update the folder schema and add a micronode field
 			SchemaVersionModel schema = schemaContainer("folder").getLatestVersion().getSchema();
@@ -478,7 +482,10 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 			// 2. Add the microschema to the list of microschemas of the project
 			// TODO maybe add project()
-			microschemaContainers().put("full", microschemaDao.create(fullMicroschema, getRequestUser(), createBatch()));
+			Microschema microschemaContainer = microschemaDao.create(fullMicroschema, getRequestUser(), createBatch());
+			microschemaContainers().put("full", microschemaContainer);
+			// TODO use DAO to add microschema
+			project().getMicroschemaContainerRoot().addMicroschema(user(), microschemaContainer, createBatch());
 
 			// 3. Update the folder schema and inject a micronode field which uses the full schema
 			SchemaVersionModel schema = schemaContainer("folder").getLatestVersion().getSchema();
