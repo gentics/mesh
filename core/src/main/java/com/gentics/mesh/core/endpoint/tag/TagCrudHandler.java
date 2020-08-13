@@ -88,7 +88,10 @@ public class TagCrudHandler extends AbstractHandler {
 	public void handleReadTagList(InternalActionContext ac, String tagFamilyUuid) {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 
-		utils.readElementList(ac, tagActions);
+		Function<Tx, Object> tagFamilyLoader = tx -> {
+			return tx.data().tagFamilyActions().loadByUuid(context(tx, ac), tagFamilyUuid, READ_PERM, true);
+		};
+		utils.readElementList(ac, tagFamilyLoader, tagActions);
 	}
 
 	/**

@@ -76,8 +76,8 @@ public class TagDAOActionsImpl implements TagDAOActions {
 
 	@Override
 	public boolean update(Tx tx, Tag element, InternalActionContext ac, EventQueueBatch batch) {
-		// TagDaoWrapper tagDao = tx.data().tagDao();
-		return tx.data().tagDao().update(element, ac, batch);
+		TagDaoWrapper tagDao = tx.data().tagDao();
+		return tagDao.update(element, ac, batch);
 	}
 
 	@Override
