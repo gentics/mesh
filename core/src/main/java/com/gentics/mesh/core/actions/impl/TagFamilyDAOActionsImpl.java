@@ -45,8 +45,8 @@ public class TagFamilyDAOActionsImpl implements TagFamilyDAOActions {
 	}
 
 	@Override
-	public TransformablePage<? extends TagFamily> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo) {
-		return ac.getProject().getTagFamilyRoot().findAll(ac, pagingInfo);
+	public TransformablePage<? extends TagFamily> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
+		return ctx.project().getTagFamilyRoot().findAll(ctx.ac(), pagingInfo);
 	}
 
 	@Override

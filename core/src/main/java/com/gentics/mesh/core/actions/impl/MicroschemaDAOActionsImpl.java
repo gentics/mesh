@@ -47,8 +47,8 @@ public class MicroschemaDAOActionsImpl implements MicroschemaDAOActions {
 	}
 
 	@Override
-	public TransformablePage<? extends Microschema> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo) {
-		return tx.data().microschemaDao().findAll(ac, pagingInfo);
+	public TransformablePage<? extends Microschema> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
+		return ctx.tx().data().microschemaDao().findAll(ctx.ac(), pagingInfo);
 		// return ac.getProject().getMicroschemaContainerRoot().findAll(ac2, pagingInfo);
 	}
 

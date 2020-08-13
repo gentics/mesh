@@ -53,9 +53,9 @@ public class SchemaDAOActionsImpl implements SchemaDAOActions {
 	}
 
 	@Override
-	public TransformablePage<? extends Schema> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo) {
-		SchemaDaoWrapper schemaDao = tx.data().schemaDao();
-		return tx.data().schemaDao().findAll(ac, pagingInfo);
+	public TransformablePage<? extends Schema> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
+		SchemaDaoWrapper schemaDao = ctx.tx().data().schemaDao();
+		return ctx.tx().data().schemaDao().findAll(ctx.ac(), pagingInfo);
 	}
 
 	@Override

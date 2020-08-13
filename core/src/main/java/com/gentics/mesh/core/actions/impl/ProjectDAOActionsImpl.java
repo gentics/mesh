@@ -46,8 +46,8 @@ public class ProjectDAOActionsImpl implements ProjectDAOActions {
 	}
 
 	@Override
-	public TransformablePage<? extends Project> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo) {
-		return tx.data().projectDao().findAll(ac, pagingInfo);
+	public TransformablePage<? extends Project> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
+		return ctx.tx().data().projectDao().findAll(ctx.ac(), pagingInfo);
 	}
 
 	@Override

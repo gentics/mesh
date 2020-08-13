@@ -322,9 +322,10 @@ public abstract class AbstractTypeProvider {
 	 * @param root
 	 * @return
 	 */
-	protected HibCoreElement handleUuidNameArgs(DataFetchingEnvironment env, DAOActions<?,?> actions) {
+	protected HibCoreElement handleUuidNameArgs(DataFetchingEnvironment env, DAOActions<?, ?> actions) {
 		GraphQLContext gc = env.getContext();
-		HibCoreElement element = handleUuidNameArgsNoPerm(env, uuid -> actions.loadByUuid(context(Tx.get(), gc), uuid, null, false), name -> actions.loadByName(context(Tx.get(), gc), name, null, false));
+		HibCoreElement element = handleUuidNameArgsNoPerm(env, uuid -> actions.loadByUuid(context(Tx.get(), gc), uuid, null, false),
+			name -> actions.loadByName(context(Tx.get(), gc), name, null, false));
 		if (element == null) {
 			return null;
 		} else {
@@ -421,9 +422,9 @@ public abstract class AbstractTypeProvider {
 					}
 				} else {
 					if (filterProvider != null && filter != null) {
-						return actions.loadAll(context(Tx.get(), gc), getPagingInfo(env), filterProvider.createPredicate(filter));
+						return actions.loadAll(context(Tx.get(), gc, env.getSource()), getPagingInfo(env), filterProvider.createPredicate(filter));
 					} else {
-						return actions.loadAll(Tx.get(), gc, getPagingInfo(env));
+						return actions.loadAll(context(Tx.get(), gc, env.getSource()), getPagingInfo(env));
 					}
 				}
 			});
@@ -461,11 +462,11 @@ public abstract class AbstractTypeProvider {
 			.dataFetcher(dataFetcher);
 	}
 
-	protected GraphQLFieldDefinition newPagingField(String name, String description, DAOActions<?,?> actions,
+	protected GraphQLFieldDefinition newPagingField(String name, String description, DAOActions<?, ?> actions,
 		String referenceTypeName) {
-		return newPagingFieldWithFetcher(name, description, (env) -> {
+		return newPagingFieldWithFetcher(name, description, env -> {
 			GraphQLContext gc = env.getContext();
-			return actions.loadAll(Tx.get(), gc, getPagingInfo(env));
+			return actions.loadAll(context(Tx.get(), gc, env.getSource()), getPagingInfo(env));
 		}, referenceTypeName);
 	}
 
@@ -482,7 +483,7 @@ public abstract class AbstractTypeProvider {
 	 *            Type name of the element which can be loaded
 	 * @return
 	 */
-	protected GraphQLFieldDefinition newElementField(String name, String description, DAOActions<?,?> actions,
+	protected GraphQLFieldDefinition newElementField(String name, String description, DAOActions<?, ?> actions,
 		String elementType) {
 		return newElementField(name, description, actions, elementType, false);
 	}
@@ -502,7 +503,7 @@ public abstract class AbstractTypeProvider {
 	 *            Does not show errors if the permission is missing. Useful for sensitive data (ex. fetching users by name)
 	 * @return
 	 */
-	protected GraphQLFieldDefinition newElementField(String name, String description, DAOActions<?,?> actions,
+	protected GraphQLFieldDefinition newElementField(String name, String description, DAOActions<?, ?> actions,
 		String elementType, boolean hidePermissionsErrors) {
 		return newFieldDefinition()
 			.name(name)

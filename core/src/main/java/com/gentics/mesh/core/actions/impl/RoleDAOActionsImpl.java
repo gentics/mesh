@@ -47,8 +47,8 @@ public class RoleDAOActionsImpl implements RoleDAOActions {
 	}
 
 	@Override
-	public TransformablePage<? extends Role> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo) {
-		return tx.data().roleDao().findAll(ac, pagingInfo);
+	public TransformablePage<? extends Role> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
+		return ctx.tx().data().roleDao().findAll(ctx.ac(), pagingInfo);
 	}
 
 	@Override

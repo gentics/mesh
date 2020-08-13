@@ -45,8 +45,8 @@ public class NodeDAOActionsImpl implements NodeDAOActions {
 	}
 
 	@Override
-	public TransformablePage<? extends Node> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo) {
-		return ac.getProject().getNodeRoot().findAll(ac, pagingInfo);
+	public TransformablePage<? extends Node> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
+		return ctx.project().getNodeRoot().findAll(ctx.ac(), pagingInfo);
 	}
 
 	@Override

@@ -233,18 +233,28 @@ public class HandlerUtilities {
 		}, model -> ac.send(model, OK));
 	}
 
+	public <T extends HibCoreElement, RM extends RestModel> void readElementList(InternalActionContext ac, LoadAllAction<T> actions) {
+		readElementList(ac, null, actions);
+	}
+
 	/**
 	 * Read a list of elements of the given root vertex and respond with a list response.
 	 * 
 	 * @param ac
+	 * @param parentLoader
 	 * @param actions
 	 *            Handler which provides the root vertex which should be used when loading the element
 	 */
-	public <T extends HibCoreElement, RM extends RestModel> void readElementList(InternalActionContext ac, LoadAllAction<T> actions) {
+	public <T extends HibCoreElement, RM extends RestModel> void readElementList(InternalActionContext ac, Function<Tx, Object> parentLoader,
+		LoadAllAction<T> actions) {
 
 		syncTx(ac, tx -> {
 			PagingParameters pagingInfo = ac.getPagingParameters();
-			TransformablePage<? extends T> page = actions.loadAll(tx, ac, pagingInfo);
+			Object parent = null;
+			if (parentLoader != null) {
+				parent = parentLoader.apply(tx);
+			}
+			TransformablePage<? extends T> page = actions.loadAll(context(tx, ac, parent), pagingInfo);
 
 			// Handle etag
 			if (ac.getGenericParameters().getETag()) {

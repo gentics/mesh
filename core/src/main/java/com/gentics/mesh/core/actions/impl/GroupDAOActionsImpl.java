@@ -47,8 +47,8 @@ public class GroupDAOActionsImpl implements GroupDAOActions {
 	}
 
 	@Override
-	public TransformablePage<? extends Group> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo) {
-		return tx.data().groupDao().findAll(ac, pagingInfo);
+	public TransformablePage<? extends Group> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
+		return ctx.tx().data().groupDao().findAll(ctx.ac(), pagingInfo);
 	}
 
 	@Override

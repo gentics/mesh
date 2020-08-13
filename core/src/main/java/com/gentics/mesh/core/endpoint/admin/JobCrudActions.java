@@ -39,8 +39,8 @@ public class JobCrudActions implements DAOActions<Job, JobResponse> {
 	}
 
 	@Override
-	public TransformablePage<? extends Job> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo) {
-		return tx.data().jobDao().findAll(ac, pagingInfo);
+	public TransformablePage<? extends Job> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
+		return ctx.tx().data().jobDao().findAll(ctx.ac(), pagingInfo);
 	}
 
 	@Override

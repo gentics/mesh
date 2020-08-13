@@ -47,10 +47,10 @@ public class BranchDAOActionsImpl implements BranchDAOActions {
 	}
 
 	@Override
-	public TransformablePage<? extends Branch> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo) {
+	public TransformablePage<? extends Branch> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
 		// BranchDaoWrapper branchDao = tx.data().branchDao();
 		// TODO use DAO
-		return ac.getProject().getBranchRoot().findAll(ac, pagingInfo);
+		return ctx.project().getBranchRoot().findAll(ctx.ac(), pagingInfo);
 	}
 
 	@Override

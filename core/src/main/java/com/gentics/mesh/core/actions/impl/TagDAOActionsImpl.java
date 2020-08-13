@@ -5,6 +5,7 @@ import java.util.function.Predicate;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.DAOActionContext;
@@ -21,11 +22,16 @@ import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
+import dagger.Lazy;
+
 @Singleton
 public class TagDAOActionsImpl implements TagDAOActions {
 
+	private Lazy<BootstrapInitializer> boot;
+
 	@Inject
-	public TagDAOActionsImpl() {
+	public TagDAOActionsImpl(Lazy<BootstrapInitializer> boot) {
+		this.boot  = boot;
 	}
 
 	@Override
@@ -52,10 +58,14 @@ public class TagDAOActionsImpl implements TagDAOActions {
 	}
 
 	@Override
-	public TransformablePage<? extends Tag> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo) {
+	public TransformablePage<? extends Tag> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
 		// TagDaoWrapper tagDao = tx.data().tagDao();
-		String tagFamilyUuid = PathParameters.getTagFamilyUuid(ac);
-		return getTagFamily(tx, ac, tagFamilyUuid).findAll(ac, pagingInfo);
+		TagFamily tagFamily = ctx.parent();
+		if(tagFamily != null) {
+			return tagFamily.findAll(ctx.ac(), pagingInfo);
+		} else {
+			return boot.get().tagRoot().findAll(ctx.ac(), pagingInfo);
+		}
 	}
 
 	@Override

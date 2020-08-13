@@ -47,8 +47,8 @@ public class UserDAOActionsImpl implements UserDAOActions {
 	}
 
 	@Override
-	public TransformablePage<? extends HibUser> loadAll(Tx tx, InternalActionContext ac, PagingParameters pagingInfo) {
-		return tx.data().userDao().findAll(ac, pagingInfo);
+	public TransformablePage<? extends HibUser> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
+		return ctx.tx().data().userDao().findAll(ctx.ac(), pagingInfo);
 	}
 
 	@Override
