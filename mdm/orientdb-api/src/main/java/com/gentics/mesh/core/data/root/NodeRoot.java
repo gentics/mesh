@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data.root;
 
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.SchemaVersion;

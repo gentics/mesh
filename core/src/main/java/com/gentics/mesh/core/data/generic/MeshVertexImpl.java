@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data.generic;
 
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;

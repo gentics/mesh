@@ -4,8 +4,6 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import com.gentics.mesh.util.UUIDUtil;
-
 /**
  * Some tests for the uuid utils.
  */

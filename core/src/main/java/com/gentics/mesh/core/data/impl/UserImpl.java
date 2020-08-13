@@ -8,7 +8,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USE
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 
 import java.util.Optional;
-import java.util.Set;
 import java.util.Spliterator;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;

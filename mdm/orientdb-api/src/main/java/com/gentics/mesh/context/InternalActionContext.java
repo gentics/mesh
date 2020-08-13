@@ -4,7 +4,6 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.user.MeshAuthUser;

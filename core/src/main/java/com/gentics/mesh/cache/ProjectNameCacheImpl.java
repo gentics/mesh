@@ -9,8 +9,6 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cache.impl.EventAwareCacheFactory;
 import com.gentics.mesh.core.data.Project;
 
-import io.vertx.core.Vertx;
-
 @Singleton
 public class ProjectNameCacheImpl extends AbstractMeshCache<String, Project> implements ProjectNameCache {
 

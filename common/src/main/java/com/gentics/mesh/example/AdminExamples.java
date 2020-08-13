@@ -5,8 +5,6 @@ import static com.gentics.mesh.example.ExampleUuids.UUID_1;
 
 import java.util.stream.Stream;
 
-import org.codehaus.jettison.json.JSONObject;
-
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;

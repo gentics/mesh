@@ -10,7 +10,6 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.Schema;

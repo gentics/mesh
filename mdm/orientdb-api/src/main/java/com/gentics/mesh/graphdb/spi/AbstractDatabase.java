@@ -5,7 +5,6 @@ import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.util.ETag;
 
