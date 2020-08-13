@@ -465,9 +465,12 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		call(() -> client.updateUser(user.getUuid(), new UserUpdateRequest().setNodeReference(newsNode)));
 
 		// Now execute the query and assert it
+		String query = getGraphQLQuery(queryName, apiVersion);
+		//System.out.println(query);
 		GraphQLResponse response = call(
-			() -> client.graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName, apiVersion), new VersioningParametersImpl().setVersion(version)));
+			() -> client.graphqlQuery(PROJECT_NAME, query, new VersioningParametersImpl().setVersion(version)));
 		JsonObject jsonResponse = new JsonObject(response.toJson());
+		//System.out.println(jsonResponse.encodePrettily());
 		if (assertion == null) {
 			assertThat(jsonResponse).compliesToAssertions(queryName, apiVersion);
 		} else {
