@@ -1,17 +1,17 @@
 {
-	microschemaModel(name:"vcard") {
+	microschema(name:"vcard") {
 		projects {
-			# [$.data.microschemaModel.projects.elements.size()=1]
+			# [$.data.microschema.projects.elements.size()=1]
 			elements {
-				# [$.data.microschemaModel.projects.elements[0].name=dummy]
+				# [$.data.microschema.projects.elements[0].name=dummy]
 				name
-				# [$.data.microschemaModel.projects.elements[0].uuid=<is-uuid>]
+				# [$.data.microschema.projects.elements[0].uuid=<is-uuid>]
 				uuid
-				# [$.data.microschemaModel.projects.elements[0].etag=<is-not-null>]
+				# [$.data.microschema.projects.elements[0].etag=<is-not-null>]
 				etag
-				# [$.data.microschemaModel.projects.elements[0].created=<is-not-null>]
+				# [$.data.microschema.projects.elements[0].created=<is-not-null>]
 				created
-				# [$.data.microschemaModel.projects.elements[0].edited=<is-not-null>]
+				# [$.data.microschema.projects.elements[0].edited=<is-not-null>]
 				edited
 			}
 		}

@@ -1,5 +1,5 @@
 {
-	microschemaModel(name: "vcard") {
+	microschema(name: "vcard") {
 		name
 		uuid
 	}
