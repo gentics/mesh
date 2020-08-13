@@ -20,6 +20,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
@@ -29,6 +30,7 @@ import com.gentics.mesh.core.data.impl.ProjectWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.schema.Schema;
@@ -66,7 +68,7 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper implements Project
 	}
 
 	@Override
-	public boolean update(Project project, InternalActionContext ac, EventQueueBatch batch) {
+	public boolean update(HibProject project, InternalActionContext ac, EventQueueBatch batch) {
 		ProjectUpdateRequest requestModel = ac.fromJson(ProjectUpdateRequest.class);
 
 		String oldName = project.getName();
@@ -104,16 +106,16 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper implements Project
 	}
 
 	@Override
-	public Page<? extends Project> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Project> extraFilter) {
-		Page<? extends Project> nativePage = boot.get().projectRoot().findAll(ac, pagingInfo, extraFilter);
+	public Page<? extends HibProject> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibProject> extraFilter) {
+		Page<? extends HibProject> nativePage = boot.get().projectRoot().findAllWrapped(ac, pagingInfo, extraFilter);
 		return nativePage;
 	}
 
 	@Override
-	public ProjectWrapper findByName(String name) {
+	public HibProject findByName(String name) {
 		ProjectRoot root = boot.get().projectRoot();
-		Project project = root.findByName(name);
-		return ProjectWrapper.wrap(project);
+		HibProject project = root.findByName(name);
+		return project;
 	}
 
 	@Override
@@ -150,7 +152,7 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper implements Project
 	}
 
 	@Override
-	public Project create(String name, String hostname, Boolean ssl, String pathPrefix, HibUser creator, SchemaVersion schemaVersion,
+	public HibProject create(String name, String hostname, Boolean ssl, String pathPrefix, HibUser creator, SchemaVersion schemaVersion,
 		String uuid, EventQueueBatch batch) {
 		ProjectRoot root = boot.get().projectRoot();
 
@@ -163,7 +165,7 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper implements Project
 
 		// Create the initial branch for the project and add the used schema
 		// version to it
-		Branch branch = project.getBranchRoot().create(name, creator, batch);
+		HibBranch branch = project.getBranchRoot().create(name, creator, batch);
 		branch.setMigrated(true);
 		if (hostname != null) {
 			branch.setHostname(hostname);
@@ -195,7 +197,7 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper implements Project
 	}
 
 	@Override
-	public Project create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
+	public HibProject create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		ProjectRoot projectRoot = boot.get().projectRoot();
 		UserDaoWrapper userDao = boot.get().userDao();
 		SchemaDaoWrapper schemaDao = boot.get().schemaDao();
@@ -215,7 +217,7 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper implements Project
 			throw error(FORBIDDEN, "error_missing_perm", projectRoot.getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
 		// TODO instead of this check, a constraint in the db should be added
-		Project conflictingProject = projectRoot.findByName(requestModel.getName());
+		HibProject conflictingProject = projectRoot.findByName(requestModel.getName());
 		if (conflictingProject != null) {
 			throw new NameConflictException("project_conflicting_name", projectName, conflictingProject.getUuid());
 		}
@@ -229,12 +231,12 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper implements Project
 		String hostname = requestModel.getHostname();
 		Boolean ssl = requestModel.getSsl();
 		String pathPrefix = requestModel.getPathPrefix();
-		Project project = create(projectName, hostname, ssl, pathPrefix, creator, schemaVersion, uuid, batch);
-		Branch initialBranch = project.getInitialBranch();
+		HibProject project = create(projectName, hostname, ssl, pathPrefix, creator, schemaVersion, uuid, batch);
+		HibBranch initialBranch = project.getInitialBranch();
 		String branchUuid = initialBranch.getUuid();
 
 		// Add project permissions
-		userDao.addCRUDPermissionOnRole(creator, projectRoot, CREATE_PERM, project);
+		userDao.addCRUDPermissionOnRole(creator, projectRoot, CREATE_PERM, project.toProject());
 		userDao.inheritRolePermissions(creator, project, project.getBaseNode());
 		userDao.inheritRolePermissions(creator, project, project.getTagFamilyRoot());
 		userDao.inheritRolePermissions(creator, project, project.getSchemaContainerRoot());
@@ -257,7 +259,7 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper implements Project
 	}
 
 	@Override
-	public void delete(Project project, BulkActionContext bac) {
+	public void delete(HibProject project, BulkActionContext bac) {
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting project {" + project.getName() + "}");
 		}
@@ -293,14 +295,14 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper implements Project
 		bac.add(project.onDeleted());
 
 		// Finally remove the project node
-		project.getVertex().remove();
+		project.toProject().getVertex().remove();
 
 		bac.process(true);
 
 	}
 
 	@Override
-	public ProjectResponse transformToRestSync(Project project, InternalActionContext ac, int level, String... languageTags) {
+	public ProjectResponse transformToRestSync(HibProject project, InternalActionContext ac, int level, String... languageTags) {
 		GenericParameters generic = ac.getGenericParameters();
 		FieldsSet fields = generic.getFields();
 
@@ -312,8 +314,8 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper implements Project
 			restProject.setRootNode(project.getBaseNode().transformToReference(ac));
 		}
 
-		project.fillCommonRestFields(ac, fields, restProject);
-		setRolePermissions(project, ac, restProject);
+		project.toProject().fillCommonRestFields(ac, fields, restProject);
+		setRolePermissions(project.toProject(), ac, restProject);
 
 		return restProject;
 
@@ -323,6 +325,11 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper implements Project
 	public long computeGlobalCount() {
 		ProjectRoot projectRoot = boot.get().projectRoot();
 		return projectRoot.computeCount();
+	}
+
+	@Override
+	public String getETag(HibProject project, InternalActionContext ac) {
+		return project.toProject().getETag(ac);
 	}
 
 }

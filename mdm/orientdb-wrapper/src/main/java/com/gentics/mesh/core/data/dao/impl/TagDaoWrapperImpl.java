@@ -19,6 +19,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
@@ -198,7 +199,7 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper implements TagDaoWrapp
 	}
 
 	@Override
-	public TransformablePage<? extends Node> findTaggedNodes(Tag tag, HibUser requestUser, Branch branch, List<String> languageTags, ContainerType type, PagingParameters pagingInfo) {
+	public TransformablePage<? extends Node> findTaggedNodes(Tag tag, HibUser requestUser, HibBranch branch, List<String> languageTags, ContainerType type, PagingParameters pagingInfo) {
 		return boot.get().tagRoot().findTaggedNodes(tag, requestUser, branch, languageTags, type, pagingInfo);
 	}
 
@@ -208,7 +209,7 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper implements TagDaoWrapp
 	}
 
 	@Override
-	public TraversalResult<? extends Node> getNodes(Tag tag, Branch branch) {
+	public TraversalResult<? extends Node> getNodes(Tag tag, HibBranch branch) {
 		return boot.get().tagRoot().getNodes(tag, branch);
 	}
 

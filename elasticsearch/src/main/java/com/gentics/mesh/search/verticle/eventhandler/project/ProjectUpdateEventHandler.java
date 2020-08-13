@@ -17,10 +17,10 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -108,7 +108,7 @@ public class ProjectUpdateEventHandler implements EventHandler {
 			.runInNewTx());
 	}
 
-	private Stream<CreateDocumentRequest> createTagRequests(TagFamily family, Project project) {
+	private Stream<CreateDocumentRequest> createTagRequests(TagFamily family, HibProject project) {
 		return family.findAll().stream()
 			.map(tag -> helper.createDocumentRequest(
 				Tag.composeIndexName(project.getUuid()),
@@ -116,7 +116,7 @@ public class ProjectUpdateEventHandler implements EventHandler {
 				entities.tag.transform(tag), complianceMode));
 	}
 
-	private CreateDocumentRequest createTagFamilyRequest(Project project, TagFamily family) {
+	private CreateDocumentRequest createTagFamilyRequest(HibProject project, TagFamily family) {
 		return helper.createDocumentRequest(
 			TagFamily.composeIndexName(project.getUuid()),
 			family.getUuid(),

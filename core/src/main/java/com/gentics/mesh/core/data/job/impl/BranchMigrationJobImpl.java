@@ -13,6 +13,7 @@ import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BranchMigrationContext;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.migration.impl.BranchMigrationImpl;
@@ -39,7 +40,7 @@ public class BranchMigrationJobImpl extends JobImpl {
 		BranchMigrationMeshEventModel model = new BranchMigrationMeshEventModel();
 		model.setEvent(event);
 
-		Branch newBranch = getBranch();
+		HibBranch newBranch = getBranch();
 		model.setBranch(newBranch.transformToReference());
 
 		HibProject project = newBranch.getProject();
@@ -59,7 +60,7 @@ public class BranchMigrationJobImpl extends JobImpl {
 
 				createBatch().add(createEvent(BRANCH_MIGRATION_START, STARTING)).dispatch();
 
-				Branch newBranch = getBranch();
+				HibBranch newBranch = getBranch();
 				if (newBranch == null) {
 					throw error(BAD_REQUEST, "Branch for job {" + getUuid() + "} cannot be found.");
 				}
@@ -68,7 +69,7 @@ public class BranchMigrationJobImpl extends JobImpl {
 				}
 				context.setNewBranch(newBranch);
 
-				Branch oldBranch = newBranch.getPreviousBranch();
+				HibBranch oldBranch = newBranch.getPreviousBranch();
 				if (oldBranch == null) {
 					throw error(BAD_REQUEST, "Branch {" + newBranch.getName() + "} does not have previous branch");
 				}
@@ -122,7 +123,7 @@ public class BranchMigrationJobImpl extends JobImpl {
 	private void finalizeMigration(BranchMigrationContext context) {
 		// Mark branch as active & migrated
 		db().tx(() -> {
-			Branch branch = context.getNewBranch();
+			HibBranch branch = context.getNewBranch();
 			branch.setActive(true);
 			branch.setMigrated(true);
 		});

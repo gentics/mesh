@@ -44,9 +44,9 @@ import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -201,7 +201,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public void deleteFromBranch(Branch branch, BulkActionContext bac) {
+	public void deleteFromBranch(HibBranch branch, BulkActionContext bac) {
 		String branchUuid = branch.getUuid();
 
 		bac.batch().add(onDeleted(branchUuid, DRAFT));

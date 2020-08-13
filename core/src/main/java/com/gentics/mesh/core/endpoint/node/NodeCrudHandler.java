@@ -22,9 +22,9 @@ import com.gentics.madl.tx.TxAction1;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.actions.impl.NodeDAOActionsImpl;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -251,7 +251,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				HibProject project = ac.getProject();
-				Branch branch = ac.getBranch();
+				HibBranch branch = ac.getBranch();
 				Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 				Tag tag = boot.meshRoot().getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
 
@@ -290,7 +290,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, () -> {
 				HibProject project = ac.getProject();
-				Branch branch = ac.getBranch();
+				HibBranch branch = ac.getBranch();
 				Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 				Tag tag = boot.meshRoot().getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
 
@@ -429,7 +429,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			utils.syncTx(ac, tx -> {
 				Node node = ac.getProject().getNodeRoot().loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 				utils.bulkableAction(bac -> {
-					Branch branch = ac.getBranch(ac.getProject());
+					HibBranch branch = ac.getBranch(ac.getProject());
 					node.takeOffline(ac, bac, branch, languageTag);
 				});
 			}, () -> ac.send(NO_CONTENT));

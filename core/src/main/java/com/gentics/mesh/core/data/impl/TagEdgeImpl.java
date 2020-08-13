@@ -10,6 +10,7 @@ import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagEdge;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.madl.field.FieldType;
 import com.syncleus.ferma.VertexFrame;
@@ -35,7 +36,7 @@ public class TagEdgeImpl extends MeshEdgeImpl implements TagEdge {
 	 * @param branch
 	 * @return Traversal
 	 */
-	public static VertexTraversal<?, ?, ?> getTagTraversal(VertexFrame vertex, Branch branch) {
+	public static VertexTraversal<?, ?, ?> getTagTraversal(VertexFrame vertex, HibBranch branch) {
 		return vertex.outE(HAS_TAG).has(BRANCH_UUID_KEY, branch.getUuid()).inV();
 	}
 
@@ -47,7 +48,7 @@ public class TagEdgeImpl extends MeshEdgeImpl implements TagEdge {
 	 * @param branch
 	 * @return Traversal
 	 */
-	public static boolean hasTag(VertexFrame vertex, Tag tag, Branch branch) {
+	public static boolean hasTag(VertexFrame vertex, Tag tag, HibBranch branch) {
 		return vertex.outE(HAS_TAG).has(BRANCH_UUID_KEY, branch.getUuid()).inV().has(UUID_KEY, tag.getUuid()).hasNext();
 	}
 
@@ -58,7 +59,7 @@ public class TagEdgeImpl extends MeshEdgeImpl implements TagEdge {
 	 * @param branch
 	 * @return Traversal
 	 */
-	public static VertexTraversal<?, ?, ?> getNodeTraversal(Tag tag, Branch branch) {
+	public static VertexTraversal<?, ?, ?> getNodeTraversal(Tag tag, HibBranch branch) {
 		return tag.inE(HAS_TAG).has(BRANCH_UUID_KEY, branch.getUuid()).outV();
 	}
 

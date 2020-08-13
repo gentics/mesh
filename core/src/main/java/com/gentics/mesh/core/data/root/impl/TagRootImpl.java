@@ -17,9 +17,9 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
@@ -145,7 +145,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	}
 
 	@Override
-	public TransformablePage<? extends Node> findTaggedNodes(Tag tag, HibUser user, Branch branch, List<String> languageTags, ContainerType type,
+	public TransformablePage<? extends Node> findTaggedNodes(Tag tag, HibUser user, HibBranch branch, List<String> languageTags, ContainerType type,
 		PagingParameters pagingInfo) {
 		VertexTraversal<?, ?, ?> traversal = getTaggedNodesTraversal(tag, branch, languageTags, type);
 		return new DynamicTransformablePageImpl<Node>(user, traversal, pagingInfo, READ_PUBLISHED_PERM, NodeImpl.class);
@@ -154,7 +154,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	@Override
 	public TraversalResult<? extends Node> findTaggedNodes(Tag tag, InternalActionContext ac) {
 		MeshAuthUser user = ac.getUser();
-		Branch branch = ac.getBranch();
+		HibBranch branch = ac.getBranch();
 		String branchUuid = branch.getUuid();
 		UserDaoWrapper userRoot = Tx.get().data().userDao();
 		TraversalResult<? extends Node> nodes = new TraversalResult<>(tag.inE(HAS_TAG).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branch.getUuid()).outV().frameExplicit(NodeImpl.class));
@@ -181,7 +181,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	}
 
 	@Override
-	public TraversalResult<? extends Node> getNodes(Tag tag, Branch branch) {
+	public TraversalResult<? extends Node> getNodes(Tag tag, HibBranch branch) {
 		Iterable<? extends NodeImpl> it = TagEdgeImpl.getNodeTraversal(tag, branch).frameExplicit(NodeImpl.class);
 		return new TraversalResult<>(it);
 	}
@@ -201,7 +201,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	 *            Optional type of the node containers to filter by
 	 * @return Traversal which can be used to locate the nodes
 	 */
-	private VertexTraversal<?, ?, ?> getTaggedNodesTraversal(Tag tag, Branch branch, List<String> languageTags, ContainerType type) {
+	private VertexTraversal<?, ?, ?> getTaggedNodesTraversal(Tag tag, HibBranch branch, List<String> languageTags, ContainerType type) {
 
 		EdgeTraversal<?, ?, ? extends VertexTraversal<?, ?, ?>> traversal = TagEdgeImpl.getNodeTraversal(tag, branch).mark().outE(
 			HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branch.getUuid());

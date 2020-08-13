@@ -40,16 +40,16 @@ import java.util.stream.Collectors;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -443,10 +443,10 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 
 	@Test
 	public void testUpdateNodeIndex() {
-		Project project = project();
+		HibProject project = project();
 		TagFamily tagfamily = tagFamily("basic");
 		String tagFamilyUuid = tx(() -> tagfamily.getUuid());
-		Branch branch = tx(() -> initialBranch());
+		HibBranch branch = tx(() -> initialBranch());
 
 		expect(TAG_FAMILY_UPDATED).one();
 		TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();

@@ -21,9 +21,9 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
@@ -35,7 +35,6 @@ import com.gentics.mesh.core.data.node.field.list.ListGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.field.NodeField;
@@ -183,7 +182,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 			if (type != LinkType.OFF) {
 
 				WebRootLinkReplacer linkReplacer = mesh().webRootLinkReplacer();
-				Branch branch = ac.getBranch();
+				HibBranch branch = ac.getBranch();
 				ContainerType containerType = forVersion(ac.getVersioningParameters().getVersion());
 
 				// Set the webroot path for the currently active language

@@ -7,6 +7,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -93,7 +94,7 @@ public interface TagDaoWrapper extends TagDao, DaoWrapper<Tag>, DaoTransformable
 	 * @param pagingInfo
 	 * @return
 	 */
-	TransformablePage<? extends Node> findTaggedNodes(Tag tag, HibUser requestUser, Branch branch, List<String> languageTags, ContainerType type,
+	TransformablePage<? extends Node> findTaggedNodes(Tag tag, HibUser requestUser, HibBranch branch, List<String> languageTags, ContainerType type,
 		PagingParameters pagingInfo);
 
 	TraversalResult<? extends Node> findTaggedNodes(Tag tag, InternalActionContext ac);
@@ -109,9 +110,7 @@ public interface TagDaoWrapper extends TagDao, DaoWrapper<Tag>, DaoTransformable
 	 * Return a traversal result of nodes that were tagged by this tag in the given branch
 	 *
 	 * @param branch
-	 *            branch
-	 *
 	 * @return Result
 	 */
-	TraversalResult<? extends Node> getNodes(Tag tag, Branch branch);
+	TraversalResult<? extends Node> getNodes(Tag tag, HibBranch branch);
 }

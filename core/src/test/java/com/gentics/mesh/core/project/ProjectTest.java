@@ -18,6 +18,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
@@ -52,8 +53,8 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	public void testCreate() {
 		try (Tx tx = tx()) {
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
-			Project project = createProject("test", "folder");
-			Project project2 = projectRoot.findByName(project.getName());
+			HibProject project = createProject("test", "folder");
+			HibProject project2 = projectRoot.findByName(project.getName());
 			assertNotNull(project2);
 			assertEquals("test", project2.getName());
 			assertEquals(project.getUuid(), project2.getUuid());
@@ -63,10 +64,10 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Test
 	@Override
 	public void testDelete() throws Exception {
-		Project project = project();
+		HibProject project = project();
 		BulkActionContext bac = createBulkContext();
 		try (Tx tx = tx()) {
-			project.delete(bac);
+			tx.data().projectDao().delete(project, bac);
 			assertElement(meshRoot().getProjectRoot(), projectUuid(), false);
 		}
 	}
@@ -125,10 +126,10 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testTransformation() throws Exception {
 		try (Tx tx = tx()) {
-			Project project = project();
+			HibProject project = project();
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			ProjectResponse response = project.transformToRestSync(ac, 0);
+			ProjectResponse response = tx.data().projectDao().transformToRestSync(project, ac, 0);
 
 			assertEquals(project.getName(), response.getName());
 			assertEquals(project.getUuid(), response.getUuid());
@@ -139,13 +140,13 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testCreateDelete() throws Exception {
 		try (Tx tx = tx()) {
-			Project project = createProject("newProject", "folder");
+			HibProject project = createProject("newProject", "folder");
 			assertNotNull(project);
 			String uuid = project.getUuid();
 			BulkActionContext bac = createBulkContext();
-			Project foundProject = meshRoot().getProjectRoot().findByUuid(uuid);
+			HibProject foundProject = meshRoot().getProjectRoot().findByUuid(uuid);
 			assertNotNull(foundProject);
-			project.delete(bac);
+			tx.data().projectDao().delete(project, bac);
 			// TODO check for attached nodes
 			foundProject = meshRoot().getProjectRoot().findByUuid(uuid);
 			assertNull(foundProject);
@@ -163,7 +164,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 			// 1. Give the user create on the project root
 			roleDao.grantPermissions(role(), meshRoot().getProjectRoot(), CREATE_PERM);
 			// 2. Create the project
-			Project project = createProject("TestProject", "folder");
+			HibProject project = createProject("TestProject", "folder");
 			assertFalse("The user should not have create permissions on the project.", userDao.hasPermission(user(), project, CREATE_PERM));
 			userDao.inheritRolePermissions(user(), root.getProjectRoot(), project);
 			// 3. Assert that the crud permissions (eg. CREATE) was inherited
@@ -177,7 +178,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testRead() {
 		try (Tx tx = tx()) {
-			Project project = project();
+			HibProject project = project();
 			assertNotNull(project.getName());
 			assertEquals("dummy", project.getName());
 			assertNotNull(project.getBaseNode());
@@ -189,7 +190,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testUpdate() {
 		try (Tx tx = tx()) {
-			Project project = project();
+			HibProject project = project();
 			project.setName("new Name");
 			assertEquals("new Name", project.getName());
 
@@ -202,7 +203,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testReadPermission() {
 		try (Tx tx = tx()) {
-			Project newProject = createProject("newProject", "folder");
+			HibProject newProject = createProject("newProject", "folder");
 			testPermission(GraphPermission.READ_PERM, newProject);
 		}
 	}
@@ -211,7 +212,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testDeletePermission() {
 		try (Tx tx = tx()) {
-			Project newProject = createProject("newProject", "folder");
+			HibProject newProject = createProject("newProject", "folder");
 			testPermission(GraphPermission.DELETE_PERM, newProject);
 		}
 	}
@@ -220,7 +221,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testUpdatePermission() {
 		try (Tx tx = tx()) {
-			Project newProject = createProject("newProject", "folder");
+			HibProject newProject = createProject("newProject", "folder");
 			testPermission(GraphPermission.UPDATE_PERM, newProject);
 		}
 	}
@@ -229,7 +230,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testCreatePermission() {
 		try (Tx tx = tx()) {
-			Project newProject = createProject("newProject", "folder");
+			HibProject newProject = createProject("newProject", "folder");
 			testPermission(GraphPermission.CREATE_PERM, newProject);
 		}
 	}

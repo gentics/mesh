@@ -34,7 +34,7 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
-import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
@@ -249,7 +249,7 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 		String uuid = tx(() -> node.getUuid());
 
 		// Create new branch
-		Branch newBranch = tx(() -> createBranch("newbranch"));
+		HibBranch newBranch = tx(() -> createBranch("newbranch"));
 
 		BranchMigrationContextImpl context = new BranchMigrationContextImpl();
 		context.setNewBranch(newBranch);
@@ -278,13 +278,13 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 		Node node = content("concorde");
 		String uuid = tx(() -> node.getUuid());
 
-		Branch newBranch = tx(() -> {
+		HibBranch newBranch = tx(() -> {
 			// Publish the node
 			BulkActionContext bac = createBulkContext();
 			node.publish(mockActionContext(), bac);
 
 			// Create new branch
-			Branch b = createBranch("newbranch");
+			HibBranch b = createBranch("newbranch");
 
 			// Migrate nodes
 			BranchMigrationContextImpl context = new BranchMigrationContextImpl();

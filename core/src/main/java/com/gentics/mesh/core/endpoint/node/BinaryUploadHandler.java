@@ -20,11 +20,11 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.binary.BinaryDataProcessor;
 import com.gentics.mesh.core.binary.BinaryProcessorRegistryImpl;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.Node;
@@ -257,7 +257,7 @@ public class BinaryUploadHandler extends AbstractHandler {
 
 		return db.singleTxWriteLock(tx -> {
 			HibProject project = ac.getProject();
-			Branch branch = ac.getBranch();
+			HibBranch branch = ac.getBranch();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, nodeUuid, UPDATE_PERM);
 
 			utils.eventAction(batch -> {

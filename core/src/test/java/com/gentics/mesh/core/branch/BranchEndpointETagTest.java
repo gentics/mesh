@@ -8,7 +8,8 @@ import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -32,9 +33,10 @@ public class BranchEndpointETagTest extends AbstractMeshTest {
 	@Test
 	public void testReadOne() {
 		try (Tx tx = tx()) {
-			Branch branch = project().getLatestBranch();
+			BranchDaoWrapper branchDao = tx.data().branchDao();
+			HibBranch branch = project().getLatestBranch();
 			String actualEtag = callETag(() -> client().findBranchByUuid(PROJECT_NAME, branch.getUuid()));
-			String etag = branch.getETag(mockActionContext());
+			String etag = branchDao.getETag(branch, mockActionContext());
 			assertThat(actualEtag).contains(etag);
 
 			// Check whether 304 is returned for correct etag

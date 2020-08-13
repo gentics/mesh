@@ -15,8 +15,8 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.MicronodeMigrationContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
@@ -56,7 +56,7 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 	public Completable migrateMicronodes(MicronodeMigrationContext context) {
 		context.validate();
 		return Completable.defer(() -> {
-			Branch branch = context.getBranch();
+			HibBranch branch = context.getBranch();
 			MicroschemaVersion fromVersion = context.getFromVersion();
 			MicroschemaVersion toVersion = context.getToVersion();
 			MigrationStatusHandler status = context.getStatus();
@@ -131,7 +131,7 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 	 * @param nextDraftVersion
 	 * @throws Exception
 	 */
-	private void migrateDraftContainer(NodeMigrationActionContextImpl ac, EventQueueBatch sqb, Branch branch, Node node,
+	private void migrateDraftContainer(NodeMigrationActionContextImpl ac, EventQueueBatch sqb, HibBranch branch, Node node,
 		NodeGraphFieldContainer container, MicroschemaVersion fromVersion, MicroschemaVersion toVersion,
 		Set<String> touchedFields, VersionNumber nextDraftVersion)
 		throws Exception {
@@ -175,7 +175,7 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 	 * @param touchedFields
 	 * @param errorsDetected
 	 */
-	private void migrateMicronodeContainer(NodeMigrationActionContextImpl ac, EventQueueBatch batch, Branch branch,
+	private void migrateMicronodeContainer(NodeMigrationActionContextImpl ac, EventQueueBatch batch, HibBranch branch,
 										   MicroschemaVersion fromVersion,
 										   MicroschemaVersion toVersion, NodeGraphFieldContainer container, Set<String> touchedFields,
 										   List<Exception> errorsDetected) {
@@ -232,7 +232,7 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 	 * @return Version of the new published container
 	 * @throws Exception
 	 */
-	private VersionNumber migratePublishedContainer(NodeMigrationActionContextImpl ac, EventQueueBatch sqb, Branch branch, Node node,
+	private VersionNumber migratePublishedContainer(NodeMigrationActionContextImpl ac, EventQueueBatch sqb, HibBranch branch, Node node,
 		NodeGraphFieldContainer container, MicroschemaVersion fromVersion, MicroschemaVersion toVersion,
 		Set<String> touchedFields) throws Exception {
 

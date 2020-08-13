@@ -38,12 +38,12 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.ListResponse;
@@ -381,7 +381,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			Tag reloadedTag = boot().tagRoot().findByUuid(tagUuid);
 			assertNull("The tag should have been deleted", reloadedTag);
 
-			Project project = tx.data().projectDao().findByName(PROJECT_NAME);
+			HibProject project = tx.data().projectDao().findByName(PROJECT_NAME);
 			assertNotNull(project);
 		}
 	}

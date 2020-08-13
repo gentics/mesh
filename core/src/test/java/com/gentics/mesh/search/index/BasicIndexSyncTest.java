@@ -15,12 +15,12 @@ import org.mockito.Mockito;
 
 import com.gentics.mesh.context.impl.BulkActionContextImpl;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -245,10 +245,10 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 		// Now manually delete the project
 		tx(tx -> {
-			Project project = tx.data().projectDao().findByName("project_2");
+			HibProject project = tx.data().projectDao().findByName("project_2");
 			BulkActionContextImpl context = Mockito.mock(BulkActionContextImpl.class);
 			Mockito.when(context.batch()).thenReturn(Mockito.mock(EventQueueBatch.class));
-			project.delete(context);
+			tx.data().projectDao().delete(project, context);
 		});
 		boot().globalCacheClear();
 		// Assert that the deletion was detected

@@ -17,8 +17,8 @@ import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.NodeMigrationActionContext;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
@@ -67,7 +67,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 			SchemaVersion fromVersion = context.getFromVersion();
 			SchemaVersion toVersion = context.getToVersion();
 			SchemaMigrationCause cause = context.getCause();
-			Branch branch = context.getBranch();
+			HibBranch branch = context.getBranch();
 			MigrationStatusHandler status = context.getStatus();
 
 			// Prepare the migration - Collect the migration scripts
@@ -156,7 +156,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 			log.debug("Migrating container {" + containerUuid + "} of node {" + parentNodeUuid + "}");
 		}
 
-		Branch branch = ac.getBranch();
+		HibBranch branch = ac.getBranch();
 		SchemaVersion toVersion = ac.getToVersion();
 		try {
 			Node node = container.getParentNode();
@@ -211,7 +211,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 	 *            Suggested new draft version
 	 * @throws Exception
 	 */
-	private void migrateDraftContainer(NodeMigrationActionContext ac, EventQueueBatch sqb, Branch branch, Node node,
+	private void migrateDraftContainer(NodeMigrationActionContext ac, EventQueueBatch sqb, HibBranch branch, Node node,
 		NodeGraphFieldContainer container, GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion, SchemaVersion toVersion,
 		Set<String> touchedFields,
 		SchemaVersionModel newSchema, VersionNumber nextDraftVersion)
@@ -271,7 +271,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 	 * @return Version of the new published container
 	 * @throws Exception
 	 */
-	private VersionNumber migratePublishedContainer(NodeMigrationActionContext ac, EventQueueBatch sqb, Branch branch, Node node,
+	private VersionNumber migratePublishedContainer(NodeMigrationActionContext ac, EventQueueBatch sqb, HibBranch branch, Node node,
 		NodeGraphFieldContainer container, GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion, SchemaVersion toVersion,
 		Set<String> touchedFields, SchemaVersionModel newSchema) throws Exception {
 

@@ -26,10 +26,10 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -212,12 +212,12 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
-	public Branch getInitialBranch() {
+	public HibBranch getInitialBranch() {
 		return getBranchRoot().getInitialBranch();
 	}
 
 	@Override
-	public Branch getLatestBranch() {
+	public HibBranch getLatestBranch() {
 		return getBranchRoot().getLatestBranch();
 	}
 
@@ -309,19 +309,19 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
-	public Branch findBranch(String branchNameOrUuid) {
+	public HibBranch findBranch(String branchNameOrUuid) {
 		return findBranchOpt(branchNameOrUuid)
 			.orElseThrow(() -> error(BAD_REQUEST, "branch_error_not_found", branchNameOrUuid));
 	}
 
 	@Override
-	public Branch findBranchOrLatest(String branchNameOrUuid) {
+	public HibBranch findBranchOrLatest(String branchNameOrUuid) {
 		return findBranchOpt(branchNameOrUuid).orElseGet(this::getLatestBranch);
 	}
 
-	private Optional<Branch> findBranchOpt(String branchNameOrUuid) {
+	private Optional<HibBranch> findBranchOpt(String branchNameOrUuid) {
 		return Optional.ofNullable(mesh().branchCache().get(id() + "-" + branchNameOrUuid, key -> {
-			Branch branch = null;
+			HibBranch branch = null;
 
 			if (!isEmpty(branchNameOrUuid)) {
 				branch = getBranchRoot().findByUuid(branchNameOrUuid);

@@ -27,11 +27,11 @@ import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
@@ -139,7 +139,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		MeshAuthUser user = ac.getUser();
 		FramedTransactionalGraph graph = Tx.get().getGraph();
 
-		Branch branch = ac.getBranch();
+		HibBranch branch = ac.getBranch();
 		String branchUuid = branch.getUuid();
 		UserDaoWrapper userDao = mesh().boot().userDao();
 
@@ -180,7 +180,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 		MeshAuthUser requestUser = ac.getUser();
 		if (perm == READ_PUBLISHED_PERM) {
-			Branch branch = ac.getBranch(element.getProject());
+			HibBranch branch = ac.getBranch(element.getProject());
 
 			List<String> requestedLanguageTags = ac.getNodeParameters().getLanguageList(options());
 			NodeGraphFieldContainer fieldContainer = element.findVersion(requestedLanguageTags, branch.getUuid(),
@@ -258,7 +258,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		// Load the parent node in order to create the node
 		Node parentNode = project.getNodeRoot().loadObjectByUuid(ac, requestModel.getParentNode().getUuid(),
 			CREATE_PERM);
-		Branch branch = ac.getBranch();
+		HibBranch branch = ac.getBranch();
 		// BUG: Don't use the latest version. Use the version which is linked to the
 		// branch!
 		Node node = parentNode.create(requestUser, schemaVersion, project, branch, uuid);
@@ -301,7 +301,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 		HibProject project = ac.getProject();
 		MeshAuthUser requestUser = ac.getUser();
-		Branch branch = ac.getBranch();
+		HibBranch branch = ac.getBranch();
 		UserDaoWrapper userDao = mesh().boot().userDao();
 
 		String body = ac.getBodyAsString();

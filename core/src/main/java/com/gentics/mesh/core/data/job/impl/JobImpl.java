@@ -15,6 +15,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.impl.BranchImpl;
@@ -90,7 +91,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 		}
 
 		Map<String, String> props = response.getProperties();
-		Branch branch = getBranch();
+		HibBranch branch = getBranch();
 		if (branch != null) {
 			props.put("branchName", branch.getName());
 			props.put("branchUuid", branch.getUuid());
@@ -186,13 +187,13 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 	}
 
 	@Override
-	public Branch getBranch() {
+	public HibBranch getBranch() {
 		return out(HAS_BRANCH, BranchImpl.class).nextOrNull();
 	}
 
 	@Override
-	public void setBranch(Branch branch) {
-		setSingleLinkOutTo(branch, HAS_BRANCH);
+	public void setBranch(HibBranch branch) {
+		setSingleLinkOutTo(branch.toBranch(), HAS_BRANCH);
 	}
 
 	@Override

@@ -19,7 +19,7 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -195,7 +195,7 @@ public class MicroschemaMappingTest extends AbstractMeshTest {
 		ComplianceMode mode = options().getSearchOptions().getComplianceMode();
 
 		tx(() -> {
-			Branch branch = latestBranch();
+			HibBranch branch = latestBranch();
 			JsonObject schemaMapping = provider.getMapping(this.schema, branch, null);
 			if (mode == ComplianceMode.ES_6) {
 				schemaMapping = schemaMapping.getJsonObject(DEFAULT_TYPE);

@@ -18,6 +18,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.db.Tx;
@@ -138,7 +139,7 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 	// Microschema Project Testcases - DELETE / Remove
 	@Test
 	public void testRemoveMicroschemaFromProjectWithPerm() throws Exception {
-		Project project = project();
+		HibProject project = project();
 		Microschema microschema = microschemaContainer("vcard");
 		String microschemaUuid = tx(() -> microschema.getUuid());
 		String microschemaName = "vcard";
@@ -172,7 +173,7 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testRemoveMicroschemaFromProjectWithoutPerm() throws Exception {
-		Project project = project();
+		HibProject project = project();
 		Microschema microschema = microschemaContainer("vcard");
 
 		try (Tx tx = tx()) {

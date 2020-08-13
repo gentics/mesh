@@ -32,8 +32,8 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
@@ -172,7 +172,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			return null;
 		}
 		GraphQLContext gc = env.getContext();
-		Branch branch = gc.getBranch();
+		HibBranch branch = gc.getBranch();
 
 		ContainerType type = getNodeVersion(env);
 		Stream<? extends NodeGraphFieldContainer> stream = StreamSupport
@@ -272,7 +272,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 						}
 						Node node = content.getNode();
 						// Resolve the given path and return the found container
-						Branch branch = gc.getBranch();
+						HibBranch branch = gc.getBranch();
 						String branchUuid = branch.getUuid();
 						ContainerType type = getNodeVersion(env);
 						Stack<String> pathStack = new Stack<>();

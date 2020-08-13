@@ -25,6 +25,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.Schema;
@@ -69,7 +70,7 @@ public class MeshEntities {
 	public final MeshEntity<HibUser> user;
 	public final MeshEntity<Group> group;
 	public final MeshEntity<Role> role;
-	public final MeshEntity<Project> project;
+	public final MeshEntity<HibProject> project;
 	public final MeshEntity<Tag> tag;
 	public final MeshEntity<TagFamily> tagFamily;
 	public final MeshEntity<Schema> schema;
@@ -99,7 +100,7 @@ public class MeshEntities {
 		user = new SimpleMeshEntity<>(userTransformer, User.TYPE_INFO, byHibElementUuid(uuid -> boot.userDao().findByUuid(uuid)));
 		group = new SimpleMeshEntity<>(groupTransformer, Group.TYPE_INFO, byUuid(uuid -> boot.groupDao().findByUuid(uuid)));
 		role = new SimpleMeshEntity<>(roleTransformer, Role.TYPE_INFO, byUuid(uuid -> boot.roleDao().findByUuid(uuid)));
-		project = new SimpleMeshEntity<>(projectTransformer, Project.TYPE_INFO, byUuid(uuid -> boot.projectDao().findByUuid(uuid)));
+		project = new SimpleMeshEntity<>(projectTransformer, Project.TYPE_INFO, byHibElementUuid(uuid -> boot.projectDao().findByUuid(uuid)));
 		tagFamily = new SimpleMeshEntity<>(tagFamilyTransformer, TagFamily.TYPE_INFO, this::toTagFamily);
 		tag = new SimpleMeshEntity<>(tagTransformer, Tag.TYPE_INFO, this::toTag);
 		nodeContent = new NodeMeshEntity(nodeTransformer, this::toNodeContent);
@@ -148,7 +149,7 @@ public class MeshEntities {
 	 * The Project {@link MeshEntity}.
 	 * @return
 	 */
-	public MeshEntity<Project> getProject() {
+	public MeshEntity<HibProject> getProject() {
 		return project;
 	}
 

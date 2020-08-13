@@ -24,6 +24,7 @@ import com.gentics.mesh.core.data.ProjectElement;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.Taggable;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -84,7 +85,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param tag
 	 * @param branch
 	 */
-	void addTag(Tag tag, Branch branch);
+	void addTag(Tag tag, HibBranch branch);
 
 	/**
 	 * Remove the given tag from the list of tags for this node in the given branch.
@@ -92,14 +93,14 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param tag
 	 * @param branch
 	 */
-	void removeTag(Tag tag, Branch branch);
+	void removeTag(Tag tag, HibBranch branch);
 
 	/**
 	 * Remove all tags for the given branch.
 	 *
 	 * @param branch
 	 */
-	void removeAllTags(Branch branch);
+	void removeAllTags(HibBranch branch);
 
 	/**
 	 * Return a list of all tags that were assigned to this node in the given branch.
@@ -107,7 +108,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param branch
 	 * @return
 	 */
-	TraversalResult<? extends Tag> getTags(Branch branch);
+	TraversalResult<? extends Tag> getTags(HibBranch branch);
 
 	/**
 	 * Return a page of all visible tags that are assigned to the node.
@@ -117,7 +118,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param branch
 	 * @return Page which contains the result
 	 */
-	TransformablePage<? extends Tag> getTags(HibUser user, PagingParameters params, Branch branch);
+	TransformablePage<? extends Tag> getTags(HibUser user, PagingParameters params, HibBranch branch);
 
 	/**
 	 * Tests if the node is tagged with the given tag.
@@ -126,7 +127,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param branch
 	 * @return
 	 */
-	boolean hasTag(Tag tag, Branch branch);
+	boolean hasTag(Tag tag, HibBranch branch);
 
 	/**
 	 * Return the draft field container for the given language in the latest branch.
@@ -145,7 +146,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *            type
 	 * @return
 	 */
-	NodeGraphFieldContainer getGraphFieldContainer(String languageTag, Branch branch, ContainerType type);
+	NodeGraphFieldContainer getGraphFieldContainer(String languageTag, HibBranch branch, ContainerType type);
 
 	/**
 	 * Return the draft field container for the given language in the latest branch.
@@ -177,10 +178,10 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *            user
 	 * @return
 	 */
-	NodeGraphFieldContainer createGraphFieldContainer(String languageTag, Branch branch, HibUser user);
+	NodeGraphFieldContainer createGraphFieldContainer(String languageTag, HibBranch branch, HibUser user);
 
 	/**
-	 * Like {@link #createGraphFieldContainer(Language, Branch, User)}, but let the new graph field container be a clone of the given original (if not null).
+	 * Like {@link #createGraphFieldContainer(Language, HibBranch, User)}, but let the new graph field container be a clone of the given original (if not null).
 	 *
 	 * @param language
 	 * @param branch
@@ -192,7 +193,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *            Whether to move the existing draft edge or create a new draft edge to the new container
 	 * @return Created container
 	 */
-	NodeGraphFieldContainer createGraphFieldContainer(String languageTag, Branch branch, HibUser editor, NodeGraphFieldContainer original,
+	NodeGraphFieldContainer createGraphFieldContainer(String languageTag, HibBranch branch, HibUser editor, NodeGraphFieldContainer original,
 		boolean handleDraftEdge);
 
 	/**
@@ -212,7 +213,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param type
 	 * @return
 	 */
-	default TraversalResult<? extends NodeGraphFieldContainer> getGraphFieldContainers(Branch branch, ContainerType type) {
+	default TraversalResult<? extends NodeGraphFieldContainer> getGraphFieldContainers(HibBranch branch, ContainerType type) {
 		return getGraphFieldContainers(branch.getUuid(), type);
 	}
 
@@ -335,7 +336,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param branch
 	 * @return
 	 */
-	default Node create(HibUser creator, SchemaVersion schemaVersion, HibProject project, Branch branch) {
+	default Node create(HibUser creator, SchemaVersion schemaVersion, HibProject project, HibBranch branch) {
 		return create(creator, schemaVersion, project, branch, null);
 	}
 
@@ -349,7 +350,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param uuid
 	 * @return
 	 */
-	Node create(HibUser creator, SchemaVersion schemaVersion, HibProject project, Branch branch, String uuid);
+	Node create(HibUser creator, SchemaVersion schemaVersion, HibProject project, HibBranch branch, String uuid);
 
 	/**
 	 * Return a page with child nodes that are visible to the given user.
@@ -490,7 +491,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param parameters
 	 * @return
 	 */
-	void takeOffline(InternalActionContext ac, BulkActionContext bac, Branch branch, PublishParameters parameters);
+	void takeOffline(InternalActionContext ac, BulkActionContext bac, HibBranch branch, PublishParameters parameters);
 
 	/**
 	 * Transform the node language into a publish status response rest model.
@@ -528,7 +529,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param branch
 	 * @param languageTag
 	 */
-	void takeOffline(InternalActionContext ac, BulkActionContext bac, Branch branch, String languageTag);
+	void takeOffline(InternalActionContext ac, BulkActionContext bac, HibBranch branch, String languageTag);
 
 	/**
 	 * Delete the language container for the given language from the branch. This will remove all PUBLISHED, DRAFT and INITIAL edges to GFCs for the language
@@ -542,7 +543,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param failForLastContainer
 	 *            Whether to execute the last container check and fail or not.
 	 */
-	void deleteLanguageContainer(InternalActionContext ac, Branch branch, String languageTag, BulkActionContext bac, boolean failForLastContainer);
+	void deleteLanguageContainer(InternalActionContext ac, HibBranch branch, String languageTag, BulkActionContext bac, boolean failForLastContainer);
 
 	/**
 	 * Resolve the given path and return the path object that contains the resolved nodes.
@@ -640,7 +641,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param bac
 	 * @param ignoreChecks
 	 */
-	void deleteFromBranch(InternalActionContext ac, Branch branch, BulkActionContext bac, boolean ignoreChecks);
+	void deleteFromBranch(InternalActionContext ac, HibBranch branch, BulkActionContext bac, boolean ignoreChecks);
 
 	/**
 	 * Return the schema container for the node.
@@ -670,7 +671,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param branch
 	 *            Branch to be used to check the consistency state
 	 */
-	void assertPublishConsistency(InternalActionContext ac, Branch branch);
+	void assertPublishConsistency(InternalActionContext ac, HibBranch branch);
 
 	/**
 	 * Create a new published version of the given language in the branch.
@@ -685,7 +686,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *            user
 	 * @return published field container
 	 */
-	NodeGraphFieldContainer publish(InternalActionContext ac, String languageTag, Branch branch, HibUser user);
+	NodeGraphFieldContainer publish(InternalActionContext ac, String languageTag, HibBranch branch, HibUser user);
 
 	/**
 	 * Publish the node for the specified branch.
@@ -695,7 +696,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param bac
 	 * @return
 	 */
-	void publish(InternalActionContext ac, Branch branch, BulkActionContext bac);
+	void publish(InternalActionContext ac, HibBranch branch, BulkActionContext bac);
 
 	/**
 	 * Transform the node into a node list item.
@@ -744,7 +745,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param branch
 	 * @return
 	 */
-	Map<String, String> getLanguagePaths(InternalActionContext ac, LinkType linkType, Branch branch);
+	Map<String, String> getLanguagePaths(InternalActionContext ac, LinkType linkType, HibBranch branch);
 
 	/**
 	 * Return the breadcrumb nodes.
@@ -775,7 +776,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *            Type of the assignment
 	 * @return
 	 */
-	NodeTaggedEventModel onTagged(Tag tag, Branch branch, Assignment assignment);
+	NodeTaggedEventModel onTagged(Tag tag, HibBranch branch, Assignment assignment);
 
 	/**
 	 * Get an existing edge.

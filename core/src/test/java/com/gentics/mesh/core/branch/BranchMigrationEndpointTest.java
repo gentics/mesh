@@ -21,7 +21,9 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -53,10 +55,10 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testStartBranchMigration() throws Throwable {
 		EventQueueBatch batch = createBatch();
-		Branch newBranch;
+		HibBranch newBranch;
 		List<? extends Node> nodes;
 		List<? extends Node> published;
-		Project project = project();
+		HibProject project = project();
 
 		try (Tx tx = tx()) {
 			assertThat(project.getInitialBranch().isMigrated()).as("Initial branch migration status").isEqualTo(true);
@@ -132,7 +134,7 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testStartAgain() throws Throwable {
 		EventQueueBatch batch = createBatch();
-		Branch newBranch = tx(() -> project().getBranchRoot().create("newbranch", user(), batch));
+		HibBranch newBranch = tx(() -> project().getBranchRoot().create("newbranch", user(), batch));
 		String jobUuidA = requestBranchMigration(newBranch);
 		triggerAndWaitForJob(jobUuidA, COMPLETED);
 
@@ -146,10 +148,10 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testStartOrder() throws Throwable {
-		Project project = project();
+		HibProject project = project();
 		EventQueueBatch batch = createBatch();
-		Branch newBranch = tx(() -> project.getBranchRoot().create("newbranch", user(), batch));
-		Branch newestBranch = tx(() -> project.getBranchRoot().create("newestbranch", user(), batch));
+		HibBranch newBranch = tx(() -> project.getBranchRoot().create("newbranch", user(), batch));
+		HibBranch newestBranch = tx(() -> project.getBranchRoot().create("newestbranch", user(), batch));
 
 		try (Tx tx = tx()) {
 			triggerAndWaitForJob(requestBranchMigration(newestBranch), FAILED);
@@ -199,7 +201,7 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 		String baseNodeUuid = tx(() -> project().getBaseNode().getUuid());
 		createNode(baseNodeUuid);
 
-		Branch newBranch;
+		HibBranch newBranch;
 		try (Tx tx = tx()) {
 			int numThreads = 1;
 			int numFolders = 1000;
@@ -241,7 +243,7 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 	 * @param branch
 	 * @return future
 	 */
-	protected String requestBranchMigration(Branch branch) {
+	protected String requestBranchMigration(HibBranch branch) {
 		return tx(() -> boot().jobRoot().enqueueBranchMigration(user(), branch).getUuid());
 	}
 }

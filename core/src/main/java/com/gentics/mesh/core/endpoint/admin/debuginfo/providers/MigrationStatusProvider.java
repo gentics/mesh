@@ -8,9 +8,9 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoBufferEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
@@ -66,13 +66,13 @@ public class MigrationStatusProvider implements DebugInfoProvider {
 			.flatMapPublisher(Flowable::fromIterable);
 	}
 
-	private Flowable<String> getSchemastatus(Branch branch) {
+	private Flowable<String> getSchemastatus(HibBranch branch) {
 		return db.singleTx(() -> branchCrudHandler.getSchemaVersionsInfo(branch))
 			.map(RestModel::toJson)
 			.toFlowable();
 	}
 
-	private Flowable<String> getMicroschemastatus(Branch branch) {
+	private Flowable<String> getMicroschemastatus(HibBranch branch) {
 		return db.singleTx(() -> branchCrudHandler.getMicroschemaVersions(branch))
 			.map(RestModel::toJson)
 			.toFlowable();
@@ -81,9 +81,9 @@ public class MigrationStatusProvider implements DebugInfoProvider {
 	private static class ProjectBranch {
 		private final String projectName;
 		private final String branchName;
-		private final Branch branch;
+		private final HibBranch branch;
 
-		private ProjectBranch(String projectName, String branchName, Branch branch) {
+		private ProjectBranch(String projectName, String branchName, HibBranch branch) {
 			this.projectName = projectName;
 			this.branchName = branchName;
 			this.branch = branch;

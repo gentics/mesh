@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.webroot;
 
-import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.branch.HibBranch;
 
 /**
  * Utility class used to deal with path prefix.
@@ -45,7 +45,7 @@ public final class PathPrefixUtil {
 	 *            Path to be handled
 	 * @return stripped path
 	 */
-	public static String strip(Branch branch, String path) {
+	public static String strip(HibBranch branch, String path) {
 		String prefix = branch.getPathPrefix();
 		prefix = sanitize(prefix);
 		return !startsWithPrefix(branch, path) ? path : path.substring(prefix.length());
@@ -58,7 +58,7 @@ public final class PathPrefixUtil {
 	 * @param path
 	 * @return
 	 */
-	public static boolean startsWithPrefix(Branch branch, String path) {
+	public static boolean startsWithPrefix(HibBranch branch, String path) {
 		String prefix = branch.getPathPrefix();
 		prefix = sanitize(prefix);
 		return path.startsWith(prefix);

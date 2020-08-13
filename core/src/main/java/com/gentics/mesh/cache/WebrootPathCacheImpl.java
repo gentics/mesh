@@ -14,7 +14,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.cache.impl.EventAwareCacheFactory;
-import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -64,7 +64,7 @@ public class WebrootPathCacheImpl extends AbstractMeshCache<String, Path> implem
 	}
 
 	@Override
-	public Path getPath(HibProject project, Branch branch, ContainerType type, String path) {
+	public Path getPath(HibProject project, HibBranch branch, ContainerType type, String path) {
 		if (isDisabled()) {
 			if (log.isTraceEnabled()) {
 				log.trace("Path cache is disabled. Not using cache");
@@ -76,7 +76,7 @@ public class WebrootPathCacheImpl extends AbstractMeshCache<String, Path> implem
 	}
 
 	@Override
-	public void store(HibProject project, Branch branch, ContainerType type, String path, Path resolvedPath) {
+	public void store(HibProject project, HibBranch branch, ContainerType type, String path, Path resolvedPath) {
 		if (isDisabled()) {
 			return;
 		}
@@ -90,8 +90,8 @@ public class WebrootPathCacheImpl extends AbstractMeshCache<String, Path> implem
 	 * @param elementId
 	 * @return
 	 */
-	private String createCacheKey(HibProject project, Branch branch, ContainerType type, String path) {
-		return project.getId() + "-" + branch.id() + "-" + type.getCode() + "-" + path;
+	private String createCacheKey(HibProject project, HibBranch branch, ContainerType type, String path) {
+		return project.getId() + "-" + branch.getId() + "-" + type.getCode() + "-" + path;
 	}
 
 }

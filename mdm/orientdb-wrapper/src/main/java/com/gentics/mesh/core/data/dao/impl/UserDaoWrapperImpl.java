@@ -45,6 +45,7 @@ import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
@@ -161,7 +162,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWra
 			}
 
 			// TODO decide whether we need to check perms on the project as well
-			Project project = projectDao.findByName(projectName);
+			HibProject project = projectDao.findByName(projectName);
 			if (project == null) {
 				throw error(BAD_REQUEST, "project_not_found", projectName);
 			}
@@ -273,7 +274,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWra
 				/*
 				 * TODO decide whether we need to check perms on the project as well
 				 */
-				Project project = Tx.get().data().projectDao().findByName(projectName);
+				HibProject project = Tx.get().data().projectDao().findByName(projectName);
 				if (project == null) {
 					throw error(BAD_REQUEST, "project_not_found", projectName);
 				}

@@ -22,15 +22,14 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.impl.AbstractRootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
@@ -98,7 +97,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	}
 
 	@Override
-	public Job enqueueSchemaMigration(HibUser creator, Branch branch, SchemaVersion fromVersion, SchemaVersion toVersion) {
+	public Job enqueueSchemaMigration(HibUser creator, HibBranch branch, SchemaVersion fromVersion, SchemaVersion toVersion) {
 		NodeMigrationJobImpl job = getGraph().addFramedVertex(NodeMigrationJobImpl.class);
 		job.setType(JobType.schema);
 		job.setBranch(branch);
@@ -113,7 +112,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	}
 
 	@Override
-	public Job enqueueMicroschemaMigration(HibUser creator, Branch branch, MicroschemaVersion fromVersion,
+	public Job enqueueMicroschemaMigration(HibUser creator, HibBranch branch, MicroschemaVersion fromVersion,
 		MicroschemaVersion toVersion) {
 		MicronodeMigrationJobImpl job = getGraph().addFramedVertex(MicronodeMigrationJobImpl.class);
 		job.setType(JobType.microschema);
@@ -130,7 +129,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	}
 
 	@Override
-	public Job enqueueBranchMigration(HibUser creator, Branch branch, SchemaVersion fromVersion, SchemaVersion toVersion) {
+	public Job enqueueBranchMigration(HibUser creator, HibBranch branch, SchemaVersion fromVersion, SchemaVersion toVersion) {
 		Job job = getGraph().addFramedVertex(BranchMigrationJobImpl.class);
 		job.setType(JobType.branch);
 		job.setBranch(branch);
@@ -145,7 +144,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	}
 
 	@Override
-	public Job enqueueBranchMigration(HibUser creator, Branch branch) {
+	public Job enqueueBranchMigration(HibUser creator, HibBranch branch) {
 		Job job = getGraph().addFramedVertex(BranchMigrationJobImpl.class);
 		job.setType(JobType.branch);
 		job.setStatus(QUEUED);
@@ -158,7 +157,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	}
 
 	@Override
-	public Job enqueueVersionPurge(HibUser user, Project project, ZonedDateTime before) {
+	public Job enqueueVersionPurge(HibUser user, HibProject project, ZonedDateTime before) {
 		VersionPurgeJobImpl job = getGraph().addFramedVertex(VersionPurgeJobImpl.class);
 		// TODO Don't add the user to reduce contention
 		// job.setCreated(user);
@@ -174,7 +173,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	}
 
 	@Override
-	public Job enqueueVersionPurge(HibUser user, Project project) {
+	public Job enqueueVersionPurge(HibUser user, HibProject project) {
 		return enqueueVersionPurge(user, project, null);
 	}
 

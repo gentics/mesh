@@ -9,8 +9,8 @@ import java.util.Set;
 
 import com.gentics.mesh.context.AbstractInternalActionContext;
 import com.gentics.mesh.context.NodeMigrationActionContext;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeMigrationUser;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
@@ -40,7 +40,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 	private HibProject project;
 
-	private Branch branch;
+	private HibBranch branch;
 
 	private SchemaMigrationCause cause;
 
@@ -51,7 +51,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 	private MigrationStatusHandler status;
 
 	@Override
-	public Branch getBranch() {
+	public HibBranch getBranch() {
 		return branch;
 	}
 
@@ -111,11 +111,11 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 	}
 
 	@Override
-	public Branch getBranch(HibProject project) {
+	public HibBranch getBranch(HibProject project) {
 		return branch;
 	}
 
-	public void setBranch(Branch branch) {
+	public void setBranch(HibBranch branch) {
 		this.branch = branch;
 	}
 

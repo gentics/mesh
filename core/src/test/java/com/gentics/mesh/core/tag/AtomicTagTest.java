@@ -7,11 +7,11 @@ import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -32,7 +32,7 @@ public class AtomicTagTest extends AbstractMeshTest {
 			LanguageRoot languageRoot = boot().languageRoot();
 			assertNotNull(languageRoot);
 
-			Project project = project();
+			HibProject project = project();
 			TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();
 			TagFamily tagFamily = tagFamilyRoot.create("basic", user);
 

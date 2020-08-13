@@ -2,7 +2,7 @@ package com.gentics.mesh.test.context.helper;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.db.TxAction;
@@ -59,7 +59,7 @@ public interface BaseHelper {
 	 * 
 	 * @return
 	 */
-	default Project project() {
+	default HibProject project() {
 		return data().getProject();
 	}
 

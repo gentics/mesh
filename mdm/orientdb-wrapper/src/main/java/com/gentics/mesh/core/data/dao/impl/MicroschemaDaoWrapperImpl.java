@@ -14,7 +14,7 @@ import javax.inject.Inject;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
@@ -103,7 +103,7 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper implements Mic
 	}
 
 	@Override
-	public MicroschemaVersion fromReference(HibProject project, MicroschemaReference reference, Branch branch) {
+	public MicroschemaVersion fromReference(HibProject project, MicroschemaReference reference, HibBranch branch) {
 		String microschemaName = reference.getName();
 		String microschemaUuid = reference.getUuid();
 		String version = branch == null ? reference.getVersion() : null;

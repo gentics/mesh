@@ -3,9 +3,9 @@ package com.gentics.mesh.core.data.root;
 import java.util.List;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -84,7 +84,7 @@ public interface TagRoot extends RootVertex<Tag>, TransformableElementRoot<Tag, 
 	 * @param pagingInfo
 	 * @return
 	 */
-	TransformablePage<? extends Node> findTaggedNodes(Tag tag, HibUser requestUser, Branch branch, List<String> languageTags, ContainerType type,
+	TransformablePage<? extends Node> findTaggedNodes(Tag tag, HibUser requestUser, HibBranch branch, List<String> languageTags, ContainerType type,
 		PagingParameters pagingInfo);
 
 	TraversalResult<? extends Node> findTaggedNodes(Tag tag, InternalActionContext ac);
@@ -97,7 +97,7 @@ public interface TagRoot extends RootVertex<Tag>, TransformableElementRoot<Tag, 
 	 *
 	 * @return Result
 	 */
-	TraversalResult<? extends Node> getNodes(Tag tag, Branch branch);
+	TraversalResult<? extends Node> getNodes(Tag tag, HibBranch branch);
 
 	Tag findByName(TagFamily tagFamily, String name);
 }

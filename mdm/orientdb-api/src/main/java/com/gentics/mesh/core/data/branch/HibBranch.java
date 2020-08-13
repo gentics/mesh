@@ -1,17 +1,14 @@
-package com.gentics.mesh.core.data;
-
-import static com.gentics.mesh.ElementType.BRANCH;
-import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UPDATED;
+package com.gentics.mesh.core.data.branch;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.TypeInfo;
-import com.gentics.mesh.core.data.branch.BranchMicroschemaEdge;
-import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
-import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
@@ -19,7 +16,6 @@ import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.branch.BranchReference;
-import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.event.branch.BranchMicroschemaAssignModel;
 import com.gentics.mesh.core.rest.event.branch.BranchSchemaAssignEventModel;
 import com.gentics.mesh.core.rest.event.branch.BranchTaggedEventModel;
@@ -30,43 +26,15 @@ import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 
-/**
- * The Branch domain model interface.
- *
- * A branch is a bundle of specific schema versions which are used within a project. Branches can be used to create multiple tree structures within a single
- * project.
- * 
- * The branch will keep track of assigned versions and also store the information which schema version has ever been assigned to the branch.
- * 
- * A branch has the following responsibilities:
- * 
- * <ul>
- * <li>Manage assigned branches for the REST API</li>
- * <li>Provide information for node migration handlers. A handler must know what version needs to be migrated.</li>
- * <li>Provide information to the search index handler so that a list of indices can be compiled which should be used when searching</li>
- * <ul>
- * 
- * The latest version will be used for the creation of new nodes and should never be be downgraded. The other assigned versions will be used to manage
- * migrations and identify which branch specific search indices should be used when using the search indices.
- * 
- */
-public interface Branch
-	extends MeshCoreVertex<BranchResponse, Branch>, NamedElement, ReferenceableElement<BranchReference>, UserTrackingVertex, Taggable, ProjectElement, HibBranch {
+public interface HibBranch extends HibCoreElement {
 
-	TypeInfo TYPE_INFO = new TypeInfo(BRANCH, BRANCH_CREATED, BRANCH_UPDATED, BRANCH_DELETED);
+	String getName();
 
-	@Override
-	default TypeInfo getTypeInfo() {
-		return TYPE_INFO;
-	}
+	void setName(String string);
 
-	static final String NAME = "name";
+	HibUser getCreator();
 
-	static final String HOSTNAME = "hostname";
-
-	static final String SSL = "ssl";
-
-	static final String PATH_PREFIX = "pathPrefix";
+	HibProject getProject();
 
 	/**
 	 * Get whether the branch is active.
@@ -455,5 +423,21 @@ public interface Branch
 	 * @return
 	 */
 	Tag findTagByUuid(String uuid);
+
+	BranchReference transformToReference();
+
+	/**
+	 * Convert this back to the non-mdm branch
+	 * 
+	 * @return
+	 * @deprecated This method should only be used when there is really no other way
+	 */
+	@Deprecated
+	default Branch toBranch() {
+		return (Branch) this;
+	}
+
+
+
 
 }

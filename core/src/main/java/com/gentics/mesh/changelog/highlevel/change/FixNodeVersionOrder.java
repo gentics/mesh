@@ -14,16 +14,16 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.changelog.highlevel.AbstractHighLevelChange;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.NodeMigrationActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.util.VersionNumber;
@@ -196,12 +196,12 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 		return newEdge;
 	}
 
-	private Stream<? extends Project> singleBranchProjects() {
+	private Stream<? extends HibProject> singleBranchProjects() {
 		return Tx.get().data().projectDao().findAll().stream()
 			.filter(this::hasSingleBranch);
 	}
 
-	private boolean hasSingleBranch(Project project) {
+	private boolean hasSingleBranch(HibProject project) {
 		long count = project.getBranchRoot().computeCount();
 		if (count == 1) {
 			return true;

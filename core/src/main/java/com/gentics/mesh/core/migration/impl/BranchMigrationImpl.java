@@ -14,8 +14,8 @@ import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.BranchMigrationContext;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -48,8 +48,8 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 	public Completable migrateBranch(BranchMigrationContext context) {
 		context.validate();
 		return Completable.defer(() -> {
-			Branch oldBranch = context.getOldBranch();
-			Branch newBranch = context.getNewBranch();
+			HibBranch oldBranch = context.getOldBranch();
+			HibBranch newBranch = context.getNewBranch();
 			BranchMigrationCause cause = context.getCause();
 			MigrationStatusHandler status = context.getStatus();
 
@@ -100,7 +100,7 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 	 * @param newBranc
 	 * @param errorsDetected
 	 */
-	private void migrateNode(Node node, EventQueueBatch batch, Branch oldBranch, Branch newBranch, List<Exception> errorsDetected) {
+	private void migrateNode(Node node, EventQueueBatch batch, HibBranch oldBranch, HibBranch newBranch, List<Exception> errorsDetected) {
 		try {
 			db.tx((tx) -> {
 
@@ -171,7 +171,7 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 	/**
 	 * Create a new initial edge between node and container for the given branch.
 	 */
-	private void setInitial(Node node, NodeGraphFieldContainer container, Branch branch) {
+	private void setInitial(Node node, NodeGraphFieldContainer container, HibBranch branch) {
 		GraphFieldContainerEdgeImpl initialEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container,
 			GraphFieldContainerEdgeImpl.class);
 		initialEdge.setLanguageTag(container.getLanguageTag());

@@ -30,6 +30,7 @@ import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.dao.JobDaoWrapper;
@@ -1062,7 +1063,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			firstNode.getSchemaContainer().getLatestVersion().setSchema(schema);
 
 			// Create the new container version with the specified content which will be migrated
-			Branch branch = firstNode.getProject().getLatestBranch();
+			HibBranch branch = firstNode.getProject().getLatestBranch();
 			NodeGraphFieldContainer oldContainer = firstNode.getGraphFieldContainer(en, branch, DRAFT);
 			NodeGraphFieldContainer newContainer = firstNode.createGraphFieldContainer(en, branch, user(),
 				oldContainer, true);
@@ -1072,7 +1073,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			micronode.createString(oldFieldName).setString("first content");
 
 			secondNode = folder("news");
-			Branch branch2 = secondNode.getProject().getLatestBranch();
+			HibBranch branch2 = secondNode.getProject().getLatestBranch();
 			NodeGraphFieldContainer oldContainer2 = secondNode.getGraphFieldContainer(en, branch2, DRAFT);
 			secondMicronodeListField = secondNode.createGraphFieldContainer(en, branch2, user(), oldContainer2, true)
 				.createMicronodeFieldList(micronodeFieldName);

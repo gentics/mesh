@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.db.Tx;
@@ -202,7 +202,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 		Node node = folder("news");
 		long childrenSize;
 		long expectedItemsInPage;
-		Branch newBranch;
+		HibBranch newBranch;
 		Node firstFolder;
 
 		try (Tx tx = tx()) {

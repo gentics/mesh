@@ -1,6 +1,7 @@
 package com.gentics.mesh.assertj.impl;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -11,10 +12,10 @@ import java.util.stream.StreamSupport;
 
 import org.assertj.core.api.AbstractAssert;
 
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.EditorTrackingVertex;
 import com.gentics.mesh.core.data.MeshCoreVertex;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
@@ -74,7 +75,7 @@ public class NodeAssert extends AbstractAssert<NodeAssert, Node> {
 	 *            list of nodes
 	 * @return fluent API
 	 */
-	public NodeAssert hasChildren(Branch branch, Node... nodes) {
+	public NodeAssert hasChildren(HibBranch branch, Node... nodes) {
 		Stream<? extends Node> stream = StreamSupport.stream(actual.getChildren(branch.getUuid()).spliterator(), false);
 		List<Node> list = stream.collect(Collectors.toList());
 		assertThat(list).as(descriptionText() + " children").usingElementComparatorOnFields("uuid").contains(nodes);
@@ -88,7 +89,7 @@ public class NodeAssert extends AbstractAssert<NodeAssert, Node> {
 	 *            branch
 	 * @return fluent API
 	 */
-	public NodeAssert hasNoChildren(Branch branch) {
+	public NodeAssert hasNoChildren(HibBranch branch) {
 		Stream<? extends Node> stream = StreamSupport.stream(actual.getChildren(branch.getUuid()).spliterator(), false);
 		List<Node> list = stream.collect(Collectors.toList());
 		assertThat(list).as(descriptionText() + " children").hasSize(0);
@@ -104,7 +105,7 @@ public class NodeAssert extends AbstractAssert<NodeAssert, Node> {
 	 *            list of nodes
 	 * @return fluent API
 	 */
-	public NodeAssert hasOnlyChildren(Branch branch, Node... nodes) {
+	public NodeAssert hasOnlyChildren(HibBranch branch, Node... nodes) {
 		Stream<? extends Node> stream = StreamSupport.stream(actual.getChildren(branch.getUuid()).spliterator(), false);
 		List<Node> list = stream.collect(Collectors.toList());
 		assertThat(list).as(descriptionText() + " children").usingElementComparatorOnFields("uuid").containsOnly(nodes);
@@ -120,7 +121,7 @@ public class NodeAssert extends AbstractAssert<NodeAssert, Node> {
 	 *            list of nodes
 	 * @return fluent API
 	 */
-	public NodeAssert hasNotChildren(Branch branch, Node... nodes) {
+	public NodeAssert hasNotChildren(HibBranch branch, Node... nodes) {
 		assertThat((Iterable<Node>)actual.getChildren(branch.getUuid()))
 			.as(descriptionText() + " children")
 			.usingElementComparatorOnFields("uuid")

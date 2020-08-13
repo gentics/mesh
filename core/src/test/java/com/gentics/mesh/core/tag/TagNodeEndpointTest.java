@@ -13,9 +13,9 @@ import org.junit.Test;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
@@ -72,10 +72,10 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 		concorde.setUuid(db().tx(() -> content("concorde").getUuid()));
 
 		// Create new branch
-		Branch newBranch = tx(() -> createBranch("newbranch"));
+		HibBranch newBranch = tx(() -> createBranch("newbranch"));
 
 		try (Tx tx = tx()) {
-			Branch initialBranch = initialBranch();
+			HibBranch initialBranch = initialBranch();
 			// Get for latest branch (must be empty)
 			assertThat(call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
 				new VersioningParametersImpl().draft())).getData()).as("Nodes tagged in latest branch").isNotNull().isEmpty();

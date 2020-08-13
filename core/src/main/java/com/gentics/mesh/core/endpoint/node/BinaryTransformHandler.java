@@ -14,11 +14,11 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -212,7 +212,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 
 			NodeGraphFieldContainer latestDraftVersion = loadTargetedContent(node, languageTag, fieldName);
 
-			Branch branch = ac.getBranch();
+			HibBranch branch = ac.getBranch();
 
 			// Create a new node version field container to store the upload
 			NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(languageTag, branch, ac.getUser(),

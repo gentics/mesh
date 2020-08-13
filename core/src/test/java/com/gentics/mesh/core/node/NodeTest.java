@@ -26,11 +26,12 @@ import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
@@ -155,7 +156,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testRootNode() {
 		try (Tx tx = tx()) {
-			Project project = project();
+			HibProject project = project();
 			Node root = project.getBaseNode();
 			assertNotNull(root);
 		}
@@ -357,8 +358,8 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testDeleteWithChildren() {
 		BulkActionContext bac = createBulkContext();
 		try (Tx tx = tx()) {
-			Project project = project();
-			Branch initialBranch = project.getInitialBranch();
+			HibProject project = project();
+			HibBranch initialBranch = project.getInitialBranch();
 			SchemaVersion folderSchema = schemaContainer("folder").getLatestVersion();
 
 			// 1. create folder with subfolder and subsubfolder
@@ -389,8 +390,8 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
 	public void testDeleteWithChildrenInBranch() throws InvalidArgumentException {
-		Branch initialBranch = tx(() -> initialBranch());
-		Project project = project();
+		HibBranch initialBranch = tx(() -> initialBranch());
+		HibProject project = project();
 
 		try (Tx tx = tx()) {
 			BulkActionContext bac = createBulkContext();
@@ -407,7 +408,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			String subSubFolderUuid = subSubFolder.getUuid();
 
 			// 2. create a new branch
-			Branch newBranch = createBranch("newbranch");
+			HibBranch newBranch = createBranch("newbranch");
 
 			// 3. migrate nodes
 			BranchMigrationContextImpl context = new BranchMigrationContextImpl();
@@ -457,8 +458,8 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
 	public void testDeletePublished() throws InvalidArgumentException {
-		Project project = project();
-		Branch initialBranch = tx(() -> initialBranch());
+		HibProject project = project();
+		HibBranch initialBranch = tx(() -> initialBranch());
 		BulkActionContext bac = createBulkContext();
 
 		try (Tx tx = tx()) {
@@ -512,8 +513,8 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testDeletePublishedFromBranch() {
 		try (Tx tx = tx()) {
-			Project project = project();
-			Branch initialBranch = project.getInitialBranch();
+			HibProject project = project();
+			HibBranch initialBranch = project.getInitialBranch();
 			SchemaVersion folderSchema = schemaContainer("folder").getLatestVersion();
 
 			// 1. create folder and publish
@@ -528,7 +529,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			});
 
 			// 2. create new branch and migrate nodes
-			Branch newBranch = tx(() -> createBranch("newbranch"));
+			HibBranch newBranch = tx(() -> createBranch("newbranch"));
 			mesh().branchCache().clear();
 
 			BranchMigrationContextImpl context = new BranchMigrationContextImpl();

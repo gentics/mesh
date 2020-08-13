@@ -10,8 +10,8 @@ import java.util.HashSet;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.search.index.node.NodeContainerTransformer;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -27,7 +27,7 @@ public class NodeContainerTransformerTest extends AbstractMeshTest {
 	public void testNodeTagFamilyTransformer() {
 		NodeContainerTransformer transformer = new NodeContainerTransformer(options());
 		try (Tx tx = tx()) {
-			Branch branch = project().getLatestBranch();
+			HibBranch branch = project().getLatestBranch();
 			NodeGraphFieldContainer node = content("concorde").getGraphFieldContainer(english(), branch, PUBLISHED);
 			JsonObject document = transformer.toDocument(node, branch.getUuid(), PUBLISHED);
 			JsonObject families = document.getJsonObject("tagFamilies");

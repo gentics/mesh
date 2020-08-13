@@ -9,8 +9,8 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -48,7 +48,7 @@ public class ProjectVersionPurgeHandler {
 	 *            Limit the purge operation to versions which exceed the max age.
 	 * @return
 	 */
-	public Completable purgeVersions(Project project, ZonedDateTime maxAge) {
+	public Completable purgeVersions(HibProject project, ZonedDateTime maxAge) {
 		return Completable.fromAction(() -> {
 			db.tx(tx -> {
 				for (Node node : project.findNodes()) {

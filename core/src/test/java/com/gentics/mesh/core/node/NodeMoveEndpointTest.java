@@ -17,7 +17,7 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.db.Tx;
@@ -179,7 +179,7 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testMoveInBranch() {
-		Branch newBranch;
+		HibBranch newBranch;
 		Node movedNode = folder("deals");
 		Node targetNode = folder("2015");
 		String oldParentUuid;

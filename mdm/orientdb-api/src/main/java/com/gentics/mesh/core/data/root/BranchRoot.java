@@ -1,7 +1,8 @@
 package com.gentics.mesh.core.data.root;
 
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
@@ -19,7 +20,7 @@ public interface BranchRoot extends RootVertex<Branch>, TransformableElementRoot
 	 * 
 	 * @return
 	 */
-	Project getProject();
+	HibProject getProject();
 
 	/**
 	 * Create a new branch and make it the latest The new branch will be the initial branch, if it is the first created.
@@ -31,7 +32,7 @@ public interface BranchRoot extends RootVertex<Branch>, TransformableElementRoot
 	 * @param batch
 	 * @return new Branch
 	 */
-	default Branch create(String name, HibUser creator, EventQueueBatch batch) {
+	default HibBranch create(String name, HibUser creator, EventQueueBatch batch) {
 		return create(name, creator, null, true, getLatestBranch(), batch);
 	}
 
@@ -51,21 +52,21 @@ public interface BranchRoot extends RootVertex<Branch>, TransformableElementRoot
 	 * @param batch
 	 * @return new Branch
 	 */
-	Branch create(String name, HibUser creator, String uuid, boolean setLatest, Branch baseBranch, EventQueueBatch batch);
+	HibBranch create(String name, HibUser creator, String uuid, boolean setLatest, HibBranch baseBranch, EventQueueBatch batch);
 
 	/**
 	 * Get the initial branch of this root.
 	 *
 	 * @return
 	 */
-	Branch getInitialBranch();
+	HibBranch getInitialBranch();
 
 	/**
 	 * Get the latest branch of this root.
 	 *
 	 * @return
 	 */
-	Branch getLatestBranch();
+	HibBranch getLatestBranch();
 
 	/**
 	 * Set the branch to be the latest branch
@@ -90,6 +91,6 @@ public interface BranchRoot extends RootVertex<Branch>, TransformableElementRoot
 	 *            branch reference
 	 * @return referenced branch
 	 */
-	Branch fromReference(BranchReference reference);
+	HibBranch fromReference(BranchReference reference);
 
 }

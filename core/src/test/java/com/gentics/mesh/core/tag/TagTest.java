@@ -24,11 +24,13 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
@@ -125,8 +127,8 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			TagDaoWrapper tagDao = tx.data().tagDao();
 			// 1. Create the tag
 			TagFamily root = tagFamily("basic");
-			Project project = project();
-			Branch branch = project.getLatestBranch();
+			HibProject project = project();
+			HibBranch branch = project.getLatestBranch();
 			Tag tag = tagDao.create(root, ENGLISH_NAME, project, user());
 			String uuid = tag.getUuid();
 			assertNotNull(meshRoot().getTagRoot().findByUuid(uuid));
@@ -169,14 +171,14 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			TagDaoWrapper tagDao = tx.data().tagDao();
 			// 1. Create the tag
 			TagFamily root = tagFamily("basic");
-			Project project = project();
+			HibProject project = project();
 			Tag tag = tagDao.create(root, ENGLISH_NAME, project, user());
 			String uuid = tag.getUuid();
 			assertNotNull(root.findByUuid(uuid));
 
 			// 2. Create new branch
-			Branch initialBranch = initialBranch();
-			Branch newBranch = createBranch("newbranch");
+			HibBranch initialBranch = initialBranch();
+			HibBranch newBranch = createBranch("newbranch");
 
 			// 3. Migrate nodes to new branch
 			BranchMigrationContextImpl context = new BranchMigrationContextImpl();
@@ -225,8 +227,8 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			TagDaoWrapper tagDao = tx.data().tagDao();
 			// 1. Create the tag
 			TagFamily root = tagFamily("basic");
-			Project project = project();
-			Branch initialBranch = project.getInitialBranch();
+			HibProject project = project();
+			HibBranch initialBranch = project.getInitialBranch();
 			Tag tag = tagDao.create(root, ENGLISH_NAME, project, user());
 			String uuid = tag.getUuid();
 			assertNotNull(meshRoot().getTagRoot().findByUuid(uuid));
@@ -237,7 +239,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			node.addTag(tag, initialBranch);
 
 			// 3. Create new branch
-			Branch newBranch = createBranch("newbranch");
+			HibBranch newBranch = createBranch("newbranch");
 
 			// 4. Migrate nodes to new branch
 			BranchMigrationContextImpl context = new BranchMigrationContextImpl();
@@ -261,9 +263,9 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testNodeUntaggingInBranch() throws Exception {
 		Node node = folder("2015");
-		Branch initialBranch = tx(() -> initialBranch());
-		Project project = project();
-		Branch newBranch = null;
+		HibBranch initialBranch = tx(() -> initialBranch());
+		HibProject project = project();
+		HibBranch newBranch = null;
 		Tag tag = null;
 
 		try (Tx tx = tx()) {

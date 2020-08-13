@@ -44,9 +44,7 @@ import com.gentics.mesh.changelog.highlevel.HighLevelChangelogSystem;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
 import com.gentics.mesh.core.data.dao.DaoCollection;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
@@ -62,6 +60,7 @@ import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.job.JobRoot;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
@@ -581,7 +580,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		// Load the verticles
 		List<String> initialProjects = db.tx(tx -> {
 			return tx.data().projectDao().findAll().stream()
-				.map(Project::getName)
+				.map(HibProject::getName)
 				.collect(Collectors.toList());
 		});
 

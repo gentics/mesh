@@ -16,7 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -262,7 +262,7 @@ public class WebRootLinkReplacer {
 
 		HibProject theirProject = node.getProject();
 
-		Branch branch = theirProject.findBranchOrLatest(branchNameOrUuid);
+		HibBranch branch = theirProject.findBranchOrLatest(branchNameOrUuid);
 
 		// edge type defaults to DRAFT
 		if (edgeType == null) {
@@ -303,7 +303,7 @@ public class WebRootLinkReplacer {
 	 *            branch
 	 * @return scheme and authority or empty string if the branch of the node does not supply the needed information
 	 */
-	private String generateSchemeAuthorityForNode(Node node, Branch branch) {
+	private String generateSchemeAuthorityForNode(Node node, HibBranch branch) {
 		String hostname = branch.getHostname();
 		if (StringUtils.isEmpty(hostname)) {
 			// Fallback to urls without authority/scheme
@@ -328,7 +328,7 @@ public class WebRootLinkReplacer {
 	 *            The branch to generate the query parameter for.
 	 * @return Example: "?branch=test1"
 	 */
-	private String branchQueryParameter(Branch branch) {
+	private String branchQueryParameter(HibBranch branch) {
 		if (branch.isLatest()) {
 			return "";
 		}

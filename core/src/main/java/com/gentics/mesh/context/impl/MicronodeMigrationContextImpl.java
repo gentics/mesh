@@ -3,7 +3,7 @@ package com.gentics.mesh.context.impl;
 import java.util.Objects;
 
 import com.gentics.mesh.context.MicronodeMigrationContext;
-import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.rest.event.node.MicroschemaMigrationCause;
@@ -12,7 +12,7 @@ public class MicronodeMigrationContextImpl implements MicronodeMigrationContext 
 
 	private MigrationStatusHandler status;
 
-	private Branch branch;
+	private HibBranch branch;
 
 	private MicroschemaVersion fromVersion;
 
@@ -30,11 +30,11 @@ public class MicronodeMigrationContextImpl implements MicronodeMigrationContext 
 	}
 
 	@Override
-	public Branch getBranch() {
+	public HibBranch getBranch() {
 		return branch;
 	}
 
-	public void setBranch(Branch branch) {
+	public void setBranch(HibBranch branch) {
 		this.branch = branch;
 	}
 

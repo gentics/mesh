@@ -26,6 +26,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -64,11 +65,11 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 	}
 
 	@Override
-	public Branch create(String name, HibUser creator, String uuid, boolean setLatest, Branch baseBranch, EventQueueBatch batch) {
+	public Branch create(String name, HibUser creator, String uuid, boolean setLatest, HibBranch baseBranch, EventQueueBatch batch) {
 		return create(name, creator, uuid, setLatest, baseBranch, true, batch);
 	}
 
-	private Branch create(String name, HibUser creator, String uuid, boolean setLatest, Branch baseBranch, boolean assignSchemas,
+	private Branch create(String name, HibUser creator, String uuid, boolean setLatest, HibBranch baseBranch, boolean assignSchemas,
 		EventQueueBatch batch) {
 		Branch branch = getGraph().addFramedVertex(BranchImpl.class);
 		UserDaoWrapper userRoot = mesh().boot().userDao();
@@ -187,7 +188,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 	 *            The newly created branch
 	 * @param batch
 	 */
-	private void assignSchemas(HibUser creator, Branch baseBranch, Branch newBranch, boolean migrate, EventQueueBatch batch) {
+	private void assignSchemas(HibUser creator, HibBranch baseBranch, HibBranch newBranch, boolean migrate, EventQueueBatch batch) {
 		// Assign the same schema versions as the base branch, so that a migration can be started
 		if (baseBranch != null && migrate) {
 			for (SchemaVersion schemaVersion : baseBranch.findActiveSchemaVersions()) {

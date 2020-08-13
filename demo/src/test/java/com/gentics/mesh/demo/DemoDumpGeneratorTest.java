@@ -15,13 +15,13 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -64,7 +64,7 @@ public class DemoDumpGeneratorTest {
 			GroupDaoWrapper groupDao = tx.data().groupDao();
 			ProjectDaoWrapper projectDao = tx.data().projectDao();
 
-			Project project = projectDao.findByName("demo");
+			HibProject project = projectDao.findByName("demo");
 			assertTrue(project.getNodeRoot().computeCount() > 0);
 			HibUser user = userDao.findByUsername("webclient");
 			assertNotNull("The webclient user should have been created but could not be found.", user);

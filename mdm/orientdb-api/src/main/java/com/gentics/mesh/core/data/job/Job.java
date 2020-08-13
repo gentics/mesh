@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.data.job;
 
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.MeshCoreVertex;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.rest.job.JobResponse;
@@ -60,14 +60,14 @@ public interface Job extends MeshCoreVertex<JobResponse, Job>, CreatorTrackingVe
 	 * 
 	 * @return
 	 */
-	Branch getBranch();
+	HibBranch getBranch();
 
 	/**
 	 * Set the branch reference for the job.
 	 * 
 	 * @param branch
 	 */
-	void setBranch(Branch branch);
+	void setBranch(HibBranch branch);
 
 	/**
 	 * Return the schema version reference.

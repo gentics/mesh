@@ -27,6 +27,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -143,7 +144,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 		});
 	}
 
-	public Transactional<Map<String, IndexInfo>> getIndices(Project project, Branch branch) {
+	public Transactional<Map<String, IndexInfo>> getIndices(HibProject project, HibBranch branch) {
 		return db.transactional(tx -> {
 			Map<String, IndexInfo> indexInfo = new HashMap<>();
 			// Each branch specific index has also document type specific mappings
@@ -154,7 +155,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 		});
 	}
 
-	public Transactional<Map<String, IndexInfo>> getIndices(Project project, Branch branch, SchemaVersion containerVersion) {
+	public Transactional<Map<String, IndexInfo>> getIndices(HibProject project, HibBranch branch, SchemaVersion containerVersion) {
 		return db.transactional(tx -> {
 			Map<String, IndexInfo> indexInfos = new HashMap<>();
 			SchemaVersionModel schema = containerVersion.getSchema();
@@ -180,7 +181,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 		});
 	}
 
-	public IndexInfo createIndexInfo(Branch branch, SchemaModel schema, String language, String indexName, String sourceInfo) {
+	public IndexInfo createIndexInfo(HibBranch branch, SchemaModel schema, String language, String indexName, String sourceInfo) {
 		JsonObject mapping = getMappingProvider().getMapping(schema, branch, language);
 		JsonObject settings = language == null
 			? getDefaultSetting(schema.getElasticsearch())
@@ -357,7 +358,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 		return db.tx(() -> {
 			HibProject project = ac.getProject();
 			if (project != null) {
-				Branch branch = ac.getBranch();
+				HibBranch branch = ac.getBranch();
 				return Collections.singleton(NodeGraphFieldContainer.composeIndexPattern(
 					project.getUuid(),
 					branch.getUuid(),

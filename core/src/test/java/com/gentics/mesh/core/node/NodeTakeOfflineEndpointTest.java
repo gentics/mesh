@@ -22,9 +22,9 @@ import java.util.Arrays;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.db.Tx;
@@ -289,9 +289,9 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testTakeOfflineForBranch() {
 		Node news = folder("news");
-		Branch initialBranch = db().tx(() -> latestBranch());
+		HibBranch initialBranch = db().tx(() -> latestBranch());
 
-		Branch newBranch = createBranch("newbranch", true);
+		HibBranch newBranch = createBranch("newbranch", true);
 
 		try (Tx tx = tx()) {
 			// publish in initial and new branch

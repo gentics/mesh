@@ -8,6 +8,7 @@ import java.util.Objects;
 
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.TypeInfo;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.BranchRoot;
@@ -144,14 +145,14 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	 *
 	 * @return
 	 */
-	Branch getInitialBranch();
+	HibBranch getInitialBranch();
 
 	/**
 	 * Get the latest branch of the project.
 	 *
 	 * @return
 	 */
-	Branch getLatestBranch();
+	HibBranch getLatestBranch();
 
 	/**
 	 * Return the branch root aggregation vertex of the project. Internally this method will create the branch root when it has not yet been created.
@@ -184,7 +185,7 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	 * @param branchNameOrUuid
 	 * @return
 	 */
-	Branch findBranch(String branchNameOrUuid);
+	HibBranch findBranch(String branchNameOrUuid);
 
 	/**
 	 * Find the branch via name or uuid that belongs to the project.
@@ -193,7 +194,7 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	 * @param branchNameOrUuid
 	 * @return
 	 */
-	Branch findBranchOrLatest(String branchNameOrUuid);
+	HibBranch findBranchOrLatest(String branchNameOrUuid);
 
 	/**
 	 * Find all nodes that belong to the project.

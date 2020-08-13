@@ -29,6 +29,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -47,8 +48,10 @@ import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchListResponse;
@@ -131,7 +134,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testCreateMultithreaded() throws Exception {
 		String branchName = "Branch V";
 		try (Tx tx = tx()) {
-			Project project = project();
+			HibProject project = project();
 			int nJobs = 100;
 
 			Set<BranchResponse> responseFutures = new HashSet<>();
@@ -151,8 +154,8 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 			// All branches must form a chain
 			Set<String> foundBranches = new HashSet<>();
-			Branch previousBranch = null;
-			Branch branch = project.getInitialBranch();
+			HibBranch previousBranch = null;
+			HibBranch branch = project.getInitialBranch();
 
 			do {
 				assertThat(branch).as("Branch").isNotNull().hasPrevious(previousBranch);
@@ -228,7 +231,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 
-			Project project = project();
+			HibProject project = project();
 			roleDao.grantPermissions(role(), project, READ_PERM);
 			roleDao.revokePermissions(role(), project, UPDATE_PERM);
 			tx.success();
@@ -262,7 +265,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testCreateWithDuplicateUuid() throws Exception {
 		String branchName = "Branch V1";
 		try (Tx tx = tx()) {
-			Project project = project();
+			HibProject project = project();
 			String uuid = user().getUuid();
 
 			BranchUpdateRequest request = new BranchUpdateRequest();
@@ -508,17 +511,17 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		EventQueueBatch batch = createBatch();
 
 		try (Tx tx = tx()) {
-			Project project = project();
-			Branch initialBranch = project.getInitialBranch();
+			HibProject project = project();
+			HibBranch initialBranch = project.getInitialBranch();
 			branchInfo.add(Pair.of(initialBranch.getUuid(), initialBranch.getName()));
 
-			Branch firstBranch = project.getBranchRoot().create("One", user(), batch);
+			HibBranch firstBranch = project.getBranchRoot().create("One", user(), batch);
 			branchInfo.add(Pair.of(firstBranch.getUuid(), firstBranch.getName()));
 
-			Branch secondBranch = project.getBranchRoot().create("Two", user(), batch);
+			HibBranch secondBranch = project.getBranchRoot().create("Two", user(), batch);
 			branchInfo.add(Pair.of(secondBranch.getUuid(), secondBranch.getName()));
 
-			Branch thirdBranch = project.getBranchRoot().create("Three", user(), batch);
+			HibBranch thirdBranch = project.getBranchRoot().create("Three", user(), batch);
 			branchInfo.add(Pair.of(thirdBranch.getUuid(), thirdBranch.getName()));
 
 			tx.success();
@@ -569,13 +572,13 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Override
 	public void testReadMultiple() throws Exception {
 		EventQueueBatch batch = createBatch();
-		Branch initialBranch;
-		Branch firstBranch;
-		Branch thirdBranch;
-		Branch secondBranch;
+		HibBranch initialBranch;
+		HibBranch firstBranch;
+		HibBranch thirdBranch;
+		HibBranch secondBranch;
 
 		try (Tx tx = tx()) {
-			Project project = project();
+			HibProject project = project();
 			initialBranch = project.getInitialBranch();
 			firstBranch = project.getBranchRoot().create("One", user(), batch);
 			secondBranch = project.getBranchRoot().create("Two", user(), batch);
@@ -586,22 +589,26 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		try (Tx tx = tx()) {
 			ListResponse<BranchResponse> responseList = call(() -> client().findBranches(PROJECT_NAME));
 			InternalActionContext ac = mockActionContext();
-
+			BranchDaoWrapper branchDao = tx.data().branchDao();
+			BranchResponse initial = branchDao.transformToRestSync(initialBranch, ac, 0);
+			BranchResponse second = branchDao.transformToRestSync(secondBranch,ac, 0);
+			BranchResponse first = branchDao.transformToRestSync(firstBranch, ac, 0);
+			BranchResponse third = branchDao.transformToRestSync(thirdBranch, ac, 0);
 			assertThat(responseList).isNotNull();
-			assertThat(responseList.getData()).usingElementComparatorOnFields("uuid", "name").containsOnly(initialBranch.transformToRestSync(ac, 0),
-				firstBranch.transformToRestSync(ac, 0), secondBranch.transformToRestSync(ac, 0), thirdBranch.transformToRestSync(ac, 0));
+			assertThat(responseList.getData()).usingElementComparatorOnFields("uuid", "name").containsOnly(initial,
+				first, second, third);
 		}
 	}
 
 	@Test
 	public void testReadMultipleWithRestrictedPermissions() throws Exception {
 		EventQueueBatch batch = createBatch();
-		Branch initialBranch = tx(() -> initialBranch());
-		Project project = project();
+		HibBranch initialBranch = tx(() -> initialBranch());
+		HibProject project = project();
 
-		Branch firstBranch;
-		Branch secondBranch;
-		Branch thirdBranch;
+		HibBranch firstBranch;
+		HibBranch secondBranch;
+		HibBranch thirdBranch;
 
 		try (Tx tx = tx()) {
 			firstBranch = project.getBranchRoot().create("One", user(), batch);
@@ -622,8 +629,10 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		try (Tx tx = tx()) {
 			InternalActionContext ac = mockActionContext();
 			assertThat(responseList).isNotNull();
-			assertThat(responseList.getData()).usingElementComparatorOnFields("uuid", "name").containsOnly(initialBranch.transformToRestSync(ac, 0),
-				secondBranch.transformToRestSync(ac, 0));
+			BranchDaoWrapper branchDao = tx.data().branchDao();
+			BranchResponse initial = branchDao.transformToRestSync(initialBranch, ac, 0);
+			BranchResponse second = branchDao.transformToRestSync(secondBranch,ac, 0);
+			assertThat(responseList.getData()).usingElementComparatorOnFields("uuid", "name").containsOnly(initial, second);
 		}
 	}
 
@@ -1052,7 +1061,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		revokeAdmin();
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
-			Project project = project();
+			HibProject project = project();
 			roleDao.revokePermissions(role(), project.getInitialBranch(), UPDATE_PERM);
 			tx.success();
 		}
@@ -1249,7 +1258,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		revokeAdmin();
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
-			Project project = project();
+			HibProject project = project();
 			roleDao.revokePermissions(role(), project.getInitialBranch(), UPDATE_PERM);
 			tx.success();
 		}

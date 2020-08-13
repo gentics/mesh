@@ -13,10 +13,10 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
@@ -85,8 +85,8 @@ public class SchemaMigrationEventHandler implements EventHandler {
 
 	public Flowable<SearchRequest> migrationStart(BranchSchemaAssignEventModel model) {
 		Map<String, IndexInfo> map = helper.getDb().transactional(tx -> {
-			Project project = Tx.get().data().projectDao().findByUuid(model.getProject().getUuid());
-			Branch branch = project.getBranchRoot().findByUuid(model.getBranch().getUuid());
+			HibProject project = Tx.get().data().projectDao().findByUuid(model.getProject().getUuid());
+			HibBranch branch = project.getBranchRoot().findByUuid(model.getBranch().getUuid());
 			SchemaVersion schema = getNewSchemaVersion(model).runInExistingTx(tx);
 			return nodeIndexHandler.getIndices(project, branch, schema).runInExistingTx(tx);
 		}).runInNewTx();

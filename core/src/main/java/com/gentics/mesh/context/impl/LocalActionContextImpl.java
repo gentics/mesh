@@ -9,12 +9,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.AbstractInternalActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.dagger.MeshComponent;
@@ -45,7 +43,7 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	private Map<String, Object> data = new HashMap<>();
 	private MultiMap parameters = MultiMap.caseInsensitiveMultiMap();
 	private String query;
-	private Project project;
+	private HibProject project;
 	private String responseBody;
 	private HttpResponseStatus responseStatus;
 	private Promise<T> promise = Promise.promise();
@@ -185,7 +183,7 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	}
 
 	@Override
-	public Project getProject() {
+	public HibProject getProject() {
 		return project;
 	}
 

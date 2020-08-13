@@ -7,10 +7,10 @@ import java.util.stream.Stream;
 
 import org.mockito.Mockito;
 
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.db.Tx;
@@ -22,14 +22,14 @@ import com.gentics.mesh.event.EventQueueBatch;
  */
 public interface TestGraphHelper extends TestHelper {
 
-	default Project createProject(String name, String schema) {
+	default HibProject createProject(String name, String schema) {
 		EventQueueBatch batch = Mockito.mock(EventQueueBatch.class);
 		return Tx.get().data().projectDao().create(name, null, null, null, user(), schemaContainer(schema).getLatestVersion(), batch);
 	}
 
-	default Branch createBranch(String name) {
+	default HibBranch createBranch(String name) {
 		EventQueueBatch batch = Mockito.mock(EventQueueBatch.class);
-		Project project = project();
+		HibProject project = project();
 		BranchRoot branchRoot = project.getBranchRoot();
 		return branchRoot.create(name, user(), batch);
 	}
@@ -45,7 +45,7 @@ public interface TestGraphHelper extends TestHelper {
 	 * 
 	 * @return
 	 */
-	default Branch latestBranch() {
+	default HibBranch latestBranch() {
 		return project().getLatestBranch();
 	}
 
@@ -54,7 +54,7 @@ public interface TestGraphHelper extends TestHelper {
 	 * 
 	 * @return
 	 */
-	default Branch initialBranch() {
+	default HibBranch initialBranch() {
 		return project().getInitialBranch();
 	}
 

@@ -1,6 +1,6 @@
 package com.gentics.mesh.context;
 
-import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.rest.event.node.MicroschemaMigrationCause;
@@ -10,7 +10,7 @@ import com.gentics.mesh.core.rest.event.node.MicroschemaMigrationCause;
  */
 public interface MicronodeMigrationContext {
 
-	Branch getBranch();
+	HibBranch getBranch();
 
 	MigrationStatusHandler getStatus();
 

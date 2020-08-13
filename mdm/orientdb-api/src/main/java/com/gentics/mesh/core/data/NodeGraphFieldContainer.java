@@ -12,6 +12,7 @@ import java.util.Set;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.DummyBulkActionContext;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
@@ -220,7 +221,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * @param branch
 	 * @param bac
 	 */
-	void deleteFromBranch(Branch branch, BulkActionContext bac);
+	void deleteFromBranch(HibBranch branch, BulkActionContext bac);
 
 	/**
 	 * Return the display field value for this container.

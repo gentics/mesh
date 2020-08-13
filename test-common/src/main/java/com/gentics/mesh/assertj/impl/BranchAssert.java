@@ -1,21 +1,22 @@
 package com.gentics.mesh.assertj.impl;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.assertj.core.api.AbstractAssert;
 
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 
-public class BranchAssert extends AbstractAssert<BranchAssert, Branch> {
-	public BranchAssert(Branch actual) {
+public class BranchAssert extends AbstractAssert<BranchAssert, HibBranch> {
+	public BranchAssert(HibBranch actual) {
 		super(actual, BranchAssert.class);
 	}
 
@@ -68,7 +69,7 @@ public class BranchAssert extends AbstractAssert<BranchAssert, Branch> {
 	 *            branch to match
 	 * @return fluent API
 	 */
-	public BranchAssert matches(Branch branch) {
+	public BranchAssert matches(HibBranch branch) {
 		if (branch == null) {
 			assertThat(actual).as(descriptionText()).isNull();
 		} else {
@@ -86,7 +87,7 @@ public class BranchAssert extends AbstractAssert<BranchAssert, Branch> {
 	 *            branch to match
 	 * @return fluent API
 	 */
-	public BranchAssert hasNext(Branch branch) {
+	public BranchAssert hasNext(HibBranch branch) {
 		assertThat(actual.getNextBranch()).as(descriptionText() + " next branch").matches(branch);
 		return this;
 	}
@@ -98,7 +99,7 @@ public class BranchAssert extends AbstractAssert<BranchAssert, Branch> {
 	 *            branch to match
 	 * @return fluent API
 	 */
-	public BranchAssert hasPrevious(Branch branch) {
+	public BranchAssert hasPrevious(HibBranch branch) {
 		assertThat(actual.getPreviousBranch()).as(descriptionText() + " previous branch").matches(branch);
 		return this;
 	}

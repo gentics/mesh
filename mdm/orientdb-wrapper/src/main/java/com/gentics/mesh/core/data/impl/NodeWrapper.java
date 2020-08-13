@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.page.TransformablePage;
@@ -372,7 +373,7 @@ public class NodeWrapper implements Node {
 		return delegate.in(labels);
 	}
 
-	public void addTag(Tag tag, Branch branch) {
+	public void addTag(Tag tag, HibBranch branch) {
 		delegate.addTag(tag, branch);
 	}
 
@@ -388,11 +389,11 @@ public class NodeWrapper implements Node {
 		delegate.linkOut(vertex, labels);
 	}
 
-	public void removeTag(Tag tag, Branch branch) {
+	public void removeTag(Tag tag, HibBranch branch) {
 		delegate.removeTag(tag, branch);
 	}
 
-	public void removeAllTags(Branch branch) {
+	public void removeAllTags(HibBranch branch) {
 		delegate.removeAllTags(branch);
 	}
 
@@ -400,11 +401,11 @@ public class NodeWrapper implements Node {
 		delegate.linkIn(vertex, labels);
 	}
 
-	public TraversalResult<? extends TagWrapper> getTags(Branch branch) {
+	public TraversalResult<? extends TagWrapper> getTags(HibBranch branch) {
 		return TagWrapper.wrap(delegate.getTags(branch));
 	}
 
-	public TransformablePage<? extends Tag> getTags(HibUser user, PagingParameters params, Branch branch) {
+	public TransformablePage<? extends Tag> getTags(HibUser user, PagingParameters params, HibBranch branch) {
 		return delegate.getTags(user, params, branch);
 	}
 
@@ -412,7 +413,7 @@ public class NodeWrapper implements Node {
 		delegate.unlinkOut(vertex, labels);
 	}
 
-	public boolean hasTag(Tag tag, Branch branch) {
+	public boolean hasTag(Tag tag, HibBranch branch) {
 		return delegate.hasTag(tag, branch);
 	}
 
@@ -428,7 +429,7 @@ public class NodeWrapper implements Node {
 		delegate.setLinkOut(vertex, labels);
 	}
 
-	public ContentWrapper getGraphFieldContainer(String languageTag, Branch branch, ContainerType type) {
+	public ContentWrapper getGraphFieldContainer(String languageTag, HibBranch branch, ContainerType type) {
 		return ContentWrapper.wrap(delegate.getGraphFieldContainer(languageTag, branch, type));
 	}
 
@@ -452,7 +453,7 @@ public class NodeWrapper implements Node {
 		return delegate.reframe(kind);
 	}
 
-	public ContentWrapper createGraphFieldContainer(String languageTag, Branch branch, HibUser user) {
+	public ContentWrapper createGraphFieldContainer(String languageTag, HibBranch branch, HibUser user) {
 		return ContentWrapper.wrap(delegate.createGraphFieldContainer(languageTag, branch, user));
 	}
 
@@ -460,7 +461,7 @@ public class NodeWrapper implements Node {
 		return delegate.reframeExplicit(kind);
 	}
 
-	public NodeGraphFieldContainer createGraphFieldContainer(String languageTag, Branch branch, HibUser editor, NodeGraphFieldContainer original,
+	public NodeGraphFieldContainer createGraphFieldContainer(String languageTag, HibBranch branch, HibUser editor, NodeGraphFieldContainer original,
 		boolean handleDraftEdge) {
 		return delegate.createGraphFieldContainer(languageTag, branch, editor, original, handleDraftEdge);
 	}
@@ -525,11 +526,11 @@ public class NodeWrapper implements Node {
 		return wrap(delegate.create(creator, schemaVersion, project));
 	}
 
-	public NodeWrapper create(HibUser creator, SchemaVersion schemaVersion, HibProject project, Branch branch) {
+	public NodeWrapper create(HibUser creator, SchemaVersion schemaVersion, HibProject project, HibBranch branch) {
 		return wrap(delegate.create(creator, schemaVersion, project, branch));
 	}
 
-	public NodeWrapper create(HibUser creator, SchemaVersion schemaVersion, HibProject project, Branch branch, String uuid) {
+	public NodeWrapper create(HibUser creator, SchemaVersion schemaVersion, HibProject project, HibBranch branch, String uuid) {
 		return wrap(delegate.create(creator, schemaVersion, project, branch, uuid));
 	}
 
@@ -586,7 +587,7 @@ public class NodeWrapper implements Node {
 		delegate.takeOffline(ac, bac);
 	}
 
-	public void takeOffline(InternalActionContext ac, BulkActionContext bac, Branch branch, PublishParameters parameters) {
+	public void takeOffline(InternalActionContext ac, BulkActionContext bac, HibBranch branch, PublishParameters parameters) {
 		delegate.takeOffline(ac, bac, branch, parameters);
 	}
 
@@ -602,11 +603,11 @@ public class NodeWrapper implements Node {
 		delegate.setPublished(ac, container, branchUuid);
 	}
 
-	public void takeOffline(InternalActionContext ac, BulkActionContext bac, Branch branch, String languageTag) {
+	public void takeOffline(InternalActionContext ac, BulkActionContext bac, HibBranch branch, String languageTag) {
 		delegate.takeOffline(ac, bac, branch, languageTag);
 	}
 
-	public void deleteLanguageContainer(InternalActionContext ac, Branch branch, String languageTag, BulkActionContext bac,
+	public void deleteLanguageContainer(InternalActionContext ac, HibBranch branch, String languageTag, BulkActionContext bac,
 		boolean failForLastContainer) {
 		delegate.deleteLanguageContainer(ac, branch, languageTag, bac, failForLastContainer);
 	}
@@ -635,7 +636,7 @@ public class NodeWrapper implements Node {
 		delegate.postfixPathSegment(releaseUuid, type, languageTag);
 	}
 
-	public void deleteFromBranch(InternalActionContext ac, Branch branch, BulkActionContext bac, boolean ignoreChecks) {
+	public void deleteFromBranch(InternalActionContext ac, HibBranch branch, BulkActionContext bac, boolean ignoreChecks) {
 		delegate.deleteFromBranch(ac, branch, bac, ignoreChecks);
 	}
 
@@ -647,15 +648,15 @@ public class NodeWrapper implements Node {
 		delegate.setSchemaContainer(container);
 	}
 
-	public void assertPublishConsistency(InternalActionContext ac, Branch branch) {
+	public void assertPublishConsistency(InternalActionContext ac, HibBranch branch) {
 		delegate.assertPublishConsistency(ac, branch);
 	}
 
-	public ContentWrapper publish(InternalActionContext ac, String languageTag, Branch branch, HibUser user) {
+	public ContentWrapper publish(InternalActionContext ac, String languageTag, HibBranch branch, HibUser user) {
 		return ContentWrapper.wrap(delegate.publish(ac, languageTag, branch, user));
 	}
 
-	public void publish(InternalActionContext ac, Branch branch, BulkActionContext bac) {
+	public void publish(InternalActionContext ac, HibBranch branch, BulkActionContext bac) {
 		delegate.publish(ac, branch, bac);
 	}
 
@@ -675,7 +676,7 @@ public class NodeWrapper implements Node {
 		delegate.updateTags(ac, batch, list);
 	}
 
-	public Map<String, String> getLanguagePaths(InternalActionContext ac, LinkType linkType, Branch branch) {
+	public Map<String, String> getLanguagePaths(InternalActionContext ac, LinkType linkType, HibBranch branch) {
 		return delegate.getLanguagePaths(ac, linkType, branch);
 	}
 
@@ -687,7 +688,7 @@ public class NodeWrapper implements Node {
 		return delegate.onDeleted(uuid, schema, branchUuid, type, languageTag);
 	}
 
-	public NodeTaggedEventModel onTagged(Tag tag, Branch branch, Assignment assignment) {
+	public NodeTaggedEventModel onTagged(Tag tag, HibBranch branch, Assignment assignment) {
 		return delegate.onTagged(tag, branch, assignment);
 	}
 

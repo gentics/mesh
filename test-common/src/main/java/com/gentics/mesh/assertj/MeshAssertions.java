@@ -46,9 +46,9 @@ import com.gentics.mesh.assertj.impl.TagMeshEventModelAssert;
 import com.gentics.mesh.assertj.impl.TagResponseAssert;
 import com.gentics.mesh.assertj.impl.UserResponseAssert;
 import com.gentics.mesh.assertj.impl.WebRootResponseAssert;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
@@ -187,7 +187,7 @@ public class MeshAssertions extends Assertions {
 		return new MicronodeAssert(actual);
 	}
 
-	public static BranchAssert assertThat(Branch actual) {
+	public static BranchAssert assertThat(HibBranch actual) {
 		return new BranchAssert(actual);
 	}
 

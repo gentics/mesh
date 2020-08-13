@@ -27,6 +27,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
@@ -51,9 +52,11 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -415,7 +418,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testCreateForBranchByUuid() {
 		String nodeUuid = tx(() -> folder("news").getUuid());
 		String initialBranchUuid = tx(() -> initialBranch().getUuid());
-		Branch newBranch = tx(() -> createBranch("newbranch"));
+		HibBranch newBranch = tx(() -> createBranch("newbranch"));
 
 		NodeCreateRequest request = new NodeCreateRequest();
 		request.setSchemaName("content");
@@ -770,7 +773,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testReadNodesForBranch() {
-		Branch newBranch = tx(() -> createBranch("newbranch"));
+		HibBranch newBranch = tx(() -> createBranch("newbranch"));
 
 		try (Tx tx = tx()) {
 			NodeListResponse restResponse = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 1000L),
@@ -1990,8 +1993,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		try (Tx tx = tx()) {
 			// create a new branch
-			Project project = project();
-			Branch initialBranch = project.getInitialBranch();
+			HibProject project = project();
+			HibBranch initialBranch = project.getInitialBranch();
 
 			// create node in one branch
 			Node node = content("concorde");
@@ -2028,9 +2031,9 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testCreateInBranchSameUUIDWithoutParent() throws Exception {
 		try (Tx tx = tx()) {
 			// create a new branch
-			Project project = project();
-			Branch initialBranch = project.getInitialBranch();
-			Branch newBranch = createBranch("newbranch");
+			HibProject project = project();
+			HibBranch initialBranch = project.getInitialBranch();
+			HibBranch newBranch = createBranch("newbranch");
 			BranchMigrationContextImpl context = new BranchMigrationContextImpl();
 			context.setNewBranch(newBranch);
 			context.setOldBranch(initialBranch);

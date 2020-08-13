@@ -46,8 +46,8 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.action.DAOActionsCollection;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
@@ -327,7 +327,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 */
 	public Object branchFetcher(DataFetchingEnvironment env) {
 		GraphQLContext gc = env.getContext();
-		Branch branch = gc.getBranch();
+		HibBranch branch = gc.getBranch();
 		return gc.requiresPerm(branch, READ_PERM);
 	}
 

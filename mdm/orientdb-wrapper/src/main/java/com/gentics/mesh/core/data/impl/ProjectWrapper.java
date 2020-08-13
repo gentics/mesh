@@ -7,11 +7,11 @@ import com.gentics.madl.traversal.RawTraversalResult;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.BranchRoot;
@@ -441,11 +441,11 @@ public class ProjectWrapper implements Project {
 		delegate.unlinkOut(vertex, labels);
 	}
 
-	public Branch getInitialBranch() {
+	public HibBranch getInitialBranch() {
 		return delegate.getInitialBranch();
 	}
 
-	public Branch getLatestBranch() {
+	public HibBranch getLatestBranch() {
 		return delegate.getLatestBranch();
 	}
 
@@ -473,7 +473,7 @@ public class ProjectWrapper implements Project {
 		return delegate.traversal();
 	}
 
-	public Branch findBranch(String branchNameOrUuid) {
+	public HibBranch findBranch(String branchNameOrUuid) {
 		return delegate.findBranch(branchNameOrUuid);
 	}
 
@@ -481,7 +481,7 @@ public class ProjectWrapper implements Project {
 		return delegate.toJson();
 	}
 
-	public Branch findBranchOrLatest(String branchNameOrUuid) {
+	public HibBranch findBranchOrLatest(String branchNameOrUuid) {
 		return delegate.findBranchOrLatest(branchNameOrUuid);
 	}
 

@@ -28,6 +28,7 @@ import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -160,7 +161,7 @@ public class TxTest extends AbstractMeshTest {
 			Node node = content();
 			TagFamily tagFamily = tagFamily("colors");
 			List<Thread> threads = new ArrayList<>();
-			Project project = project();
+			HibProject project = project();
 			HibUser user = user();
 
 			for (int i = 0; i < nThreads; i++) {

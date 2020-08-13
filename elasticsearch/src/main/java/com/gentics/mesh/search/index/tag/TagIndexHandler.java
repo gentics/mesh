@@ -133,7 +133,7 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 		return db.tx(tx -> {
 			Set<String> activeIndices = new HashSet<>();
 			ProjectDaoWrapper projectDao = tx.data().projectDao();
-			for (Project project : projectDao.findAll()) {
+			for (HibProject project : projectDao.findAll()) {
 				activeIndices.add(Tag.composeIndexName(project.getUuid()));
 			}
 			return indices.stream()

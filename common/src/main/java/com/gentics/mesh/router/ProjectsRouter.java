@@ -10,7 +10,7 @@ import java.util.Map;
 
 import javax.naming.InvalidNameException;
 
-import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.shared.SharedKeys;
 
@@ -83,7 +83,7 @@ public class ProjectsRouter {
 
 			projectRouter.route().handler(ctx -> {
 				Database db = apiRouter.getRoot().getStorage().getDb().get();
-				Project project = db.tx(tx -> {
+				HibProject project = db.tx(tx -> {
 					return tx.data().projectDao().findByName(name);
 				});
 				if (project == null) {

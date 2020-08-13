@@ -13,8 +13,8 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.db.Tx;
@@ -49,8 +49,8 @@ public class BranchEventHandler implements EventHandler {
 				return Flowable.empty();
 			} else {
 				Map<String, IndexInfo> map = helper.getDb().transactional(tx -> {
-					Project project = Tx.get().data().projectDao().findByUuid(model.getProject().getUuid());
-					Branch branch = project.getBranchRoot().findByUuid(model.getUuid());
+					HibProject project = Tx.get().data().projectDao().findByUuid(model.getProject().getUuid());
+					HibBranch branch = project.getBranchRoot().findByUuid(model.getUuid());
 					return nodeIndexHandler.getIndices(project, branch).runInExistingTx(tx);
 				}).runInNewTx();
 

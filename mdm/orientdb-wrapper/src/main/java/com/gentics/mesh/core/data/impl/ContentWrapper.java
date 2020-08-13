@@ -9,12 +9,12 @@ import java.util.stream.Stream;
 import com.gentics.madl.traversal.RawTraversalResult;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.HibContent;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
@@ -511,7 +511,7 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		delegate.deleteFieldEdge(key);
 	}
 
-	public void deleteFromBranch(Branch branch, BulkActionContext bac) {
+	public void deleteFromBranch(HibBranch branch, BulkActionContext bac) {
 		delegate.deleteFromBranch(branch, bac);
 	}
 

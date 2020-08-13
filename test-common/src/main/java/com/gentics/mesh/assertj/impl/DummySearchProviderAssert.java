@@ -16,12 +16,12 @@ import java.util.stream.IntStream;
 
 import org.assertj.core.api.AbstractAssert;
 
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.search.request.Bulkable;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.DeleteDocumentRequest;
@@ -176,7 +176,7 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 	 * @param languages
 	 * @return Fluent API
 	 */
-	public DummySearchProviderAssert storedAllContainers(Node node, Project project, Branch branch, String... languages) {
+	public DummySearchProviderAssert storedAllContainers(Node node, HibProject project, HibBranch branch, String... languages) {
 		for (ContainerType type : Arrays.asList(DRAFT, PUBLISHED)) {
 			for (String lang : languages) {
 				String projectUuid = project.getUuid();

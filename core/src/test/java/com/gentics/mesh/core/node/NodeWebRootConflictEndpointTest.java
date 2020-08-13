@@ -11,6 +11,7 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.db.Tx;
@@ -217,11 +218,11 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 
 		String conflictingName = "filename.html";
 		String newBranchName = "newbranch";
-		Branch initialBranch = tx(() -> initialBranch());
+		HibBranch initialBranch = tx(() -> initialBranch());
 		String folderUuid = folderUuid();
 
 		// 1. Create new branch and migrate nodes
-		Branch newBranch = tx(() -> createBranch(newBranchName));
+		HibBranch newBranch = tx(() -> createBranch(newBranchName));
 		BranchMigrationContextImpl context = new BranchMigrationContextImpl();
 		context.setNewBranch(newBranch);
 		context.setOldBranch(initialBranch);
@@ -254,12 +255,12 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 	public void testDuplicateCrossBranchesSameNode() {
 		String conflictingName = "filename.html";
 		String newBranchName = "newbranch";
-		Branch initialBranch = tx(() -> initialBranch());
+		HibBranch initialBranch = tx(() -> initialBranch());
 		String initialBranchUuid = initialBranchUuid();
 		String folderUuid = tx(() -> folder("2015").getUuid());
 
 		// 1. Create new branch and migrate nodes
-		Branch newBranch = tx(() -> createBranch(newBranchName));
+		HibBranch newBranch = tx(() -> createBranch(newBranchName));
 		BranchMigrationContextImpl context = new BranchMigrationContextImpl();
 		context.setNewBranch(newBranch);
 		context.setOldBranch(initialBranch);
@@ -294,10 +295,10 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 		String conflictingName = "filename.html";
 		String newBranchName = "newbranch";
 		String folderUuid = tx(() -> folder("2015").getUuid());
-		Branch initialBranch = tx(() -> initialBranch());
+		HibBranch initialBranch = tx(() -> initialBranch());
 
 		// 1. Create new branch and migrate nodes
-		Branch newBranch = tx(() -> createBranch(newBranchName));
+		HibBranch newBranch = tx(() -> createBranch(newBranchName));
 		BranchMigrationContextImpl context = new BranchMigrationContextImpl();
 		context.setOldBranch(initialBranch);
 		context.setNewBranch(newBranch);

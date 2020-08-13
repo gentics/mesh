@@ -1,6 +1,6 @@
 package com.gentics.mesh.context;
 
-import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.rest.event.node.BranchMigrationCause;
 
@@ -14,14 +14,14 @@ public interface BranchMigrationContext {
 	 * 
 	 * @return
 	 */
-	Branch getOldBranch();
+	HibBranch getOldBranch();
 
 	/**
 	 * Return the new branch to migrate to.
 	 * 
 	 * @return
 	 */
-	Branch getNewBranch();
+	HibBranch getNewBranch();
 
 	/**
 	 * Return the migration cause info.

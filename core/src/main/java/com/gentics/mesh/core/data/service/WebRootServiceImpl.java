@@ -12,9 +12,9 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.cache.WebrootPathCache;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -45,7 +45,7 @@ public class WebRootServiceImpl implements WebRootService {
 	@Override
 	public Path findByProjectPath(InternalActionContext ac, String path, ContainerType type) {
 		HibProject project = ac.getProject();
-		Branch branch = ac.getBranch();
+		HibBranch branch = ac.getBranch();
 
 		Path cachedPath = pathStore.getPath(project, branch, type, path);
 		if (cachedPath != null) {
