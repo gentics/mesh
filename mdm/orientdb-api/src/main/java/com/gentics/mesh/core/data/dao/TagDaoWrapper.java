@@ -28,6 +28,8 @@ public interface TagDaoWrapper extends TagDao, DaoWrapper<Tag>, DaoTransformable
 	 */
 	TraversalResult<? extends Tag> findAll(TagFamily tagFamily);
 
+	Tag findByName(String name);
+
 	Tag findByName(TagFamily tagFamily, String name);
 
 	String getSubETag(Tag tag, InternalActionContext ac);

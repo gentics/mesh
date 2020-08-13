@@ -51,7 +51,11 @@ public class TagDAOActionsImpl implements TagDAOActions {
 		TagDaoWrapper tagDao = ctx.tx().data().tagDao();
 		TagFamily tagFamily = ctx.parent();
 		if (perm == null) {
-			return tagDao.findByName(tagFamily, name);
+			if (tagFamily == null) {
+				return tagDao.findByName(name);
+			} else {
+				return tagDao.findByName(tagFamily, name);
+			}
 		} else {
 			throw new RuntimeException("Not supported");
 		}

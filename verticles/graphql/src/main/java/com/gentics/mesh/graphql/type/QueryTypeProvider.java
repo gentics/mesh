@@ -427,7 +427,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 
 		// .tag
 		// TODO use project specific tag root
-		root.field(newElementField("tag", "Load tag by name or uuid.", actions.tagActions(), TAG_TYPE_NAME));
+		root.field(newElementField("tag", "Load first tag by name or uuid.", actions.tagActions(), TAG_TYPE_NAME));
 
 		// .tags
 		root.field(newPagingSearchField("tags", "Load page of tags.", actions.tagActions(), TAG_PAGE_TYPE_NAME, tagSearchHandler, null));
