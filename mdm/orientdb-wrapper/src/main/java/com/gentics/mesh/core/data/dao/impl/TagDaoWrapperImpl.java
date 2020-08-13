@@ -131,7 +131,7 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper implements TagDaoWrapp
 
 	@Override
 	public Tag findByName(TagFamily tagFamily, String name) {
-		return boot.get().tagRoot().findByName(name);
+		return boot.get().tagRoot().findByName(tagFamily, name);
 	}
 
 	@Override
