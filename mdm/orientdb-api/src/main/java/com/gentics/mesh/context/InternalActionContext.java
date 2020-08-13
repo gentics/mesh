@@ -5,7 +5,7 @@ import java.util.function.BiConsumer;
 
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.handler.ActionContext;
@@ -39,7 +39,7 @@ public interface InternalActionContext extends ActionContext, ParameterProviderC
 	 * 
 	 * @return
 	 */
-	Project getProject();
+	HibProject getProject();
 
 	/**
 	 * Return the latest branch of the project.
@@ -59,7 +59,7 @@ public interface InternalActionContext extends ActionContext, ParameterProviderC
 	 *
 	 * @return branch
 	 */
-	Branch getBranch(Project project);
+	Branch getBranch(HibProject project);
 
 	/**
 	 * Return the mesh auth user.

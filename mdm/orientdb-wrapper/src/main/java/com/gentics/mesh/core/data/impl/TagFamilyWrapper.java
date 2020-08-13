@@ -18,6 +18,7 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -77,7 +78,7 @@ public class TagFamilyWrapper implements TagFamily {
 		return delegate.transformToReference();
 	}
 
-	public Project getProject() {
+	public HibProject getProject() {
 		return delegate.getProject();
 	}
 

@@ -14,9 +14,9 @@ import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.MicronodeMigrationContext;
 import com.gentics.mesh.context.impl.MicronodeMigrationContextImpl;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.BranchMicroschemaEdge;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
@@ -53,7 +53,7 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 
 		Branch branch = getBranch();
 		if (branch != null) {
-			Project project = branch.getProject();
+			HibProject project = branch.getProject();
 			model.setProject(project.transformToReference());
 			model.setBranch(branch.transformToReference());
 		}

@@ -17,7 +17,6 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
@@ -27,6 +26,7 @@ import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.impl.TagWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -87,7 +87,7 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper implements TagDaoWrapp
 	}
 
 	@Override
-	public Tag loadObjectByUuid(Project project, InternalActionContext ac, String tagUuid, GraphPermission perm) {
+	public Tag loadObjectByUuid(HibProject project, InternalActionContext ac, String tagUuid, GraphPermission perm) {
 		// TODO this is an old bug in mesh. The global tag root is used to load tags. Instead the project specific tags should be checked.
 		// This code is used for branch tagging. The case makes incorrect usage of the root.
 		TagRoot tagRoot = boot.get().tagRoot();
@@ -224,7 +224,7 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper implements TagDaoWrapp
 
 	@Override
 	public Tag create(TagFamily tagFamily, InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		Project project = ac.getProject();
+		HibProject project = ac.getProject();
 		TagCreateRequest requestModel = ac.fromJson(TagCreateRequest.class);
 		String tagName = requestModel.getName();
 		if (isEmpty(tagName)) {
@@ -251,12 +251,12 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper implements TagDaoWrapp
 	}
 
 	@Override
-	public Tag create(TagFamily tagFamily, String name, Project project, HibUser creator) {
+	public Tag create(TagFamily tagFamily, String name, HibProject project, HibUser creator) {
 		return create(tagFamily, name, project, creator, null);
 	}
 
 	@Override
-	public Tag create(TagFamily tagFamily, String name, Project project, HibUser creator, String uuid) {
+	public Tag create(TagFamily tagFamily, String name, HibProject project, HibUser creator, String uuid) {
 		return boot.get().tagRoot().create(tagFamily, name, project, creator, uuid);
 	}
 

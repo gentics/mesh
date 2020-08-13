@@ -64,11 +64,9 @@ import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagEdge;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
@@ -87,6 +85,7 @@ import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformableStreamPageImpl;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
@@ -583,17 +582,17 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Project getProject() {
+	public HibProject getProject() {
 		return db().index().findByUuid(ProjectImpl.class, property(PROJECT_KEY_PROPERTY));
 	}
 
 	@Override
-	public void setProject(Project project) {
+	public void setProject(HibProject project) {
 		property(PROJECT_KEY_PROPERTY, project.getUuid());
 	}
 
 	@Override
-	public Node create(HibUser creator, SchemaVersion schemaVersion, Project project) {
+	public Node create(HibUser creator, SchemaVersion schemaVersion, HibProject project) {
 		return create(creator, schemaVersion, project, project.getLatestBranch());
 	}
 
@@ -601,7 +600,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * Create a new node and make sure to delegate the creation request to the main node root aggregation node.
 	 */
 	@Override
-	public Node create(HibUser creator, SchemaVersion schemaVersion, Project project, Branch branch, String uuid) {
+	public Node create(HibUser creator, SchemaVersion schemaVersion, HibProject project, Branch branch, String uuid) {
 		if (!isBaseNode() && !isVisibleInBranch(branch.getUuid())) {
 			log.error(String.format("Error while creating node in branch {%s}: requested parent node {%s} exists, but is not visible in branch.",
 				branch.getName(), getUuid()));

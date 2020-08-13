@@ -16,6 +16,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
@@ -135,7 +136,7 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 	@Override
 	public Set<String> getIndicesForSearch(InternalActionContext ac) {
 		return db.tx(() -> {
-			Project project = ac.getProject();
+			HibProject project = ac.getProject();
 			if (project != null) {
 				return Collections.singleton(TagFamily.composeIndexName(project.getUuid()));
 			} else {

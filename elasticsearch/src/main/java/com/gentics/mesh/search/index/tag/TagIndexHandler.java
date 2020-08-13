@@ -17,6 +17,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
@@ -145,7 +146,7 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	@Override
 	public Set<String> getIndicesForSearch(InternalActionContext ac) {
 		return db.tx(() -> {
-			Project project = ac.getProject();
+			HibProject project = ac.getProject();
 			if (project != null) {
 				return Collections.singleton(Tag.composeIndexName(project.getUuid()));
 			} else {

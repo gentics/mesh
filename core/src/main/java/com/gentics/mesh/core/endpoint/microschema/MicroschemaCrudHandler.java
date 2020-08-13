@@ -18,9 +18,9 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.actions.impl.MicroschemaDAOActionsImpl;
 import com.gentics.mesh.core.actions.impl.ProjectMicroschemaLoadAllActionImpl;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.MicroschemaRoot;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
@@ -206,7 +206,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<Microschema, Mic
 		validateParameter(microschemaUuid, "microschemaUuid");
 
 		utils.syncTx(ac, tx -> {
-			Project project = ac.getProject();
+			HibProject project = ac.getProject();
 			UserDaoWrapper userDao = tx.data().userDao();
 			if (!userDao.hasPermission(ac.getUser(), project, UPDATE_PERM)) {
 				String projectUuid = project.getUuid();
@@ -230,7 +230,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<Microschema, Mic
 		validateParameter(microschemaUuid, "microschemaUuid");
 
 		utils.syncTx(ac, tx -> {
-			Project project = ac.getProject();
+			HibProject project = ac.getProject();
 			String projectUuid = project.getUuid();
 			UserDaoWrapper userDao = tx.data().userDao();
 			if (!userDao.hasPermission(ac.getUser(), project, UPDATE_PERM)) {

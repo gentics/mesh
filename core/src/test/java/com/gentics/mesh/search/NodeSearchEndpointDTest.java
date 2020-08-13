@@ -20,10 +20,10 @@ import org.junit.runners.Parameterized;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -161,7 +161,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 			String english = english();
 			Node concorde = content("concorde");
 
-			Project project = concorde.getProject();
+			HibProject project = concorde.getProject();
 			Node parentNode = concorde.getParentNode(branchUuid);
 			SchemaVersion schemaVersion = concorde.getSchemaContainer().getLatestVersion();
 

@@ -2,9 +2,9 @@ package com.gentics.mesh.core.data.dao;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.SchemaRoot;
 import com.gentics.mesh.core.data.schema.Schema;
@@ -31,7 +31,7 @@ public interface SchemaDaoWrapper extends SchemaDao, DaoWrapper<Schema> {
 
 	TransformablePage<? extends Schema> findAll(InternalActionContext ac, PagingParameters pagingInfo);
 
-	TransformablePage<? extends Schema> findAll(InternalActionContext ac, Project project, PagingParameters pagingInfo);
+	TransformablePage<? extends Schema> findAll(InternalActionContext ac, HibProject project, PagingParameters pagingInfo);
 
 	Schema create(InternalActionContext ac, EventQueueBatch batch, String uuid);
 
@@ -44,7 +44,7 @@ public interface SchemaDaoWrapper extends SchemaDao, DaoWrapper<Schema> {
 	 */
 	SchemaVersion fromReference(SchemaReference reference);
 
-	SchemaVersion fromReference(Project project, SchemaReference reference);
+	SchemaVersion fromReference(HibProject project, SchemaReference reference);
 
 	/**
 	 * Create new schema container.
@@ -90,9 +90,9 @@ public interface SchemaDaoWrapper extends SchemaDao, DaoWrapper<Schema> {
 	 */
 	Schema create(SchemaVersionModel schema, HibUser creator, String uuid, boolean validate) throws MeshSchemaException;
 
-	Schema findByName(Project project, String schemaName);
+	Schema findByName(HibProject project, String schemaName);
 
-	Schema findByUuid(Project project, String schemaUuid);
+	Schema findByUuid(HibProject project, String schemaUuid);
 
 	long computeCount();
 

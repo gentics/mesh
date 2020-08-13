@@ -40,6 +40,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformableStreamPageImpl;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.schema.Schema;
@@ -207,7 +208,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public Node create(HibUser creator, SchemaVersion version, Project project, String uuid) {
+	public Node create(HibUser creator, SchemaVersion version, HibProject project, String uuid) {
 		// TODO check whether the mesh node is in fact a folder node.
 		NodeImpl node = getGraph().addFramedVertex(NodeImpl.class);
 		if (uuid != null) {
@@ -241,7 +242,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	// TODO use schema container version instead of container
 	private Node createNode(InternalActionContext ac, SchemaVersion schemaVersion, EventQueueBatch batch,
 		String uuid) {
-		Project project = ac.getProject();
+		HibProject project = ac.getProject();
 		MeshAuthUser requestUser = ac.getUser();
 		BootstrapInitializer boot = mesh().boot();
 		UserDaoWrapper userRoot = boot.userDao();
@@ -298,7 +299,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		// Override any given version parameter. Creation is always scoped to drafts
 		ac.getVersioningParameters().setVersion("draft");
 
-		Project project = ac.getProject();
+		HibProject project = ac.getProject();
 		MeshAuthUser requestUser = ac.getUser();
 		Branch branch = ac.getBranch();
 		UserDaoWrapper userDao = mesh().boot().userDao();

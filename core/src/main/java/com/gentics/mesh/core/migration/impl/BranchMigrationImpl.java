@@ -16,9 +16,9 @@ import javax.inject.Singleton;
 import com.gentics.mesh.context.BranchMigrationContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.core.migration.AbstractMigrationHandler;
@@ -61,7 +61,7 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 			});
 
 			List<? extends Node> nodes = db.tx(() -> {
-				Project project = oldBranch.getProject();
+				HibProject project = oldBranch.getProject();
 				return project.findNodes().list();
 			});
 

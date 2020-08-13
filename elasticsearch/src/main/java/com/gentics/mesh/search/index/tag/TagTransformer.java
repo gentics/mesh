@@ -6,9 +6,9 @@ import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.search.index.AbstractTransformer;
 import com.gentics.mesh.search.index.MappingHelper;
 import com.gentics.mesh.util.ETag;
@@ -26,7 +26,7 @@ public class TagTransformer extends AbstractTransformer<Tag> {
 	}
 
 	public String generateVersion(Tag tag) {
-		Project project = tag.getProject();
+		HibProject project = tag.getProject();
 		TagFamily tagFamily = tag.getTagFamily();
 
 		StringBuilder builder = new StringBuilder();

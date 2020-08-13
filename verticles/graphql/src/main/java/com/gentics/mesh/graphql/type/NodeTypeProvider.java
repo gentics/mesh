@@ -34,11 +34,11 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -223,7 +223,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				if (content == null) {
 					return null;
 				}
-				Project projectOfNode = content.getNode().getProject();
+				HibProject projectOfNode = content.getNode().getProject();
 				return gc.requiresPerm(projectOfNode, READ_PERM);
 			}).build(),
 
@@ -678,7 +678,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	}
 
 	private List<GraphQLObjectType> generateSchemaFieldTypesV1(GraphQLContext context) {
-		Project project = context.getProject();
+		HibProject project = context.getProject();
 		List<GraphQLObjectType> schemaTypes = new ArrayList<>();
 		for (Schema container : project.getSchemaContainerRoot().findAll()) {
 			SchemaVersion version = container.getLatestVersion();
@@ -729,7 +729,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	}
 
 	private List<GraphQLObjectType> generateSchemaFieldTypesV2(GraphQLContext context) {
-		Project project = context.getProject();
+		HibProject project = context.getProject();
 
 		return project.getSchemaContainerRoot().findAll().stream().map(container -> {
 			SchemaVersion version = container.getLatestVersion();

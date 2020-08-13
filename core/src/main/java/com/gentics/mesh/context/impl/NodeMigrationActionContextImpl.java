@@ -11,7 +11,7 @@ import com.gentics.mesh.context.AbstractInternalActionContext;
 import com.gentics.mesh.context.NodeMigrationActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeMigrationUser;
-import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
@@ -38,7 +38,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 	private String query;
 
-	private Project project;
+	private HibProject project;
 
 	private Branch branch;
 
@@ -97,7 +97,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 	}
 
 	@Override
-	public Project getProject() {
+	public HibProject getProject() {
 		return project;
 	}
 
@@ -106,12 +106,12 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 	 *
 	 * @param project
 	 */
-	public void setProject(Project project) {
+	public void setProject(HibProject project) {
 		this.project = project;
 	}
 
 	@Override
-	public Branch getBranch(Project project) {
+	public Branch getBranch(HibProject project) {
 		return branch;
 	}
 

@@ -4,11 +4,11 @@ import java.util.List;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.tag.TagResponse;
@@ -53,7 +53,7 @@ public interface TagRoot extends RootVertex<Tag>, TransformableElementRoot<Tag, 
 	 *            Creator of the tag
 	 * @return
 	 */
-	Tag create(String name, Project project, TagFamily tagFamily, HibUser creator);
+	Tag create(String name, HibProject project, TagFamily tagFamily, HibUser creator);
 
 	/**
 	 * Create a new tag with the given name and creator. Note that this method will not check for any tag name collisions. Note that the created tag will also
@@ -69,7 +69,7 @@ public interface TagRoot extends RootVertex<Tag>, TransformableElementRoot<Tag, 
 	 *            Optional uuid
 	 * @return
 	 */
-	Tag create(TagFamily tagFamily, String name, Project project, HibUser creator, String uuid);
+	Tag create(TagFamily tagFamily, String name, HibProject project, HibUser creator, String uuid);
 
 	boolean update(Tag tag, InternalActionContext ac, EventQueueBatch batch);
 

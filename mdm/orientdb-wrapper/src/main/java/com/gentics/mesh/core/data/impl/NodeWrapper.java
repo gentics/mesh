@@ -13,13 +13,13 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
@@ -195,7 +195,7 @@ public class NodeWrapper implements Node {
 		delegate.remove();
 	}
 
-	public Project getProject() {
+	public HibProject getProject() {
 		return delegate.getProject();
 	}
 
@@ -493,7 +493,7 @@ public class NodeWrapper implements Node {
 		return delegate.getAvailableLanguageNames(branch, type);
 	}
 
-	public void setProject(Project project) {
+	public void setProject(HibProject project) {
 		delegate.setProject(project);
 	}
 
@@ -521,15 +521,15 @@ public class NodeWrapper implements Node {
 		delegate.setParentNode(branchUuid, parentNode);
 	}
 
-	public NodeWrapper create(HibUser creator, SchemaVersion schemaVersion, Project project) {
+	public NodeWrapper create(HibUser creator, SchemaVersion schemaVersion, HibProject project) {
 		return wrap(delegate.create(creator, schemaVersion, project));
 	}
 
-	public NodeWrapper create(HibUser creator, SchemaVersion schemaVersion, Project project, Branch branch) {
+	public NodeWrapper create(HibUser creator, SchemaVersion schemaVersion, HibProject project, Branch branch) {
 		return wrap(delegate.create(creator, schemaVersion, project, branch));
 	}
 
-	public NodeWrapper create(HibUser creator, SchemaVersion schemaVersion, Project project, Branch branch, String uuid) {
+	public NodeWrapper create(HibUser creator, SchemaVersion schemaVersion, HibProject project, Branch branch, String uuid) {
 		return wrap(delegate.create(creator, schemaVersion, project, branch, uuid));
 	}
 

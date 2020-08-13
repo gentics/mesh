@@ -48,11 +48,11 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.action.DAOActionsCollection;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -315,7 +315,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 */
 	public Object projectFetcher(DataFetchingEnvironment env) {
 		GraphQLContext gc = env.getContext();
-		Project project = gc.getProject();
+		HibProject project = gc.getProject();
 		return gc.requiresPerm(project, READ_PERM);
 	}
 
@@ -339,7 +339,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 */
 	public Object rootNodeFetcher(DataFetchingEnvironment env) {
 		GraphQLContext gc = env.getContext();
-		Project project = gc.getProject();
+		HibProject project = gc.getProject();
 		if (project != null) {
 			Node node = project.getBaseNode();
 			gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
@@ -563,7 +563,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 * @return
 	 */
 	public GraphQLSchema getRootSchema(GraphQLContext context) {
-		Project project = context.getProject();
+		HibProject project = context.getProject();
 		graphql.schema.GraphQLSchema.Builder builder = GraphQLSchema.newSchema();
 
 		Set<GraphQLType> additionalTypes = new HashSet<>();

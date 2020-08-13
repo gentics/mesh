@@ -3,7 +3,7 @@ package com.gentics.mesh.core.action;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.impl.DAOActionContextImpl;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Tx;
 
 /**
@@ -30,7 +30,7 @@ public interface DAOActionContext {
 	 * 
 	 * @return
 	 */
-	Project project();
+	HibProject project();
 
 	/**
 	 * Parent element for the operation (e.g. Tag Family or Branch for tag load requests).

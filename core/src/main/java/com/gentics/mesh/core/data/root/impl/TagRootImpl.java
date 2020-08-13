@@ -18,7 +18,6 @@ import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
@@ -30,6 +29,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
@@ -106,7 +106,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	}
 
 	@Override
-	public Tag create(String name, Project project, TagFamily tagFamily, HibUser creator) {
+	public Tag create(String name, HibProject project, TagFamily tagFamily, HibUser creator) {
 		TagImpl tag = getGraph().addFramedVertex(TagImpl.class);
 		tag.setName(name);
 		tag.setCreated(creator);
@@ -215,7 +215,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	}
 
 	@Override
-	public Tag create(TagFamily tagFamily, String name, Project project, HibUser creator, String uuid) {
+	public Tag create(TagFamily tagFamily, String name, HibProject project, HibUser creator, String uuid) {
 		TagImpl tag = getGraph().addFramedVertex(TagImpl.class);
 		if (uuid != null) {
 			tag.setUuid(uuid);

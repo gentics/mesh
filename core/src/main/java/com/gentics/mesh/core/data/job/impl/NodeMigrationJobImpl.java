@@ -13,9 +13,9 @@ import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.NodeMigrationActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.migration.impl.MigrationStatusHandlerImpl;
@@ -51,7 +51,7 @@ public class NodeMigrationJobImpl extends JobImpl {
 		model.setFromVersion(fromVersion.transformToReference());
 
 		Branch branch = getBranch();
-		Project project = branch.getProject();
+		HibProject project = branch.getProject();
 		model.setProject(project.transformToReference());
 		model.setBranch(branch.transformToReference());
 
@@ -92,7 +92,7 @@ public class NodeMigrationJobImpl extends JobImpl {
 					throw error(BAD_REQUEST, "Schema container for job {" + getUuid() + "} can't be found.");
 				}
 
-				Project project = branch.getProject();
+				HibProject project = branch.getProject();
 				if (project == null) {
 					throw error(BAD_REQUEST, "Project for job {" + getUuid() + "} not found");
 				}

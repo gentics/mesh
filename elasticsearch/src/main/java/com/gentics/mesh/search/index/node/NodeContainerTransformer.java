@@ -21,7 +21,6 @@ import org.jsoup.Jsoup;
 
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
@@ -43,6 +42,7 @@ import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -459,7 +459,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 
 	public String generateVersion(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
 		Node node = container.getParentNode();
-		Project project = node.getProject();
+		HibProject project = node.getProject();
 
 		StringBuilder builder = new StringBuilder();
 		builder.append(container.getElementVersion());

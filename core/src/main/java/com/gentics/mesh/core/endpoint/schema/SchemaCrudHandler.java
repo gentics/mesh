@@ -23,6 +23,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.dao.impl.SchemaDaoWrapperImpl;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.SchemaRoot;
 import com.gentics.mesh.core.data.schema.Microschema;
@@ -237,7 +238,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<Schema, SchemaRespons
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				Project project = ac.getProject();
+				HibProject project = ac.getProject();
 				String projectUuid = project.getUuid();
 				UserDaoWrapper userDao = tx.data().userDao();
 				if (!userDao.hasPermission(ac.getUser(), project, GraphPermission.UPDATE_PERM)) {
@@ -274,7 +275,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<Schema, SchemaRespons
 			utils.syncTx(ac, tx -> {
 				SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 				UserDaoWrapper userDao = tx.data().userDao();
-				Project project = ac.getProject();
+				HibProject project = ac.getProject();
 				String projectUuid = project.getUuid();
 
 				if (!userDao.hasPermission(ac.getUser(), project, GraphPermission.UPDATE_PERM)) {

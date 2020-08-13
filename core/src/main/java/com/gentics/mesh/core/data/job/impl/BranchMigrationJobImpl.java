@@ -13,8 +13,8 @@ import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BranchMigrationContext;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.migration.impl.BranchMigrationImpl;
 import com.gentics.mesh.core.migration.impl.MigrationStatusHandlerImpl;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -42,7 +42,7 @@ public class BranchMigrationJobImpl extends JobImpl {
 		Branch newBranch = getBranch();
 		model.setBranch(newBranch.transformToReference());
 
-		Project project = newBranch.getProject();
+		HibProject project = newBranch.getProject();
 		model.setProject(project.transformToReference());
 
 		model.setStatus(status);

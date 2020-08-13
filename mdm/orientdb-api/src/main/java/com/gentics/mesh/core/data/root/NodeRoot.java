@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.root;
 
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 
@@ -23,7 +24,7 @@ public interface NodeRoot extends RootVertex<Node> {
 	 *            Project to which the node should be assigned to
 	 * @return Created node
 	 */
-	default Node create(HibUser user, SchemaVersion container, Project project) {
+	default Node create(HibUser user, SchemaVersion container, HibProject project) {
 		return create(user, container, project, null);
 	}
 
@@ -40,6 +41,6 @@ public interface NodeRoot extends RootVertex<Node> {
 	 *            Optional uuid
 	 * @return Created node
 	 */
-	Node create(HibUser user, SchemaVersion container, Project project, String uuid);
+	Node create(HibUser user, SchemaVersion container, HibProject project, String uuid);
 
 }

@@ -24,10 +24,10 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.actions.impl.NodeDAOActionsImpl;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Language;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -131,7 +131,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, () -> {
-				Project project = ac.getProject();
+				HibProject project = ac.getProject();
 
 				// TODO Add support for moving nodes across projects.
 				// This is tricky since the branch consistency must be taken care of
@@ -250,7 +250,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				Project project = ac.getProject();
+				HibProject project = ac.getProject();
 				Branch branch = ac.getBranch();
 				Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 				Tag tag = boot.meshRoot().getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
@@ -289,7 +289,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, () -> {
-				Project project = ac.getProject();
+				HibProject project = ac.getProject();
 				Branch branch = ac.getBranch();
 				Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 				Tag tag = boot.meshRoot().getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
@@ -475,7 +475,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				Project project = ac.getProject();
+				HibProject project = ac.getProject();
 				Node node = project.getNodeRoot().loadObjectByUuid(ac, nodeUuid, UPDATE_PERM);
 				TransformablePage<? extends Tag> page = utils.eventAction(batch -> {
 					return node.updateTags(ac, batch);

@@ -18,6 +18,7 @@ import com.gentics.mesh.core.data.branch.BranchMicroschemaEdge;
 import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.schema.Microschema;
@@ -215,7 +216,7 @@ public class BranchWrapper implements Branch, HibBranch {
 		delegate.remove();
 	}
 
-	public Project getProject() {
+	public HibProject getProject() {
 		return delegate.getProject();
 	}
 

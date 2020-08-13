@@ -5,9 +5,9 @@ import java.util.function.Predicate;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
@@ -75,7 +75,7 @@ public interface MicroschemaDaoWrapper extends MicroschemaDao {
 	 *            reference
 	 * @return
 	 */
-	default MicroschemaVersion fromReference(Project project, MicroschemaReference reference) {
+	default MicroschemaVersion fromReference(HibProject project, MicroschemaReference reference) {
 		return fromReference(project, reference, null);
 	}
 
@@ -90,7 +90,7 @@ public interface MicroschemaDaoWrapper extends MicroschemaDao {
 	 *            branch
 	 * @return
 	 */
-	MicroschemaVersion fromReference(Project project, MicroschemaReference reference, Branch branch);
+	MicroschemaVersion fromReference(HibProject project, MicroschemaReference reference, Branch branch);
 
 	void delete(Microschema microschema, BulkActionContext bac);
 

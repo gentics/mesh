@@ -14,6 +14,7 @@ import java.util.List;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
@@ -31,7 +32,7 @@ public interface Taggable {
 	 * 
 	 * @return Project of the element
 	 */
-	Project getProject();
+	HibProject getProject();
 
 	/**
 	 * Extract the tags to be set from the TagListUpdateRequest which is expected to be in the body of the action context.
@@ -54,7 +55,7 @@ public interface Taggable {
 	 */
 	default List<Tag> getTagsToSet(List<TagReference> list, InternalActionContext ac, EventQueueBatch batch) {
 		List<Tag> tags = new ArrayList<>();
-		Project project = getProject();
+		HibProject project = getProject();
 		TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();
 		UserDaoWrapper userDao = Tx.get().data().userDao();
 		HibUser user = ac.getUser();

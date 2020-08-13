@@ -15,9 +15,9 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.webroot.PathPrefixUtil;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -44,7 +44,7 @@ public class WebRootServiceImpl implements WebRootService {
 
 	@Override
 	public Path findByProjectPath(InternalActionContext ac, String path, ContainerType type) {
-		Project project = ac.getProject();
+		HibProject project = ac.getProject();
 		Branch branch = ac.getBranch();
 
 		Path cachedPath = pathStore.getPath(project, branch, type, path);

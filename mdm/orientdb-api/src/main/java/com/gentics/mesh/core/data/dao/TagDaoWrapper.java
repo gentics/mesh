@@ -5,11 +5,11 @@ import java.util.List;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -50,7 +50,7 @@ public interface TagDaoWrapper extends TagDao, DaoWrapper<Tag>, DaoTransformable
 	 *            User that is used to assign creator and editor references of the new tag.
 	 * @return
 	 */
-	Tag create(TagFamily tagFamily, String name, Project project, HibUser creator);
+	Tag create(TagFamily tagFamily, String name, HibProject project, HibUser creator);
 
 	/**
 	 * Create a new tag with the given name and creator. Note that this method will not check for any tag name collisions. Note that the created tag will also
@@ -66,7 +66,7 @@ public interface TagDaoWrapper extends TagDao, DaoWrapper<Tag>, DaoTransformable
 	 *            Optional uuid
 	 * @return
 	 */
-	Tag create(TagFamily tagFamily, String name, Project project, HibUser creator, String uuid);
+	Tag create(TagFamily tagFamily, String name, HibProject project, HibUser creator, String uuid);
 
 	void delete(Tag tag, BulkActionContext bac);
 
@@ -80,7 +80,7 @@ public interface TagDaoWrapper extends TagDao, DaoWrapper<Tag>, DaoTransformable
 
 	TraversalResult<? extends Tag> findAllGlobal();
 
-	Tag loadObjectByUuid(Project project, InternalActionContext ac, String tagUuid, GraphPermission readPerm);
+	Tag loadObjectByUuid(HibProject project, InternalActionContext ac, String tagUuid, GraphPermission readPerm);
 
 	/**
 	 * Return a page of nodes that are visible to the user and which are tagged by this tag. Use the paging and language information provided.

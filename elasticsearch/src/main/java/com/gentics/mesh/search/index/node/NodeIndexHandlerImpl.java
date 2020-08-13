@@ -28,6 +28,7 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.search.MoveDocumentEntry;
@@ -354,7 +355,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 
 	public Set<String> getIndicesForSearch(InternalActionContext ac, ContainerType type) {
 		return db.tx(() -> {
-			Project project = ac.getProject();
+			HibProject project = ac.getProject();
 			if (project != null) {
 				Branch branch = ac.getBranch();
 				return Collections.singleton(NodeGraphFieldContainer.composeIndexPattern(
@@ -645,7 +646,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 			// Not found
 			throw error(INTERNAL_SERVER_ERROR, "error_element_not_found", uuid);
 		} else {
-			Project project = node.getProject();
+			HibProject project = node.getProject();
 
 			List<UpdateBulkEntry> entries = new ArrayList<>();
 

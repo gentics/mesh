@@ -17,11 +17,11 @@ import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.image.spi.ImageInfo;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
@@ -104,7 +104,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 
 		// Load needed elements
 		Node node = db.tx(tx -> {
-			Project project = ac.getProject();
+			HibProject project = ac.getProject();
 			Node n = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 
 			Language language = tx.data().languageDao().findByLanguageTag(languageTag);

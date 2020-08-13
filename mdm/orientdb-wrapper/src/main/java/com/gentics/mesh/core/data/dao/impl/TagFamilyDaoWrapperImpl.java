@@ -16,7 +16,6 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
@@ -25,6 +24,7 @@ import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.impl.TagFamilyWrapper;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
@@ -60,14 +60,14 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper implements TagFa
 	}
 
 	@Override
-	public TagFamilyWrapper findByName(Project project, String name) {
+	public TagFamilyWrapper findByName(HibProject project, String name) {
 		TagFamilyRoot root = project.getTagFamilyRoot();
 		TagFamily tagFamily = root.findByName(name);
 		return TagFamilyWrapper.wrap(tagFamily);
 	}
 
 	@Override
-	public TagFamilyWrapper findByUuid(Project project, String uuid) {
+	public TagFamilyWrapper findByUuid(HibProject project, String uuid) {
 		TagFamilyRoot root = project.getTagFamilyRoot();
 		TagFamily tagFamily = root.findByUuid(uuid);
 		return TagFamilyWrapper.wrap(tagFamily);
@@ -115,7 +115,7 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper implements TagFa
 	@Override
 	public boolean update(TagFamily tagFamily, InternalActionContext ac, EventQueueBatch batch) {
 		TagFamilyUpdateRequest requestModel = ac.fromJson(TagFamilyUpdateRequest.class);
-		Project project = ac.getProject();
+		HibProject project = ac.getProject();
 		String newName = requestModel.getName();
 
 		if (isEmpty(newName)) {
@@ -135,7 +135,7 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper implements TagFa
 	}
 
 	@Override
-	public TagFamily create(Project project, InternalActionContext ac, EventQueueBatch batch, String uuid) {
+	public TagFamily create(HibProject project, InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		MeshAuthUser requestUser = ac.getUser();
 		UserDaoWrapper userDao = boot.get().userDao();
 		TagFamilyCreateRequest requestModel = ac.fromJson(TagFamilyCreateRequest.class);
@@ -164,7 +164,7 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper implements TagFa
 	}
 
 	@Override
-	public TraversalResult<? extends TagFamily> findAll(Project project) {
+	public TraversalResult<? extends TagFamily> findAll(HibProject project) {
 		return project.getTagFamilyRoot().findAll();
 	}
 

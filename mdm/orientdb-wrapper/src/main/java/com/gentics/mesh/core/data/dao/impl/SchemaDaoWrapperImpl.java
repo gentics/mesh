@@ -20,7 +20,6 @@ import javax.inject.Provider;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
@@ -29,6 +28,7 @@ import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.impl.SchemaWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.SchemaRoot;
 import com.gentics.mesh.core.data.schema.Microschema;
@@ -106,7 +106,7 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper implements SchemaDa
 	}
 
 	@Override
-	public TransformablePage<? extends Schema> findAll(InternalActionContext ac, Project project, PagingParameters pagingInfo) {
+	public TransformablePage<? extends Schema> findAll(InternalActionContext ac, HibProject project, PagingParameters pagingInfo) {
 		return project.getSchemaContainerRoot().findAll(ac, pagingInfo);
 	}
 
@@ -130,7 +130,7 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper implements SchemaDa
 	}
 
 	@Override
-	public SchemaVersion fromReference(Project project, SchemaReference reference) {
+	public SchemaVersion fromReference(HibProject project, SchemaReference reference) {
 		if (reference == null) {
 			throw error(INTERNAL_SERVER_ERROR, "Missing schema reference");
 		}
@@ -174,13 +174,13 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper implements SchemaDa
 	}
 
 	@Override
-	public Schema findByUuid(Project project, String schemaUuid) {
+	public Schema findByUuid(HibProject project, String schemaUuid) {
 		Schema schema = project.getSchemaContainerRoot().findByUuid(schemaUuid);
 		return SchemaWrapper.wrap(schema);
 	}
 
 	@Override
-	public Schema findByName(Project project, String schemaName) {
+	public Schema findByName(HibProject project, String schemaName) {
 		Schema schema = project.getSchemaContainerRoot().findByName(schemaName);
 		return SchemaWrapper.wrap(schema);
 	}

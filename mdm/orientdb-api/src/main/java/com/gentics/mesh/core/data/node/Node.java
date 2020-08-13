@@ -20,13 +20,13 @@ import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.ProjectElement;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.Taggable;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -263,7 +263,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *
 	 * @param project
 	 */
-	void setProject(Project project);
+	void setProject(HibProject project);
 
 	/**
 	 * Return the children for this node for all branches.
@@ -324,7 +324,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param project
 	 * @return
 	 */
-	Node create(HibUser creator, SchemaVersion schemaVersion, Project project);
+	Node create(HibUser creator, SchemaVersion schemaVersion, HibProject project);
 
 	/**
 	 * Create a child node in this node in the given branch
@@ -335,7 +335,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param branch
 	 * @return
 	 */
-	default Node create(HibUser creator, SchemaVersion schemaVersion, Project project, Branch branch) {
+	default Node create(HibUser creator, SchemaVersion schemaVersion, HibProject project, Branch branch) {
 		return create(creator, schemaVersion, project, branch, null);
 	}
 
@@ -349,7 +349,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param uuid
 	 * @return
 	 */
-	Node create(HibUser creator, SchemaVersion schemaVersion, Project project, Branch branch, String uuid);
+	Node create(HibUser creator, SchemaVersion schemaVersion, HibProject project, Branch branch, String uuid);
 
 	/**
 	 * Return a page with child nodes that are visible to the given user.

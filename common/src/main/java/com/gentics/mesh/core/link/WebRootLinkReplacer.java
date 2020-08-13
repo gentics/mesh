@@ -17,8 +17,8 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.handler.VersionHandler;
@@ -260,7 +260,7 @@ public class WebRootLinkReplacer {
 			languageTags = languageTagList.toArray(new String[languageTagList.size()]);
 		}
 
-		Project theirProject = node.getProject();
+		HibProject theirProject = node.getProject();
 
 		Branch branch = theirProject.findBranchOrLatest(branchNameOrUuid);
 
