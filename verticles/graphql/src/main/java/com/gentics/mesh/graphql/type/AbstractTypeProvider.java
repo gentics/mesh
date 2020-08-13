@@ -319,12 +319,13 @@ public abstract class AbstractTypeProvider {
 	 * Handle the UUID or name arguments and locate and return the vertex from the root vertex.
 	 * 
 	 * @param env
+	 * @param parent
 	 * @param root
 	 * @return
 	 */
-	protected HibCoreElement handleUuidNameArgs(DataFetchingEnvironment env, DAOActions<?, ?> actions) {
+	protected HibCoreElement handleUuidNameArgs(DataFetchingEnvironment env, Object parent, DAOActions<?, ?> actions) {
 		GraphQLContext gc = env.getContext();
-		HibCoreElement element = handleUuidNameArgsNoPerm(env, uuid -> actions.loadByUuid(context(Tx.get(), gc), uuid, null, false),
+		HibCoreElement element = handleUuidNameArgsNoPerm(env, uuid -> actions.loadByUuid(context(Tx.get(), gc, parent), uuid, null, false),
 			name -> actions.loadByName(context(Tx.get(), gc), name, null, false));
 		if (element == null) {
 			return null;
@@ -514,12 +515,12 @@ public abstract class AbstractTypeProvider {
 				GraphQLContext gc = env.getContext();
 				if (hidePermissionsErrors) {
 					try {
-						return handleUuidNameArgs(env, actions);
+						return handleUuidNameArgs(env, null, actions);
 					} catch (PermissionException e) {
 						return null;
 					}
 				} else {
-					return handleUuidNameArgs(env, actions);
+					return handleUuidNameArgs(env, null, actions);
 				}
 			}).build();
 	}
