@@ -29,7 +29,6 @@ import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.branch.HibBranch;
@@ -49,6 +48,8 @@ import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
@@ -107,11 +108,11 @@ public class TestDataProvider {
 
 	private Map<String, Schema> schemaContainers = new HashMap<>();
 	private Map<String, Microschema> microschemaContainers = new HashMap<>();
-	private Map<String, TagFamily> tagFamilies = new HashMap<>();
+	private Map<String, HibTagFamily> tagFamilies = new HashMap<>();
 	private long contentCount = 0;
 	private Map<String, Node> folders = new HashMap<>();
 	private Map<String, Node> contents = new HashMap<>();
-	private Map<String, Tag> tags = new HashMap<>();
+	private Map<String, HibTag> tags = new HashMap<>();
 	private Map<String, HibUser> users = new HashMap<>();
 	private Map<String, Role> roles = new HashMap<>();
 	private Map<String, Group> groups = new HashMap<>();
@@ -300,8 +301,8 @@ public class TestDataProvider {
 
 	private void addTags() {
 
-		TagFamily colorTags = tagFamilies.get("colors");
-		TagFamily basicTags = tagFamilies.get("basic");
+		HibTagFamily colorTags = tagFamilies.get("colors");
+		HibTagFamily basicTags = tagFamilies.get("basic");
 
 		// Tags for categories
 		addTag("Vehicle", basicTags);
@@ -572,16 +573,16 @@ public class TestDataProvider {
 		return folderNode;
 	}
 
-	public Tag addTag(String name) {
+	public HibTag addTag(String name) {
 		return addTag(name, getTagFamily("demo"));
 	}
 
-	public Tag addTag(String name, TagFamily tagFamily) {
+	public HibTag addTag(String name, HibTagFamily tagFamily) {
 		TagDaoWrapper tagDao = Tx.get().data().tagDao();
 		if (name == null || StringUtils.isEmpty(name)) {
 			throw new RuntimeException("Name for tag empty");
 		}
-		Tag tag = tagDao.create(tagFamily, name, project, userInfo.getUser());
+		HibTag tag = tagDao.create(tagFamily, name, project, userInfo.getUser());
 		tags.put(name.toLowerCase(), tag);
 		return tag;
 	}
@@ -661,7 +662,7 @@ public class TestDataProvider {
 		return folders.get(name);
 	}
 
-	public TagFamily getTagFamily(String key) {
+	public HibTagFamily getTagFamily(String key) {
 		return tagFamilies.get(key);
 	}
 
@@ -669,7 +670,7 @@ public class TestDataProvider {
 		return contents.get(name);
 	}
 
-	public Tag getTag(String name) {
+	public HibTag getTag(String name) {
 		return tags.get(name);
 	}
 
@@ -677,7 +678,7 @@ public class TestDataProvider {
 		return schemaContainers.get(name);
 	}
 
-	public Map<String, Tag> getTags() {
+	public Map<String, HibTag> getTags() {
 		return tags;
 	}
 
@@ -718,7 +719,7 @@ public class TestDataProvider {
 		return folders.size() + contents.size() + 1;
 	}
 
-	public Map<String, TagFamily> getTagFamilies() {
+	public Map<String, HibTagFamily> getTagFamilies() {
 		return tagFamilies;
 	}
 

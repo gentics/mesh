@@ -7,8 +7,8 @@ import static org.junit.Assert.assertNotNull;
 
 import org.assertj.core.api.AbstractAssert;
 
-import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.tag.TagReference;
@@ -26,7 +26,7 @@ public class NodeResponseAssert extends AbstractAssert<NodeResponseAssert, NodeR
 	 * @param tag
 	 * @return
 	 */
-	public boolean contains(Tag tag) {
+	public boolean contains(HibTag tag) {
 		assertNotNull(tag);
 		assertNotNull(tag.getUuid());
 		assertNotNull(actual);

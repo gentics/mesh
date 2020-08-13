@@ -41,6 +41,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -341,7 +342,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 			HibProject project = ac.getProject();
 			BranchDaoWrapper branchDao = tx.data().branchDao();
 			HibBranch branch = branchDao.loadObjectByUuid(project, ac, uuid, READ_PERM);
-			TransformablePage<? extends Tag> tagPage = branch.getTags(ac.getUser(), ac.getPagingParameters());
+			TransformablePage<? extends HibTag> tagPage = branch.getTags(ac.getUser(), ac.getPagingParameters());
 			return tagPage.transformToRestSync(ac, 0);
 		}, model -> ac.send(model, OK));
 	}
@@ -367,7 +368,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 				TagDaoWrapper tagDao = tx.data().tagDao();
 
 				HibBranch branch = branchDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
-				Tag tag = tagDao.loadObjectByUuid(project, ac, tagUuid, READ_PERM);
+				HibTag tag = tagDao.loadObjectByUuid(project, ac, tagUuid, READ_PERM);
 
 				// TODO check if the branch is already tagged
 				if (branch.hasTag(tag)) {
@@ -407,7 +408,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 				TagDaoWrapper tagDao = tx.data().tagDao();
 
 				HibBranch branch = branchDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
-				Tag tag = tagDao.loadObjectByUuid(project, ac, tagUuid, READ_PERM);
+				HibTag tag = tagDao.loadObjectByUuid(project, ac, tagUuid, READ_PERM);
 
 				// TODO check if the tag has already been removed
 
@@ -444,7 +445,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 				HibProject project = ac.getProject();
 
 				HibBranch branch = branchDao.loadObjectByUuid(project, ac, branchUuid, UPDATE_PERM);
-				TransformablePage<? extends Tag> page = utils.eventAction(batch -> {
+				TransformablePage<? extends HibTag> page = utils.eventAction(batch -> {
 					return branch.updateTags(ac, batch);
 				});
 

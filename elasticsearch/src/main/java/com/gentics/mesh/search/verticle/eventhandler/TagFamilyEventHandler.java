@@ -18,6 +18,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.MeshProjectElementEventModel;
 import com.gentics.mesh.core.rest.event.ProjectEvent;
@@ -56,7 +57,7 @@ public class TagFamilyEventHandler implements EventHandler {
 			if (event == TAG_FAMILY_CREATED || event == TAG_FAMILY_UPDATED) {
 				return helper.getDb().tx(() -> {
 					// We also need to update all tags of this family
-					Optional<TagFamily> tagFamily = entities.tagFamily.getElement(model);
+					Optional<HibTagFamily> tagFamily = entities.tagFamily.getElement(model);
 
 					Stream<SearchRequest> tagFamilyUpdate = toStream(tagFamily)
 						.map(tf -> entities.createRequest(tf, projectUuid));

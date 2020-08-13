@@ -44,6 +44,8 @@ import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.ListResponse;
@@ -74,8 +76,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		try (Tx tx = tx()) {
 			TagDaoWrapper tagDao = tx.data().tagDao();
 			// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
-			TagFamily basicTagFamily = tagFamily("basic");
-			Tag noPermTag = tagDao.create(basicTagFamily, "noPermTag", project(), user());
+			HibTagFamily basicTagFamily = tagFamily("basic");
+			HibTag noPermTag = tagDao.create(basicTagFamily, "noPermTag", project(), user());
 			String noPermTagUUID = noPermTag.getUuid();
 			// TODO check whether the project reference should be moved from generic class into node mesh class and thus not be available for tags
 			basicTagFamily.addTag(noPermTag);
@@ -144,7 +146,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 	@Test
 	public void testReadMetaCountOnly() {
 		try (Tx tx = tx()) {
-			TagFamily parentTagFamily = tagFamily("colors");
+			HibTagFamily parentTagFamily = tagFamily("colors");
 
 			TagListResponse pageResponse = client().findTags(PROJECT_NAME, parentTagFamily.getUuid(), new PagingParametersImpl(1, 0L)).blockingGet();
 			assertEquals(0, pageResponse.getData().size());
@@ -154,8 +156,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 	@Test
 	public void testReadByUUID() throws Exception {
 		try (Tx tx = tx()) {
-			Tag tag = tag("red");
-			TagFamily parentTagFamily = tagFamily("colors");
+			HibTag tag = tag("red");
+			HibTagFamily parentTagFamily = tagFamily("colors");
 
 			assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
 			TagResponse response = client().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), tag.getUuid()).blockingGet();
@@ -166,9 +168,9 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 	@Test
 	public void testReadByUuidWithRolePerms() {
 		try (Tx tx = tx()) {
-			Tag tag = tag("red");
+			HibTag tag = tag("red");
 			String uuid = tag.getUuid();
-			TagFamily parentTagFamily = tagFamily("colors");
+			HibTagFamily parentTagFamily = tagFamily("colors");
 
 			TagResponse response = call(() -> client().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), uuid, new RolePermissionParametersImpl()
 				.setRoleUuid(role().getUuid())));
@@ -182,9 +184,9 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		String parentTagFamilyUuid;
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
-			TagFamily parentTagFamily = tagFamily("basic");
+			HibTagFamily parentTagFamily = tagFamily("basic");
 			parentTagFamilyUuid = parentTagFamily.getUuid();
-			Tag tag = tag("vehicle");
+			HibTag tag = tag("vehicle");
 			uuid = tag.getUuid();
 			assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
 			roleDao.revokePermissions(role(), tag, READ_PERM);
@@ -200,10 +202,10 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 	public void testUpdate() throws Exception {
 		final String newName = "new Name";
 
-		Tag tag = tag("vehicle");
+		HibTag tag = tag("vehicle");
 		String tagUuid = tx(() -> tag.getUuid());
 
-		TagFamily parentTagFamily = tagFamily("basic");
+		HibTagFamily parentTagFamily = tagFamily("basic");
 		String parentTagFamilyUuid = tx(() -> parentTagFamily.getUuid());
 
 		TagUpdateRequest tagUpdateRequest = new TagUpdateRequest();
@@ -271,8 +273,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 	@Test
 	public void testUpdateTagWithConflictingName() {
 		try (Tx tx = tx()) {
-			Tag tag = tag("red");
-			TagFamily parentTagFamily = tagFamily("colors");
+			HibTag tag = tag("red");
+			HibTagFamily parentTagFamily = tagFamily("colors");
 
 			String uuid = tag.getUuid();
 			String tagFamilyName = tag.getTagFamily().getName();
@@ -292,8 +294,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 	@Test
 	public void testUpdateTagWithNoName() {
 		try (Tx tx = tx()) {
-			Tag tag = tag("red");
-			TagFamily parentTagFamily = tagFamily("colors");
+			HibTag tag = tag("red");
+			HibTagFamily parentTagFamily = tagFamily("colors");
 
 			String uuid = tag.getUuid();
 			TagUpdateRequest tagUpdateRequest = new TagUpdateRequest();
@@ -305,8 +307,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 	@Test
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
-		Tag tag = tag("vehicle");
-		TagFamily parentTagFamily = tagFamily("basic");
+		HibTag tag = tag("vehicle");
+		HibTagFamily parentTagFamily = tagFamily("basic");
 
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
@@ -336,8 +338,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 	public void testDeleteByUUID() throws Exception {
 		final String projectUuid = db().tx(() -> project().getUuid());
 		final String branchUuid = db().tx(() -> project().getLatestBranch().getUuid());
-		final Tag tag = tag("vehicle");
-		final TagFamily parentTagFamily = tagFamily("basic");
+		final HibTag tag = tag("vehicle");
+		final HibTagFamily parentTagFamily = tagFamily("basic");
 		final String parentTagFamilyUuid = tx(() -> parentTagFamily.getUuid());
 		final String tagUuid = tx(() -> tag.getUuid());
 
@@ -378,7 +380,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			}
 			assertThat(trackingSearchProvider()).hasEvents(4, 0, 1, 0, 0);
 
-			Tag reloadedTag = boot().tagRoot().findByUuid(tagUuid);
+			HibTag reloadedTag = boot().tagRoot().findByUuid(tagUuid);
 			assertNull("The tag should have been deleted", reloadedTag);
 
 			HibProject project = tx.data().projectDao().findByName(PROJECT_NAME);
@@ -397,9 +399,9 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 
 		String uuid;
 		try (Tx tx = tx()) {
-			Tag tag = tag("vehicle");
+			HibTag tag = tag("vehicle");
 			uuid = tag.getUuid();
-			TagFamily parentTagFamily = tagFamily("basic");
+			HibTagFamily parentTagFamily = tagFamily("basic");
 			call(() -> client().deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid), FORBIDDEN, "error_missing_perm", uuid,
 				DELETE_PERM.getRestPerm().getName());
 		}
@@ -413,7 +415,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 	@Test
 	public void testCreateConflictingName() {
 		try (Tx tx = tx()) {
-			TagFamily tagFamily = tagFamily("colors");
+			HibTagFamily tagFamily = tagFamily("colors");
 
 			TagCreateRequest tagCreateRequest = new TagCreateRequest();
 			tagCreateRequest.setName("red");
@@ -502,14 +504,14 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 	@Test
 	public void testCreateTagWithSameNameInSameTagFamily() {
 		try (Tx tx = tx()) {
-			TagFamily parentTagFamily = tagFamily("colors");
+			HibTagFamily parentTagFamily = tagFamily("colors");
 
 			TagCreateRequest tagCreateRequest = new TagCreateRequest();
 			assertNotNull("We expect that a tag with the name already exists.", tag("red"));
 			tagCreateRequest.setName("red");
 			String tagFamilyName;
 
-			TagFamily tagFamily = data().getTagFamilies().get("colors");
+			HibTagFamily tagFamily = data().getTagFamilies().get("colors");
 			tagFamilyName = tagFamily.getName();
 			// tagCreateRequest.setTagFamily(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
 			call(() -> client().createTag(PROJECT_NAME, parentTagFamily.getUuid(), tagCreateRequest), CONFLICT,
@@ -523,7 +525,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 	public void testUpdateMultithreaded() throws Exception {
 		int nJobs = 5;
 		try (Tx tx = tx()) {
-			TagFamily parentTagFamily = tagFamily("colors");
+			HibTagFamily parentTagFamily = tagFamily("colors");
 
 			TagUpdateRequest request = new TagUpdateRequest();
 			request.setName("newName");
@@ -539,7 +541,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 	public void testReadByUuidMultithreaded() throws Exception {
 		int nJobs = 100;
 		try (Tx tx = tx()) {
-			TagFamily parentTagFamily = tagFamily("colors");
+			HibTagFamily parentTagFamily = tagFamily("colors");
 
 			String uuid = tag("red").getUuid();
 
@@ -553,7 +555,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 	public void testDeleteByUUIDMultithreaded() throws Exception {
 		int nJobs = 3;
 		try (Tx tx = tx()) {
-			TagFamily parentTagFamily = tagFamily("colors");
+			HibTagFamily parentTagFamily = tagFamily("colors");
 
 			String uuid = tag("red").getUuid();
 			validateDeletion(i -> client().deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid), nJobs);
@@ -565,7 +567,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 	@Override
 	public void testCreateMultithreaded() throws Exception {
 		int nJobs = 200;
-		TagFamily parentTagFamily = tagFamily("colors");
+		HibTagFamily parentTagFamily = tagFamily("colors");
 
 		validateCreation(nJobs, i -> {
 			TagCreateRequest request = new TagCreateRequest();
@@ -579,7 +581,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
 		int nJobs = 200;
 		try (Tx tx = tx()) {
-			TagFamily parentTagFamily = tagFamily("colors");
+			HibTagFamily parentTagFamily = tagFamily("colors");
 
 			awaitConcurrentRequests(nJobs, i -> client().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), tag("red").getUuid()));
 		}
@@ -590,7 +592,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 	public void testCreateReadDelete() throws Exception {
 		TagCreateRequest tagCreateRequest = new TagCreateRequest();
 		tagCreateRequest.setName("SomeName");
-		TagFamily tagFamily = data().getTagFamilies().get("colors");
+		HibTagFamily tagFamily = data().getTagFamilies().get("colors");
 		// tagCreateRequest.setTagFamily(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
 
 		try (Tx tx = tx()) {
@@ -617,9 +619,9 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		String parentTagFamilyUuid;
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
-			Tag tag = tag("red");
+			HibTag tag = tag("red");
 
-			TagFamily parentTagFamily = tagFamily("colors");
+			HibTagFamily parentTagFamily = tagFamily("colors");
 			parentTagFamilyUuid = parentTagFamily.getUuid();
 
 			assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
@@ -639,7 +641,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		TagUpdateRequest request = new TagUpdateRequest();
 		request.setName("newName");
 		try (Tx tx = tx()) {
-			TagFamily parentTagFamily = tagFamily("colors");
+			HibTagFamily parentTagFamily = tagFamily("colors");
 			call(() -> client().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), "bogus", request), BAD_REQUEST, "error_illegal_uuid", "bogus");
 		}
 

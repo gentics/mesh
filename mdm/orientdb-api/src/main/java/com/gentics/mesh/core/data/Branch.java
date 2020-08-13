@@ -17,6 +17,7 @@ import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
@@ -365,14 +366,14 @@ public interface Branch
 	 * 
 	 * @param tag
 	 */
-	void addTag(Tag tag);
+	void addTag(HibTag tag);
 
 	/**
 	 * Remove the given tag from the list of tags for this branch.
 	 * 
 	 * @param tag
 	 */
-	void removeTag(Tag tag);
+	void removeTag(HibTag tag);
 
 	/**
 	 * Remove all tags.
@@ -384,7 +385,7 @@ public interface Branch
 	 *
 	 * @return
 	 */
-	TraversalResult<? extends Tag> getTags();
+	TraversalResult<? extends HibTag> getTags();
 
 	/**
 	 * Return a page of all visible tags that are assigned to the branch.
@@ -401,7 +402,7 @@ public interface Branch
 	 * @param tag
 	 * @return
 	 */
-	boolean hasTag(Tag tag);
+	boolean hasTag(HibTag tag);
 
 	/**
 	 * Handle the update tags request.
@@ -410,7 +411,7 @@ public interface Branch
 	 * @param batch
 	 * @return Page which includes the new set of tags
 	 */
-	TransformablePage<? extends Tag> updateTags(InternalActionContext ac, EventQueueBatch batch);
+	TransformablePage<? extends HibTag> updateTags(InternalActionContext ac, EventQueueBatch batch);
 
 	/**
 	 * Generate event which is send when the branch is set to be the latest of the project.

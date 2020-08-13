@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 
 import org.assertj.core.api.AbstractAssert;
 
-import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.tag.TagReference;
 
@@ -151,7 +151,7 @@ public class BranchResponseAssert extends AbstractAssert<BranchResponseAssert, B
 	 * @param tag
 	 * @return
 	 */
-	public boolean contains(Tag tag) {
+	public boolean contains(HibTag tag) {
 		assertNotNull(tag);
 		assertNotNull(tag.getUuid());
 		assertNotNull(actual);

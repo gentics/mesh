@@ -14,6 +14,7 @@ import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -27,7 +28,7 @@ public class TagFamilyDAOActionsImpl implements TagFamilyDAOActions {
 	}
 
 	@Override
-	public TagFamily loadByUuid(DAOActionContext ctx, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+	public HibTagFamily loadByUuid(DAOActionContext ctx, String uuid, GraphPermission perm, boolean errorIfNotFound) {
 		if (perm == null) {
 			return ctx.project().getTagFamilyRoot().findByUuid(uuid);
 		} else {
@@ -36,7 +37,7 @@ public class TagFamilyDAOActionsImpl implements TagFamilyDAOActions {
 	}
 
 	@Override
-	public TagFamily loadByName(DAOActionContext ctx, String name, GraphPermission perm, boolean errorIfNotFound) {
+	public HibTagFamily loadByName(DAOActionContext ctx, String name, GraphPermission perm, boolean errorIfNotFound) {
 		if (perm == null) {
 			return ctx.project().getTagFamilyRoot().findByName(name);
 		} else {
@@ -50,43 +51,45 @@ public class TagFamilyDAOActionsImpl implements TagFamilyDAOActions {
 	}
 
 	@Override
-	public Page<? extends TagFamily> loadAll(DAOActionContext ctx, PagingParameters pagingInfo,
-		Predicate<TagFamily> extraFilter) {
+	public Page<? extends HibTagFamily> loadAll(DAOActionContext ctx, PagingParameters pagingInfo,
+		Predicate<HibTagFamily> extraFilter) {
 		return ctx.project().getTagFamilyRoot().findAll(ctx.ac(), pagingInfo, extraFilter);
 	}
 
 	@Override
-	public boolean update(Tx tx, TagFamily tagFamily, InternalActionContext ac, EventQueueBatch batch) {
+	public boolean update(Tx tx, HibTagFamily tagFamily, InternalActionContext ac, EventQueueBatch batch) {
 		TagFamilyDaoWrapper tagFamilyDao = tx.data().tagFamilyDao();
 		return tagFamilyDao.update(tagFamily, ac, batch);
 	}
 
 	@Override
-	public TagFamily create(Tx tx, InternalActionContext ac, EventQueueBatch batch, String uuid) {
+	public HibTagFamily create(Tx tx, InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		TagFamilyDaoWrapper tagFamilyDao = tx.data().tagFamilyDao();
 		return tagFamilyDao.create(ac.getProject(), ac, batch, uuid);
 	}
 
 	@Override
-	public void delete(Tx tx, TagFamily tagFamily, BulkActionContext bac) {
-		// TagFamilyDaoWrapper tagFamilyDao = tx.data().tagFamilyDao();
-		tagFamily.delete(bac);
+	public void delete(Tx tx, HibTagFamily tagFamily, BulkActionContext bac) {
+		TagFamilyDaoWrapper tagFamilyDao = tx.data().tagFamilyDao();
+		tagFamilyDao.delete(tagFamily, bac);
 	}
 
 	@Override
-	public TagFamilyResponse transformToRestSync(Tx tx, TagFamily element, InternalActionContext ac, int level, String... languageTags) {
+	public TagFamilyResponse transformToRestSync(Tx tx, HibTagFamily element, InternalActionContext ac, int level, String... languageTags) {
 		TagFamilyDaoWrapper tagFamilyDao = tx.data().tagFamilyDao();
 		return tagFamilyDao.transformToRestSync(element, ac, level, languageTags);
 	}
 
 	@Override
-	public String getAPIPath(Tx tx, InternalActionContext ac, TagFamily tagFamily) {
-		return tagFamily.getAPIPath(ac);
+	public String getAPIPath(Tx tx, InternalActionContext ac, HibTagFamily tagFamily) {
+		TagFamilyDaoWrapper tagFamilyDao = tx.data().tagFamilyDao();
+		return tagFamilyDao.getAPIPath(tagFamily, ac);
 	}
 
 	@Override
-	public String getETag(Tx tx, InternalActionContext ac, TagFamily tagFamily) {
-		return tagFamily.getETag(ac);
+	public String getETag(Tx tx, InternalActionContext ac, HibTagFamily tagFamily) {
+		TagFamilyDaoWrapper tagFamilyDao = tx.data().tagFamilyDao();
+		return tagFamilyDao.getETag(tagFamily, ac);
 	}
 
 }

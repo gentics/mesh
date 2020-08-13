@@ -14,6 +14,7 @@ import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.event.branch.BranchMicroschemaAssignModel;
@@ -333,14 +334,14 @@ public interface HibBranch extends HibCoreElement {
 	 * 
 	 * @param tag
 	 */
-	void addTag(Tag tag);
+	void addTag(HibTag tag);
 
 	/**
 	 * Remove the given tag from the list of tags for this branch.
 	 * 
 	 * @param tag
 	 */
-	void removeTag(Tag tag);
+	void removeTag(HibTag tag);
 
 	/**
 	 * Remove all tags.
@@ -352,7 +353,7 @@ public interface HibBranch extends HibCoreElement {
 	 *
 	 * @return
 	 */
-	TraversalResult<? extends Tag> getTags();
+	TraversalResult<? extends HibTag> getTags();
 
 	/**
 	 * Return a page of all visible tags that are assigned to the branch.
@@ -361,7 +362,7 @@ public interface HibBranch extends HibCoreElement {
 	 * @param params
 	 * @return Page which contains the result
 	 */
-	TransformablePage<? extends Tag> getTags(HibUser user, PagingParameters params);
+	TransformablePage<? extends HibTag> getTags(HibUser user, PagingParameters params);
 
 	/**
 	 * Tests if the branch is tagged with the given tag.
@@ -369,7 +370,7 @@ public interface HibBranch extends HibCoreElement {
 	 * @param tag
 	 * @return
 	 */
-	boolean hasTag(Tag tag);
+	boolean hasTag(HibTag tag);
 
 	/**
 	 * Handle the update tags request.
@@ -378,7 +379,7 @@ public interface HibBranch extends HibCoreElement {
 	 * @param batch
 	 * @return Page which includes the new set of tags
 	 */
-	TransformablePage<? extends Tag> updateTags(InternalActionContext ac, EventQueueBatch batch);
+	TransformablePage<? extends HibTag> updateTags(InternalActionContext ac, EventQueueBatch batch);
 
 	/**
 	 * Generate event which is send when the branch is set to be the latest of the project.
@@ -394,7 +395,7 @@ public interface HibBranch extends HibCoreElement {
 	 * @param assignment
 	 * @return
 	 */
-	BranchTaggedEventModel onTagged(Tag tag, Assignment assignment);
+	BranchTaggedEventModel onTagged(HibTag tag, Assignment assignment);
 
 	/**
 	 * Create a project schema assignment event.
@@ -422,7 +423,7 @@ public interface HibBranch extends HibCoreElement {
 	 * @param uuid
 	 * @return
 	 */
-	Tag findTagByUuid(String uuid);
+	HibTag findTagByUuid(String uuid);
 
 	BranchReference transformToReference();
 
@@ -436,8 +437,5 @@ public interface HibBranch extends HibCoreElement {
 	default Branch toBranch() {
 		return (Branch) this;
 	}
-
-
-
 
 }

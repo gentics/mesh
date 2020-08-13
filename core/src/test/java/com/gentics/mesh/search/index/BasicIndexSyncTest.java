@@ -15,7 +15,6 @@ import org.mockito.Mockito;
 
 import com.gentics.mesh.context.impl.BulkActionContextImpl;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
@@ -23,6 +22,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
@@ -179,16 +179,16 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		assertMetrics("tag", 400, 3, 0);
 
 		// Assert update
-		tx(() -> {
+		tx(tx -> {
 			tag("red").setName("updated");
 		});
 		syncIndex();
 		assertMetrics("tag", 0, 1, 0);
 
 		// Assert deletion
-		tx(() -> {
-			TagFamily tagFamily = tagFamily("colors");
-			boot().tagDao().findByName(tagFamily, "tag_3").getElement().remove();
+		tx(tx -> {
+			HibTagFamily tagFamily = tagFamily("colors");
+			boot().tagDao().findByName(tagFamily, "tag_3").deleteElement();
 		});
 		syncIndex();
 		assertMetrics("tag", 0, 0, 1);
@@ -216,8 +216,8 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		assertMetrics("tagfamily", 0, 1, 0);
 
 		// Assert deletion
-		tx(() -> {
-			boot().tagFamilyDao().findByName(project(), "tagfamily_3").getElement().remove();
+		tx(tx -> {
+			boot().tagFamilyDao().findByName(project(), "tagfamily_3").deleteElement();
 		});
 		syncIndex();
 		assertMetrics("tagfamily", 0, 0, 1);

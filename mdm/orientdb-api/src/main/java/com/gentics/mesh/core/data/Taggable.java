@@ -16,6 +16,8 @@ import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
+import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.tag.TagListUpdateRequest;
@@ -41,7 +43,7 @@ public interface Taggable {
 	 * @param batch search queue batch
 	 * @return list of tags
 	 */
-	default List<Tag> getTagsToSet(InternalActionContext ac, EventQueueBatch batch) {
+	default List<HibTag> getTagsToSet(InternalActionContext ac, EventQueueBatch batch) {
 		TagListUpdateRequest request = JsonUtil.readValue(ac.getBodyAsString(), TagListUpdateRequest.class);
 		return getTagsToSet(request.getTags(), ac, batch);
 	}
@@ -53,13 +55,14 @@ public interface Taggable {
 	 * @param batch
 	 * @return
 	 */
-	default List<Tag> getTagsToSet(List<TagReference> list, InternalActionContext ac, EventQueueBatch batch) {
-		List<Tag> tags = new ArrayList<>();
+	default List<HibTag> getTagsToSet(List<TagReference> list, InternalActionContext ac, EventQueueBatch batch) {
+		List<HibTag> tags = new ArrayList<>();
 		HibProject project = getProject();
 		TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();
 		UserDaoWrapper userDao = Tx.get().data().userDao();
-		HibUser user = ac.getUser();
 		TagDaoWrapper tagDao = Tx.get().data().tagDao();
+
+		HibUser user = ac.getUser();
 		for (TagReference tagReference : list) {
 			if (!tagReference.isSet()) {
 				throw error(BAD_REQUEST, "tag_error_name_or_uuid_missing");
@@ -68,14 +71,14 @@ public interface Taggable {
 				throw error(BAD_REQUEST, "tag_error_tagfamily_not_set");
 			}
 			// 1. Locate the tag family
-			TagFamily tagFamily = tagFamilyRoot.findByName(tagReference.getTagFamily());
+			HibTagFamily tagFamily = tagFamilyRoot.findByName(tagReference.getTagFamily());
 			// Tag Family could not be found so lets create a new one
 			if (tagFamily == null) {
 				throw error(NOT_FOUND, "tagfamily_not_found", tagReference.getTagFamily());
 			}
 			// 2. The uuid was specified so lets try to load the tag this way
 			if (!isEmpty(tagReference.getUuid())) {
-				Tag tag = tagFamily.findByUuid(tagReference.getUuid());
+				HibTag tag = tagDao.findByUuid(tagFamily, tagReference.getUuid());
 				if (tag == null) {
 					throw error(NOT_FOUND, "tag_not_found", tagReference.getUuid());
 				}
@@ -84,7 +87,7 @@ public interface Taggable {
 				}
 				tags.add(tag);
 			} else {
-				Tag tag = tagDao.findByName(tagFamily, tagReference.getName());
+				HibTag tag = tagDao.findByName(tagFamily, tagReference.getName());
 				// Tag with name could not be found so create it
 				if (tag == null) {
 					if (userDao.hasPermission(user, tagFamily, CREATE_PERM)) {

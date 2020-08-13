@@ -9,9 +9,9 @@ import java.util.Set;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.EditorTrackingVertex;
 import com.gentics.mesh.core.data.HibElement;
-import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 
 import io.vertx.core.json.JsonObject;
@@ -79,10 +79,10 @@ public abstract class AbstractTransformer<T> implements Transformer<T> {
 	 * @param document
 	 * @param tags
 	 */
-	public void addTags(JsonObject document, Iterable<? extends Tag> tags) {
+	public void addTags(JsonObject document, Iterable<? extends HibTag> tags) {
 		List<String> tagUuids = new ArrayList<>();
 		List<String> tagNames = new ArrayList<>();
-		for (Tag tag : tags) {
+		for (HibTag tag : tags) {
 			tagUuids.add(tag.getUuid());
 			tagNames.add(tag.getName());
 		}

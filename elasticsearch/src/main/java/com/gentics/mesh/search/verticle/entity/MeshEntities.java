@@ -30,6 +30,8 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
+import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
@@ -71,8 +73,8 @@ public class MeshEntities {
 	public final MeshEntity<Group> group;
 	public final MeshEntity<Role> role;
 	public final MeshEntity<HibProject> project;
-	public final MeshEntity<Tag> tag;
-	public final MeshEntity<TagFamily> tagFamily;
+	public final MeshEntity<HibTag> tag;
+	public final MeshEntity<HibTagFamily> tagFamily;
 	public final MeshEntity<Schema> schema;
 	public final MeshEntity<Microschema> microschema;
 	public final MeshEntity<NodeGraphFieldContainer> nodeContent;
@@ -157,7 +159,7 @@ public class MeshEntities {
 	 * The Tag {@link MeshEntity}.
 	 * @return
 	 */
-	public MeshEntity<Tag> getTag() {
+	public MeshEntity<HibTag> getTag() {
 		return tag;
 	}
 
@@ -165,7 +167,7 @@ public class MeshEntities {
 	 * The TagFamily {@link MeshEntity}.
 	 * @return
 	 */
-	public MeshEntity<TagFamily> getTagFamily() {
+	public MeshEntity<HibTagFamily> getTagFamily() {
 		return tagFamily;
 	}
 

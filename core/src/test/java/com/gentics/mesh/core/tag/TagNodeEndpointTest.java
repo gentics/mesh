@@ -13,12 +13,12 @@ import org.junit.Test;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -97,10 +97,10 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			TagDaoWrapper tagDao = tx.data().tagDao();
 			RoleDaoWrapper roleDao = tx.data().roleDao();
-			TagFamily root = tagFamily("basic");
-			Tag tag1 = tagDao.create(root, "test1", project(), user());
-			Tag tag2 = tagDao.create(root, "test2", project(), user());
-			Tag tag3 = tagDao.create(root, "test3", project(), user());
+			HibTagFamily root = tagFamily("basic");
+			HibTag tag1 = tagDao.create(root, "test1", project(), user());
+			HibTag tag2 = tagDao.create(root, "test2", project(), user());
+			HibTag tag3 = tagDao.create(root, "test3", project(), user());
 
 			Node node = content();
 

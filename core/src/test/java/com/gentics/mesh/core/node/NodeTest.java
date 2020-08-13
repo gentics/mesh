@@ -23,10 +23,8 @@ import org.junit.Test;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
@@ -35,6 +33,7 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
+import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.SortOrder;
@@ -97,13 +96,13 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			Node newsNode = content("news overview");
 			assertNotNull(newsNode);
 
-			Tag carTag = tag("car");
+			HibTag carTag = tag("car");
 			assertNotNull(carTag);
 
 			newsNode.addTag(carTag, project().getLatestBranch());
 
 			assertEquals(1, newsNode.getTags(project().getLatestBranch()).count());
-			Tag firstTag = newsNode.getTags(project().getLatestBranch()).iterator().next();
+			HibTag firstTag = newsNode.getTags(project().getLatestBranch()).iterator().next();
 			assertEquals(carTag.getUuid(), firstTag.getUuid());
 		}
 	}

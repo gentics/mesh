@@ -24,6 +24,7 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -220,7 +221,7 @@ public class NodeWrapper implements Node {
 		return delegate.getGraph();
 	}
 
-	public List<Tag> getTagsToSet(InternalActionContext ac, EventQueueBatch batch) {
+	public List<HibTag> getTagsToSet(InternalActionContext ac, EventQueueBatch batch) {
 		return delegate.getTagsToSet(ac, batch);
 	}
 
@@ -289,7 +290,7 @@ public class NodeWrapper implements Node {
 		return delegate.vertx();
 	}
 
-	public List<Tag> getTagsToSet(List<TagReference> list, InternalActionContext ac, EventQueueBatch batch) {
+	public List<HibTag> getTagsToSet(List<TagReference> list, InternalActionContext ac, EventQueueBatch batch) {
 		return delegate.getTagsToSet(list, ac, batch);
 	}
 
@@ -373,7 +374,7 @@ public class NodeWrapper implements Node {
 		return delegate.in(labels);
 	}
 
-	public void addTag(Tag tag, HibBranch branch) {
+	public void addTag(HibTag tag, HibBranch branch) {
 		delegate.addTag(tag, branch);
 	}
 
@@ -389,7 +390,7 @@ public class NodeWrapper implements Node {
 		delegate.linkOut(vertex, labels);
 	}
 
-	public void removeTag(Tag tag, HibBranch branch) {
+	public void removeTag(HibTag tag, HibBranch branch) {
 		delegate.removeTag(tag, branch);
 	}
 
@@ -401,11 +402,11 @@ public class NodeWrapper implements Node {
 		delegate.linkIn(vertex, labels);
 	}
 
-	public TraversalResult<? extends TagWrapper> getTags(HibBranch branch) {
-		return TagWrapper.wrap(delegate.getTags(branch));
+	public TraversalResult<? extends HibTag> getTags(HibBranch branch) {
+		return delegate.getTags(branch);
 	}
 
-	public TransformablePage<? extends Tag> getTags(HibUser user, PagingParameters params, HibBranch branch) {
+	public TransformablePage<? extends HibTag> getTags(HibUser user, PagingParameters params, HibBranch branch) {
 		return delegate.getTags(user, params, branch);
 	}
 

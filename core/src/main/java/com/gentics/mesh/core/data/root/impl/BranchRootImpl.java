@@ -25,7 +25,6 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
@@ -38,6 +37,7 @@ import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
@@ -326,8 +326,8 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 	 * @param restNode
 	 *            Rest model which will be updated
 	 */
-	private void setTagsToRest(Branch branch, InternalActionContext ac, BranchResponse restNode) {
-		restNode.setTags(branch.getTags().stream().map(Tag::transformToReference).collect(Collectors.toList()));
+	private void setTagsToRest(HibBranch branch, InternalActionContext ac, BranchResponse restNode) {
+		restNode.setTags(branch.getTags().stream().map(HibTag::transformToReference).collect(Collectors.toList()));
 	}
 
 }

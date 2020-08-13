@@ -29,13 +29,14 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
@@ -204,11 +205,11 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return data().getTagFamilies();
 	}
 
-	default TagFamily tagFamily(String key) {
+	default HibTagFamily tagFamily(String key) {
 		return data().getTagFamily(key);
 	}
 
-	default Tag tag(String key) {
+	default HibTag tag(String key) {
 		return data().getTag(key);
 	}
 
@@ -224,7 +225,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return data().getRoles();
 	}
 
-	default Map<String, ? extends Tag> tags() {
+	default Map<String, ? extends HibTag> tags() {
 		return data().getTags();
 	}
 

@@ -8,12 +8,12 @@ import java.util.stream.Collectors;
 
 import org.assertj.core.api.AbstractAssert;
 
-import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.tag.HibTag;
 
 public class BranchAssert extends AbstractAssert<BranchAssert, HibBranch> {
 	public BranchAssert(HibBranch actual) {
@@ -206,7 +206,7 @@ public class BranchAssert extends AbstractAssert<BranchAssert, HibBranch> {
 	 * @return fluent API
 	 */
 	public BranchAssert isTagged(String... tags) {
-		Set<String> tagNames = actual.getTags().stream().map(Tag::getName).collect(Collectors.toSet());
+		Set<String> tagNames = actual.getTags().stream().map(HibTag::getName).collect(Collectors.toSet());
 		assertThat(tagNames).as(descriptionText() + " tags").contains(tags);
 		return this;
 	}
@@ -217,7 +217,7 @@ public class BranchAssert extends AbstractAssert<BranchAssert, HibBranch> {
 	 * @return fluent API
 	 */
 	public BranchAssert isNotTagged(String... tags) {
-		Set<String> tagNames = actual.getTags().stream().map(Tag::getName).collect(Collectors.toSet());
+		Set<String> tagNames = actual.getTags().stream().map(HibTag::getName).collect(Collectors.toSet());
 		assertThat(tagNames).as(descriptionText() + " tags").doesNotContain(tags);
 		return this;
 	}
@@ -228,7 +228,7 @@ public class BranchAssert extends AbstractAssert<BranchAssert, HibBranch> {
 	 * @return fluent API
 	 */
 	public BranchAssert isOnlyTagged(String... tags) {
-		Set<String> tagNames = actual.getTags().stream().map(Tag::getName).collect(Collectors.toSet());
+		Set<String> tagNames = actual.getTags().stream().map(HibTag::getName).collect(Collectors.toSet());
 		assertThat(tagNames).as(descriptionText() + " tags").containsOnly(tags);
 		return this;
 	}

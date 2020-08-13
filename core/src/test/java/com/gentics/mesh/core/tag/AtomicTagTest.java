@@ -14,6 +14,7 @@ import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
+import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -36,14 +37,14 @@ public class AtomicTagTest extends AbstractMeshTest {
 			TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();
 			TagFamily tagFamily = tagFamilyRoot.create("basic", user);
 
-			Tag tag = tagDao.create(tagFamily, "dummyName", project, user);
+			HibTag tag = tagDao.create(tagFamily, "dummyName", project, user);
 			String uuid = tag.getUuid();
 			assertNotNull(tag);
 			assertEquals("dummyName", tag.getName());
 			tag.setName("renamed tag");
 			assertEquals("renamed tag", tag.getName());
 
-			Tag reloadedTag = boot().tagRoot().findByUuid(uuid);
+			HibTag reloadedTag = boot().tagRoot().findByUuid(uuid);
 			assertNotNull(reloadedTag);
 			assertEquals("renamed tag", reloadedTag.getName());
 		}

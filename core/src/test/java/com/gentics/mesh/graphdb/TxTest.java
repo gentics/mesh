@@ -19,7 +19,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
@@ -29,6 +28,8 @@ import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -159,7 +160,7 @@ public class TxTest extends AbstractMeshTest {
 			CyclicBarrier barrierA = new CyclicBarrier(nThreads);
 			CyclicBarrier barrierB = new CyclicBarrier(nThreads);
 			Node node = content();
-			TagFamily tagFamily = tagFamily("colors");
+			HibTagFamily tagFamily = tagFamily("colors");
 			List<Thread> threads = new ArrayList<>();
 			HibProject project = project();
 			HibUser user = user();
@@ -189,7 +190,7 @@ public class TxTest extends AbstractMeshTest {
 								HibUser reloadedUser = tx.getGraph().getFramedVertexExplicit(UserImpl.class, user.getId());
 								Project reloadedProject = tx.getGraph().getFramedVertexExplicit(ProjectImpl.class, project.getId());
 
-								Tag tag = tagDao.create(reloadedTagFamily, "bogus_" + threadNo + "_" + currentRun, project(), reloadedUser);
+								HibTag tag = tagDao.create(reloadedTagFamily, "bogus_" + threadNo + "_" + currentRun, project(), reloadedUser);
 								// Reload the node
 								reloadedNode.addTag(tag, reloadedProject.getLatestBranch());
 								tx.success();

@@ -25,6 +25,8 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.search.request.Bulkable;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.DeleteDocumentRequest;
+import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.util.Tuple;
@@ -195,7 +197,7 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 	 * @param tag
 	 * @return Fluent API
 	 */
-	public DummySearchProviderAssert stored(Tag tag) {
+	public DummySearchProviderAssert stored(HibTag tag) {
 		assertThat(actual).hasStore(Tag.composeIndexName(tag.getProject().getUuid()), Tag.composeDocumentId(tag.getUuid()));
 		return this;
 	}
@@ -206,7 +208,7 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 	 * @param tagfamily
 	 * @return Fluent API
 	 */
-	public DummySearchProviderAssert stored(TagFamily tagfamily) {
+	public DummySearchProviderAssert stored(HibTagFamily tagfamily) {
 		assertThat(actual).hasStore(TagFamily.composeIndexName(tagfamily.getProject().getUuid()), TagFamily.composeDocumentId(tagfamily.getUuid()));
 		return this;
 	}

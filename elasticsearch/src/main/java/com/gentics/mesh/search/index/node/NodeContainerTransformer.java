@@ -22,8 +22,6 @@ import org.jsoup.Jsoup;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
@@ -45,6 +43,8 @@ import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
@@ -415,11 +415,11 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	 * @param document
 	 * @param tags
 	 */
-	private void addTagFamilies(JsonObject document, Iterable<? extends Tag> tags) {
+	private void addTagFamilies(JsonObject document, Iterable<? extends HibTag> tags) {
 		JsonObject familiesObject = new JsonObject();
 
-		for (Tag tag : tags) {
-			TagFamily family = tag.getTagFamily();
+		for (HibTag tag : tags) {
+			HibTagFamily family = tag.getTagFamily();
 			JsonObject familyObject = familiesObject.getJsonObject(family.getName());
 			if (familyObject == null) {
 				familyObject = new JsonObject();
@@ -502,7 +502,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 		document.put("created", toISO8601(node.getCreationTimestamp()));
 
 		addProject(document, node.getProject());
-		TraversalResult<? extends Tag> tags = node.getTags(node.getProject().getLatestBranch());
+		TraversalResult<? extends HibTag> tags = node.getTags(node.getProject().getLatestBranch());
 		addTags(document, tags);
 		addTagFamilies(document, node.getTags(node.getProject().getLatestBranch()));
 		addPermissionInfo(document, node, type);

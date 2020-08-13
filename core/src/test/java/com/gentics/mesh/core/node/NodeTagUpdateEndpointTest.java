@@ -123,7 +123,10 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 		waitForSearchIdleEvent();
 
 		assertEquals("The node should have two tags.", 2, response.getMetainfo().getTotalCount());
-		long afterCount = tx(() -> tagFamily("colors").findAll().count());
+		long afterCount = tx(tx -> {
+			TagDaoWrapper tagDao = tx.data().tagDao();
+			return tagDao.findAll(tagFamily("colors")).count();
+		});
 		assertEquals("The colors tag family should now have one additional color tag.", previousCount + 1, afterCount);
 
 		try (Tx tx = tx()) {

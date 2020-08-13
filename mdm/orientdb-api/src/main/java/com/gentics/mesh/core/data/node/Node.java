@@ -30,6 +30,7 @@ import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -85,7 +86,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param tag
 	 * @param branch
 	 */
-	void addTag(Tag tag, HibBranch branch);
+	void addTag(HibTag tag, HibBranch branch);
 
 	/**
 	 * Remove the given tag from the list of tags for this node in the given branch.
@@ -93,7 +94,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param tag
 	 * @param branch
 	 */
-	void removeTag(Tag tag, HibBranch branch);
+	void removeTag(HibTag tag, HibBranch branch);
 
 	/**
 	 * Remove all tags for the given branch.
@@ -108,7 +109,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param branch
 	 * @return
 	 */
-	TraversalResult<? extends Tag> getTags(HibBranch branch);
+	TraversalResult<? extends HibTag> getTags(HibBranch branch);
 
 	/**
 	 * Return a page of all visible tags that are assigned to the node.
@@ -118,7 +119,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param branch
 	 * @return Page which contains the result
 	 */
-	TransformablePage<? extends Tag> getTags(HibUser user, PagingParameters params, HibBranch branch);
+	TransformablePage<? extends HibTag> getTags(HibUser user, PagingParameters params, HibBranch branch);
 
 	/**
 	 * Tests if the node is tagged with the given tag.
@@ -776,7 +777,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *            Type of the assignment
 	 * @return
 	 */
-	NodeTaggedEventModel onTagged(Tag tag, HibBranch branch, Assignment assignment);
+	NodeTaggedEventModel onTagged(HibTag tag, HibBranch branch, Assignment assignment);
 
 	/**
 	 * Get an existing edge.

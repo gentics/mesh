@@ -4,11 +4,12 @@ import java.util.List;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.tag.TagResponse;
@@ -29,7 +30,7 @@ public interface TagRoot extends RootVertex<Tag>, TransformableElementRoot<Tag, 
 	 * @param tag
 	 *            Tag to be added
 	 */
-	void addTag(Tag tag);
+	void addTag(HibTag tag);
 
 	/**
 	 * Remove the tag from the aggregation vertex.
@@ -37,7 +38,7 @@ public interface TagRoot extends RootVertex<Tag>, TransformableElementRoot<Tag, 
 	 * @param tag
 	 *            Tag to be removed
 	 */
-	void removeTag(Tag tag);
+	void removeTag(HibTag tag);
 
 	/**
 	 * Create a new tag with the given parameters and assign it to this tag root. Note that the created tag will also be assigned to the global and project tag
@@ -53,7 +54,7 @@ public interface TagRoot extends RootVertex<Tag>, TransformableElementRoot<Tag, 
 	 *            Creator of the tag
 	 * @return
 	 */
-	Tag create(String name, HibProject project, TagFamily tagFamily, HibUser creator);
+	HibTag create(String name, HibProject project, HibTagFamily tagFamily, HibUser creator);
 
 	/**
 	 * Create a new tag with the given name and creator. Note that this method will not check for any tag name collisions. Note that the created tag will also
@@ -69,9 +70,9 @@ public interface TagRoot extends RootVertex<Tag>, TransformableElementRoot<Tag, 
 	 *            Optional uuid
 	 * @return
 	 */
-	Tag create(TagFamily tagFamily, String name, HibProject project, HibUser creator, String uuid);
+	HibTag create(HibTagFamily tagFamily, String name, HibProject project, HibUser creator, String uuid);
 
-	boolean update(Tag tag, InternalActionContext ac, EventQueueBatch batch);
+	boolean update(HibTag tag, InternalActionContext ac, EventQueueBatch batch);
 
 	/**
 	 * Return a page of nodes that are visible to the user and which are tagged by this tag. Use the paging and language information provided.
@@ -84,10 +85,10 @@ public interface TagRoot extends RootVertex<Tag>, TransformableElementRoot<Tag, 
 	 * @param pagingInfo
 	 * @return
 	 */
-	TransformablePage<? extends Node> findTaggedNodes(Tag tag, HibUser requestUser, HibBranch branch, List<String> languageTags, ContainerType type,
+	TransformablePage<? extends Node> findTaggedNodes(HibTag tag, HibUser requestUser, HibBranch branch, List<String> languageTags, ContainerType type,
 		PagingParameters pagingInfo);
 
-	TraversalResult<? extends Node> findTaggedNodes(Tag tag, InternalActionContext ac);
+	TraversalResult<? extends Node> findTaggedNodes(HibTag tag, InternalActionContext ac);
 
 	/**
 	 * Return a traversal result of nodes that were tagged by this tag in the given branch
@@ -97,7 +98,7 @@ public interface TagRoot extends RootVertex<Tag>, TransformableElementRoot<Tag, 
 	 *
 	 * @return Result
 	 */
-	TraversalResult<? extends Node> getNodes(Tag tag, HibBranch branch);
+	TraversalResult<? extends Node> getNodes(HibTag tag, HibBranch branch);
 
-	Tag findByName(TagFamily tagFamily, String name);
+	HibTag findByName(HibTagFamily tagFamily, String name);
 }

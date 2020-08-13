@@ -1,10 +1,10 @@
 package com.gentics.mesh.assertj.impl;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 
 import com.gentics.mesh.assertj.AbstractMeshAssert;
-import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 
 public class TagFamilyResponseAssert extends AbstractMeshAssert<TagFamilyResponseAssert, TagFamilyResponse> {
@@ -13,8 +13,8 @@ public class TagFamilyResponseAssert extends AbstractMeshAssert<TagFamilyRespons
 		super(actual, TagFamilyResponseAssert.class);
 	}
 
-	public TagFamilyResponseAssert matches(TagFamily tagFamily) {
-		assertGenericNode(tagFamily, actual);
+	public TagFamilyResponseAssert matches(HibTagFamily tagFamily) {
+		assertGenericNode(tagFamily.toTagFamily(), actual);
 		assertNotNull("Name field was not set in the rest response.", actual.getName());
 		return this;
 	}

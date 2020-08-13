@@ -26,6 +26,7 @@ import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
+import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
@@ -104,12 +105,12 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	}
 
 	@Override
-	public Tag create(InternalActionContext ac, EventQueueBatch batch) {
+	public HibTag create(InternalActionContext ac, EventQueueBatch batch) {
 		return mesh().boot().tagDao().create(this, ac, batch);
 	}
 
 	@Override
-	public Tag create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
+	public HibTag create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		return mesh().boot().tagDao().create(this, ac, batch, uuid);
 	}
 
@@ -206,7 +207,11 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	}
 
 	@Override
-	public Tag findByName(String name) {
+	public HibTag findByName(String name) {
 		return mesh().boot().tagDao().findByName(this, name);
+	}
+
+	public void deleteElement() {
+		getElement().remove();
 	}
 }

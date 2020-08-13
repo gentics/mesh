@@ -52,6 +52,7 @@ import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
+import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.branch.BranchReference;
@@ -591,14 +592,14 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
-	public void addTag(Tag tag) {
+	public void addTag(HibTag tag) {
 		removeTag(tag);
-		addFramedEdge(HAS_BRANCH_TAG, tag);
+		addFramedEdge(HAS_BRANCH_TAG, tag.toTag());
 	}
 
 	@Override
-	public void removeTag(Tag tag) {
-		outE(HAS_BRANCH_TAG).mark().inV().retain(tag).back().removeAll();
+	public void removeTag(HibTag tag) {
+		outE(HAS_BRANCH_TAG).mark().inV().retain(tag.toTag()).back().removeAll();
 	}
 
 	@Override
@@ -623,13 +624,13 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
-	public boolean hasTag(Tag tag) {
+	public boolean hasTag(HibTag tag) {
 		return outE(HAS_BRANCH_TAG).inV().has(UUID_KEY, tag.getUuid()).hasNext();
 	}
 
 	@Override
-	public TransformablePage<? extends Tag> updateTags(InternalActionContext ac, EventQueueBatch batch) {
-		List<Tag> tags = getTagsToSet(ac, batch);
+	public TransformablePage<? extends HibTag> updateTags(InternalActionContext ac, EventQueueBatch batch) {
+		List<HibTag> tags = getTagsToSet(ac, batch);
 		// TODO Rework this code. We should only add the needed tags and don't dispatch all events.
 		removeAllTags();
 		tags.forEach(tag -> {

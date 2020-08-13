@@ -14,9 +14,10 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.node.NodeContent;
+import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -52,15 +53,15 @@ public class TagTypeProvider extends AbstractTypeProvider {
 
 		// .name
 		tagType.field(newFieldDefinition().name("name").description("Name of the tag").type(GraphQLString).dataFetcher((env) -> {
-			Tag tag = env.getSource();
+			HibTag tag = env.getSource();
 			return tag.getName();
 		}));
 
 		// .tagFamily
 		tagType.field(newFieldDefinition().name("tagFamily").description("Tag family to which the tag belongs").dataFetcher((env) -> {
 			GraphQLContext gc = env.getContext();
-			Tag tag = env.getSource();
-			TagFamily tagFamily = tag.getTagFamily();
+			HibTag tag = env.getSource();
+			HibTagFamily tagFamily = tag.getTagFamily();
 			return gc.requiresPerm(tagFamily, READ_PERM);
 		}).type(new GraphQLTypeReference(TAG_FAMILY_TYPE_NAME)));
 

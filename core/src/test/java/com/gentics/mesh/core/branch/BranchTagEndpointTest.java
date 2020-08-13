@@ -23,6 +23,7 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
@@ -40,7 +41,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddTagToBranch() throws Exception {
-		Tag tag = tag("red");
+		HibTag tag = tag("red");
 		String tagUuid = tx(() -> tag.getUuid());
 		HibBranch branch = tx(() -> project().getLatestBranch());
 		String branchUuid = tx(() -> branch.getUuid());
@@ -77,7 +78,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddTagToNoPermBranch() throws Exception {
-		Tag tag = tag("red");
+		HibTag tag = tag("red");
 		String tagUuid = tx(() -> tag.getUuid());
 		HibBranch branch = tx(() -> project().getLatestBranch());
 		String branchUuid = tx(() -> branch.getUuid());
@@ -99,7 +100,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddNoPermTagToBranch() throws Exception {
-		Tag tag = tag("red");
+		HibTag tag = tag("red");
 		String tagUuid = tx(() -> tag.getUuid());
 		HibBranch branch = tx(() -> project().getLatestBranch());
 		String branchUuid = tx(() -> branch.getUuid());
@@ -129,7 +130,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddTagToBogusBranch() throws Exception {
-		Tag tag = tag("red");
+		HibTag tag = tag("red");
 		String tagUuid = tx(() -> tag.getUuid());
 
 		call(() -> client().addTagToBranch(PROJECT_NAME, "bogus", tagUuid), NOT_FOUND, "object_not_found_for_uuid", "bogus");
@@ -137,7 +138,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testRemoveTagFromBranch() throws Exception {
-		Tag tag = tag("red");
+		HibTag tag = tag("red");
 		String tagUuid = tx(() -> tag.getUuid());
 		HibBranch branch = tx(() -> project().getLatestBranch());
 		String branchUuid = tx(() -> branch.getUuid());
@@ -175,7 +176,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testRemoveTagFromNoPermBranch() throws Exception {
-		Tag tag = tag("red");
+		HibTag tag = tag("red");
 		String tagUuid = tx(() -> tag.getUuid());
 		HibBranch branch = tx(() -> project().getLatestBranch());
 		String branchUuid = tx(() -> branch.getUuid());
@@ -198,7 +199,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testRemoveNoPermTagFromBranch() throws Exception {
-		Tag tag = tag("red");
+		HibTag tag = tag("red");
 		String tagUuid = tx(() -> tag.getUuid());
 		HibBranch branch = tx(() -> project().getLatestBranch());
 		String branchUuid = tx(() -> branch.getUuid());
@@ -229,7 +230,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testRemoveTagFromBogusBranch() throws Exception {
-		Tag tag = tag("red");
+		HibTag tag = tag("red");
 		String tagUuid = tx(() -> tag.getUuid());
 
 		call(() -> client().removeTagFromBranch(PROJECT_NAME, "bogus", tagUuid), NOT_FOUND, "object_not_found_for_uuid", "bogus");
@@ -237,9 +238,9 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadTagsFromBranch() throws Exception {
-		Tag red = tag("red");
+		HibTag red = tag("red");
 		String redUuid = tx(() -> red.getUuid());
-		Tag blue = tag("blue");
+		HibTag blue = tag("blue");
 		String blueUuid = tx(() -> blue.getUuid());
 		HibBranch branch = tx(() -> project().getLatestBranch());
 		String branchUuid = tx(() -> branch.getUuid());
@@ -253,9 +254,9 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadNoPermTagsFromBranch() throws Exception {
-		Tag red = tag("red");
+		HibTag red = tag("red");
 		String redUuid = tx(() -> red.getUuid());
-		Tag blue = tag("blue");
+		HibTag blue = tag("blue");
 		String blueUuid = tx(() -> blue.getUuid());
 		HibBranch branch = tx(() -> project().getLatestBranch());
 		String branchUuid = tx(() -> branch.getUuid());
@@ -275,9 +276,9 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadTagsFromNoPermBranch() throws Exception {
-		Tag red = tag("red");
+		HibTag red = tag("red");
 		String redUuid = tx(() -> red.getUuid());
-		Tag blue = tag("blue");
+		HibTag blue = tag("blue");
 		String blueUuid = tx(() -> blue.getUuid());
 		HibBranch branch = tx(() -> project().getLatestBranch());
 		String branchUuid = tx(() -> branch.getUuid());
@@ -320,9 +321,9 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testUpdateTagsForBranch() throws Exception {
-		Tag red = tag("red");
-		Tag blue = tag("blue");
-		Tag car = tag("car");
+		HibTag red = tag("red");
+		HibTag blue = tag("blue");
+		HibTag car = tag("car");
 		HibBranch branch = tx(() -> project().getLatestBranch());
 		String branchUuid = tx(() -> branch.getUuid());
 
@@ -345,10 +346,10 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testUpdateNoPermTagsForBranch() throws Exception {
-		Tag red = tag("red");
-		Tag blue = tag("blue");
+		HibTag red = tag("red");
+		HibTag blue = tag("blue");
 		String blueUuid = tx(() -> blue.getUuid());
-		Tag car = tag("car");
+		HibTag car = tag("car");
 		HibBranch branch = tx(() -> project().getLatestBranch());
 		String branchUuid = tx(() -> branch.getUuid());
 
@@ -377,9 +378,9 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testUpdateTagsForNoPermBranch() throws Exception {
-		Tag red = tag("red");
-		Tag blue = tag("blue");
-		Tag car = tag("car");
+		HibTag red = tag("red");
+		HibTag blue = tag("blue");
+		HibTag car = tag("car");
 		HibBranch branch = tx(() -> project().getLatestBranch());
 		String branchUuid = tx(() -> branch.getUuid());
 
@@ -408,8 +409,8 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testUpdateTagsForBogusBranch() throws Exception {
-		Tag red = tag("red");
-		Tag car = tag("car");
+		HibTag red = tag("red");
+		HibTag car = tag("car");
 
 		call(() -> client().updateTagsForBranch(PROJECT_NAME, "bogus", new TagListUpdateRequest().setTags(Arrays.asList(ref(red), ref(car)))),
 			NOT_FOUND,
@@ -418,7 +419,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testUpdateBogusTagsForBranch() throws Exception {
-		Tag red = tag("red");
+		HibTag red = tag("red");
 		HibBranch branch = tx(() -> project().getLatestBranch());
 		String branchUuid = tx(() -> branch.getUuid());
 
@@ -436,7 +437,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 	 *            tag
 	 * @return tag reference
 	 */
-	protected TagReference ref(Tag tag) {
+	protected TagReference ref(HibTag tag) {
 		return tx(() -> ref(tag.getUuid(), tag.getTagFamily().getName()));
 	}
 

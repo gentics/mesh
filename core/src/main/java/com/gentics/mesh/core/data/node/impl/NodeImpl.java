@@ -91,6 +91,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
+import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
@@ -496,15 +497,15 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void addTag(Tag tag, HibBranch branch) {
+	public void addTag(HibTag tag, HibBranch branch) {
 		removeTag(tag, branch);
 		TagEdge edge = addFramedEdge(HAS_TAG, tag, TagEdgeImpl.class);
 		edge.setBranchUuid(branch.getUuid());
 	}
 
 	@Override
-	public void removeTag(Tag tag, HibBranch branch) {
-		outE(HAS_TAG).has(TagEdgeImpl.BRANCH_UUID_KEY, branch.getUuid()).mark().inV().retain(tag).back().removeAll();
+	public void removeTag(HibTag tag, HibBranch branch) {
+		outE(HAS_TAG).has(TagEdgeImpl.BRANCH_UUID_KEY, branch.getUuid()).mark().inV().retain(tag.toTag()).back().removeAll();
 	}
 
 	@Override
@@ -1579,9 +1580,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public TransformablePage<? extends Tag> getTags(HibUser user, PagingParameters params, HibBranch branch) {
+	public TransformablePage<? extends HibTag> getTags(HibUser user, PagingParameters params, HibBranch branch) {
 		VertexTraversal<?, ?, ?> traversal = TagEdgeImpl.getTagTraversal(this, branch);
-		return new DynamicTransformablePageImpl<Tag>(user, traversal, params, READ_PERM, TagImpl.class);
+		return new DynamicTransformablePageImpl<HibTag>(user, traversal, params, READ_PERM, TagImpl.class);
 	}
 
 	@Override
@@ -1779,8 +1780,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public TransformablePage<? extends Tag> updateTags(InternalActionContext ac, EventQueueBatch batch) {
-		List<Tag> tags = getTagsToSet(ac, batch);
+	public TransformablePage<? extends HibTag> updateTags(InternalActionContext ac, EventQueueBatch batch) {
+		List<HibTag> tags = getTagsToSet(ac, batch);
 		HibBranch branch = ac.getBranch();
 		applyTags(branch, tags, batch);
 		HibUser user = ac.getUser();
@@ -1789,15 +1790,15 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public void updateTags(InternalActionContext ac, EventQueueBatch batch, List<TagReference> list) {
-		List<Tag> tags = getTagsToSet(list, ac, batch);
+		List<HibTag> tags = getTagsToSet(list, ac, batch);
 		HibBranch branch = ac.getBranch();
 		applyTags(branch, tags, batch);
 	}
 
-	private void applyTags(HibBranch branch, List<? extends Tag> tags, EventQueueBatch batch) {
+	private void applyTags(HibBranch branch, List<? extends HibTag> tags, EventQueueBatch batch) {
 		List<? extends Tag> currentTags = getTags(branch).list();
 
-		List<Tag> toBeAdded = tags.stream()
+		List<HibTag> toBeAdded = tags.stream()
 			.filter(StreamUtil.not(new HashSet<>(currentTags)::contains))
 			.collect(Collectors.toList());
 		toBeAdded.forEach(tag -> {
@@ -1805,7 +1806,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			batch.add(onTagged(tag, branch, ASSIGNED));
 		});
 
-		List<Tag> toBeRemoved = currentTags.stream()
+		List<HibTag> toBeRemoved = currentTags.stream()
 			.filter(StreamUtil.not(new HashSet<>(tags)::contains))
 			.collect(Collectors.toList());
 		toBeRemoved.forEach(tag -> {
@@ -2189,7 +2190,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public NodeTaggedEventModel onTagged(Tag tag, HibBranch branch, Assignment assignment) {
+	public NodeTaggedEventModel onTagged(HibTag tag, HibBranch branch, Assignment assignment) {
 		NodeTaggedEventModel model = new NodeTaggedEventModel();
 		model.setTag(tag.transformToReference());
 

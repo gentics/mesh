@@ -26,6 +26,7 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchReference;
@@ -66,7 +67,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		Node node = folder("2015");
 		String nodeUuid = tx(() -> node.getUuid());
 		String schemaUuid = tx(() -> node.getSchemaContainer().getUuid());
-		Tag tag = tag("red");
+		HibTag tag = tag("red");
 		String tagUuid = tx(() -> tag.getUuid());
 
 		try (Tx tx = tx()) {
@@ -118,7 +119,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testAddTagToNoPermNode() throws Exception {
 		Node node = folder("2015");
-		Tag tag = tag("red");
+		HibTag tag = tag("red");
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			assertFalse(node.getTags(project().getLatestBranch()).list().contains(tag));
@@ -139,7 +140,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testAddNoPermTagToNode() throws Exception {
 		Node node = folder("2015");
-		Tag tag = tag("red");
+		HibTag tag = tag("red");
 
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
@@ -161,7 +162,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testUntaggingViaDeleteOfTag() {
 		Node node = folder("2015");
-		Tag tag = tag("bike");
+		HibTag tag = tag("bike");
 		String schemaUuid = tx(() -> node.getSchemaContainer().getUuid());
 		String nodeUuid = tx(() -> node.getUuid());
 		String tagUuid = tx(() -> tag.getUuid());
@@ -212,7 +213,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testRemoveTagFromNode() throws Exception {
 		Node node = folder("2015");
-		Tag tag = tag("bike");
+		HibTag tag = tag("bike");
 		String schemaUuid = tx(() -> node.getSchemaContainer().getUuid());
 		String nodeUuid = tx(() -> node.getUuid());
 		String tagUuid = tx(() -> tag.getUuid());
@@ -275,7 +276,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testRemoveTagFromNoPermNode() throws Exception {
 		Node node = folder("2015");
-		Tag tag = tag("bike");
+		HibTag tag = tag("bike");
 
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
@@ -310,7 +311,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		// 2. Tag a node in branch v1 with tag "red"
 		try (Tx tx = tx()) {
 			Node node = content();
-			Tag tag = tag("red");
+			HibTag tag = tag("red");
 			call(() -> client().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new VersioningParametersImpl().setBranch(branchOne)));
 		}
 
@@ -330,7 +331,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 				response.getTags().stream().filter(tag -> tag.getName().equals("red")).count());
 
 			// via /tagFamilies/:tagFamilyUuid/tags/:tagUuid/nodes
-			Tag tag = tag("red");
+			HibTag tag = tag("red");
 			NodeListResponse taggedNodes = call(() -> client().findNodesForTag(PROJECT_NAME, tag.getTagFamily().getUuid(), tag.getUuid(),
 				new VersioningParametersImpl().setBranch(branchOne)));
 			assertEquals("We expected to find the node in the list response but it was not included.", 1,
@@ -351,7 +352,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		// 4. Tag a node in branch v2 with tag "blue"
 		try (Tx tx = tx()) {
 			Node node = content();
-			Tag tag = tag("blue");
+			HibTag tag = tag("blue");
 			call(() -> client().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new VersioningParametersImpl().setBranch(branchTwo)));
 		}
 
@@ -375,13 +376,13 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 				response.getTags().stream().filter(tag -> tag.getName().equals("blue")).count());
 
 			// via /tagFamilies/:tagFamilyUuid/tags/:tagUuid/nodes
-			Tag tag1 = tag("red");
+			HibTag tag1 = tag("red");
 			NodeListResponse taggedNodes = call(() -> client().findNodesForTag(PROJECT_NAME, tag1.getTagFamily().getUuid(), tag1.getUuid(),
 				new VersioningParametersImpl().setBranch(branchTwo)));
 			assertEquals("We expected to find the node in the list response but it was not included.", 1,
 				taggedNodes.getData().stream().filter(item -> item.getUuid().equals(node.getUuid())).count());
 
-			Tag tag2 = tag("blue");
+			HibTag tag2 = tag("blue");
 			taggedNodes = call(() -> client().findNodesForTag(PROJECT_NAME, tag2.getTagFamily().getUuid(), tag2.getUuid(),
 				new VersioningParametersImpl().setBranch(branchTwo)));
 			assertEquals("We expected to find the node in the list response but it was not included.", 1,
@@ -392,7 +393,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		// 5. Remove the tag "red" in branch v1
 		try (Tx tx = tx()) {
 			Node node = content();
-			Tag tag = tag("red");
+			HibTag tag = tag("red");
 			call(() -> client().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(),
 				new VersioningParametersImpl().setBranch(branchOne)));
 		}
@@ -417,14 +418,14 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 				response.getTags().stream().filter(tag -> tag.getName().equals("blue")).count());
 
 			// via /tagFamilies/:tagFamilyUuid/tags/:tagUuid/nodes
-			Tag tag1 = tag("red");
+			HibTag tag1 = tag("red");
 			NodeListResponse taggedNodes = call(
 				() -> client().findNodesForTag(PROJECT_NAME, tag1.getTagFamily().getUuid(), tag1.getUuid(),
 					new VersioningParametersImpl().setBranch(branchTwo)));
 			assertEquals("We expected to find the node in the list response but it was not included.", 1,
 				taggedNodes.getData().stream().filter(item -> item.getUuid().equals(node.getUuid())).count());
 
-			Tag tag2 = tag("blue");
+			HibTag tag2 = tag("blue");
 			taggedNodes = call(() -> client().findNodesForTag(PROJECT_NAME, tag2.getTagFamily().getUuid(),
 				tag2.getUuid(), new VersioningParametersImpl().setBranch(branchTwo)));
 			assertEquals("We expected to find the node in the list response but it was not included.", 1,
@@ -446,7 +447,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 			assertEquals("We expected to find no tags for the node in branch one.", 0, response.getTags().size());
 
 			// via /tagFamilies/:tagFamilyUuid/tags/:tagUuid/nodes
-			Tag tag = tag("red");
+			HibTag tag = tag("red");
 			NodeListResponse taggedNodes = call(() -> client().findNodesForTag(PROJECT_NAME,
 				tag.getTagFamily().getUuid(), tag.getUuid(), new VersioningParametersImpl().setBranch(branchOne)));
 			assertEquals("We expected to find the node not be tagged by tag red.", 0,
@@ -459,7 +460,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testRemoveNoPermTagFromNode() throws Exception {
 		Node node = folder("2015");
-		Tag tag = tag("bike");
+		HibTag tag = tag("bike");
 
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
