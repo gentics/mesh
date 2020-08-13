@@ -24,15 +24,16 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
-import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.endpoint.migration.branch.BranchMigrationHandler;
+import com.gentics.mesh.core.migration.impl.BranchMigrationImpl;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.error.InvalidArgumentException;
@@ -52,7 +53,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	public static final String ENGLISH_NAME = "test english name";
 
-	private BranchMigrationHandler branchMigrationHandler;
+	private BranchMigrationImpl branchMigrationHandler;
 
 	@Before
 	public void setupHandler() {
@@ -74,6 +75,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testTagFamilyTagCreation() {
 		try (Tx tx = tx()) {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			final String TAG_FAMILY_NAME = "mycustomtagFamily";
 			TagFamily tagFamily = project().getTagFamilyRoot().create(TAG_FAMILY_NAME, user());
 			assertNotNull(tagFamily);
@@ -82,7 +84,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			tagFamily.setDescription("description");
 			assertEquals("description", tagFamily.getDescription());
 			assertEquals(0, tagFamily.computeCount());
-			assertNotNull(tagFamily.create(GERMAN_NAME, project(), user()));
+			assertNotNull(tagDao.create(tagFamily, GERMAN_NAME, project(), user()));
 			assertEquals(1, tagFamily.computeCount());
 		}
 	}
@@ -98,8 +100,9 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testSimpleTag() {
 		try (Tx tx = tx()) {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			TagFamily root = tagFamily("basic");
-			Tag tag = root.create("test", project(), user());
+			Tag tag = tagDao.create(root, "test", project(), user());
 			assertEquals("test", tag.getName());
 			tag.setName("test2");
 			assertEquals("test2", tag.getName());
@@ -109,8 +112,9 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testProjectTag() {
 		try (Tx tx = tx()) {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			TagFamily root = tagFamily("basic");
-			Tag tag = root.create("test", project(), user());
+			Tag tag = tagDao.create(root, "test", project(), user());
 			assertEquals(project(), tag.getProject());
 		}
 	}
@@ -118,11 +122,12 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testNodeTagging() throws Exception {
 		try (Tx tx = tx()) {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			// 1. Create the tag
 			TagFamily root = tagFamily("basic");
 			Project project = project();
 			Branch branch = project.getLatestBranch();
-			Tag tag = root.create(ENGLISH_NAME, project, user());
+			Tag tag = tagDao.create(root, ENGLISH_NAME, project, user());
 			String uuid = tag.getUuid();
 			assertNotNull(meshRoot().getTagRoot().findByUuid(uuid));
 
@@ -141,8 +146,8 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			// 4. Reload the tag and inspect the tagged nodes
 			Tag reloadedTag = meshRoot().getTagRoot().findByUuid(tag.getUuid());
-			assertEquals("The tag should have exactly one node.", 1, reloadedTag.getNodes(branch).count());
-			Node contentFromTag = reloadedTag.getNodes(branch).iterator().next();
+			assertEquals("The tag should have exactly one node.", 1, tagDao.getNodes(reloadedTag, branch).count());
+			Node contentFromTag = tagDao.getNodes(reloadedTag, branch).iterator().next();
 			NodeGraphFieldContainer fieldContainer = contentFromTag.getLatestDraftFieldContainer(german);
 
 			assertNotNull(contentFromTag);
@@ -151,9 +156,9 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertEquals("The name of the file from the loaded tag did not match the expected one.", GERMAN_TEST_FILENAME, filename);
 
 			// Remove the file/content and check whether the content was really removed
-			reloadedTag.removeNode(contentFromTag);
+			tagDao.removeNode(reloadedTag, contentFromTag);
 			// TODO verify for removed node
-			assertEquals("The tag should not have any file.", 0, reloadedTag.getNodes(branch).count());
+			assertEquals("The tag should not have any file.", 0, tagDao.getNodes(reloadedTag, branch).count());
 		}
 
 	}
@@ -161,10 +166,11 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testNodeTaggingInBranch() throws Exception {
 		try (Tx tx = tx()) {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			// 1. Create the tag
 			TagFamily root = tagFamily("basic");
 			Project project = project();
-			Tag tag = root.create(ENGLISH_NAME, project, user());
+			Tag tag = tagDao.create(root, ENGLISH_NAME, project, user());
 			String uuid = tag.getUuid();
 			assertNotNull(root.findByUuid(uuid));
 
@@ -186,13 +192,13 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertThat(new ArrayList<Tag>(node.getTags(initialBranch).list())).as("Tags in initial Release")
 				.usingElementComparatorOnFields("uuid", "name")
 				.containsOnly(tag);
-			assertThat(new ArrayList<Node>(tag.getNodes(initialBranch).list())).as("Nodes with tag in initial Release")
+			assertThat(new ArrayList<Node>(tagDao.getNodes(tag, initialBranch).list())).as("Nodes with tag in initial Release")
 				.usingElementComparatorOnFields(
 					"uuid")
 				.containsOnly(node);
 
 			assertThat(node.getTags(newBranch).list()).as("Tags in new Branch").isEmpty();
-			assertThat(new ArrayList<Node>(tag.getNodes(newBranch).list())).as("Nodes with tag in new Branch").isEmpty();
+			assertThat(new ArrayList<Node>(tagDao.getNodes(tag, newBranch).list())).as("Nodes with tag in new Branch").isEmpty();
 
 			// 6. Tag in new branch
 			node.addTag(tag, newBranch);
@@ -201,14 +207,14 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertThat(new ArrayList<Tag>(node.getTags(initialBranch).list())).as("Tags in initial Release")
 				.usingElementComparatorOnFields("uuid", "name")
 				.containsOnly(tag);
-			assertThat(new ArrayList<Node>(tag.getNodes(initialBranch).list())).as("Nodes with tag in initial Release")
+			assertThat(new ArrayList<Node>(tagDao.getNodes(tag, initialBranch).list())).as("Nodes with tag in initial Release")
 				.usingElementComparatorOnFields(
 					"uuid")
 				.containsOnly(node);
 
 			assertThat(new ArrayList<Tag>(node.getTags(newBranch).list())).as("Tags in new Release").usingElementComparatorOnFields("uuid", "name")
 				.containsOnly(tag);
-			assertThat(new ArrayList<Node>(tag.getNodes(newBranch).list())).as("Nodes with tag in new Release").usingElementComparatorOnFields("uuid")
+			assertThat(new ArrayList<Node>(tagDao.getNodes(tag, newBranch).list())).as("Nodes with tag in new Release").usingElementComparatorOnFields("uuid")
 				.containsOnly(node);
 		}
 	}
@@ -216,11 +222,12 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testMigrateTagsForBranch() throws Exception {
 		try (Tx tx = tx()) {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			// 1. Create the tag
 			TagFamily root = tagFamily("basic");
 			Project project = project();
 			Branch initialBranch = project.getInitialBranch();
-			Tag tag = root.create(ENGLISH_NAME, project, user());
+			Tag tag = tagDao.create(root, ENGLISH_NAME, project, user());
 			String uuid = tag.getUuid();
 			assertNotNull(meshRoot().getTagRoot().findByUuid(uuid));
 
@@ -241,12 +248,12 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 5. Assert
 			assertThat(new ArrayList<Tag>(node.getTags(initialBranch).list())).as("Tags in initial Branch")
 				.usingElementComparatorOnFields("uuid", "name").containsOnly(tag);
-			assertThat(new ArrayList<Node>(tag.getNodes(initialBranch).list())).as("Nodes with tag in initial Branch").usingElementComparatorOnFields(
+			assertThat(new ArrayList<Node>(tagDao.getNodes(tag, initialBranch).list())).as("Nodes with tag in initial Branch").usingElementComparatorOnFields(
 				"uuid").containsOnly(node);
 
 			assertThat(new ArrayList<Tag>(node.getTags(newBranch).list())).as("Tags in new Branch").usingElementComparatorOnFields("uuid", "name")
 				.containsOnly(tag);
-			assertThat(new ArrayList<Node>(tag.getNodes(newBranch).list())).as("Nodes with tag in new Branch").usingElementComparatorOnFields("uuid")
+			assertThat(new ArrayList<Node>(tagDao.getNodes(tag, newBranch).list())).as("Nodes with tag in new Branch").usingElementComparatorOnFields("uuid")
 				.containsOnly(node);
 		}
 	}
@@ -260,10 +267,11 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 		Tag tag = null;
 
 		try (Tx tx = tx()) {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			// 1. Create the tag
 			TagFamily root = tagFamily("basic");
 			initialBranch = project.getInitialBranch();
-			tag = root.create(ENGLISH_NAME, project, user());
+			tag = tagDao.create(root, ENGLISH_NAME, project, user());
 			String uuid = tag.getUuid();
 			assertNotNull(root.findByUuid(uuid));
 
@@ -284,16 +292,17 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 		branchMigrationHandler.migrateBranch(context).blockingAwait();
 
 		try (Tx tx = tx()) {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			// 5. Untag in initial branch
 			node.removeTag(tag, initialBranch);
 
 			// 6. Assert
 			assertThat(node.getTags(initialBranch).list()).as("Tags in initial Branch").isEmpty();
-			assertThat(new ArrayList<Node>(tag.getNodes(initialBranch).list())).as("Nodes with tag in initial Branch").isEmpty();
+			assertThat(new ArrayList<Node>(tagDao.getNodes(tag, initialBranch).list())).as("Nodes with tag in initial Branch").isEmpty();
 
 			assertThat(new ArrayList<Tag>(node.getTags(newBranch).list())).as("Tags in new Branch").usingElementComparatorOnFields("uuid", "name")
 				.containsOnly(tag);
-			assertThat(new ArrayList<Node>(tag.getNodes(newBranch).list())).as("Nodes with tag in new Branch").usingElementComparatorOnFields("uuid")
+			assertThat(new ArrayList<Node>(tagDao.getNodes(tag, newBranch).list())).as("Nodes with tag in new Branch").usingElementComparatorOnFields("uuid")
 				.containsOnly(node);
 		}
 	}
@@ -317,11 +326,12 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			TagDaoWrapper tagDao = tx.data().tagDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
 			TagFamily basicTagFamily = tagFamily("basic");
 			long beforeCount = basicTagFamily.computeCount();
-			Tag noPermTag = basicTagFamily.create("noPermTag", project(), user());
+			Tag noPermTag = tagDao.create(basicTagFamily, "noPermTag", project(), user());
 			basicTagFamily.addTag(noPermTag);
 			assertNotNull(noPermTag.getUuid());
 			assertEquals(beforeCount + 1, basicTagFamily.computeCount());
@@ -373,11 +383,12 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testFindByName() {
 		try (Tx tx = tx()) {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			Tag tag = tag("car");
-			Tag foundTag = tag.getTagFamily().findByName("Car");
+			Tag foundTag = tagDao.findByName(tag.getTagFamily(), "Car");
 			assertNotNull(foundTag);
 			assertEquals("Car", foundTag.getName());
-			assertNull("No tag with the name bogus should be found", tag.getTagFamily().findByName("bogus"));
+			assertNull("No tag with the name bogus should be found", tagDao.findByName(tag.getTagFamily(), "bogus"));
 		}
 	}
 
@@ -395,8 +406,9 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testCreate() throws Exception {
 		try (Tx tx = tx()) {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			TagFamily tagFamily = tagFamily("basic");
-			Tag tag = tagFamily.create(GERMAN_NAME, project(), user());
+			Tag tag = tagDao.create(tagFamily, GERMAN_NAME, project(), user());
 			assertNotNull(tag);
 			String uuid = tag.getUuid();
 			CountDownLatch latch = new CountDownLatch(1);
@@ -443,8 +455,9 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testCreateDelete() throws Exception {
 		try (Tx tx = tx()) {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			TagFamily tagFamily = tagFamily("basic");
-			Tag tag = tagFamily.create("someTag", project(), user());
+			Tag tag = tagDao.create(tagFamily, "someTag", project(), user());
 			String uuid = tag.getUuid();
 			assertNotNull(meshRoot().getTagRoot().findByUuid(uuid));
 			tag.delete(createBulkContext());
@@ -456,13 +469,14 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testCRUDPermissions() {
 		try (Tx tx = tx()) {
-			UserRoot userRoot = tx.data().userDao();
+			TagDaoWrapper tagDao = tx.data().tagDao();
+			UserDaoWrapper userDao = tx.data().userDao();
 			TagFamily tagFamily = tagFamily("basic");
-			Tag tag = tagFamily.create("someTag", project(), user());
-			assertTrue(userRoot.hasPermission(user(), tagFamily, GraphPermission.READ_PERM));
-			assertFalse(userRoot.hasPermission(user(), tag, GraphPermission.READ_PERM));
-			userRoot.inheritRolePermissions(getRequestUser(), tagFamily, tag);
-			assertTrue(userRoot.hasPermission(user(), tag, GraphPermission.READ_PERM));
+			Tag tag = tagDao.create(tagFamily, "someTag", project(), user());
+			assertTrue(userDao.hasPermission(user(), tagFamily, GraphPermission.READ_PERM));
+			assertFalse(userDao.hasPermission(user(), tag, GraphPermission.READ_PERM));
+			userDao.inheritRolePermissions(getRequestUser(), tagFamily, tag);
+			assertTrue(userDao.hasPermission(user(), tag, GraphPermission.READ_PERM));
 		}
 	}
 

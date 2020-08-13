@@ -26,12 +26,12 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.branch.BranchMicroschemaEdge;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.rest.common.FieldTypes;
-import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
@@ -69,7 +69,7 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 	 *            Schema from which the mapping should be constructed
 	 * @return An ES-Mapping for the given Schema
 	 */
-	public JsonObject getMapping(Schema schema) {
+	public JsonObject getMapping(SchemaModel schema) {
 		return getMapping(schema, null, null);
 	}
 
@@ -84,7 +84,7 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 	 *            The language override to use
 	 * @return An ES-Mapping for the given Schema in the branch
 	 */
-	public JsonObject getMapping(Schema schema, Branch branch, String language) {
+	public JsonObject getMapping(SchemaModel schema, Branch branch, String language) {
 		// 1. Get the common type specific mapping
 		JsonObject mapping = getMapping();
 
@@ -464,8 +464,8 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 
 		if (shouldFilter) {
 			for (BranchMicroschemaEdge edge : branch.findAllLatestMicroschemaVersionEdges()) {
-				MicroschemaContainerVersion version = edge.getMicroschemaContainerVersion();
-				MicroschemaModel microschema = version.getSchema();
+				MicroschemaVersion version = edge.getMicroschemaContainerVersion();
+				MicroschemaVersionModel microschema = version.getSchema();
 				String microschemaName = microschema.getName();
 
 				// Check if the microschema is contained in the whitelist

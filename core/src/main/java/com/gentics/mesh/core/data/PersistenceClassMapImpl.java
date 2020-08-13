@@ -33,10 +33,10 @@ import com.gentics.mesh.core.data.root.impl.ProjectRootImpl;
 import com.gentics.mesh.core.data.root.impl.RoleRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.data.root.impl.UserRootImpl;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 
@@ -59,11 +59,11 @@ public class PersistenceClassMapImpl extends HashMap<Class<?>, Class<?>> impleme
 		put(Tag.class, TagImpl.class);
 		put(Branch.class, BranchImpl.class);
 		put(Project.class, ProjectImpl.class);
-		put(MicroschemaContainer.class, MicroschemaContainerImpl.class);
-		put(SchemaContainer.class, SchemaContainerImpl.class);
+		put(Microschema.class, MicroschemaContainerImpl.class);
+		put(Schema.class, SchemaContainerImpl.class);
 
-		put(MicroschemaContainerVersion.class, MicroschemaContainerVersionImpl.class);
-		put(SchemaContainerVersion.class, SchemaContainerVersionImpl.class);
+		put(MicroschemaVersion.class, MicroschemaContainerVersionImpl.class);
+		put(SchemaVersion.class, SchemaContainerVersionImpl.class);
 
 		put(UserRoot.class, UserRootImpl.class);
 		put(GroupRoot.class, GroupRootImpl.class);

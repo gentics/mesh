@@ -1,427 +1,328 @@
 package com.gentics.mesh.core.data.dao.impl;
 
-import java.util.Set;
-import java.util.Stack;
-import java.util.function.Function;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.core.rest.error.Errors.conflict;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.madl.traversal.RawTraversalResult;
+import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
+import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.generic.PermissionProperties;
+import com.gentics.mesh.core.data.impl.ProjectWrapper;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.rest.common.PermissionInfo;
+import com.gentics.mesh.core.data.root.ProjectRoot;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
+import com.gentics.mesh.core.rest.error.NameConflictException;
+import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
-import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.madl.frame.EdgeFrame;
-import com.gentics.mesh.madl.frame.ElementFrame;
-import com.gentics.mesh.madl.frame.VertexFrame;
-import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
 import com.gentics.mesh.madl.traversal.TraversalResult;
+import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.google.gson.JsonObject;
-import com.syncleus.ferma.ClassInitializer;
-import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.TEdge;
-import com.syncleus.ferma.traversals.EdgeTraversal;
-import com.syncleus.ferma.traversals.VertexTraversal;
-import com.tinkerpop.blueprints.Vertex;
+import com.gentics.mesh.parameter.value.FieldsSet;
+import com.gentics.mesh.router.RouterStorageRegistry;
 
 import dagger.Lazy;
-import io.vertx.core.Vertx;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 // Use ProjectDao instead of ProjectRoot once ready
 @Singleton
-public class ProjectDaoWrapperImpl implements ProjectDaoWrapper {
+public class ProjectDaoWrapperImpl extends AbstractDaoWrapper implements ProjectDaoWrapper {
 
-	private final Lazy<BootstrapInitializer> boot;
+	private static final Logger log = LoggerFactory.getLogger(ProjectDaoWrapperImpl.class);
+
+	private final RouterStorageRegistry routerStorageRegistry;
 
 	@Inject
-	public ProjectDaoWrapperImpl(Lazy<BootstrapInitializer> boot) {
-		this.boot = boot;
+	public ProjectDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionProperties> permissions,
+		RouterStorageRegistry routerStorageRegistry) {
+		super(boot, permissions);
+		this.routerStorageRegistry = routerStorageRegistry;
 	}
 
-	public Object id() {
-		return boot.get().projectRoot().id();
+	@Override
+	public boolean update(Project project, InternalActionContext ac, EventQueueBatch batch) {
+		ProjectUpdateRequest requestModel = ac.fromJson(ProjectUpdateRequest.class);
+
+		String oldName = project.getName();
+		String newName = requestModel.getName();
+		routerStorageRegistry.assertProjectName(newName);
+		if (shouldUpdate(newName, oldName)) {
+			// Check for conflicting project name
+			Project projectWithSameName = boot.get().projectRoot().findByName(newName);
+			if (projectWithSameName != null && !projectWithSameName.getUuid().equals(project.getUuid())) {
+				throw conflict(projectWithSameName.getUuid(), newName, "project_conflicting_name");
+			}
+
+			project.setName(newName);
+			project.setEditor(ac.getUser());
+			project.setLastEditedTimestamp();
+
+			// Update the project and its nodes in the index
+			batch.add(project.onUpdated());
+			return true;
+		}
+		return false;
 	}
 
-	public PermissionInfo getRolePermissions(InternalActionContext ac, String roleUuid) {
-		return boot.get().projectRoot().getRolePermissions(ac, roleUuid);
+	@Override
+	public TraversalResult<? extends ProjectWrapper> findAll() {
+		Stream<? extends Project> nativeStream = boot.get().projectRoot().findAll().stream();
+		return new TraversalResult<>(nativeStream.map(ProjectWrapper::new));
 	}
 
-	public void setUuid(String uuid) {
-		boot.get().projectRoot().setUuid(uuid);
-	}
-
-	public void setUniqueLinkOutTo(VertexFrame vertex, String... labels) {
-		boot.get().projectRoot().setUniqueLinkOutTo(vertex, labels);
-	}
-
-	public TraversalResult<? extends Role> getRolesWithPerm(GraphPermission perm) {
-		return boot.get().projectRoot().getRolesWithPerm(perm);
-	}
-
-	public String getUuid() {
-		return boot.get().projectRoot().getUuid();
-	}
-
-	public Vertex getVertex() {
-		return boot.get().projectRoot().getVertex();
-	}
-
-	public String getElementVersion() {
-		return boot.get().projectRoot().getElementVersion();
-	}
-
-	public Project create(String projectName, String hostname, Boolean ssl, String pathPrefix, User creator,
-		SchemaContainerVersion schemaContainerVersion, EventQueueBatch batch) {
-		return boot.get().projectRoot().create(projectName, hostname, ssl, pathPrefix, creator, schemaContainerVersion, batch);
-	}
-
-	public void setUniqueLinkInTo(VertexFrame vertex, String... labels) {
-		boot.get().projectRoot().setUniqueLinkInTo(vertex, labels);
-	}
-
-	public <T> T property(String name) {
-		return boot.get().projectRoot().property(name);
-	}
-
-	public void delete(BulkActionContext bac) {
-		boot.get().projectRoot().delete(bac);
-	}
-
-	public Vertex getElement() {
-		return boot.get().projectRoot().getElement();
-	}
-
-	public void setSingleLinkOutTo(VertexFrame vertex, String... labels) {
-		boot.get().projectRoot().setSingleLinkOutTo(vertex, labels);
-	}
-
-	public Object getId() {
-		return boot.get().projectRoot().getId();
-	}
-
-	public <T> T addFramedEdge(String label, com.syncleus.ferma.VertexFrame inVertex, ClassInitializer<T> initializer) {
-		return boot.get().projectRoot().addFramedEdge(label, inVertex, initializer);
-	}
-
-	public void setSingleLinkInTo(VertexFrame vertex, String... labels) {
-		boot.get().projectRoot().setSingleLinkInTo(vertex, labels);
-	}
-
-	public Set<String> getPropertyKeys() {
-		return boot.get().projectRoot().getPropertyKeys();
-	}
-
-	public void addToStringSetProperty(String propertyKey, String value) {
-		boot.get().projectRoot().addToStringSetProperty(propertyKey, value);
-	}
-
-	public VertexTraversal<?, ?, ?> out(String... labels) {
-		return boot.get().projectRoot().out(labels);
-	}
-
-	public void remove() {
-		boot.get().projectRoot().remove();
-	}
-
-	public void delete() {
-		boot.get().projectRoot().delete();
-	}
-
-	public <T extends ElementFrame> TraversalResult<? extends T> out(String label, Class<T> clazz) {
-		return boot.get().projectRoot().out(label, clazz);
-	}
-
-	public FramedGraph getGraph() {
-		return boot.get().projectRoot().getGraph();
-	}
-
-	public <R> void property(String key, R value) {
-		boot.get().projectRoot().property(key, value);
-	}
-
-	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
-		Set<GraphPermission> permissionsToRevoke) {
-		boot.get().projectRoot().applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
-	}
-
-	public <T extends EdgeFrame> TraversalResult<? extends T> outE(String label, Class<T> clazz) {
-		return boot.get().projectRoot().outE(label, clazz);
-	}
-
-	public <T> T getProperty(String name) {
-		return boot.get().projectRoot().getProperty(name);
-	}
-
-	public <T extends ElementFrame> TraversalResult<? extends T> in(String label, Class<T> clazz) {
-		return boot.get().projectRoot().in(label, clazz);
-	}
-
-	public <T> T addFramedEdge(String label, com.syncleus.ferma.VertexFrame inVertex, Class<T> kind) {
-		return boot.get().projectRoot().addFramedEdge(label, inVertex, kind);
-	}
-
-	public void removeProperty(String key) {
-		boot.get().projectRoot().removeProperty(key);
-	}
-
-	public <T extends EdgeFrame> TraversalResult<? extends T> inE(String label, Class<T> clazz) {
-		return boot.get().projectRoot().inE(label, clazz);
-	}
-
-	public <T extends RawTraversalResult<?>> T traverse(Function<GraphTraversal<Vertex, Vertex>, GraphTraversal<?, ?>> traverser) {
-		return boot.get().projectRoot().traverse(traverser);
-	}
-
-	public <T> T getProperty(String name, Class<T> type) {
-		return boot.get().projectRoot().getProperty(name, type);
-	}
-
-	public Database db() {
-		return boot.get().projectRoot().db();
-	}
-
-	public Vertx vertx() {
-		return boot.get().projectRoot().vertx();
-	}
-
-	public boolean hasPublishPermissions() {
-		return boot.get().projectRoot().hasPublishPermissions();
-	}
-
-	public MeshOptions options() {
-		return boot.get().projectRoot().options();
-	}
-
-	public <T> T addFramedEdgeExplicit(String label, com.syncleus.ferma.VertexFrame inVertex, ClassInitializer<T> initializer) {
-		return boot.get().projectRoot().addFramedEdgeExplicit(label, inVertex, initializer);
-	}
-
-	public void setCachedUuid(String uuid) {
-		boot.get().projectRoot().setCachedUuid(uuid);
-	}
-
-	public TraversalResult<? extends Project> findAll() {
-		return boot.get().projectRoot().findAll();
-	}
-
-	public Project create(String projectName, String hostname, Boolean ssl, String pathPrefix, User creator,
-		SchemaContainerVersion schemaContainerVersion, String uuid, EventQueueBatch batch) {
-		return boot.get().projectRoot().create(projectName, hostname, ssl, pathPrefix, creator, schemaContainerVersion, uuid, batch);
-	}
-
-	public void setProperty(String name, Object value) {
-		boot.get().projectRoot().setProperty(name, value);
-	}
-
-	public Class<?> getTypeResolution() {
-		return boot.get().projectRoot().getTypeResolution();
-	}
-
-	public Stream<? extends Project> findAllStream(InternalActionContext ac, GraphPermission permission) {
-		return boot.get().projectRoot().findAllStream(ac, permission);
-	}
-
-	public void setTypeResolution(Class<?> type) {
-		boot.get().projectRoot().setTypeResolution(type);
-	}
-
-	public <T> T addFramedEdgeExplicit(String label, com.syncleus.ferma.VertexFrame inVertex, Class<T> kind) {
-		return boot.get().projectRoot().addFramedEdgeExplicit(label, inVertex, kind);
-	}
-
-	public void removeTypeResolution() {
-		boot.get().projectRoot().removeTypeResolution();
-	}
-
-	public VertexTraversal<?, ?, ?> v() {
-		return boot.get().projectRoot().v();
-	}
-
-	public EdgeTraversal<?, ?, ?> e() {
-		return boot.get().projectRoot().e();
-	}
-
-	public EdgeTraversal<?, ?, ?> e(Object... ids) {
-		return boot.get().projectRoot().e(ids);
-	}
-
-	public void removeProject(Project project) {
-		boot.get().projectRoot().removeProject(project);
-	}
-
-	public TEdge addFramedEdge(String label, com.syncleus.ferma.VertexFrame inVertex) {
-		return boot.get().projectRoot().addFramedEdge(label, inVertex);
-	}
-
-	public <T> T getGraphAttribute(String key) {
-		return boot.get().projectRoot().getGraphAttribute(key);
-	}
-
-	public void addProject(Project project) {
-		boot.get().projectRoot().addProject(project);
-	}
-
-	public TraversalResult<? extends Project> findAllDynamic() {
-		return boot.get().projectRoot().findAllDynamic();
-	}
-
-	public VertexTraversal<?, ?, ?> in(String... labels) {
-		return boot.get().projectRoot().in(labels);
-	}
-
-	public EdgeTraversal<?, ?, ?> outE(String... labels) {
-		return boot.get().projectRoot().outE(labels);
-	}
-
+	@Override
 	public TransformablePage<? extends Project> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
-		return boot.get().projectRoot().findAll(ac, pagingInfo);
+		TransformablePage<? extends Project> nativePage = boot.get().projectRoot().findAll(ac, pagingInfo);
+		// TODO wrap the page
+		return nativePage;
 	}
 
-	public EdgeTraversal<?, ?, ?> inE(String... labels) {
-		return boot.get().projectRoot().inE(labels);
+	@Override
+	public Page<? extends Project> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Project> extraFilter) {
+		Page<? extends Project> nativePage = boot.get().projectRoot().findAll(ac, pagingInfo, extraFilter);
+		return nativePage;
 	}
 
-	public void linkOut(com.syncleus.ferma.VertexFrame vertex, String... labels) {
-		boot.get().projectRoot().linkOut(vertex, labels);
+	@Override
+	public ProjectWrapper findByName(String name) {
+		ProjectRoot root = boot.get().projectRoot();
+		Project project = root.findByName(name);
+		return ProjectWrapper.wrap(project);
 	}
 
-	public void linkIn(com.syncleus.ferma.VertexFrame vertex, String... labels) {
-		boot.get().projectRoot().linkIn(vertex, labels);
+	@Override
+	public Project findByName(InternalActionContext ac, String projectName, GraphPermission perm) {
+		ProjectRoot root = boot.get().projectRoot();
+		Project project = root.findByName(ac, projectName, perm);
+		return ProjectWrapper.wrap(project);
 	}
 
-	public TransformablePage<? extends Project> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Project> extraFilter) {
-		return boot.get().projectRoot().findAll(ac, pagingInfo, extraFilter);
+	@Override
+	public ProjectWrapper findByUuid(String uuid) {
+		ProjectRoot root = boot.get().projectRoot();
+		Project project = root.findByUuid(uuid);
+		return ProjectWrapper.wrap(project);
 	}
 
-	public void unlinkOut(com.syncleus.ferma.VertexFrame vertex, String... labels) {
-		boot.get().projectRoot().unlinkOut(vertex, labels);
+	@Override
+	public Project findByUuidGlobal(String uuid) {
+		return findByUuid(uuid);
 	}
 
-	public void unlinkIn(com.syncleus.ferma.VertexFrame vertex, String... labels) {
-		boot.get().projectRoot().unlinkIn(vertex, labels);
-	}
-
-	public TransformablePage<? extends Project> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo) {
-		return boot.get().projectRoot().findAllNoPerm(ac, pagingInfo);
-	}
-
-	public void setLinkOut(com.syncleus.ferma.VertexFrame vertex, String... labels) {
-		boot.get().projectRoot().setLinkOut(vertex, labels);
-	}
-
-	public Project findByName(String name) {
-		return boot.get().projectRoot().findByName(name);
-	}
-
-	public VertexTraversal<?, ?, ?> traversal() {
-		return boot.get().projectRoot().traversal();
-	}
-
-	public JsonObject toJson() {
-		return boot.get().projectRoot().toJson();
-	}
-
-	public Project findByName(InternalActionContext ac, String name, GraphPermission perm) {
-		return boot.get().projectRoot().findByName(ac, name, perm);
-	}
-
-	public <T> T reframe(Class<T> kind) {
-		return boot.get().projectRoot().reframe(kind);
-	}
-
-	public <T> T reframeExplicit(Class<T> kind) {
-		return boot.get().projectRoot().reframeExplicit(kind);
-	}
-
-	public Project findByUuid(String uuid) {
-		return boot.get().projectRoot().findByUuid(uuid);
-	}
-
+	@Override
 	public Project loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
-		return boot.get().projectRoot().loadObjectByUuid(ac, uuid, perm);
+		ProjectRoot root = boot.get().projectRoot();
+		Project project = root.loadObjectByUuid(ac, uuid, perm);
+		return ProjectWrapper.wrap(project);
 	}
 
+	@Override
 	public Project loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
-		return boot.get().projectRoot().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+		ProjectRoot root = boot.get().projectRoot();
+		Project project = root.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+		return ProjectWrapper.wrap(project);
 	}
 
-	public Project loadObjectByUuidNoPerm(String uuid, boolean errorIfNotFound) {
-		return boot.get().projectRoot().loadObjectByUuidNoPerm(uuid, errorIfNotFound);
+	@Override
+	public Project create(String name, String hostname, Boolean ssl, String pathPrefix, HibUser creator, SchemaVersion schemaVersion,
+		String uuid, EventQueueBatch batch) {
+		ProjectRoot root = boot.get().projectRoot();
+
+		Project project = root.create();
+		if (uuid != null) {
+			project.setUuid(uuid);
+		}
+		project.setName(name);
+		project.getNodeRoot();
+
+		// Create the initial branch for the project and add the used schema
+		// version to it
+		Branch branch = project.getBranchRoot().create(name, creator, batch);
+		branch.setMigrated(true);
+		if (hostname != null) {
+			branch.setHostname(hostname);
+		}
+		if (ssl != null) {
+			branch.setSsl(ssl);
+		}
+		if (pathPrefix != null) {
+			branch.setPathPrefix(pathPrefix);
+		} else {
+			branch.setPathPrefix("");
+		}
+		branch.assignSchemaVersion(creator, schemaVersion, batch);
+
+		// Assign the provided schema container to the project
+		project.getSchemaContainerRoot().addItem(schemaVersion.getSchemaContainer());
+		// project.getLatestBranch().assignSchemaVersion(creator,
+		// schemaContainerVersion);
+		project.createBaseNode(creator, schemaVersion);
+
+		project.setCreated(creator);
+		project.setEditor(creator);
+		project.getSchemaContainerRoot();
+		project.getTagFamilyRoot();
+
+		root.addItem(project);
+
+		return project;
 	}
 
-	public MeshVertex resolveToElement(Stack<String> stack) {
-		return boot.get().projectRoot().resolveToElement(stack);
-	}
-
-	public Project create(InternalActionContext ac, EventQueueBatch batch) {
-		return boot.get().projectRoot().create(ac, batch);
-	}
-
+	@Override
 	public Project create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		return boot.get().projectRoot().create(ac, batch, uuid);
-	}
+		ProjectRoot projectRoot = boot.get().projectRoot();
+		UserDaoWrapper userDao = boot.get().userDao();
+		SchemaDaoWrapper schemaDao = boot.get().schemaDao();
 
-	public void addItem(Project item) {
-		boot.get().projectRoot().addItem(item);
-	}
+		// TODO also create a default object schema for the project. Move this
+		// into service class
+		// ObjectSchema defaultContentSchema = objectSchemaRoot.findByName(,
+		// name)
+		ProjectCreateRequest requestModel = ac.fromJson(ProjectCreateRequest.class);
+		String projectName = requestModel.getName();
+		MeshAuthUser creator = ac.getUser();
 
-	public void removeItem(Project item) {
-		boot.get().projectRoot().removeItem(item);
-	}
+		if (StringUtils.isEmpty(requestModel.getName())) {
+			throw error(BAD_REQUEST, "project_missing_name");
+		}
+		if (!userDao.hasPermission(creator, projectRoot, CREATE_PERM)) {
+			throw error(FORBIDDEN, "error_missing_perm", projectRoot.getUuid(), CREATE_PERM.getRestPerm().getName());
+		}
+		// TODO instead of this check, a constraint in the db should be added
+		Project conflictingProject = projectRoot.findByName(requestModel.getName());
+		if (conflictingProject != null) {
+			throw new NameConflictException("project_conflicting_name", projectName, conflictingProject.getUuid());
+		}
+		routerStorageRegistry.assertProjectName(requestModel.getName());
 
-	public String getRootLabel() {
-		return boot.get().projectRoot().getRootLabel();
-	}
+		if (requestModel.getSchema() == null || !requestModel.getSchema().isSet()) {
+			throw error(BAD_REQUEST, "project_error_no_schema_reference");
+		}
+		SchemaVersion schemaVersion = schemaDao.fromReference(requestModel.getSchema());
 
-	public Class<? extends Project> getPersistanceClass() {
-		return boot.get().projectRoot().getPersistanceClass();
-	}
+		String hostname = requestModel.getHostname();
+		Boolean ssl = requestModel.getSsl();
+		String pathPrefix = requestModel.getPathPrefix();
+		Project project = create(projectName, hostname, ssl, pathPrefix, creator, schemaVersion, uuid, batch);
+		Branch initialBranch = project.getInitialBranch();
+		String branchUuid = initialBranch.getUuid();
 
-	public long computeCount() {
-		return boot.get().projectRoot().computeCount();
-	}
+		// Add project permissions
+		userDao.addCRUDPermissionOnRole(creator, projectRoot, CREATE_PERM, project);
+		userDao.inheritRolePermissions(creator, project, project.getBaseNode());
+		userDao.inheritRolePermissions(creator, project, project.getTagFamilyRoot());
+		userDao.inheritRolePermissions(creator, project, project.getSchemaContainerRoot());
+		userDao.inheritRolePermissions(creator, project, project.getMicroschemaContainerRoot());
+		userDao.inheritRolePermissions(creator, project, project.getNodeRoot());
+		userDao.inheritRolePermissions(creator, project, initialBranch);
 
-	public String getAPIPath(Project element, InternalActionContext ac) {
-		return boot.get().projectRoot().getAPIPath(element, ac);
-	}
+		// Store the project and the branch in the index
+		batch.add(project.onCreated());
+		batch.add(initialBranch.onCreated());
 
-	public String getETag(Project element, InternalActionContext ac) {
-		return boot.get().projectRoot().getAPIPath(element, ac);
-	}
+		// Add events for created basenode
+		batch.add(project.getBaseNode().onCreated());
+		project.getBaseNode().getDraftGraphFieldContainers().forEach(c -> {
+			batch.add(c.onCreated(branchUuid, DRAFT));
+		});
 
-	public ProjectResponse transformToRestSync(Project element, InternalActionContext ac, int level, String[] languageTags) {
-		return boot.get().projectRoot().transformToRestSync(element, ac, level, languageTags);
+		return project;
+
 	}
 
 	@Override
-	public boolean update(Project element, InternalActionContext ac, EventQueueBatch batch) {
-		return boot.get().projectRoot().update(element, ac, batch);
+	public void delete(Project project, BulkActionContext bac) {
+		if (log.isDebugEnabled()) {
+			log.debug("Deleting project {" + project.getName() + "}");
+		}
+
+		// Remove the nodes in the project hierarchy
+		Node base = project.getBaseNode();
+		base.delete(bac, true, true);
+
+		// Remove the tagfamilies from the index
+		project.getTagFamilyRoot().delete(bac);
+
+		// Remove all nodes in this project
+		for (Node node : project.findNodes()) {
+			node.delete(bac, true, false);
+			bac.inc();
+		}
+
+		// Finally also remove the node root
+		project.getNodeRoot().delete(bac);
+
+		// Unassign the schema from the container
+		for (Schema container : project.getSchemaContainerRoot().findAll()) {
+			project.getSchemaContainerRoot().removeSchemaContainer(container, bac.batch());
+		}
+
+		// Remove the project schema root from the index
+		project.getSchemaContainerRoot().delete(bac);
+
+		// Remove the branch root and all branches
+		project.getBranchRoot().delete(bac);
+
+		// Remove the project from the index
+		bac.add(project.onDeleted());
+
+		// Finally remove the project node
+		project.getVertex().remove();
+
+		bac.process(true);
+
 	}
 
 	@Override
-	public String getSubETag(Project project, InternalActionContext ac) {
-		return boot.get().projectRoot().getSubETag(project, ac);
+	public ProjectResponse transformToRestSync(Project project, InternalActionContext ac, int level, String... languageTags) {
+		GenericParameters generic = ac.getGenericParameters();
+		FieldsSet fields = generic.getFields();
+
+		ProjectResponse restProject = new ProjectResponse();
+		if (fields.has("name")) {
+			restProject.setName(project.getName());
+		}
+		if (fields.has("rootNode")) {
+			restProject.setRootNode(project.getBaseNode().transformToReference(ac));
+		}
+
+		project.fillCommonRestFields(ac, fields, restProject);
+		setRolePermissions(project, ac, restProject);
+
+		return restProject;
+
 	}
 
 	@Override
-	public void delete(Project element, BulkActionContext bac) {
-		boot.get().projectRoot().delete(element, bac);
+	public long computeGlobalCount() {
+		ProjectRoot projectRoot = boot.get().projectRoot();
+		return projectRoot.computeCount();
 	}
 
 }

@@ -16,9 +16,9 @@ import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.EditorTrackingVertex;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.TransformableElement;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.NodeContent;
-import com.gentics.mesh.core.data.root.UserRoot;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.model.MeshElement;
@@ -145,8 +145,8 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 			Object source = env.getSource();
 			if (source instanceof NodeContent) {
 				element = ((NodeContent) source).getNode();
-			} else if (source instanceof SchemaContainerVersion) {
-				element = ((SchemaContainerVersion) source).getSchemaContainer();
+			} else if (source instanceof SchemaVersion) {
+				element = ((SchemaVersion) source).getSchemaContainer();
 			} else {
 				element = env.getSource();
 			}
@@ -167,9 +167,8 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 				GraphQLContext gc = env.getContext();
 				MeshCoreVertex<?, ?> vertex = getMeshCoreVertex(env.getSource());
 
-				UserRoot userRoot = Tx.get().data().userDao();
-
-				return userRoot.getPermissionInfo(gc.getUser(), vertex);
+				UserDaoWrapper userDao = Tx.get().data().userDao();
+				return userDao.getPermissionInfo(gc.getUser(), vertex);
 			})
 		);
 
@@ -184,9 +183,8 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 				GraphQLContext gc = env.getContext();
 				MeshCoreVertex<?, ?> vertex = getMeshCoreVertex(env.getSource());
 
-				UserRoot userRoot = Tx.get().data().userDao();
-
-				userRoot.getPermissionInfo(gc.getUser(), vertex);
+				UserDaoWrapper userDao = Tx.get().data().userDao();
+				userDao.getPermissionInfo(gc.getUser(), vertex);
 				return vertex.getRolePermissions(gc, env.getArgument("role"));
 			})
 		);
@@ -199,8 +197,8 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 					CreatorTrackingVertex vertex = null;
 					if (source instanceof NodeContent) {
 						vertex = ((NodeContent) source).getNode();
-					} else if (source instanceof SchemaContainerVersion) {
-						vertex = ((SchemaContainerVersion) source).getSchemaContainer();
+					} else if (source instanceof SchemaVersion) {
+						vertex = ((SchemaVersion) source).getSchemaContainer();
 					} else {
 						vertex = env.getSource();
 					}
@@ -216,8 +214,8 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 					CreatorTrackingVertex vertex = null;
 					if (source instanceof NodeContent) {
 						vertex = ((NodeContent) source).getNode();
-					} else if (source instanceof SchemaContainerVersion) {
-						vertex = ((SchemaContainerVersion) source).getSchemaContainer();
+					} else if (source instanceof SchemaVersion) {
+						vertex = ((SchemaVersion) source).getSchemaContainer();
 					} else {
 						vertex = env.getSource();
 					}
@@ -227,8 +225,8 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 			// .edited
 			setField.accept(newFieldDefinition().name("edited").description("ISO8601 formatted edit timestamp").type(GraphQLString).dataFetcher(env -> {
 				Object source = env.getSource();
-				if (source instanceof SchemaContainerVersion) {
-					source = ((SchemaContainerVersion) source).getSchemaContainer();
+				if (source instanceof SchemaVersion) {
+					source = ((SchemaVersion) source).getSchemaContainer();
 				}
 				if (source instanceof EditorTrackingVertex) {
 					EditorTrackingVertex vertex = (EditorTrackingVertex) source;
@@ -241,8 +239,8 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 			setField.accept(newFieldDefinition().name("editor").description("Editor of the element").type(new GraphQLTypeReference("User"))
 					.dataFetcher(env -> {
 						Object source = env.getSource();
-						if (source instanceof SchemaContainerVersion) {
-							source = ((SchemaContainerVersion) source).getSchemaContainer();
+						if (source instanceof SchemaVersion) {
+							source = ((SchemaVersion) source).getSchemaContainer();
 						}
 						if (source instanceof EditorTrackingVertex) {
 							GraphQLContext gc = env.getContext();
@@ -257,8 +255,8 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 	private MeshCoreVertex<?, ?> getMeshCoreVertex(Object source) {
 		if (source instanceof NodeContent) {
 			return ((NodeContent) source).getNode();
-		} else if (source instanceof SchemaContainerVersion) {
-			return ((SchemaContainerVersion) source).getSchemaContainer();
+		} else if (source instanceof SchemaVersion) {
+			return ((SchemaVersion) source).getSchemaContainer();
 		} else {
 			return (MeshCoreVertex<?, ?>) source;
 		}

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.endpoint.handler;
 
+import static com.gentics.mesh.core.action.DAOActionContext.context;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
@@ -7,9 +8,8 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.action.DAOActions;
+import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
@@ -21,7 +21,7 @@ import io.vertx.ext.web.RoutingContext;
 /**
  * Abstract class for CRUD REST handlers. The abstract class provides handler methods for create, read (one), read (multiple) and delete.
  */
-public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM extends RestModel> extends AbstractHandler {
+public abstract class AbstractCrudHandler<T extends HibCoreElement, RM extends RestModel> extends AbstractHandler {
 
 	public static final String TAGFAMILY_ELEMENT_CONTEXT_DATA_KEY = "rootElement";
 
@@ -35,14 +35,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 		this.writeLock = writeLock;
 	}
 
-	/**
-	 * Return the main root vertex that is used to handle CRUD for the elements that are used in combination with this handler.
-	 * @param tx TODO
-	 * @param ac
-	 * 
-	 * @return
-	 */
-	abstract public RootVertex<T> getRootVertex(Tx tx, InternalActionContext ac);
+	abstract public DAOActions<T, RM> crudActions();
 
 	/**
 	 * Handle create requests.
@@ -50,7 +43,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 	 * @param ac
 	 */
 	public void handleCreate(InternalActionContext ac) {
-		utils.createElement(ac, tx -> getRootVertex(tx, ac));
+		utils.createElement(ac, crudActions());
 	}
 
 	/**
@@ -62,7 +55,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 	 */
 	public void handleDelete(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		utils.deleteElement(ac, tx -> getRootVertex(tx, ac), uuid);
+		utils.deleteElement(ac, crudActions(), uuid);
 	}
 
 	/**
@@ -74,7 +67,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 	 */
 	public void handleRead(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		utils.readElement(ac, uuid, tx -> getRootVertex(tx, ac), READ_PERM);
+		utils.readElement(ac, uuid, crudActions(), READ_PERM);
 	}
 
 	/**
@@ -86,7 +79,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 	 */
 	public void handleUpdate(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		utils.updateElement(ac, uuid, tx -> getRootVertex(tx, ac));
+		utils.updateElement(ac, uuid, crudActions());
 	}
 
 	/**
@@ -95,7 +88,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 	 * @param ac
 	 */
 	public void handleReadList(InternalActionContext ac) {
-		utils.readElementList(ac, tx -> getRootVertex(tx, ac));
+		utils.readElementList(ac, crudActions());
 	}
 
 	/**
@@ -112,7 +105,8 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 			// Only try to load the root element when a uuid string was specified
 			if (!isEmpty(uuid)) {
 				boolean result = db.tx(tx -> {
-					T foundElement = getRootVertex(tx, ac).findByUuid(uuid);
+					//TODO Calling load is not correct. The findByUuid method should be used here instead or the loadObject
+					T foundElement = crudActions().loadByUuid(context(tx, ac), uuid, null, false);
 					if (foundElement == null) {
 						throw error(NOT_FOUND, i18nNotFoundMessage, uuid);
 					} else {

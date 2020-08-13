@@ -9,7 +9,7 @@ import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.search.context.GenericEntryContext;
 import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.search.index.entry.AbstractEntry;
 
 import io.reactivex.Completable;
@@ -20,9 +20,9 @@ import io.reactivex.Completable;
 public class CreateIndexEntryImpl extends AbstractEntry<GenericEntryContext> implements CreateIndexEntry {
 
 	private String indexName;
-	private Schema schema;
+	private SchemaModel schema;
 	private IndexHandler<?> indexHandler;
-	private GenericEntryContextImpl context = new GenericEntryContextImpl();
+	private GenericEntryContext context = new GenericEntryContextImpl();
 
 	@Inject
 	public CreateIndexEntryImpl(IndexHandler<?> indexHandler, String indexName) {
@@ -37,12 +37,12 @@ public class CreateIndexEntryImpl extends AbstractEntry<GenericEntryContext> imp
 	}
 
 	@Override
-	public Schema getSchema() {
+	public SchemaModel getSchema() {
 		return schema;
 	}
 
 	@Override
-	public CreateIndexEntry setSchema(Schema schema) {
+	public CreateIndexEntry setSchema(SchemaModel schema) {
 		this.schema = schema;
 		return this;
 	}
@@ -58,7 +58,7 @@ public class CreateIndexEntryImpl extends AbstractEntry<GenericEntryContext> imp
 	}
 
 	@Override
-	public GenericEntryContextImpl getContext() {
+	public GenericEntryContext getContext() {
 		return context;
 	}
 

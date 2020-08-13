@@ -23,6 +23,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
+import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.GraphField;
@@ -35,19 +36,19 @@ import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
-import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
@@ -89,8 +90,8 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	 * @return
 	 * @throws MeshJsonException
 	 */
-	protected MicroschemaContainer createDummyMicroschema() throws MeshJsonException {
-		MicroschemaModel dummyMicroschema = new MicroschemaModelImpl();
+	protected Microschema createDummyMicroschema() throws MeshJsonException {
+		MicroschemaVersionModel dummyMicroschema = new MicroschemaModelImpl();
 		dummyMicroschema.setName("dummymicroschema");
 
 		StringFieldSchema stringFieldSchema = new StringFieldSchemaImpl();
@@ -104,7 +105,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	/**
 	 * Dummy microschema
 	 */
-	protected MicroschemaContainer dummyMicroschema;
+	protected Microschema dummyMicroschema;
 
 	@Before
 	public void addDummySchema() throws Exception {
@@ -122,8 +123,9 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 		Node newOverview = content("news overview");
 
 		try (Tx tx = tx()) {
+			MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
 
-			MicroschemaModel fullMicroschema = new MicroschemaModelImpl();
+			MicroschemaVersionModel fullMicroschema = new MicroschemaModelImpl();
 			fullMicroschema.setName("full");
 
 			// fullMicroschema.addField(new BinaryFieldSchemaImpl().setName("binaryfield").setLabel("Binary Field"));
@@ -141,14 +143,14 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 			fullMicroschema.addField(new NumberFieldSchemaImpl().setName("numberfield").setLabel("Number Field"));
 			fullMicroschema.addField(new StringFieldSchemaImpl().setName("stringfield").setLabel("String Field"));
 
-			MicroschemaContainer microschemaContainer = boot().microschemaContainerRoot().create(fullMicroschema, getRequestUser(), createBatch());
+			Microschema microschema = microschemaDao.create(fullMicroschema, getRequestUser(), createBatch());
 
-			SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
+			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(new MicronodeFieldSchemaImpl().setName("micronodefield").setLabel("Micronode Field"));
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
-			MicronodeGraphField micronodeField = container.createMicronode("micronodefield", microschemaContainer.getLatestVersion());
+			MicronodeGraphField micronodeField = container.createMicronode("micronodefield", microschema.getLatestVersion());
 			Micronode micronode = micronodeField.getMicronode();
 			assertNotNull("Micronode must not be null", micronode);
 			// micronode.createBinary("binaryfield");
@@ -259,7 +261,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 			MicronodeGraphField field = container.createMicronode("testMicronodeField", dummyMicroschema.getLatestVersion());
 			Micronode micronode = field.getMicronode();
 
-			MicroschemaModel schema = micronode.getSchemaContainerVersion().getSchema();
+			MicroschemaVersionModel schema = micronode.getSchemaContainerVersion().getSchema();
 			schema.addField(FieldUtil.createStringFieldSchema("stringfield"));
 			micronode.getSchemaContainerVersion().setSchema(schema);
 			InternalActionContext ac = mockActionContext();
@@ -353,8 +355,8 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 		try (Tx tx = tx()) {
 			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			// Create microschema for the micronode
-			MicroschemaContainerVersion containerVersion = tx.getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
-			MicroschemaModel microschema = new MicroschemaModelImpl();
+			MicroschemaVersion containerVersion = tx.getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
+			MicroschemaVersionModel microschema = new MicroschemaModelImpl();
 			microschema.setVersion("1.0");
 			microschema.addField(FieldUtil.createStringFieldSchema("string"));
 			microschema.addField(FieldUtil.createDateFieldSchema("date"));

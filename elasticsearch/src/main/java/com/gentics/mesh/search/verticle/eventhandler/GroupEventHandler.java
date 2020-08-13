@@ -15,7 +15,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.root.GroupRoot;
+import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
@@ -53,7 +53,7 @@ public class GroupEventHandler implements EventHandler {
 				return helper.getDb().tx(tx -> {
 					// We also need to update all users of the group
 					Optional<Group> groupOptional = entities.group.getElement(model);
-					GroupRoot groupRoot = tx.data().groupDao();
+					GroupDaoWrapper groupRoot = tx.data().groupDao();
 
 					return Stream.concat(
 						toStream(groupOptional).map(entities::createRequest),

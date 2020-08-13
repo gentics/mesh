@@ -132,12 +132,13 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 
 	@Inject
-	public OrientDBDatabase(Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, Lazy<DaoCollection> daos, MetricsService metrics, OrientDBTypeHandler typeHandler,
+	public OrientDBDatabase(MeshOptions options, Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, Lazy<DaoCollection> daos, MetricsService metrics, OrientDBTypeHandler typeHandler,
 		OrientDBIndexHandler indexHandler,
 		OrientDBClusterManager clusterManager,
 		TxCleanupTask txCleanupTask,
 		Mesh mesh, WriteLock writeLock) {
 		super(vertx);
+		this.options = options;
 		this.boot = boot;
 		this.daos = daos;
 		this.metrics = metrics;
@@ -179,8 +180,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public void init(MeshOptions options, String meshVersion, String... basePaths) throws Exception {
-		super.init(options, meshVersion);
+	public void init(String meshVersion, String... basePaths) throws Exception {
+		super.init(meshVersion);
 
 		GraphStorageOptions storageOptions = options.getStorageOptions();
 		boolean startOrientServer = storageOptions != null && storageOptions.getStartServer();
@@ -372,7 +373,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	@Deprecated
 	public Tx tx() {
-		return new OrientDBTx(this, boot.get(), daos.get(), txProvider, resolver, commitTimer);
+		return new OrientDBTx(options, this, boot.get(), daos.get(), txProvider, resolver, commitTimer);
 	}
 
 	@Override

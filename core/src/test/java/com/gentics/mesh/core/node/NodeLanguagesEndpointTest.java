@@ -8,13 +8,14 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 import org.junit.Test;
 
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
@@ -75,7 +76,7 @@ public class NodeLanguagesEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testDeleteLanguageNoPerm() {
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.revokePermissions(role(), content(), DELETE_PERM);
 			tx.success();
 		}

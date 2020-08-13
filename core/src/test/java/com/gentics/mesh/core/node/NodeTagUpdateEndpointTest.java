@@ -20,8 +20,8 @@ import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
-import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.event.node.NodeTaggedEventModel;
@@ -127,9 +127,11 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 		assertEquals("The colors tag family should now have one additional color tag.", previousCount + 1, afterCount);
 
 		try (Tx tx = tx()) {
+			TagDaoWrapper tagDao = tx.data().tagDao();
+
 			assertThat(trackingSearchProvider()).storedAllContainers(content(), project(), latestBranch(), "en", "de");
 			assertThat(trackingSearchProvider()).stored(tagFamily("colors"));
-			assertThat(trackingSearchProvider()).stored(tagFamily("colors").findByName("purple"));
+			assertThat(trackingSearchProvider()).stored(tagDao.findByName(tagFamily("colors"), "purple"));
 			// 4( contents (en,de * type) + 1 new tag + 1 tagfamily doc updated
 			long stores = 6;
 			assertThat(trackingSearchProvider()).hasEvents(stores, 0, 0, 0, 0);
@@ -231,7 +233,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 	public void testUpdateWithNoNodePerm() {
 		// 1. Revoke the update permission
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.revokePermissions(role(), content(), UPDATE_PERM);
 			tx.success();
 		}
@@ -250,7 +252,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 	public void testUpdateWithNoTagFamilyCreatePerm() {
 		// 1. Revoke the tag create permission
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.revokePermissions(role(), tagFamily("colors"), CREATE_PERM);
 			tx.success();
 		}

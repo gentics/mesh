@@ -11,16 +11,15 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.actions.impl.GroupDAOActionsImpl;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.page.TransformablePage;
-import com.gentics.mesh.core.data.root.GroupRoot;
-import com.gentics.mesh.core.data.root.RoleRoot;
-import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.root.UserRoot;
-import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
@@ -48,8 +47,8 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 	}
 
 	@Override
-	public RootVertex<Group> getRootVertex(Tx tx, InternalActionContext ac) {
-		return tx.data().groupDao();
+	public GroupDAOActionsImpl crudActions() {
+		return new GroupDAOActionsImpl();
 	}
 
 	/**
@@ -61,8 +60,8 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 	 */
 	public void handleGroupRolesList(InternalActionContext ac, String groupUuid) {
 		utils.syncTx(ac, tx -> {
-			GroupRoot groupRoot = tx.data().groupDao();
-			Group group = getRootVertex(tx, ac).loadObjectByUuid(ac, groupUuid, READ_PERM);
+			GroupDaoWrapper groupRoot = tx.data().groupDao();
+			Group group = tx.data().groupDao().loadObjectByUuid(ac, groupUuid, READ_PERM);
 			PagingParametersImpl pagingInfo = new PagingParametersImpl(ac);
 			TransformablePage<? extends Role> rolePage = groupRoot.getRoles(group, ac.getUser(), pagingInfo);
 			return rolePage.transformToRestSync(ac, 0);
@@ -82,8 +81,9 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				GroupRoot groupDao = tx.data().groupDao();
-				RoleRoot roleDao = tx.data().roleDao();
+				GroupDaoWrapper groupDao = tx.data().groupDao();
+				RoleDaoWrapper roleDao = tx.data().roleDao();
+
 				Group group = groupDao.loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 				Role role = roleDao.loadObjectByUuid(ac, roleUuid, READ_PERM);
 				// Handle idempotency
@@ -120,20 +120,22 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				Group group = getRootVertex(tx, ac).loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
-				GroupRoot groupRoot = tx.data().groupDao();
-				Role role = boot.get().roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
+				GroupDaoWrapper groupDao = tx.data().groupDao();
+				RoleDaoWrapper roleDao = tx.data().roleDao();
+
+				Group group = groupDao.loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
+				Role role = roleDao.loadObjectByUuid(ac, roleUuid, READ_PERM);
 
 				// No need to update the group if it is not assigned
-				if (!groupRoot.hasRole(group, role)) {
+				if (!groupDao.hasRole(group, role)) {
 					return;
 				}
 
 				utils.eventAction(batch -> {
-					groupRoot.removeRole(group, role);
+					groupDao.removeRole(group, role);
 					group.setEditor(ac.getUser());
 					group.setLastEditedTimestamp();
-					batch.add(groupRoot.createRoleAssignmentEvent(group, role, UNASSIGNED));
+					batch.add(groupDao.createRoleAssignmentEvent(group, role, UNASSIGNED));
 					return batch;
 				});
 
@@ -152,11 +154,11 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(groupUuid, "groupUuid");
 
 		utils.syncTx(ac, tx -> {
-			GroupRoot groupRoot = tx.data().groupDao();
+			GroupDaoWrapper groupDao = tx.data().groupDao();
 			MeshAuthUser requestUser = ac.getUser();
 			PagingParametersImpl pagingInfo = new PagingParametersImpl(ac);
-			Group group = tx.data().groupDao().loadObjectByUuid(ac, groupUuid, READ_PERM);
-			TransformablePage<? extends User> userPage = groupRoot.getVisibleUsers(group, requestUser, pagingInfo);
+			Group group = groupDao.loadObjectByUuid(ac, groupUuid, READ_PERM);
+			TransformablePage<? extends HibUser> userPage = groupDao.getVisibleUsers(group, requestUser, pagingInfo);
 			return userPage.transformToRestSync(ac, 0);
 		}, model -> ac.send(model, OK));
 	}
@@ -176,10 +178,10 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				GroupRoot groupDao = tx.data().groupDao();
-				UserRoot userDao = tx.data().userDao();
+				GroupDaoWrapper groupDao = tx.data().groupDao();
+				UserDaoWrapper userDao = tx.data().userDao();
 				Group group = groupDao.loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
-				User user = userDao.loadObjectByUuid(ac, userUuid, READ_PERM);
+				HibUser user = userDao.loadObjectByUuid(ac, userUuid, READ_PERM);
 
 				// Only add the user if it is not yet assigned
 				if (!groupDao.hasUser(group, user)) {
@@ -188,7 +190,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 						batch.add(groupDao.createUserAssignmentEvent(group, user, ASSIGNED));
 					});
 				}
-				return group.transformToRestSync(ac, 0);
+				return groupDao.transformToRestSync(group, ac, 0);
 			}, model -> ac.send(model, OK));
 		}
 	}
@@ -208,9 +210,11 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				GroupRoot groupDao = tx.data().groupDao();
+				GroupDaoWrapper groupDao = tx.data().groupDao();
+				UserDaoWrapper userDao = tx.data().userDao();
+
 				Group group = groupDao.loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
-				User user = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
+				HibUser user = userDao.loadObjectByUuid(ac, userUuid, READ_PERM);
 
 				// No need to remove the user if it is not assigned
 				if (!groupDao.hasUser(group, user)) {

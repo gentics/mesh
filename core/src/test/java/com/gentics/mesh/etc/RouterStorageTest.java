@@ -10,7 +10,7 @@ import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.router.RouterStorage;
-import com.gentics.mesh.router.RouterStorageRegistry;
+import com.gentics.mesh.router.RouterStorageRegistryImpl;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.CaseInsensitiveHeaders;
@@ -27,7 +27,7 @@ public class RouterStorageTest {
 	@Test
 	public void testFailureHandler() throws Exception {
 		MeshAuthChain chain = mock(MeshAuthChain.class);
-		RouterStorageRegistry routerStorageRegistry = mock(RouterStorageRegistry.class);
+		RouterStorageRegistryImpl routerStorageRegistry = mock(RouterStorageRegistryImpl.class);
 		RouterStorage storage = new RouterStorage(Vertx.vertx(), new MeshOptions(), chain, null, null, null, () -> {
 			return Mockito.mock(Database.class);
 		}, null, routerStorageRegistry, null);

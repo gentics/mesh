@@ -137,7 +137,7 @@ icon:check[] Core: Migrating remaining nodes via the `/{project}/branches/{branc
 [[v1.4.4]]
 == 1.4.4 (14.04.2020)
 
-CAUTION: Microschema migrations since version 1.2.0 are very likely to cause a loss of data in nodes that contain micronodes of the migrated schema. This bug has been fixed in this version. At the first start with this version or higher, Gentics Mesh will try to restore affected nodes in projects with a single branch. However, because some data cannot be restored, we advise to restore a backup of a moment before the microschema migration, if possible. We apologize for the inconvenience.
+CAUTION: Microschema migrations since version 1.2.0 are very likely to cause a loss of data in nodes that contain micronodes of the migrated schema. This bug has been fixed in this version. At the first start with this version or higher, Gentics Mesh will try to restore affected nodes in projects with a single branch. However, because some data cannot be restored, we advise to restore a backup of a moment before the microschemaModel migration, if possible. We apologize for the inconvenience.
 
 icon:plus[] Monitoring: Metrics have been added for the synchronized write lock, the topology lock, commit times and interrupts. Take a look at our link:{{< relref "monitoring.asciidoc" >}}#_metrics[documentation] for more information.
 
@@ -173,7 +173,7 @@ icon:check[] UI: The Gentics Mesh UI has been updated to version link:https://gi
 
 icon:check[] Core: The storage filesystem compatibility check has been made more reliable.
 
-icon:check[] Core: Fixed a bug that caused errors during microschema migrations in certain situations.
+icon:check[] Core: Fixed a bug that caused errors during microschemaModel migrations in certain situations.
 
 [[v1.4.1]]
 == 1.4.1 (19.01.2020)
@@ -427,7 +427,7 @@ ____
 
 icon:plus[] Java Rest Client: Various new methods have been added to handle endpoint agnostic requests (`get(), post(), delete(), put()`). These methods can be used to handle plugin requests.
 
-icon:check[] Migration: It is now possible to apply schema / microschema changes that include the `name` property via the `changes` endpoint. Previously the name property was not utilized.
+icon:check[] Migration: It is now possible to apply schema / microschemaModel changes that include the `name` property via the `changes` endpoint. Previously the name property was not utilized.
 
 [[v0.40.2]]
 == 0.40.2 (09.09.2019)
@@ -900,7 +900,7 @@ icon:check[] Java Rest Client: Fixed a bug that prevented automatic reconnection
 
 icon:check[] REST: The `publish` and `readPublished` permissions are now only shown for nodes.
 
-icon:check[] Core: Creation of schemas with the same name of an existing microschema or vice versa is not allowed anymore. Doing so caused conflicts in GraphQL. link:https://github.com/gentics/mesh/issues/597[#597]
+icon:check[] Core: Creation of schemas with the same name of an existing microschemaModel or vice versa is not allowed anymore. Doing so caused conflicts in GraphQL. link:https://github.com/gentics/mesh/issues/597[#597]
 
 icon:check[] Core: A bug in the image transform endpoint has been fixed. Previously nodes which were updated using that endpoint could not be found via webroot anymore. link:https://github.com/gentics/mesh/issues/599[#599]
 
@@ -910,9 +910,9 @@ icon:check[] Plugins: A `NullPointerException` has been fixed which has happened
 
 icon:check[] REST: Creating a schema with a micronode field and the allow option set to `[]` will now allow micronodes of all microschemas. link:https://github.com/gentics/mesh/issues/431[#431]
 
-icon:check[] Core: Fixed a bug that caused an internal server error when applying changes to a microschema. link:https://github.com/gentics/mesh/issues/591[#591]
+icon:check[] Core: Fixed a bug that caused an internal server error when applying changes to a microschemaModel. link:https://github.com/gentics/mesh/issues/591[#591]
 
-icon:check[] UI: Fixed validation issues in microschema lists when updating nodes. Previously validation issues would not be detected by the UI and the node update would fail. link:https://github.com/gentics/mesh-ui/pull/202[#202]
+icon:check[] UI: Fixed validation issues in microschemaModel lists when updating nodes. Previously validation issues would not be detected by the UI and the node update would fail. link:https://github.com/gentics/mesh-ui/pull/202[#202]
 
 [[v0.31.4]]
 == 0.31.4 (11.04.2019)
@@ -1581,7 +1581,7 @@ icon:check[] REST: Creating a release with fixed UUID will now invoke the node m
 
 icon:check[] Java REST Client: The `eventbus()` method now correctly sends authorization headers.
 
-icon:check[] Java Rest Client: Missing methods to start schema/microschema migrations for a release have been added.
+icon:check[] Java Rest Client: Missing methods to start schema/microschemaModel migrations for a release have been added.
 
 [[v0.18.0]]
 == 0.18.0 (06.04.2018)
@@ -1620,7 +1620,7 @@ icon:check[] Java Rest Client: Fix webroot requests never returns when containin
 
 icon:check[] GraphQL: Fixed language parameter in nodes query method was ignored in some cases. link:https://github.com/gentics/mesh/issues/365[#365]
 
-icon:check[] REST: The `{apiLatest}/microschemas` endpoint will now correctly detect name conflicts during microschema creation.
+icon:check[] REST: The `{apiLatest}/microschemas` endpoint will now correctly detect name conflicts during microschemaModel creation.
 
 [[v0.17.3]]
 == 0.17.3 (15.03.2018)
@@ -2054,7 +2054,7 @@ The specified field mapping will be added to the generated fields property of th
 
 You can use the `POST {apiLatest}/utilities/validateSchema` endpoint to validate and inspect the effective index configuration.
 
-icon:plus[] REST: The `POST {apiLatest}/utilities/validateSchema` and `POST {apiLatest}/utilities/validateMicroschema` endpoints can now be used to validate a schema/microschema JSON without actually storing it.
+icon:plus[] REST: The `POST {apiLatest}/utilities/validateSchema` and `POST {apiLatest}/utilities/validateMicroschema` endpoints can now be used to validate a schema/microschemaModel JSON without actually storing it.
                      The validation response will also contain the generated Elasticsearch index configuration.
 
 icon:plus[] GraphQL: Nodes can now be loaded in the context of a schema. This will return all nodes which use the schema.
@@ -2081,7 +2081,7 @@ icon:check[] REST: Fixed a bug in the permission system. Permissions on microsch
 
 icon:check[] REST: ETags will now be updated if the permission on the element changes.
 
-icon:check[] Core: Various bugs within the schema / microschema migration code have been addressed and fixed.
+icon:check[] Core: Various bugs within the schema / microschemaModel migration code have been addressed and fixed.
 
 icon:check[] Core: The search index handling has been updated. A differential synchronization will be run to update the new search index and thus the old index data can still be used.
 
@@ -2131,7 +2131,7 @@ icon:plus[] The `{apiLatest}/:projectName/release/:releaseUuid/schemas` and `{ap
 
 icon:check[] Java REST Client: A potential threading issue within the Java REST Client has been fixed. Vert.x http clients will no longer be shared across multiple threads.
 
-icon:check[] Memory: Reduce memory footprint of microschema migrations. link:https://github.com/gentics/mesh/issues/135[#135]
+icon:check[] Memory: Reduce memory footprint of microschemaModel migrations. link:https://github.com/gentics/mesh/issues/135[#135]
 
 icon:check[] Fixed handling "required" and "allow" properties of schema fields when adding fields to schemas.
 
@@ -2297,7 +2297,7 @@ icon:check[] Versioning: Older Gentics Mesh instances (>0.8.x) were lacking some
 
 icon:plus[] License: The license was changed to Apache License 2.0
 
-icon:plus[] Schema Versions: The schema version field type was changed from `number` to `string`. It is now also possible to load schema and microschema versions using the `?version` query parameter.
+icon:plus[] Schema Versions: The schema version field type was changed from `number` to `string`. It is now also possible to load schema and microschemaModel versions using the `?version` query parameter.
 
 icon:check[] Search: The error reporting for failing queries has been improved.
 
@@ -2404,7 +2404,7 @@ icon:plus[] GraphQL: Added micronode list handling. Previously it was not possib
 
 icon:check[] Core: Fixed NPE that was thrown when loading releases on older systems.
 
-icon:check[] Core: An upgrade error has been fixed which was caused by an invalid microschema JSON format error.
+icon:check[] Core: An upgrade error has been fixed which was caused by an invalid microschemaModel JSON format error.
 
 icon:check[] UI: You will no longer be automatically logged in as anonymous user once your session expires.
 
@@ -2526,7 +2526,7 @@ icon:plus[] Gentics Mesh now supports GraphQL.
 
 icon:important[] The `expandAll` and `expand` parameters will be removed within an upcoming release of Gentics Mesh. We highly recommend to use the GraphQL endpoint instead if you want to fetch deeply nested data.
 
-icon:plus[] Schema name validation - Schema and microschema names must only contain letter, number or underscore characters.
+icon:plus[] Schema name validation - Schema and microschemaModel names must only contain letter, number or underscore characters.
 
 icon:plus[] Node Tag Endpoint
 
@@ -2845,7 +2845,7 @@ icon:check[] A typo within the search model document for users was fixed.
 
 == 0.6.2 (15.03.2016)
 
-icon:check[] The microschema and schema permission field was always empty for newly created elements.
+icon:check[] The microschemaModel and schema permission field was always empty for newly created elements.
 
 == 0.6.1 (14.03.2016)
 

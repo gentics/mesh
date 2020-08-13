@@ -11,11 +11,11 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -86,13 +86,13 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	}
 
 	public final String getETag(T element, InternalActionContext ac) {
-		UserRoot userRoot = mesh().boot().userDao();
-		RoleRoot roleDao = mesh().boot().roleDao();
+		UserDaoWrapper userDao = mesh().boot().userDao();
+		RoleDaoWrapper roleDao = mesh().boot().roleDao();
 
 		StringBuilder keyBuilder = new StringBuilder();
 		keyBuilder.append(getUuid());
 		keyBuilder.append("-");
-		keyBuilder.append(userRoot.getPermissionInfo(ac.getUser(), element).getHash());
+		keyBuilder.append(userDao.getPermissionInfo(ac.getUser(), element).getHash());
 
 		keyBuilder.append("fields:");
 		GenericParameters generic = ac.getGenericParameters();

@@ -32,16 +32,16 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
-import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.client.NodeParametersImpl;
@@ -69,7 +69,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		String uuid = tx(() -> node.getUuid());
 
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			prepareSchema(node, "", "binary");
 			roleDao.revokePermissions(role(), node, UPDATE_PERM);
 			tx.success();
@@ -170,7 +170,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			Node node = folder("news");
 
 			// Add a schema called nonBinary
-			SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
+			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(new StringFieldSchemaImpl().setName("nonBinary").setLabel("No Binary content"));
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
@@ -190,7 +190,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			Node node = folder("news");
 
 			// Add a schema called nonBinary
-			SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
+			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 			for (String fieldName : fields) {
 				schema.addField(FieldUtil.createBinaryFieldSchema(fieldName));
 			}
@@ -236,7 +236,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		// Prepare schema
 		try (Tx tx = tx()) {
 			Node node = folder("news");
-			SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
+			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(FieldUtil.createBinaryFieldSchema("image"));
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
 		}
@@ -271,7 +271,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			Node node = folder("news");
 
 			// Add a schema called nonBinary
-			SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
+			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(FieldUtil.createBinaryFieldSchema("image"));
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
@@ -295,7 +295,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 
 		// Add a schema called nonBinary
 		try (Tx tx = tx()) {
-			SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
+			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(FieldUtil.createBinaryFieldSchema("image"));
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
 			tx.success();
@@ -687,7 +687,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			prepareSchema(folder2014, "", "binary");
 
 			// make binary field the segment field
-			SchemaModel schema = folder2014.getSchemaContainer().getLatestVersion().getSchema();
+			SchemaVersionModel schema = folder2014.getSchemaContainer().getLatestVersion().getSchema();
 			schema.setSegmentField("binary");
 			folder2014.getSchemaContainer().getLatestVersion().setSchema(schema);
 			tx.success();

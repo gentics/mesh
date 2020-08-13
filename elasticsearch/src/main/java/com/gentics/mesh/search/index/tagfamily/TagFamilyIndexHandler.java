@@ -151,7 +151,7 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 
 	@Override
 	public Stream<? extends TagFamily> loadAllElements(Tx tx) {
-		return tx.data().tagFamilyDao().findAll().stream();
+		return tx.data().tagFamilyDao().findAllGlobal().stream();
 	}
 
 }

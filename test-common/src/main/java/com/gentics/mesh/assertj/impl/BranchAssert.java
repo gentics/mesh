@@ -1,7 +1,6 @@
 package com.gentics.mesh.assertj.impl;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -10,10 +9,10 @@ import org.assertj.core.api.AbstractAssert;
 
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 
 public class BranchAssert extends AbstractAssert<BranchAssert, Branch> {
 	public BranchAssert(Branch actual) {
@@ -111,7 +110,7 @@ public class BranchAssert extends AbstractAssert<BranchAssert, Branch> {
 	 *            schema version
 	 * @return fluent API
 	 */
-	public BranchAssert hasSchemaVersion(SchemaContainerVersion version) {
+	public BranchAssert hasSchemaVersion(SchemaVersion version) {
 		assertThat(actual.contains(version)).as(descriptionText() + " has version").isTrue();
 		return this;
 	}
@@ -123,7 +122,7 @@ public class BranchAssert extends AbstractAssert<BranchAssert, Branch> {
 	 *            schema version
 	 * @return fluent API
 	 */
-	public BranchAssert hasNotSchemaVersion(SchemaContainerVersion version) {
+	public BranchAssert hasNotSchemaVersion(SchemaVersion version) {
 		assertThat(actual.contains(version)).as(descriptionText() + " has version").isFalse();
 		return this;
 	}
@@ -135,7 +134,7 @@ public class BranchAssert extends AbstractAssert<BranchAssert, Branch> {
 	 *            schema
 	 * @return fluent API
 	 */
-	public BranchAssert hasSchema(SchemaContainer schemaContainer) {
+	public BranchAssert hasSchema(Schema schemaContainer) {
 		assertThat(actual.contains(schemaContainer)).as(descriptionText() + " has schema").isTrue();
 		return this;
 	}
@@ -147,7 +146,7 @@ public class BranchAssert extends AbstractAssert<BranchAssert, Branch> {
 	 *            schema
 	 * @return fluent API
 	 */
-	public BranchAssert hasNotSchema(SchemaContainer schemaContainer) {
+	public BranchAssert hasNotSchema(Schema schemaContainer) {
 		assertThat(actual.contains(schemaContainer)).as(descriptionText() + " has schema").isFalse();
 		return this;
 	}
@@ -159,7 +158,7 @@ public class BranchAssert extends AbstractAssert<BranchAssert, Branch> {
 	 *            microschema version
 	 * @return fluent API
 	 */
-	public BranchAssert hasMicroschemaVersion(MicroschemaContainerVersion version) {
+	public BranchAssert hasMicroschemaVersion(MicroschemaVersion version) {
 		assertThat(actual.contains(version)).as(descriptionText() + " has version").isTrue();
 		return this;
 	}
@@ -171,7 +170,7 @@ public class BranchAssert extends AbstractAssert<BranchAssert, Branch> {
 	 *            schema version
 	 * @return fluent API
 	 */
-	public BranchAssert hasNotMicroschemaVersion(MicroschemaContainerVersion version) {
+	public BranchAssert hasNotMicroschemaVersion(MicroschemaVersion version) {
 		assertThat(actual.contains(version)).as(descriptionText() + " has version").isFalse();
 		return this;
 	}
@@ -179,24 +178,24 @@ public class BranchAssert extends AbstractAssert<BranchAssert, Branch> {
 	/**
 	 * Assert that the microschema is assigned (in any version) to the branch.
 	 * 
-	 * @param microschemaContainer
+	 * @param microschema
 	 *            microschema
 	 * @return fluent API
 	 */
-	public BranchAssert hasMicroschema(MicroschemaContainer microschemaContainer) {
-		assertThat(actual.contains(microschemaContainer)).as(descriptionText() + " has schema").isTrue();
+	public BranchAssert hasMicroschema(Microschema microschema) {
+		assertThat(actual.contains(microschema)).as(descriptionText() + " has schema").isTrue();
 		return this;
 	}
 
 	/**
 	 * Assert that the microschema is not assigned (in any version) to the branch.
 	 * 
-	 * @param microschemaContainer
+	 * @param microschema
 	 *            microschema
 	 * @return fluent API
 	 */
-	public BranchAssert hasNotMicroschema(MicroschemaContainer microschemaContainer) {
-		assertThat(actual.contains(microschemaContainer)).as(descriptionText() + " has schema").isFalse();
+	public BranchAssert hasNotMicroschema(Microschema microschema) {
+		assertThat(actual.contains(microschema)).as(descriptionText() + " has schema").isFalse();
 		return this;
 	}
 

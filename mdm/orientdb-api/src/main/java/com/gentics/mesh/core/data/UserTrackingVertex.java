@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data;
 
+import com.gentics.mesh.core.data.user.HibUser;
+
 /**
  * Interface for vertices that track creation and editing.
  */
@@ -11,7 +13,7 @@ public interface UserTrackingVertex extends CreatorTrackingVertex, EditorTrackin
 	 * @param creator
 	 *            Creator
 	 */
-	default void setCreated(User creator) {
+	default void setCreated(HibUser creator) {
 		setCreator(creator);
 		setCreationTimestamp();
 		setEditor(creator);

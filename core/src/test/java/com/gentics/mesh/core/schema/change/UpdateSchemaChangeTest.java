@@ -15,13 +15,13 @@ import java.io.IOException;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.UpdateSchemaChange;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateSchemaChangeImpl;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -64,15 +64,15 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApply() {
 		try (Tx tx = tx()) {
-			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
-			SchemaModel schema = new SchemaModelImpl();
+			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaVersionModel schema = new SchemaModelImpl();
 			UpdateSchemaChange change = tx.getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
 			change.setIndexOptions(new JsonObject().put("key", "value"));
 			change.setName("updated");
 			version.setSchema(schema);
 			version.setNextChange(change);
 
-			Schema updatedSchema = mutator.apply(version);
+			SchemaModel updatedSchema = mutator.apply(version);
 			assertEquals("updated", updatedSchema.getName());
 			assertEquals("value", updatedSchema.getElasticsearch().getString("key"));
 			change = tx.getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
@@ -87,9 +87,9 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 	public void testFieldOrderChange() {
 		try (Tx tx = tx()) {
 			// 1. Create the schema container
-			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
-			SchemaModel schema = new SchemaModelImpl();
+			SchemaVersionModel schema = new SchemaModelImpl();
 			schema.setSegmentField("someField");
 			schema.addField(FieldUtil.createHtmlFieldSchema("first"));
 			schema.addField(FieldUtil.createHtmlFieldSchema("second"));
@@ -101,7 +101,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 			version.setNextChange(change);
 
 			// 3. Apply the change
-			Schema updatedSchema = mutator.apply(version);
+			SchemaModel updatedSchema = mutator.apply(version);
 			assertNotNull("The updated schema was not generated.", updatedSchema);
 			assertEquals("The segment field value should not have changed", "someField", updatedSchema.getSegmentField());
 			assertEquals("The updated schema should contain two fields.", 2, updatedSchema.getFields().size());
@@ -113,10 +113,10 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 	@Test
 	public void testUpdateSchemaSegmentFieldToNull() {
 		try (Tx tx = tx()) {
-			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
-			SchemaModel schema = new SchemaModelImpl();
+			SchemaVersionModel schema = new SchemaModelImpl();
 			schema.setSegmentField("someField");
 
 			// 2. Create schema update change
@@ -127,7 +127,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 			version.setNextChange(change);
 
 			// 3. Apply the change
-			Schema updatedSchema = mutator.apply(version);
+			SchemaModel updatedSchema = mutator.apply(version);
 			assertNull("The segment field name was not set to null", updatedSchema.getSegmentField());
 		}
 	}
@@ -135,10 +135,10 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 	@Test
 	public void testUpdateSchema() {
 		try (Tx tx = tx()) {
-			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
-			SchemaModel schema = new SchemaModelImpl();
+			SchemaVersionModel schema = new SchemaModelImpl();
 
 			// 2. Create schema update change
 			UpdateSchemaChange change = tx.getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
@@ -150,7 +150,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 			version.setNextChange(change);
 
 			// 3. Apply the change
-			Schema updatedSchema = mutator.apply(version);
+			SchemaModel updatedSchema = mutator.apply(version);
 			assertEquals("The display field name was not updated", "newDisplayField", updatedSchema.getDisplayField());
 			assertEquals("The segment field name was not updated", "newSegmentField", updatedSchema.getSegmentField());
 			assertTrue("The schema container flag was not updated", updatedSchema.getContainer());

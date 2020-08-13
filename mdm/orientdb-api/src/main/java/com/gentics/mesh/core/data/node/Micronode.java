@@ -7,7 +7,7 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.TransformableElement;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.madl.traversal.TraversalResult;
@@ -45,7 +45,7 @@ public interface Micronode extends GraphFieldContainer, MeshVertex, Transformabl
 	void clone(Micronode micronode);
 
 	@Override
-	MicroschemaContainerVersion getSchemaContainerVersion();
+	MicroschemaVersion getSchemaContainerVersion();
 
 	/**
 	 * Compare the micronode and return a list of changes which identify the changes.

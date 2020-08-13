@@ -17,9 +17,9 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.root.ProjectRoot;
-import com.gentics.mesh.core.data.root.RoleRoot;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
@@ -77,10 +77,10 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testAddMicroschemaToProjectWithPerm() throws Exception {
 		Project extraProject;
-		MicroschemaContainer microschema = microschemaContainer("vcard");
+		Microschema microschema = microschemaContainer("vcard");
 
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
 
 			ProjectCreateRequest request = new ProjectCreateRequest();
@@ -108,8 +108,8 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 		String microschemaUuid;
 		Project extraProject;
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
-			MicroschemaContainer microschema = microschemaContainer("vcard");
+			RoleDaoWrapper roleDao = tx.data().roleDao();
+			Microschema microschema = microschemaContainer("vcard");
 			microschemaUuid = microschema.getUuid();
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
 			ProjectCreateRequest request = new ProjectCreateRequest();
@@ -128,7 +128,7 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			// Reload the microschema and check for expected changes
-			MicroschemaContainer microschema = microschemaContainer("vcard");
+			Microschema microschema = microschemaContainer("vcard");
 
 			assertFalse("The microschema should not have been added to the extra project but it was",
 				extraProject.getMicroschemaContainerRoot().contains(microschema));
@@ -139,7 +139,7 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testRemoveMicroschemaFromProjectWithPerm() throws Exception {
 		Project project = project();
-		MicroschemaContainer microschema = microschemaContainer("vcard");
+		Microschema microschema = microschemaContainer("vcard");
 		String microschemaUuid = tx(() -> microschema.getUuid());
 		String microschemaName = "vcard";
 
@@ -173,10 +173,10 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testRemoveMicroschemaFromProjectWithoutPerm() throws Exception {
 		Project project = project();
-		MicroschemaContainer microschema = microschemaContainer("vcard");
+		Microschema microschema = microschemaContainer("vcard");
 
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			assertTrue("The microschema should be assigned to the project.", project.getMicroschemaContainerRoot().contains(microschema));
 			// Revoke update perms on the project
 			roleDao.revokePermissions(role(), project, UPDATE_PERM);

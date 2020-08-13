@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 
 import io.vertx.core.json.JsonObject;
@@ -14,7 +14,7 @@ import io.vertx.core.json.JsonObject;
 /**
  * Implementation of Microschema
  */
-public class MicroschemaModelImpl implements MicroschemaModel {
+public class MicroschemaModelImpl implements MicroschemaVersionModel {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Version of the microschema")
@@ -42,7 +42,7 @@ public class MicroschemaModelImpl implements MicroschemaModel {
 	}
 
 	@Override
-	public MicroschemaModel setVersion(String version) {
+	public MicroschemaVersionModel setVersion(String version) {
 		this.version = version;
 		return this;
 	}
@@ -53,7 +53,7 @@ public class MicroschemaModelImpl implements MicroschemaModel {
 	}
 
 	@Override
-	public MicroschemaModel setDescription(String description) {
+	public MicroschemaVersionModel setDescription(String description) {
 		this.description = description;
 		return this;
 	}
@@ -64,7 +64,7 @@ public class MicroschemaModelImpl implements MicroschemaModel {
 	}
 
 	@Override
-	public MicroschemaModel setName(String name) {
+	public MicroschemaVersionModel setName(String name) {
 		this.name = name;
 		return this;
 	}
@@ -75,7 +75,7 @@ public class MicroschemaModelImpl implements MicroschemaModel {
 	}
 
 	@Override
-	public MicroschemaModel setElasticsearch(JsonObject elasticsearch) {
+	public MicroschemaVersionModel setElasticsearch(JsonObject elasticsearch) {
 		this.elasticsearch = elasticsearch;
 		return this;
 	}
@@ -86,7 +86,7 @@ public class MicroschemaModelImpl implements MicroschemaModel {
 	}
 
 	@Override
-	public MicroschemaModel setFields(List<FieldSchema> fields) {
+	public MicroschemaVersionModel setFields(List<FieldSchema> fields) {
 		this.fields = fields;
 		return this;
 	}

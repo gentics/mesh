@@ -14,6 +14,7 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 
 import java.util.Arrays;
@@ -24,8 +25,8 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -183,7 +184,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 			assertThat(call(() -> client().publishNode(PROJECT_NAME, nodeUuid))).as("Publish Status").isPublished("en").isPublished("de");
 
 			db().tx(() -> {
-				RoleRoot roleDao = tx.data().roleDao();
+				RoleDaoWrapper roleDao = tx.data().roleDao();
 				roleDao.revokePermissions(role(), node, PUBLISH_PERM);
 				return null;
 			});
@@ -201,7 +202,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 			assertThat(call(() -> client().publishNode(PROJECT_NAME, nodeUuid))).as("Publish Status").isPublished("en").isPublished("de");
 
 			db().tx(() -> {
-				RoleRoot roleDao = tx.data().roleDao();
+				RoleDaoWrapper roleDao = tx.data().roleDao();
 				roleDao.revokePermissions(role(), node, PUBLISH_PERM);
 				return null;
 			});

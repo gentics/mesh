@@ -17,13 +17,12 @@ import com.syncleus.ferma.VertexFrame;
 
 public class OrientDBFermaMultithreadingTest extends AbstractOrientDBTest {
 
-	private Database db = mockDatabase();
+	private Database db;
 
 	@Before
 	public void setup() throws Exception {
-		MeshOptions options = new MeshOptions();
-		options.setNodeName("dummy");
-		db.init(options, null,"com.gentics.mesh.graphdb.orientdb.graph");
+		db = mockDatabase(new MeshOptions());
+		db.init(null, "com.gentics.mesh.graphdb.orientdb.graph");
 		db.setupConnectionPool();
 	}
 

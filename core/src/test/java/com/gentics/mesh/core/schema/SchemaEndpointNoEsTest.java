@@ -17,7 +17,8 @@ import java.util.Arrays;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
+import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
@@ -41,10 +42,11 @@ public class SchemaEndpointNoEsTest extends AbstractMeshTest {
 		awaitEvents();
 
 		try (Tx tx = tx()) {
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 			assertThat(createRequest).matches(restSchema);
 			assertThat(restSchema.getPermissions()).hasPerm(CREATE, READ, UPDATE, DELETE);
 
-			SchemaContainer schemaContainer = boot().schemaContainerRoot().findByUuid(restSchema.getUuid());
+			Schema schemaContainer = schemaDao.findByUuid(restSchema.getUuid());
 			assertNotNull(schemaContainer);
 			assertEquals("Name does not match with the requested name", createRequest.getName(), schemaContainer.getName());
 		}

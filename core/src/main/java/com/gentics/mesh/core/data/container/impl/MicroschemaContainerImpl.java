@@ -1,30 +1,27 @@
 package com.gentics.mesh.core.data.container.impl;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.impl.AbstractGraphFieldSchemaContainer;
-import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 
 /**
- * See {@link MicroschemaContainer}
+ * See {@link Microschema}
  */
 public class MicroschemaContainerImpl extends
-	AbstractGraphFieldSchemaContainer<MicroschemaResponse, MicroschemaModel, MicroschemaReference, MicroschemaContainer, MicroschemaContainerVersion>
-	implements MicroschemaContainer {
+	AbstractGraphFieldSchemaContainer<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, Microschema, MicroschemaVersion>
+	implements Microschema {
 
 	@Override
 	protected Class<MicroschemaContainerImpl> getContainerClass() {
@@ -32,7 +29,7 @@ public class MicroschemaContainerImpl extends
 	}
 
 	@Override
-	protected Class<? extends MicroschemaContainerVersion> getContainerVersionClass() {
+	protected Class<? extends MicroschemaVersion> getContainerVersionClass() {
 		return MicroschemaContainerVersionImpl.class;
 	}
 
@@ -46,19 +43,8 @@ public class MicroschemaContainerImpl extends
 	}
 
 	@Override
-	public RootVertex<MicroschemaContainer> getRoot() {
+	public RootVertex<Microschema> getRoot() {
 		return mesh().boot().meshRoot().getMicroschemaContainerRoot();
-	}
-
-	@Override
-	public void delete(BulkActionContext bac) {
-		for (MicroschemaContainerVersion version : findAll()) {
-			if (version.findMicronodes().hasNext()) {
-				throw error(BAD_REQUEST, "microschema_delete_still_in_use", getUuid());
-			}
-			version.delete(bac);
-		}
-		super.delete(bac);
 	}
 
 	@Override
@@ -67,12 +53,12 @@ public class MicroschemaContainerImpl extends
 	}
 
 	@Override
-	public User getCreator() {
+	public HibUser getCreator() {
 		return mesh().userProperties().getCreator(this);
 	}
 
 	@Override
-	public User getEditor() {
+	public HibUser getEditor() {
 		return mesh().userProperties().getEditor(this);
 	}
 

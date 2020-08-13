@@ -10,9 +10,10 @@ import java.util.Set;
 import com.gentics.mesh.context.AbstractInternalActionContext;
 import com.gentics.mesh.context.NodeMigrationActionContext;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.NodeMigrationUser;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.rest.event.node.SchemaMigrationCause;
 import com.gentics.mesh.core.rest.job.warning.ConflictWarning;
@@ -43,9 +44,9 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 	private SchemaMigrationCause cause;
 
-	private SchemaContainerVersion fromContainerVersion;
+	private SchemaVersion fromContainerVersion;
 
-	private SchemaContainerVersion toContainerVersion;
+	private SchemaVersion toContainerVersion;
 
 	private MigrationStatusHandler status;
 
@@ -234,20 +235,20 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 	}
 
 	@Override
-	public SchemaContainerVersion getFromVersion() {
+	public SchemaVersion getFromVersion() {
 		return fromContainerVersion;
 	}
 
-	public void setFromVersion(SchemaContainerVersion fromContainerVersion) {
+	public void setFromVersion(SchemaVersion fromContainerVersion) {
 		this.fromContainerVersion = fromContainerVersion;
 	}
 
 	@Override
-	public SchemaContainerVersion getToVersion() {
+	public SchemaVersion getToVersion() {
 		return toContainerVersion;
 	}
 
-	public void setToVersion(SchemaContainerVersion toContainerVersion) {
+	public void setToVersion(SchemaVersion toContainerVersion) {
 		this.toContainerVersion = toContainerVersion;
 	}
 

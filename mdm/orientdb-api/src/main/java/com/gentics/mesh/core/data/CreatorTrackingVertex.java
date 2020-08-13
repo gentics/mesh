@@ -3,12 +3,14 @@ package com.gentics.mesh.core.data;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.CREATOR_UUID_PROPERTY_KEY;
 
+import com.gentics.mesh.core.data.user.HibCreatorTracking;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.util.DateUtils;
 
 /**
  * Interface for vertices that track their creator and creation time.
  */
-public interface CreatorTrackingVertex extends MeshVertex {
+public interface CreatorTrackingVertex extends MeshVertex, HibCreatorTracking {
 
 	static final String CREATION_TIMESTAMP_PROPERTY_KEY = "creation_timestamp";
 
@@ -17,7 +19,7 @@ public interface CreatorTrackingVertex extends MeshVertex {
 	 * 
 	 * @return Creator
 	 */
-	User getCreator();
+	HibUser getCreator();
 
 	/**
 	 * Set the creator of the vertex.
@@ -25,7 +27,7 @@ public interface CreatorTrackingVertex extends MeshVertex {
 	 * @param user
 	 *            Creator
 	 */
-	default void setCreator(User user) {
+	default void setCreator(HibUser user) {
 		if (user == null) {
 			removeProperty(CREATOR_UUID_PROPERTY_KEY);
 		} else {
@@ -74,7 +76,7 @@ public interface CreatorTrackingVertex extends MeshVertex {
 	 * @param creator
 	 *            Creator
 	 */
-	default void setCreated(User creator) {
+	default void setCreated(HibUser creator) {
 		setCreator(creator);
 		setCreationTimestamp(System.currentTimeMillis());
 	}

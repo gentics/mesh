@@ -45,11 +45,11 @@ public class MeshMeshIntegrationTest {
 		assertNotEquals(meshInternalA, meshInternalB);
 		assertNotEquals(meshInternalA.boot(), meshInternalB.boot());
 		meshInternalA.database().tx(() -> {
-			System.out.println(meshInternalA.boot().userDao().getUuid());
+			System.out.println(meshInternalA.boot().userRoot().getUuid());
 			System.out.println("Admin in A: " + meshInternalA.boot().userDao().findByName("admin").getUuid());
 		});
 		meshInternalB.database().tx(() -> {
-			System.out.println(meshInternalB.boot().userDao().getUuid());
+			System.out.println(meshInternalB.boot().userRoot().getUuid());
 			System.out.println("Admin in B: " + meshInternalB.boot().userDao().findByName("admin").getUuid());
 		});
 

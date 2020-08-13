@@ -26,7 +26,7 @@ import com.gentics.mesh.core.rest.node.field.NumberField;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.TestSize;
@@ -104,7 +104,7 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 
 		try (Tx tx = tx()) {
 			// Update the schema
-			SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
+			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 			NumberFieldSchema numberFieldSchema = new NumberFieldSchemaImpl();
 			numberFieldSchema.setName("numberField");
 			// numberFieldSchema.setMin(10);

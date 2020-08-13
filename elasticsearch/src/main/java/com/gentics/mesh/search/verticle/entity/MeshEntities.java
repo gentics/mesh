@@ -17,6 +17,7 @@ import com.gentics.mesh.ElementType;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -25,10 +26,10 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
-import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.ProjectEvent;
@@ -65,14 +66,14 @@ public class MeshEntities {
 	private final MeshOptions options;
 	private final ComplianceMode complianceMode;
 
-	public final MeshEntity<User> user;
+	public final MeshEntity<HibUser> user;
 	public final MeshEntity<Group> group;
 	public final MeshEntity<Role> role;
 	public final MeshEntity<Project> project;
 	public final MeshEntity<Tag> tag;
 	public final MeshEntity<TagFamily> tagFamily;
-	public final MeshEntity<SchemaContainer> schema;
-	public final MeshEntity<MicroschemaContainer> microschema;
+	public final MeshEntity<Schema> schema;
+	public final MeshEntity<Microschema> microschema;
 	public final MeshEntity<NodeGraphFieldContainer> nodeContent;
 	private final Map<ElementType, MeshEntity<?>> entities;
 
@@ -93,9 +94,9 @@ public class MeshEntities {
 		this.options = options;
 		this.complianceMode = options.getSearchOptions().getComplianceMode();
 
-		schema = new SimpleMeshEntity<>(schemaTransformer, SchemaContainer.TYPE_INFO, byUuid(uuid -> boot.schemaDao().findByUuid(uuid)));
-		microschema = new SimpleMeshEntity<>(microschemaTransformer, MicroschemaContainer.TYPE_INFO, byUuid(uuid -> boot.microschemaDao().findByUuid(uuid)));
-		user = new SimpleMeshEntity<>(userTransformer, User.TYPE_INFO, byUuid(uuid -> boot.userDao().findByUuid(uuid)));
+		schema = new SimpleMeshEntity<>(schemaTransformer, Schema.TYPE_INFO, byUuid(uuid -> boot.schemaDao().findByUuid(uuid)));
+		microschema = new SimpleMeshEntity<>(microschemaTransformer, Microschema.TYPE_INFO, byUuid(uuid -> boot.microschemaDao().findByUuid(uuid)));
+		user = new SimpleMeshEntity<>(userTransformer, User.TYPE_INFO, byHibElementUuid(uuid -> boot.userDao().findByUuid(uuid)));
 		group = new SimpleMeshEntity<>(groupTransformer, Group.TYPE_INFO, byUuid(uuid -> boot.groupDao().findByUuid(uuid)));
 		role = new SimpleMeshEntity<>(roleTransformer, Role.TYPE_INFO, byUuid(uuid -> boot.roleDao().findByUuid(uuid)));
 		project = new SimpleMeshEntity<>(projectTransformer, Project.TYPE_INFO, byUuid(uuid -> boot.projectDao().findByUuid(uuid)));
@@ -123,7 +124,7 @@ public class MeshEntities {
 	 * The User {@link MeshEntity}.
 	 * @return
 	 */
-	public MeshEntity<User> getUser() {
+	public MeshEntity<HibUser> getUser() {
 		return user;
 	}
 
@@ -171,7 +172,7 @@ public class MeshEntities {
 	 * The Schema {@link MeshEntity}.
 	 * @return
 	 */
-	public MeshEntity<SchemaContainer> getSchema() {
+	public MeshEntity<Schema> getSchema() {
 		return schema;
 	}
 
@@ -179,26 +180,26 @@ public class MeshEntities {
 	 * The Microschema {@link MeshEntity}.
 	 * @return
 	 */
-	public MeshEntity<MicroschemaContainer> getMicroschema() {
+	public MeshEntity<Microschema> getMicroschema() {
 		return microschema;
 	}
 
 	private Optional<TagFamily> toTagFamily(MeshElementEventModel eventModel) {
 		ProjectEvent event = Util.requireType(ProjectEvent.class, eventModel);
-		return findElementByUuid(Tx.get().data().projectDao(), event.getProject().getUuid())
+		return findElementByUuid(boot.projectRoot(), event.getProject().getUuid())
 			.flatMap(project -> findElementByUuid(project.getTagFamilyRoot(), eventModel.getUuid()));
 	}
 
 	private Optional<Tag> toTag(MeshElementEventModel eventModel) {
 		TagElementEventModel event = Util.requireType(TagElementEventModel.class, eventModel);
-		return findElementByUuid(Tx.get().data().projectDao(), event.getProject().getUuid())
+		return findElementByUuid(boot.projectRoot(), event.getProject().getUuid())
 			.flatMap(project -> findElementByUuid(project.getTagFamilyRoot(), event.getTagFamily().getUuid()))
 			.flatMap(family -> findElementByUuid(family, eventModel.getUuid()));
 	}
 
 	private Optional<NodeGraphFieldContainer> toNodeContent(MeshElementEventModel eventModel) {
 		NodeMeshEventModel event = Util.requireType(NodeMeshEventModel.class, eventModel);
-		return findElementByUuid(Tx.get().data().projectDao(), event.getProject().getUuid())
+		return findElementByUuid(boot.projectRoot(), event.getProject().getUuid())
 			.flatMap(project -> findElementByUuid(project.getNodeRoot(), eventModel.getUuid()))
 			.flatMap(node -> warningOptional(
 				"Could not find NodeGraphFieldContainer for event " + eventModel.toJson(),
@@ -237,6 +238,10 @@ public class MeshEntities {
 		return event -> Optional.ofNullable(elementLoader.apply(event.getUuid()));
 	}
 
+	private <T extends HibElement> EventVertexMapper<T> byHibElementUuid(Function<String, T> elementLoader) {
+		return event -> Optional.ofNullable(elementLoader.apply(event.getUuid()));
+	}
+
 	/**
 	 * Creates a {@link CreateDocumentRequest} for the given element.
 	 * @param element
@@ -251,7 +256,7 @@ public class MeshEntities {
 	 * @param element
 	 * @return
 	 */
-	public CreateDocumentRequest createRequest(User element) {
+	public CreateDocumentRequest createRequest(HibUser element) {
 		return helper.createDocumentRequest(User.composeIndexName(), element.getUuid(), user.transform(element), complianceMode);
 	}
 

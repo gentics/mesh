@@ -12,8 +12,8 @@ import java.util.Set;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.AbstractInternalActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -195,11 +195,9 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	 * @param projectName
 	 */
 	public void setProject(String projectName) {
-		MeshComponent mesh = user.getGraphAttribute(GraphAttribute.MESH_COMPONENT);
-		mesh.database().tx(() -> {
-			Project project = Tx.get().data().projectDao().findByName(projectName);
-			this.project = project;
-			return null;
+		MeshComponent mesh = user.toUser().getGraphAttribute(GraphAttribute.MESH_COMPONENT);
+		this.project = mesh.database().tx(tx -> {
+			return tx.data().projectDao().findByName(projectName);
 		});
 	}
 

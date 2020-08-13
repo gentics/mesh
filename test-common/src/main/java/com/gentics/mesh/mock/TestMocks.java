@@ -18,7 +18,6 @@ import static com.gentics.mesh.example.ExampleUuids.UUID_2;
 import static com.gentics.mesh.example.ExampleUuids.UUID_3;
 import static com.gentics.mesh.example.ExampleUuids.UUID_4;
 import static com.gentics.mesh.example.ExampleUuids.UUID_5;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -53,15 +52,15 @@ import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
-import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
@@ -103,7 +102,7 @@ public final class TestMocks {
 	public static Node mockNodeBasic(String schemaType, User user) {
 		Node node = mock(Node.class);
 		when(node.getUuid()).thenReturn(NODE_DELOREAN_UUID);
-		SchemaContainer schemaContainer = mockSchemaContainer(schemaType, user);
+		Schema schemaContainer = mockSchemaContainer(schemaType, user);
 		when(node.getSchemaContainer()).thenReturn(schemaContainer);
 		return node;
 	}
@@ -111,10 +110,10 @@ public final class TestMocks {
 	public static Micronode mockMicronode(String microschemaName, User user) {
 		Micronode micronode = mock(Micronode.class);
 		when(micronode.getUuid()).thenReturn(UUID_1);
-		MicroschemaContainer microschemaContainer = mockMicroschemaContainer(microschemaName, user);
-		MicroschemaContainerVersion latestVersion = microschemaContainer.getLatestVersion();
+		Microschema microschemaContainer = mockMicroschemaContainer(microschemaName, user);
+		MicroschemaVersion latestVersion = microschemaContainer.getLatestVersion();
 		when(micronode.getSchemaContainerVersion()).thenReturn(latestVersion);
-		MicroschemaModel microschema = microschemaContainer.getLatestVersion().getSchema();
+		MicroschemaVersionModel microschema = microschemaContainer.getLatestVersion().getSchema();
 		when(micronode.getSchemaContainerVersion().getSchema()).thenReturn(microschema);
 
 		// longitude field
@@ -162,6 +161,7 @@ public final class TestMocks {
 
 	public static User mockUser(String username, String firstname, String lastname, User creator) {
 		User user = mock(User.class);
+		when(user.toUser()).thenReturn(user);
 		when(user.getUsername()).thenReturn(username);
 		when(user.getFirstname()).thenReturn(firstname);
 		when(user.getLastname()).thenReturn(lastname);
@@ -220,11 +220,11 @@ public final class TestMocks {
 		return new TraversalResult<>(Collections.emptyList());
 	}
 
-	public static SchemaContainer mockSchemaContainer(String name, User user) {
-		SchemaContainer container = mock(SchemaContainer.class);
+	public static Schema mockSchemaContainer(String name, User user) {
+		Schema container = mock(Schema.class);
 		when(container.getName()).thenReturn(name);
 		when(container.getUuid()).thenReturn(SCHEMA_VEHICLE_UUID);
-		SchemaContainerVersion latestVersion = mock(SchemaContainerVersion.class);
+		SchemaVersion latestVersion = mock(SchemaVersion.class);
 		when(latestVersion.getSchemaContainer()).thenReturn(container);
 		when(latestVersion.getSchema()).thenReturn(mockContentSchema());
 		when(latestVersion.getName()).thenReturn(name);
@@ -237,11 +237,11 @@ public final class TestMocks {
 		return container;
 	}
 
-	public static MicroschemaContainer mockMicroschemaContainer(String name, User user) {
-		MicroschemaContainer container = mock(MicroschemaContainer.class);
+	public static Microschema mockMicroschemaContainer(String name, User user) {
+		Microschema container = mock(Microschema.class);
 		when(container.getName()).thenReturn(name);
 		when(container.getUuid()).thenReturn(MICROSCHEMA_UUID);
-		MicroschemaContainerVersion latestVersion = mock(MicroschemaContainerVersion.class);
+		MicroschemaVersion latestVersion = mock(MicroschemaVersion.class);
 		when(latestVersion.getSchema()).thenReturn(mockGeolocationMicroschema());
 
 		when(container.getLatestVersion()).thenReturn(latestVersion);
@@ -254,8 +254,8 @@ public final class TestMocks {
 		return container;
 	}
 
-	public static SchemaModel mockContentSchema() {
-		SchemaModel schema = new SchemaModelImpl();
+	public static SchemaVersionModel mockContentSchema() {
+		SchemaVersionModel schema = new SchemaModelImpl();
 		schema.setName("content");
 		schema.setDescription("Content schema");
 		schema.setDisplayField("string");
@@ -280,8 +280,8 @@ public final class TestMocks {
 		return schema;
 	}
 
-	public static MicroschemaModel mockGeolocationMicroschema() {
-		MicroschemaModel microschema = new MicroschemaModelImpl();
+	public static MicroschemaVersionModel mockGeolocationMicroschema() {
+		MicroschemaVersionModel microschema = new MicroschemaModelImpl();
 		microschema.setName("geolocation");
 		microschema.setDescription("Microschema for Geolocations");
 
@@ -300,8 +300,8 @@ public final class TestMocks {
 		TraversalResult<? extends Tag> tagResult = new TraversalResult<>(Arrays.asList(tagA, tagB));
 		Mockito.<TraversalResult<? extends Tag>>when(node.getTags(Mockito.any())).thenReturn(tagResult);
 
-		SchemaContainer schemaContainer = mockSchemaContainer("content", user);
-		SchemaContainerVersion latestVersion = schemaContainer.getLatestVersion();
+		Schema schemaContainer = mockSchemaContainer("content", user);
+		SchemaVersion latestVersion = schemaContainer.getLatestVersion();
 		when(latestVersion.getUuid()).thenReturn(UUID_2);
 		when(node.getSchemaContainer()).thenReturn(schemaContainer);
 		when(node.getCreator()).thenReturn(user);

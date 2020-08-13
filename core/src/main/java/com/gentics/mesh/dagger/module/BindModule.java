@@ -1,5 +1,8 @@
 package com.gentics.mesh.dagger.module;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 import com.gentics.mesh.auth.MeshOAuthService;
 import com.gentics.mesh.auth.oauth2.MeshOAuth2ServiceImpl;
 import com.gentics.mesh.cache.CacheRegistry;
@@ -16,6 +19,30 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.impl.BulkActionContextImpl;
+import com.gentics.mesh.core.action.BranchDAOActions;
+import com.gentics.mesh.core.action.DAOActionsCollection;
+import com.gentics.mesh.core.action.GroupDAOActions;
+import com.gentics.mesh.core.action.MicroschemaDAOActions;
+import com.gentics.mesh.core.action.NodeDAOActions;
+import com.gentics.mesh.core.action.ProjectDAOActions;
+import com.gentics.mesh.core.action.RoleDAOActions;
+import com.gentics.mesh.core.action.SchemaDAOActions;
+import com.gentics.mesh.core.action.TagDAOActions;
+import com.gentics.mesh.core.action.TagFamilyDAOActions;
+import com.gentics.mesh.core.action.UserDAOActions;
+import com.gentics.mesh.core.actions.impl.BranchDAOActionsImpl;
+import com.gentics.mesh.core.actions.impl.DAOActionsCollectionImpl;
+import com.gentics.mesh.core.actions.impl.GroupDAOActionsImpl;
+import com.gentics.mesh.core.actions.impl.MicroschemaDAOActionsImpl;
+import com.gentics.mesh.core.actions.impl.NodeDAOActionsImpl;
+import com.gentics.mesh.core.actions.impl.ProjectDAOActionsImpl;
+import com.gentics.mesh.core.actions.impl.RoleDAOActionsImpl;
+import com.gentics.mesh.core.actions.impl.SchemaDAOActionsImpl;
+import com.gentics.mesh.core.actions.impl.TagDAOActionsImpl;
+import com.gentics.mesh.core.actions.impl.TagFamilyDAOActionsImpl;
+import com.gentics.mesh.core.actions.impl.UserDAOActionsImpl;
+import com.gentics.mesh.core.binary.BinaryProcessorRegistry;
+import com.gentics.mesh.core.binary.BinaryProcessorRegistryImpl;
 import com.gentics.mesh.core.data.PersistenceClassMap;
 import com.gentics.mesh.core.data.PersistenceClassMapImpl;
 import com.gentics.mesh.core.data.binary.Binaries;
@@ -64,8 +91,12 @@ import com.gentics.mesh.plugin.manager.MeshPluginManagerImpl;
 import com.gentics.mesh.plugin.pf4j.PluginEnvironmentImpl;
 import com.gentics.mesh.plugin.registry.DelegatingPluginRegistry;
 import com.gentics.mesh.plugin.registry.DelegatingPluginRegistryImpl;
+import com.gentics.mesh.router.RouterStorageRegistry;
+import com.gentics.mesh.router.RouterStorageRegistryImpl;
 import com.gentics.mesh.search.index.common.DropIndexHandler;
 import com.gentics.mesh.search.index.common.DropIndexHandlerImpl;
+import com.gentics.mesh.search.index.node.NodeIndexHandler;
+import com.gentics.mesh.search.index.node.NodeIndexHandlerImpl;
 import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.storage.LocalBinaryStorage;
 
@@ -178,5 +209,50 @@ public abstract class BindModule {
 
 	@Binds
 	abstract LanguageDaoWrapper bindLanguageDao(LanguageDaoWrapperImpl e);
+
+	@Binds
+	abstract RouterStorageRegistry bindRouterStorageRegistry(RouterStorageRegistryImpl e);
+
+	@Binds
+	abstract PasswordEncoder bindPasswordEncoder(BCryptPasswordEncoder e);
+
+	@Binds
+	abstract NodeIndexHandler bindNodeIndexHandler(NodeIndexHandlerImpl e);
+
+	@Binds
+	abstract BinaryProcessorRegistry bindBinaryProcessorRegistry(BinaryProcessorRegistryImpl e);
+
+	@Binds
+	abstract DAOActionsCollection bindDaoCollection(DAOActionsCollectionImpl e);
+
+	@Binds
+	abstract UserDAOActions userDAOActions(UserDAOActionsImpl e);
+
+	@Binds
+	abstract GroupDAOActions grouDAOpActions(GroupDAOActionsImpl e);
+
+	@Binds
+	abstract RoleDAOActions roleDAOActions(RoleDAOActionsImpl e);
+
+	@Binds
+	abstract TagDAOActions tagADAOctions(TagDAOActionsImpl e);
+
+	@Binds
+	abstract TagFamilyDAOActions tagFDAOamilyActions(TagFamilyDAOActionsImpl e);
+
+	@Binds
+	abstract BranchDAOActions branDAOchActions(BranchDAOActionsImpl e);
+
+	@Binds
+	abstract ProjectDAOActions projDAOectActions(ProjectDAOActionsImpl e);
+
+	@Binds
+	abstract NodeDAOActions nodeDAOActions(NodeDAOActionsImpl e);
+
+	@Binds
+	abstract MicroschemaDAOActions micrDAOoschemaActions(MicroschemaDAOActionsImpl e);
+
+	@Binds
+	abstract SchemaDAOActions scheDAOmaActions(SchemaDAOActionsImpl e);
 
 }

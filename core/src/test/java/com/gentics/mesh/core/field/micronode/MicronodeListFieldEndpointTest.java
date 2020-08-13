@@ -39,7 +39,7 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractListFieldEndpointTest;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
-import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
@@ -52,7 +52,7 @@ import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
@@ -69,7 +69,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	@Before
 	public void updateSchema() throws IOException {
 		try (Tx tx = tx()) {
-			SchemaModel schema = schemaContainer("folder").getLatestVersion().getSchema();
+			SchemaVersionModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 			ListFieldSchema listFieldSchema = new ListFieldSchemaImpl();
 			listFieldSchema.setName(FIELD_NAME);
 			listFieldSchema.setLabel("Some label");
@@ -394,7 +394,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 		String targetUuid = contentUuid();
 
 		String vcardUuid = tx(() -> microschemaContainers().get("vcard").getUuid());
-		MicroschemaModel vcard = tx(() -> microschemaContainers().get("vcard").getLatestVersion().getSchema());
+		MicroschemaVersionModel vcard = tx(() -> microschemaContainers().get("vcard").getLatestVersion().getSchema());
 		vcard.addField(new NodeFieldSchemaImpl().setName("node"));
 		MicroschemaUpdateRequest request = JsonUtil.readValue(vcard.toJson(), MicroschemaUpdateRequest.class);
 		call(() -> client().updateMicroschema(vcardUuid, request));
@@ -457,7 +457,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 		String targetUuid = contentUuid();
 
 		String vcardUuid = tx(() -> microschemaContainers().get("vcard").getUuid());
-		MicroschemaModel vcard = tx(() -> microschemaContainers().get("vcard").getLatestVersion().getSchema());
+		MicroschemaVersionModel vcard = tx(() -> microschemaContainers().get("vcard").getLatestVersion().getSchema());
 		vcard.addField(new ListFieldSchemaImpl().setListType("node").setName("node"));
 		MicroschemaUpdateRequest request = JsonUtil.readValue(vcard.toJson(), MicroschemaUpdateRequest.class);
 		call(() -> client().updateMicroschema(vcardUuid, request));

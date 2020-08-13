@@ -1,16 +1,11 @@
 package com.gentics.mesh.core.data.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
-
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.syncleus.ferma.traversals.VertexTraversal;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;

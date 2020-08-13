@@ -16,8 +16,9 @@ import javax.inject.Singleton;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.DropIndexRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
@@ -27,7 +28,7 @@ import com.gentics.mesh.core.rest.event.branch.BranchSchemaAssignEventModel;
 import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.graphdb.spi.Transactional;
-import com.gentics.mesh.search.index.node.NodeIndexHandler;
+import com.gentics.mesh.search.index.node.NodeIndexHandlerImpl;
 import com.gentics.mesh.search.verticle.MessageEvent;
 
 import io.reactivex.Flowable;
@@ -38,11 +39,11 @@ import io.vertx.core.logging.LoggerFactory;
 public class SchemaMigrationEventHandler implements EventHandler {
 	private static final Logger log = LoggerFactory.getLogger(SchemaMigrationEventHandler.class);
 
-	private final NodeIndexHandler nodeIndexHandler;
+	private final NodeIndexHandlerImpl nodeIndexHandler;
 	private final MeshHelper helper;
 
 	@Inject
-	public SchemaMigrationEventHandler(NodeIndexHandler nodeIndexHandler, MeshHelper helper) {
+	public SchemaMigrationEventHandler(NodeIndexHandlerImpl nodeIndexHandler, MeshHelper helper) {
 		this.nodeIndexHandler = nodeIndexHandler;
 		this.helper = helper;
 	}
@@ -86,17 +87,18 @@ public class SchemaMigrationEventHandler implements EventHandler {
 		Map<String, IndexInfo> map = helper.getDb().transactional(tx -> {
 			Project project = Tx.get().data().projectDao().findByUuid(model.getProject().getUuid());
 			Branch branch = project.getBranchRoot().findByUuid(model.getBranch().getUuid());
-			SchemaContainerVersion schema = getNewSchemaVersion(model).runInExistingTx(tx);
+			SchemaVersion schema = getNewSchemaVersion(model).runInExistingTx(tx);
 			return nodeIndexHandler.getIndices(project, branch, schema).runInExistingTx(tx);
 		}).runInNewTx();
 
 		return toRequests(map);
 	}
 
-	private Transactional<SchemaContainerVersion> getNewSchemaVersion(BranchSchemaAssignEventModel model) {
+	private Transactional<SchemaVersion> getNewSchemaVersion(BranchSchemaAssignEventModel model) {
 		return helper.getDb().transactional(tx -> {
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 			SchemaReference schema = model.getSchema();
-			SchemaContainer container = helper.getBoot().schemaContainerRoot().findByUuid(schema.getUuid());
+			Schema container = schemaDao.findByUuid(schema.getUuid());
 			return container.findVersionByUuid(schema.getVersionUuid());
 		});
 	}

@@ -25,7 +25,7 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.ElasticsearchTestMode;
@@ -50,7 +50,7 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 		Node nodeB = content();
 
 		try (Tx tx = tx()) {
-			SchemaModel schema = nodeA.getSchemaContainer().getLatestVersion().getSchema();
+			SchemaVersionModel schema = nodeA.getSchemaContainer().getLatestVersion().getSchema();
 
 			List<String> names = Arrays.asList("binary", "binary2", "binary3");
 			for (String name : names) {
@@ -118,7 +118,7 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 		Node nodeB = content();
 
 		try (Tx tx = tx()) {
-			SchemaModel schema = nodeA.getSchemaContainer().getLatestVersion().getSchema();
+			SchemaVersionModel schema = nodeA.getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(new BinaryFieldSchemaImpl().setName("binary"));
 			nodeA.getSchemaContainer().getLatestVersion().setSchema(schema);
 

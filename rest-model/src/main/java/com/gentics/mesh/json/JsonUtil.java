@@ -37,9 +37,9 @@ import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.node.field.list.FieldList;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
@@ -122,8 +122,8 @@ public final class JsonUtil {
 
 			@Override
 			public void setupModule(SetupContext context) {
-				addAbstractMapping(context, Schema.class, SchemaModelImpl.class);
-				addAbstractMapping(context, Microschema.class, MicroschemaModelImpl.class);
+				addAbstractMapping(context, SchemaModel.class, SchemaModelImpl.class);
+				addAbstractMapping(context, MicroschemaModel.class, MicroschemaModelImpl.class);
 				addAbstractMapping(context, SchemaReference.class, SchemaReferenceImpl.class);
 				addAbstractMapping(context, MicroschemaReference.class, MicroschemaReferenceImpl.class);
 			}

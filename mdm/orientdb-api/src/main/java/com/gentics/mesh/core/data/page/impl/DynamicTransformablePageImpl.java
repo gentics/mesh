@@ -9,11 +9,11 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import com.gentics.mesh.core.data.TransformableElement;
-import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -33,13 +33,13 @@ import com.tinkerpop.blueprints.Vertex;
 public class DynamicTransformablePageImpl<T extends TransformableElement<? extends RestModel>> extends AbstractDynamicPage<T>
 	implements TransformablePage<T> {
 
-	private User requestUser;
+	private HibUser requestUser;
 
 	private Predicate<T> extraFilter;
 
 	private boolean frameExplicitly;
 
-	private DynamicTransformablePageImpl(User requestUser, PagingParameters pagingInfo, Predicate<T> extraFilter, boolean frameExplicitly) {
+	private DynamicTransformablePageImpl(HibUser requestUser, PagingParameters pagingInfo, Predicate<T> extraFilter, boolean frameExplicitly) {
 		super(pagingInfo);
 		this.extraFilter = extraFilter;
 		this.requestUser = requestUser;
@@ -56,7 +56,7 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 	 * @param pagingInfo
 	 *            Paging information which contains the perPage and page information
 	 */
-	public DynamicTransformablePageImpl(User requestUser, RootVertex<? extends T> root, PagingParameters pagingInfo) {
+	public DynamicTransformablePageImpl(HibUser requestUser, RootVertex<? extends T> root, PagingParameters pagingInfo) {
 		this(requestUser, root, pagingInfo, READ_PERM, null, true);
 	}
 
@@ -77,7 +77,7 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 	 *            Whether to frame the found value explicitily
 	 *
 	 */
-	public DynamicTransformablePageImpl(User requestUser, RootVertex<? extends T> root, PagingParameters pagingInfo, GraphPermission perm,
+	public DynamicTransformablePageImpl(HibUser requestUser, RootVertex<? extends T> root, PagingParameters pagingInfo, GraphPermission perm,
 		Predicate<T> extraFilter, boolean frameExplicitly) {
 		this(requestUser, pagingInfo, extraFilter, frameExplicitly);
 		init(root.getPersistanceClass(), "e." + root.getRootLabel().toLowerCase() + "_out", root.id(), Direction.IN, root.getGraph(), perm);
@@ -105,7 +105,7 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 	 * @param frameExplicitly
 	 *            Whether to frame the found value explicitily
 	 */
-	public DynamicTransformablePageImpl(User requestUser, String indexName, Object indexKey, Direction dir, Class<T> clazz, PagingParameters pagingInfo,
+	public DynamicTransformablePageImpl(HibUser requestUser, String indexName, Object indexKey, Direction dir, Class<T> clazz, PagingParameters pagingInfo,
 		GraphPermission perm, Predicate<T> extraFilter, boolean frameExplicitly) {
 		this(requestUser, pagingInfo, extraFilter, frameExplicitly);
 		init(clazz, indexName, indexKey, dir, Tx.getActive().getGraph(), perm);
@@ -125,7 +125,7 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 	 * @param clazz
 	 *            Element class used to reframe the found elements
 	 */
-	public DynamicTransformablePageImpl(User user, VertexTraversal<?, ?, ?> traversal, PagingParameters pagingInfo, GraphPermission perm,
+	public DynamicTransformablePageImpl(HibUser user, VertexTraversal<?, ?, ?> traversal, PagingParameters pagingInfo, GraphPermission perm,
 		Class<? extends T> clazz) {
 		this(user, pagingInfo, null, true);
 		init(clazz, traversal, perm);
@@ -148,13 +148,13 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 	 */
 	private void applyPagingAndPermChecks(Stream<Vertex> stream, Class<? extends T> clazz, GraphPermission perm) {
 		AtomicLong pageCounter = new AtomicLong();
-		FramedGraph graph = Tx.getActive().getGraph();
+		FramedGraph graph = Tx.get().getGraph();
 
-		UserRoot userRoot = Tx.get().data().userDao();
+		UserDaoWrapper userDao = Tx.get().data().userDao();
 
 		// Only handle elements which are visible to the user
 		if (perm != null) {
-			stream = stream.filter(item -> userRoot.hasPermissionForId(requestUser, item.getId(), perm));
+			stream = stream.filter(item -> userDao.hasPermissionForId(requestUser, item.getId(), perm));
 		}
 
 		Stream<T> framedStream;

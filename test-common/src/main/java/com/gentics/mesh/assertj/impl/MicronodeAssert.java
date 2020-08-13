@@ -6,7 +6,7 @@ import static org.junit.Assert.assertTrue;
 import org.assertj.core.api.AbstractObjectAssert;
 
 import com.gentics.mesh.core.data.node.Micronode;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 
 public class MicronodeAssert extends AbstractObjectAssert<MicronodeAssert, Micronode> {
 	public MicronodeAssert(Micronode actual) {
@@ -32,12 +32,12 @@ public class MicronodeAssert extends AbstractObjectAssert<MicronodeAssert, Micro
 	/**
 	 * Assert that the micronode uses the given microschema.
 	 * 
-	 * @param microschemaContainerVersion
+	 * @param microschemaVersion
 	 *            microschema container
 	 * @return Fluent API
 	 */
-	public MicronodeAssert isOf(MicroschemaContainerVersion microschemaContainerVersion) {
-		assertTrue(actual.getSchemaContainerVersion().getUuid().equals(microschemaContainerVersion.getUuid()));
+	public MicronodeAssert isOf(MicroschemaVersion microschemaVersion) {
+		assertTrue(actual.getSchemaContainerVersion().getUuid().equals(microschemaVersion.getUuid()));
 		return this;
 	}
 

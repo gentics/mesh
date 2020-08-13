@@ -15,8 +15,8 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.syncleus.ferma.FramedGraph;
@@ -39,12 +39,12 @@ public class NodeDeletionGraphFieldContainerFix {
 		Project project = boot.meshRoot().getProjectRoot().findAll().iterator().next();
 		String branchUuid = project.getInitialBranch().getUuid();
 
-		SchemaContainerVersion version = container.getSchemaContainerVersion();
+		SchemaVersion version = container.getSchemaContainerVersion();
 		if (version == null) {
 			log.error("Container {" + container.getUuid() + "} has no schema version linked to it.");
 			return false;
 		}
-		SchemaContainer schemaContainer = version.getSchemaContainer();
+		Schema schemaContainer = version.getSchemaContainer();
 		// 1. Find the initial version to check whether the whole version history is still intact
 		NodeGraphFieldContainer initial = findInitial(container);
 

@@ -46,9 +46,11 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.root.RoleRoot;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.Permission;
@@ -85,7 +87,8 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 	@Override
 	public void testReadByUuidWithRolePerms() {
 		try (Tx tx = tx()) {
-			TagFamily tagFamily = project().getTagFamilyRoot().findAll().iterator().next();
+			TagFamilyDaoWrapper tagFamilyDao = tx.data().tagFamilyDao();
+			TagFamily tagFamily = tagFamilyDao.findAll(project()).iterator().next();
 			String uuid = tagFamily.getUuid();
 
 			TagFamilyResponse response = call(() -> client().findTagFamilyByUuid(PROJECT_NAME, uuid, new RolePermissionParametersImpl().setRoleUuid(
@@ -101,9 +104,10 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 	public void testReadByUUIDWithMissingPermission() throws Exception {
 		String uuid;
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
+			TagFamilyDaoWrapper tagFamilyDao = tx.data().tagFamilyDao();
 			Role role = role();
-			TagFamily tagFamily = project().getTagFamilyRoot().findAll().iterator().next();
+			TagFamily tagFamily = tagFamilyDao.findAll(project()).iterator().next();
 			uuid = tagFamily.getUuid();
 			assertNotNull(tagFamily);
 			roleDao.revokePermissions(role, tagFamily, READ_PERM);
@@ -228,7 +232,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		request.setName("newTagFamily");
 		String tagFamilyRootUuid = db().tx(() -> project().getTagFamilyRoot().getUuid());
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.revokePermissions(role(), project().getTagFamilyRoot(), CREATE_PERM);
 			tx.success();
 		}
@@ -277,7 +281,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 	@Test
 	public void testCreateWithoutPerm() {
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.revokePermissions(role(), project().getTagFamilyRoot(), CREATE_PERM);
 			tx.success();
 		}
@@ -324,9 +328,10 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 
 		Set<String> taggedDraftContentUuids = new HashSet<>();
 		Set<String> taggedPublishedContentUuids = new HashSet<>();
-		tx(() -> {
+		tx(tx -> {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			tags.forEach(t -> {
-				t.getNodes(initialBranch()).forEach(n -> {
+				tagDao.getNodes(t, initialBranch()).forEach(n -> {
 					n.getGraphFieldContainers(initialBranch(), DRAFT).forEach(c -> {
 						taggedDraftContentUuids.add(c.getUuid());
 					});
@@ -363,7 +368,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 		TagFamily basicTagFamily = tagFamily("basic");
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			Role role = role();
 			roleDao.revokePermissions(role, basicTagFamily, DELETE_PERM);
 			tx.success();
@@ -451,17 +456,18 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		awaitEvents();
 
 		try (Tx tx = tx()) {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			// Multiple tags of the same family can be tagged on same node. This should still trigger only 1 update for that node.
 			HashSet<String> taggedNodes = new HashSet<>();
 			int storeCount = 0;
 			for (Tag tag : tagfamily.findAll()) {
 				storeCount++;
-				for (Node node : tag.getNodes(branch)) {
+				for (Node node : tagDao.getNodes(tag, branch)) {
 					if (!taggedNodes.contains(node.getUuid())) {
 						taggedNodes.add(node.getUuid());
 						for (ContainerType containerType : Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED)) {
 							for (NodeGraphFieldContainer fieldContainer : node.getGraphFieldContainers(branch, containerType)) {
-								SchemaContainerVersion schema = node.getSchemaContainer().getLatestVersion();
+								SchemaVersion schema = node.getSchemaContainer().getLatestVersion();
 								storeCount++;
 								assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch
 									.getUuid(), schema.getUuid(), containerType), NodeGraphFieldContainer.composeDocumentId(node.getUuid(),
@@ -492,7 +498,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		String name;
 		TagFamily tagFamily = tagFamily("basic");
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			uuid = tagFamily.getUuid();
 			name = tagFamily.getName();
 			roleDao.revokePermissions(role(), tagFamily, UPDATE_PERM);

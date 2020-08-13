@@ -2,9 +2,6 @@ package com.gentics.mesh.search.index;
 
 import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC_FINISHED;
 import static com.gentics.mesh.test.ClientHelper.call;
-/**
- * Test that bogus indices will be detected and removed during index sync operation.
- */
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER_ES6;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -25,8 +22,8 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -52,9 +49,9 @@ public class IndexSyncCleanupTest extends AbstractMeshTest {
 		extraIndices.add(Group.composeIndexName() + "2");
 		extraIndices.add(Role.composeIndexName() + "2");
 		extraIndices.add(TagFamily.composeIndexName(projectUuid()) + "bogus");
-		extraIndices.add(MicroschemaContainer.composeIndexName() + "bogus");
-		extraIndices.add(SchemaContainer.composeIndexName() + "bogus");
-		extraIndices.add(SchemaContainer.composeIndexName() + "bogus");
+		extraIndices.add(Microschema.composeIndexName() + "bogus");
+		extraIndices.add(Schema.composeIndexName() + "bogus");
+		extraIndices.add(Schema.composeIndexName() + "bogus");
 		extraIndices.add(Project.composeIndexName() + "bogus");
 
 		// 1. Create extra bogus indices
@@ -83,8 +80,8 @@ public class IndexSyncCleanupTest extends AbstractMeshTest {
 		remainingIndices.add("mesh-" + User.composeIndexName());
 		remainingIndices.add("mesh-" + Group.composeIndexName());
 		remainingIndices.add("mesh-" + Role.composeIndexName());
-		remainingIndices.add("mesh-" + SchemaContainer.composeIndexName());
-		remainingIndices.add("mesh-" + MicroschemaContainer.composeIndexName());
+		remainingIndices.add("mesh-" + Schema.composeIndexName());
+		remainingIndices.add("mesh-" + Microschema.composeIndexName());
 		remainingIndices.add("mesh-" + Project.composeIndexName());
 		remainingIndices.add("mesh-" + TagFamily.composeIndexName(projectUuid()));
 		remainingIndices.add("mesh-" + Tag.composeIndexName(projectUuid()));

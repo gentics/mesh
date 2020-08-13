@@ -18,13 +18,11 @@ import org.apache.commons.lang3.BooleanUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.actions.impl.RoleDAOActionsImpl;
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.RoleRoot;
-import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionResponse;
@@ -49,8 +47,8 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 	}
 
 	@Override
-	public RootVertex<Role> getRootVertex(Tx tx, InternalActionContext ac) {
-		return boot.roleRoot();
+	public RoleDAOActionsImpl crudActions() {
+		return new RoleDAOActionsImpl();
 	}
 
 	/**
@@ -79,7 +77,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 			Role role = roleDao.loadObjectByUuid(ac, roleUuid, READ_PERM);
 
 			// 2. Resolve the path to element that is targeted
-			MeshVertex targetElement = boot.meshRoot().resolvePathToElement(pathToElement);
+			HibElement targetElement = boot.meshRoot().resolvePathToElement(pathToElement);
 			if (targetElement == null) {
 				throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
 			}
@@ -120,12 +118,12 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 					log.debug("Handling permission request for element on path {" + pathToElement + "}");
 				}
 
-				RoleRoot roleDao = tx.data().roleDao();
+				RoleDaoWrapper roleDao = tx.data().roleDao();
 				// 1. Load the role that should be used
 				Role role = roleDao.loadObjectByUuid(ac, roleUuid, UPDATE_PERM);
 
 				// 2. Resolve the path to element that is targeted
-				MeshVertex element = boot.meshRoot().resolvePathToElement(pathToElement);
+				HibElement element = boot.meshRoot().resolvePathToElement(pathToElement);
 
 				if (element == null) {
 					throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);

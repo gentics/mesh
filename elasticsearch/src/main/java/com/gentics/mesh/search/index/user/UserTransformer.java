@@ -12,8 +12,8 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.search.index.AbstractTransformer;
 import com.gentics.mesh.util.ETag;
@@ -24,7 +24,7 @@ import io.vertx.core.json.JsonObject;
  * Transformer for user search index documents.
  */
 @Singleton
-public class UserTransformer extends AbstractTransformer<User> {
+public class UserTransformer extends AbstractTransformer<HibUser> {
 
 	public static final String EMAIL_KEY = "emailaddress";
 	public static final String USERNAME_KEY = "username";
@@ -38,9 +38,9 @@ public class UserTransformer extends AbstractTransformer<User> {
 	}
 
 	@Override
-	public String generateVersion(User user) {
+	public String generateVersion(HibUser user) {
 		StringBuilder builder = new StringBuilder();
-		builder.append(user.getElementVersion());
+		builder.append(user.toUser().getElementVersion());
 		builder.append("|");
 		for (Group group : user.getGroups()) {
 			builder.append(group.getElementVersion());
@@ -64,7 +64,7 @@ public class UserTransformer extends AbstractTransformer<User> {
 	 * @return
 	 */
 	@Override
-	public JsonObject toDocument(User user) {
+	public JsonObject toDocument(HibUser user) {
 		JsonObject document = new JsonObject();
 		addBasicReferences(document, user);
 		document.put(USERNAME_KEY, user.getUsername());

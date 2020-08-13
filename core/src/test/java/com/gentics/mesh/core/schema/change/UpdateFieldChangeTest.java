@@ -9,7 +9,7 @@ import java.io.IOException;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.UpdateFieldChange;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
@@ -39,7 +39,7 @@ public class UpdateFieldChangeTest extends AbstractChangeTest {
 	@Override
 	public void testApply() {
 		try (Tx tx = tx()) {
-			SchemaContainerVersion version = tx.getGraph()
+			SchemaVersion version = tx.getGraph()
 					.addFramedVertex(SchemaContainerVersionImpl.class);
 
 			SchemaModelImpl schema = new SchemaModelImpl("test");

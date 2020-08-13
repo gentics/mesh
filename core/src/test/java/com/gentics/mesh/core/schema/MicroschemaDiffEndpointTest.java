@@ -13,13 +13,13 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
-import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
@@ -30,38 +30,38 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 @MeshTestSetting(testSize = FULL, startServer = true)
 public class MicroschemaDiffEndpointTest extends AbstractMeshTest {
 
-	private Microschema getMicroschema() {
-		Microschema vcardMicroschema = new MicroschemaModelImpl();
-		vcardMicroschema.setName("vcard");
-		vcardMicroschema.setDescription("Microschema for a vcard");
+	private MicroschemaModel getMicroschema() {
+		MicroschemaModel vcardMicroschemaModel = new MicroschemaModelImpl();
+		vcardMicroschemaModel.setName("vcard");
+		vcardMicroschemaModel.setDescription("Microschema for a vcard");
 
 		// firstname field
 		StringFieldSchema firstNameFieldSchema = new StringFieldSchemaImpl();
 		firstNameFieldSchema.setName("firstName");
 		firstNameFieldSchema.setLabel("First Name");
 		firstNameFieldSchema.setRequired(true);
-		vcardMicroschema.addField(firstNameFieldSchema);
+		vcardMicroschemaModel.addField(firstNameFieldSchema);
 
 		// lastname field
 		StringFieldSchema lastNameFieldSchema = new StringFieldSchemaImpl();
 		lastNameFieldSchema.setName("lastName");
 		lastNameFieldSchema.setLabel("Last Name");
 		lastNameFieldSchema.setRequired(true);
-		vcardMicroschema.addField(lastNameFieldSchema);
+		vcardMicroschemaModel.addField(lastNameFieldSchema);
 
 		// address field
 		StringFieldSchema addressFieldSchema = new StringFieldSchemaImpl();
 		addressFieldSchema.setName("address");
 		addressFieldSchema.setLabel("Address");
-		vcardMicroschema.addField(addressFieldSchema);
+		vcardMicroschemaModel.addField(addressFieldSchema);
 
 		// postcode field
 		StringFieldSchema postcodeFieldSchema = new StringFieldSchemaImpl();
 		postcodeFieldSchema.setName("postcode");
 		postcodeFieldSchema.setLabel("Post Code");
-		vcardMicroschema.addField(postcodeFieldSchema);
+		vcardMicroschemaModel.addField(postcodeFieldSchema);
 
-		return vcardMicroschema;
+		return vcardMicroschemaModel;
 	}
 
 	@Test
@@ -70,15 +70,15 @@ public class MicroschemaDiffEndpointTest extends AbstractMeshTest {
 		// Set the description to empty string
 		String microschemaUuid = tx(() -> microschemaContainer("vcard").getUuid());
 		tx(() -> {
-			MicroschemaContainer microschema = tx(() -> microschemaContainer("vcard"));
-			MicroschemaContainerVersion microschemaVersion = microschema.getLatestVersion();
-			MicroschemaModel schemaModel = microschemaVersion.getSchema();
+			Microschema microschema = tx(() -> microschemaContainer("vcard"));
+			MicroschemaVersion microschemaVersion = microschema.getLatestVersion();
+			MicroschemaVersionModel schemaModel = microschemaVersion.getSchema();
 			schemaModel.setDescription("");
 			microschemaVersion.setJson(schemaModel.toJson());
 		});
 
 		// Diff the schema with no description in the JSON
-		Microschema request = getMicroschema();
+		MicroschemaModel request = getMicroschema();
 		request.setDescription(null);
 		SchemaChangesListModel changes = call(() -> client().diffMicroschema(microschemaUuid, request));
 
@@ -91,8 +91,8 @@ public class MicroschemaDiffEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testNoDiff() {
 		try (Tx tx = tx()) {
-			MicroschemaContainer microschema = microschemaContainer("vcard");
-			Microschema request = getMicroschema();
+			Microschema microschema = microschemaContainer("vcard");
+			MicroschemaModel request = getMicroschema();
 
 			SchemaChangesListModel changes = call(() -> client().diffMicroschema(microschema.getUuid(), request));
 			assertThat(changes.getChanges()).isEmpty();
@@ -102,7 +102,7 @@ public class MicroschemaDiffEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testAddField() {
 		String uuid = tx(() -> microschemaContainer("vcard").getUuid());
-		Microschema request = getMicroschema();
+		MicroschemaModel request = getMicroschema();
 		StringFieldSchema stringField = FieldUtil.createStringFieldSchema("someField");
 		stringField.setAllowedValues("one", "two");
 		request.addField(stringField);
@@ -119,7 +119,7 @@ public class MicroschemaDiffEndpointTest extends AbstractMeshTest {
 	public void testApplyChanges() {
 		String uuid = tx(() -> microschemaContainer("vcard").getUuid());
 
-		Microschema request = getMicroschema();
+		MicroschemaModel request = getMicroschema();
 		StringFieldSchema stringField = FieldUtil
 			.createStringFieldSchema("someField");
 		stringField.setAllowedValues("one", "two");
@@ -135,8 +135,8 @@ public class MicroschemaDiffEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testAddUnsupportedField() {
 		try (Tx tx = tx()) {
-			MicroschemaContainer microschema = microschemaContainer("vcard");
-			Microschema request = getMicroschema();
+			Microschema microschema = microschemaContainer("vcard");
+			MicroschemaModel request = getMicroschema();
 			BinaryFieldSchema binaryField = FieldUtil.createBinaryFieldSchema("binaryField");
 			request.addField(binaryField);
 
@@ -148,8 +148,8 @@ public class MicroschemaDiffEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testRemoveField() {
 		try (Tx tx = tx()) {
-			MicroschemaContainer microschema = microschemaContainer("vcard");
-			Microschema request = getMicroschema();
+			Microschema microschema = microschemaContainer("vcard");
+			MicroschemaModel request = getMicroschema();
 			request.removeField("postcode");
 
 			SchemaChangesListModel changes = call(() -> client().diffMicroschema(microschema.getUuid(), request));

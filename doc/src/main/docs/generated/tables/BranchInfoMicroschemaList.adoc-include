@@ -10,6 +10,6 @@
 | microschemas
 | false
 | array
-| List of microschema references.
+| List of microschemaModel references.
 
 |======

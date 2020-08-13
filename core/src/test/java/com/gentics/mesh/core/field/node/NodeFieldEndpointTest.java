@@ -26,10 +26,10 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldEndpointTest;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
@@ -40,7 +40,7 @@ import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.parameter.LinkType;
@@ -59,7 +59,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Before
 	public void updateSchema() throws Exception {
 		try (Tx tx = tx()) {
-			SchemaModel schema = schemaContainer("folder").getLatestVersion().getSchema();
+			SchemaVersionModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 			NodeFieldSchema nodeFieldSchema = new NodeFieldSchemaImpl();
 			nodeFieldSchema.setName(FIELD_NAME);
 			nodeFieldSchema.setLabel("Some label");
@@ -365,7 +365,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	public void testReadNodeExpandAllNoPerm() throws IOException {
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			// Revoke the permission to the referenced node
 			Node referencedNode = folder("news");
 			roleDao.revokePermissions(role(), referencedNode, GraphPermission.READ_PERM);

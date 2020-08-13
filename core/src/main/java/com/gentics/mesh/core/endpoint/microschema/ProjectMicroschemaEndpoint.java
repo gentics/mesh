@@ -57,7 +57,7 @@ public class ProjectMicroschemaEndpoint extends AbstractProjectEndpoint {
 		endpoint.exampleResponse(OK, microschemaExamples.getMicroschemaListResponse(), "List of assigned microschemas.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = wrap(rc);
-			crudHandler.handleReadMicroschemaList(ac);
+			crudHandler.handleReadProjectList(ac);
 		});
 	}
 

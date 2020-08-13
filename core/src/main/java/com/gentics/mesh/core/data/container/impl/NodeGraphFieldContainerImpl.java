@@ -48,7 +48,6 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -67,9 +66,10 @@ import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.NameConflictException;
@@ -79,8 +79,8 @@ import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
@@ -125,7 +125,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public SchemaContainerVersion getSchemaContainerVersion() {
+	public SchemaVersion getSchemaContainerVersion() {
 		return db().index().findByUuid(SchemaContainerVersionImpl.class, property(SCHEMA_CONTAINER_VERSION_KEY_PROPERTY));
 	}
 
@@ -143,7 +143,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	@Override
 	public void updateDisplayFieldValue() {
 		// TODO use schema storage instead
-		Schema schema = getSchemaContainerVersion().getSchema();
+		SchemaModel schema = getSchemaContainerVersion().getSchema();
 		String displayFieldName = schema.getDisplayField();
 		FieldSchema fieldSchema = schema.getField(displayFieldName);
 		// Only update the display field value if the field can be located
@@ -227,7 +227,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public Set<String> getUrlFieldValues() {
-		SchemaModel schema = getSchemaContainerVersion().getSchema();
+		SchemaVersionModel schema = getSchemaContainerVersion().getSchema();
 
 		Set<String> urlFieldValues = new HashSet<>();
 		if (schema.getUrlFields() != null) {
@@ -521,7 +521,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public void validate() {
-		Schema schema = getSchemaContainerVersion().getSchema();
+		SchemaModel schema = getSchemaContainerVersion().getSchema();
 		Map<String, GraphField> fieldsMap = getFields().stream().collect(Collectors.toMap(GraphField::getFieldKey, Function.identity()));
 
 		schema.getFields().stream().forEach(fieldSchema -> {
@@ -539,7 +539,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	public List<FieldContainerChange> compareTo(FieldMap fieldMap) {
 		List<FieldContainerChange> changes = new ArrayList<>();
 
-		Schema schemaA = getSchemaContainerVersion().getSchema();
+		SchemaModel schemaA = getSchemaContainerVersion().getSchema();
 		Map<String, FieldSchema> fieldSchemaMap = schemaA.getFieldsAsMap();
 
 		// Handle all fields
@@ -571,9 +571,9 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	public List<FieldContainerChange> compareTo(NodeGraphFieldContainer container) {
 		List<FieldContainerChange> changes = new ArrayList<>();
 
-		Schema schemaA = getSchemaContainerVersion().getSchema();
+		SchemaModel schemaA = getSchemaContainerVersion().getSchema();
 		Map<String, FieldSchema> fieldMapA = schemaA.getFieldsAsMap();
-		Schema schemaB = container.getSchemaContainerVersion().getSchema();
+		SchemaModel schemaB = container.getSchemaContainerVersion().getSchema();
 		Map<String, FieldSchema> fieldMapB = schemaB.getFieldsAsMap();
 		// Generate a structural diff first. This way it is easy to determine
 		// which fields have been added or removed.
@@ -633,7 +633,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public List<? extends MicronodeGraphField> getMicronodeFields(MicroschemaContainerVersion version) {
+	public List<? extends MicronodeGraphField> getMicronodeFields(MicroschemaVersion version) {
 		String microschemaVersionUuid = version.getUuid();
 		return new TraversalResult<>(outE(HAS_FIELD)
 			.has(MicronodeGraphFieldImpl.class)
@@ -644,7 +644,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public TraversalResult<? extends MicronodeGraphFieldList> getMicronodeListFields(MicroschemaContainerVersion version) {
+	public TraversalResult<? extends MicronodeGraphFieldList> getMicronodeListFields(MicroschemaVersion version) {
 		String microschemaVersionUuid = version.getUuid();
 		TraversalResult<? extends MicronodeGraphFieldList> lists = new TraversalResult<>(out(HAS_LIST)
 			.has(MicronodeGraphFieldListImpl.class)
@@ -669,12 +669,12 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public User getEditor() {
+	public HibUser getEditor() {
 		return mesh().userProperties().getEditor(this);
 	}
 
 	@Override
-	public void setEditor(User user) {
+	public void setEditor(HibUser user) {
 		mesh().userProperties().setEditor(this, user);
 	}
 
@@ -779,7 +779,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		model.setBranchUuid(branchUuid);
 		model.setLanguageTag(getLanguageTag());
 		model.setType(type);
-		SchemaContainerVersion version = getSchemaContainerVersion();
+		SchemaVersion version = getSchemaContainerVersion();
 		if (version != null) {
 			model.setSchema(version.transformToReference());
 		}
@@ -809,7 +809,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public boolean isAutoPurgeEnabled() {
-		SchemaContainerVersion schema = getSchemaContainerVersion();
+		SchemaVersion schema = getSchemaContainerVersion();
 		return schema.isAutoPurgeEnabled();
 	}
 

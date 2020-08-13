@@ -25,23 +25,22 @@ import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.actions.impl.BranchDAOActionsImpl;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
+import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
-import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
@@ -76,8 +75,8 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	}
 
 	@Override
-	public RootVertex<Branch> getRootVertex(Tx tx, InternalActionContext ac) {
-		return ac.getProject().getBranchRoot();
+	public BranchDAOActionsImpl crudActions() {
+		return new BranchDAOActionsImpl();
 	}
 
 	@Override
@@ -115,16 +114,17 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 			utils.syncTx(ac, tx -> {
 				Project project = ac.getProject();
 				BranchDaoWrapper branchDao = tx.data().branchDao();
+				SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+
 				Branch branch = branchDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
 				BranchInfoSchemaList schemaReferenceList = ac.fromJson(BranchInfoSchemaList.class);
-				SchemaContainerRoot schemaContainerRoot = project.getSchemaContainerRoot();
 
 				BranchInfoSchemaList branchList = utils.eventAction(event -> {
 
 					// Resolve the list of references to graph schema container versions
 					for (SchemaReference reference : schemaReferenceList.getSchemas()) {
-						SchemaContainerVersion version = schemaContainerRoot.fromReference(reference);
-						SchemaContainerVersion assignedVersion = branch.findLatestSchemaVersion(version.getSchemaContainer());
+						SchemaVersion version = schemaDao.fromReference(project, reference);
+						SchemaVersion assignedVersion = branch.findLatestSchemaVersion(version.getSchemaContainer());
 						if (assignedVersion != null && Double.valueOf(assignedVersion.getVersion()) > Double.valueOf(version.getVersion())) {
 							throw error(BAD_REQUEST, "branch_error_downgrade_schema_version", version.getName(), assignedVersion.getVersion(),
 								version.getVersion());
@@ -178,15 +178,15 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 				BranchDaoWrapper branchDao = tx.data().branchDao();
 				Branch branch = branchDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
 				BranchInfoMicroschemaList microschemaReferenceList = ac.fromJson(BranchInfoMicroschemaList.class);
-				MicroschemaContainerRoot microschemaContainerRoot = ac.getProject().getMicroschemaContainerRoot();
+				MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
 
-				User user = ac.getUser();
+				HibUser user = ac.getUser();
 				utils.eventAction(batch -> {
 					// Transform the list of references into microschema container version vertices
 					for (MicroschemaReference reference : microschemaReferenceList.getMicroschemas()) {
-						MicroschemaContainerVersion version = microschemaContainerRoot.fromReference(reference);
+						MicroschemaVersion version = microschemaDao.fromReference(ac.getProject(), reference);
 
-						MicroschemaContainerVersion assignedVersion = branch.findLatestMicroschemaVersion(version.getSchemaContainer());
+						MicroschemaVersion assignedVersion = branch.findLatestMicroschemaVersion(version.getSchemaContainer());
 						if (assignedVersion != null && Double.valueOf(assignedVersion.getVersion()) > Double.valueOf(version.getVersion())) {
 							throw error(BAD_REQUEST, "branch_error_downgrade_microschema_version", version.getName(), assignedVersion.getVersion(),
 								version.getVersion());
@@ -273,7 +273,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	 *            The type of the schema version (either schema version or microschema version)
 	 */
 	private <T extends GraphFieldSchemaContainerVersion> void handleMigrateRemaining(InternalActionContext ac, String branchUuid,
-		Function<Branch, Iterable<T>> activeSchemas, PentaFunction<JobRoot, User, Branch, T, T, Job> enqueueMigration) {
+		Function<Branch, Iterable<T>> activeSchemas, PentaFunction<JobRoot, HibUser, Branch, T, T, Job> enqueueMigration) {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				Project project = ac.getProject();
@@ -364,8 +364,9 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 				Project project = ac.getProject();
 				BranchDaoWrapper branchDao = tx.data().branchDao();
 				TagDaoWrapper tagDao = tx.data().tagDao();
+
 				Branch branch = branchDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
-				Tag tag = tagDao.loadObjectByUuid(ac, tagUuid, READ_PERM);
+				Tag tag = tagDao.loadObjectByUuid(project, ac, tagUuid, READ_PERM);
 
 				// TODO check if the branch is already tagged
 				if (branch.hasTag(tag)) {
@@ -405,7 +406,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 				TagDaoWrapper tagDao = tx.data().tagDao();
 
 				Branch branch = branchDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
-				Tag tag = tagDao.loadObjectByUuid(ac, tagUuid, READ_PERM);
+				Tag tag = tagDao.loadObjectByUuid(project, ac, tagUuid, READ_PERM);
 
 				// TODO check if the tag has already been removed
 
@@ -438,11 +439,10 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				Project project = ac.getProject();
 				BranchDaoWrapper branchDao = tx.data().branchDao();
+				Project project = ac.getProject();
 
 				Branch branch = branchDao.loadObjectByUuid(project, ac, branchUuid, UPDATE_PERM);
-
 				TransformablePage<? extends Tag> page = utils.eventAction(batch -> {
 					return branch.updateTags(ac, batch);
 				});

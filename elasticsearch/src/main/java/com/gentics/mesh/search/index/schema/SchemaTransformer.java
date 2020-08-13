@@ -6,7 +6,7 @@ import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.search.index.AbstractTransformer;
 import com.gentics.mesh.util.ETag;
 
@@ -16,13 +16,13 @@ import io.vertx.core.json.JsonObject;
  * Transformer for schemas.
  */
 @Singleton
-public class SchemaTransformer extends AbstractTransformer<SchemaContainer> {
+public class SchemaTransformer extends AbstractTransformer<Schema> {
 
 	@Inject
 	public SchemaTransformer() {
 	}
 
-	public String generateVersion(SchemaContainer container) {
+	public String generateVersion(Schema container) {
 		StringBuilder builder = new StringBuilder();
 		builder.append(container.getElementVersion());
 		builder.append("|");
@@ -32,7 +32,7 @@ public class SchemaTransformer extends AbstractTransformer<SchemaContainer> {
 	}
 
 	@Override
-	public JsonObject toDocument(SchemaContainer container) {
+	public JsonObject toDocument(Schema container) {
 		JsonObject document = new JsonObject();
 		document.put(NAME_KEY, container.getName());
 		document.put(DESCRIPTION_KEY, container.getLatestVersion().getSchema().getDescription());

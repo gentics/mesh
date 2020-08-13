@@ -26,9 +26,10 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.root.GroupRoot;
-import com.gentics.mesh.core.data.root.RoleRoot;
-import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.event.group.GroupUserAssignModel;
@@ -47,11 +48,12 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 	public void testGetUsersByGroup() throws Exception {
 		String extraUserUuid;
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
-			GroupRoot groupRoot = tx.data().groupDao();
-			UserRoot userRoot = meshRoot().getUserRoot();
-			User extraUser = userRoot.create("extraUser", user());
-			groupRoot.addUser(group(), extraUser);
+			RoleDaoWrapper roleDao = tx.data().roleDao();
+			GroupDaoWrapper groupDao = tx.data().groupDao();
+			UserDaoWrapper userDao = tx.data().userDao();
+
+			HibUser extraUser = userDao.create("extraUser", user());
+			groupDao.addUser(group(), extraUser);
 			extraUserUuid = extraUser.getUuid();
 			roleDao.grantPermissions(role(), extraUser, READ_PERM);
 			tx.success();
@@ -76,9 +78,10 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 	public void testAddUserToGroupWithBogusGroupId() throws Exception {
 		String userUuid;
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
-			UserRoot userRoot = meshRoot().getUserRoot();
-			User extraUser = userRoot.create("extraUser", user());
+			RoleDaoWrapper roleDao = tx.data().roleDao();
+			UserDaoWrapper userDao = tx.data().userDao();
+
+			HibUser extraUser = userDao.create("extraUser", user());
 			userUuid = extraUser.getUuid();
 			roleDao.grantPermissions(role(), extraUser, READ_PERM);
 			tx.success();
@@ -94,15 +97,16 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 		final String userLastname = "Einstein";
 		final String groupUuid = groupUuid();
 		final String groupName = tx(() -> group().getName());
-		User extraUser = tx(tx -> {
-			RoleRoot roleDao = tx.data().roleDao();
-			GroupRoot groupRoot = tx.data().groupDao();
-			UserRoot userRoot = meshRoot().getUserRoot();
-			User user = userRoot.create("extraUser", user());
+		HibUser extraUser = tx(tx -> {
+			RoleDaoWrapper roleDao = tx.data().roleDao();
+			UserDaoWrapper userDao = tx.data().userDao();
+			GroupDaoWrapper groupDao = tx.data().groupDao();
+
+			HibUser user = userDao.create("extraUser", user());
 			user.setFirstname(userFirstname);
 			user.setLastname(userLastname);
 			roleDao.grantPermissions(role(), user, READ_PERM);
-			assertFalse("User should not be member of the group.", groupRoot.hasUser(group(), user));
+			assertFalse("User should not be member of the group.", groupDao.hasUser(group(), user));
 			return user;
 		});
 
@@ -125,12 +129,12 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 		waitForSearchIdleEvent();
 
 		try (Tx tx = tx()) {
-			GroupRoot groupRoot = tx.data().groupDao();
+			GroupDaoWrapper groupDao = tx.data().groupDao();
 			assertThat(restGroup).matches(group());
 			assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), extraUserUuid);
 			assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 			trackingSearchProvider().reset();
-			assertTrue("User should be member of the group.", groupRoot.hasUser(group(), extraUser));
+			assertTrue("User should be member of the group.", groupDao.hasUser(group(), extraUser));
 		}
 		// Test for idempotency
 		expect(GROUP_USER_ASSIGNED).none();
@@ -140,51 +144,53 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddUserToGroupWithoutPermOnGroup() throws Exception {
-		User extraUser;
+		HibUser extraUser;
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
+			UserDaoWrapper userDao = tx.data().userDao();
+
 			Group group = group();
-			UserRoot userRoot = meshRoot().getUserRoot();
-			extraUser = userRoot.create("extraUser", user());
+			extraUser = userDao.create("extraUser", user());
 			roleDao.grantPermissions(role(), extraUser, READ_PERM);
 			roleDao.revokePermissions(role(), group, UPDATE_PERM);
 			tx.success();
 		}
 
 		try (Tx tx = tx()) {
-			GroupRoot groupRoot = tx.data().groupDao();
+			GroupDaoWrapper groupDao = tx.data().groupDao();
 			call(() -> client().addUserToGroup(groupUuid(), extraUser.getUuid()), FORBIDDEN, "error_missing_perm", groupUuid(),
 				UPDATE_PERM.getRestPerm().getName());
-			assertFalse("User should not be member of the group.", groupRoot.hasUser(group(), extraUser));
+			assertFalse("User should not be member of the group.", groupDao.hasUser(group(), extraUser));
 		}
 
 	}
 
 	@Test
 	public void testAddUserToGroupWithoutPermOnUser() throws Exception {
-		User extraUser;
+		HibUser extraUser;
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
-			UserRoot userRoot = meshRoot().getUserRoot();
-			extraUser = userRoot.create("extraUser", user());
+			RoleDaoWrapper roleDao = tx.data().roleDao();
+			UserDaoWrapper userDao = tx.data().userDao();
+
+			extraUser = userDao.create("extraUser", user());
 			roleDao.grantPermissions(role(), extraUser, DELETE_PERM);
 			tx.success();
 		}
 
 		try (Tx tx = tx()) {
-			GroupRoot groupRoot = tx.data().groupDao();
+			GroupDaoWrapper groupDao = tx.data().groupDao();
 			call(() -> client().addUserToGroup(group().getUuid(), extraUser.getUuid()), FORBIDDEN, "error_missing_perm", extraUser.getUuid(),
 				READ_PERM.getRestPerm().getName());
-			assertFalse("User should not be member of the group.", groupRoot.hasUser(group(), extraUser));
+			assertFalse("User should not be member of the group.", groupDao.hasUser(group(), extraUser));
 		}
 	}
 
 	@Test
 	public void testRemoveUserFromGroupWithoutPerm() throws Exception {
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
-			GroupRoot groupRoot = tx.data().groupDao();
-			assertTrue("User should be a member of the group.", groupRoot.hasUser(group(), user()));
+			RoleDaoWrapper roleDao = tx.data().roleDao();
+			GroupDaoWrapper groupDao = tx.data().groupDao();
+			assertTrue("User should be a member of the group.", groupDao.hasUser(group(), user()));
 			roleDao.revokePermissions(role(), group(), UPDATE_PERM);
 			tx.success();
 		}
@@ -192,8 +198,8 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 		call(() -> client().removeUserFromGroup(groupUuid(), userUuid()), FORBIDDEN, "error_missing_perm", groupUuid(),
 			UPDATE_PERM.getRestPerm().getName());
 		try (Tx tx = tx()) {
-			GroupRoot groupRoot = tx.data().groupDao();
-			assertTrue("User should still be a member of the group.", groupRoot.hasUser(group(), user()));
+			GroupDaoWrapper groupDao = tx.data().groupDao();
+			assertTrue("User should still be a member of the group.", groupDao.hasUser(group(), user()));
 		}
 	}
 
@@ -204,11 +210,12 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 		final String userFirstname = "Albert";
 		final String userLastname = "Einstein";
 
-		User extraUser = tx(tx -> {
-			RoleRoot roleDao = tx.data().roleDao();
-			UserRoot userRoot = meshRoot().getUserRoot();
-			GroupRoot groupRoot = tx.data().groupDao();
-			User user = userRoot.create("extraUser", user());
+		HibUser extraUser = tx(tx -> {
+			RoleDaoWrapper roleDao = tx.data().roleDao();
+			UserDaoWrapper userDao = tx.data().userDao();
+			GroupDaoWrapper groupRoot = tx.data().groupDao();
+
+			HibUser user = userDao.create("extraUser", user());
 			user.setFirstname(userFirstname);
 			user.setLastname(userLastname);
 			roleDao.grantPermissions(role(), user, READ_PERM);
@@ -235,10 +242,10 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 		waitForSearchIdleEvent();
 
 		try (Tx tx = tx()) {
-			GroupRoot groupRoot = tx.data().groupDao();
+			GroupDaoWrapper groupDao = tx.data().groupDao();
 			assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), extraUserUuid);
 			assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
-			assertFalse("User should not be member of the group.", groupRoot.hasUser(group(), extraUser));
+			assertFalse("User should not be member of the group.", groupDao.hasUser(group(), extraUser));
 		}
 
 		// Test for idempotency
@@ -258,8 +265,8 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 	public void testRemoveUserFromLastGroupWithPerm() throws Exception {
 		call(() -> client().removeUserFromGroup(groupUuid(), userUuid()));
 		try (Tx tx = tx()) {
-			GroupRoot groupRoot = tx.data().groupDao();
-			assertFalse("User should no longer be member of the group.", groupRoot.hasUser(group(), user()));
+			GroupDaoWrapper groupDao = tx.data().groupDao();
+			assertFalse("User should no longer be member of the group.", groupDao.hasUser(group(), user()));
 		}
 	}
 
@@ -267,8 +274,8 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 	public void testRemoveUserFromGroupWithBogusUserUuid() throws Exception {
 		call(() -> client().removeUserFromGroup(groupUuid(), "bogus"), NOT_FOUND, "object_not_found_for_uuid", "bogus");
 		try (Tx tx = tx()) {
-			GroupRoot groupRoot = tx.data().groupDao();
-			assertTrue("User should still be member of the group.", groupRoot.hasUser(group(), user()));
+			GroupDaoWrapper groupDao = tx.data().groupDao();
+			assertTrue("User should still be member of the group.", groupDao.hasUser(group(), user()));
 		}
 	}
 }

@@ -31,7 +31,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.search.index.node.NodeContainerMappingProvider;
-import com.gentics.mesh.search.index.node.NodeIndexHandler;
+import com.gentics.mesh.search.index.node.NodeIndexHandlerImpl;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -190,7 +190,7 @@ public class MicroschemaMappingTest extends AbstractMeshTest {
 
 	@Test
 	public void testMicroschemaCustomMappingJson() {
-		NodeIndexHandler handler = mesh().indexHandlerRegistry().nodeIndexHandler;
+		NodeIndexHandlerImpl handler = mesh().indexHandlerRegistry().nodeIndexHandler;
 		NodeContainerMappingProvider provider = handler.getMappingProvider();
 		ComplianceMode mode = options().getSearchOptions().getComplianceMode();
 

@@ -28,16 +28,16 @@ import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
@@ -60,8 +60,8 @@ import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
@@ -103,7 +103,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	}
 
 	default MeshAuthUser getRequestUser() {
-		return data().getUserInfo().getUser().reframe(MeshAuthUserImpl.class);
+		return data().getUserInfo().getUser().toUser().reframe(MeshAuthUserImpl.class);
 	}
 
 	default Role anonymousRole() {
@@ -212,11 +212,11 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return data().getTag(key);
 	}
 
-	default SchemaContainer schemaContainer(String key) {
+	default Schema schemaContainer(String key) {
 		return data().getSchemaContainer(key);
 	}
 
-	default Map<String, SchemaContainer> schemaContainers() {
+	default Map<String, Schema> schemaContainers() {
 		return data().getSchemaContainers();
 	}
 
@@ -240,11 +240,11 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return data().getGroups();
 	}
 
-	default Map<String, MicroschemaContainer> microschemaContainers() {
+	default Map<String, Microschema> microschemaContainers() {
 		return data().getMicroschemaContainers();
 	}
 
-	default MicroschemaContainer microschemaContainer(String key) {
+	default Microschema microschemaContainer(String key) {
 		return data().getMicroschemaContainers().get(key);
 	}
 
@@ -471,7 +471,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		NodeResponse nodeResponse = call(() -> client().findNodeByUuid(projectName, uuid, new VersioningParametersImpl().setBranch(sourceBranchName)
 			.draft()));
 
-		Schema schema = schemaContainer(nodeResponse.getSchema().getName()).getLatestVersion().getSchema();
+		SchemaModel schema = schemaContainer(nodeResponse.getSchema().getName()).getLatestVersion().getSchema();
 
 		// update node for target branch
 		NodeCreateRequest create = new NodeCreateRequest();
@@ -535,7 +535,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 			.blockingFirst();
 	}
 
-	default public Schema readSchema(String uuid) {
+	default public SchemaModel readSchema(String uuid) {
 		return call(() -> client().findSchemaByUuid(uuid));
 	}
 
@@ -571,7 +571,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	 */
 	default public void prepareSchema(Node node, String mimeTypeWhitelist, String binaryFieldName) throws IOException {
 		// Update the schema and enable binary support for folders
-		SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
+		SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		schema.addField(new BinaryFieldSchemaImpl().setAllowedMimeTypes(mimeTypeWhitelist).setName(binaryFieldName).setLabel("Binary content"));
 		node.getSchemaContainer().getLatestVersion().setSchema(schema);
 		mesh().serverSchemaStorage().clear();
@@ -661,8 +661,8 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return client;
 	}
 
-	default public SchemaContainer getSchemaContainer() {
-		SchemaContainer container = data().getSchemaContainer("content");
+	default public Schema getSchemaContainer() {
+		Schema container = data().getSchemaContainer("content");
 		return container;
 	}
 
@@ -670,7 +670,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return mesh().bulkProvider().get();
 	}
 
-	default public Map<String, User> users() {
+	default public Map<String, HibUser> users() {
 		return data().getUsers();
 	}
 

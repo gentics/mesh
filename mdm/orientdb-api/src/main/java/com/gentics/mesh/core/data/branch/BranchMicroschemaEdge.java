@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.branch;
 
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 
 /**
  * Edge between a branch and a microschema version.
@@ -12,6 +12,6 @@ public interface BranchMicroschemaEdge extends BranchVersionEdge {
 	 * 
 	 * @return
 	 */
-	MicroschemaContainerVersion getMicroschemaContainerVersion();
+	MicroschemaVersion getMicroschemaContainerVersion();
 
 }

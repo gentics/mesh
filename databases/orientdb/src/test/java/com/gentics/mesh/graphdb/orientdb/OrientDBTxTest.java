@@ -13,18 +13,20 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.orientdb.graph.Person;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
 
 public class OrientDBTxTest extends AbstractOrientDBTest {
 
-	private Database db = mockDatabase();
+	private Database db;
 	private Person p;
 
 	@Before
 	public void setup() throws Exception {
-		db.init(null, null);
+		db = mockDatabase(new MeshOptions());
+		db.init(null);
 	}
 
 	//	@Test

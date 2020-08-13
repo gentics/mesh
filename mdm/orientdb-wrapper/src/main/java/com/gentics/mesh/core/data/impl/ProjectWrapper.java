@@ -15,13 +15,14 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.BranchRoot;
-import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
+import com.gentics.mesh.core.data.root.MicroschemaRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
-import com.gentics.mesh.core.data.root.SchemaContainerRoot;
+import com.gentics.mesh.core.data.root.SchemaRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
@@ -55,6 +56,14 @@ public class ProjectWrapper implements Project {
 
 	private final Project delegate;
 
+	public static ProjectWrapper wrap(Project project) {
+		if (project == null) {
+			return null;
+		} else {
+			return new ProjectWrapper(project);
+		}
+	}
+
 	public ProjectWrapper(Project delegate) {
 		this.delegate = delegate;
 	}
@@ -75,11 +84,11 @@ public class ProjectWrapper implements Project {
 		return delegate.getRolePermissions(ac, roleUuid);
 	}
 
-	public User getEditor() {
+	public HibUser getEditor() {
 		return delegate.getEditor();
 	}
 
-	public User getCreator() {
+	public HibUser getCreator() {
 		return delegate.getCreator();
 	}
 
@@ -99,11 +108,11 @@ public class ProjectWrapper implements Project {
 		return delegate.getAPIPath(ac);
 	}
 
-	public void setEditor(User user) {
+	public void setEditor(HibUser user) {
 		delegate.setEditor(user);
 	}
 
-	public void setCreator(User user) {
+	public void setCreator(HibUser user) {
 		delegate.setCreator(user);
 	}
 
@@ -348,8 +357,8 @@ public class ProjectWrapper implements Project {
 		delegate.removeTypeResolution();
 	}
 
-	public Node createBaseNode(User creator, SchemaContainerVersion schemaContainerVersion) {
-		return delegate.createBaseNode(creator, schemaContainerVersion);
+	public Node createBaseNode(HibUser creator, SchemaVersion schemaVersion) {
+		return delegate.createBaseNode(creator, schemaVersion);
 	}
 
 	public VertexTraversal<?, ?, ?> v() {
@@ -384,11 +393,11 @@ public class ProjectWrapper implements Project {
 		return delegate.getTagFamilyRoot();
 	}
 
-	public SchemaContainerRoot getSchemaContainerRoot() {
+	public SchemaRoot getSchemaContainerRoot() {
 		return delegate.getSchemaContainerRoot();
 	}
 
-	public MicroschemaContainerRoot getMicroschemaContainerRoot() {
+	public MicroschemaRoot getMicroschemaContainerRoot() {
 		return delegate.getMicroschemaContainerRoot();
 	}
 
@@ -448,7 +457,7 @@ public class ProjectWrapper implements Project {
 		delegate.unlinkIn(vertex, labels);
 	}
 
-	public ProjectSchemaEventModel onSchemaAssignEvent(SchemaContainer schema, Assignment assigned) {
+	public ProjectSchemaEventModel onSchemaAssignEvent(Schema schema, Assignment assigned) {
 		return delegate.onSchemaAssignEvent(schema, assigned);
 	}
 
@@ -456,7 +465,7 @@ public class ProjectWrapper implements Project {
 		delegate.setLinkOut(vertex, labels);
 	}
 
-	public ProjectMicroschemaEventModel onMicroschemaAssignEvent(MicroschemaContainer microschema, Assignment assigned) {
+	public ProjectMicroschemaEventModel onMicroschemaAssignEvent(Microschema microschema, Assignment assigned) {
 		return delegate.onMicroschemaAssignEvent(microschema, assigned);
 	}
 
@@ -490,6 +499,14 @@ public class ProjectWrapper implements Project {
 
 	public Node findNode(String uuid) {
 		return delegate.findNode(uuid);
+	}
+
+	public Set<String> getRoleUuidsForPerm(GraphPermission permission) {
+		return delegate.getRoleUuidsForPerm(permission);
+	}
+
+	public void setRoleUuidForPerm(GraphPermission permission, Set<String> allowedRoles) {
+		delegate.setRoleUuidForPerm(permission, allowedRoles);
 	}
 
 }

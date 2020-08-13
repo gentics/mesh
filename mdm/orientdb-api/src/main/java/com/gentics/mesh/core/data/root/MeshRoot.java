@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.root;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
 import com.gentics.mesh.core.data.job.JobRoot;
@@ -110,14 +112,14 @@ public interface MeshRoot extends MeshVertex {
 	 * 
 	 * @return
 	 */
-	SchemaContainerRoot getSchemaContainerRoot();
+	SchemaRoot getSchemaContainerRoot();
 
 	/**
 	 * Returns the microschema container aggregation vertex.
 	 * 
 	 * @return
 	 */
-	MicroschemaContainerRoot getMicroschemaContainerRoot();
+	MicroschemaRoot getMicroschemaContainerRoot();
 
 	/**
 	 * This method will try to resolve the given path and return the element that is matching the path.
@@ -125,7 +127,7 @@ public interface MeshRoot extends MeshVertex {
 	 * @param pathToElement
 	 * @return Resolved element or null if no element could be found
 	 */
-	MeshVertex resolvePathToElement(String pathToElement);
+	HibElement resolvePathToElement(String pathToElement);
 
 	void clearReferences();
 

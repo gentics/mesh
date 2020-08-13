@@ -1,16 +1,23 @@
 package com.gentics.mesh.core.endpoint.tag;
 
+import static com.gentics.mesh.core.action.DAOActionContext.context;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
+import java.util.function.Function;
+
 import javax.inject.Inject;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.action.TagDAOActions;
+import com.gentics.mesh.core.action.TagFamilyDAOActions;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.tag.TagResponse;
@@ -29,18 +36,17 @@ public class TagCrudHandler extends AbstractHandler {
 	private final HandlerUtilities utils;
 	private final MeshOptions options;
 	private final WriteLock globalLock;
+	private final TagDAOActions tagActions;
+	private final TagFamilyDAOActions tagFamilyActions;
 
 	@Inject
-	public TagCrudHandler(MeshOptions options, HandlerUtilities utils, WriteLock writeLock) {
+	public TagCrudHandler(MeshOptions options, HandlerUtilities utils, WriteLock writeLock, TagDAOActions tagActions,
+		TagFamilyDAOActions tagFamilyActions) {
 		this.options = options;
 		this.utils = utils;
 		this.globalLock = writeLock;
-	}
-
-	public TagFamily getTagFamily(InternalActionContext ac, String tagFamilyUuid) {
-		validateParameter(tagFamilyUuid, "tagFamilyUuid");
-
-		return ac.getProject().getTagFamilyRoot().findByUuid(tagFamilyUuid);
+		this.tagActions = tagActions;
+		this.tagFamilyActions = tagFamilyActions;
 	}
 
 	/**
@@ -59,10 +65,13 @@ public class TagCrudHandler extends AbstractHandler {
 
 		try (WriteLock lock = globalLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
+				TagDaoWrapper tagDao = tx.data().tagDao();
 				PagingParameters pagingParams = ac.getPagingParameters();
 				NodeParameters nodeParams = ac.getNodeParameters();
-				Tag tag = getTagFamily(ac, tagFamilyUuid).loadObjectByUuid(ac, tagUuid, READ_PERM);
-				TransformablePage<? extends Node> page = tag.findTaggedNodes(ac.getUser(), ac.getBranch(), nodeParams.getLanguageList(options),
+				TagFamily tagFamily = tagFamilyActions.loadByUuid(context(tx, ac), tagFamilyUuid, READ_PERM, true);
+				Tag tag = tagActions.loadByUuid(context(tx, ac, tagFamily), tagUuid, READ_PERM, true);
+				TransformablePage<? extends Node> page = tagDao.findTaggedNodes(tag, ac.getUser(), ac.getBranch(),
+					nodeParams.getLanguageList(options),
 					ContainerType.forVersion(ac.getVersioningParameters().getVersion()), pagingParams);
 				return page.transformToRestSync(ac, 0);
 			}, model -> ac.send(model, OK));
@@ -79,7 +88,10 @@ public class TagCrudHandler extends AbstractHandler {
 	public void handleReadTagList(InternalActionContext ac, String tagFamilyUuid) {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 
-		utils.readElementList(ac, tx ->  getTagFamily(ac, tagFamilyUuid));
+		Function<Tx, Object> tagFamilyLoader = tx -> {
+			return tx.data().tagFamilyActions().loadByUuid(context(tx, ac), tagFamilyUuid, READ_PERM, true);
+		};
+		utils.readElementList(ac, tagFamilyLoader, tagActions);
 	}
 
 	/**
@@ -96,7 +108,8 @@ public class TagCrudHandler extends AbstractHandler {
 		try (WriteLock lock = globalLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				ResultInfo info = utils.eventAction(batch -> {
-					Tag tag = getTagFamily(ac, tagFamilyUuid).create(ac, batch);
+					// TODO use DAOActionContext and load tagFamily by uuid first. Without a parent this is inconsistent.
+					Tag tag = tagActions.create(tx, ac, batch, null);
 					TagResponse model = tag.transformToRestSync(ac, 0);
 					String path = tag.getAPIPath(ac);
 					ResultInfo resultInfo = new ResultInfo(model);
@@ -126,8 +139,10 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 		validateParameter(tagUuid, "tagUuid");
 
-		utils.updateElement(ac, tagUuid, tx -> getTagFamily(ac, tagFamilyUuid));
-
+		Function<Tx, Object> tagFamilyLoader = tx -> {
+			return tx.data().tagFamilyActions().loadByUuid(context(tx, ac), tagFamilyUuid, READ_PERM, true);
+		};
+		utils.createOrUpdateElement(ac, tagFamilyLoader, tagUuid, tagActions);
 	}
 
 	/**
@@ -144,7 +159,10 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 		validateParameter(tagUuid, "tagUuid");
 
-		utils.readElement(ac, tagUuid, tx -> getTagFamily(ac, tagFamilyUuid), READ_PERM);
+		Function<Tx, Object> tagFamilyLoader = tx -> {
+			return tx.data().tagFamilyActions().loadByUuid(context(tx, ac), tagFamilyUuid, READ_PERM, true);
+		};
+		utils.readElement(ac, tagFamilyLoader, tagUuid, tagActions, READ_PERM);
 
 	}
 
@@ -162,7 +180,10 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 		validateParameter(tagUuid, "tagUuid");
 
-		utils.deleteElement(ac, tx -> getTagFamily(ac, tagFamilyUuid), tagUuid);
+		Function<Tx, Object> tagFamilyLoader = tx -> {
+			return tagFamilyActions.loadByUuid(context(tx, ac), tagFamilyUuid, READ_PERM, true);
+		};
+		utils.deleteElement(ac, tagFamilyLoader, tagActions, tagUuid);
 
 	}
 

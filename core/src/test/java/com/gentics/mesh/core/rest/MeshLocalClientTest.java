@@ -7,7 +7,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;

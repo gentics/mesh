@@ -17,7 +17,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.job.Job;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.job.JobListResponse;
@@ -133,13 +133,13 @@ public class JobEndpointTest extends AbstractMeshTest {
 		});
 
 		tx(() -> {
-			SchemaContainer schema = schemaContainer("content");
+			Schema schema = schemaContainer("content");
 			Job job = boot().jobRoot().enqueueSchemaMigration(user(), initialBranch(), schema.getLatestVersion(), schema.getLatestVersion());
 			return job.getUuid();
 		});
 
 		String job3Uuid = tx(() -> {
-			SchemaContainer schema = schemaContainer("folder");
+			Schema schema = schemaContainer("folder");
 			Job job = boot().jobRoot().enqueueSchemaMigration(user(), initialBranch(), schema.getLatestVersion(), schema.getLatestVersion());
 			return job.getUuid();
 		});
@@ -148,7 +148,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 		JobResponse jobResponse = call(() -> client().findJobByUuid(job3Uuid));
 		try (Tx tx = tx()) {
-			SchemaContainer schema = schemaContainer("folder");
+			Schema schema = schemaContainer("folder");
 			assertEquals(initialBranchUuid(), jobResponse.getProperties().get("branchUuid"));
 			assertEquals(schema.getUuid(), jobResponse.getProperties().get("schemaUuid"));
 			assertEquals(schema.getLatestVersion().getVersion(), jobResponse.getProperties().get("fromVersion"));

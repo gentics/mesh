@@ -15,6 +15,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -27,7 +28,7 @@ import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
 import io.reactivex.Flowable;
 
 @Singleton
-public class UserIndexHandler extends AbstractIndexHandler<User> {
+public class UserIndexHandler extends AbstractIndexHandler<HibUser> {
 
 	private final static Set<String> indices = Collections.singleton(User.composeIndexName());
 
@@ -88,12 +89,12 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 	}
 
 	@Override
-	public Function<String, User> elementLoader() {
+	public Function<String, HibUser> elementLoader() {
 		return (uuid) -> boot.meshRoot().getUserRoot().findByUuid(uuid);
 	}
 
 	@Override
-	public Stream<? extends User> loadAllElements(Tx tx) {
+	public Stream<? extends HibUser> loadAllElements(Tx tx) {
 		return tx.data().userDao().findAll().stream();
 	}
 

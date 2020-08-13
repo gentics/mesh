@@ -27,23 +27,31 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
+import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
@@ -97,14 +105,14 @@ public class TestDataProvider {
 
 	private TestSize size;
 
-	private Map<String, SchemaContainer> schemaContainers = new HashMap<>();
-	private Map<String, MicroschemaContainer> microschemaContainers = new HashMap<>();
+	private Map<String, Schema> schemaContainers = new HashMap<>();
+	private Map<String, Microschema> microschemaContainers = new HashMap<>();
 	private Map<String, TagFamily> tagFamilies = new HashMap<>();
 	private long contentCount = 0;
 	private Map<String, Node> folders = new HashMap<>();
 	private Map<String, Node> contents = new HashMap<>();
 	private Map<String, Tag> tags = new HashMap<>();
-	private Map<String, User> users = new HashMap<>();
+	private Map<String, HibUser> users = new HashMap<>();
 	private Map<String, Role> roles = new HashMap<>();
 	private Map<String, Group> groups = new HashMap<>();
 
@@ -182,12 +190,12 @@ public class TestDataProvider {
 			addPermissions(project.getBranchRoot());
 			addPermissions(project.getInitialBranch());
 			addPermissions(project.getTagFamilyRoot());
-			addPermissions(tx.data().projectDao());
-			addPermissions(boot.userDao());
-			addPermissions(boot.groupDao());
-			addPermissions(boot.roleDao());
-			addPermissions(boot.microschemaDao());
-			addPermissions(boot.schemaDao());
+			addPermissions(boot.projectRoot());
+			addPermissions(boot.userRoot());
+			addPermissions(boot.groupRoot());
+			addPermissions(boot.roleRoot());
+			addPermissions(boot.microschemaContainerRoot());
+			addPermissions(boot.schemaContainerRoot());
 			log.debug("Added BasicPermissions to nodes took {" + (System.currentTimeMillis() - startPerm) + "} ms.");
 			tx.success();
 		});
@@ -201,21 +209,21 @@ public class TestDataProvider {
 		boot.userDao().findByUsername("admin").setPasswordHash(hash);
 	}
 
-	private void addPermissions(MeshVertex vertex) {
-		addPermissions(Arrays.asList(vertex));
+	private void addPermissions(HibElement element) {
+		addPermissions(Arrays.asList(element));
 	}
 
 	public TestSize getSize() {
 		return size;
 	}
 
-	private void addPermissions(Collection<? extends MeshVertex> elements) {
-		RoleRoot roleDao = Tx.get().data().roleDao();
+	private void addPermissions(Collection<? extends HibElement> elements) {
+		RoleDaoWrapper roleDao = Tx.get().data().roleDao();
 
 		Role role = userInfo.getRole();
-		for (MeshVertex meshVertex : elements) {
+		for (HibElement meshVertex : elements) {
 			if (log.isTraceEnabled()) {
-				log.trace("Granting CRUD permissions on {" + meshVertex.getElement().getId() + "} with role {" + role.getElement().getId() + "}");
+				log.trace("Granting CRUD permissions on {" + meshVertex.getId() + "} with role {" + role.getElement().getId() + "}");
 			}
 			roleDao.grantPermissions(role, meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM, READ_PUBLISHED_PERM, PUBLISH_PERM);
 		}
@@ -238,7 +246,7 @@ public class TestDataProvider {
 
 	private void addContents() {
 
-		SchemaContainer contentSchema = schemaContainers.get("content");
+		Schema contentSchema = schemaContainers.get("content");
 
 		addContent(folders.get("2014"), "News_2014", "News!", "Neuigkeiten!");
 		addContent(folders.get("march"), "New_in_March_2014", "This is new in march 2014.", "Das ist neu im März 2014");
@@ -314,7 +322,9 @@ public class TestDataProvider {
 	}
 
 	public UserInfo createUserInfo(String username, String firstname, String lastname) {
-		RoleRoot roleDao = Tx.get().data().roleDao();
+		UserDaoWrapper userDao = Tx.get().data().userDao();
+		GroupDaoWrapper groupDao = Tx.get().data().groupDao();
+		RoleDaoWrapper roleDao = Tx.get().data().roleDao();
 
 		String password = "test123";
 		String hashedPassword = "$2a$10$n/UeWGbY9c1FHFyCqlVsY.XvNYmZ7Jjgww99SF94q/B5nomYuquom";
@@ -322,7 +332,7 @@ public class TestDataProvider {
 		log.debug("Creating user with username: " + username + " and password: " + password);
 
 		String email = firstname.toLowerCase().substring(0, 1) + "." + lastname.toLowerCase() + "@spam.gentics.com";
-		User user = root.getUserRoot().create(username, null);
+		HibUser user = userDao.create(username, null);
 		// Precomputed hash since hashing takes some time and we want to keep out tests fast
 		user.setPasswordHash(hashedPassword);
 		user.setFirstname(firstname);
@@ -337,8 +347,8 @@ public class TestDataProvider {
 
 		String groupName = username + "_group";
 		GroupRoot groupRoot = root.getGroupRoot();
-		Group group = groupRoot.create(groupName, user);
-		groupRoot.addUser(group, user);
+		Group group = groupDao.create(groupName, user);
+		groupDao.addUser(group, user);
 		group.setCreator(user);
 		group.setCreationTimestamp();
 		group.setEditor(user);
@@ -346,8 +356,8 @@ public class TestDataProvider {
 		groups.put(groupName, group);
 
 		String roleName = username + "_role";
-		Role role = root.getRoleRoot().create(roleName, user);
-		groupRoot.addRole(group, role);
+		Role role = roleDao.create(roleName, user);
+		groupDao.addRole(group, role);
 		roleDao.grantPermissions(role, role, READ_PERM);
 		roles.put(roleName, role);
 
@@ -355,16 +365,19 @@ public class TestDataProvider {
 	}
 
 	private void addUserGroupRoleProject() {
+		UserDaoWrapper userDao = Tx.get().data().userDao();
+		RoleDaoWrapper roleDao = Tx.get().data().roleDao();
+		GroupDaoWrapper groupDao = Tx.get().data().groupDao();
+
 		// User, Groups, Roles
 		userInfo = createUserInfo("joe1", "Joe", "Doe");
 		UserRoot userRoot = getMeshRoot().getUserRoot();
 		GroupRoot groupRoot = getMeshRoot().getGroupRoot();
 		RoleRoot roleRoot = getMeshRoot().getRoleRoot();
-
+		ProjectDaoWrapper projectDao = boot.projectDao();
 		EventQueueBatch batch = Mockito.mock(EventQueueBatch.class);
-		project = root.getProjectRoot().create(PROJECT_NAME, null, null, null, userInfo.getUser(), getSchemaContainer("folder").getLatestVersion(),
-			batch);
-		User jobUser = userInfo.getUser();
+		project = projectDao.create(PROJECT_NAME, null, null, null, userInfo.getUser(), getSchemaContainer("folder").getLatestVersion(), batch);
+		HibUser jobUser = userInfo.getUser();
 		project.getSchemaContainerRoot().addSchemaContainer(jobUser, getSchemaContainer("folder"), batch);
 		project.getSchemaContainerRoot().addSchemaContainer(jobUser, getSchemaContainer("content"), batch);
 		project.getSchemaContainerRoot().addSchemaContainer(jobUser, getSchemaContainer("binary_content"), batch);
@@ -373,25 +386,25 @@ public class TestDataProvider {
 
 		if (getSize() == FULL) {
 			// Guest Group / Role
-			Group guestGroup = root.getGroupRoot().create("guests", userInfo.getUser());
+			Group guestGroup = groupDao.create("guests", userInfo.getUser());
 			groups.put("guests", guestGroup);
 
-			Role guestRole = root.getRoleRoot().create("guest_role", userInfo.getUser());
-			groupRoot.addRole(guestGroup, guestRole);
+			Role guestRole = roleDao.create("guest_role", userInfo.getUser());
+			groupDao.addRole(guestGroup, guestRole);
 			roles.put(guestRole.getName(), guestRole);
 
 			// Extra User
-			User user = userRoot.create("guest", userInfo.getUser());
+			HibUser user = userDao.create("guest", userInfo.getUser());
 			user.addGroup(guestGroup);
 			user.setFirstname("Guest Firstname");
 			user.setLastname("Guest Lastname");
 			user.setEmailAddress("guest@spam.gentics.com");
 			users.put(user.getUsername(), user);
 
-			Group group = groupRoot.create("extra_group", userInfo.getUser());
+			Group group = groupDao.create("extra_group", userInfo.getUser());
 			groups.put(group.getName(), group);
 
-			Role role = roleRoot.create("extra_role", userInfo.getUser());
+			Role role = roleDao.create("extra_role", userInfo.getUser());
 			roles.put(role.getName(), role);
 		}
 		// Publish the project basenode
@@ -416,17 +429,18 @@ public class TestDataProvider {
 	}
 
 	private void addBootstrapSchemas() {
+		SchemaDaoWrapper schemaDao = Tx.get().data().schemaDao();
 
 		// folder
-		SchemaContainer folderSchemaContainer = boot.schemaContainerRoot().findByName("folder");
+		Schema folderSchemaContainer = schemaDao.findByName("folder");
 		schemaContainers.put("folder", folderSchemaContainer);
 
 		// content
-		SchemaContainer contentSchemaContainer = boot.schemaContainerRoot().findByName("content");
+		Schema contentSchemaContainer = schemaDao.findByName("content");
 		schemaContainers.put("content", contentSchemaContainer);
 
 		// binary_content
-		SchemaContainer binaryContentSchemaContainer = boot.schemaContainerRoot().findByName("binary_content");
+		Schema binaryContentSchemaContainer = schemaDao.findByName("binary_content");
 		schemaContainers.put("binary_content", binaryContentSchemaContainer);
 
 	}
@@ -447,7 +461,9 @@ public class TestDataProvider {
 	 * @throws MeshJsonException
 	 */
 	private void addVCardMicroschema() throws MeshJsonException {
-		MicroschemaModel vcardMicroschema = new MicroschemaModelImpl();
+		MicroschemaDaoWrapper microschemaDao = Tx.get().data().microschemaDao();
+
+		MicroschemaVersionModel vcardMicroschema = new MicroschemaModelImpl();
 		vcardMicroschema.setName("vcard");
 		vcardMicroschema.setDescription("Microschema for a vcard");
 
@@ -477,8 +493,7 @@ public class TestDataProvider {
 		postcodeFieldSchema.setLabel("Post Code");
 		vcardMicroschema.addField(postcodeFieldSchema);
 
-		MicroschemaContainer vcardMicroschemaContainer = boot.microschemaContainerRoot().create(vcardMicroschema, userInfo.getUser(),
-			createBatch());
+		Microschema vcardMicroschemaContainer = microschemaDao.create(vcardMicroschema, userInfo.getUser(), createBatch());
 		microschemaContainers.put(vcardMicroschemaContainer.getName(), vcardMicroschemaContainer);
 		project.getMicroschemaContainerRoot().addMicroschema(user(), vcardMicroschemaContainer, createBatch());
 	}
@@ -489,7 +504,9 @@ public class TestDataProvider {
 	 * @throws MeshJsonException
 	 */
 	private void addCaptionedImageMicroschema() throws MeshJsonException {
-		MicroschemaModel captionedImageMicroschema = new MicroschemaModelImpl();
+		MicroschemaDaoWrapper microschemaDao = Tx.get().data().microschemaDao();
+
+		MicroschemaVersionModel captionedImageMicroschema = new MicroschemaModelImpl();
 		captionedImageMicroschema.setName("captionedImage");
 		captionedImageMicroschema.setDescription("Microschema for a captioned image");
 
@@ -506,10 +523,9 @@ public class TestDataProvider {
 		captionFieldSchema.setLabel("Caption");
 		captionedImageMicroschema.addField(captionFieldSchema);
 
-		MicroschemaContainer microschemaContainer = boot.microschemaContainerRoot().create(captionedImageMicroschema, userInfo.getUser(),
-			createBatch());
-		microschemaContainers.put(captionedImageMicroschema.getName(), microschemaContainer);
-		project.getMicroschemaContainerRoot().addMicroschema(user(), microschemaContainer, createBatch());
+		Microschema microschema = microschemaDao.create(captionedImageMicroschema, userInfo.getUser(), createBatch());
+		microschemaContainers.put(captionedImageMicroschema.getName(), microschema);
+		project.getMicroschemaContainerRoot().addMicroschema(user(), microschema, createBatch());
 	}
 
 	public Node addFolder(Node rootNode, String englishName, String germanName) {
@@ -518,7 +534,7 @@ public class TestDataProvider {
 
 	public Node addFolder(Node rootNode, String englishName, String germanName, String uuid) {
 		InternalActionContext ac = new NodeMigrationActionContextImpl();
-		SchemaContainerVersion schemaVersion = schemaContainers.get("folder").getLatestVersion();
+		SchemaVersion schemaVersion = schemaContainers.get("folder").getLatestVersion();
 		Branch branch = project.getLatestBranch();
 		Node folderNode;
 		if (uuid == null) {
@@ -561,10 +577,11 @@ public class TestDataProvider {
 	}
 
 	public Tag addTag(String name, TagFamily tagFamily) {
+		TagDaoWrapper tagDao = Tx.get().data().tagDao();
 		if (name == null || StringUtils.isEmpty(name)) {
 			throw new RuntimeException("Name for tag empty");
 		}
-		Tag tag = tagFamily.create(name, project, userInfo.getUser());
+		Tag tag = tagDao.create(tagFamily, name, project, userInfo.getUser());
 		tags.put(name.toLowerCase(), tag);
 		return tag;
 	}
@@ -656,7 +673,7 @@ public class TestDataProvider {
 		return tags.get(name);
 	}
 
-	public SchemaContainer getSchemaContainer(String name) {
+	public Schema getSchemaContainer(String name) {
 		return schemaContainers.get(name);
 	}
 
@@ -672,7 +689,7 @@ public class TestDataProvider {
 		return folders;
 	}
 
-	public Map<String, User> getUsers() {
+	public Map<String, HibUser> getUsers() {
 		return users;
 	}
 
@@ -684,11 +701,11 @@ public class TestDataProvider {
 		return roles;
 	}
 
-	public Map<String, SchemaContainer> getSchemaContainers() {
+	public Map<String, Schema> getSchemaContainers() {
 		return schemaContainers;
 	}
 
-	public Map<String, MicroschemaContainer> getMicroschemaContainers() {
+	public Map<String, Microschema> getMicroschemaContainers() {
 		return microschemaContainers;
 	}
 
@@ -709,7 +726,7 @@ public class TestDataProvider {
 		return getUserInfo().getRole();
 	}
 
-	public User user() {
+	public HibUser user() {
 		return getUserInfo().getUser();
 	}
 

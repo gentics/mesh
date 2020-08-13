@@ -57,7 +57,7 @@ public class BootstrapInitializerTest extends AbstractMeshTest {
 			assertThat(language).as("Custom language").isNotNull().hasTag("sq-KS").hasName("Albanian (Kosovo)").hasNativeName("Shqip (Kosovo)");
 
 			// check overwritten language
-			language = boot().languageRoot().findByLanguageTag("de");
+			language = tx.data().languageDao().findByLanguageTag("de");
 			assertThat(language).as("Overwritten default language").isNotNull().hasTag("de").hasName("German (modified)").hasNativeName("Deutsch (modifiziert)");
 
 			tx.success();

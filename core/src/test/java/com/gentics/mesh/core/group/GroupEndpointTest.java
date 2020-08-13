@@ -39,9 +39,10 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.root.GroupRoot;
-import com.gentics.mesh.core.data.root.RoleRoot;
-import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
@@ -82,7 +83,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		trackingSearchProvider().clear().blockingAwait();
 
 		try (Tx tx = tx()) {
-			assertElement(tx.data().groupDao(), restGroup.getUuid(), true);
+			assertElement(boot().groupRoot(), restGroup.getUuid(), true);
 		}
 	}
 
@@ -92,12 +93,12 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName("test12345");
 		String groupRootUuid = db().tx(tx -> {
-			return tx.data().groupDao().getUuid();
+			return boot().groupRoot().getUuid();
 		});
 
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
-			roleDao.revokePermissions(role(), tx.data().groupDao(), CREATE_PERM);
+			RoleDaoWrapper roleDao = tx.data().roleDao();
+			roleDao.revokePermissions(role(), boot().groupRoot(), CREATE_PERM);
 			tx.success();
 		}
 
@@ -140,7 +141,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 	@Test
 	public void testBatchCreation() {
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			GroupRoot root = meshRoot().getGroupRoot();
 			roleDao.grantPermissions(role(), root, CREATE_PERM);
 			tx.success();
@@ -164,7 +165,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		request.setName(name);
 
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.grantPermissions(role(), meshRoot().getGroupRoot(), CREATE_PERM);
 			tx.success();
 		}
@@ -173,7 +174,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 			GroupResponse restGroup = call(() -> client().createGroup(request));
 			assertThat(restGroup).matches(request);
 
-			assertElement(tx.data().groupDao(), restGroup.getUuid(), true);
+			assertElement(boot().groupRoot(), restGroup.getUuid(), true);
 			call(() -> client().createGroup(request), CONFLICT, "group_conflicting_name", name);
 		}
 	}
@@ -203,7 +204,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 	@Test
 	public void testCreateGroupWithMissingName() throws Exception {
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.grantPermissions(role(), group(), CREATE_PERM);
 			tx.success();
 		}
@@ -219,11 +220,12 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		request.setName(name);
 
 		tx(tx -> {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
+			UserDaoWrapper userDao = tx.data().userDao();
 			GroupRoot root = meshRoot().getGroupRoot();
-			UserRoot userRoot = tx.data().userDao();
+
 			roleDao.revokePermissions(role(), root, CREATE_PERM);
-			assertFalse("The create permission to the groups root node should have been revoked.", userRoot.hasPermission(user(), root, CREATE_PERM));
+			assertFalse("The create permission to the groups root node should have been revoked.", userDao.hasPermission(user(), root, CREATE_PERM));
 		});
 		String rootUuid = db().tx(() -> meshRoot().getGroupRoot().getUuid());
 		call(() -> client().createGroup(request), FORBIDDEN, "error_missing_perm", rootUuid, CREATE_PERM.getRestPerm().getName());
@@ -238,12 +240,12 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		final int nGroups = 21;
 
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
-			GroupRoot root = meshRoot().getGroupRoot();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
+			GroupDaoWrapper groupDao = tx.data().groupDao();
 			// Create and save some groups
-			root.create(extraGroupName, user());
+			groupDao.create(extraGroupName, user());
 			for (int i = 0; i < nGroups; i++) {
-				Group group = root.create("group_" + i, user());
+				Group group = groupDao.create("group_" + i, user());
 				roleDao.grantPermissions(role(), group, READ_PERM);
 			}
 			tx.success();
@@ -324,7 +326,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			Group group = group();
 			roleDao.revokePermissions(role(), group, READ_PERM);
 			assertNotNull("The UUID of the group must not be null.", group.getUuid());
@@ -372,7 +374,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.revokePermissions(role(), group(), UPDATE_PERM);
 			tx.success();
 		}
@@ -390,7 +392,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 		String oldName;
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			Group group = group();
 			oldName = group.getName();
 			roleDao.grantPermissions(role(), group, UPDATE_PERM);
@@ -428,10 +430,11 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		request.setName(alreadyUsedName);
 
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
-			GroupRoot groupRoot = meshRoot().getGroupRoot();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
+			GroupDaoWrapper groupDao = tx.data().groupDao();
+
 			// Create a group which occupies the name
-			assertNotNull(groupRoot.create(alreadyUsedName, user()));
+			assertNotNull(groupDao.create(alreadyUsedName, user()));
 			roleDao.grantPermissions(role(), group(), UPDATE_PERM);
 			tx.success();
 		}
@@ -439,8 +442,8 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		call(() -> client().updateGroup(groupUuid(), request), CONFLICT, "group_conflicting_name", alreadyUsedName);
 
 		try (Tx tx = tx()) {
-			GroupRoot groupRoot = meshRoot().getGroupRoot();
-			Group reloadedGroup = groupRoot.findByUuid(group().getUuid());
+			GroupDaoWrapper groupDao = tx.data().groupDao();
+			Group reloadedGroup = groupDao.findByUuid(group().getUuid());
 			assertEquals("The group should not have been updated", group().getName(), reloadedGroup.getName());
 		}
 
@@ -498,7 +501,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 1, 0, 0);
 
 		try (Tx tx = tx()) {
-			assertElement(tx.data().groupDao(), groupUuid(), false);
+			assertElement(boot().groupRoot(), groupUuid(), false);
 		}
 	}
 
@@ -523,14 +526,14 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 		// Don't allow delete
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.revokePermissions(role(), group(), DELETE_PERM);
 			tx.success();
 		}
 
 		try (Tx tx = tx()) {
 			call(() -> client().deleteGroup(groupUuid()), FORBIDDEN, "error_missing_perm", groupUuid(), DELETE_PERM.getRestPerm().getName());
-			assertElement(tx.data().groupDao(), groupUuid(), true);
+			assertElement(boot().groupRoot(), groupUuid(), true);
 		}
 	}
 

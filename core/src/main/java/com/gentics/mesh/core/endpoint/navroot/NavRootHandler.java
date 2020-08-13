@@ -11,11 +11,11 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.service.WebRootServiceImpl;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.path.Path;
@@ -49,7 +49,7 @@ public class NavRootHandler {
 			ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
 			Path nodePath = webrootService.findByProjectPath(ac, path, type);
 			PathSegment lastSegment = nodePath.getLast();
-			UserRoot userRoot = tx.data().userDao();
+			UserDaoWrapper userDao = tx.data().userDao();
 
 			if (lastSegment == null) {
 				throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(path));
@@ -59,7 +59,7 @@ public class NavRootHandler {
 				throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(path));
 			}
 			Node node = container.getParentNode();
-			if (!userRoot.hasPermission(requestUser, node, READ_PUBLISHED_PERM)) {
+			if (!userDao.hasPermission(requestUser, node, READ_PUBLISHED_PERM)) {
 				throw error(FORBIDDEN, "error_missing_perm", node.getUuid(), READ_PUBLISHED_PERM.getRestPerm().getName());
 			}
 			return node;

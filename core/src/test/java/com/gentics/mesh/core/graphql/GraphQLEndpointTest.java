@@ -39,8 +39,8 @@ import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
@@ -65,7 +65,7 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
@@ -211,7 +211,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			call(() -> client.assignMicroschemaToProject(PROJECT_NAME, microschemaResponse.getUuid()));
 		} else {
 			try (Tx tx = tx()) {
-				for (MicroschemaContainer microschema : meshRoot().getMicroschemaContainerRoot().findAll()) {
+				for (Microschema microschema : meshRoot().getMicroschemaContainerRoot().findAll()) {
 					microschema.remove();
 				}
 				tx.success();
@@ -230,9 +230,9 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			Node node3 = folder("2014");
 
 			// Update the folder schema to contain all fields
-			SchemaContainer schemaContainer = schemaContainer("folder");
+			Schema schemaContainer = schemaContainer("folder");
 			safelySetUuid(tx, schemaContainer, FOLDER_SCHEMA_UUID);
-			SchemaModel schema = schemaContainer.getLatestVersion().getSchema();
+			SchemaVersionModel schema = schemaContainer.getLatestVersion().getSchema();
 			schema.setUrlFields("niceUrl");
 			schema.setAutoPurge(true);
 			NodeFieldSchema nodeFieldSchema = new NodeFieldSchemaImpl();
@@ -465,9 +465,12 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		call(() -> client.updateUser(user.getUuid(), new UserUpdateRequest().setNodeReference(newsNode)));
 
 		// Now execute the query and assert it
+		String query = getGraphQLQuery(queryName, apiVersion);
+		//System.out.println(query);
 		GraphQLResponse response = call(
-			() -> client.graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName, apiVersion), new VersioningParametersImpl().setVersion(version)));
+			() -> client.graphqlQuery(PROJECT_NAME, query, new VersioningParametersImpl().setVersion(version)));
 		JsonObject jsonResponse = new JsonObject(response.toJson());
+		//System.out.println(jsonResponse.encodePrettily());
 		if (assertion == null) {
 			assertThat(jsonResponse).compliesToAssertions(queryName, apiVersion);
 		} else {
@@ -481,7 +484,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 	 * @param schemaContainer
 	 * @param uuid
 	 */
-	private void safelySetUuid(Tx tx, SchemaContainer schemaContainer, String uuid) {
+	private void safelySetUuid(Tx tx, Schema schemaContainer, String uuid) {
 		for (Vertex node : tx.getGraph().getVertices("schema", schemaContainer.getUuid())) {
 			node.setProperty("schema", uuid);
 		}

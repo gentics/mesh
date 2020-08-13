@@ -20,7 +20,7 @@
 | fromVersion
 | true
 | object
-| Reference to the source microschema version.
+| Reference to the source microschemaModel version.
 
 | origin
 | true
@@ -40,7 +40,7 @@
 | toVersion
 | true
 | object
-| Reference to the target microschema version.
+| Reference to the target microschemaModel version.
 
 | uuid
 | true

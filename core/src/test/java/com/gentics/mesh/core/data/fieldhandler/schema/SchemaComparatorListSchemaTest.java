@@ -1,23 +1,24 @@
 package com.gentics.mesh.core.data.fieldhandler.schema;
 
+import static com.gentics.mesh.test.TestSize.FULL;
+
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.fieldhandler.AbstractComparatorListSchemaTest;
 import com.gentics.mesh.core.data.schema.handler.AbstractFieldSchemaContainerComparator;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(testSize = FULL, startServer = false)
-public class SchemaComparatorListSchemaTest extends AbstractComparatorListSchemaTest<Schema> {
+public class SchemaComparatorListSchemaTest extends AbstractComparatorListSchemaTest<SchemaModel> {
 
 	@Override
-	public AbstractFieldSchemaContainerComparator<Schema> getComparator() {
+	public AbstractFieldSchemaContainerComparator<SchemaModel> getComparator() {
 		return new SchemaComparator();
 	}
 
 	@Override
-	public Schema createContainer() {
+	public SchemaModel createContainer() {
 		return FieldUtil.createMinimalValidSchema();
 	}
 

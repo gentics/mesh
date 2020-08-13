@@ -15,17 +15,16 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.impl.BranchImpl;
-import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.job.Job;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.job.JobType;
@@ -67,7 +66,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 		JobResponse response = new JobResponse();
 		response.setUuid(getUuid());
 
-		User creator = getCreator();
+		HibUser creator = getCreator();
 		if (creator != null) {
 			response.setCreator(creator.transformToReference());
 		} else {
@@ -99,18 +98,18 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 			log.debug("No referenced branch found.");
 		}
 
-		SchemaContainerVersion toSchema = getToSchemaVersion();
+		SchemaVersion toSchema = getToSchemaVersion();
 		if (toSchema != null) {
-			SchemaContainer container = toSchema.getSchemaContainer();
+			Schema container = toSchema.getSchemaContainer();
 			props.put("schemaName", container.getName());
 			props.put("schemaUuid", container.getUuid());
 			props.put("fromVersion", getFromSchemaVersion().getVersion());
 			props.put("toVersion", toSchema.getVersion());
 		}
 
-		MicroschemaContainerVersion toMicroschema = getToMicroschemaVersion();
+		MicroschemaVersion toMicroschema = getToMicroschemaVersion();
 		if (toMicroschema != null) {
-			MicroschemaContainer container = toMicroschema.getSchemaContainer();
+			Microschema container = toMicroschema.getSchemaContainer();
 			props.put("microschemaName", container.getName());
 			props.put("microschemaUuid", container.getUuid());
 			props.put("fromVersion", getFromMicroschemaVersion().getVersion());
@@ -197,42 +196,42 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 	}
 
 	@Override
-	public SchemaContainerVersion getFromSchemaVersion() {
+	public SchemaVersion getFromSchemaVersion() {
 		return out(HAS_FROM_VERSION).has(SchemaContainerVersionImpl.class).nextOrDefaultExplicit(SchemaContainerVersionImpl.class, null);
 	}
 
 	@Override
-	public void setFromSchemaVersion(SchemaContainerVersion version) {
+	public void setFromSchemaVersion(SchemaVersion version) {
 		setSingleLinkOutTo(version, HAS_FROM_VERSION);
 	}
 
 	@Override
-	public SchemaContainerVersion getToSchemaVersion() {
+	public SchemaVersion getToSchemaVersion() {
 		return out(HAS_TO_VERSION).has(SchemaContainerVersionImpl.class).nextOrDefaultExplicit(SchemaContainerVersionImpl.class, null);
 	}
 
 	@Override
-	public void setToSchemaVersion(SchemaContainerVersion version) {
+	public void setToSchemaVersion(SchemaVersion version) {
 		setSingleLinkOutTo(version, HAS_TO_VERSION);
 	}
 
 	@Override
-	public MicroschemaContainerVersion getFromMicroschemaVersion() {
+	public MicroschemaVersion getFromMicroschemaVersion() {
 		return out(HAS_FROM_VERSION).has(MicroschemaContainerVersionImpl.class).nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class, null);
 	}
 
 	@Override
-	public void setFromMicroschemaVersion(MicroschemaContainerVersion fromVersion) {
+	public void setFromMicroschemaVersion(MicroschemaVersion fromVersion) {
 		setSingleLinkOutTo(fromVersion, HAS_FROM_VERSION);
 	}
 
 	@Override
-	public MicroschemaContainerVersion getToMicroschemaVersion() {
+	public MicroschemaVersion getToMicroschemaVersion() {
 		return out(HAS_TO_VERSION).has(MicroschemaContainerVersionImpl.class).nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class, null);
 	}
 
 	@Override
-	public void setToMicroschemaVersion(MicroschemaContainerVersion toVersion) {
+	public void setToMicroschemaVersion(MicroschemaVersion toVersion) {
 		setSingleLinkOutTo(toVersion, HAS_TO_VERSION);
 	}
 
@@ -305,7 +304,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 	}
 
 	@Override
-	public User getCreator() {
+	public HibUser getCreator() {
 		return mesh().userProperties().getCreator(this);
 	}
 

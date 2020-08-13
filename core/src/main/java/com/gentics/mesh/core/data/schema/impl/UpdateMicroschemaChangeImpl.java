@@ -11,13 +11,13 @@ import com.gentics.mesh.core.data.schema.UpdateMicroschemaChange;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
-import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 
 /**
  * @see UpdateMicroschemaChange
  */
-public class UpdateMicroschemaChangeImpl extends AbstractFieldSchemaContainerUpdateChange<Microschema> implements UpdateMicroschemaChange {
+public class UpdateMicroschemaChangeImpl extends AbstractFieldSchemaContainerUpdateChange<MicroschemaModel> implements UpdateMicroschemaChange {
 
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(UpdateMicroschemaChangeImpl.class, MeshVertexImpl.class);

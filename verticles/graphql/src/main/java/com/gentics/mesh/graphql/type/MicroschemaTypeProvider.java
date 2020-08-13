@@ -12,9 +12,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.UserRoot;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
@@ -52,12 +52,12 @@ public class MicroschemaTypeProvider extends AbstractTypeProvider {
 
 		schemaType.field(newPagingFieldWithFetcher("projects", "Projects that this schema is assigned to", (env) -> {
 			GraphQLContext gc = env.getContext();
-			MicroschemaContainer microschema = env.getSource();
-			UserRoot userRoot = Tx.get().data().userDao();
+			Microschema microschema = env.getSource();
+			UserDaoWrapper userDao = Tx.get().data().userDao();
 			return microschema.findReferencedBranches().keySet().stream()
 				.map(Branch::getProject)
 				.distinct()
-				.filter(it -> userRoot.hasPermission(gc.getUser(), it, GraphPermission.READ_PERM))
+				.filter(it -> userDao.hasPermission(gc.getUser(), it, GraphPermission.READ_PERM))
 				.collect(Collectors.toList());
 		}, PROJECT_REFERENCE_PAGE_TYPE_NAME));
 

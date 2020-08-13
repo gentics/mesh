@@ -3,14 +3,14 @@ package com.gentics.mesh.graphql.context.impl;
 import static com.gentics.mesh.core.rest.error.Errors.missingPerm;
 
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.MeshCoreVertex;
+import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.rest.error.PermissionException;
-import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.error.PermissionException;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 
 import graphql.ExceptionWhileDataFetching;
@@ -28,14 +28,14 @@ public class GraphQLContextImpl extends InternalRoutingActionContextImpl impleme
 	}
 
 	@Override
-	public <T extends MeshCoreVertex<?, ?>> T requiresPerm(T vertex, GraphPermission... permission) {
-		UserRoot userRoot = Tx.get().data().userDao();
+	public <T extends HibCoreElement> T requiresPerm(T element, GraphPermission... permission) {
+		UserDaoWrapper userDao = Tx.get().data().userDao();
 		for (GraphPermission perm : permission) {
-			if (userRoot.hasPermission(getUser(), vertex, perm)) {
-				return vertex;
+			if (userDao.hasPermission(getUser(), element, perm)) {
+				return element;
 			}
 		}
-		throw missingPerm(vertex.getTypeInfo().getType().name().toLowerCase(), vertex.getUuid());
+		throw missingPerm(element.getTypeInfo().getType().name().toLowerCase(), element.getUuid());
 	}
 
 	@Override
@@ -52,14 +52,14 @@ public class GraphQLContextImpl extends InternalRoutingActionContextImpl impleme
 	public boolean hasReadPerm(NodeGraphFieldContainer container) {
 		Node node = container.getParentNode();
 		Object nodeId = node.id();
-		UserRoot userRoot = Tx.get().data().userDao();
+		UserDaoWrapper userDao = Tx.get().data().userDao();
 
-		if (userRoot.hasPermissionForId(getUser(), nodeId, GraphPermission.READ_PERM)) {
+		if (userDao.hasPermissionForId(getUser(), nodeId, GraphPermission.READ_PERM)) {
 			return true;
 		}
 
 		boolean isPublished = container.isPublished(getBranch().getUuid());
-		if (isPublished && userRoot.hasPermissionForId(getUser(), nodeId, GraphPermission.READ_PUBLISHED_PERM)) {
+		if (isPublished && userDao.hasPermissionForId(getUser(), nodeId, GraphPermission.READ_PUBLISHED_PERM)) {
 			return true;
 		}
 		return false;

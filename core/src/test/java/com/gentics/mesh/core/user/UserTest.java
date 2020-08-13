@@ -26,18 +26,18 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.GroupRoot;
-import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
+import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
@@ -68,7 +68,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testTransformToReference() throws Exception {
 		try (Tx tx = tx()) {
-			User user = user();
+			HibUser user = user();
 			UserReference reference = user.transformToReference();
 			assertNotNull(reference);
 			assertEquals(user.getUuid(), reference.getUuid());
@@ -109,8 +109,8 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testETag() {
 		try (Tx tx = tx()) {
 			InternalActionContext ac = mockActionContext();
-			User user = user();
-			String eTag = user.getETag(ac);
+			HibUser user = user();
+			String eTag = user.toUser().getETag(ac);
 			System.out.println(eTag);
 		}
 	}
@@ -119,10 +119,10 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testRootNode() {
 		try (Tx tx = tx()) {
-			UserRoot root = meshRoot().getUserRoot();
-			int nUserBefore = Iterables.size(root.findAll());
-			assertNotNull(root.create("dummy12345", user()));
-			int nUserAfter = Iterables.size(root.findAll());
+			UserDaoWrapper userDao= tx.data().userDao();
+			int nUserBefore = Iterables.size(userDao.findAll());
+			assertNotNull(userDao.create("dummy12345", user()));
+			int nUserAfter = Iterables.size(userDao.findAll());
 			assertEquals("The root node should now list one more user", nUserBefore + 1, nUserAfter);
 		}
 	}
@@ -130,14 +130,14 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testHasPermission() {
 		try (Tx tx = tx()) {
-			UserRoot userRoot = tx.data().userDao();
-			User user = user();
+			UserDaoWrapper userDao = tx.data().userDao();
+			HibUser user = user();
 			long start = System.currentTimeMillis();
 			int nChecks = 9000;
 			int runs = 90;
 			for (int e = 0; e < runs; e++) {
 				for (int i = 0; i < nChecks; i++) {
-					assertTrue(userRoot.hasPermission(user, content(), READ_PERM));
+					assertTrue(userDao.hasPermission(user, content(), READ_PERM));
 				}
 			}
 			long duration = System.currentTimeMillis() - start;
@@ -154,7 +154,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 
 			UserDaoWrapper userDao = tx.data().userDao();
-			Page<? extends User> page = userDao.findAll(ac, new PagingParametersImpl(1, 6L));
+			Page<? extends HibUser> page = userDao.findAll(ac, new PagingParametersImpl(1, 6L));
 			assertEquals(users().size(), page.getTotalElements());
 			assertEquals(users().size(), page.getSize());
 
@@ -168,7 +168,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
-			Page<? extends User> page = tx.data().userDao().findAll(mockActionContext(), new PagingParametersImpl(1, 25L));
+			Page<? extends HibUser> page = tx.data().userDao().findAll(mockActionContext(), new PagingParametersImpl(1, 25L));
 			assertNotNull(page);
 			assertEquals(users().size(), page.getTotalElements());
 		}
@@ -198,24 +198,14 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	}
 
 	@Test
-	public void testSetNameAlias() {
-		try (Tx tx = tx()) {
-			User user = user();
-			user.setName("test123");
-			assertEquals("test123", user.getName());
-			assertEquals("test123", user.getUsername());
-		}
-	}
-
-	@Test
 	public void testGetPermissions() {
 		try (Tx tx = tx()) {
-			UserRoot userRoot = tx.data().userDao();
+			UserDaoWrapper userDao = tx.data().userDao();
 			Permission[] perms = { CREATE, UPDATE, DELETE, READ, READ_PUBLISHED, PUBLISH };
 			long start = System.currentTimeMillis();
 			int nChecks = 10000;
 			for (int i = 0; i < nChecks; i++) {
-				PermissionInfo loadedPermInfo = userRoot.getPermissionInfo(user(), content());
+				PermissionInfo loadedPermInfo = userDao.getPermissionInfo(user(), content());
 				assertThat(loadedPermInfo).hasPerm(perms);
 				// assertNotNull(ac.data().get("permissions:" + language.getUuid()));
 			}
@@ -227,16 +217,17 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testFindUsersOfGroup() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
-			UserRoot userRoot = meshRoot().getUserRoot();
-			GroupRoot groupRoot = tx.data().groupDao();
-			User extraUser = userRoot.create("extraUser", user());
-			groupRoot.addUser(group(), extraUser);
+			UserDaoWrapper userDao= tx.data().userDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
+			GroupDaoWrapper groupDao = tx.data().groupDao();
+
+			HibUser extraUser = userDao.create("extraUser", user());
+			groupDao.addUser(group(), extraUser);
 			roleDao.grantPermissions(role(), extraUser, GraphPermission.READ_PERM);
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			MeshAuthUser requestUser = ac.getUser();
-			Page<? extends User> userPage = groupRoot.getVisibleUsers(group(), requestUser, new PagingParametersImpl(1, 10L));
+			Page<? extends HibUser> userPage = groupDao.getVisibleUsers(group(), requestUser, new PagingParametersImpl(1, 10L));
 
 			assertEquals(2, userPage.getTotalElements());
 		}
@@ -258,7 +249,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 		try (Tx tx = tx()) {
 			UserDaoWrapper userDao = tx.data().userDao();
 			String uuid = user().getUuid();
-			User foundUser = userDao.findByUuid(uuid);
+			HibUser foundUser = userDao.findByUuid(uuid);
 			assertNotNull(foundUser);
 			assertEquals(uuid, foundUser.getUuid());
 		}
@@ -271,7 +262,8 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 
-			UserResponse restUser = user().transformToRestSync(ac, 0);
+			UserDaoWrapper userDao= tx.data().userDao();
+			UserResponse restUser = userDao.transformToRestSync(user(), ac, 0);
 
 			assertNotNull(restUser);
 			assertEquals(user().getUsername(), restUser.getUsername());
@@ -287,14 +279,14 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testCreateDelete() throws Exception {
 		try (Tx tx = tx()) {
-			MeshRoot root = meshRoot();
-			User user = root.getUserRoot().create("Anton", user());
+			UserDaoWrapper userDao = tx.data().userDao();
+			HibUser user = userDao.create("Anton", user());
 			assertTrue(user.isEnabled());
 			assertNotNull(user);
 			String uuid = user.getUuid();
 			BulkActionContext bac = createBulkContext();
-			user.delete(bac);
-			User foundUser = root.getUserRoot().findByUuid(uuid);
+			userDao.delete(user, bac);
+			HibUser foundUser = userDao.findByUuid(uuid);
 			assertNull(foundUser);
 		}
 	}
@@ -303,26 +295,27 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testCRUDPermissions() {
 		try (Tx tx = tx()) {
-			UserRoot userRoot = tx.data().userDao();
-			MeshRoot root = meshRoot();
-			User user = user();
-			User newUser = root.getUserRoot().create("Anton", user());
-			assertFalse(userRoot.hasPermission(user, newUser, GraphPermission.CREATE_PERM));
-			userRoot.inheritRolePermissions(user, root.getUserRoot(), newUser);
-			assertTrue(userRoot.hasPermission(user, newUser, GraphPermission.CREATE_PERM));
+			UserDaoWrapper userDao = tx.data().userDao();
+			UserRoot userRoot = boot().userRoot();
+
+			HibUser user = user();
+			HibUser newUser = userDao.create("Anton", user());
+			assertFalse(userDao.hasPermission(user, newUser, GraphPermission.CREATE_PERM));
+			userDao.inheritRolePermissions(user, userRoot, newUser);
+			assertTrue(userDao.hasPermission(user, newUser, GraphPermission.CREATE_PERM));
 		}
 	}
 
 	@Test
 	public void testInheritPermissions() {
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
-			UserRoot userDao = tx.data().userDao();
-			GroupRoot groupDao = tx.data().groupDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
+			UserDaoWrapper userDao = tx.data().userDao();
+			GroupDaoWrapper groupDao = tx.data().groupDao();
 
 			Node sourceNode = folder("news");
 			Node targetNode = folder("2015");
-			User newUser;
+			HibUser newUser;
 
 			Role roleWithDeletePerm;
 			Role roleWithReadPerm;
@@ -333,33 +326,33 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			InternalActionContext ac = mockActionContext();
 
-			Group newGroup = meshRoot().getGroupRoot().create("extraGroup", user());
-			newUser = meshRoot().getUserRoot().create("Anton", user());
+			Group newGroup = groupDao.create("extraGroup", user());
+			newUser = userDao.create("Anton", user());
 			groupDao.addUser(newGroup, newUser);
 
 			// Create test roles
-			roleWithDeletePerm = meshRoot().getRoleRoot().create("roleWithDeletePerm", newUser);
+			roleWithDeletePerm = roleDao.create("roleWithDeletePerm", newUser);
 			groupDao.addRole(newGroup, roleWithDeletePerm);
 			roleDao.grantPermissions(roleWithDeletePerm, sourceNode, GraphPermission.DELETE_PERM);
 
-			roleWithReadPerm = meshRoot().getRoleRoot().create("roleWithReadPerm", newUser);
+			roleWithReadPerm = roleDao.create("roleWithReadPerm", newUser);
 			groupDao.addRole(newGroup, roleWithReadPerm);
 			roleDao.grantPermissions(roleWithReadPerm, sourceNode, GraphPermission.READ_PERM);
 
-			roleWithUpdatePerm = meshRoot().getRoleRoot().create("roleWithUpdatePerm", newUser);
+			roleWithUpdatePerm = roleDao.create("roleWithUpdatePerm", newUser);
 			groupDao.addRole(newGroup, roleWithUpdatePerm);
 			roleDao.grantPermissions(roleWithUpdatePerm, sourceNode, GraphPermission.UPDATE_PERM);
 
-			roleWithAllPerm = meshRoot().getRoleRoot().create("roleWithAllPerm", newUser);
+			roleWithAllPerm = roleDao.create("roleWithAllPerm", newUser);
 			groupDao.addRole(newGroup, roleWithAllPerm);
 			roleDao.grantPermissions(roleWithAllPerm, sourceNode, GraphPermission.CREATE_PERM, GraphPermission.UPDATE_PERM, GraphPermission.DELETE_PERM,
 				GraphPermission.READ_PERM, GraphPermission.READ_PUBLISHED_PERM, PUBLISH_PERM);
 
-			roleWithCreatePerm = meshRoot().getRoleRoot().create("roleWithCreatePerm", newUser);
+			roleWithCreatePerm = roleDao.create("roleWithCreatePerm", newUser);
 			groupDao.addRole(newGroup, roleWithCreatePerm);
 			roleDao.grantPermissions(roleWithCreatePerm, sourceNode, GraphPermission.CREATE_PERM);
 
-			roleWithNoPerm = meshRoot().getRoleRoot().create("roleWithNoPerm", newUser);
+			roleWithNoPerm = roleDao.create("roleWithNoPerm", newUser);
 			groupDao.addRole(newGroup, roleWithNoPerm);
 			userDao.inheritRolePermissions(user(), sourceNode, targetNode);
 			ac.data().clear();
@@ -408,7 +401,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testRead() {
 		try (Tx tx = tx()) {
-			User user = user();
+			HibUser user = user();
 			assertEquals("joe1", user.getUsername());
 			assertNotNull(user.getPasswordHash());
 			assertEquals("Joe", user.getFirstname());
@@ -427,17 +420,17 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testUserGroup() {
 		try (Tx tx = tx()) {
-			GroupRoot groupRoot = tx.data().groupDao();
-			User user = user();
+			GroupDaoWrapper groupDao = tx.data().groupDao();
+			HibUser user = user();
 			assertEquals(1, user.getGroups().count());
 
 			for (int i = 0; i < 10; i++) {
-				Group extraGroup = meshRoot().getGroupRoot().create("group_" + i, user());
+				Group extraGroup = groupDao.create("group_" + i, user());
 				// Multiple calls should not affect the result
-				groupRoot.addUser(extraGroup, user);
-				groupRoot.addUser(extraGroup, user);
-				groupRoot.addUser(extraGroup, user);
-				groupRoot.addUser(extraGroup, user);
+				groupDao.addUser(extraGroup, user);
+				groupDao.addUser(extraGroup, user);
+				groupDao.addUser(extraGroup, user);
+				groupDao.addUser(extraGroup, user);
 			}
 
 			assertEquals(11, user().getGroups().count());
@@ -454,15 +447,15 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			final String LASTNAME = "doe";
 			final String PASSWDHASH = "RANDOM";
 
-			UserRoot userRoot = meshRoot().getUserRoot();
-			User user = userRoot.create(USERNAME, user());
+			UserDaoWrapper userDao = tx.data().userDao();
+			HibUser user = userDao.create(USERNAME, user());
 			user.setEmailAddress(EMAIL);
 			user.setFirstname(FIRSTNAME);
 			user.setLastname(LASTNAME);
 			user.setPasswordHash(PASSWDHASH);
 			assertTrue(user.isEnabled());
 
-			User reloadedUser = userRoot.findByUuid(user.getUuid());
+			HibUser reloadedUser = userDao.findByUuid(user.getUuid());
 			assertEquals("The username did not match.", USERNAME, reloadedUser.getUsername());
 			assertEquals("The lastname did not match.", LASTNAME, reloadedUser.getLastname());
 			assertEquals("The firstname did not match.", FIRSTNAME, reloadedUser.getFirstname());
@@ -475,12 +468,14 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testDelete() {
 		try (Tx tx = tx()) {
-			User user = user();
+			UserDaoWrapper userDao = tx.data().userDao();
+			HibUser user = user();
+
 			String uuid = user.getUuid();
 			assertEquals(1, user.getGroups().count());
 			assertTrue(user.isEnabled());
 			BulkActionContext bac = createBulkContext();
-			user.delete(bac);
+			userDao.delete(user, bac);
 			User foundUser = meshRoot().getUserRoot().findByUuid(uuid);
 			assertNull(foundUser);
 		}
@@ -489,8 +484,8 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testOwnRolePerm() {
 		try (Tx tx = tx()) {
-			UserRoot userRoot = tx.data().userDao();
-			assertTrue("The user should have update permissions on his role", userRoot.hasPermission(user(), role(), GraphPermission.UPDATE_PERM));
+			UserDaoWrapper userDao = tx.data().userDao();
+			assertTrue("The user should have update permissions on his role", userDao.hasPermission(user(), role(), GraphPermission.UPDATE_PERM));
 		}
 	}
 
@@ -498,9 +493,10 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testUpdate() {
 		try (Tx tx = tx()) {
-			User newUser = meshRoot().getUserRoot().create("newUser", user());
+			UserDaoWrapper userDao = tx.data().userDao();
+			HibUser newUser = userDao.create("newUser", user());
 
-			User user = user();
+			HibUser user = user();
 
 			user.setEmailAddress("changed");
 			assertEquals("changed", user.getEmailAddress());
@@ -519,7 +515,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			user.setCreator(newUser);
 			assertNotNull(user.getCreator());
-			assertEquals(newUser, user.getCreator());
+			assertEquals(newUser.getUuid(), user.getCreator().getUuid());
 
 			user.setCreationTimestamp(0);
 			assertEquals(0, user.getCreationTimestamp().longValue());
@@ -536,7 +532,8 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testReadPermission() {
 		try (Tx tx = tx()) {
-			User user = meshRoot().getUserRoot().create("Anton", user());
+			UserDaoWrapper userDao = tx.data().userDao();
+			HibUser user = userDao.create("Anton", user());
 			testPermission(GraphPermission.READ_PERM, user);
 		}
 	}
@@ -545,7 +542,8 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testDeletePermission() {
 		try (Tx tx = tx()) {
-			User user = meshRoot().getUserRoot().create("Anton", user());
+			UserDaoWrapper userDao = tx.data().userDao();
+			HibUser user = userDao.create("Anton", user());
 			testPermission(GraphPermission.DELETE_PERM, user);
 		}
 	}
@@ -554,7 +552,8 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testUpdatePermission() {
 		try (Tx tx = tx()) {
-			User user = meshRoot().getUserRoot().create("Anton", user());
+			UserDaoWrapper userDao = tx.data().userDao();
+			HibUser user = userDao.create("Anton", user());
 			testPermission(GraphPermission.UPDATE_PERM, user);
 		}
 	}
@@ -563,7 +562,8 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testCreatePermission() {
 		try (Tx tx = tx()) {
-			User user = meshRoot().getUserRoot().create("Anton", user());
+			UserDaoWrapper userDao = tx.data().userDao();
+			HibUser user = userDao.create("Anton", user());
 			testPermission(GraphPermission.CREATE_PERM, user);
 		}
 	}
@@ -571,13 +571,15 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testUserRolesHashes() {
 		try (Tx tx = tx()) {
-			GroupRoot groupRoot = tx.data().groupDao();
-			User oldUser = user();
-			User newUser = meshRoot().getUserRoot().create("newuser", oldUser);
-			Group newGroup = meshRoot().getGroupRoot().create("newgroup", oldUser);
+			GroupDaoWrapper groupDao = tx.data().groupDao();
+			UserDaoWrapper userDao= tx.data().userDao();
 
-			groupRoot.getRoles(group()).forEach(role -> groupRoot.addRole(newGroup, role));
-			groupRoot.addUser(newGroup, newUser);
+			HibUser oldUser = user();
+			HibUser newUser = userDao.create("newuser", oldUser);
+			Group newGroup = groupDao.create("newgroup", oldUser);
+
+			groupDao.getRoles(group()).forEach(role -> groupDao.addRole(newGroup, role));
+			groupDao.addUser(newGroup, newUser);
 
 			// Both groups have the same roles, so the hashes must match.
 			assertEquals(oldUser.getRolesHash(), newUser.getRolesHash());

@@ -35,19 +35,19 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
@@ -604,7 +604,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		if (content == null) {
 			return null;
 		}
-		User user = content.getContainer().getEditor();
+		HibUser user = content.getContainer().getEditor();
 		return gc.requiresPerm(user, READ_PERM);
 	}
 
@@ -680,9 +680,9 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	private List<GraphQLObjectType> generateSchemaFieldTypesV1(GraphQLContext context) {
 		Project project = context.getProject();
 		List<GraphQLObjectType> schemaTypes = new ArrayList<>();
-		for (SchemaContainer container : project.getSchemaContainerRoot().findAll()) {
-			SchemaContainerVersion version = container.getLatestVersion();
-			Schema schema = version.getSchema();
+		for (Schema container : project.getSchemaContainerRoot().findAll()) {
+			SchemaVersion version = container.getLatestVersion();
+			SchemaModel schema = version.getSchema();
 			GraphQLObjectType.Builder root = newObject();
 			// TODO remove this workaround
 			root.name(schema.getName().replaceAll("-", "_"));
@@ -732,8 +732,8 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		Project project = context.getProject();
 
 		return project.getSchemaContainerRoot().findAll().stream().map(container -> {
-			SchemaContainerVersion version = container.getLatestVersion();
-			Schema schema = version.getSchema();
+			SchemaVersion version = container.getLatestVersion();
+			SchemaModel schema = version.getSchema();
 			GraphQLObjectType.Builder root = newObject();
 			root.withInterface(GraphQLTypeReference.typeRef(NODE_TYPE_NAME));
 			root.name(schema.getName());

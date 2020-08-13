@@ -21,10 +21,11 @@ import org.junit.Rule;
 
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
@@ -114,18 +115,18 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 		return node.transformToRestSync(ac, 0).toJson();
 	}
 
-	protected void testPermission(GraphPermission perm, MeshCoreVertex<?, ?> element) {
+	protected void testPermission(GraphPermission perm, HibElement element) {
 		RoutingContext rc = tx(() -> mockRoutingContext());
 
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 
 			roleDao.grantPermissions(role(), element, perm);
 			tx.success();
 		}
 
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			assertTrue("The role {" + role().getName() + "} does not grant permission on element {" + element.getUuid()
 				+ "} although we granted those permissions.", roleDao.hasPermission(role(), perm, element));
 			assertTrue("The user has no {" + perm.getRestPerm().getName() + "} permission on node {" + element.getUuid() + "/" + element.getClass()
@@ -133,14 +134,14 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 		}
 
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.revokePermissions(role(), element, perm);
 			rc.data().clear();
 			tx.success();
 		}
 
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			boolean hasPerm = roleDao.hasPermission(role(), perm, element);
 			assertFalse("The user's role {" + role().getName() + "} still got {" + perm.getRestPerm().getName() + "} permission on node {" + element
 				.getUuid() + "/" + element.getClass().getSimpleName() + "} although we revoked it.", hasPerm);

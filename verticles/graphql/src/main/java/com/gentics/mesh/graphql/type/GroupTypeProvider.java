@@ -10,7 +10,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.root.GroupRoot;
+import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
@@ -44,18 +44,18 @@ public class GroupTypeProvider extends AbstractTypeProvider {
 
 		// .roles
 		groupType.field(newPagingFieldWithFetcher("roles", "Roles assigned to the group.", (env) -> {
-			GroupRoot groupRoot = Tx.get().data().groupDao();
+			GroupDaoWrapper groupDao = Tx.get().data().groupDao();
 			GraphQLContext gc = env.getContext();
 			Group group = env.getSource();
-			return groupRoot.getRoles(group, gc.getUser(), getPagingInfo(env));
+			return groupDao.getRoles(group, gc.getUser(), getPagingInfo(env));
 		}, ROLE_PAGE_TYPE_NAME));
 
 		// .users
 		groupType.field(newPagingFieldWithFetcher("users", "Users assigned to the group.", (env) -> {
-			GroupRoot groupRoot = Tx.get().data().groupDao();
+			GroupDaoWrapper groupDao = Tx.get().data().groupDao();
 			GraphQLContext gc = env.getContext();
 			Group group = env.getSource();
-			return groupRoot.getVisibleUsers(group, gc.getUser(), getPagingInfo(env));
+			return groupDao.getVisibleUsers(group, gc.getUser(), getPagingInfo(env));
 		}, USER_PAGE_TYPE_NAME));
 		return groupType.build();
 	}

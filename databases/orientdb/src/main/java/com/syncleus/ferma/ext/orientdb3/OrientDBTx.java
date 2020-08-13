@@ -12,6 +12,7 @@ import com.gentics.mesh.core.data.dao.DaoCollection;
 import com.gentics.mesh.core.db.AbstractTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.db.TxData;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.cluster.TxCleanupTask;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.tx.OrientStorage;
@@ -41,7 +42,7 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	private final BootstrapInitializer boot;
 	private final TxData txData;
 
-	public OrientDBTx(Database db, BootstrapInitializer boot, DaoCollection daos, OrientStorage provider, TypeResolver typeResolver, Timer commitTimer) {
+	public OrientDBTx(MeshOptions options, Database db, BootstrapInitializer boot, DaoCollection daos, OrientStorage provider, TypeResolver typeResolver, Timer commitTimer) {
 		this.db = db;
 		this.boot = boot;
 		this.typeResolver = typeResolver;
@@ -55,7 +56,7 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 			DelegatingFramedOrientGraph transaction = new DelegatingFramedOrientGraph((OrientGraph) provider.rawTx(), typeResolver);
 			init(transaction);
 		}
-		this.txData = new OrientTxData(daos);
+		this.txData = new OrientTxData(options, daos);
 	}
 
 	@Override

@@ -33,8 +33,8 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.dagger.DaggerMeshComponent;
@@ -44,7 +44,7 @@ import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
 import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandler;
-import com.gentics.mesh.search.index.node.NodeIndexHandler;
+import com.gentics.mesh.search.index.node.NodeIndexHandlerImpl;
 import com.gentics.mesh.search.index.project.ProjectIndexHandler;
 import com.gentics.mesh.search.index.role.RoleIndexHandler;
 import com.gentics.mesh.search.index.schema.SchemaContainerIndexHandler;
@@ -146,7 +146,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		Node parentNode = mockNodeBasic("folder", user);
 		Node node = mockNode(parentNode, project, user, language, tagA, tagB);
 
-		NodeIndexHandler nodeIndexHandler = meshDagger.nodeContainerIndexHandler();
+		NodeIndexHandlerImpl nodeIndexHandler = meshDagger.nodeContainerIndexHandler();
 		nodeIndexHandler.storeContainer(node.getLatestDraftFieldContainer(language), UUID_1, ContainerType.PUBLISHED).toCompletable()
 			.blockingAwait();
 		writeStoreEvent("node.search");
@@ -210,7 +210,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 
 	private void writeSchemaDocumentExample() throws Exception {
 		User user = mockUser("joe1", "Joe", "Doe");
-		SchemaContainer schemaContainer = mockSchemaContainer("content", user);
+		Schema schemaContainer = mockSchemaContainer("content", user);
 
 		SchemaContainerIndexHandler searchIndexHandler = meshDagger.schemaContainerIndexHandler();
 		searchIndexHandler.store(schemaContainer, mockUpdateDocumentEntry()).blockingAwait();
@@ -219,10 +219,10 @@ public class SearchModelGenerator extends AbstractGenerator {
 
 	private void writeMicroschemaDocumentExample() throws Exception {
 		User user = mockUser("joe1", "Joe", "Doe");
-		MicroschemaContainer microschemaContainer = mockMicroschemaContainer("geolocation", user);
+		Microschema microschema = mockMicroschemaContainer("geolocation", user);
 
 		MicroschemaContainerIndexHandler searchIndexHandler = meshDagger.microschemaContainerIndexHandler();
-		searchIndexHandler.store(microschemaContainer, mockUpdateDocumentEntry()).blockingAwait();
+		searchIndexHandler.store(microschema, mockUpdateDocumentEntry()).blockingAwait();
 		writeStoreEvent("microschema.search");
 	}
 

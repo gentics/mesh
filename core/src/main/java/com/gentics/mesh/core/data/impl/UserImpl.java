@@ -8,6 +8,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USE
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.Spliterator;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -19,9 +20,9 @@ import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -29,8 +30,9 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
-import com.gentics.mesh.core.data.root.GroupRoot;
-import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
@@ -204,7 +206,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public Page<? extends Group> getGroups(User user, PagingParameters params) {
+	public Page<? extends Group> getGroups(HibUser user, PagingParameters params) {
 		VertexTraversal<?, ?, ?> traversal = out(HAS_USER);
 		return new DynamicTransformablePageImpl<Group>(user, traversal, params, READ_PERM, GroupImpl.class);
 	}
@@ -238,14 +240,14 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public Page<? extends Role> getRolesViaShortcut(User user, PagingParameters params) {
+	public Page<? extends Role> getRolesViaShortcut(HibUser user, PagingParameters params) {
 		String indexName = "e." + ASSIGNED_TO_ROLE + "_out";
 		return new DynamicTransformablePageImpl<>(user, indexName.toLowerCase(), id(), Direction.IN, RoleImpl.class, params, READ_PERM, null, true);
 	}
 
 	@Override
 	public void updateShortcutEdges() {
-		GroupRoot groupRoot = Tx.get().data().groupDao();
+		GroupDaoWrapper groupRoot = Tx.get().data().groupDao();
 		outE(ASSIGNED_TO_ROLE).removeAll();
 		for (Group group : getGroups()) {
 			for (Role role : groupRoot.getRoles(group)) {
@@ -305,8 +307,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
-		UserRoot userRoot = Tx.get().data().userDao();
-		return userRoot.update(this, ac, batch);
+		UserDaoWrapper userDao = Tx.get().data().userDao();
+		return userDao.update(this, ac, batch);
 	}
 
 	@Override
@@ -321,12 +323,12 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public User getCreator() {
+	public HibUser getCreator() {
 		return mesh().userProperties().getCreator(this);
 	}
 
 	@Override
-	public User getEditor() {
+	public HibUser getEditor() {
 		return mesh().userProperties().getEditor(this);
 	}
 
@@ -361,6 +363,11 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	public User setAPITokenIssueTimestamp(Long timestamp) {
 		property(API_TOKEN_ISSUE_TIMESTAMP, timestamp);
 		return this;
+	}
+
+	@Override
+	public void remove() {
+		getElement().remove();
 	}
 
 }

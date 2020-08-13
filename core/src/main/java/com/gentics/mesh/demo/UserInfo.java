@@ -1,15 +1,16 @@
 package com.gentics.mesh.demo;
 
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.user.HibUser;
 
 /**
  * Container for user, group, role and password references of an user.
  */
 public class UserInfo {
 
-	private User user;
+	private HibUser user;
 	private String userUuid;
 
 	private Group group;
@@ -20,7 +21,7 @@ public class UserInfo {
 
 	private String password;
 
-	public UserInfo(User user, Group group, Role role, String password) {
+	public UserInfo(HibUser user, Group group, Role role, String password) {
 		this.user = user;
 		this.userUuid = user.getUuid();
 		this.group = group;
@@ -58,7 +59,7 @@ public class UserInfo {
 		return roleUuid;
 	}
 
-	public User getUser() {
+	public HibUser getUser() {
 		return user;
 	}
 

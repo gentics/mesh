@@ -17,16 +17,16 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.core.data.root.RoleRoot;
-import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.service.WebRootServiceImpl;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.node.BinaryFieldResponseHandler;
 import com.gentics.mesh.core.endpoint.node.NodeCrudHandler;
@@ -101,7 +101,7 @@ public class WebRootHandler {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				MeshAuthUser requestUser = ac.getUser();
-				UserRoot userRoot = tx.data().userDao();
+				UserDaoWrapper userDao = tx.data().userDao();
 
 				String branchUuid = ac.getBranch().getUuid();
 				// Load all nodes for the given path
@@ -124,7 +124,7 @@ public class WebRootHandler {
 				String version = ac.getVersioningParameters().getVersion();
 				Node node = container.getParentNode();
 				addCacheControl(rc, node, version);
-				userRoot.failOnNoReadPermission(requestUser, container, branchUuid, version);
+				userDao.failOnNoReadPermission(requestUser, container, branchUuid, version);
 
 				rc.response().putHeader(MeshHeaders.WEBROOT_NODE_UUID, node.getUuid());
 				// TODO decide whether we want to add also lang, version
@@ -193,7 +193,7 @@ public class WebRootHandler {
 	 * @return
 	 */
 	private boolean isPublic(Node node, String version) {
-		RoleRoot roleDao = Tx.get().data().roleDao();
+		RoleDaoWrapper roleDao = Tx.get().data().roleDao();
 
 		Role anonymousRole = boot.anonymousRole();
 		AuthenticationOptions authOptions = options.getAuthenticationOptions();

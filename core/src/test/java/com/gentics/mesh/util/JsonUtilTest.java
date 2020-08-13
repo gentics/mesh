@@ -28,7 +28,7 @@ import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.StringField;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
@@ -110,7 +110,7 @@ public class JsonUtilTest {
 		SchemaUpdateRequest schemaUpdate = new SchemaUpdateRequest();
 		schemaUpdate.addField(FieldUtil.createMicronodeFieldSchema("micro").setAllowedMicroSchemas("TestMicroschema"));
 		String json = schemaUpdate.toJson();
-		SchemaModel model = JsonUtil.readValue(json, SchemaResponse.class);
+		SchemaVersionModel model = JsonUtil.readValue(json, SchemaResponse.class);
 		assertThat(model.getField("micro", MicronodeFieldSchemaImpl.class).getAllowedMicroSchemas()).containsExactly("TestMicroschema");
 	}
 

@@ -10,12 +10,12 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.schema.RemoveFieldChange;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.RemoveFieldChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -38,10 +38,10 @@ public class RemoveFieldChangeTest extends AbstractChangeTest {
 	@Override
 	public void testApply() {
 		try (Tx tx = tx()) {
-			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema with field
-			SchemaModel schema = new SchemaModelImpl();
+			SchemaVersionModel schema = new SchemaModelImpl();
 			schema.addField(FieldUtil.createStringFieldSchema("test"));
 
 			// 2. Create remove field change

@@ -26,7 +26,7 @@ import com.gentics.mesh.core.rest.node.field.HtmlField;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.TestSize;
@@ -80,7 +80,7 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 		try (Tx tx = tx()) {
 
 			// Add html field schema to the schema
-			SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
+			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 			HtmlFieldSchemaImpl htmlFieldSchema = new HtmlFieldSchemaImpl();
 			htmlFieldSchema.setName(HTML_FIELD);
 			htmlFieldSchema.setLabel("Some html field");

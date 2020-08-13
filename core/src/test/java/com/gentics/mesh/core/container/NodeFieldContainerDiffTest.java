@@ -16,9 +16,9 @@ import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.FramedGraph;
@@ -95,11 +95,11 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 
 			// Create microschema vcard 
 			FramedGraph graph = tx.getGraph();
-			MicroschemaContainer schemaContainer = graph.addFramedVertex(MicroschemaContainerImpl.class);
+			Microschema schemaContainer = graph.addFramedVertex(MicroschemaContainerImpl.class);
 			MicroschemaContainerVersionImpl version = graph.addFramedVertex(MicroschemaContainerVersionImpl.class);
 			schemaContainer.setLatestVersion(version);
 			version.setSchemaContainer(schemaContainer);
-			MicroschemaModel microschema = new MicroschemaModelImpl();
+			MicroschemaVersionModel microschema = new MicroschemaModelImpl();
 			microschema.setName("vcard");
 			microschema.getFields().add(FieldUtil.createStringFieldSchema("firstName"));
 			microschema.getFields().add(FieldUtil.createStringFieldSchema("lastName"));

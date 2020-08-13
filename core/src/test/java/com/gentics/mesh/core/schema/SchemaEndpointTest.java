@@ -47,11 +47,11 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.BulkActionContext;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.root.RoleRoot;
-import com.gentics.mesh.core.data.root.SchemaContainerRoot;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.common.AbstractResponse;
@@ -69,10 +69,10 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
@@ -114,12 +114,13 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		awaitEvents();
 
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
-		assertThat(trackingSearchProvider()).hasStore(SchemaContainer.composeIndexName(), SchemaContainer.composeDocumentId(restSchema.getUuid()));
+		assertThat(trackingSearchProvider()).hasStore(Schema.composeIndexName(), Schema.composeDocumentId(restSchema.getUuid()));
 		try (Tx tx = tx()) {
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 			assertThat(createRequest).matches(restSchema);
 			assertThat(restSchema.getPermissions()).hasPerm(CREATE, READ, UPDATE, DELETE);
 
-			SchemaContainer schemaContainer = boot().schemaContainerRoot().findByUuid(restSchema.getUuid());
+			Schema schemaContainer = schemaDao.findByUuid(restSchema.getUuid());
 			assertNotNull(schemaContainer);
 			assertEquals("Name does not match with the requested name", createRequest.getName(), schemaContainer.getName());
 			// assertEquals("Description does not match with the requested description", request.getDescription(), schema.getDescription());
@@ -158,7 +159,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		SchemaCreateRequest schema = FieldUtil.createMinimalValidSchemaCreateRequest();
 		String schemaRootUuid = db().tx(() -> meshRoot().getSchemaContainerRoot().getUuid());
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.revokePermissions(role(), meshRoot().getSchemaContainerRoot(), CREATE_PERM);
 			tx.success();
 		}
@@ -212,14 +213,14 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		final int nSchemas = 22;
 
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
-			SchemaContainerRoot schemaRoot = meshRoot().getSchemaContainerRoot();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 
 			// Create schema with no read permission
-			SchemaModel schema = FieldUtil.createMinimalValidSchema();
+			SchemaVersionModel schema = FieldUtil.createMinimalValidSchema();
 			schema.setName("No_Perm_Schema");
-			SchemaContainer noPermSchema = schemaRoot.create(schema, user());
-			SchemaModel dummySchema = new SchemaModelImpl();
+			Schema noPermSchema = schemaDao.create(schema, user());
+			SchemaVersionModel dummySchema = new SchemaModelImpl();
 			dummySchema.setName("dummy");
 			dummySchema.setVersion("1.0");
 			noPermSchema.getLatestVersion().setSchema(dummySchema);
@@ -228,7 +229,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			for (int i = 0; i < nSchemas; i++) {
 				schema = FieldUtil.createMinimalValidSchema();
 				schema.setName("extra_schema_" + i);
-				SchemaContainer extraSchema = schemaRoot.create(schema, user());
+				Schema extraSchema = schemaDao.create(schema, user());
 				extraSchema.getLatestVersion().setSchema(dummySchema);
 				roleDao.grantPermissions(role(), extraSchema, READ_PERM);
 			}
@@ -255,7 +256,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			assertEquals(perPage, restResponse.getMetainfo().getPerPage().longValue());
 			assertEquals(totalSchemas, restResponse.getMetainfo().getTotalCount());
 
-			List<Schema> allSchemas = new ArrayList<>();
+			List<SchemaModel> allSchemas = new ArrayList<>();
 			for (int page = 1; page <= totalPages; page++) {
 				restResponse = client().findSchemas(new PagingParametersImpl(page, perPage)).blockingGet();
 				allSchemas.addAll(restResponse.getData());
@@ -288,10 +289,10 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Override
 	public void testReadByUUID() throws Exception {
 		try (Tx tx = tx()) {
-			SchemaContainer container = schemaContainer("content");
-			SchemaContainerVersion schemaContainerVersion = container.getLatestVersion();
+			Schema container = schemaContainer("content");
+			SchemaVersion schemaVersion = container.getLatestVersion();
 			SchemaResponse restSchema = call(() -> client().findSchemaByUuid(container.getUuid()));
-			assertThat(restSchema).matches(schemaContainerVersion).isValid();
+			assertThat(restSchema).matches(schemaVersion).isValid();
 		}
 	}
 
@@ -356,8 +357,8 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testReadByUUIDWithMissingPermission() throws Exception {
 		String uuid = tx(() -> schemaContainer("content").getUuid());
 		tx(tx -> {
-			RoleRoot roleDao = tx.data().roleDao();
-			SchemaContainer schema = schemaContainer("content");
+			RoleDaoWrapper roleDao = tx.data().roleDao();
+			Schema schema = schemaContainer("content");
 			roleDao.grantPermissions(role(), schema, DELETE_PERM);
 			roleDao.grantPermissions(role(), schema, UPDATE_PERM);
 			roleDao.grantPermissions(role(), schema, CREATE_PERM);
@@ -570,14 +571,15 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Test
 	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
 		try (Tx tx = tx()) {
-			SchemaContainer schema = schemaContainer("content");
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			Schema schema = schemaContainer("content");
 			String oldName = schema.getName();
 			SchemaUpdateRequest request = new SchemaUpdateRequest();
 			request.setName("new-name");
 
 			call(() -> client().updateSchema("bogus", request), NOT_FOUND, "object_not_found_for_uuid", "bogus");
 
-			SchemaContainer reloaded = boot().schemaContainerRoot().findByUuid(schema.getUuid());
+			Schema reloaded = schemaDao.findByUuid(schema.getUuid());
 			assertEquals("The name should not have been changed.", oldName, reloaded.getName());
 		}
 	}
@@ -586,8 +588,9 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Override
 	public void testDeleteByUUID() throws Exception {
 		try (Tx tx = tx()) {
-			SchemaContainer schema = schemaContainer("content");
-			assertThat(schema.getNodes()).isNotEmpty();
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			Schema schema = schemaContainer("content");
+			assertThat(schemaDao.getNodes(schema)).isNotEmpty();
 		}
 
 		String uuid = db().tx(() -> schemaContainer("content").getUuid());
@@ -605,16 +608,17 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		String jobUuid = tx(() -> schemaContainer("content").getLatestVersion().referencedJobsViaTo().iterator().next().getUuid());
 
 		try (Tx tx = tx()) {
-			SchemaContainer reloaded = boot().schemaContainerRoot().findByUuid(uuid);
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			Schema reloaded = schemaDao.findByUuid(uuid);
 
 			assertNotNull("The schema should not have been deleted.", reloaded);
 			// Validate and delete all remaining nodes that use the schema
-			assertThat(reloaded.getNodes()).isNotEmpty();
+			assertThat(schemaDao.getNodes(reloaded)).isNotEmpty();
 			BulkActionContext context = createBulkContext();
-			for (Node node : reloaded.getNodes()) {
+			for (Node node : schemaDao.getNodes(reloaded)) {
 				node.delete(context);
 			}
-			assertThat(reloaded.getNodes()).isEmpty();
+			assertThat(schemaDao.getNodes(reloaded)).isEmpty();
 			tx.success();
 		}
 
@@ -633,8 +637,9 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		awaitEvents();
 
 		try (Tx tx = tx()) {
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 			assertFalse("The referenced job should have been deleted", tx.getGraph().getVertices("uuid", jobUuid).iterator().hasNext());
-			SchemaContainer reloaded = boot().schemaContainerRoot().findByUuid(uuid);
+			Schema reloaded = schemaDao.findByUuid(uuid);
 			assertFalse("The version of the schema container should have been deleted as well.", tx.getGraph().getVertices("uuid", versionUuid)
 				.iterator().hasNext());
 			assertNull("The schema should have been deleted.", reloaded);
@@ -644,9 +649,9 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Test
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
-		SchemaContainer schema = schemaContainer("content");
+		Schema schema = schemaContainer("content");
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.revokePermissions(role(), schema, DELETE_PERM);
 			tx.success();
 		}
@@ -680,7 +685,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testReadByUuidMultithreaded() throws Exception {
 		int nJobs = 10;
 		try (Tx tx = tx()) {
-			SchemaContainer schema = schemaContainer("content");
+			Schema schema = schemaContainer("content");
 			String uuid = schema.getUuid();
 			Observable.range(0, nJobs)
 				.flatMapCompletable(i -> client().findSchemaByUuid(uuid).toCompletable())
@@ -694,7 +699,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testDeleteByUUIDMultithreaded() throws Exception {
 		int nJobs = 3;
 		try (Tx tx = tx()) {
-			SchemaContainer schema = schemaContainer("content");
+			Schema schema = schemaContainer("content");
 			validateDeletion(i -> client().deleteSchema(schema.getUuid()), nJobs);
 		}
 	}
@@ -722,7 +727,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
 		int nJobs = 200;
 		try (Tx tx = tx()) {
-			SchemaContainer schema = schemaContainer("content");
+			Schema schema = schemaContainer("content");
 			awaitConcurrentRequests(nJobs, i -> client().findSchemaByUuid(schema.getUuid()));
 		}
 	}
@@ -732,8 +737,9 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
 		String schemaUuid;
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
-			SchemaContainer schema = schemaContainer("content");
+			RoleDaoWrapper roleDao = tx.data().roleDao();
+
+			Schema schema = schemaContainer("content");
 			roleDao.revokePermissions(role(), schema, UPDATE_PERM);
 			schemaUuid = schema.getUuid();
 			tx.success();

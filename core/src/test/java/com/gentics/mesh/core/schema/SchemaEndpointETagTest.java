@@ -8,7 +8,7 @@ import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -32,7 +32,7 @@ public class SchemaEndpointETagTest extends AbstractMeshTest {
 	@Test
 	public void testReadOne() {
 		try (Tx tx = tx()) {
-			SchemaContainer schema = schemaContainer("content");
+			Schema schema = schemaContainer("content");
 
 			String responseTag = callETag(() -> client().findSchemaByUuid(schema.getUuid()));
 			String etag = schema.getETag(mockActionContext());

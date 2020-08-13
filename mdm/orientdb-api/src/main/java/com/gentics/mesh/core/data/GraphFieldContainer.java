@@ -24,7 +24,7 @@ import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -166,7 +166,7 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	 * @param microschemaVersion
 	 * @return
 	 */
-	MicronodeGraphField createMicronode(String key, MicroschemaContainerVersion microschemaVersion);
+	MicronodeGraphField createMicronode(String key, MicroschemaVersion microschemaVersion);
 
 	/**
 	 * Return the graph date list.

@@ -13,8 +13,8 @@ import org.apache.commons.io.IOUtils;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.gentics.mesh.context.impl.LocalActionContextImpl;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.endpoint.admin.AdminHandler;
 import com.gentics.mesh.core.endpoint.admin.plugin.PluginHandler;
 import com.gentics.mesh.core.endpoint.auth.AuthenticationRestHandler;
@@ -81,11 +81,11 @@ import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
-import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
+import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
@@ -351,6 +351,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 		LocalActionContextImpl<TagResponse> ac = createContext(TagResponse.class);
 		ac.setProject(projectName);
 		ac.setPayloadObject(request);
+		ac.setParameter("tagFamilyUuid", tagFamilyUuid);
 		tagCrudHandler.handleCreate(ac, tagFamilyUuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
@@ -359,6 +360,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	public MeshRequest<TagResponse> findTagByUuid(String projectName, String tagFamilyUuid, String uuid, ParameterProvider... parameters) {
 		LocalActionContextImpl<TagResponse> ac = createContext(TagResponse.class, parameters);
 		ac.setProject(projectName);
+		ac.setParameter("tagUuid", uuid);
+		ac.setParameter("tagFamilyUuid", tagFamilyUuid);
 		tagCrudHandler.handleRead(ac, tagFamilyUuid, uuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
@@ -368,6 +371,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 		LocalActionContextImpl<TagResponse> ac = createContext(TagResponse.class);
 		ac.setProject(projectName);
 		ac.setPayloadObject(request);
+		ac.setParameter("tagUuid", uuid);
+		ac.setParameter("tagFamilyUuid", tagFamilyUuid);
 		tagCrudHandler.handleUpdate(ac, tagFamilyUuid, uuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
@@ -377,6 +382,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 		LocalActionContextImpl<TagResponse> ac = createContext(TagResponse.class);
 		ac.setProject(projectName);
 		ac.setPayloadObject(request);
+		ac.setParameter("tagUuid", uuid);
+		ac.setParameter("tagFamilyUuid", tagFamilyUuid);
 		tagCrudHandler.handleUpdate(ac, tagFamilyUuid, uuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
@@ -385,6 +392,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	public MeshRequest<EmptyResponse> deleteTag(String projectName, String tagFamilyUuid, String uuid) {
 		LocalActionContextImpl<EmptyResponse> ac = createContext(EmptyResponse.class);
 		ac.setProject(projectName);
+		ac.setParameter("tagUuid", uuid);
+		ac.setParameter("tagFamilyUuid", tagFamilyUuid);
 		tagCrudHandler.handleDelete(ac, tagFamilyUuid, uuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
@@ -393,6 +402,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	public MeshRequest<TagListResponse> findTags(String projectName, String tagFamilyUuid, ParameterProvider... parameters) {
 		LocalActionContextImpl<TagListResponse> ac = createContext(TagListResponse.class, parameters);
 		ac.setProject(projectName);
+		ac.setParameter("tagFamilyUuid", tagFamilyUuid);
 		tagCrudHandler.handleReadTagList(ac, tagFamilyUuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
@@ -650,7 +660,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<SchemaChangesListModel> diffSchema(String uuid, Schema request) {
+	public MeshRequest<SchemaChangesListModel> diffSchema(String uuid, SchemaModel request) {
 		LocalActionContextImpl<SchemaChangesListModel> ac = createContext(SchemaChangesListModel.class);
 		ac.setPayloadObject(request);
 		schemaCrudHandler.handleDiff(ac, uuid);
@@ -1106,7 +1116,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<SchemaChangesListModel> diffMicroschema(String uuid, Microschema request) {
+	public MeshRequest<SchemaChangesListModel> diffMicroschema(String uuid, MicroschemaModel request) {
 		LocalActionContextImpl<SchemaChangesListModel> ac = createContext(SchemaChangesListModel.class);
 		ac.setPayloadObject(request);
 		microschemaCrudHandler.handleDiff(ac, uuid);
@@ -1601,12 +1611,12 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<SchemaValidationResponse> validateSchema(Schema schema) {
+	public MeshRequest<SchemaValidationResponse> validateSchema(SchemaModel schema) {
 		return null;
 	}
 
 	@Override
-	public MeshRequest<SchemaValidationResponse> validateMicroschema(Microschema microschema) {
+	public MeshRequest<SchemaValidationResponse> validateMicroschema(MicroschemaModel microschemaModel) {
 		return null;
 	}
 

@@ -12,7 +12,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
-import com.gentics.mesh.core.data.root.RoleRoot;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
@@ -36,7 +36,7 @@ public class AnonymousAccessEndpointTest extends AbstractMeshTest {
 		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid), FORBIDDEN, "error_missing_perm", uuid, READ_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.grantPermissions(anonymousRole(), content(), READ_PERM);
 			tx.success();
 		}
@@ -59,7 +59,7 @@ public class AnonymousAccessEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testReadPublishedNode() {
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.grantPermissions(anonymousRole(), content(), READ_PERM);
 			tx.success();
 		}

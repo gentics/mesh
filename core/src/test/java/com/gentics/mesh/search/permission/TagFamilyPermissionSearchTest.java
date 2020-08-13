@@ -9,6 +9,8 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.db.Tx;
@@ -27,7 +29,7 @@ public class TagFamilyPermissionSearchTest extends AbstractMeshTest {
 		String tagfamilyname = "testtagfamily42a";
 		TagFamilyResponse response = createTagFamily(PROJECT_NAME, tagfamilyname);
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			TagFamily tagFamily = project().getTagFamilyRoot().findByUuid(response.getUuid());
 			System.out.println("TagFamily Uuid:" + response.getUuid());
 			for (Role role : user().getRoles()) {
@@ -45,7 +47,7 @@ public class TagFamilyPermissionSearchTest extends AbstractMeshTest {
 
 		// Now add the perm
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			TagFamily tagFamily = project().getTagFamilyRoot().findByUuid(response.getUuid());
 			System.out.println("TagFamily Uuid:" + response.getUuid());
 			for (Role role : user().getRoles()) {

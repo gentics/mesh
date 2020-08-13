@@ -5,19 +5,19 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 
 @Singleton
-public class MicroschemaComparator extends AbstractFieldSchemaContainerComparator<Microschema> {
+public class MicroschemaComparator extends AbstractFieldSchemaContainerComparator<MicroschemaModel> {
 
 	@Inject
 	public MicroschemaComparator() {
 	}
 
 	@Override
-	public List<SchemaChangeModel> diff(Microschema containerA, Microschema containerB) {
-		return super.diff(containerA, containerB, Microschema.class);
+	public List<SchemaChangeModel> diff(MicroschemaModel containerA, MicroschemaModel containerB) {
+		return super.diff(containerA, containerB, MicroschemaModel.class);
 	}
 
 }

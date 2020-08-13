@@ -1,5 +1,6 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -38,7 +39,7 @@ public class EventHandlerFactory {
 	 * @param <T>
 	 * @return
 	 */
-	public <T extends MeshCoreVertex<? extends RestModel, T>> EventHandler createSimpleEventHandler(Function<MeshEntities, MeshEntity<T>> entity,
+	public <T extends HibElement> EventHandler createSimpleEventHandler(Function<MeshEntities, MeshEntity<T>> entity,
 		String indexName) {
 		return new SimpleEventHandler<>(helper, entity.apply(entities), indexName, complianceMode);
 	}

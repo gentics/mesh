@@ -9,12 +9,12 @@ import java.io.IOException;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.schema.FieldTypeChange;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.FieldTypeChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
@@ -39,7 +39,7 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 	@Override
 	public void testApply() {
 		try (Tx tx = tx()) {
-			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
 			SchemaModelImpl schema = new SchemaModelImpl();
@@ -58,7 +58,7 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 			version.setNextChange(fieldTypeUpdate);
 			version.setSchema(schema);
 
-			Schema updatedSchema = mutator.apply(version);
+			SchemaModel updatedSchema = mutator.apply(version);
 			assertNotNull(updatedSchema);
 			assertEquals("html", updatedSchema.getField("stringField").getType());
 		}
@@ -67,7 +67,7 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 	@Test
 	public void testChangeFieldTypeToList() {
 		try (Tx tx = tx()) {
-			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
 			SchemaModelImpl schema = new SchemaModelImpl();
@@ -88,7 +88,7 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 			version.setSchema(schema);
 
 			// 3. Apply the changes
-			Schema updatedSchema = mutator.apply(version);
+			SchemaModel updatedSchema = mutator.apply(version);
 			assertNotNull(updatedSchema);
 			ListFieldSchema fieldSchema = updatedSchema.getField("stringField", ListFieldSchemaImpl.class);
 			assertEquals("list", fieldSchema.getType());

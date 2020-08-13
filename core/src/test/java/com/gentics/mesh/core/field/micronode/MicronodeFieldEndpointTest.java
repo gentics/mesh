@@ -22,15 +22,17 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldEndpointTest;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
-import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -43,7 +45,7 @@ import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
@@ -65,7 +67,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Before
 	public void updateSchema() throws IOException {
 		try (Tx tx = tx()) {
-			SchemaModel schema = schemaContainer("folder").getLatestVersion().getSchema();
+			SchemaVersionModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 			MicronodeFieldSchema microschemaFieldSchema = new MicronodeFieldSchemaImpl();
 			microschemaFieldSchema.setName(FIELD_NAME);
 			microschemaFieldSchema.setLabel("Some label");
@@ -238,7 +240,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		String targetUuid = contentUuid();
 
 		String vcardUuid = tx(() -> microschemaContainers().get("vcard").getUuid());
-		MicroschemaModel vcard = tx(() -> microschemaContainers().get("vcard").getLatestVersion().getSchema());
+		MicroschemaVersionModel vcard = tx(() -> microschemaContainers().get("vcard").getLatestVersion().getSchema());
 		vcard.addField(new NodeFieldSchemaImpl().setName("node"));
 		MicroschemaUpdateRequest request = JsonUtil.readValue(vcard.toJson(), MicroschemaUpdateRequest.class);
 		call(() -> client().updateMicroschema(vcardUuid, request));
@@ -272,11 +274,11 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 					.hasUuid(sourceUuid);
 			}).match(1, NodeMeshEventModel.class, event -> {
 				assertThat(event)
-				.hasBranchUuid(initialBranchUuid())
-				.hasLanguage("en")
-				.hasType(PUBLISHED)
-				.hasSchemaName("folder")
-				.hasUuid(sourceUuid);
+					.hasBranchUuid(initialBranchUuid())
+					.hasLanguage("en")
+					.hasType(PUBLISHED)
+					.hasSchemaName("folder")
+					.hasUuid(sourceUuid);
 			}).two();
 
 		call(() -> client().deleteNode(PROJECT_NAME, targetUuid));
@@ -295,7 +297,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		String targetUuid = contentUuid();
 
 		String vcardUuid = tx(() -> microschemaContainers().get("vcard").getUuid());
-		MicroschemaModel vcard = tx(() -> microschemaContainers().get("vcard").getLatestVersion().getSchema());
+		MicroschemaVersionModel vcard = tx(() -> microschemaContainers().get("vcard").getLatestVersion().getSchema());
 		vcard.addField(new ListFieldSchemaImpl().setListType("node").setName("node"));
 		MicroschemaUpdateRequest request = JsonUtil.readValue(vcard.toJson(), MicroschemaUpdateRequest.class);
 		call(() -> client().updateMicroschema(vcardUuid, request));
@@ -324,23 +326,23 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 		expect(NODE_DELETED).one();
 		expect(NODE_REFERENCE_UPDATED)
-		.match(1, NodeMeshEventModel.class, event -> {
-			assertThat(event)
-				.hasBranchUuid(initialBranchUuid())
-				.hasLanguage("en")
-				.hasType(DRAFT)
-				.hasSchemaName("folder")
-				.hasUuid(sourceUuid);
-		}).match(1, NodeMeshEventModel.class, event -> {
-			assertThat(event)
-			.hasBranchUuid(initialBranchUuid())
-			.hasLanguage("en")
-			.hasType(PUBLISHED)
-			.hasSchemaName("folder")
-			.hasUuid(sourceUuid);
-			
-		})
-		.two();
+			.match(1, NodeMeshEventModel.class, event -> {
+				assertThat(event)
+					.hasBranchUuid(initialBranchUuid())
+					.hasLanguage("en")
+					.hasType(DRAFT)
+					.hasSchemaName("folder")
+					.hasUuid(sourceUuid);
+			}).match(1, NodeMeshEventModel.class, event -> {
+				assertThat(event)
+					.hasBranchUuid(initialBranchUuid())
+					.hasLanguage("en")
+					.hasType(PUBLISHED)
+					.hasSchemaName("folder")
+					.hasUuid(sourceUuid);
+
+			})
+			.two();
 
 		call(() -> client().deleteNode(PROJECT_NAME, targetUuid));
 
@@ -379,7 +381,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	public void testReadNodeWithExistingField() throws IOException {
 		Node node = folder("2015");
 		try (Tx tx = tx()) {
-			MicroschemaContainerVersion microschema = microschemaContainers().get("vcard").getLatestVersion();
+			MicroschemaVersion microschema = microschemaContainers().get("vcard").getLatestVersion();
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			MicronodeGraphField micronodeField = container.createMicronode(FIELD_NAME, microschema);
 			micronodeField.getMicronode().createString("firstName").setString("Max");
@@ -405,19 +407,24 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	public void testExpandAllCyclicMicronodeWithNodeReference() {
 		Node node = folder("2015");
-		MicroschemaModel nodeMicroschema = new MicroschemaModelImpl();
+		MicroschemaVersionModel nodeMicroschema = new MicroschemaModelImpl();
 
 		try (Tx tx = tx()) {
+			MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
+
 			// 1. Create microschema noderef with nodefield
 			nodeMicroschema.setName("noderef");
 			for (int i = 0; i < 10; i++) {
 				nodeMicroschema.addField(new NodeFieldSchemaImpl().setName("nodefield_" + i));
 			}
-			microschemaContainers().put("noderef",
-				project().getMicroschemaContainerRoot().create(nodeMicroschema, getRequestUser(), createBatch()));
+			// TODO Maybe add project()
+			Microschema microschemaContainer = microschemaDao.create(nodeMicroschema, getRequestUser(), createBatch());
+			microschemaContainers().put("noderef", microschemaContainer);
+			// TODO use dao instead
+			project().getMicroschemaContainerRoot().addMicroschema(user(), microschemaContainer, createBatch());
 
 			// 2. Update the folder schema and add a micronode field
-			SchemaModel schema = schemaContainer("folder").getLatestVersion().getSchema();
+			SchemaVersionModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 			MicronodeFieldSchema microschemaFieldSchema = new MicronodeFieldSchemaImpl();
 			microschemaFieldSchema.setName("noderef");
 			microschemaFieldSchema.setLabel("Micronode field");
@@ -449,12 +456,12 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		Long date = System.currentTimeMillis();
 		Node newsOverview = content("news overview");
 		Node newsFolder = folder("news");
-		MicroschemaModel fullMicroschema = new MicroschemaModelImpl();
+		MicroschemaVersionModel fullMicroschema = new MicroschemaModelImpl();
 
 		try (Tx tx = tx()) {
+			MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
 
 			// 1. Create microschema that includes all field types
-
 			fullMicroschema.setName("full");
 			// TODO implement BinaryField in Micronode
 			// fullMicroschema.addField(new BinaryFieldSchemaImpl().setName("binaryfield").setLabel("Binary Field"));
@@ -474,11 +481,14 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			fullMicroschema.addField(new StringFieldSchemaImpl().setName("stringfield").setLabel("String Field"));
 
 			// 2. Add the microschema to the list of microschemas of the project
-			microschemaContainers().put("full",
-				project().getMicroschemaContainerRoot().create(fullMicroschema, getRequestUser(), createBatch()));
+			// TODO maybe add project()
+			Microschema microschemaContainer = microschemaDao.create(fullMicroschema, getRequestUser(), createBatch());
+			microschemaContainers().put("full", microschemaContainer);
+			// TODO use DAO to add microschema
+			project().getMicroschemaContainerRoot().addMicroschema(user(), microschemaContainer, createBatch());
 
 			// 3. Update the folder schema and inject a micronode field which uses the full schema
-			SchemaModel schema = schemaContainer("folder").getLatestVersion().getSchema();
+			SchemaVersionModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 			MicronodeFieldSchema microschemaFieldSchema = new MicronodeFieldSchemaImpl();
 			microschemaFieldSchema.setName("full");
 			microschemaFieldSchema.setLabel("Micronode field");

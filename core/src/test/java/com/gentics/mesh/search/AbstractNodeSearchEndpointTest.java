@@ -21,8 +21,8 @@ import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
@@ -80,7 +80,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 
 	protected void addNumberSpeedFieldToOneNode(Number number) {
 		Node node = content("concorde");
-		SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
+		SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		schema.addField(new NumberFieldSchemaImpl().setName("speed"));
 		node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
@@ -93,7 +93,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 	protected void addMicronodeField() {
 		Node node = content("concorde");
 
-		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
+		SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		MicronodeFieldSchemaImpl vcardFieldSchema = new MicronodeFieldSchemaImpl();
 		vcardFieldSchema.setName("vcard");
 		vcardFieldSchema.setAllowedMicroSchemas(new String[] { "vcard" });
@@ -112,7 +112,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 		Node node = content("concorde");
 
 		// Update the schema
-		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
+		SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		ListFieldSchema vcardListFieldSchema = new ListFieldSchemaImpl();
 		vcardListFieldSchema.setName("vcardlist");
 		vcardListFieldSchema.setListType("micronode");
@@ -138,7 +138,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 		Node node = content("concorde");
 
 		// Update the schema
-		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
+		SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		ListFieldSchema nodeListFieldSchema = new ListFieldSchemaImpl();
 		nodeListFieldSchema.setName("nodelist");
 		nodeListFieldSchema.setListType("node");

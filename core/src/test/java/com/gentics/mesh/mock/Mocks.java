@@ -14,8 +14,8 @@ import org.mockito.Mockito;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.shared.SharedKeys;
 import com.gentics.mesh.util.HttpQueryUtils;
@@ -31,14 +31,14 @@ public final class Mocks {
 
 	}
 
-	public static InternalActionContext getMockedInternalActionContext(String query, User user, Project project) {
+	public static InternalActionContext getMockedInternalActionContext(String query, HibUser user, Project project) {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(getMockedRoutingContext(query, false, user, null));
 		ac.data().put(SharedKeys.PROJECT_CONTEXT_KEY, project);
 		ac.put(API_VERSION_CONTEXT_KEY, CURRENT_API_VERSION);
 		return ac;
 	}
 
-	public static RoutingContext getMockedRoutingContext(String query, boolean noInternalMap, User user, Project project) {
+	public static RoutingContext getMockedRoutingContext(String query, boolean noInternalMap, HibUser user, Project project) {
 		Map<String, Object> map = new HashMap<>();
 		if (noInternalMap) {
 			map = null;
@@ -59,7 +59,7 @@ public final class Mocks {
 		});
 		paramMap.entrySet().stream().forEach(entry -> when(request.getParam(entry.getKey())).thenReturn(entry.getValue()));
 		if (user != null) {
-			MeshAuthUserImpl requestUser = Tx.get().getGraph().frameElement(user.getElement(), MeshAuthUserImpl.class);
+			MeshAuthUserImpl requestUser = Tx.get().getGraph().frameElement(user.toUser().getElement(), MeshAuthUserImpl.class);
 			when(rc.user()).thenReturn(requestUser);
 			// JsonObject principal = new JsonObject();
 			// principal.put("uuid", user.getUuid());

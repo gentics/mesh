@@ -33,7 +33,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -42,7 +42,7 @@ import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
-import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.madl.field.FieldType;
 import com.gentics.mesh.madl.index.VertexIndexDefinition;
 import com.gentics.mesh.madl.traversal.TraversalResult;
@@ -68,13 +68,13 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 
 		NodeParametersImpl parameters = new NodeParametersImpl(ac);
 		MicronodeResponse restMicronode = new MicronodeResponse();
-		MicroschemaContainerVersion microschemaContainer = getSchemaContainerVersion();
+		MicroschemaVersion microschemaContainer = getSchemaContainerVersion();
 		if (microschemaContainer == null) {
 			throw error(BAD_REQUEST, "The microschema container for micronode {" + getUuid() + "} could not be found.");
 		}
 
-		Microschema microschema = microschemaContainer.getSchema();
-		if (microschema == null) {
+		MicroschemaModel microschemaModel = microschemaContainer.getSchema();
+		if (microschemaModel == null) {
 			throw error(BAD_REQUEST, "The microschema for micronode {" + getUuid() + "} could not be found.");
 		}
 
@@ -89,7 +89,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 		}
 
 		// Fields
-		for (FieldSchema fieldEntry : microschema.getFields()) {
+		for (FieldSchema fieldEntry : microschemaModel.getFields()) {
 			Field restField = getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry, requestedLanguageTags, level);
 			if (restField != null) {
 				restMicronode.getFields().put(fieldEntry.getName(), restField);
@@ -104,7 +104,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	}
 
 	@Override
-	public MicroschemaContainerVersion getSchemaContainerVersion() {
+	public MicroschemaVersion getSchemaContainerVersion() {
 		return db().index().findByUuid(MicroschemaContainerVersionImpl.class, property(MICROSCHEMA_VERSION_KEY_PROPERTY));
 	}
 
@@ -224,13 +224,13 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 
 	@Override
 	public void validate() {
-		Microschema microschema = getSchemaContainerVersion().getSchema();
+		MicroschemaModel microschemaModel = getSchemaContainerVersion().getSchema();
 		Map<String, GraphField> fieldsMap = getFields().stream().collect(Collectors.toMap(GraphField::getFieldKey, Function.identity()));
 
-		microschema.getFields().stream().forEach(fieldSchema -> {
+		microschemaModel.getFields().stream().forEach(fieldSchema -> {
 			GraphField field = fieldsMap.get(fieldSchema.getName());
 			if (fieldSchema.isRequired() && field == null) {
-				throw error(CONFLICT, "node_error_missing_mandatory_field_value", fieldSchema.getName(), microschema.getName());
+				throw error(CONFLICT, "node_error_missing_mandatory_field_value", fieldSchema.getName(), microschemaModel.getName());
 			}
 			if (field != null) {
 				field.validate();
@@ -248,7 +248,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 		}
 		if (obj instanceof MicronodeField) {
 			MicronodeField restMicronode = (MicronodeField) obj;
-			Microschema schema = getSchemaContainerVersion().getSchema();
+			MicroschemaModel schema = getSchemaContainerVersion().getSchema();
 			// Iterate over all field schemas and compare rest and graph with eachother
 			for (FieldSchema fieldSchema : schema.getFields()) {
 				GraphField graphField = getField(fieldSchema);

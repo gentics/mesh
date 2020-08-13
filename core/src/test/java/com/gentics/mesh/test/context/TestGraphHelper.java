@@ -10,10 +10,11 @@ import org.mockito.Mockito;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.root.BranchRoot;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.event.EventQueueBatch;
 
 /**
@@ -33,9 +34,10 @@ public interface TestGraphHelper extends TestHelper {
 		return branchRoot.create(name, user(), batch);
 	}
 
-	default MicroschemaContainer createMicroschema(MicroschemaModel schema) {
+	default Microschema createMicroschema(MicroschemaVersionModel schema) {
 		EventQueueBatch batch = Mockito.mock(EventQueueBatch.class);
-		return meshRoot().getMicroschemaContainerRoot().create(schema, user(), batch);
+		MicroschemaDaoWrapper microschemaDao = Tx.get().data().microschemaDao();
+		return microschemaDao.create(schema, user(), batch);
 	}
 
 	/**

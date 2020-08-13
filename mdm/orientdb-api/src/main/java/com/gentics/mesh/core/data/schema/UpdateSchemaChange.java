@@ -2,7 +2,7 @@ package com.gentics.mesh.core.data.schema;
 
 import java.util.List;
 
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 
 import io.vertx.core.json.JsonObject;
@@ -10,7 +10,7 @@ import io.vertx.core.json.JsonObject;
 /**
  * Change entry that contains information on how to change schema specific attributes.
  */
-public interface UpdateSchemaChange extends FieldSchemaContainerUpdateChange<Schema> {
+public interface UpdateSchemaChange extends FieldSchemaContainerUpdateChange<SchemaModel> {
 
 	SchemaChangeOperation OPERATION = SchemaChangeOperation.UPDATESCHEMA;
 

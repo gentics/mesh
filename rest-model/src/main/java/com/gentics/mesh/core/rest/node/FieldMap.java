@@ -24,7 +24,7 @@ import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 
 /**
  * A field map stores all fields of a node or micronode.
@@ -272,7 +272,7 @@ public interface FieldMap extends RestModel {
 	 * @return
 	 */
 	@JsonIgnore
-	Set<String> getUrlFieldValues(Schema schema);
+	Set<String> getUrlFieldValues(SchemaModel schema);
 
 	/**
 	 * Delete all fields in this map.

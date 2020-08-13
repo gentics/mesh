@@ -15,7 +15,7 @@ import com.gentics.mesh.plugin.MeshPlugin;
 import com.gentics.mesh.plugin.RestPlugin;
 import com.gentics.mesh.router.PluginRouter;
 import com.gentics.mesh.router.RouterStorage;
-import com.gentics.mesh.router.RouterStorageRegistry;
+import com.gentics.mesh.router.RouterStorageRegistryImpl;
 
 import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
@@ -32,10 +32,10 @@ public class RestPluginRegistry implements PluginRegistry {
 	 */
 	private Set<String> apiNameSyncSet = Collections.synchronizedSet(new HashSet<>());
 
-	private final RouterStorageRegistry routerStorageRegistry;
+	private final RouterStorageRegistryImpl routerStorageRegistry;
 
 	@Inject
-	public RestPluginRegistry(RouterStorageRegistry routerStorageRegistry) {
+	public RestPluginRegistry(RouterStorageRegistryImpl routerStorageRegistry) {
 		this.routerStorageRegistry = routerStorageRegistry;
 	}
 

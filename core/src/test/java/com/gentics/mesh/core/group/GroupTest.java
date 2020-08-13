@@ -14,14 +14,13 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -49,18 +48,18 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Test
 	public void testUserGroup() {
 		try (Tx tx = tx()) {
-			UserRoot userRoot = meshRoot().getUserRoot();
-			GroupRoot groupRoot = meshRoot().getGroupRoot();
+			UserDaoWrapper userDao = tx.data().userDao();
+			GroupDaoWrapper groupDao = tx.data().groupDao();
 
-			Group group = groupRoot.create("test group", user());
-			User user = userRoot.create("testuser", user());
-			groupRoot.addUser(group, user);
-			groupRoot.addUser(group, user);
-			groupRoot.addUser(group, user);
+			Group group = groupDao.create("test group", user());
+			HibUser user = userDao.create("testuser", user());
+			groupDao.addUser(group, user);
+			groupDao.addUser(group, user);
+			groupDao.addUser(group, user);
 
-			assertEquals("The group should contain one member.", 1, groupRoot.getUsers(group).count());
+			assertEquals("The group should contain one member.", 1, groupDao.getUsers(group).count());
 
-			User userOfGroup = groupRoot.getUsers(group).iterator().next();
+			HibUser userOfGroup = groupDao.getUsers(group).iterator().next();
 			assertEquals("Username did not match the expected one.", user.getUsername(), userOfGroup.getUsername());
 		}
 	}
@@ -97,12 +96,11 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Override
 	public void testRootNode() {
 		try (Tx tx = tx()) {
-			GroupRoot root = meshRoot().getGroupRoot();
-			long nGroupsBefore = root.computeCount();
-			GroupRoot groupRoot = meshRoot().getGroupRoot();
-			assertNotNull(groupRoot.create("test group2", user()));
+			GroupDaoWrapper groupDao = tx.data().groupDao();
+			long nGroupsBefore = groupDao.computeCount();
+			assertNotNull(groupDao.create("test group2", user()));
 
-			long nGroupsAfter = root.computeCount();
+			long nGroupsAfter = groupDao.computeCount();
 			assertEquals(nGroupsBefore + 1, nGroupsAfter);
 		}
 	}
@@ -143,7 +141,8 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Override
 	public void testCreateDelete() throws Exception {
 		try (Tx tx = tx()) {
-			Group group = tx.data().groupDao().create("newGroup", user());
+			GroupDaoWrapper groupDao = tx.data().groupDao();
+			Group group = groupDao.create("newGroup", user());
 			assertNotNull(group);
 			String uuid = group.getUuid();
 			group.delete(createBulkContext());
@@ -157,14 +156,15 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	public void testCRUDPermissions() {
 		try (Tx tx = tx()) {
 			MeshRoot root = meshRoot();
-			UserRoot userRoot = tx.data().userDao();
-			User user = user();
+			UserDaoWrapper userDao = tx.data().userDao();
+			GroupDaoWrapper groupDao = tx.data().groupDao();
+			HibUser user = user();
 			InternalActionContext ac = mockActionContext();
-			Group group = root.getGroupRoot().create("newGroup", user);
-			assertFalse(userRoot.hasPermission(user, group, GraphPermission.CREATE_PERM));
-			userRoot.inheritRolePermissions(user, root.getGroupRoot(), group);
+			Group group = groupDao.create("newGroup", user);
+			assertFalse(userDao.hasPermission(user, group, GraphPermission.CREATE_PERM));
+			userDao.inheritRolePermissions(user, root.getGroupRoot(), group);
 			ac.data().clear();
-			assertTrue(userRoot.hasPermission(user, group, GraphPermission.CREATE_PERM));
+			assertTrue(userDao.hasPermission(user, group, GraphPermission.CREATE_PERM));
 		}
 	}
 
@@ -172,11 +172,11 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Override
 	public void testRead() {
 		try (Tx tx = tx()) {
-			GroupRoot groupRoot = tx.data().groupDao();
+			GroupDaoWrapper groupDao = tx.data().groupDao();
 			Group group = group();
 			assertEquals("joe1_group", group.getName());
-			assertNotNull(groupRoot.getUsers(group));
-			assertEquals(1, groupRoot.getUsers(group).count());
+			assertNotNull(groupDao.getUsers(group));
+			assertEquals(1, groupDao.getUsers(group).count());
 			assertNotNull(group.getUuid());
 		}
 	}
@@ -185,7 +185,8 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Override
 	public void testCreate() {
 		try (Tx tx = tx()) {
-			Group group = meshRoot().getGroupRoot().create("newGroup", user());
+			GroupDaoWrapper groupDao = tx.data().groupDao();
+			Group group = groupDao.create("newGroup", user());
 			assertNotNull(group);
 			assertEquals("newGroup", group.getName());
 		}
@@ -195,14 +196,14 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Override
 	public void testDelete() throws Exception {
 		try (Tx tx = tx()) {
-			GroupRoot groupRoot = tx.data().groupDao();
-			Group group = groupRoot.create("newGroup", user());
+			GroupDaoWrapper groupDao = tx.data().groupDao();
+			Group group = groupDao.create("newGroup", user());
 
 			assertNotNull(group);
 			assertEquals("newGroup", group.getName());
 			String uuid = group.getUuid();
 			String userUuid = user().getUuid();
-			groupRoot.addUser(group(), user());
+			groupDao.addUser(group(), user());
 
 			// TODO add users to group?
 			BulkActionContext bac = createBulkContext();

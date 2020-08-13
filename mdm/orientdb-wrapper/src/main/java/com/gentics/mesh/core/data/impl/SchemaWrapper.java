@@ -9,14 +9,14 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.HibSchema;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.root.SchemaContainerRoot;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
@@ -43,11 +43,19 @@ import com.tinkerpop.blueprints.Vertex;
 import io.reactivex.Single;
 import io.vertx.core.Vertx;
 
-public class SchemaWrapper implements SchemaContainer {
+public class SchemaWrapper implements Schema, HibSchema {
 
-	private final SchemaContainer delegate;
+	private final Schema delegate;
 
-	public SchemaWrapper(SchemaContainer delegate) {
+	public static SchemaWrapper wrap(Schema schema) {
+		if (schema == null) {
+			return null;
+		} else {
+			return new SchemaWrapper(schema);
+		}
+	}
+
+	public SchemaWrapper(Schema delegate) {
 		this.delegate = delegate;
 	}
 
@@ -67,11 +75,11 @@ public class SchemaWrapper implements SchemaContainer {
 		return delegate.getRolePermissions(ac, roleUuid);
 	}
 
-	public User getEditor() {
+	public HibUser getEditor() {
 		return delegate.getEditor();
 	}
 
-	public User getCreator() {
+	public HibUser getCreator() {
 		return delegate.getCreator();
 	}
 
@@ -219,7 +227,7 @@ public class SchemaWrapper implements SchemaContainer {
 		delegate.property(key, value);
 	}
 
-	public SchemaContainerVersion findVersionByUuid(String uuid) {
+	public SchemaVersion findVersionByUuid(String uuid) {
 		return delegate.findVersionByUuid(uuid);
 	}
 
@@ -260,7 +268,7 @@ public class SchemaWrapper implements SchemaContainer {
 		delegate.removeProperty(key);
 	}
 
-	public SchemaContainerVersion findVersionByRev(String version) {
+	public SchemaVersion findVersionByRev(String version) {
 		return delegate.findVersionByRev(version);
 	}
 
@@ -270,10 +278,6 @@ public class SchemaWrapper implements SchemaContainer {
 
 	public <T extends EdgeFrame> TraversalResult<? extends T> inE(String label, Class<T> clazz) {
 		return delegate.inE(label, clazz);
-	}
-
-	public TraversalResult<? extends Node> getNodes() {
-		return delegate.getNodes();
 	}
 
 	public <T extends RawTraversalResult<?>> T traverse(Function<GraphTraversal<Vertex, Vertex>, GraphTraversal<?, ?>> traverser) {
@@ -292,7 +296,7 @@ public class SchemaWrapper implements SchemaContainer {
 		return delegate.getETag(ac);
 	}
 
-	public Iterable<? extends SchemaContainerVersion> findAll() {
+	public Iterable<? extends SchemaVersion> findAll() {
 		return delegate.findAll();
 	}
 
@@ -300,15 +304,11 @@ public class SchemaWrapper implements SchemaContainer {
 		return delegate.vertx();
 	}
 
-	public TraversalResult<? extends SchemaContainerRoot> getRoots() {
-		return delegate.getRoots();
-	}
-
 	public boolean hasPublishPermissions() {
 		return delegate.hasPublishPermissions();
 	}
 
-	public SchemaContainerVersion getLatestVersion() {
+	public SchemaVersion getLatestVersion() {
 		return delegate.getLatestVersion();
 	}
 
@@ -320,7 +320,7 @@ public class SchemaWrapper implements SchemaContainer {
 		return delegate.addFramedEdgeExplicit(label, inVertex, initializer);
 	}
 
-	public void setLatestVersion(SchemaContainerVersion version) {
+	public void setLatestVersion(SchemaVersion version) {
 		delegate.setLatestVersion(version);
 	}
 
@@ -336,7 +336,7 @@ public class SchemaWrapper implements SchemaContainer {
 		delegate.setProperty(name, value);
 	}
 
-	public RootVertex<SchemaContainer> getRoot() {
+	public RootVertex<Schema> getRoot() {
 		return delegate.getRoot();
 	}
 
@@ -344,7 +344,7 @@ public class SchemaWrapper implements SchemaContainer {
 		return delegate.onUpdated();
 	}
 
-	public Map<Branch, SchemaContainerVersion> findReferencedBranches() {
+	public Map<Branch, SchemaVersion> findReferencedBranches() {
 		return delegate.findReferencedBranches();
 	}
 
@@ -442,6 +442,14 @@ public class SchemaWrapper implements SchemaContainer {
 
 	public <T> T reframeExplicit(Class<T> kind) {
 		return delegate.reframeExplicit(kind);
+	}
+
+	public Set<String> getRoleUuidsForPerm(GraphPermission permission) {
+		return delegate.getRoleUuidsForPerm(permission);
+	}
+
+	public void setRoleUuidForPerm(GraphPermission permission, Set<String> allowedRoles) {
+		delegate.setRoleUuidForPerm(permission, allowedRoles);
 	}
 
 }

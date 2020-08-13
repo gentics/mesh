@@ -11,7 +11,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
@@ -30,7 +30,7 @@ import io.reactivex.Flowable;
  * Handler for schema container index.
  */
 @Singleton
-public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaContainer> {
+public class SchemaContainerIndexHandler extends AbstractIndexHandler<Schema> {
 
 	@Inject
 	SchemaTransformer transformer;
@@ -51,17 +51,17 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 
 	@Override
 	protected String composeDocumentIdFromEntry(UpdateDocumentEntry entry) {
-		return SchemaContainer.composeDocumentId(entry.getElementUuid());
+		return Schema.composeDocumentId(entry.getElementUuid());
 	}
 
 	@Override
 	protected String composeIndexNameFromEntry(UpdateDocumentEntry entry) {
-		return SchemaContainer.composeIndexName();
+		return Schema.composeIndexName();
 	}
 
 	@Override
-	public Class<SchemaContainer> getElementClass() {
-		return SchemaContainer.class;
+	public Class<Schema> getElementClass() {
+		return Schema.class;
 	}
 
 	@Override
@@ -76,33 +76,33 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 
 	@Override
 	public Flowable<SearchRequest> syncIndices() {
-		return diffAndSync(SchemaContainer.composeIndexName(), null);
+		return diffAndSync(Schema.composeIndexName(), null);
 	}
 
 	@Override
 	public Set<String> filterUnknownIndices(Set<String> indices) {
-		return filterIndicesByType(indices, SchemaContainer.composeIndexName());
+		return filterIndicesByType(indices, Schema.composeIndexName());
 	}
 
 	@Override
 	public Set<String> getIndicesForSearch(InternalActionContext ac) {
-		return Collections.singleton(SchemaContainer.composeIndexName());
+		return Collections.singleton(Schema.composeIndexName());
 	}
 
 	@Override
 	public Map<String, IndexInfo> getIndices() {
-		String indexName = SchemaContainer.composeIndexName();
+		String indexName = Schema.composeIndexName();
 		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping(), "schema");
 		return Collections.singletonMap(indexName, info);
 	}
 
 	@Override
-	public Function<String, SchemaContainer> elementLoader() {
+	public Function<String, Schema> elementLoader() {
 		return (uuid) -> boot.meshRoot().getSchemaContainerRoot().findByUuid(uuid);
 	}
 
 	@Override
-	public Stream<? extends SchemaContainer> loadAllElements(Tx tx) {
+	public Stream<? extends Schema> loadAllElements(Tx tx) {
 		return tx.data().schemaDao().findAll().stream();
 	}
 }

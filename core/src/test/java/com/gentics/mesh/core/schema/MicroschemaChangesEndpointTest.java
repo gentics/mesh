@@ -17,8 +17,8 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
@@ -27,7 +27,7 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
@@ -49,8 +49,8 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 	public void testRemoveField() throws Exception {
 		// 1. Create node that uses the microschema
 		Node node;
-		MicroschemaContainer microschemaContainer = microschemaContainer("vcard");
-		MicroschemaContainerVersion beforeVersion;
+		Microschema microschemaContainer = microschemaContainer("vcard");
+		MicroschemaVersion beforeVersion;
 		try (Tx tx = tx()) {
 			node = createMicronodeNode();
 			beforeVersion = microschemaContainer.getLatestVersion();
@@ -85,10 +85,10 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddField() throws Exception {
-		MicroschemaContainer microschemaContainer = microschemaContainer("vcard");
+		Microschema microschemaContainer = microschemaContainer("vcard");
 
 		// 1. Setup changes
-		MicroschemaContainerVersion beforeVersion;
+		MicroschemaVersion beforeVersion;
 		try (Tx tx = tx()) {
 			beforeVersion = microschemaContainer.getLatestVersion();
 			assertNull("The microschema should not yet have any changes", beforeVersion.getNextChange());
@@ -119,7 +119,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 		final String newName = "new_name";
 
 		String vcardUuid = tx(() -> microschemaContainers().get("vcard").getUuid());
-		MicroschemaContainerVersion beforeVersion = tx(() -> microschemaContainers().get("vcard").getLatestVersion());
+		MicroschemaVersion beforeVersion = tx(() -> microschemaContainers().get("vcard").getLatestVersion());
 
 		expect(MICROSCHEMA_UPDATED).match(1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName(newName).hasUuid(vcardUuid);
@@ -147,7 +147,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			String name = "captionedImage";
 			String originalSchemaName = "vcard";
-			MicroschemaContainer microschema = microschemaContainers().get(originalSchemaName);
+			Microschema microschema = microschemaContainers().get(originalSchemaName);
 			assertNotNull(microschema);
 			MicroschemaUpdateRequest request = new MicroschemaUpdateRequest();
 			request.setName(name);
@@ -160,7 +160,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 	private Node createMicronodeNode() {
 
 		// 1. Update folder schema
-		SchemaModel schema = schemaContainer("folder").getLatestVersion().getSchema();
+		SchemaVersionModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 		MicronodeFieldSchema microschemaFieldSchema = new MicronodeFieldSchemaImpl();
 		microschemaFieldSchema.setName("micronodeField");
 		microschemaFieldSchema.setLabel("Some label");

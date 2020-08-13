@@ -10,10 +10,11 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.TagDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.root.LanguageRoot;
-import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -24,19 +25,18 @@ public class AtomicTagTest extends AbstractMeshTest {
 	@Test
 	public void testTagCreation() throws Exception {
 		try (Tx tx = tx()) {
-			MeshRoot meshRoot = boot().meshRoot();
-			User user = meshRoot.getUserRoot().create("test", null);
-			LanguageRoot languageRoot = meshRoot.getLanguageRoot();
-			assertNotNull(languageRoot);
+			UserDaoWrapper userDao = tx.data().userDao();
+			TagDaoWrapper tagDao = tx.data().tagDao();
 
-			meshRoot.getTagFamilyRoot();
-			meshRoot.getTagRoot();
+			HibUser user = userDao.create("test", null);
+			LanguageRoot languageRoot = boot().languageRoot();
+			assertNotNull(languageRoot);
 
 			Project project = project();
 			TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();
 			TagFamily tagFamily = tagFamilyRoot.create("basic", user);
 
-			Tag tag = tagFamily.create("dummyName", project, user);
+			Tag tag = tagDao.create(tagFamily, "dummyName", project, user);
 			String uuid = tag.getUuid();
 			assertNotNull(tag);
 			assertEquals("dummyName", tag.getName());

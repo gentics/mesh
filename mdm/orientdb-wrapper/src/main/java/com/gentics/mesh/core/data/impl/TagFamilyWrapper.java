@@ -10,8 +10,7 @@ import com.gentics.madl.traversal.RawTraversalResult;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
-import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
@@ -21,6 +20,8 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
+import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
@@ -48,9 +49,17 @@ import com.tinkerpop.blueprints.Vertex;
 import io.reactivex.Single;
 import io.vertx.core.Vertx;
 
-public class TagFamilyWrapper {
+public class TagFamilyWrapper implements TagFamily {
 
 	private final TagFamily delegate;
+
+	public static TagFamilyWrapper wrap(TagFamily tagFamily) {
+		if (tagFamily == null) {
+			return null;
+		} else {
+			return new TagFamilyWrapper(tagFamily);
+		}
+	}
 
 	public TagFamilyWrapper(TagFamily delegate) {
 		this.delegate = delegate;
@@ -76,11 +85,11 @@ public class TagFamilyWrapper {
 		return delegate.getRolePermissions(ac, roleUuid);
 	}
 
-	public User getEditor() {
+	public HibUser getEditor() {
 		return delegate.getEditor();
 	}
 
-	public User getCreator() {
+	public HibUser getCreator() {
 		return delegate.getCreator();
 	}
 
@@ -353,10 +362,6 @@ public class TagFamilyWrapper {
 		delegate.setDescription(description);
 	}
 
-	public Tag create(String name, Project project, User creator) {
-		return delegate.create(name, project, creator);
-	}
-
 	public void fillPermissionChanged(PermissionChangedEventModelImpl model, Role role) {
 		delegate.fillPermissionChanged(model, role);
 	}
@@ -379,10 +384,6 @@ public class TagFamilyWrapper {
 
 	public EdgeTraversal<?, ?, ?> e(Object... ids) {
 		return delegate.e(ids);
-	}
-
-	public Tag create(String name, Project project, User creator, String uuid) {
-		return delegate.create(name, project, creator, uuid);
 	}
 
 	public TEdge addFramedEdge(String label, com.syncleus.ferma.VertexFrame inVertex) {
@@ -433,12 +434,12 @@ public class TagFamilyWrapper {
 		delegate.setProject(project);
 	}
 
-	public TransformablePage<? extends Tag> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Tag> extraFilter) {
+	public Page<? extends Tag> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Tag> extraFilter) {
 		return delegate.findAll(ac, pagingInfo, extraFilter);
 	}
 
-	public Tag create(InternalActionContext ac, EventQueueBatch batch) {
-		return delegate.create(ac, batch);
+	public TagWrapper create(InternalActionContext ac, EventQueueBatch batch) {
+		return TagWrapper.wrap(delegate.create(ac, batch));
 	}
 
 	public void unlinkOut(com.syncleus.ferma.VertexFrame vertex, String... labels) {
@@ -465,8 +466,8 @@ public class TagFamilyWrapper {
 		delegate.setLinkOut(vertex, labels);
 	}
 
-	public Tag findByName(String name) {
-		return delegate.findByName(name);
+	public TagWrapper findByName(String name) {
+		return TagWrapper.wrap(delegate.findByName(name));
 	}
 
 	public VertexTraversal<?, ?, ?> traversal() {
@@ -505,7 +506,7 @@ public class TagFamilyWrapper {
 		return delegate.loadObjectByUuidNoPerm(uuid, errorIfNotFound);
 	}
 
-	public MeshVertex resolveToElement(Stack<String> stack) {
+	public HibElement resolveToElement(Stack<String> stack) {
 		return delegate.resolveToElement(stack);
 	}
 
@@ -531,6 +532,14 @@ public class TagFamilyWrapper {
 
 	public long computeCount() {
 		return delegate.computeCount();
+	}
+
+	public Set<String> getRoleUuidsForPerm(GraphPermission permission) {
+		return delegate.getRoleUuidsForPerm(permission);
+	}
+
+	public void setRoleUuidForPerm(GraphPermission permission, Set<String> allowedRoles) {
+		delegate.setRoleUuidForPerm(permission, allowedRoles);
 	}
 
 }

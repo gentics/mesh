@@ -16,8 +16,8 @@ import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.Errors;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
@@ -434,7 +434,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	List<FieldContainerChange> compareTo(FieldMap fieldMap);
 
 	@Override
-	SchemaContainerVersion getSchemaContainerVersion();
+	SchemaVersion getSchemaContainerVersion();
 
 	/**
 	 * Get all micronode fields that have a micronode using the given microschema container version.
@@ -443,7 +443,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 *            microschema container version
 	 * @return list of micronode fields
 	 */
-	List<? extends MicronodeGraphField> getMicronodeFields(MicroschemaContainerVersion version);
+	List<? extends MicronodeGraphField> getMicronodeFields(MicroschemaVersion version);
 
 	/**
 	 * Get all micronode list fields that have at least one micronode using the given microschema container version.
@@ -452,7 +452,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 *            microschema container version
 	 * @return list of micronode list fields
 	 */
-	TraversalResult<? extends MicronodeGraphFieldList> getMicronodeListFields(MicroschemaContainerVersion version);
+	TraversalResult<? extends MicronodeGraphFieldList> getMicronodeListFields(MicroschemaVersion version);
 
 	/**
 	 * Return the ETag for the field container.

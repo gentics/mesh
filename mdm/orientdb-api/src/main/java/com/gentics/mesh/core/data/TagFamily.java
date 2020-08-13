@@ -12,6 +12,8 @@ import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
+import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -71,38 +73,6 @@ public interface TagFamily extends MeshCoreVertex<TagFamilyResponse, TagFamily>,
 	 * @param description
 	 */
 	void setDescription(String description);
-
-	/**
-	 * Create a new tag with the given name and creator. Note that this method will not check for any tag name collisions. Note that the created tag will also
-	 * be assigned to the global root vertex.
-	 * 
-	 * @param name
-	 *            Name of the new tag.
-	 * @param project
-	 *            Root project of the tag.
-	 * @param creator
-	 *            User that is used to assign creator and editor references of the new tag.
-	 * @return
-	 */
-	default Tag create(String name, Project project, User creator) {
-		return create(name, project, creator, null);
-	}
-
-	/**
-	 * Create a new tag with the given name and creator. Note that this method will not check for any tag name collisions. Note that the created tag will also
-	 * be assigned to the global root vertex.
-	 * 
-	 * @param name
-	 *            Name of the new tag.
-	 * @param project
-	 *            Root project of the tag.
-	 * @param creator
-	 *            User that is used to assign creator and editor references of the new tag.
-	 * @param uuid
-	 *            Optional uuid
-	 * @return
-	 */
-	Tag create(String name, Project project, User creator, String uuid);
 
 	/**
 	 * Return a page of all tags which are visible to the given user. Use the paging parameters from the action context.

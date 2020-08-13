@@ -22,15 +22,16 @@ import com.gentics.mesh.core.data.schema.UpdateSchemaChange;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
+
 import io.vertx.core.json.JsonObject;
 
 /**
  * @see UpdateSchemaChange
  */
-public class UpdateSchemaChangeImpl extends AbstractFieldSchemaContainerUpdateChange<Schema> implements UpdateSchemaChange {
+public class UpdateSchemaChangeImpl extends AbstractFieldSchemaContainerUpdateChange<SchemaModel> implements UpdateSchemaChange {
 
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(UpdateSchemaChangeImpl.class, MeshVertexImpl.class);
@@ -43,11 +44,11 @@ public class UpdateSchemaChangeImpl extends AbstractFieldSchemaContainerUpdateCh
 
 	@Override
 	public <R extends FieldSchemaContainer> R apply(R container) {
-		if (!(container instanceof Schema)) {
-			throw error(BAD_REQUEST, "The provided container was no " + Schema.class.getName() + " got {" + container.getClass().getName() + "}");
+		if (!(container instanceof SchemaModel)) {
+			throw error(BAD_REQUEST, "The provided container was no " + SchemaModel.class.getName() + " got {" + container.getClass().getName() + "}");
 		}
 
-		Schema schema = (Schema) super.apply(container);
+		SchemaModel schema = (SchemaModel) super.apply(container);
 
 		// .displayField
 		String displayFieldname = getDisplayField();

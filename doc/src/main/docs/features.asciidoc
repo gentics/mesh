@@ -1663,10 +1663,10 @@ Permissions on a single or multiple schemas are applied via ```/schemas/:uuid```
 Permissions on a single or multiple microschemas are applied via ```/microschemas/:uuid``` path and ```/microschemas``` path respectively.
 
 * Granting permissions on ```/microschemas``` recursively will affect all microschemas.
-* Read permissions on a microschema are needed for creating, reading, updating, and deleting micronodes based on that schema.
+* Read permissions on a microschemaModel are needed for creating, reading, updating, and deleting micronodes based on that schema.
 
 [caption=]
-.Role permissions on a specific microschema and multiple microschemas
+.Role permissions on a specific microschemaModel and multiple microschemas
 [options="header"]
 |======
 | Role permission                                     | Element path               | Permission  | Recursive
@@ -1992,7 +1992,7 @@ Note: Migrated nodes will still have the same _uuid_ as before.
 
 === Updating a project branch
 
-A branch can be _renamed_ and new schema/microschema versions can be _assigned_ to it.
+A branch can be _renamed_ and new schema/microschemaModel versions can be _assigned_ to it.
 
 Renaming is useful if you want to change your development branch to be the current production branch.
 
@@ -2166,7 +2166,7 @@ include::content/docs/examples/models/updateschema.json[]
 [options="header"]
 |======
 | Properties       | Description
-| description      | New microschema description
+| description      | New microschemaModel description
 |======
 
 [source,json]
@@ -2261,7 +2261,7 @@ Before the migration is being executed a job is added to the job queue. You can 
 These jobs will be processed and execute the actual migration.
 
 By default updating a schema will create a new schema version and the nodes will be migrated to that new version. 
-If you want to defer this operation you can set the `updateAssignedBranches` query parameter to false when updating a schema/microschema. 
+If you want to defer this operation you can set the `updateAssignedBranches` query parameter to false when updating a schema/microschemaModel.
 This leads to a new schema version being created but the version would not be linked to your current branch and no migration would be invoked.
 
 Once a job has been queued and a migration has been invoked the status can be checked via the `{apiLatest}/admin/status/migrations` endpoint.

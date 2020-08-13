@@ -9,8 +9,8 @@ import java.util.Collection;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.group.GroupUserAssignModel;
 import com.gentics.mesh.search.verticle.MessageEvent;
@@ -39,7 +39,7 @@ public class GroupUserAssignmentHandler implements EventHandler {
 		return Flowable.defer(() -> {
 			GroupUserAssignModel model = requireType(GroupUserAssignModel.class, messageEvent.message);
 			return Flowable.just(helper.getDb().tx(() -> {
-				User user = helper.getBoot().userDao().findByUuid(model.getUser().getUuid());
+				HibUser user = helper.getBoot().userDao().findByUuid(model.getUser().getUuid());
 				return entities.createRequest(user);
 			}));
 		});

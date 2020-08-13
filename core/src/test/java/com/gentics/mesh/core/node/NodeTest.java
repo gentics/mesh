@@ -4,6 +4,7 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.rest.SortOrder.UNSORTED;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.util.TestUtils.size;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -27,13 +28,13 @@ import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.UserRoot;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -220,13 +221,13 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testCRUDPermissions() {
 		try (Tx tx = tx()) {
-			UserRoot userRoot = tx.data().userDao();
+			UserDaoWrapper userDao = tx.data().userDao();
 			Node node = folder("2015").create(user(), getSchemaContainer().getLatestVersion(), project());
 			InternalActionContext ac = mockActionContext("");
-			assertFalse(userRoot.hasPermission(user(), node, GraphPermission.CREATE_PERM));
-			userRoot.inheritRolePermissions(user(), folder("2015"), node);
+			assertFalse(userDao.hasPermission(user(), node, GraphPermission.CREATE_PERM));
+			userDao.inheritRolePermissions(user(), folder("2015"), node);
 			ac.data().clear();
-			assertTrue(userRoot.hasPermission(user(), node, GraphPermission.CREATE_PERM));
+			assertTrue(userDao.hasPermission(user(), node, GraphPermission.CREATE_PERM));
 		}
 	}
 
@@ -246,16 +247,16 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testCreate() {
 		try (Tx tx = tx()) {
-			User user = user();
+			HibUser user = user();
 			Node parentNode = folder("2015");
-			SchemaContainerVersion schemaVersion = schemaContainer("content").getLatestVersion();
+			SchemaVersion schemaVersion = schemaContainer("content").getLatestVersion();
 			Node node = parentNode.create(user, schemaVersion, project());
 			long ts = System.currentTimeMillis();
 			node.setCreationTimestamp(ts);
 			Long creationTimeStamp = node.getCreationTimestamp();
 			assertNotNull(creationTimeStamp);
 			assertEquals(ts, creationTimeStamp.longValue());
-			assertEquals(user, node.getCreator());
+			assertEquals(user.getUuid(), node.getCreator().getUuid());
 			String english = english();
 			String german = german();
 
@@ -263,7 +264,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			englishContainer.createString("content").setString("english content");
 			englishContainer.createString("name").setString("english.html");
 			assertNotNull(node.getUuid());
-			assertEquals(user, englishContainer.getEditor());
+			assertEquals(user.getUuid(), englishContainer.getEditor().getUuid());
 			assertNotNull(englishContainer.getLastEditedTimestamp());
 
 			List<? extends GraphFieldContainer> allProperties = TestUtils.toList(node.getDraftGraphFieldContainers());
@@ -306,7 +307,8 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 		try (Tx tx = tx()) {
 			Node node = content();
 			try (Tx tx2 = tx()) {
-				User newUser = meshRoot().getUserRoot().create("newUser", user());
+				UserDaoWrapper userDao = tx2.data().userDao();
+				HibUser newUser = userDao.create("newUser", user());
 				newUser.addGroup(group());
 				assertEquals(user().getUuid(), node.getCreator().getUuid());
 				System.out.println(newUser.getUuid());
@@ -357,7 +359,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 		try (Tx tx = tx()) {
 			Project project = project();
 			Branch initialBranch = project.getInitialBranch();
-			SchemaContainerVersion folderSchema = schemaContainer("folder").getLatestVersion();
+			SchemaVersion folderSchema = schemaContainer("folder").getLatestVersion();
 
 			// 1. create folder with subfolder and subsubfolder
 			Node folder = project.getBaseNode().create(user(), folderSchema, project);
@@ -392,7 +394,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 		try (Tx tx = tx()) {
 			BulkActionContext bac = createBulkContext();
-			SchemaContainerVersion folderSchema = schemaContainer("folder").getLatestVersion();
+			SchemaVersion folderSchema = schemaContainer("folder").getLatestVersion();
 
 			// 1. create folder with subfolder and subsubfolder
 			Node folder = project.getBaseNode().create(user(), folderSchema, project);
@@ -460,7 +462,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 		BulkActionContext bac = createBulkContext();
 
 		try (Tx tx = tx()) {
-			SchemaContainerVersion folderSchema = schemaContainer("folder").getLatestVersion();
+			SchemaVersion folderSchema = schemaContainer("folder").getLatestVersion();
 
 			// 1. create folder and publish
 			String folderUuid = tx(() -> {
@@ -512,7 +514,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 		try (Tx tx = tx()) {
 			Project project = project();
 			Branch initialBranch = project.getInitialBranch();
-			SchemaContainerVersion folderSchema = schemaContainer("folder").getLatestVersion();
+			SchemaVersion folderSchema = schemaContainer("folder").getLatestVersion();
 
 			// 1. create folder and publish
 			String folderUuid = tx(() -> {

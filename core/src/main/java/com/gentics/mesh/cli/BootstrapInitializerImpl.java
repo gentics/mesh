@@ -65,22 +65,23 @@ import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
+import com.gentics.mesh.core.data.root.MicroschemaRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
-import com.gentics.mesh.core.data.root.SchemaContainerRoot;
+import com.gentics.mesh.core.data.root.SchemaRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
@@ -99,7 +100,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MonitoringConfig;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
-import com.gentics.mesh.router.RouterStorageRegistry;
+import com.gentics.mesh.router.RouterStorageRegistryImpl;
 import com.gentics.mesh.search.DevNullSearchProvider;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
@@ -174,7 +175,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	public MeshOptions options;
 
 	@Inject
-	public RouterStorageRegistry routerStorageRegistry;
+	public RouterStorageRegistryImpl routerStorageRegistry;
 
 	@Inject
 	public MetricsOptions metricsOptions;
@@ -283,7 +284,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		addDebugInfoLogAppender(options);
 		RequirementsCheck.init(storageOptions);
 		try {
-			db.init(mesh.getOptions(), MeshVersion.getBuildInfo().getVersion(), "com.gentics.mesh.core.data");
+			db.init(MeshVersion.getBuildInfo().getVersion(), "com.gentics.mesh.core.data");
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -603,14 +604,13 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		if (password != null) {
 			db.tx(tx -> {
 				UserDaoWrapper userDao = tx.data().userDao();
-				User adminUser = userDao.findByName(ADMIN_USERNAME);
+				HibUser adminUser = userDao.findByName(ADMIN_USERNAME);
 				if (adminUser != null) {
 					userDao.setPassword(adminUser, password);
 					adminUser.setAdmin(true);
 				} else {
 					// Recreate the user if it can't be found.
-					UserRoot userRoot = meshRoot.getUserRoot();
-					adminUser = userRoot.create(ADMIN_USERNAME, null);
+					adminUser = userDao.create(ADMIN_USERNAME, null);
 					adminUser.setCreator(adminUser);
 					adminUser.setCreationTimestamp();
 					adminUser.setEditor(adminUser);
@@ -788,7 +788,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
-	public SchemaContainerRoot schemaContainerRoot() {
+	public SchemaRoot schemaContainerRoot() {
 		return meshRoot().getSchemaContainerRoot();
 	}
 
@@ -798,7 +798,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
-	public MicroschemaContainerRoot microschemaContainerRoot() {
+	public MicroschemaRoot microschemaContainerRoot() {
 		return meshRoot().getMicroschemaContainerRoot();
 	}
 
@@ -908,6 +908,10 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	public void initMandatoryData(MeshOptions config) throws Exception {
 
 		db.tx(tx -> {
+			UserDaoWrapper userDao = tx.data().userDao();
+			GroupDaoWrapper groupDao = tx.data().groupDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
+
 			MeshRoot meshRoot = meshRoot();
 
 			// Create the initial root vertices
@@ -919,14 +923,13 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			meshRoot.getChangelogRoot();
 
 			GroupRoot groupRoot = meshRoot.getGroupRoot();
-			UserRoot userRoot = meshRoot.getUserRoot();
 			RoleRoot roleRoot = meshRoot.getRoleRoot();
-			SchemaContainerRoot schemaContainerRoot = meshRoot.getSchemaContainerRoot();
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 
 			// Verify that an admin user exists
-			User adminUser = userRoot.findByUsername(ADMIN_USERNAME);
+			HibUser adminUser = userDao.findByUsername(ADMIN_USERNAME);
 			if (adminUser == null) {
-				adminUser = userRoot.create(ADMIN_USERNAME, adminUser);
+				adminUser = userDao.create(ADMIN_USERNAME, adminUser);
 				adminUser.setAdmin(true);
 				adminUser.setCreator(adminUser);
 				adminUser.setCreationTimestamp();
@@ -958,9 +961,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			}
 
 			// Content
-			SchemaContainer contentSchemaContainer = schemaContainerRoot.findByName("content");
+			Schema contentSchemaContainer = schemaDao.findByName("content");
 			if (contentSchemaContainer == null) {
-				SchemaModel schema = new SchemaModelImpl();
+				SchemaVersionModel schema = new SchemaModelImpl();
 				schema.setName("content");
 				schema.setDescription("Content schema for blogposts");
 				schema.setDisplayField("title");
@@ -989,14 +992,14 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				schema.addField(contentFieldSchema);
 
 				schema.setContainer(false);
-				contentSchemaContainer = schemaContainerRoot.create(schema, adminUser, null, false);
+				contentSchemaContainer = schemaDao.create(schema, adminUser, null, false);
 				log.debug("Created schema container {" + schema.getName() + "} uuid: {" + contentSchemaContainer.getUuid() + "}");
 			}
 
 			// Folder
-			SchemaContainer folderSchemaContainer = schemaContainerRoot.findByName("folder");
+			Schema folderSchemaContainer = schemaDao.findByName("folder");
 			if (folderSchemaContainer == null) {
-				SchemaModel schema = new SchemaModelImpl();
+				SchemaVersionModel schema = new SchemaModelImpl();
 				schema.setName("folder");
 				schema.setDescription("Folder schema to create containers for other nodes.");
 				schema.setDisplayField("name");
@@ -1013,15 +1016,15 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				schema.addField(nameFieldSchema);
 
 				schema.setContainer(true);
-				folderSchemaContainer = schemaContainerRoot.create(schema, adminUser, null, false);
+				folderSchemaContainer = schemaDao.create(schema, adminUser, null, false);
 				log.debug("Created schema container {" + schema.getName() + "} uuid: {" + folderSchemaContainer.getUuid() + "}");
 			}
 
 			// Binary content for images and other downloads
-			SchemaContainer binarySchemaContainer = schemaContainerRoot.findByName("binary_content");
+			Schema binarySchemaContainer = schemaDao.findByName("binary_content");
 			if (binarySchemaContainer == null) {
 
-				SchemaModel schema = new SchemaModelImpl();
+				SchemaVersionModel schema = new SchemaModelImpl();
 				schema.setDescription("Binary content schema used to store images and other binary data.");
 				schema.setName("binary_content");
 				schema.setDisplayField("name");
@@ -1038,21 +1041,21 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				schema.addField(binaryFieldSchema);
 
 				schema.setContainer(false);
-				binarySchemaContainer = schemaContainerRoot.create(schema, adminUser, null, false);
+				binarySchemaContainer = schemaDao.create(schema, adminUser, null, false);
 				log.debug("Created schema container {" + schema.getName() + "} uuid: {" + binarySchemaContainer.getUuid() + "}");
 			}
 
 			Group adminGroup = groupRoot.findByName("admin");
 			if (adminGroup == null) {
-				adminGroup = groupRoot.create("admin", adminUser);
-				groupRoot.addUser(adminGroup, adminUser);
+				adminGroup = groupDao.create("admin", adminUser);
+				groupDao.addUser(adminGroup, adminUser);
 				log.debug("Created admin group {" + adminGroup.getUuid() + "}");
 			}
 
 			Role adminRole = roleRoot.findByName("admin");
 			if (adminRole == null) {
-				adminRole = roleRoot.create("admin", adminUser);
-				groupRoot.addRole(adminGroup, adminRole);
+				adminRole = roleDao.create("admin", adminUser);
+				groupDao.addRole(adminGroup, adminRole);
 				log.debug("Created admin role {" + adminRole.getUuid() + "}");
 			}
 
@@ -1071,13 +1074,16 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		// Only setup optional data for empty installations
 		if (isEmptyInstallation) {
 			db.tx(tx -> {
+				UserDaoWrapper userDao = tx.data().userDao();
+				GroupDaoWrapper groupDao = tx.data().groupDao();
+				RoleDaoWrapper roleDao = tx.data().roleDao();
+
 				meshRoot = meshRoot();
 
-				UserRoot userRoot = meshRoot().getUserRoot();
 				// Verify that an anonymous user exists
-				User anonymousUser = userRoot.findByUsername("anonymous");
+				HibUser anonymousUser = userDao.findByUsername("anonymous");
 				if (anonymousUser == null) {
-					anonymousUser = userRoot.create("anonymous", anonymousUser);
+					anonymousUser = userDao.create("anonymous", anonymousUser);
 					anonymousUser.setCreator(anonymousUser);
 					anonymousUser.setCreationTimestamp();
 					anonymousUser.setEditor(anonymousUser);
@@ -1089,16 +1095,16 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				GroupRoot groupRoot = meshRoot.getGroupRoot();
 				Group anonymousGroup = groupRoot.findByName("anonymous");
 				if (anonymousGroup == null) {
-					anonymousGroup = groupRoot.create("anonymous", anonymousUser);
-					groupRoot.addUser(anonymousGroup, anonymousUser);
+					anonymousGroup = groupDao.create("anonymous", anonymousUser);
+					groupDao.addUser(anonymousGroup, anonymousUser);
 					log.debug("Created anonymous group {" + anonymousGroup.getUuid() + "}");
 				}
 
 				RoleRoot roleRoot = meshRoot.getRoleRoot();
 				anonymousRole = roleRoot.findByName("anonymous");
 				if (anonymousRole == null) {
-					anonymousRole = roleRoot.create("anonymous", anonymousUser);
-					groupRoot.addRole(anonymousGroup, anonymousRole);
+					anonymousRole = roleDao.create("anonymous", anonymousUser);
+					groupDao.addRole(anonymousGroup, anonymousRole);
 					log.debug("Created anonymous role {" + anonymousRole.getUuid() + "}");
 				}
 
@@ -1110,7 +1116,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	@Override
 	public void initPermissions() {
 		db.tx(tx -> {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			Role adminRole = meshRoot().getRoleRoot().findByName("admin");
 			for (Vertex vertex : tx.getGraph().getVertices()) {
 				WrappedVertex wrappedVertex = (WrappedVertex) vertex;

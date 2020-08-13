@@ -22,10 +22,10 @@ import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
+import com.gentics.mesh.core.data.root.MicroschemaRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
-import com.gentics.mesh.core.data.root.SchemaContainerRoot;
+import com.gentics.mesh.core.data.root.SchemaRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
@@ -136,7 +136,7 @@ public interface BootstrapInitializer {
 	 * @return
 	 */
 	@Deprecated
-	MicroschemaContainerRoot microschemaContainerRoot();
+	MicroschemaRoot microschemaContainerRoot();
 
 	MicroschemaDaoWrapper microschemaDao();
 
@@ -147,7 +147,7 @@ public interface BootstrapInitializer {
 	 * @return
 	 */
 	@Deprecated
-	SchemaContainerRoot schemaContainerRoot();
+	SchemaRoot schemaContainerRoot();
 
 	SchemaDaoWrapper schemaDao();
 

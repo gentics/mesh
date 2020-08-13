@@ -1,7 +1,7 @@
 package com.gentics.mesh.context;
 
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.rest.event.node.MicroschemaMigrationCause;
 
@@ -14,9 +14,9 @@ public interface MicronodeMigrationContext {
 
 	MigrationStatusHandler getStatus();
 
-	MicroschemaContainerVersion getFromVersion();
+	MicroschemaVersion getFromVersion();
 
-	MicroschemaContainerVersion getToVersion();
+	MicroschemaVersion getToVersion();
 
 	/**
 	 * Return the cause info of the migration which can be used for dispatched events.

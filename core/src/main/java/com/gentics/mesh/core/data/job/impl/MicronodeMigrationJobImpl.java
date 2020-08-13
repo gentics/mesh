@@ -17,17 +17,18 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.BranchMicroschemaEdge;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
-import com.gentics.mesh.core.endpoint.migration.impl.MigrationStatusHandlerImpl;
-import com.gentics.mesh.core.endpoint.migration.micronode.MicronodeMigrationHandler;
+import com.gentics.mesh.core.migration.impl.MicronodeMigrationImpl;
+import com.gentics.mesh.core.migration.impl.MigrationStatusHandlerImpl;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.migration.MicroschemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.MicroschemaMigrationCause;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.core.rest.job.JobWarningList;
+
 import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -44,10 +45,10 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 		MicroschemaMigrationMeshEventModel model = new MicroschemaMigrationMeshEventModel();
 		model.setEvent(event);
 
-		MicroschemaContainerVersion toVersion = getToMicroschemaVersion();
+		MicroschemaVersion toVersion = getToMicroschemaVersion();
 		model.setToVersion(toVersion.transformToReference());
 
-		MicroschemaContainerVersion fromVersion = getFromMicroschemaVersion();
+		MicroschemaVersion fromVersion = getFromMicroschemaVersion();
 		model.setFromVersion(fromVersion.transformToReference());
 
 		Branch branch = getBranch();
@@ -77,19 +78,19 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 				}
 				context.setBranch(branch);
 
-				MicroschemaContainerVersion fromContainerVersion = getFromMicroschemaVersion();
+				MicroschemaVersion fromContainerVersion = getFromMicroschemaVersion();
 				if (fromContainerVersion == null) {
 					throw error(BAD_REQUEST, "Source version of microschema for job {" + getUuid() + "} could not be found.");
 				}
 				context.setFromVersion(fromContainerVersion);
 
-				MicroschemaContainerVersion toContainerVersion = getToMicroschemaVersion();
+				MicroschemaVersion toContainerVersion = getToMicroschemaVersion();
 				if (toContainerVersion == null) {
 					throw error(BAD_REQUEST, "Target version of microschema for job {" + getUuid() + "} could not be found.");
 				}
 				context.setToVersion(toContainerVersion);
 
-				MicroschemaContainer schemaContainer = fromContainerVersion.getSchemaContainer();
+				Microschema schemaContainer = fromContainerVersion.getSchemaContainer();
 				BranchMicroschemaEdge branchVersionEdge = branch.findBranchMicroschemaEdge(toContainerVersion);
 				context.getStatus().setVersionEdge(branchVersionEdge);
 				if (log.isDebugEnabled()) {
@@ -120,7 +121,7 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 	protected Completable processTask() {
 		return Completable.defer(() -> {
 			MicronodeMigrationContext context = prepareContext();
-			MicronodeMigrationHandler handler = mesh().micronodeMigrationHandler();
+			MicronodeMigrationImpl handler = mesh().micronodeMigrationHandler();
 			return handler.migrateMicronodes(context)
 				.doOnComplete(() -> {
 					db().tx(() -> {

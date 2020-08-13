@@ -3,7 +3,7 @@ package com.gentics.mesh.dagger.module;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.dao.DaoCollection;
-import com.gentics.mesh.core.data.dao.impl.OrientDBDaoCollection;
+import com.gentics.mesh.core.data.dao.OrientDBDaoCollection;
 
 import dagger.Module;
 import dagger.Provides;

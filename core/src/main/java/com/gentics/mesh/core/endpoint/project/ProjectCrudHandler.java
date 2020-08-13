@@ -14,10 +14,10 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.actions.impl.ProjectDAOActionsImpl;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
@@ -40,8 +40,8 @@ public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResp
 	}
 
 	@Override
-	public RootVertex<Project> getRootVertex(Tx tx, InternalActionContext ac) {
-		return tx.data().projectDao();
+	public ProjectDAOActionsImpl crudActions() {
+		return new ProjectDAOActionsImpl();
 	}
 
 	/**
@@ -53,9 +53,8 @@ public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResp
 	 */
 	public void handleReadByName(InternalActionContext ac, String projectName) {
 		utils.syncTx(ac, tx -> {
-			RootVertex<Project> root = getRootVertex(tx, ac);
-			Project project = root.findByName(ac, projectName, READ_PERM);
-			return project.transformToRestSync(ac, 0);
+			Project project = tx.data().projectDao().findByName(ac, projectName, READ_PERM);
+			return crudActions().transformToRestSync(tx, project, ac, 0);
 		}, model -> ac.send(model, OK));
 	}
 
@@ -76,9 +75,9 @@ public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResp
 				if (!ac.getUser().isAdmin()) {
 					throw error(FORBIDDEN, "error_admin_permission_required");
 				}
-				RootVertex<Project> root = getRootVertex(tx, ac);
 				MeshAuthUser user = ac.getUser();
-				Project project = root.loadObjectByUuid(ac, uuid, DELETE_PERM);
+				ProjectDaoWrapper projectDao = tx.data().projectDao();
+				Project project = projectDao.loadObjectByUuid(ac, uuid, DELETE_PERM);
 				db.tx(() -> {
 					if (before.isPresent()) {
 						boot.jobRoot().enqueueVersionPurge(user, project, before.get());

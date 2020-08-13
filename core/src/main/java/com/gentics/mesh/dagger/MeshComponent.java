@@ -4,7 +4,7 @@ import javax.annotation.Nullable;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
@@ -19,13 +19,13 @@ import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.generic.UserProperties;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
-import com.gentics.mesh.core.endpoint.migration.branch.BranchMigrationHandler;
-import com.gentics.mesh.core.endpoint.migration.micronode.MicronodeMigrationHandler;
-import com.gentics.mesh.core.endpoint.migration.node.NodeMigrationHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.core.endpoint.role.RoleCrudHandler;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
+import com.gentics.mesh.core.migration.impl.BranchMigrationImpl;
+import com.gentics.mesh.core.migration.impl.MicronodeMigrationImpl;
+import com.gentics.mesh.core.migration.impl.NodeMigrationImpl;
 import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandler;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
@@ -46,13 +46,13 @@ import com.gentics.mesh.rest.MeshLocalClientImpl;
 import com.gentics.mesh.rest.RestAPIVerticle;
 import com.gentics.mesh.router.EndpointRegistry;
 import com.gentics.mesh.router.RouterStorage;
-import com.gentics.mesh.router.RouterStorageRegistry;
+import com.gentics.mesh.router.RouterStorageRegistryImpl;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
 import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandler;
-import com.gentics.mesh.search.index.node.NodeIndexHandler;
+import com.gentics.mesh.search.index.node.NodeIndexHandlerImpl;
 import com.gentics.mesh.search.index.project.ProjectIndexHandler;
 import com.gentics.mesh.search.index.role.RoleIndexHandler;
 import com.gentics.mesh.search.index.schema.SchemaContainerIndexHandler;
@@ -81,7 +81,7 @@ public interface MeshComponent {
 
 	SearchProvider searchProvider();
 
-	BCryptPasswordEncoder passwordEncoder();
+	PasswordEncoder passwordEncoder();
 
 	Provider<RouterStorage> routerStorageProvider();
 
@@ -97,13 +97,13 @@ public interface MeshComponent {
 
 	ServerSchemaStorage serverSchemaStorage();
 
-	NodeIndexHandler nodeContainerIndexHandler();
+	NodeIndexHandlerImpl nodeContainerIndexHandler();
 
-	NodeMigrationHandler nodeMigrationHandler();
+	NodeMigrationImpl nodeMigrationHandler();
 
-	BranchMigrationHandler branchMigrationHandler();
+	BranchMigrationImpl branchMigrationHandler();
 
-	MicronodeMigrationHandler micronodeMigrationHandler();
+	MicronodeMigrationImpl micronodeMigrationHandler();
 
 	ProjectVersionPurgeHandler projectVersionPurgeHandler();
 
@@ -161,7 +161,7 @@ public interface MeshComponent {
 
 	MeshPluginManager pluginManager();
 
-	RouterStorageRegistry routerStorageRegistry();
+	RouterStorageRegistryImpl routerStorageRegistry();
 
 	Binaries binaries();
 

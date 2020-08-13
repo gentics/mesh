@@ -4,15 +4,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.EditorTrackingVertex;
-import com.gentics.mesh.core.data.MeshCoreVertex;
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.user.HibUser;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -56,18 +56,18 @@ public abstract class AbstractTransformer<T> implements Transformer<T> {
 	 * 
 	 * @param document
 	 *            JSON document to which basic references will be added
-	 * @param vertex
-	 *            Vertex which will be used to load the basic references
+	 * @param element
+	 *            Element which will be used to load the basic references
 	 */
-	protected void addBasicReferences(JsonObject document, MeshCoreVertex<?, ?> vertex) {
-		document.put("uuid", vertex.getUuid());
-		if (vertex instanceof CreatorTrackingVertex) {
-			CreatorTrackingVertex createdVertex = (CreatorTrackingVertex) vertex;
+	protected void addBasicReferences(JsonObject document, HibElement element) {
+		document.put("uuid", element.getUuid());
+		if (element instanceof CreatorTrackingVertex) {
+			CreatorTrackingVertex createdVertex = (CreatorTrackingVertex) element;
 			addUser(document, "creator", createdVertex.getCreator());
 			document.put("created", createdVertex.getCreationDate());
 		}
-		if (vertex instanceof EditorTrackingVertex) {
-			EditorTrackingVertex editedVertex = (EditorTrackingVertex) vertex;
+		if (element instanceof EditorTrackingVertex) {
+			EditorTrackingVertex editedVertex = (EditorTrackingVertex) element;
 			addUser(document, "editor", editedVertex.getEditor());
 			document.put("edited", editedVertex.getLastEditedDate());
 		}
@@ -100,7 +100,7 @@ public abstract class AbstractTransformer<T> implements Transformer<T> {
 	 * @param key
 	 * @param user
 	 */
-	protected void addUser(JsonObject document, String key, User user) {
+	protected void addUser(JsonObject document, String key, HibUser user) {
 		if (user != null) {
 			// TODO make sure field names match response UserResponse field names..
 			JsonObject userFields = new JsonObject();
@@ -116,17 +116,14 @@ public abstract class AbstractTransformer<T> implements Transformer<T> {
 	 * @param document
 	 * @param element
 	 */
-	protected void addPermissionInfo(JsonObject document, MeshCoreVertex<?, ?> element) {
-		Iterable<? extends Role> roleIt = element.getRolesWithPerm(GraphPermission.READ_PERM);
-		List<String> roleUuids = new ArrayList<>();
-		for (Role role : roleIt) {
-			roleUuids.add(role.getUuid());
-		}
-		document.put("_roleUuids", roleUuids);
+	protected void addPermissionInfo(JsonObject document, HibElement element) {
+		Set<String> roleUuids = element.getRoleUuidsForPerm(GraphPermission.READ_PERM);
+		List<String> roleUuidsList = new ArrayList<>(roleUuids);
+		document.put("_roleUuids", roleUuidsList);
 	}
 
 	@Override
-	public JsonObject toPermissionPartial(MeshCoreVertex<?, ?> element) {
+	public JsonObject toPermissionPartial(HibElement element) {
 		JsonObject document = new JsonObject();
 		addPermissionInfo(document, element);
 		return document;

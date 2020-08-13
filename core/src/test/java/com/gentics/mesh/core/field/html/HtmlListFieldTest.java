@@ -25,7 +25,7 @@ import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -48,7 +48,7 @@ public class HtmlListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testFieldTransformation() throws Exception {
 		Node node = folder("2015");
-		Schema schema;
+		SchemaModel schema;
 
 		try (Tx tx = tx()) {
 			schema = prepareNode(node, "nodeList", "node");

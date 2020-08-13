@@ -22,6 +22,7 @@ import javax.inject.Inject;
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.endpoint.PathParameters;
 import com.gentics.mesh.core.endpoint.tag.TagCrudHandler;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -95,8 +96,8 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		endpoint.events(TAG_UPDATED, TAG_CREATED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
-			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");
-			String uuid = ac.getParameter("tagUuid");
+			String tagFamilyUuid = PathParameters.getTagFamilyUuid(rc);
+			String uuid = PathParameters.getTagUuid(rc);
 			tagCrudHandler.handleUpdate(ac, tagFamilyUuid, uuid);
 		});
 
@@ -112,7 +113,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		createTag.events(TAG_CREATED);
 		createTag.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
-			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");
+			String tagFamilyUuid = PathParameters.getTagFamilyUuid(rc);
 			tagCrudHandler.handleCreate(ac, tagFamilyUuid);
 		});
 	}
@@ -129,8 +130,8 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		readOne.produces(APPLICATION_JSON);
 		readOne.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
-			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");
-			String uuid = ac.getParameter("tagUuid");
+			String tagFamilyUuid = PathParameters.getTagFamilyUuid(rc);
+			String uuid = PathParameters.getTagUuid(rc);
 			tagCrudHandler.handleRead(ac, tagFamilyUuid, uuid);
 		});
 
@@ -145,7 +146,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		readAll.addQueryParameters(GenericParametersImpl.class);
 		readAll.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
-			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");
+			String tagFamilyUuid = PathParameters.getTagFamilyUuid(rc);
 			tagCrudHandler.handleReadTagList(ac, tagFamilyUuid);
 		});
 
@@ -164,8 +165,8 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		endpoint.events(TAG_DELETED, NODE_UNTAGGED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
-			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");
-			String uuid = ac.getParameter("tagUuid");
+			String tagFamilyUuid = PathParameters.getTagFamilyUuid(rc);
+			String uuid = PathParameters.getTagUuid(rc);
 			tagCrudHandler.handleDelete(ac, tagFamilyUuid, uuid);
 		});
 	}
@@ -182,8 +183,8 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		endpoint.exampleResponse(OK, nodeExamples.getNodeListResponse(), "List of nodes which were tagged using the provided tag.");
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
-			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");
-			String uuid = ac.getParameter("tagUuid");
+			String tagFamilyUuid = PathParameters.getTagFamilyUuid(rc);
+			String uuid = PathParameters.getTagUuid(rc);
 			tagCrudHandler.handleTaggedNodesList(ac, tagFamilyUuid, uuid);
 		});
 	}
@@ -199,8 +200,8 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		endpoint.events(TAG_FAMILY_DELETED, TAG_DELETED, NODE_UNTAGGED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
-			String uuid = ac.getParameter("tagFamilyUuid");
-			tagFamilyCrudHandler.handleDelete(ac, uuid);
+			String tagFamilyUuid = PathParameters.getTagFamilyUuid(rc);
+			tagFamilyCrudHandler.handleDelete(ac, tagFamilyUuid);
 		});
 	}
 
@@ -214,8 +215,8 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		readOne.exampleResponse(OK, tagFamilyExamples.getTagFamilyResponse("Colors"), "Loaded tag family.");
 		readOne.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
-			String uuid = ac.getParameter("tagFamilyUuid");
-			tagFamilyCrudHandler.handleRead(ac, uuid);
+			String tagFamilyUuid = PathParameters.getTagFamilyUuid(rc);
+			tagFamilyCrudHandler.handleRead(ac, tagFamilyUuid);
 		});
 
 		InternalEndpointRoute readAll = createRoute();
@@ -260,8 +261,8 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		endpoint.events(TAG_FAMILY_UPDATED, TAG_FAMILY_CREATED);
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
-			String uuid = ac.getParameter("tagFamilyUuid");
-			tagFamilyCrudHandler.handleUpdate(ac, uuid);
+			String tagFamilyUuid = PathParameters.getTagFamilyUuid(rc);
+			tagFamilyCrudHandler.handleUpdate(ac, tagFamilyUuid);
 		});
 	}
 }

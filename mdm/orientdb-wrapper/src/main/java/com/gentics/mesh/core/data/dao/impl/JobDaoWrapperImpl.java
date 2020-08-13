@@ -15,16 +15,19 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.JobDaoWrapper;
+import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.job.Job;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -48,13 +51,11 @@ import io.reactivex.Completable;
 import io.vertx.core.Vertx;
 
 @Singleton
-public class JobDaoWrapperImpl implements JobDaoWrapper {
-
-	private final Lazy<BootstrapInitializer> boot;
+public class JobDaoWrapperImpl extends AbstractDaoWrapper implements JobDaoWrapper {
 
 	@Inject
-	public JobDaoWrapperImpl(Lazy<BootstrapInitializer> boot) {
-		this.boot = boot;
+	public JobDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionProperties> permissions) {
+		super(boot, permissions);
 	}
 
 	public Object id() {
@@ -77,7 +78,7 @@ public class JobDaoWrapperImpl implements JobDaoWrapper {
 		return boot.get().jobRoot().getRolesWithPerm(perm);
 	}
 
-	public Job enqueueSchemaMigration(User creator, Branch branch, SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion) {
+	public Job enqueueSchemaMigration(HibUser creator, Branch branch, SchemaVersion fromVersion, SchemaVersion toVersion) {
 		return boot.get().jobRoot().enqueueSchemaMigration(creator, branch, fromVersion, toVersion);
 	}
 
@@ -93,7 +94,7 @@ public class JobDaoWrapperImpl implements JobDaoWrapper {
 		return boot.get().jobRoot().getElementVersion();
 	}
 
-	public Job enqueueBranchMigration(User creator, Branch branch, SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion) {
+	public Job enqueueBranchMigration(HibUser creator, Branch branch, SchemaVersion fromVersion, SchemaVersion toVersion) {
 		return boot.get().jobRoot().enqueueBranchMigration(creator, branch, fromVersion, toVersion);
 	}
 
@@ -145,8 +146,8 @@ public class JobDaoWrapperImpl implements JobDaoWrapper {
 		boot.get().jobRoot().remove();
 	}
 
-	public Job enqueueMicroschemaMigration(User creator, Branch branch, MicroschemaContainerVersion fromVersion,
-		MicroschemaContainerVersion toVersion) {
+	public Job enqueueMicroschemaMigration(HibUser creator, Branch branch, MicroschemaVersion fromVersion,
+		MicroschemaVersion toVersion) {
 		return boot.get().jobRoot().enqueueMicroschemaMigration(creator, branch, fromVersion, toVersion);
 	}
 
@@ -183,7 +184,7 @@ public class JobDaoWrapperImpl implements JobDaoWrapper {
 		return boot.get().jobRoot().in(label, clazz);
 	}
 
-	public Job enqueueBranchMigration(User creator, Branch branch) {
+	public Job enqueueBranchMigration(HibUser creator, Branch branch) {
 		return boot.get().jobRoot().enqueueBranchMigration(creator, branch);
 	}
 
@@ -211,7 +212,7 @@ public class JobDaoWrapperImpl implements JobDaoWrapper {
 		return boot.get().jobRoot().db();
 	}
 
-	public Job enqueueVersionPurge(User user, Project project, ZonedDateTime before) {
+	public Job enqueueVersionPurge(HibUser user, Project project, ZonedDateTime before) {
 		return boot.get().jobRoot().enqueueVersionPurge(user, project, before);
 	}
 
@@ -227,7 +228,7 @@ public class JobDaoWrapperImpl implements JobDaoWrapper {
 		return boot.get().jobRoot().options();
 	}
 
-	public Job enqueueVersionPurge(User user, Project project) {
+	public Job enqueueVersionPurge(HibUser user, Project project) {
 		return boot.get().jobRoot().enqueueVersionPurge(user, project);
 	}
 
@@ -327,7 +328,7 @@ public class JobDaoWrapperImpl implements JobDaoWrapper {
 		boot.get().jobRoot().linkIn(vertex, labels);
 	}
 
-	public TransformablePage<? extends Job> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Job> extraFilter) {
+	public Page<? extends Job> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Job> extraFilter) {
 		return boot.get().jobRoot().findAll(ac, pagingInfo, extraFilter);
 	}
 
@@ -387,7 +388,7 @@ public class JobDaoWrapperImpl implements JobDaoWrapper {
 		return boot.get().jobRoot().loadObjectByUuidNoPerm(uuid, errorIfNotFound);
 	}
 
-	public MeshVertex resolveToElement(Stack<String> stack) {
+	public HibElement resolveToElement(Stack<String> stack) {
 		return boot.get().jobRoot().resolveToElement(stack);
 	}
 
@@ -417,6 +418,15 @@ public class JobDaoWrapperImpl implements JobDaoWrapper {
 
 	public long computeCount() {
 		return boot.get().jobRoot().computeCount();
+	}
+
+	@Override
+	public Set<String> getRoleUuidsForPerm(GraphPermission permission) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void setRoleUuidForPerm(GraphPermission permission, java.util.Set<String> allowedRoles) {
 	}
 
 }

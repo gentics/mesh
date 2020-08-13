@@ -16,10 +16,10 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.endpoint.migration.impl.MigrationStatusHandlerImpl;
-import com.gentics.mesh.core.endpoint.migration.node.NodeMigrationHandler;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.migration.impl.MigrationStatusHandlerImpl;
+import com.gentics.mesh.core.migration.impl.NodeMigrationImpl;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.SchemaMigrationCause;
@@ -44,10 +44,10 @@ public class NodeMigrationJobImpl extends JobImpl {
 		SchemaMigrationMeshEventModel model = new SchemaMigrationMeshEventModel();
 		model.setEvent(event);
 
-		SchemaContainerVersion toVersion = getToSchemaVersion();
+		SchemaVersion toVersion = getToSchemaVersion();
 		model.setToVersion(toVersion.transformToReference());
 
-		SchemaContainerVersion fromVersion = getFromSchemaVersion();
+		SchemaVersion fromVersion = getFromSchemaVersion();
 		model.setFromVersion(fromVersion.transformToReference());
 
 		Branch branch = getBranch();
@@ -75,19 +75,19 @@ public class NodeMigrationJobImpl extends JobImpl {
 				}
 				context.setBranch(branch);
 
-				SchemaContainerVersion fromContainerVersion = getFromSchemaVersion();
+				SchemaVersion fromContainerVersion = getFromSchemaVersion();
 				if (fromContainerVersion == null) {
 					throw error(BAD_REQUEST, "Source schema version for job {" + getUuid() + "} could not be found.");
 				}
 				context.setFromVersion(fromContainerVersion);
 
-				SchemaContainerVersion toContainerVersion = getToSchemaVersion();
+				SchemaVersion toContainerVersion = getToSchemaVersion();
 				if (toContainerVersion == null) {
 					throw error(BAD_REQUEST, "Target schema version for job {" + getUuid() + "} could not be found.");
 				}
 				context.setToVersion(toContainerVersion);
 
-				SchemaContainer schemaContainer = toContainerVersion.getSchemaContainer();
+				Schema schemaContainer = toContainerVersion.getSchemaContainer();
 				if (schemaContainer == null) {
 					throw error(BAD_REQUEST, "Schema container for job {" + getUuid() + "} can't be found.");
 				}
@@ -126,7 +126,7 @@ public class NodeMigrationJobImpl extends JobImpl {
 	}
 
 	protected Completable processTask() {
-		NodeMigrationHandler handler = mesh().nodeMigrationHandler();
+		NodeMigrationImpl handler = mesh().nodeMigrationHandler();
 
 		return Completable.defer(() -> {
 			NodeMigrationActionContextImpl context = prepareContext();
@@ -159,7 +159,7 @@ public class NodeMigrationJobImpl extends JobImpl {
 		// Deactivate edge
 		db().tx(() -> {
 			Branch branch = context.getBranch();
-			SchemaContainerVersion fromContainerVersion = context.getFromVersion();
+			SchemaVersion fromContainerVersion = context.getFromVersion();
 			BranchSchemaEdge edge = branch.findBranchSchemaEdge(fromContainerVersion);
 			if (edge != null) {
 				edge.setActive(false);

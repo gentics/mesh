@@ -1,27 +1,28 @@
 package com.gentics.mesh.graphql.filter;
 
-import com.gentics.graphqlfilter.filter.BooleanFilter;
-import com.gentics.graphqlfilter.filter.FilterField;
-import com.gentics.graphqlfilter.filter.MainFilter;
-import com.gentics.graphqlfilter.filter.MappedFilter;
-import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
-import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
-import com.gentics.mesh.graphql.context.GraphQLContext;
-import com.gentics.mesh.json.JsonUtil;
-import graphql.schema.GraphQLEnumType;
-import graphql.schema.GraphQLEnumValueDefinition;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import com.gentics.graphqlfilter.filter.BooleanFilter;
+import com.gentics.graphqlfilter.filter.FilterField;
+import com.gentics.graphqlfilter.filter.MainFilter;
+import com.gentics.graphqlfilter.filter.MappedFilter;
+import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
+import com.gentics.mesh.graphql.context.GraphQLContext;
+import com.gentics.mesh.json.JsonUtil;
+
+import graphql.schema.GraphQLEnumType;
+import graphql.schema.GraphQLEnumValueDefinition;
+
 /**
  * Filter schemas.
  */
-public class SchemaFilter extends MainFilter<SchemaContainer> {
+public class SchemaFilter extends MainFilter<Schema> {
 
 	private static final String NAME = "SchemaFilter";
 
@@ -48,8 +49,8 @@ public class SchemaFilter extends MainFilter<SchemaContainer> {
 	}
 
 	@Override
-	protected List<FilterField<SchemaContainer, ?>> getFilters() {
-		List<FilterField<SchemaContainer, ?>> filters = new ArrayList<>();
+	protected List<FilterField<Schema, ?>> getFilters() {
+		List<FilterField<Schema, ?>> filters = new ArrayList<>();
 		filters.add(FilterField.create("is", "Filters by schema", schemaEnum(), uuid -> schema -> schema.getUuid().equals(uuid)));
 		filters.add(new MappedFilter<>("isContainer", "Filters by schema container flag", BooleanFilter.filter(), schema -> getLatestVersion(schema).getContainer()));
 		filters.add(CommonFields.nameFilter());
@@ -58,7 +59,7 @@ public class SchemaFilter extends MainFilter<SchemaContainer> {
 		return filters;
 	}
 
-	private SchemaModel getLatestVersion(SchemaContainer schema) {
+	private SchemaVersionModel getLatestVersion(Schema schema) {
 		return JsonUtil.readValue(schema.getLatestVersion().getJson(), SchemaModelImpl.class);
 	}
 }

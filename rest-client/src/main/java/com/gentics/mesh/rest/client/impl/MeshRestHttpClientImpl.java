@@ -70,11 +70,11 @@ import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
-import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
+import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
@@ -721,24 +721,24 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<SchemaValidationResponse> validateSchema(Schema schema) {
+	public MeshRequest<SchemaValidationResponse> validateSchema(SchemaModel schema) {
 		return prepareRequest(POST, "/utilities/validateSchema", SchemaValidationResponse.class, schema);
 	}
 
 	@Override
-	public MeshRequest<SchemaValidationResponse> validateMicroschema(Microschema schema) {
+	public MeshRequest<SchemaValidationResponse> validateMicroschema(MicroschemaModel schema) {
 		return prepareRequest(POST, "/utilities/validateMicroschema", SchemaValidationResponse.class, schema);
 	}
 
 	@Override
-	public MeshRequest<SchemaChangesListModel> diffSchema(String uuid, Schema request) {
+	public MeshRequest<SchemaChangesListModel> diffSchema(String uuid, SchemaModel request) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
 		Objects.requireNonNull(request, "request must not be null");
 		return prepareRequest(POST, "/schemas/" + uuid + "/diff", SchemaChangesListModel.class, request);
 	}
 
 	@Override
-	public MeshRequest<SchemaChangesListModel> diffMicroschema(String uuid, Microschema request) {
+	public MeshRequest<SchemaChangesListModel> diffMicroschema(String uuid, MicroschemaModel request) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
 		Objects.requireNonNull(request, "request must not be null");
 		return prepareRequest(POST, "/microschemas/" + uuid + "/diff", SchemaChangesListModel.class, request);

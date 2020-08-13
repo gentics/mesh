@@ -15,7 +15,7 @@ import java.util.Map;
 
 import org.assertj.core.api.AbstractAssert;
 
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 
@@ -108,7 +108,7 @@ public class SchemaChangeModelAssert extends AbstractAssert<SchemaChangeModelAss
 	 * @return
 	 */
 	public SchemaChangeModelAssert isUpdateOperation(Object container) {
-		if (container instanceof Schema) {
+		if (container instanceof SchemaModel) {
 			assertEquals("The change operation does not match.", UPDATESCHEMA, actual.getOperation());
 		} else {
 			assertEquals("The change operation does not match.", UPDATEMICROSCHEMA, actual.getOperation());

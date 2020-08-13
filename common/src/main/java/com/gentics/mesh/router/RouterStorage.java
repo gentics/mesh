@@ -11,7 +11,6 @@ import javax.naming.InvalidNameException;
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.distributed.RequestDelegator;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -66,7 +65,7 @@ public class RouterStorage {
 
 	private MeshAuthChain authChain;
 
-	private final RouterStorageRegistry routerStorageRegistry;
+	private final RouterStorageRegistryImpl routerStorageRegistry;
 
 	private final RequestDelegator delegator;
 
@@ -74,7 +73,7 @@ public class RouterStorage {
 	public RouterStorage(Vertx vertx, MeshOptions options, MeshAuthChain authChain, CorsHandler corsHandler, BodyHandlerImpl bodyHandler,
 		Lazy<BootstrapInitializer> boot,
 		Lazy<Database> db, VersionHandler versionHandler,
-		RouterStorageRegistry routerStorageRegistry,
+		RouterStorageRegistryImpl routerStorageRegistry,
 		RequestDelegator delegator) {
 		this.vertx = vertx;
 		this.options = options;

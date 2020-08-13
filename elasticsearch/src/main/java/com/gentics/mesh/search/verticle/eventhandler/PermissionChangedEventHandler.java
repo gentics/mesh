@@ -19,8 +19,8 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.search.request.UpdateDocumentRequest;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -116,9 +116,9 @@ public class PermissionChangedEventHandler implements EventHandler {
 		case PROJECT:
 			return Project.composeIndexName();
 		case SCHEMA:
-			return SchemaContainer.composeIndexName();
+			return Schema.composeIndexName();
 		case MICROSCHEMA:
-			return MicroschemaContainer.composeIndexName();
+			return Microschema.composeIndexName();
 		case TAG:
 			if (model instanceof PermissionChangedProjectElementEventModel) {
 				PermissionChangedProjectElementEventModel projectModel = (PermissionChangedProjectElementEventModel) model;

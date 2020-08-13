@@ -25,10 +25,10 @@ public class EndpointRegistry {
 	private final Vertx vertx;
 	private final MeshOptions options;
 
-	private final RouterStorageRegistry routerStorageRegistry;
+	private final RouterStorageRegistryImpl routerStorageRegistry;
 
 	@Inject
-	public EndpointRegistry(Vertx vertx, MeshOptions options, RouterStorageRegistry routerStorageRegistry) {
+	public EndpointRegistry(Vertx vertx, MeshOptions options, RouterStorageRegistryImpl routerStorageRegistry) {
 		this.vertx = vertx;
 		this.options = options;
 		this.routerStorageRegistry = routerStorageRegistry;

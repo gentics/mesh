@@ -1,10 +1,22 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
+import static com.gentics.mesh.search.verticle.eventhandler.EventHandler.forEvent;
+import static com.gentics.mesh.search.verticle.eventhandler.Util.logElasticSearchError;
+import static com.gentics.mesh.search.verticle.eventhandler.Util.toMultiMap;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.search.verticle.MessageEvent;
@@ -15,21 +27,11 @@ import com.gentics.mesh.search.verticle.eventhandler.node.NodeTagEventHandler;
 import com.gentics.mesh.search.verticle.eventhandler.project.ProjectCreateEventHandler;
 import com.gentics.mesh.search.verticle.eventhandler.project.ProjectDeleteEventHandler;
 import com.gentics.mesh.search.verticle.eventhandler.project.ProjectUpdateEventHandler;
+
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Stream;
-
-import static com.gentics.mesh.search.verticle.eventhandler.EventHandler.forEvent;
-import static com.gentics.mesh.search.verticle.eventhandler.Util.logElasticSearchError;
-import static com.gentics.mesh.search.verticle.eventhandler.Util.toMultiMap;
 
 /**
  * Maps events from mesh to elastic search requests.
@@ -107,8 +109,8 @@ public class MainEventHandler implements EventHandler {
 			syncEventHandler,
 			clearEventHandler,
 			forEvent(MeshEvent.SEARCH_FLUSH_REQUEST, MainEventHandler::flushRequest),
-			eventHandlerFactory.createSimpleEventHandler(MeshEntities::getSchema, SchemaContainer.composeIndexName()),
-			eventHandlerFactory.createSimpleEventHandler(MeshEntities::getMicroschema, MicroschemaContainer.composeIndexName()),
+			eventHandlerFactory.createSimpleEventHandler(MeshEntities::getSchema, Schema.composeIndexName()),
+			eventHandlerFactory.createSimpleEventHandler(MeshEntities::getMicroschema, Microschema.composeIndexName()),
 			eventHandlerFactory.createSimpleEventHandler(MeshEntities::getUser, User.composeIndexName()),
 			eventHandlerFactory.createSimpleEventHandler(MeshEntities::getRole, Role.composeIndexName()),
 			eventHandlerFactory.createSimpleEventHandler(MeshEntities::getProject, Project.composeIndexName()),

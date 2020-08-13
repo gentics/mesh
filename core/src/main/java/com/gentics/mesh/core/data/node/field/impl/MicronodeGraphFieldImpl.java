@@ -11,13 +11,14 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
+import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
@@ -28,12 +29,13 @@ import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
-import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.util.CompareUtils;
 
@@ -86,21 +88,22 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 			throw error(BAD_REQUEST, "micronode_error_missing_reference", fieldKey);
 		}
 
-		MicroschemaContainerVersion microschemaContainerVersion = ac.getProject().getMicroschemaContainerRoot().fromReference(microschemaReference,
+		MicroschemaDaoWrapper microschemaDao = Tx.get().data().microschemaDao();
+		MicroschemaVersion microschemaVersion = microschemaDao.fromReference(ac.getProject(), microschemaReference,
 			ac.getBranch());
 
 		Micronode micronode = null;
 
 		// check whether microschema is allowed
 		if (!ArrayUtils.isEmpty(microschemaFieldSchema.getAllowedMicroSchemas())
-			&& !Arrays.asList(microschemaFieldSchema.getAllowedMicroSchemas()).contains(microschemaContainerVersion.getName())) {
-			log.error("Node update not allowed since the microschema {" + microschemaContainerVersion.getName()
+			&& !Arrays.asList(microschemaFieldSchema.getAllowedMicroSchemas()).contains(microschemaVersion.getName())) {
+			log.error("Node update not allowed since the microschema {" + microschemaVersion.getName()
 				+ "} is now allowed. Allowed microschemas {" + Arrays.toString(microschemaFieldSchema.getAllowedMicroSchemas()) + "}");
-			throw error(BAD_REQUEST, "node_error_invalid_microschema_field_value", fieldKey, microschemaContainerVersion.getName());
+			throw error(BAD_REQUEST, "node_error_invalid_microschema_field_value", fieldKey, microschemaVersion.getName());
 		}
 
 		// Always create a new micronode field since each update must create a new field instance. The old field must be detached from the given container.
-		micronodeGraphField = container.createMicronode(fieldKey, microschemaContainerVersion);
+		micronodeGraphField = container.createMicronode(fieldKey, microschemaVersion);
 		micronode = micronodeGraphField.getMicronode();
 
 		micronode.updateFieldsFromRest(ac, micronodeRestField.getFields());
@@ -198,7 +201,7 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 			Micronode micronodeA = getMicronode();
 			MicronodeField micronodeB = ((MicronodeField) field);
 			// Load each field using the field schema
-			Microschema schema = micronodeA.getSchemaContainerVersion().getSchema();
+			MicroschemaModel schema = micronodeA.getSchemaContainerVersion().getSchema();
 			for (FieldSchema fieldSchema : schema.getFields()) {
 				GraphField graphField = micronodeA.getField(fieldSchema);
 				try {
@@ -243,7 +246,7 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 			MicronodeField micronodeB = ((MicronodeField) obj);
 
 			// Load each field using the field schema
-			Microschema schema = micronodeA.getSchemaContainerVersion().getSchema();
+			MicroschemaModel schema = micronodeA.getSchemaContainerVersion().getSchema();
 			for (FieldSchema fieldSchema : schema.getFields()) {
 				GraphField graphField = micronodeA.getField(fieldSchema);
 				try {

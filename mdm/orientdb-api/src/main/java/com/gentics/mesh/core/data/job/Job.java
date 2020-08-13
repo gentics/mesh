@@ -3,13 +3,12 @@ package com.gentics.mesh.core.data.job;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.core.rest.job.JobWarningList;
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.util.DateUtils;
 
 import io.reactivex.Completable;
@@ -75,56 +74,56 @@ public interface Job extends MeshCoreVertex<JobResponse, Job>, CreatorTrackingVe
 	 * 
 	 * @return
 	 */
-	SchemaContainerVersion getFromSchemaVersion();
+	SchemaVersion getFromSchemaVersion();
 
 	/**
 	 * Set the schema version reference.
 	 * 
 	 * @param version
 	 */
-	void setFromSchemaVersion(SchemaContainerVersion version);
+	void setFromSchemaVersion(SchemaVersion version);
 
 	/**
 	 * Return the schema version reference.
 	 * 
 	 * @return
 	 */
-	SchemaContainerVersion getToSchemaVersion();
+	SchemaVersion getToSchemaVersion();
 
 	/**
 	 * Set the schema version reference.
 	 * 
 	 * @param version
 	 */
-	void setToSchemaVersion(SchemaContainerVersion version);
+	void setToSchemaVersion(SchemaVersion version);
 
 	/**
 	 * Return the microschema version reference.
 	 * 
 	 * @return
 	 */
-	MicroschemaContainerVersion getFromMicroschemaVersion();
+	MicroschemaVersion getFromMicroschemaVersion();
 
 	/**
 	 * Set the microschema version reference.
 	 * 
 	 * @param fromVersion
 	 */
-	void setFromMicroschemaVersion(MicroschemaContainerVersion fromVersion);
+	void setFromMicroschemaVersion(MicroschemaVersion fromVersion);
 
 	/**
 	 * Return the microschema version reference.
 	 * 
 	 * @return
 	 */
-	MicroschemaContainerVersion getToMicroschemaVersion();
+	MicroschemaVersion getToMicroschemaVersion();
 
 	/**
 	 * Set the microschema version reference.
 	 * 
 	 * @param toVersion
 	 */
-	void setToMicroschemaVersion(MicroschemaContainerVersion toVersion);
+	void setToMicroschemaVersion(MicroschemaVersion toVersion);
 
 	/**
 	 * Process the job.

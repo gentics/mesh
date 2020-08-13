@@ -10,10 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -24,7 +21,7 @@ import com.gentics.mesh.core.rest.node.FieldMap;
 import io.vertx.core.json.JsonObject;
 
 /**
- * A field schema container is a named container that contains field schemas. Typical containers are {@link Schema} or {@link Microschema}.
+ * A field schema container is a named container that contains field schemas. Typical containers are {@link SchemaModel} or {@link MicroschemaModel}.
  */
 public interface FieldSchemaContainer extends RestModel {
 

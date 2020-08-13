@@ -16,7 +16,6 @@ import com.gentics.mesh.graphdb.spi.Database;
 @Ignore
 public class OrientDBServerTest extends AbstractOrientDBTest {
 
-	private Database db = mockDatabase();
 
 	private File dbDirectory;
 
@@ -36,7 +35,9 @@ public class OrientDBServerTest extends AbstractOrientDBTest {
 		MeshOptions options = new MeshOptions();
 		options.getStorageOptions().setDirectory(dbDirectory.getAbsolutePath());
 		options.getStorageOptions().setStartServer(true);
-		db.init(options, null);
+
+		Database db = mockDatabase(options);
+		db.init(null);
 		db.setupConnectionPool();
 
 		for (int i = 0; i < 100; i++) {

@@ -20,7 +20,7 @@
 | description
 | false
 | string
-| Description of the microschema
+| Description of the microschemaModel
 
 | edited
 | true
@@ -40,12 +40,12 @@
 | fields
 | true
 | array
-| List of microschema fields
+| List of microschemaModel fields
 
 | name
 | true
 | string
-| Name of the microschema
+| Name of the microschemaModel
 
 | permissions.create
 | true
@@ -90,6 +90,6 @@
 | version
 | true
 | string
-| Version of the microschema
+| Version of the microschemaModel
 
 |======

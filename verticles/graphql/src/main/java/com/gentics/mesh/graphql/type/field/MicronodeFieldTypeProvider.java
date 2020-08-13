@@ -1,19 +1,37 @@
 package com.gentics.mesh.graphql.type.field;
 
+import static com.gentics.mesh.graphql.type.NodeTypeProvider.nodeTypeName;
+import static graphql.Scalars.GraphQLString;
+import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
+import static graphql.schema.GraphQLInterfaceType.newInterface;
+import static graphql.schema.GraphQLObjectType.newObject;
+import static graphql.schema.GraphQLUnionType.newUnionType;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Micronode;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
-import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.type.AbstractTypeProvider;
 import com.gentics.mesh.graphql.type.MicroschemaTypeProvider;
 import com.gentics.mesh.handler.Versioned;
+
 import dagger.Lazy;
 import graphql.schema.DataFetcher;
 import graphql.schema.GraphQLFieldDefinition;
@@ -25,22 +43,6 @@ import graphql.schema.GraphQLTypeReference;
 import graphql.schema.GraphQLUnionType;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import static com.gentics.mesh.graphql.type.NodeTypeProvider.nodeTypeName;
-import static graphql.Scalars.GraphQLString;
-import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
-import static graphql.schema.GraphQLInterfaceType.newInterface;
-import static graphql.schema.GraphQLObjectType.newObject;
-import static graphql.schema.GraphQLUnionType.newUnionType;
 
 @Singleton
 public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
@@ -72,7 +74,7 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 					Object object = env.getObject();
 					if (object instanceof Micronode) {
 						Micronode fieldContainer = (Micronode) object;
-						MicroschemaContainerVersion micronodeFieldSchema = fieldContainer.getSchemaContainerVersion();
+						MicroschemaVersion micronodeFieldSchema = fieldContainer.getSchemaContainerVersion();
 						String schemaName = micronodeFieldSchema.getName();
 						GraphQLObjectType foundType = env.getSchema().getObjectType(schemaName);
 						return foundType;
@@ -86,7 +88,7 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 				.name(MICRONODE_TYPE_NAME)
 				.typeResolver(env -> {
 					Micronode fieldContainer = env.getObject();
-					MicroschemaContainerVersion micronodeFieldSchema = fieldContainer.getSchemaContainerVersion();
+					MicroschemaVersion micronodeFieldSchema = fieldContainer.getSchemaContainerVersion();
 					String schemaName = micronodeFieldSchema.getName();
 					return env.getSchema().getObjectType(schemaName);
 				})
@@ -126,14 +128,14 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 			Project project = context.getProject();
 
 			List<GraphQLObjectType> schemaTypes = new ArrayList<>();
-			for (MicroschemaContainer container : project.getMicroschemaContainerRoot().findAll()) {
-				MicroschemaContainerVersion version = container.getLatestVersion();
-				Microschema microschema = version.getSchema();
+			for (Microschema container : project.getMicroschemaContainerRoot().findAll()) {
+				MicroschemaVersion version = container.getLatestVersion();
+				MicroschemaModel microschemaModel = version.getSchema();
 				Builder microschemaType = newObject();
-				microschemaType.name(microschema.getName());
-				microschemaType.description(microschema.getDescription());
+				microschemaType.name(microschemaModel.getName());
+				microschemaType.description(microschemaModel.getDescription());
 
-				for (FieldSchema fieldSchema : microschema.getFields()) {
+				for (FieldSchema fieldSchema : microschemaModel.getFields()) {
 					FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
 					switch (type) {
 						case STRING:
@@ -172,22 +174,22 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 		}).since(2, () -> {
 			Project project = context.getProject();
 			return project.getMicroschemaContainerRoot().findAll().stream().map(container -> {
-				MicroschemaContainerVersion version = container.getLatestVersion();
-				Microschema microschema = version.getSchema();
-				String microschemaName = microschema.getName();
+				MicroschemaVersion version = container.getLatestVersion();
+				MicroschemaModel microschemaModel = version.getSchema();
+				String microschemaName = microschemaModel.getName();
 
 				Builder microschemaType = newObject();
 
 				microschemaType.withInterface(GraphQLTypeReference.typeRef(MICRONODE_TYPE_NAME));
 				microschemaType.name(microschemaName);
-				microschemaType.description(microschema.getDescription());
+				microschemaType.description(microschemaModel.getDescription());
 
 				GraphQLFieldDefinition.Builder fieldsField = newFieldDefinition();
 				Builder fieldsType = newObject();
 				fieldsType.name(nodeTypeName(microschemaName));
 				fieldsField.dataFetcher(micronodeFetcher(Function.identity()));
 
-				for (FieldSchema fieldSchema : microschema.getFields()) {
+				for (FieldSchema fieldSchema : microschemaModel.getFields()) {
 					FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
 					switch (type) {
 					case STRING:

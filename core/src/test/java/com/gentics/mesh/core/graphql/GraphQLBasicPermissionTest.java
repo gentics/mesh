@@ -6,7 +6,7 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.root.RoleRoot;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -18,7 +18,7 @@ public class GraphQLBasicPermissionTest extends AbstractMeshTest {
 	@Test
 	public void testReadProjectNoPerm() throws Throwable {
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.revokePermissions(role(), project(), READ_PERM);
 			tx.success();
 		}

@@ -6,20 +6,26 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
+import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.impl.BranchWrapper;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 
+import dagger.Lazy;
+
 @Singleton
-public class BranchDaoWrapperImpl implements BranchDaoWrapper {
+public class BranchDaoWrapperImpl extends AbstractDaoWrapper implements BranchDaoWrapper {
 
 	@Inject
-	public BranchDaoWrapperImpl() {
+	public BranchDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionProperties> permissions) {
+		super(boot, permissions);
 	}
 
 	// New methods
@@ -47,6 +53,14 @@ public class BranchDaoWrapperImpl implements BranchDaoWrapper {
 	@Override
 	public BranchWrapper loadObjectByUuid(Project project, InternalActionContext ac, String uuid, GraphPermission perm) {
 		Branch branch = project.getBranchRoot().loadObjectByUuid(ac, uuid, perm);
+		if (branch == null) {
+			return null;
+		} else {
+			return new BranchWrapper(branch);
+		}
+	}
+
+	private BranchWrapper wrap(Branch branch) {
 		if (branch == null) {
 			return null;
 		} else {

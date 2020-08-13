@@ -21,23 +21,24 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
+import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.BranchImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaChange;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.branch.BranchSchemaAssignEventModel;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
@@ -52,11 +53,11 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 /**
- * @see SchemaContainerVersion
+ * @see SchemaVersion
  */
 public class SchemaContainerVersionImpl extends
-	AbstractGraphFieldSchemaContainerVersion<SchemaResponse, SchemaModel, SchemaReference, SchemaContainerVersion, SchemaContainer> implements
-	SchemaContainerVersion {
+	AbstractGraphFieldSchemaContainerVersion<SchemaResponse, SchemaVersionModel, SchemaReference, SchemaVersion, Schema> implements
+	SchemaVersion {
 
 	private static final Logger log = LoggerFactory.getLogger(SchemaContainerVersionImpl.class);
 
@@ -65,12 +66,12 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	protected Class<? extends SchemaContainerVersion> getContainerVersionClass() {
+	protected Class<? extends SchemaVersion> getContainerVersionClass() {
 		return SchemaContainerVersionImpl.class;
 	}
 
 	@Override
-	protected Class<? extends SchemaContainer> getContainerClass() {
+	protected Class<? extends Schema> getContainerClass() {
 		return SchemaContainerImpl.class;
 	}
 
@@ -86,10 +87,11 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public TraversalResult<? extends Node> getNodes(String branchUuid, User user, ContainerType type) {
-		UserRoot userRoot = Tx.get().data().userDao();
-		return new TraversalResult<>(getSchemaContainer().getNodes().stream()
-			.filter(node -> GraphFieldContainerEdgeImpl.matchesBranchAndType(node.getId(), branchUuid, type) && userRoot.hasPermissionForId(user, node.getId(), READ_PUBLISHED_PERM)));
+	public TraversalResult<? extends Node> getNodes(String branchUuid, HibUser user, ContainerType type) {
+		UserDaoWrapper userDao = Tx.get().data().userDao();
+		SchemaDaoWrapper schemaDao = Tx.get().data().schemaDao();
+		return new TraversalResult<>(schemaDao.getNodes(getSchemaContainer()).stream()
+			.filter(node -> GraphFieldContainerEdgeImpl.matchesBranchAndType(node.getId(), branchUuid, type) && userDao.hasPermissionForId(user, node.getId(), READ_PUBLISHED_PERM)));
 	}
 
 	@Override
@@ -104,8 +106,8 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public SchemaModel getSchema() {
-		SchemaModel schema = mesh().serverSchemaStorage().getSchema(getName(), getVersion());
+	public SchemaVersionModel getSchema() {
+		SchemaVersionModel schema = mesh().serverSchemaStorage().getSchema(getName(), getVersion());
 		if (schema == null) {
 			schema = JsonUtil.readValue(getJson(), SchemaModelImpl.class);
 			mesh().serverSchemaStorage().addSchema(schema);
@@ -121,7 +123,7 @@ public class SchemaContainerVersionImpl extends
 		// Load the schema and add/overwrite some properties
 		// Use getSchema to utilise the schema storage
 		SchemaResponse restSchema = JsonUtil.readValue(getJson(), SchemaResponse.class);
-		SchemaContainer container = getSchemaContainer();
+		Schema container = getSchemaContainer();
 		container.fillCommonRestFields(ac, fields, restSchema);
 		restSchema.setRolePerms(container.getRolePermissions(ac, ac.getRolePermissionParameters().getRoleUuid()));
 		return restSchema;
@@ -129,7 +131,7 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public void setSchema(SchemaModel schema) {
+	public void setSchema(SchemaVersionModel schema) {
 		mesh().serverSchemaStorage().removeSchema(schema.getName(), schema.getVersion());
 		mesh().serverSchemaStorage().addSchema(schema);
 		String json = schema.toJson();

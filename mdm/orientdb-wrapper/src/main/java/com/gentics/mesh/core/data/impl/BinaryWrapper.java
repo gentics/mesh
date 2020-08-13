@@ -36,6 +36,14 @@ public class BinaryWrapper implements Binary {
 
 	private final Binary delegate;
 
+	public static BinaryWrapper wrap(Binary binary) {
+		if (binary == null) {
+			return null;
+		} else {
+			return new BinaryWrapper(binary);
+		}
+	}
+
 	public BinaryWrapper(Binary delegate) {
 		this.delegate = delegate;
 	}
@@ -162,7 +170,7 @@ public class BinaryWrapper implements Binary {
 	}
 
 	public Binary setSHA512Sum(String sha512sum) {
-		return delegate.setSHA512Sum(sha512sum);
+		return wrap(delegate.setSHA512Sum(sha512sum));
 	}
 
 	public <T> T addFramedEdge(String label, com.syncleus.ferma.VertexFrame inVertex, Class<T> kind) {
@@ -206,7 +214,7 @@ public class BinaryWrapper implements Binary {
 	}
 
 	public Binary setSize(long sizeInBytes) {
-		return delegate.setSize(sizeInBytes);
+		return wrap(delegate.setSize(sizeInBytes));
 	}
 
 	public <T> T addFramedEdgeExplicit(String label, com.syncleus.ferma.VertexFrame inVertex, ClassInitializer<T> initializer) {
@@ -327,6 +335,14 @@ public class BinaryWrapper implements Binary {
 
 	public <T> T reframeExplicit(Class<T> kind) {
 		return delegate.reframeExplicit(kind);
+	}
+
+	public Set<String> getRoleUuidsForPerm(GraphPermission permission) {
+		return delegate.getRoleUuidsForPerm(permission);
+	}
+
+	public void setRoleUuidForPerm(GraphPermission permission, Set<String> allowedRoles) {
+		delegate.setRoleUuidForPerm(permission, allowedRoles);
 	}
 
 }

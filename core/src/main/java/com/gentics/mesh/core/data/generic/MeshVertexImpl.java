@@ -2,7 +2,9 @@ package com.gentics.mesh.core.data.generic;
 
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -13,11 +15,12 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.BulkActionContext;
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.db.AbstractVertexFrame;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.graph.GraphAttribute;
@@ -37,7 +40,7 @@ import io.vertx.core.Vertx;
  * @see MeshVertex
  */
 @GraphElement
-public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
+public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, HibElement {
 
 	private String uuid;
 
@@ -116,7 +119,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 
 	protected void applyVertexPermissions(EventQueueBatch batch, Role role, Set<GraphPermission> permissionsToGrant,
 		Set<GraphPermission> permissionsToRevoke) {
-		RoleRoot roleDao = mesh().boot().roleDao();
+		RoleDaoWrapper roleDao = mesh().boot().roleDao();
 		roleDao.grantPermissions(role, this, permissionsToGrant.toArray(new GraphPermission[permissionsToGrant.size()]));
 		roleDao.revokePermissions(role, this, permissionsToRevoke.toArray(new GraphPermission[permissionsToRevoke.size()]));
 
@@ -171,6 +174,21 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	 */
 	public io.vertx.reactivex.core.Vertx rxVertx() {
 		return new io.vertx.reactivex.core.Vertx(vertx());
+	}
+
+	@Override
+	public Set<String> getRoleUuidsForPerm(GraphPermission permission) {
+		Set<String> oset = property(permission.propertyKey());
+		if (oset == null) {
+			return new HashSet<>(10);
+		} else {
+			return new HashSet<>(oset);
+		}
+	}
+
+	@Override
+	public void setRoleUuidForPerm(GraphPermission permission, Set<String> allowedRoles) {
+		property(permission.propertyKey(), allowedRoles);
 	}
 
 }

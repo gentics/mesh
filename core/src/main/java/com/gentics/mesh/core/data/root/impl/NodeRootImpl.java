@@ -29,11 +29,9 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Language;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
@@ -44,9 +42,10 @@ import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformableStreamPageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.NodeRoot;
-import com.gentics.mesh.core.data.root.UserRoot;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -124,15 +123,15 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 	/**
 	 * Finds all nodes of a project.
+	 * 
 	 * @param projectUuid
 	 * @return
 	 */
 	private Stream<Vertex> findAll(String projectUuid) {
 		return toStream(db().getVertices(
 			NodeImpl.class,
-			new String[]{PROJECT_KEY_PROPERTY},
-			new Object[]{projectUuid}
-		));
+			new String[] { PROJECT_KEY_PROPERTY },
+			new Object[] { projectUuid }));
 	}
 
 	private Stream<? extends Node> findAllStream(InternalActionContext ac, ContainerType type) {
@@ -159,7 +158,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 			}
 			return false;
 		})
-		.map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
+			.map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
 	}
 
 	@Override
@@ -168,9 +167,12 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public Node loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
+	public Node loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
 		Node element = findByUuid(uuid);
-		UserRoot userRoot = mesh().boot().userDao();
+		if (!errorIfNotFound && element == null) {
+			return null;
+		}
+		UserDaoWrapper userDao = mesh().boot().userDao();
 		if (element == null) {
 			throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);
 		}
@@ -181,31 +183,31 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 			List<String> requestedLanguageTags = ac.getNodeParameters().getLanguageList(options());
 			NodeGraphFieldContainer fieldContainer = element.findVersion(requestedLanguageTags, branch.getUuid(),
-					ac.getVersioningParameters().getVersion());
+				ac.getVersioningParameters().getVersion());
 
 			if (fieldContainer == null) {
 				throw error(NOT_FOUND, "node_error_published_not_found_for_uuid_branch_language", uuid,
-						String.join(",", requestedLanguageTags), branch.getUuid());
+					String.join(",", requestedLanguageTags), branch.getUuid());
 			}
 			// Additionally check whether the read published permission could grant read
 			// perm for published nodes
 			boolean isPublished = fieldContainer.isPublished(branch.getUuid());
-			if (isPublished && userRoot.hasPermission(requestUser, element, READ_PUBLISHED_PERM)) {
+			if (isPublished && userDao.hasPermission(requestUser, element, READ_PUBLISHED_PERM)) {
 				return element;
 				// The container could be a draft. Check whether READ perm is granted.
-			} else if (!isPublished && userRoot.hasPermission(requestUser, element, READ_PERM)) {
+			} else if (!isPublished && userDao.hasPermission(requestUser, element, READ_PERM)) {
 				return element;
 			} else {
 				throw error(FORBIDDEN, "error_missing_perm", uuid, READ_PUBLISHED_PERM.getRestPerm().getName());
 			}
-		} else if (userRoot.hasPermission(requestUser, element, perm)) {
+		} else if (userDao.hasPermission(requestUser, element, perm)) {
 			return element;
 		}
 		throw error(FORBIDDEN, "error_missing_perm", uuid, perm.getRestPerm().getName());
 	}
 
 	@Override
-	public Node create(User creator, SchemaContainerVersion version, Project project, String uuid) {
+	public Node create(HibUser creator, SchemaVersion version, Project project, String uuid) {
 		// TODO check whether the mesh node is in fact a folder node.
 		NodeImpl node = getGraph().addFramedVertex(NodeImpl.class);
 		if (uuid != null) {
@@ -237,8 +239,8 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	 * @return
 	 */
 	// TODO use schema container version instead of container
-	private Node createNode(InternalActionContext ac, SchemaContainerVersion schemaVersion, EventQueueBatch batch,
-			String uuid) {
+	private Node createNode(InternalActionContext ac, SchemaVersion schemaVersion, EventQueueBatch batch,
+		String uuid) {
 		Project project = ac.getProject();
 		MeshAuthUser requestUser = ac.getUser();
 		BootstrapInitializer boot = mesh().boot();
@@ -254,7 +256,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 		// Load the parent node in order to create the node
 		Node parentNode = project.getNodeRoot().loadObjectByUuid(ac, requestModel.getParentNode().getUuid(),
-				CREATE_PERM);
+			CREATE_PERM);
 		Branch branch = ac.getBranch();
 		// BUG: Don't use the latest version. Use the version which is linked to the
 		// branch!
@@ -306,17 +308,17 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		// 1. Extract the schema information from the given JSON
 		SchemaReferenceInfo schemaInfo = JsonUtil.readValue(body, SchemaReferenceInfo.class);
 		boolean missingSchemaInfo = schemaInfo.getSchema() == null
-				|| (StringUtils.isEmpty(schemaInfo.getSchema().getUuid())
-						&& StringUtils.isEmpty(schemaInfo.getSchema().getName()));
+			|| (StringUtils.isEmpty(schemaInfo.getSchema().getUuid())
+				&& StringUtils.isEmpty(schemaInfo.getSchema().getName()));
 		if (missingSchemaInfo) {
 			throw error(BAD_REQUEST, "error_schema_parameter_missing");
 		}
 
 		if (!isEmpty(schemaInfo.getSchema().getUuid())) {
 			// 2. Use schema reference by uuid first
-			SchemaContainer schemaByUuid = project.getSchemaContainerRoot().loadObjectByUuid(ac,
-					schemaInfo.getSchema().getUuid(), READ_PERM);
-			SchemaContainerVersion schemaVersion = branch.findLatestSchemaVersion(schemaByUuid);
+			Schema schemaByUuid = project.getSchemaContainerRoot().loadObjectByUuid(ac,
+				schemaInfo.getSchema().getUuid(), READ_PERM);
+			SchemaVersion schemaVersion = branch.findLatestSchemaVersion(schemaByUuid);
 			if (schemaVersion == null) {
 				throw error(BAD_REQUEST, "schema_error_schema_not_linked_to_branch", schemaByUuid.getName(), branch.getName(), project.getName());
 			}
@@ -325,15 +327,16 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 		// 3. Or just schema reference by name
 		if (!isEmpty(schemaInfo.getSchema().getName())) {
-			SchemaContainer schemaByName = project.getSchemaContainerRoot()
-					.findByName(schemaInfo.getSchema().getName());
+			Schema schemaByName = project.getSchemaContainerRoot()
+				.findByName(schemaInfo.getSchema().getName());
 			if (schemaByName != null) {
 				String schemaName = schemaByName.getName();
 				String schemaUuid = schemaByName.getUuid();
 				if (userDao.hasPermission(requestUser, schemaByName, READ_PERM)) {
-					SchemaContainerVersion schemaVersion = branch.findLatestSchemaVersion(schemaByName);
+					SchemaVersion schemaVersion = branch.findLatestSchemaVersion(schemaByName);
 					if (schemaVersion == null) {
-						throw error(BAD_REQUEST, "schema_error_schema_not_linked_to_branch", schemaByName.getName(), branch.getName(), project.getName());
+						throw error(BAD_REQUEST, "schema_error_schema_not_linked_to_branch", schemaByName.getName(), branch.getName(),
+							project.getName());
 					}
 					return createNode(ac, schemaVersion, batch, uuid);
 				} else {
@@ -350,7 +353,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 	@Override
 	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive,
-			Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
+		Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
 		if (recursive) {
 			for (Node node : findAll()) {
 				// We don't need to recursively handle the permissions for each node again since

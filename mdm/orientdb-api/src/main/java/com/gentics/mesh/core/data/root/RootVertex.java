@@ -15,13 +15,17 @@ import java.util.stream.StreamSupport;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HasPermissions;
-import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.page.impl.DynamicNonTransformablePageImpl;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -64,13 +68,13 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	default Stream<? extends T> findAllStream(InternalActionContext ac, GraphPermission permission) {
 		MeshAuthUser user = ac.getUser();
 		FramedTransactionalGraph graph = Tx.get().getGraph();
-		UserRoot userRoot = Tx.get().data().userDao();
+		UserDaoWrapper userDao = Tx.get().data().userDao();
 
 		String idx = "e." + getRootLabel().toLowerCase() + "_out";
 		Spliterator<Edge> itemEdges = graph.getEdges(idx.toLowerCase(), id()).spliterator();
 		return StreamSupport.stream(itemEdges, false)
 			.map(edge -> edge.getVertex(Direction.IN))
-			.filter(vertex -> userRoot.hasPermissionForId(user, vertex.getId(), permission))
+			.filter(vertex -> userDao.hasPermissionForId(user, vertex.getId(), permission))
 			.map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
 	}
 
@@ -109,8 +113,9 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 *            Additional filter to be applied
 	 * @return
 	 */
-	default TransformablePage<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<T> extraFilter) {
-		return new DynamicTransformablePageImpl<>(ac.getUser(), this, pagingInfo, READ_PERM, extraFilter, true);
+	default Page<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<T> extraFilter) {
+		Page<? extends T> page = new DynamicNonTransformablePageImpl<>(ac.getUser(), this, pagingInfo, READ_PERM, extraFilter, true);
+		return page;
 	}
 
 	/**
@@ -155,8 +160,8 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 
 		MeshAuthUser requestUser = ac.getUser();
 		String elementUuid = element.getUuid();
-		UserRoot userRoot = Tx.get().data().userDao();
-		if (requestUser != null && userRoot.hasPermission(requestUser, element, perm)) {
+		UserDaoWrapper userDao = Tx.get().data().userDao();
+		if (requestUser != null && userDao.hasPermission(requestUser, element, perm)) {
 			return element;
 		} else {
 			throw error(FORBIDDEN, "error_missing_perm", elementUuid, perm.getRestPerm().getName());
@@ -216,6 +221,10 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 */
 	default T loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
 		T element = findByUuid(uuid);
+		return checkPerms(element, uuid, ac, perm, errorIfNotFound);
+	}
+
+	default T checkPerms(T element, String uuid, InternalActionContext ac, GraphPermission perm, boolean errorIfNotFound) {
 		if (element == null) {
 			if (errorIfNotFound) {
 				throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);
@@ -226,8 +235,8 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 
 		MeshAuthUser requestUser = ac.getUser();
 		String elementUuid = element.getUuid();
-		UserRoot userRoot = Tx.get().data().userDao();
-		if (userRoot.hasPermission(requestUser, element, perm)) {
+		UserDaoWrapper userDao = Tx.get().data().userDao();
+		if (userDao.hasPermission(requestUser, element, perm)) {
 			return element;
 		} else {
 			throw error(FORBIDDEN, "error_missing_perm", elementUuid, perm.getRestPerm().getName());
@@ -263,7 +272,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 *            Stack which contains the remaining path elements which should be resolved starting with the current graph element
 	 * @return
 	 */
-	default MeshVertex resolveToElement(Stack<String> stack) {
+	default HibElement resolveToElement(Stack<String> stack) {
 		if (log.isDebugEnabled()) {
 			log.debug("Resolving for {" + getPersistanceClass().getSimpleName() + "}.");
 			if (stack.isEmpty()) {

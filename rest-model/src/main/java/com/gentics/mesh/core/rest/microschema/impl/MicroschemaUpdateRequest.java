@@ -6,12 +6,12 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 
 import io.vertx.core.json.JsonObject;
 
-public class MicroschemaUpdateRequest implements MicroschemaModel {
+public class MicroschemaUpdateRequest implements MicroschemaVersionModel {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Version of the microschema")

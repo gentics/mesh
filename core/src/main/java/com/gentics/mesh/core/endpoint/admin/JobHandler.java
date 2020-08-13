@@ -19,8 +19,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.page.TransformablePage;
-import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
@@ -46,12 +44,11 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 	public JobHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, WriteLockImpl writeLock) {
 		super(db, utils, writeLock);
 		this.boot = boot;
-
 	}
 
 	@Override
-	public RootVertex<Job> getRootVertex(Tx tx, InternalActionContext ac) {
-		return boot.jobRoot();
+	public JobCrudActions crudActions() {
+		return new JobCrudActions();
 	}
 
 	@Override

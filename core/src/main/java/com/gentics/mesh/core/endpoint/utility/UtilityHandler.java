@@ -15,17 +15,16 @@ import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.AbstractRestException;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
-import com.gentics.mesh.core.rest.schema.Microschema;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.MicroschemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.validation.SchemaValidationResponse;
 import com.gentics.mesh.core.rest.validation.ValidationStatus;
-import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.search.index.node.NodeIndexHandler;
+import com.gentics.mesh.search.index.node.NodeIndexHandlerImpl;
 
 import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
@@ -45,12 +44,12 @@ public class UtilityHandler extends AbstractHandler {
 
 	private final WebRootLinkReplacer linkReplacer;
 
-	private final NodeIndexHandler nodeIndexHandler;
+	private final NodeIndexHandlerImpl nodeIndexHandler;
 
 	private final HandlerUtilities utils;
 
 	@Inject
-	public UtilityHandler(MeshOptions options, Database db, WebRootLinkReplacer linkReplacer, NodeIndexHandler nodeIndexHandler,
+	public UtilityHandler(MeshOptions options, Database db, WebRootLinkReplacer linkReplacer, NodeIndexHandlerImpl nodeIndexHandler,
 		HandlerUtilities utils) {
 		this.options = options;
 		this.db = db;
@@ -84,7 +83,7 @@ public class UtilityHandler extends AbstractHandler {
 	 */
 	public void validateSchema(InternalActionContext ac) {
 		db.asyncTx(() -> {
-			Schema schema = JsonUtil.readValue(ac.getBodyAsString(), SchemaModelImpl.class);
+			SchemaModel schema = JsonUtil.readValue(ac.getBodyAsString(), SchemaModelImpl.class);
 			JsonObject fullSettings = nodeIndexHandler.createIndexSettings(schema);
 			SchemaValidationResponse response = new SchemaValidationResponse();
 			response.setElasticsearch(fullSettings);
@@ -124,7 +123,7 @@ public class UtilityHandler extends AbstractHandler {
 	 */
 	public void validateMicroschema(InternalActionContext ac) {
 		utils.syncTx(ac, tx -> {
-			Microschema model = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModelImpl.class);
+			MicroschemaModel model = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModelImpl.class);
 			model.validate();
 			return new SchemaValidationResponse();
 		}, msg -> ac.send(msg, OK));

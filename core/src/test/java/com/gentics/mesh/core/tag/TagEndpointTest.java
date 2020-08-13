@@ -41,8 +41,9 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.ListResponse;
@@ -71,9 +72,10 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 
 		final int nBasicTags = 9;
 		try (Tx tx = tx()) {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
 			TagFamily basicTagFamily = tagFamily("basic");
-			Tag noPermTag = basicTagFamily.create("noPermTag", project(), user());
+			Tag noPermTag = tagDao.create(basicTagFamily, "noPermTag", project(), user());
 			String noPermTagUUID = noPermTag.getUuid();
 			// TODO check whether the project reference should be moved from generic class into node mesh class and thus not be available for tags
 			basicTagFamily.addTag(noPermTag);
@@ -179,7 +181,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		String uuid;
 		String parentTagFamilyUuid;
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			TagFamily parentTagFamily = tagFamily("basic");
 			parentTagFamilyUuid = parentTagFamily.getUuid();
 			Tag tag = tag("vehicle");
@@ -208,6 +210,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		List<? extends Node> nodes;
 
 		try (Tx tx = tx()) {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			String tagName = tag.getName();
 			assertNotNull(tag.getEditor());
 			TagResponse restTag = call(() -> client().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), tag.getUuid()));
@@ -224,7 +227,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 
 			// 3. Send the request to the server
 			trackingSearchProvider().clear().blockingAwait();
-			nodes = tag.getNodes(project().getLatestBranch()).list();
+			nodes = tagDao.getNodes(tag, project().getLatestBranch()).list();
 			tx.success();
 		}
 
@@ -306,7 +309,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		TagFamily parentTagFamily = tagFamily("basic");
 
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.revokePermissions(role(), tag, UPDATE_PERM);
 			tx.success();
 		}
@@ -345,8 +348,9 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 				.hasTagFamily("basic", parentTagFamilyUuid);
 		}).one();
 
-		tx(() -> {
-			tag.getNodes(initialBranch()).forEach(n -> {
+		tx(tx -> {
+			TagDaoWrapper tagDao = tx.data().tagDao();
+			tagDao.getNodes(tag, initialBranch()).forEach(n -> {
 				String uuid = n.getUuid();
 				expect(NODE_UNTAGGED).match(1, NodeTaggedEventModel.class, event -> {
 					assertEquals(uuid, event.getNode().getUuid());
@@ -355,7 +359,10 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			});
 		});
 
-		List<? extends Node> nodes = tx(() -> tag.getNodes(project().getLatestBranch()).list());
+		List<? extends Node> nodes = tx(tx -> {
+			TagDaoWrapper tagDao = tx.data().tagDao();
+			return tagDao.getNodes(tag, project().getLatestBranch()).list();
+		});
 		call(() -> client().deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid));
 
 		awaitEvents();
@@ -383,7 +390,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.revokePermissions(role(), tag("vehicle"), DELETE_PERM);
 			tx.success();
 		}
@@ -461,7 +468,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 
 		String tagRootUuid = db().tx(() -> tagFamily("colors").getUuid());
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.revokePermissions(role(), tagFamily("colors"), CREATE_PERM);
 			tx.success();
 		}
@@ -609,7 +616,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		String uuid;
 		String parentTagFamilyUuid;
 		try (Tx tx = tx()) {
-			RoleRoot roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
 			Tag tag = tag("red");
 
 			TagFamily parentTagFamily = tagFamily("colors");

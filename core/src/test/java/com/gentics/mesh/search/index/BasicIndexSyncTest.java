@@ -16,15 +16,19 @@ import org.mockito.Mockito;
 import com.gentics.mesh.context.impl.BulkActionContextImpl;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
@@ -101,7 +105,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 		// Assert deletion
 		tx(() -> {
-			boot().userDao().findByName("user_3").getElement().remove();
+			boot().userDao().findByName("user_3").remove();;
 		});
 		syncIndex();
 		assertMetrics("user", 0, 0, 1);
@@ -163,9 +167,10 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 	@Ignore("Currently fails due to https://github.com/gentics/mesh/issues/606")
 	public void testTagSync() throws Exception {
 		// Assert insert
-		tx(() -> {
+		tx(tx -> {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			for (int i = 0; i < 400; i++) {
-				tagFamily("colors").create("tag_" + i, project(), user());
+				tagDao.create(tagFamily("colors"), "tag_" + i, project(), user());
 			}
 		});
 		syncIndex();
@@ -182,7 +187,8 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 		// Assert deletion
 		tx(() -> {
-			boot().tagDao().findByName("tag_3").getElement().remove();
+			TagFamily tagFamily = tagFamily("colors");
+			boot().tagDao().findByName(tagFamily, "tag_3").getElement().remove();
 		});
 		syncIndex();
 		assertMetrics("tag", 0, 0, 1);
@@ -211,7 +217,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 		// Assert deletion
 		tx(() -> {
-			boot().tagFamilyDao().findByName("tagfamily_3").getElement().remove();
+			boot().tagFamilyDao().findByName(project(), "tagfamily_3").getElement().remove();
 		});
 		syncIndex();
 		assertMetrics("tagfamily", 0, 0, 1);
@@ -282,11 +288,12 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 	@Test
 	public void testSchemaSync() throws Exception {
 		// Assert insert
-		tx(() -> {
+		tx(tx -> {
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 			for (int i = 0; i < 400; i++) {
-				SchemaModel model = new SchemaModelImpl();
+				SchemaVersionModel model = new SchemaModelImpl();
 				model.setName("schema_" + i);
-				boot().schemaDao().create(model, user());
+				schemaDao.create(model, user());
 			}
 		});
 		syncIndex();
@@ -302,8 +309,9 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		assertMetrics("schema", 0, 1, 0);
 
 		// Assert deletion
-		tx(() -> {
-			SchemaContainer schema = boot().schemaDao().findByName("schema_3");
+		tx(tx -> {
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			Schema schema = schemaDao.findByName("schema_3");
 			schema.getLatestVersion().remove();
 			schema.remove();
 		});
@@ -316,7 +324,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		// Assert insert
 		tx(() -> {
 			for (int i = 0; i < 400; i++) {
-				MicroschemaModel model = new MicroschemaModelImpl();
+				MicroschemaVersionModel model = new MicroschemaModelImpl();
 				model.setName("microschema_" + i);
 				createMicroschema(model);
 			}
@@ -332,8 +340,9 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		assertMetrics("microschema", 0, 1, 0);
 
 		// Assert deletion
-		tx(() -> {
-			MicroschemaContainer microschema = boot().microschemaDao().findByName("microschema_101");
+		tx(tx -> {
+			MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
+			Microschema microschema = microschemaDao.findByName("microschema_101");
 			microschema.getLatestVersion().remove();
 			microschema.remove();
 		});

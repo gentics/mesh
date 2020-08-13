@@ -63,7 +63,6 @@ import com.gentics.mesh.core.data.BranchParentEntry;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.Language;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
@@ -72,6 +71,7 @@ import com.gentics.mesh.core.data.TagEdge;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.generic.AbstractGenericFieldContainerVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -88,10 +88,11 @@ import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformableStreamPageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.UserRoot;
-import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
+import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -119,7 +120,7 @@ import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
 import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.webroot.PathPrefixUtil;
@@ -401,12 +402,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public NodeGraphFieldContainer createGraphFieldContainer(String languageTag, Branch branch, User editor) {
+	public NodeGraphFieldContainer createGraphFieldContainer(String languageTag, Branch branch, HibUser editor) {
 		return createGraphFieldContainer(languageTag, branch, editor, null, true);
 	}
 
 	@Override
-	public NodeGraphFieldContainer createGraphFieldContainer(String languageTag, Branch branch, User editor, NodeGraphFieldContainer original,
+	public NodeGraphFieldContainer createGraphFieldContainer(String languageTag, Branch branch, HibUser editor, NodeGraphFieldContainer original,
 		boolean handleDraftEdge) {
 		NodeGraphFieldContainerImpl previous = null;
 		EdgeFrame draftEdge = null;
@@ -512,12 +513,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void setSchemaContainer(SchemaContainer schema) {
+	public void setSchemaContainer(Schema schema) {
 		property(SCHEMA_CONTAINER_KEY_PROPERTY, schema.getUuid());
 	}
 
 	@Override
-	public SchemaContainer getSchemaContainer() {
+	public Schema getSchemaContainer() {
 		String uuid = property(SCHEMA_CONTAINER_KEY_PROPERTY);
 		if (uuid == null) {
 			return null;
@@ -550,11 +551,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public Stream<Node> getChildrenStream(InternalActionContext ac) {
 		MeshAuthUser user = ac.getUser();
-		UserRoot userRoot = Tx.get().data().userDao();
+		UserDaoWrapper userDao = Tx.get().data().userDao();
 		return toStream(getUnframedChildren(ac.getBranch().getUuid()))
 			.filter(node -> {
 				Object id = node.getId();
-				return userRoot.hasPermissionForId(user, id, READ_PERM) || userRoot.hasPermissionForId(user, id, READ_PUBLISHED_PERM);
+				return userDao.hasPermissionForId(user, id, READ_PERM) || userDao.hasPermissionForId(user, id, READ_PUBLISHED_PERM);
 			}).map(node -> graph.frameElementExplicit(node, NodeImpl.class));
 	}
 
@@ -592,7 +593,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Node create(User creator, SchemaContainerVersion schemaVersion, Project project) {
+	public Node create(HibUser creator, SchemaVersion schemaVersion, Project project) {
 		return create(creator, schemaVersion, project, project.getLatestBranch());
 	}
 
@@ -600,7 +601,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * Create a new node and make sure to delegate the creation request to the main node root aggregation node.
 	 */
 	@Override
-	public Node create(User creator, SchemaContainerVersion schemaVersion, Project project, Branch branch, String uuid) {
+	public Node create(HibUser creator, SchemaVersion schemaVersion, Project project, Branch branch, String uuid) {
 		if (!isBaseNode() && !isVisibleInBranch(branch.getUuid())) {
 			log.error(String.format("Error while creating node in branch {%s}: requested parent node {%s} exists, but is not visible in branch.",
 				branch.getName(), getUuid()));
@@ -647,7 +648,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 		}
 
-		SchemaContainer container = getSchemaContainer();
+		Schema container = getSchemaContainer();
 		if (container == null) {
 			throw error(BAD_REQUEST, "The schema container for node {" + getUuid() + "} could not be found.");
 		}
@@ -774,7 +775,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			// We should change this behaviour and update the client implementations.
 			// throw error(NOT_FOUND, "object_not_found_for_uuid", getUuid());
 		} else {
-			Schema schema = fieldContainer.getSchemaContainerVersion().getSchema();
+			SchemaModel schema = fieldContainer.getSchemaContainerVersion().getSchema();
 			if (fieldsSet.has("container")) {
 				restNode.setContainer(schema.getContainer());
 			}
@@ -807,7 +808,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			// editor and edited
 			if (fieldsSet.has("editor")) {
-				User editor = fieldContainer.getEditor();
+				HibUser editor = fieldContainer.getEditor();
 				if (editor != null) {
 					restNode.setEditor(editor.transformToReference());
 				}
@@ -859,10 +860,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 */
 	private void setChildrenInfo(InternalActionContext ac, Branch branch, NodeResponse restNode) {
 		Map<String, NodeChildrenInfo> childrenInfo = new HashMap<>();
-		UserRoot userRoot = Tx.get().data().userDao();
+		UserDaoWrapper userDao = Tx.get().data().userDao();
 
 		for (Node child : getChildren(branch.getUuid())) {
-			if (userRoot.hasPermission(ac.getUser(), child, READ_PERM)) {
+			if (userDao.hasPermission(ac.getUser(), child, READ_PERM)) {
 				String schemaName = child.getSchemaContainer().getName();
 				NodeChildrenInfo info = childrenInfo.get(schemaName);
 				if (info == null) {
@@ -1172,7 +1173,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			PublishStatusModel status = new PublishStatusModel();
 			status.setPublished(true);
 			status.setVersion(c.getVersion().toString());
-			User editor = c.getEditor();
+			HibUser editor = c.getEditor();
 			if (editor != null) {
 				status.setPublisher(editor.transformToReference());
 			}
@@ -1277,7 +1278,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			PublishStatusModel status = new PublishStatusModel();
 			status.setPublished(true);
 			status.setVersion(container.getVersion().toString());
-			User editor = container.getEditor();
+			HibUser editor = container.getEditor();
 			if (editor != null) {
 				status.setPublisher(editor.transformToReference());
 			}
@@ -1369,7 +1370,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public NodeGraphFieldContainer publish(InternalActionContext ac, String languageTag, Branch branch, User user) {
+	public NodeGraphFieldContainer publish(InternalActionContext ac, String languageTag, Branch branch, HibUser user) {
 		String branchUuid = branch.getUuid();
 
 		// create published version
@@ -1561,7 +1562,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public Stream<? extends Node> getChildren(MeshAuthUser requestUser, String branchUuid, List<String> languageTags, ContainerType type) {
 		GraphPermission perm = type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM;
-		UserRoot userRoot = Tx.get().data().userDao();
+		UserDaoWrapper userRoot = Tx.get().data().userDao();
 
 		Predicate<Node> languageFilter = languageTags == null || languageTags.isEmpty()
 			? item -> true
@@ -1578,7 +1579,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public TransformablePage<? extends Tag> getTags(User user, PagingParameters params, Branch branch) {
+	public TransformablePage<? extends Tag> getTags(HibUser user, PagingParameters params, Branch branch) {
 		VertexTraversal<?, ?, ?> traversal = TagEdgeImpl.getTagTraversal(this, branch);
 		return new DynamicTransformablePageImpl<Tag>(user, traversal, params, READ_PERM, TagImpl.class);
 	}
@@ -1704,8 +1705,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 
 			// Make sure the container was already migrated. Otherwise the update can't proceed.
-			SchemaContainerVersion schemaContainerVersion = latestDraftVersion.getSchemaContainerVersion();
-			if (!latestDraftVersion.getSchemaContainerVersion().equals(branch.findLatestSchemaVersion(schemaContainerVersion
+			SchemaVersion schemaVersion = latestDraftVersion.getSchemaContainerVersion();
+			if (!latestDraftVersion.getSchemaContainerVersion().equals(branch.findLatestSchemaVersion(schemaVersion
 				.getSchemaContainer()))) {
 				throw error(BAD_REQUEST, "node_error_migration_incomplete");
 			}
@@ -1782,7 +1783,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		List<Tag> tags = getTagsToSet(ac, batch);
 		Branch branch = ac.getBranch();
 		applyTags(branch, tags, batch);
-		User user = ac.getUser();
+		HibUser user = ac.getUser();
 		return getTags(user, ac.getPagingParameters(), branch);
 	}
 
@@ -1923,7 +1924,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// Check the different language versions
 		for (NodeGraphFieldContainer container : getGraphFieldContainers(branchUuid, type)) {
-			Schema schema = container.getSchemaContainerVersion().getSchema();
+			SchemaModel schema = container.getSchemaContainerVersion().getSchema();
 			String segmentFieldName = schema.getSegmentField();
 			// First check whether a string field exists for the given name
 			StringGraphField field = container.getString(segmentFieldName);
@@ -1995,7 +1996,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 */
 	@Override
 	public String getSubETag(InternalActionContext ac) {
-		UserRoot userRoot = Tx.get().data().userDao();
+		UserDaoWrapper userDao = Tx.get().data().userDao();
 		StringBuilder keyBuilder = new StringBuilder();
 
 		// Parameters
@@ -2063,7 +2064,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// branch specific children
 		for (Node child : getChildren(branch.getUuid())) {
-			if (userRoot.hasPermission(ac.getUser(), child, READ_PUBLISHED_PERM)) {
+			if (userDao.hasPermission(ac.getUser(), child, READ_PUBLISHED_PERM)) {
 				keyBuilder.append("-");
 				keyBuilder.append(child.getSchemaContainer().getName());
 			}
@@ -2130,7 +2131,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public User getCreator() {
+	public HibUser getCreator() {
 		return mesh().userProperties().getCreator(this);
 	}
 
@@ -2158,7 +2159,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return model;
 	}
 
-	public NodeMeshEventModel onReferenceUpdated(String uuid, SchemaContainer schema, String branchUuid, ContainerType type, String languageTag) {
+	public NodeMeshEventModel onReferenceUpdated(String uuid, Schema schema, String branchUuid, ContainerType type, String languageTag) {
 		NodeMeshEventModel event = new NodeMeshEventModel();
 		event.setEvent(NODE_REFERENCE_UPDATED);
 		event.setUuid(uuid);
@@ -2173,7 +2174,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public NodeMeshEventModel onDeleted(String uuid, SchemaContainer schema, String branchUuid, ContainerType type, String languageTag) {
+	public NodeMeshEventModel onDeleted(String uuid, Schema schema, String branchUuid, ContainerType type, String languageTag) {
 		NodeMeshEventModel event = new NodeMeshEventModel();
 		event.setEvent(getTypeInfo().getOnDeleted());
 		event.setUuid(uuid);

@@ -4,27 +4,28 @@ import static com.gentics.mesh.core.rest.MeshEvent.TAG_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.TAG_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.TAG_UPDATED;
 
-import java.util.List;
 import java.util.Objects;
 
 import com.gentics.mesh.ElementType;
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
-import com.gentics.mesh.madl.traversal.TraversalResult;
-import com.gentics.mesh.parameter.PagingParameters;
 
 /**
  * Graph domain model interface for a tag.
  * 
  * Tags can currently only hold a single string value. Tags are not localizable. A tag can only be assigned to a single tag family.
  */
-public interface Tag extends MeshCoreVertex<TagResponse, Tag>, ReferenceableElement<TagReference>, UserTrackingVertex, ProjectElement {
+public interface Tag extends MeshCoreVertex<TagResponse, Tag>, ReferenceableElement<TagReference>, UserTrackingVertex, ProjectElement, HibCoreElement {
 
 	TypeInfo TYPE_INFO = new TypeInfo(ElementType.TAG, TAG_CREATED, TAG_UPDATED, TAG_DELETED);
 
@@ -60,36 +61,6 @@ public interface Tag extends MeshCoreVertex<TagResponse, Tag>, ReferenceableElem
 	TagFamily getTagFamily();
 
 	/**
-	 * Unassign the the node from the tag.
-	 * 
-	 * @param node
-	 */
-	void removeNode(Node node);
-
-	/**
-	 * Return a traversal result of nodes that were tagged by this tag in the given branch
-	 * 
-	 * @param branch
-	 *            branch
-	 * 
-	 * @return Result
-	 */
-	TraversalResult<? extends Node> getNodes(Branch branch);
-
-	/**
-	 * Return a page of nodes that are visible to the user and which are tagged by this tag. Use the paging and language information provided.
-	 * 
-	 * @param requestUser
-	 * @param branch
-	 * @param languageTags
-	 * @param type
-	 * @param pagingInfo
-	 * @return
-	 */
-	TransformablePage<? extends Node> findTaggedNodes(MeshAuthUser requestUser, Branch branch, List<String> languageTags, ContainerType type,
-			PagingParameters pagingInfo);
-
-	/**
 	 * Set the tag family of this tag.
 	 * 
 	 * @param tagFamily
@@ -97,19 +68,10 @@ public interface Tag extends MeshCoreVertex<TagResponse, Tag>, ReferenceableElem
 	void setTagFamily(TagFamily tagFamily);
 
 	/**
-	 * Set the project to which tag is assigned to.
-	 * 
-	 * @param project
-	 */
-	void setProject(Project project);
-
-	/**
 	 * Return the project to which the tag was assigned to
 	 * 
 	 * @return Project of the tag
 	 */
 	Project getProject();
-
-	TraversalResult<? extends Node> findTaggedNodes(InternalActionContext ac);
 
 }

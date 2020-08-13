@@ -4,7 +4,7 @@ import java.util.Objects;
 
 import com.gentics.mesh.context.MicronodeMigrationContext;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.rest.event.node.MicroschemaMigrationCause;
 
@@ -14,9 +14,9 @@ public class MicronodeMigrationContextImpl implements MicronodeMigrationContext 
 
 	private Branch branch;
 
-	private MicroschemaContainerVersion fromVersion;
+	private MicroschemaVersion fromVersion;
 
-	private MicroschemaContainerVersion toVersion;
+	private MicroschemaVersion toVersion;
 
 	private MicroschemaMigrationCause cause;
 
@@ -39,20 +39,20 @@ public class MicronodeMigrationContextImpl implements MicronodeMigrationContext 
 	}
 
 	@Override
-	public MicroschemaContainerVersion getFromVersion() {
+	public MicroschemaVersion getFromVersion() {
 		return fromVersion;
 	}
 
-	public void setFromVersion(MicroschemaContainerVersion fromVersion) {
+	public void setFromVersion(MicroschemaVersion fromVersion) {
 		this.fromVersion = fromVersion;
 	}
 
 	@Override
-	public MicroschemaContainerVersion getToVersion() {
+	public MicroschemaVersion getToVersion() {
 		return toVersion;
 	}
 
-	public void setToVersion(MicroschemaContainerVersion toVersion) {
+	public void setToVersion(MicroschemaVersion toVersion) {
 		this.toVersion = toVersion;
 	}
 

@@ -8,8 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.Microschema;
-
+import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.json.JsonUtil;
@@ -19,7 +18,7 @@ import io.vertx.core.json.JsonObject;
 /**
  * POJO for a microschema response.
  */
-public class MicroschemaResponse extends AbstractGenericRestResponse implements Microschema {
+public class MicroschemaResponse extends AbstractGenericRestResponse implements MicroschemaModel {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Version of the microschema")
