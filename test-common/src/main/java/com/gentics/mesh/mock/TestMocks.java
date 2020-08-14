@@ -28,7 +28,6 @@ import java.util.List;
 
 import org.mockito.Mockito;
 
-import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -36,6 +35,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
@@ -144,15 +144,15 @@ public final class TestMocks {
 		return role;
 	}
 
-	public static Group mockGroup(String groupName, User creator) {
-		Group group = mock(Group.class);
+	public static HibGroup mockGroup(String groupName, User creator) {
+		HibGroup group = mock(HibGroup.class);
 		when(group.getCreator()).thenReturn(creator);
 		when(group.getCreationTimestamp()).thenReturn(TIMESTAMP_OLD);
 		when(group.getEditor()).thenReturn(creator);
 		when(group.getLastEditedTimestamp()).thenReturn(TIMESTAMP_NEW);
 		when(group.getName()).thenReturn(groupName);
 		when(group.getUuid()).thenReturn(GROUP_CLIENT_UUID);
-		when(group.getRolesWithPerm(InternalPermission.READ_PERM)).thenReturn(createEmptyTraversal());
+		//when(group.getRolesWithPerm(InternalPermission.READ_PERM)).thenReturn(createEmptyTraversal());
 		when(group.getElementVersion()).thenReturn(UUID_5);
 		return group;
 	}

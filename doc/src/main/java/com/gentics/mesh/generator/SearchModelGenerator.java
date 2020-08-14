@@ -13,6 +13,7 @@ import static com.gentics.mesh.mock.TestMocks.mockTag;
 import static com.gentics.mesh.mock.TestMocks.mockTagFamily;
 import static com.gentics.mesh.mock.TestMocks.mockUpdateDocumentEntry;
 import static com.gentics.mesh.mock.TestMocks.mockUser;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
@@ -26,16 +27,22 @@ import org.mockito.Mockito;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.TagDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.impl.TagDaoWrapperImpl;
+import com.gentics.mesh.core.data.dao.impl.UserDaoWrapperImpl;
+import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
+import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.db.TxData;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.dagger.DaggerMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
@@ -121,19 +128,33 @@ public class SearchModelGenerator extends AbstractGenerator {
 		provider = (TrackingSearchProvider) meshDagger.searchProvider();
 
 		try {
+			TxData txData = mockTx();
+			UserDaoWrapper userDao = mock(UserDaoWrapperImpl.class);
+			TagDaoWrapper tagDao = mock(TagDaoWrapperImpl.class);
+			when(txData.userDao()).thenReturn(userDao);
+			when(txData.tagDao()).thenReturn(tagDao);
+
 			writeNodeDocumentExample();
 			writeTagDocumentExample();
 			writeGroupDocumentExample();
-			writeUserDocumentExample();
+			writeUserDocumentExample(userDao);
 			writeRoleDocumentExample();
 			writeProjectDocumentExample();
-			writeTagFamilyDocumentExample();
+			writeTagFamilyDocumentExample(tagDao);
 			writeSchemaDocumentExample();
 			writeMicroschemaDocumentExample();
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.exit(10);
 		}
+	}
+
+	private TxData mockTx() {
+		Tx txMock = mock(Tx.class);
+		Tx.setActive(txMock);
+		TxData txData = mock(TxData.class);
+		when(txMock.data()).thenReturn(txData);
+		return txData;
 	}
 
 	private void writeNodeDocumentExample() throws Exception {
@@ -163,7 +184,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 
 	private void writeGroupDocumentExample() throws Exception {
 		User user = mockUser("joe1", "Joe", "Doe");
-		Group group = mockGroup("adminGroup", user);
+		HibGroup group = mockGroup("adminGroup", user);
 		GroupIndexHandler groupIndexHandler = meshDagger.groupIndexHandler();
 		groupIndexHandler.store(group, mockUpdateDocumentEntry()).blockingAwait();
 		writeStoreEvent("group.search");
@@ -177,19 +198,20 @@ public class SearchModelGenerator extends AbstractGenerator {
 		writeStoreEvent("role.search");
 	}
 
-	private void writeUserDocumentExample() throws Exception {
+	private void writeUserDocumentExample(UserDaoWrapper userDao) throws Exception {
 		User creator = mockUser("admin", "Admin", "");
 		User user = mockUser("joe1", "Joe", "Doe", creator);
-		Group groupA = mockGroup("editors", user);
-		Group groupB = mockGroup("superEditors", user);
-		TraversalResult<? extends Group> result = new TraversalResult<>(Arrays.asList(groupA, groupB));
-		Mockito.<TraversalResult<? extends Group>>when(user.getGroups()).thenReturn(result);
+		HibGroup groupA = mockGroup("editors", user);
+		HibGroup groupB = mockGroup("superEditors", user);
+		TraversalResult<? extends HibGroup> result = new TraversalResult<>(Arrays.asList(groupA, groupB));
+		when(userDao.getGroups(Mockito.any())).thenCallRealMethod();
+		Mockito.<TraversalResult<? extends HibGroup>>when(user.getGroups()).thenReturn(result);
 		UserIndexHandler userIndexHandler = meshDagger.userIndexHandler();
 		userIndexHandler.store(user, mockUpdateDocumentEntry()).blockingAwait();
 		writeStoreEvent("user.search");
 	}
 
-	private void writeTagFamilyDocumentExample() throws Exception {
+	private void writeTagFamilyDocumentExample(TagDaoWrapper tagDao) throws Exception {
 		User user = mockUser("joe1", "Joe", "Doe");
 		Project project = mockProject(user);
 		TagFamily tagFamily = mockTagFamily("colors", user, project);
@@ -197,6 +219,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		tagList.add(mockTag("red", user, tagFamily, project));
 		tagList.add(mockTag("green", user, tagFamily, project));
 
+		when(tagDao.findAll(Mockito.any())).thenCallRealMethod();
 		when(tagFamily.findAll()).then(answer -> {
 			return new TraversalResult<>(tagList);
 		});

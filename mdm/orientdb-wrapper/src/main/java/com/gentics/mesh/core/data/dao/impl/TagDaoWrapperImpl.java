@@ -82,7 +82,8 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper implements TagDaoWrapp
 
 	@Override
 	public TraversalResult<? extends HibTag> findAll(HibTagFamily tagFamily) {
-		return tagFamily.toTagFamily().findAll();
+		TagFamily graphTagFamily = toTagFamily(tagFamily);
+		return graphTagFamily.findAll();
 	}
 
 	@Override
