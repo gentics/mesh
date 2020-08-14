@@ -130,18 +130,17 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
-			RolePermissionRequest request = new RolePermissionRequest();
-			request.setRecursive(false);
-			request.getPermissions().add(READ);
-			request.getPermissions().add(UPDATE);
-			request.getPermissions().add(CREATE);
-			request.getPermissions().setOthers(false);
-			GenericMessageResponse message = call(() -> client().updateRolePermissions(role().getUuid(),
-				"projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid(), request));
-			assertThat(message).matches("role_updated_permission", role().getName());
-		}
+		RolePermissionRequest request = new RolePermissionRequest();
+		request.setRecursive(false);
+		request.getPermissions().add(READ);
+		request.getPermissions().add(UPDATE);
+		request.getPermissions().add(CREATE);
+		request.getPermissions().setOthers(false);
+		String tagFamilyUuid = tx(() -> tagFamily("colors").getUuid());
+		String roleName = tx(() -> role().getName());
+		GenericMessageResponse message = call(() -> client().updateRolePermissions(roleUuid(),
+			"projects/" + projectUuid() + "/tagFamilies/" + tagFamilyUuid, request));
+		assertThat(message).matches("role_updated_permission", roleName);
 
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
@@ -208,7 +207,8 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 
 		tx(tx -> {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
-			assertFalse("The role should no longer have read permission on the group.", roleDao.hasPermission(role(), InternalPermission.READ_PERM, group()));
+			assertFalse("The role should no longer have read permission on the group.",
+				roleDao.hasPermission(role(), InternalPermission.READ_PERM, group()));
 		});
 	}
 
