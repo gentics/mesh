@@ -574,7 +574,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
-	public BranchTaggedEventModel onTagged(Tag tag, Assignment assignment) {
+	public BranchTaggedEventModel onTagged(HibTag tag, Assignment assignment) {
 		BranchTaggedEventModel model = new BranchTaggedEventModel();
 		model.setTag(tag.transformToReference());
 		model.setBranch(transformToReference());

@@ -202,7 +202,7 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 	}
 
 	private boolean hasSingleBranch(HibProject project) {
-		long count = project.getBranchRoot().computeCount();
+		long count = project.toProject().getBranchRoot().computeCount();
 		if (count == 1) {
 			return true;
 		} else {

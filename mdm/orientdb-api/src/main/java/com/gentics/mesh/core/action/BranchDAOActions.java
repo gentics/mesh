@@ -1,9 +1,10 @@
 package com.gentics.mesh.core.action;
 
-import com.gentics.mesh.core.action.DAOActions;
-import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 
-public interface BranchDAOActions extends DAOActions<Branch, BranchResponse> {
+public interface BranchDAOActions extends DAOActions<HibBranch, BranchResponse> {
+
 
 }

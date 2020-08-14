@@ -23,6 +23,7 @@ import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
+import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -39,7 +40,7 @@ import io.reactivex.Observable;
  * Handler for the tag specific search index.
  */
 @Singleton
-public class TagIndexHandler extends AbstractIndexHandler<Tag> {
+public class TagIndexHandler extends AbstractIndexHandler<HibTag> {
 
 	/**
 	 * Name of the custom property of SearchQueueEntry containing the project uuid.
@@ -89,13 +90,13 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	}
 
 	@Override
-	public Completable store(Tag tag, UpdateDocumentEntry entry) {
+	public Completable store(HibTag tag, UpdateDocumentEntry entry) {
 		entry.getContext().setProjectUuid(tag.getProject().getUuid());
 		return super.store(tag, entry);
 	}
 
 	@Override
-	public Observable<IndexBulkEntry> storeForBulk(Tag tag, UpdateDocumentEntry entry) {
+	public Observable<IndexBulkEntry> storeForBulk(HibTag tag, UpdateDocumentEntry entry) {
 		entry.getContext().setProjectUuid(tag.getProject().getUuid());
 		return super.storeForBulk(tag, entry);
 	}
@@ -156,12 +157,12 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	}
 
 	@Override
-	public Function<String, Tag> elementLoader() {
-		return (uuid) -> boot.meshRoot().getTagRoot().findByUuid(uuid);
+	public Function<String, HibTag> elementLoader() {
+		return uuid -> boot.meshRoot().getTagRoot().findByUuid(uuid);
 	}
 
 	@Override
-	public Stream<? extends Tag> loadAllElements(Tx tx) {
+	public Stream<? extends HibTag> loadAllElements(Tx tx) {
 		return tx.data().tagDao().findAllGlobal().stream();
 	}
 

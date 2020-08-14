@@ -58,6 +58,7 @@ import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
+import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
@@ -298,8 +299,8 @@ public final class TestMocks {
 		when(node.getParentNode(anyString())).thenReturn(parentNode);
 		when(node.getProject()).thenReturn(project);
 
-		TraversalResult<? extends Tag> tagResult = new TraversalResult<>(Arrays.asList(tagA, tagB));
-		Mockito.<TraversalResult<? extends Tag>>when(node.getTags(Mockito.any())).thenReturn(tagResult);
+		TraversalResult<? extends HibTag> tagResult = new TraversalResult<>(Arrays.asList(tagA, tagB));
+		Mockito.<TraversalResult<? extends HibTag>>when(node.getTags(Mockito.any())).thenReturn(tagResult);
 
 		Schema schemaContainer = mockSchemaContainer("content", user);
 		SchemaVersion latestVersion = schemaContainer.getLatestVersion();

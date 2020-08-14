@@ -19,6 +19,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -255,7 +256,9 @@ public class BinaryTransformHandler extends AbstractHandler {
 			if (field.getFieldKey().equals(newDraftVersion.getSchemaContainerVersion().getSchema().getSegmentField())) {
 				newDraftVersion.updateWebrootPathInfo(branch.getUuid(), "node_conflicting_segmentfield_upload");
 			}
-			String branchUuid = node.getProject().getBranchRoot().getLatestBranch().getUuid();
+			BranchDaoWrapper branchDao = tx.data().branchDao();
+			// TODO maybe use a fixed method in project?
+			String branchUuid = branchDao.getLatestBranch(node.getProject()).getUuid();
 
 			// Purge the old draft
 			if (ac.isPurgeAllowed() && newDraftVersion.isAutoPurgeEnabled() && latestDraftVersion.isPurgeable()) {

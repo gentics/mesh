@@ -17,6 +17,7 @@ import static org.junit.Assert.assertNull;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.db.Tx;
@@ -200,8 +201,9 @@ public class JobEndpointTest extends AbstractMeshTest {
 		assertNotNull(jobResonse.getErrorMessage());
 
 		// Change the job so that it will no longer fail
-		tx(() -> {
-			HibBranch branch = project().getBranchRoot().create("testBranch", user(), null, true, initialBranch(), createBatch());
+		tx(tx -> {
+			BranchDaoWrapper branchDao = tx.data().branchDao();
+			HibBranch branch = branchDao.create(project(), "testBranch", user(), null, true, initialBranch(), createBatch());
 			job.setBranch(branch);
 		});
 

@@ -5,8 +5,9 @@ import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.search.index.AbstractTransformer;
 import com.gentics.mesh.search.index.MappingHelper;
 import com.gentics.mesh.util.ETag;
@@ -17,19 +18,19 @@ import io.vertx.core.json.JsonObject;
  * Transformer for tagfamily search index documents.
  */
 @Singleton
-public class TagFamilyTransformer extends AbstractTransformer<TagFamily> {
+public class TagFamilyTransformer extends AbstractTransformer<HibTagFamily> {
 
 	@Inject
 	public TagFamilyTransformer() {
 	}
 
-	public String generateVersion(TagFamily tagFamily) {
+	public String generateVersion(HibTagFamily tagFamily) {
 		HibProject project = tagFamily.getProject();
 
 		StringBuilder builder = new StringBuilder();
 		builder.append(tagFamily.getElementVersion());
 		builder.append("|");
-		tagFamily.findAll().forEach(tag -> {
+		Tx.get().data().tagDao().findAll(tagFamily).forEach(tag -> {
 			builder.append(tag.getElementVersion());
 			builder.append("|");
 		});
@@ -44,11 +45,11 @@ public class TagFamilyTransformer extends AbstractTransformer<TagFamily> {
 	 * @return
 	 */
 	@Override
-	public JsonObject toDocument(TagFamily tagFamily) {
+	public JsonObject toDocument(HibTagFamily tagFamily) {
 		JsonObject document = new JsonObject();
 		document.put(NAME_KEY, tagFamily.getName());
 		addBasicReferences(document, tagFamily);
-		addTags(document, tagFamily.findAll());
+		addTags(document, Tx.get().data().tagDao().findAll(tagFamily));
 		addProject(document, tagFamily.getProject());
 		addPermissionInfo(document, tagFamily);
 		document.put(MappingHelper.VERSION_KEY, generateVersion(tagFamily));

@@ -7,6 +7,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.Tx;
@@ -32,11 +33,12 @@ public class TagEndpointETagTest extends AbstractMeshTest {
 	@Test
 	public void testReadOne() {
 		try (Tx tx = tx()) {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			HibTagFamily tagfamily = tagFamily("colors");
 			HibTag tag = tag("red");
 
 			String actualEtag = callETag(() -> client().findTagByUuid(PROJECT_NAME, tagfamily.getUuid(), tag.getUuid()));
-			String etag = tag.getETag(mockActionContext());
+			String etag = tagDao.getETag(tag, mockActionContext());
 			assertEquals(etag, actualEtag);
 
 			// Check whether 304 is returned for correct etag

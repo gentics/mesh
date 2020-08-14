@@ -66,14 +66,18 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testUpdateByTagUuid() {
-		long previousCount = tx(() -> tagFamily("colors").findAll().count());
+		long previousCount = tx(tx -> {
+			return tx.data().tagDao().findAll(tagFamily("colors")).count();
+		});
 		String tagUuid = tx(() -> tag("red").getUuid());
 		String nodeUuid = tx(() -> content().getUuid());
 		TagListUpdateRequest request = new TagListUpdateRequest();
 		request.getTags().add(new TagReference().setUuid(tagUuid).setTagFamily("colors"));
 		TagListResponse response = call(() -> client().updateTagsForNode(PROJECT_NAME, nodeUuid, request));
 		assertEquals(1, response.getMetainfo().getTotalCount());
-		long afterCount = tx(() -> tagFamily("colors").findAll().count());
+		long afterCount = tx(tx -> {
+			return tx.data().tagDao().findAll(tagFamily("colors")).count();
+		});
 		assertEquals("The colors tag family should not have any additional tags.", previousCount, afterCount);
 
 		waitForSearchIdleEvent();

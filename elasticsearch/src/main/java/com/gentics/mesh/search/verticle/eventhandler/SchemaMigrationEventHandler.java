@@ -22,7 +22,6 @@ import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.DropIndexRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.branch.BranchSchemaAssignEventModel;
 import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
@@ -85,8 +84,8 @@ public class SchemaMigrationEventHandler implements EventHandler {
 
 	public Flowable<SearchRequest> migrationStart(BranchSchemaAssignEventModel model) {
 		Map<String, IndexInfo> map = helper.getDb().transactional(tx -> {
-			HibProject project = Tx.get().data().projectDao().findByUuid(model.getProject().getUuid());
-			HibBranch branch = project.getBranchRoot().findByUuid(model.getBranch().getUuid());
+			HibProject project = tx.data().projectDao().findByUuid(model.getProject().getUuid());
+			HibBranch branch = tx.data().branchDao().findByUuid(project, model.getBranch().getUuid());
 			SchemaVersion schema = getNewSchemaVersion(model).runInExistingTx(tx);
 			return nodeIndexHandler.getIndices(project, branch, schema).runInExistingTx(tx);
 		}).runInNewTx();

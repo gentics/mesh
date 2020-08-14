@@ -18,7 +18,7 @@ import org.apache.commons.lang3.BooleanUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.actions.impl.RoleDAOActionsImpl;
+import com.gentics.mesh.core.action.RoleDAOActions;
 import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
@@ -41,14 +41,9 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 	private BootstrapInitializer boot;
 
 	@Inject
-	public RoleCrudHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, WriteLock writeLock) {
-		super(db, utils, writeLock);
+	public RoleCrudHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, WriteLock writeLock, RoleDAOActions roleActions) {
+		super(db, utils, writeLock, roleActions);
 		this.boot = boot;
-	}
-
-	@Override
-	public RoleDAOActionsImpl crudActions() {
-		return new RoleDAOActionsImpl();
 	}
 
 	/**

@@ -325,7 +325,9 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		});
 
 		// TODO Assert for tags
-		List<? extends HibTag> tags = tx(() -> basicTagFamily.findAll().list());
+		List<? extends HibTag> tags = tx(tx -> {
+			return tx.data().tagDao().findAll(basicTagFamily).list();
+		});
 		List<String> tagUuids = tx(() -> tags.stream().map(HibTag::getUuid).collect(Collectors.toList()));
 
 		Set<String> taggedDraftContentUuids = new HashSet<>();
@@ -462,7 +464,8 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 			// Multiple tags of the same family can be tagged on same node. This should still trigger only 1 update for that node.
 			HashSet<String> taggedNodes = new HashSet<>();
 			int storeCount = 0;
-			for (HibTag tag : tagfamily.findAll()) {
+
+			for (HibTag tag : tagDao.findAll(tagfamily)) {
 				storeCount++;
 				for (Node node : tagDao.getNodes(tag, branch)) {
 					if (!taggedNodes.contains(node.getUuid())) {

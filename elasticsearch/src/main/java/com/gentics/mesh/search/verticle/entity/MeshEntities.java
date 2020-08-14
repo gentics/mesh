@@ -187,13 +187,13 @@ public class MeshEntities {
 		return microschema;
 	}
 
-	private Optional<TagFamily> toTagFamily(MeshElementEventModel eventModel) {
+	private Optional<HibTagFamily> toTagFamily(MeshElementEventModel eventModel) {
 		ProjectEvent event = Util.requireType(ProjectEvent.class, eventModel);
 		return findElementByUuid(boot.projectRoot(), event.getProject().getUuid())
 			.flatMap(project -> findElementByUuid(project.getTagFamilyRoot(), eventModel.getUuid()));
 	}
 
-	private Optional<Tag> toTag(MeshElementEventModel eventModel) {
+	private Optional<HibTag> toTag(MeshElementEventModel eventModel) {
 		TagElementEventModel event = Util.requireType(TagElementEventModel.class, eventModel);
 		return findElementByUuid(boot.projectRoot(), event.getProject().getUuid())
 			.flatMap(project -> findElementByUuid(project.getTagFamilyRoot(), event.getTagFamily().getUuid()))
@@ -268,7 +268,7 @@ public class MeshEntities {
 	 * @param element
 	 * @return
 	 */
-	public CreateDocumentRequest createRequest(TagFamily element, String projectUuid) {
+	public CreateDocumentRequest createRequest(HibTagFamily element, String projectUuid) {
 		return helper.createDocumentRequest(TagFamily.composeIndexName(projectUuid), element.getUuid(), tagFamily.transform(element), complianceMode);
 	}
 
@@ -277,7 +277,7 @@ public class MeshEntities {
 	 * @param element
 	 * @return
 	 */
-	public CreateDocumentRequest createRequest(Tag element, String projectUuid) {
+	public CreateDocumentRequest createRequest(HibTag element, String projectUuid) {
 		return helper.createDocumentRequest(Tag.composeIndexName(projectUuid), element.getUuid(), tag.transform(element), complianceMode);
 	}
 

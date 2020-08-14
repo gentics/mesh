@@ -24,6 +24,7 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
@@ -84,16 +85,16 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertNull(tagFamily.getDescription());
 			tagFamily.setDescription("description");
 			assertEquals("description", tagFamily.getDescription());
-			assertEquals(0, tagFamily.computeCount());
+			assertEquals(0, tagDao.computeCount(tagFamily));
 			assertNotNull(tagDao.create(tagFamily, GERMAN_NAME, project(), user()));
-			assertEquals(1, tagFamily.computeCount());
+			assertEquals(1, tagDao.computeCount(tagFamily));
 		}
 	}
 
 	@Test
 	public void testReadFieldContainer() {
 		try (Tx tx = tx()) {
-			Tag tag = tags().get("red");
+			HibTag tag = tags().get("red");
 			assertEquals("red", tag.getName());
 		}
 	}
@@ -330,19 +331,21 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 		try (Tx tx = tx()) {
 			TagDaoWrapper tagDao = tx.data().tagDao();
 			RoleDaoWrapper roleDao = tx.data().roleDao();
+			TagFamilyDaoWrapper tagFamilyDao = tx.data().tagFamilyDao();
+
 			// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
 			HibTagFamily basicTagFamily = tagFamily("basic");
-			long beforeCount = basicTagFamily.computeCount();
+			long beforeCount = tagDao.computeCount(basicTagFamily);
 			HibTag noPermTag = tagDao.create(basicTagFamily, "noPermTag", project(), user());
-			basicTagFamily.addTag(noPermTag);
+			tagFamilyDao.addTag(basicTagFamily, noPermTag);
 			assertNotNull(noPermTag.getUuid());
-			assertEquals(beforeCount + 1, basicTagFamily.computeCount());
+			assertEquals(beforeCount + 1, tagDao.computeCount(basicTagFamily));
 
-			Page<? extends HibTag> tagfamilyTagpage = basicTagFamily.findAll(mockActionContext(), new PagingParametersImpl(1, 20L));
+			Page<? extends HibTag> tagfamilyTagpage = tagDao.findAll(basicTagFamily, mockActionContext(), new PagingParametersImpl(1, 20L));
 			assertPage(tagfamilyTagpage, beforeCount);
 
 			roleDao.grantPermissions(role(), noPermTag, READ_PERM);
-			Page<? extends HibTag> globalTagPage = basicTagFamily.findAll(mockActionContext(), new PagingParametersImpl(1, 20L));
+			Page<? extends HibTag> globalTagPage = tagDao.findAll(basicTagFamily, mockActionContext(), new PagingParametersImpl(1, 20L));
 			assertPage(globalTagPage, beforeCount + 1);
 		}
 	}
@@ -418,7 +421,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertNotNull("The folder could not be found.", loadedTag);
 			String name = loadedTag.getName();
 			assertEquals("The loaded name of the folder did not match the expected one.", GERMAN_NAME, name);
-			assertEquals(10, tagFamily.computeCount());
+			assertEquals(10, tagDao.computeCount(tagFamily));
 			latch.countDown();
 			HibTag projectTag = tagDao.findByUuid(tagFamily, uuid);
 			assertNotNull("The tag should also be assigned to the project tag root", projectTag);

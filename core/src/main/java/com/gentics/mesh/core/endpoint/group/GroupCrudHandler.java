@@ -9,9 +9,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.actions.impl.GroupDAOActionsImpl;
+import com.gentics.mesh.core.action.GroupDAOActions;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
@@ -27,7 +26,6 @@ import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 
-import dagger.Lazy;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -38,17 +36,9 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 
 	private static final Logger log = LoggerFactory.getLogger(GroupCrudHandler.class);
 
-	private Lazy<BootstrapInitializer> boot;
-
 	@Inject
-	public GroupCrudHandler(Database db, Lazy<BootstrapInitializer> boot, HandlerUtilities utils, WriteLock writeLock) {
-		super(db, utils, writeLock);
-		this.boot = boot;
-	}
-
-	@Override
-	public GroupDAOActionsImpl crudActions() {
-		return new GroupDAOActionsImpl();
+	public GroupCrudHandler(Database db, HandlerUtilities utils, WriteLock writeLock, GroupDAOActions groupActions) {
+		super(db, utils, writeLock, groupActions);
 	}
 
 	/**

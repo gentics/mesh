@@ -25,9 +25,7 @@ import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.actions.impl.BranchDAOActionsImpl;
-import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.action.BranchDAOActions;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
@@ -64,21 +62,16 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * CRUD Handler for Branches
  */
-public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchResponse> {
+public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResponse> {
 
 	private static final Logger log = LoggerFactory.getLogger(BranchCrudHandler.class);
 
 	private BootstrapInitializer boot;
 
 	@Inject
-	public BranchCrudHandler(Database db, HandlerUtilities utils, BootstrapInitializer boot, WriteLock writeLock) {
-		super(db, utils, writeLock);
+	public BranchCrudHandler(Database db, HandlerUtilities utils, BootstrapInitializer boot, WriteLock writeLock, BranchDAOActions branchActions) {
+		super(db, utils, writeLock, branchActions);
 		this.boot = boot;
-	}
-
-	@Override
-	public BranchDAOActionsImpl crudActions() {
-		return new BranchDAOActionsImpl();
 	}
 
 	@Override

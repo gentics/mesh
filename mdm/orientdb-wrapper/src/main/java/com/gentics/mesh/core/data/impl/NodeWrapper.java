@@ -689,7 +689,7 @@ public class NodeWrapper implements Node {
 		return delegate.onDeleted(uuid, schema, branchUuid, type, languageTag);
 	}
 
-	public NodeTaggedEventModel onTagged(Tag tag, HibBranch branch, Assignment assignment) {
+	public NodeTaggedEventModel onTagged(HibTag tag, HibBranch branch, Assignment assignment) {
 		return delegate.onTagged(tag, branch, assignment);
 	}
 

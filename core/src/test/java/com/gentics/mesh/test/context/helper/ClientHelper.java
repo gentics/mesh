@@ -7,7 +7,7 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 
 import org.apache.commons.lang3.RandomStringUtils;
 
-import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
@@ -79,7 +79,7 @@ public interface ClientHelper extends EventHelper {
 	 *            true to make branch the latest
 	 * @return new branch
 	 */
-	default Branch createBranch(String name, boolean latest) {
+	default HibBranch createBranch(String name, boolean latest) {
 		BranchCreateRequest request = new BranchCreateRequest();
 		request.setName(name);
 
@@ -97,7 +97,7 @@ public interface ClientHelper extends EventHelper {
 	 *            request
 	 * @return new branch
 	 */
-	default Branch createBranch(BranchCreateRequest request) {
+	default HibBranch createBranch(BranchCreateRequest request) {
 		StringBuilder uuid = new StringBuilder();
 		waitForJobs(() -> {
 			BranchResponse response = call(() -> client().createBranch(PROJECT_NAME, request));
@@ -111,7 +111,9 @@ public interface ClientHelper extends EventHelper {
 		}, COMPLETED, 1);
 
 		// return new branch
-		return tx(() -> project().getBranchRoot().findByUuid(uuid.toString()));
+		return tx(tx -> {
+			return tx.data().branchDao().findByUuid(project(), uuid.toString());
+		});
 	}
 
 	default NodeResponse createBinaryNode(String parentNodeUuid) {

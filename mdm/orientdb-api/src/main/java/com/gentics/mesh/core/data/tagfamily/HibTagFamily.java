@@ -3,7 +3,6 @@ package com.gentics.mesh.core.data.tagfamily;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUserTracking;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 
@@ -36,7 +35,4 @@ public interface HibTagFamily extends HibCoreElement, HibUserTracking {
 
 	void setDescription(String description);
 
-	void addTag(HibTag tag);
-
-	long computeCount();
 }

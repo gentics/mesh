@@ -154,6 +154,7 @@ public interface HibUser extends HibCoreElement, HibUserTracking {
 	 *
 	 * @return
 	 */
+	// TODO we want to use this to the user dao
 	Iterable<? extends Role> getRoles();
 
 	/**
@@ -241,6 +242,7 @@ public interface HibUser extends HibCoreElement, HibUserTracking {
 	 * @param params
 	 * @return
 	 */
+	// TODO we want to move this into the dao
 	Page<? extends Group> getGroups(HibUser user, PagingParameters params);
 
 	/**
@@ -248,6 +250,7 @@ public interface HibUser extends HibCoreElement, HibUserTracking {
 	 *
 	 * @return
 	 */
+	// TODO we want to use this to the user dao
 	TraversalResult<? extends Group> getGroups();
 
 	/**
@@ -263,6 +266,7 @@ public interface HibUser extends HibCoreElement, HibUserTracking {
 	 * @param group
 	 * @return Fluent API
 	 */
+	// TODO we want to use this to the user dao 
 	HibUser addGroup(Group group);
 
 	/**

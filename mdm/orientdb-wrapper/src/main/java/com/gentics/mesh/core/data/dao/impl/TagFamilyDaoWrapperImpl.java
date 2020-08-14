@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.data.dao.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toTag;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toTagFamily;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -77,6 +79,11 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper implements TagFa
 	public HibTagFamily findByUuidGlobal(String uuid) {
 		TagFamilyRoot globalTagFamilyRoot = boot.get().tagFamilyRoot();
 		return globalTagFamilyRoot.findByUuid(uuid);
+	}
+
+	@Override
+	public HibTagFamily findByUuid(String uuid) {
+		return findByUuidGlobal(uuid);
 	}
 
 	@Override
@@ -196,5 +203,17 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper implements TagFa
 	@Override
 	public String getAPIPath(HibTagFamily tagFamily, InternalActionContext ac) {
 		return tagFamily.toTagFamily().getAPIPath(ac);
+	}
+
+	@Override
+	public void removeTag(HibTagFamily tagFamily, HibTag tag) {
+		TagFamily graphTagFamily = toTagFamily(tagFamily);
+		graphTagFamily.removeTag(toTag(tag));
+	}
+
+	@Override
+	public void addTag(HibTagFamily tagFamily, HibTag tag) {
+		TagFamily graphTagFamily = toTagFamily(tagFamily);
+		graphTagFamily.addTag(toTag(tag));
 	}
 }

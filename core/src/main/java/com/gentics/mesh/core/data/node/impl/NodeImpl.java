@@ -499,7 +499,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public void addTag(HibTag tag, HibBranch branch) {
 		removeTag(tag, branch);
-		TagEdge edge = addFramedEdge(HAS_TAG, tag, TagEdgeImpl.class);
+		TagEdge edge = addFramedEdge(HAS_TAG, tag.toTag(), TagEdgeImpl.class);
 		edge.setBranchUuid(branch.getUuid());
 	}
 
@@ -1580,9 +1580,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public TransformablePage<? extends HibTag> getTags(HibUser user, PagingParameters params, HibBranch branch) {
+	public TransformablePage<? extends Tag> getTags(HibUser user, PagingParameters params, HibBranch branch) {
 		VertexTraversal<?, ?, ?> traversal = TagEdgeImpl.getTagTraversal(this, branch);
-		return new DynamicTransformablePageImpl<HibTag>(user, traversal, params, READ_PERM, TagImpl.class);
+		return new DynamicTransformablePageImpl<Tag>(user, traversal, params, READ_PERM, TagImpl.class);
 	}
 
 	@Override
@@ -1780,7 +1780,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public TransformablePage<? extends HibTag> updateTags(InternalActionContext ac, EventQueueBatch batch) {
+	public TransformablePage<? extends Tag> updateTags(InternalActionContext ac, EventQueueBatch batch) {
 		List<HibTag> tags = getTagsToSet(ac, batch);
 		HibBranch branch = ac.getBranch();
 		applyTags(branch, tags, batch);

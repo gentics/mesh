@@ -188,7 +188,7 @@ public class TestDataProvider {
 			addPermissions(project.getBaseNode());
 			addPermissions(project.getMicroschemaContainerRoot());
 			addPermissions(project.getSchemaContainerRoot());
-			addPermissions(project.getBranchRoot());
+			addPermissions(project.toProject().getBranchRoot());
 			addPermissions(project.getInitialBranch());
 			addPermissions(project.getTagFamilyRoot());
 			addPermissions(boot.projectRoot());

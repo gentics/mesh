@@ -53,7 +53,9 @@ public class TagFamilyDAOActionsImpl implements TagFamilyDAOActions {
 	@Override
 	public Page<? extends HibTagFamily> loadAll(DAOActionContext ctx, PagingParameters pagingInfo,
 		Predicate<HibTagFamily> extraFilter) {
-		return ctx.project().getTagFamilyRoot().findAll(ctx.ac(), pagingInfo, extraFilter);
+		return ctx.project().getTagFamilyRoot().findAll(ctx.ac(), pagingInfo, tagFamily -> {
+			return extraFilter.test(tagFamily);
+		});
 	}
 
 	@Override

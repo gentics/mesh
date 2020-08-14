@@ -55,7 +55,8 @@ public class TagFamilyEventHandler implements EventHandler {
 			String projectUuid = Util.requireType(ProjectEvent.class, messageEvent.message).getProject().getUuid();
 
 			if (event == TAG_FAMILY_CREATED || event == TAG_FAMILY_UPDATED) {
-				return helper.getDb().tx(() -> {
+				return helper.getDb().tx(tx -> {
+					TagDaoWrapper tagDao = tx.data().tagDao();
 					// We also need to update all tags of this family
 					Optional<HibTagFamily> tagFamily = entities.tagFamily.getElement(model);
 
@@ -63,10 +64,14 @@ public class TagFamilyEventHandler implements EventHandler {
 						.map(tf -> entities.createRequest(tf, projectUuid));
 
 					Stream<SearchRequest> tagUpdates = toStream(tagFamily)
-						.flatMap(tf -> tf.findAll().stream())
+						.flatMap(tf -> {
+							return tagDao.findAll(tf).stream();
+						})
 						.map(t -> entities.createRequest(t, projectUuid));
 
-					Stream<SearchRequest> nodeUpdates = toStream(tagFamily).flatMap(tf -> createNodeUpdates(model, tf));
+					Stream<SearchRequest> nodeUpdates = toStream(tagFamily).flatMap(tf -> {
+						return createNodeUpdates(model, tf);
+					});
 
 					return Util.concat(tagFamilyUpdate, tagUpdates, nodeUpdates).collect(Util.toFlowable());
 				});
@@ -92,12 +97,14 @@ public class TagFamilyEventHandler implements EventHandler {
 	 * @param tagFamily
 	 * @return
 	 */
-	private Stream<SearchRequest> createNodeUpdates(MeshProjectElementEventModel model, TagFamily tagFamily) {
+	private Stream<SearchRequest> createNodeUpdates(MeshProjectElementEventModel model, HibTagFamily tagFamily) {
 		TagDaoWrapper tagDao = helper.getBoot().tagDao();
 		return findElementByUuidStream(helper.getBoot().projectRoot(), model.getProject().getUuid())
 			.flatMap(project -> project.getBranchRoot().findAll().stream()
-				.flatMap(branch -> tagFamily.findAll().stream()
-					.flatMap(tag -> tagDao.getNodes(tag, branch).stream())
-					.flatMap(node -> entities.generateNodeRequests(node.getUuid(), project, branch))));
+				.flatMap(branch -> {
+					return tagDao.findAll(tagFamily).stream()
+						.flatMap(tag -> tagDao.getNodes(tag, branch).stream())
+						.flatMap(node -> entities.generateNodeRequests(node.getUuid(), project, branch));
+				}));
 	}
 }

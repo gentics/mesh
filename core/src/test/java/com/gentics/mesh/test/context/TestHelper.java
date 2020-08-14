@@ -29,7 +29,6 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.MeshRoot;
@@ -201,7 +200,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return data().getContent(key);
 	}
 
-	default Map<String, TagFamily> tagFamilies() {
+	default Map<String, HibTagFamily> tagFamilies() {
 		return data().getTagFamilies();
 	}
 

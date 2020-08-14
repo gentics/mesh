@@ -427,7 +427,7 @@ public interface Branch
 	 * @param assignment
 	 * @return
 	 */
-	BranchTaggedEventModel onTagged(Tag tag, Assignment assignment);
+	BranchTaggedEventModel onTagged(HibTag tag, Assignment assignment);
 
 	/**
 	 * Create a project schema assignment event.

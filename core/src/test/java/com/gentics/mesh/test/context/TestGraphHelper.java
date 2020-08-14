@@ -11,7 +11,6 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
@@ -30,8 +29,7 @@ public interface TestGraphHelper extends TestHelper {
 	default HibBranch createBranch(String name) {
 		EventQueueBatch batch = Mockito.mock(EventQueueBatch.class);
 		HibProject project = project();
-		BranchRoot branchRoot = project.getBranchRoot();
-		return branchRoot.create(name, user(), batch);
+		return Tx.get().data().branchDao().create(project, name, user(), batch);
 	}
 
 	default Microschema createMicroschema(MicroschemaVersionModel schema) {

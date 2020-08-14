@@ -26,8 +26,8 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.db.Tx;
@@ -272,7 +272,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testGetPublishStatusForBranch() {
 		Node node = folder("2015");
-		Branch newBranch = createBranch("newbranch", true);
+		HibBranch newBranch = createBranch("newbranch", true);
 
 		try (Tx tx = tx()) {
 			String nodeUuid = node.getUuid();
@@ -500,7 +500,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		Branch newBranch = createBranch("newbranch", true);
+		HibBranch newBranch = createBranch("newbranch", true);
 
 		try (Tx tx = tx()) {
 			String nodeUuid = node.getUuid();

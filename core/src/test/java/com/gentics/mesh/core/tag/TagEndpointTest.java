@@ -42,6 +42,7 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.tag.HibTag;
@@ -75,12 +76,14 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		final int nBasicTags = 9;
 		try (Tx tx = tx()) {
 			TagDaoWrapper tagDao = tx.data().tagDao();
+			TagFamilyDaoWrapper tagFamilyDao = tx.data().tagFamilyDao();
+			
 			// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
 			HibTagFamily basicTagFamily = tagFamily("basic");
 			HibTag noPermTag = tagDao.create(basicTagFamily, "noPermTag", project(), user());
 			String noPermTagUUID = noPermTag.getUuid();
 			// TODO check whether the project reference should be moved from generic class into node mesh class and thus not be available for tags
-			basicTagFamily.addTag(noPermTag);
+			tagFamilyDao.addTag(basicTagFamily, noPermTag);
 			assertNotNull(noPermTag.getUuid());
 
 			// Test default paging parameters

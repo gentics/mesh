@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.root;
 import java.util.List;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.Node;
@@ -72,7 +73,7 @@ public interface TagRoot extends RootVertex<Tag>, TransformableElementRoot<Tag, 
 	 */
 	HibTag create(HibTagFamily tagFamily, String name, HibProject project, HibUser creator, String uuid);
 
-	boolean update(HibTag tag, InternalActionContext ac, EventQueueBatch batch);
+	boolean update(Tag tag, InternalActionContext ac, EventQueueBatch batch);
 
 	/**
 	 * Return a page of nodes that are visible to the user and which are tagged by this tag. Use the paging and language information provided.
@@ -85,7 +86,7 @@ public interface TagRoot extends RootVertex<Tag>, TransformableElementRoot<Tag, 
 	 * @param pagingInfo
 	 * @return
 	 */
-	TransformablePage<? extends Node> findTaggedNodes(HibTag tag, HibUser requestUser, HibBranch branch, List<String> languageTags, ContainerType type,
+	TransformablePage<? extends Node> findTaggedNodes(Tag tag, HibUser requestUser, Branch branch, List<String> languageTags, ContainerType type,
 		PagingParameters pagingInfo);
 
 	TraversalResult<? extends Node> findTaggedNodes(HibTag tag, InternalActionContext ac);
@@ -98,7 +99,6 @@ public interface TagRoot extends RootVertex<Tag>, TransformableElementRoot<Tag, 
 	 *
 	 * @return Result
 	 */
-	TraversalResult<? extends Node> getNodes(HibTag tag, HibBranch branch);
+	TraversalResult<? extends Node> getNodes(Tag tag, HibBranch branch);
 
-	HibTag findByName(HibTagFamily tagFamily, String name);
 }

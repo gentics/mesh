@@ -15,7 +15,6 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
@@ -68,15 +67,14 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Override
 	public void testFindAllVisible() throws Exception {
 		try (Tx tx = tx()) {
+			BranchDaoWrapper branchDao = tx.data().branchDao();
 			EventQueueBatch batch = createBatch();
-			HibProject project = project();
-			BranchRoot branchRoot = project.getBranchRoot();
-			HibBranch initialBranch = branchRoot.getInitialBranch();
-			HibBranch branchOne = branchRoot.create("One", user(), batch);
-			HibBranch branchTwo = branchRoot.create("Two", user(), batch);
-			HibBranch branchThree = branchRoot.create("Three", user(), batch);
+			HibBranch initialBranch = project().getInitialBranch();
+			HibBranch branchOne = branchDao.create(project(), "One", user(), batch);
+			HibBranch branchTwo = branchDao.create(project(), "Two", user(), batch);
+			HibBranch branchThree = branchDao.create(project(), "Three", user(), batch);
 
-			Page<? extends HibBranch> page = branchRoot.findAll(mockActionContext(), new PagingParametersImpl(1, 25L));
+			Page<? extends HibBranch> page = branchDao.findAll(project(), mockActionContext(), new PagingParametersImpl(1, 25L));
 			assertThat(page).isNotNull();
 			List<HibBranch> arrayList = new ArrayList<>();
 			page.iterator().forEachRemaining(r -> arrayList.add(r));
@@ -88,14 +86,15 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Override
 	public void testFindAll() throws Exception {
 		try (Tx tx = tx()) {
+			BranchDaoWrapper branchDao = tx.data().branchDao();
 			HibProject project = project();
 			HibBranch initialBranch = initialBranch();
 			HibBranch branchOne = createBranch("One");
 			HibBranch branchTwo = createBranch("Two");
 			HibBranch branchThree = createBranch("Three");
 
-			BranchRoot branchRoot = project.getBranchRoot();
-			assertThat(new ArrayList<HibBranch>(branchRoot.findAll().list())).usingElementComparatorOnFields("uuid").containsExactly(initialBranch,
+			List<? extends HibBranch> branchList = branchDao.findAll(project).list();
+			assertThat(new ArrayList<HibBranch>(branchList)).usingElementComparatorOnFields("uuid").containsExactly(initialBranch,
 				branchOne, branchTwo, branchThree);
 		}
 	}
@@ -105,7 +104,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	public void testRootNode() throws Exception {
 		try (Tx tx = tx()) {
 			HibProject project = project();
-			BranchRoot branchRoot = project.getBranchRoot();
+			BranchRoot branchRoot = project.toProject().getBranchRoot();
 			assertThat(branchRoot).as("Branch Root of Project").isNotNull();
 			HibBranch initialBranch = project.getInitialBranch();
 			assertThat(initialBranch).as("Initial Branch of Project").isNotNull().isActive().isNamed(project.getName()).hasUuid().hasNext(null)
@@ -119,9 +118,9 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Override
 	public void testFindByName() throws Exception {
 		try (Tx tx = tx()) {
+			BranchDaoWrapper branchDao = tx.data().branchDao();
 			HibProject project = project();
-			BranchRoot branchRoot = project.getBranchRoot();
-			HibBranch foundBranch = branchRoot.findByName(project.getName());
+			HibBranch foundBranch = branchDao.findByName(project, project.getName());
 			assertThat(foundBranch).as("Branch with name " + project.getName()).isNotNull().matches(project.getInitialBranch());
 		}
 	}
@@ -130,11 +129,10 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Override
 	public void testFindByUUID() throws Exception {
 		try (Tx tx = tx()) {
+			BranchDaoWrapper branchDao = tx.data().branchDao();
 			HibProject project = project();
-			BranchRoot branchRoot = project.getBranchRoot();
 			HibBranch initialBranch = project.getInitialBranch();
-
-			Branch foundBranch = branchRoot.findByUuid(initialBranch.getUuid());
+			HibBranch foundBranch = branchDao.findByUuid(project, initialBranch.getUuid());
 			assertThat(foundBranch).as("Branch with uuid " + initialBranch.getUuid()).isNotNull().matches(initialBranch);
 		}
 	}
@@ -148,6 +146,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Override
 	public void testCreate() throws Exception {
 		try (Tx tx = tx()) {
+			BranchDaoWrapper branchDao = tx.data().branchDao();
 			HibBranch initialBranch = initialBranch();
 			HibBranch firstNewBranch = createBranch("First new Branch");
 			HibBranch secondNewBranch = createBranch("Second new Branch");
@@ -160,8 +159,8 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			assertThat(project.getLatestBranch()).as("Latest Branch").isNamed("Third new Branch").matches(thirdNewBranch).hasNext(null)
 				.hasPrevious(secondNewBranch);
 
-			BranchRoot branchRoot = project.getBranchRoot();
-			assertThat(new ArrayList<HibBranch>(branchRoot.findAll().list())).usingElementComparatorOnFields("uuid").containsExactly(initialBranch,
+			assertThat(new ArrayList<HibBranch>(branchDao.findAll(project).list())).usingElementComparatorOnFields("uuid").containsExactly(
+				initialBranch,
 				firstNewBranch, secondNewBranch, thirdNewBranch);
 
 			for (Schema schema : project.getSchemaContainerRoot().findAll()) {

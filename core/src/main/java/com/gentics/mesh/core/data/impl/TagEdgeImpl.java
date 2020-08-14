@@ -48,7 +48,7 @@ public class TagEdgeImpl extends MeshEdgeImpl implements TagEdge {
 	 * @param branch
 	 * @return Traversal
 	 */
-	public static boolean hasTag(VertexFrame vertex, Tag tag, HibBranch branch) {
+	public static boolean hasTag(VertexFrame vertex, HibTag tag, HibBranch branch) {
 		return vertex.outE(HAS_TAG).has(BRANCH_UUID_KEY, branch.getUuid()).inV().has(UUID_KEY, tag.getUuid()).hasNext();
 	}
 
@@ -59,7 +59,7 @@ public class TagEdgeImpl extends MeshEdgeImpl implements TagEdge {
 	 * @param branch
 	 * @return Traversal
 	 */
-	public static VertexTraversal<?, ?, ?> getNodeTraversal(HibTag tag, HibBranch branch) {
+	public static VertexTraversal<?, ?, ?> getNodeTraversal(Tag tag, HibBranch branch) {
 		return tag.inE(HAS_TAG).has(BRANCH_UUID_KEY, branch.getUuid()).outV();
 	}
 

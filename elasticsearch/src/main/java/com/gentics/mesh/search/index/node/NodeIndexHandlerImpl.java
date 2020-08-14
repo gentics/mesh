@@ -405,7 +405,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 	 */
 	private void store(Set<Single<String>> obs, Node node, GenericEntryContext context) {
 		if (context.getBranchUuid() == null) {
-			for (Branch branch : node.getProject().getBranchRoot().findAll()) {
+			for (HibBranch branch : Tx.get().data().branchDao().findAll(node.getProject())) {
 				store(obs, node, branch.getUuid(), context);
 			}
 		} else {
@@ -475,7 +475,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 	private Observable<IndexBulkEntry> storeForBulk(Node node, GenericEntryContext context) {
 		if (context.getBranchUuid() == null) {
 			Set<Observable<IndexBulkEntry>> obs = new HashSet<>();
-			for (Branch branch : node.getProject().getBranchRoot().findAll()) {
+			for (HibBranch branch : Tx.get().data().branchDao().findAll(node.getProject())) {
 				obs.add(storeForBulk(node, branch.getUuid(), context));
 			}
 			return Observable.merge(obs);
@@ -652,7 +652,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 			List<UpdateBulkEntry> entries = new ArrayList<>();
 
 			// Determine which documents need to be updated. The node could have multiple documents in various indices.
-			for (Branch branch : project.getBranchRoot().findAll()) {
+			for (HibBranch branch : Tx.get().data().branchDao().findAll(project)) {
 				for (ContainerType type : Arrays.asList(DRAFT, PUBLISHED)) {
 					JsonObject json = getTransformer().toPermissionPartial(node, type);
 					for (NodeGraphFieldContainer container : node.getGraphFieldContainers(branch, type)) {

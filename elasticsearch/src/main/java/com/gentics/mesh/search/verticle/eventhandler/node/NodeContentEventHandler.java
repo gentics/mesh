@@ -17,6 +17,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.search.request.BulkRequest;
@@ -137,8 +138,8 @@ public class NodeContentEventHandler implements EventHandler {
 	private Transactional<SchemaVersion> findLatestSchemaVersion(NodeMeshEventModel message) {
 		return helper.getDb().transactional(tx -> {
 			Schema schema = tx.data().schemaDao().findByUuid(message.getSchema().getUuid());
-			return tx.data().projectDao().findByUuid(message.getProject().getUuid())
-				.getBranchRoot().findByUuid(message.getBranchUuid())
+			HibProject project = tx.data().projectDao().findByUuid(message.getProject().getUuid());
+			return tx.data().branchDao().findByUuid(project, message.getBranchUuid())
 				.findLatestSchemaVersion(schema);
 		});
 	}

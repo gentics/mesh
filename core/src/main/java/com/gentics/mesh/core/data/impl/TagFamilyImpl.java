@@ -26,9 +26,9 @@ import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
-import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
+import com.gentics.mesh.core.data.util.HibClassConverter;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedProjectElementEventModel;
@@ -105,13 +105,13 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	}
 
 	@Override
-	public HibTag create(InternalActionContext ac, EventQueueBatch batch) {
-		return mesh().boot().tagDao().create(this, ac, batch);
+	public Tag create(InternalActionContext ac, EventQueueBatch batch) {
+		return HibClassConverter.toTag(mesh().boot().tagDao().create(this, ac, batch));
 	}
 
 	@Override
-	public HibTag create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		return mesh().boot().tagDao().create(this, ac, batch, uuid);
+	public Tag create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
+		return HibClassConverter.toTag(mesh().boot().tagDao().create(this, ac, batch, uuid));
 	}
 
 	@Override
@@ -207,8 +207,12 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	}
 
 	@Override
-	public HibTag findByName(String name) {
-		return mesh().boot().tagDao().findByName(this, name);
+	public Tag findByName(String name) {
+		return out(getRootLabel())
+			.mark()
+			.has(TagImpl.TAG_VALUE_KEY, name)
+			.back()
+			.nextOrDefaultExplicit(TagImpl.class, null);
 	}
 
 	public void deleteElement() {

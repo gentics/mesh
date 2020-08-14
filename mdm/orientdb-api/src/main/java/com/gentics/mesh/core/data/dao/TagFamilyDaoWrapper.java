@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.dao;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -22,11 +23,18 @@ public interface TagFamilyDaoWrapper extends TagFamilyDao, DaoWrapper<HibTagFami
 
 	HibTagFamily findByName(HibProject project, String name);
 
+	HibTagFamily findByUuid(String uuid);
+
 	HibTagFamily findByUuid(HibProject project, String uuid);
+
+	void addTag(HibTagFamily tagFamily, HibTag tag);
+
+	void removeTag(HibTagFamily tagFamily, HibTag tag);
 
 	void delete(HibTagFamily tagFamily, BulkActionContext bac);
 
 	String getETag(HibTagFamily tagfamily, InternalActionContext mockActionContext);
 
 	String getAPIPath(HibTagFamily tagFamily, InternalActionContext ac);
+
 }

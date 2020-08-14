@@ -21,7 +21,7 @@ import org.apache.commons.lang3.math.NumberUtils;
 import com.gentics.madl.tx.TxAction1;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.actions.impl.NodeDAOActionsImpl;
+import com.gentics.mesh.core.action.NodeDAOActions;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.branch.HibBranch;
@@ -31,6 +31,7 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
@@ -59,15 +60,10 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	private static final Logger log = LoggerFactory.getLogger(NodeCrudHandler.class);
 
 	@Inject
-	public NodeCrudHandler(Database db, HandlerUtilities utils, MeshOptions options, BootstrapInitializer boot, WriteLock writeLock) {
-		super(db, utils, writeLock);
+	public NodeCrudHandler(Database db, HandlerUtilities utils, MeshOptions options, BootstrapInitializer boot, WriteLock writeLock, NodeDAOActions nodeActions) {
+		super(db, utils, writeLock, nodeActions);
 		this.options = options;
 		this.boot = boot;
-	}
-
-	@Override
-	public NodeDAOActionsImpl crudActions() {
-		return new NodeDAOActionsImpl();
 	}
 
 	@Override
@@ -221,7 +217,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		utils.syncTx(ac, tx -> {
 			Node node = ac.getProject().getNodeRoot().loadObjectByUuid(ac, uuid, READ_PERM);
-			TransformablePage<? extends Tag> tagPage = node.getTags(ac.getUser(), ac.getPagingParameters(), ac.getBranch());
+			//TODO use DAO
+			TransformablePage<? extends HibTag> tagPage = node.getTags(ac.getUser(), ac.getPagingParameters(), ac.getBranch());
 			// Handle etag
 			if (ac.getGenericParameters().getETag()) {
 				String etag = tagPage.getETag(ac);

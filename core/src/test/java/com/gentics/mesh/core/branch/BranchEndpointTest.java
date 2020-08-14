@@ -47,7 +47,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
@@ -425,11 +424,11 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 	@Test
 	public void testCreateWithoutBaseBranch() {
-		Branch latest = createBranch("Latest", true);
+		HibBranch latest = createBranch("Latest", true);
 
 		BranchCreateRequest request = new BranchCreateRequest();
 		request.setName("New Branch");
-		Branch created = createBranch(request);
+		HibBranch created = createBranch(request);
 
 		tx(() -> {
 			assertThat(created).as("New Branch").isNotNull().hasPrevious(latest);
@@ -439,14 +438,14 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Test
 	public void testCreateWithBaseBranchByUuid() {
 		createBranch("Latest", true);
-		Branch base = createBranch("Base", false);
+		HibBranch base = createBranch("Base", false);
 		String baseUuid = tx(() -> base.getUuid());
 
 		BranchCreateRequest request = new BranchCreateRequest();
 		request.setName("New Branch");
 		request.setBaseBranch(new BranchReference().setUuid(baseUuid));
 		grantAdmin();
-		Branch created = createBranch(request);
+		HibBranch created = createBranch(request);
 
 		tx(() -> {
 			assertThat(created).as("New Branch").isNotNull().hasPrevious(base);
@@ -456,14 +455,14 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Test
 	public void testCreateWithBaseBranchByName() {
 		createBranch("Latest", true);
-		Branch base = createBranch("Base", false);
+		HibBranch base = createBranch("Base", false);
 		String baseName = tx(() -> base.getName());
 
 		BranchCreateRequest request = new BranchCreateRequest();
 		request.setName("New Branch");
 		request.setBaseBranch(new BranchReference().setName(baseName));
 		grantAdmin();
-		Branch created = createBranch(request);
+		HibBranch created = createBranch(request);
 
 		tx(() -> {
 			assertThat(created).as("New Branch").isNotNull().hasPrevious(base);
@@ -472,7 +471,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 	@Test
 	public void testCreateWithNoPermBaseBranch() {
-		Branch latest = createBranch("Latest", true);
+		HibBranch latest = createBranch("Latest", true);
 		String latestUuid = tx(() -> latest.getUuid());
 		tx(tx -> {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
@@ -511,17 +510,18 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		EventQueueBatch batch = createBatch();
 
 		try (Tx tx = tx()) {
+			BranchDaoWrapper branchDao = tx.data().branchDao();
 			HibProject project = project();
 			HibBranch initialBranch = project.getInitialBranch();
 			branchInfo.add(Pair.of(initialBranch.getUuid(), initialBranch.getName()));
 
-			HibBranch firstBranch = project.getBranchRoot().create("One", user(), batch);
+			HibBranch firstBranch = branchDao.create(project, "One", user(), batch);
 			branchInfo.add(Pair.of(firstBranch.getUuid(), firstBranch.getName()));
 
-			HibBranch secondBranch = project.getBranchRoot().create("Two", user(), batch);
+			HibBranch secondBranch = branchDao.create(project, "Two", user(), batch);
 			branchInfo.add(Pair.of(secondBranch.getUuid(), secondBranch.getName()));
 
-			HibBranch thirdBranch = project.getBranchRoot().create("Three", user(), batch);
+			HibBranch thirdBranch = branchDao.create(project, "Three", user(), batch);
 			branchInfo.add(Pair.of(thirdBranch.getUuid(), thirdBranch.getName()));
 
 			tx.success();
@@ -578,11 +578,12 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		HibBranch secondBranch;
 
 		try (Tx tx = tx()) {
+			BranchDaoWrapper branchDao = tx.data().branchDao();
 			HibProject project = project();
 			initialBranch = project.getInitialBranch();
-			firstBranch = project.getBranchRoot().create("One", user(), batch);
-			secondBranch = project.getBranchRoot().create("Two", user(), batch);
-			thirdBranch = project.getBranchRoot().create("Three", user(), batch);
+			firstBranch = branchDao.create(project, "One", user(), batch);
+			secondBranch = branchDao.create(project, "Two", user(), batch);
+			thirdBranch = branchDao.create(project, "Three", user(), batch);
 			tx.success();
 		}
 
@@ -611,9 +612,10 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		HibBranch thirdBranch;
 
 		try (Tx tx = tx()) {
-			firstBranch = project.getBranchRoot().create("One", user(), batch);
-			secondBranch = project.getBranchRoot().create("Two", user(), batch);
-			thirdBranch = project.getBranchRoot().create("Three", user(), batch);
+			BranchDaoWrapper branchDao = tx.data().branchDao();
+			firstBranch = branchDao.create(project, "One", user(), batch);
+			secondBranch = branchDao.create(project, "Two", user(), batch);
+			thirdBranch = branchDao.create(project, "Three", user(), batch);
 			tx.success();
 		}
 		revokeAdmin();
@@ -673,7 +675,8 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		EventQueueBatch batch = createBatch();
 		String newName = "New Branch Name";
 		try (Tx tx = tx()) {
-			project().getBranchRoot().create(newName, user(), batch);
+			BranchDaoWrapper branchDao = tx.data().branchDao();
+			branchDao.create(project(), newName, user(), batch);
 			tx.success();
 		}
 		BranchUpdateRequest request = new BranchUpdateRequest();

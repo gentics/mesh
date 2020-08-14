@@ -1,11 +1,14 @@
-package com.gentics.mesh.core.endpoint.admin;
+package com.gentics.mesh.core.actions.impl;
 
 import java.util.function.Predicate;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.DAOActionContext;
-import com.gentics.mesh.core.action.DAOActions;
+import com.gentics.mesh.core.action.JobDAOActions;
 import com.gentics.mesh.core.data.dao.JobDaoWrapper;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.page.Page;
@@ -16,7 +19,12 @@ import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
-public class JobCrudActions implements DAOActions<Job, JobResponse> {
+@Singleton
+public class JobDAOActionsImpl implements JobDAOActions {
+
+	@Inject
+	public JobDAOActionsImpl() {
+	}
 
 	@Override
 	public Job loadByUuid(DAOActionContext ctx, String uuid, GraphPermission perm, boolean errorIfNotFound) {

@@ -15,7 +15,7 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.actions.impl.MicroschemaDAOActionsImpl;
+import com.gentics.mesh.core.action.MicroschemaDAOActions;
 import com.gentics.mesh.core.actions.impl.ProjectMicroschemaLoadAllActionImpl;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
@@ -51,16 +51,11 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<Microschema, Mic
 
 	@Inject
 	public MicroschemaCrudHandler(Database db, MicroschemaComparator comparator, Lazy<BootstrapInitializer> boot, HandlerUtilities utils,
-		WriteLock writeLock, ProjectMicroschemaLoadAllActionImpl projectMicroschemaLoadAllAction) {
-		super(db, utils, writeLock);
+		WriteLock writeLock, ProjectMicroschemaLoadAllActionImpl projectMicroschemaLoadAllAction, MicroschemaDAOActions microschemaActions) {
+		super(db, utils, writeLock, microschemaActions);
 		this.comparator = comparator;
 		this.boot = boot;
 		this.projectMicroschemaLoadAllAction = projectMicroschemaLoadAllAction;
-	}
-
-	@Override
-	public MicroschemaDAOActionsImpl crudActions() {
-		return new MicroschemaDAOActionsImpl();
 	}
 
 	@Override

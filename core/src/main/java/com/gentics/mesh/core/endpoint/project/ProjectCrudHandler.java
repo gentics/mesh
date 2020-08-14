@@ -35,14 +35,9 @@ public class ProjectCrudHandler extends AbstractCrudHandler<HibProject, ProjectR
 	private BootstrapInitializer boot;
 
 	@Inject
-	public ProjectCrudHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, WriteLock writeLock) {
-		super(db, utils, writeLock);
+	public ProjectCrudHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, WriteLock writeLock, ProjectDAOActions projectActions) {
+		super(db, utils, writeLock, projectActions);
 		this.boot = boot;
-	}
-
-	@Override
-	public ProjectDAOActions crudActions() {
-		return new ProjectDAOActionsImpl();
 	}
 
 	/**

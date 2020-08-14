@@ -16,8 +16,8 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.action.SchemaDAOActions;
 import com.gentics.mesh.core.actions.impl.ProjectSchemaLoadAllActionImpl;
-import com.gentics.mesh.core.actions.impl.SchemaDAOActionsImpl;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
@@ -61,17 +61,12 @@ public class SchemaCrudHandler extends AbstractCrudHandler<Schema, SchemaRespons
 
 	@Inject
 	public SchemaCrudHandler(Database db, SchemaComparator comparator, Lazy<BootstrapInitializer> boot,
-		HandlerUtilities utils, NodeIndexHandlerImpl nodeIndexHandler, WriteLock writeLock, ProjectSchemaLoadAllActionImpl projectSchemaDAOActions) {
-		super(db, utils, writeLock);
+		HandlerUtilities utils, NodeIndexHandlerImpl nodeIndexHandler, WriteLock writeLock, ProjectSchemaLoadAllActionImpl projectSchemaDAOActions, SchemaDAOActions schemaActions) {
+		super(db, utils, writeLock, schemaActions);
 		this.comparator = comparator;
 		this.boot = boot;
 		this.nodeIndexHandler = nodeIndexHandler;
 		this.projectSchemaDAOActions = projectSchemaDAOActions;
-	}
-
-	@Override
-	public SchemaDAOActionsImpl crudActions() {
-		return new SchemaDAOActionsImpl();
 	}
 
 	/**

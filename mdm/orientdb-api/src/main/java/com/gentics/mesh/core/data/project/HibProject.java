@@ -4,7 +4,6 @@ import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.root.MicroschemaRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.SchemaRoot;
@@ -28,8 +27,6 @@ public interface HibProject extends HibCoreElement, HibUserTracking {
 	TraversalResult<? extends Node> findNodes();
 
 	HibBranch getLatestBranch();
-
-	BranchRoot getBranchRoot();
 
 	Node getBaseNode();
 

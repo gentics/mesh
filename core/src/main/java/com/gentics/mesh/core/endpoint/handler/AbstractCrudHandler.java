@@ -28,14 +28,18 @@ public abstract class AbstractCrudHandler<T extends HibCoreElement, RM extends R
 	protected final Database db;
 	protected final HandlerUtilities utils;
 	protected final WriteLock writeLock;
+	private final DAOActions<T, RM> actions;
 
-	public AbstractCrudHandler(Database db, HandlerUtilities utils, WriteLock writeLock) {
+	public AbstractCrudHandler(Database db, HandlerUtilities utils, WriteLock writeLock, DAOActions<T, RM> actions) {
 		this.db = db;
 		this.utils = utils;
 		this.writeLock = writeLock;
+		this.actions = actions;
 	}
 
-	abstract public DAOActions<T, RM> crudActions();
+	public DAOActions<T, RM> crudActions() {
+		return actions;
+	}
 
 	/**
 	 * Handle create requests.

@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.dao.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toProject;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
@@ -18,7 +19,6 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
@@ -264,38 +264,40 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper implements Project
 			log.debug("Deleting project {" + project.getName() + "}");
 		}
 
+		Project graphProject = toProject(project);
+
 		// Remove the nodes in the project hierarchy
-		Node base = project.getBaseNode();
+		Node base = graphProject.getBaseNode();
 		base.delete(bac, true, true);
 
 		// Remove the tagfamilies from the index
-		project.getTagFamilyRoot().delete(bac);
+		graphProject.getTagFamilyRoot().delete(bac);
 
 		// Remove all nodes in this project
-		for (Node node : project.findNodes()) {
+		for (Node node : graphProject.findNodes()) {
 			node.delete(bac, true, false);
 			bac.inc();
 		}
 
 		// Finally also remove the node root
-		project.getNodeRoot().delete(bac);
+		graphProject.getNodeRoot().delete(bac);
 
 		// Unassign the schema from the container
-		for (Schema container : project.getSchemaContainerRoot().findAll()) {
-			project.getSchemaContainerRoot().removeSchemaContainer(container, bac.batch());
+		for (Schema container : graphProject.getSchemaContainerRoot().findAll()) {
+			graphProject.getSchemaContainerRoot().removeSchemaContainer(container, bac.batch());
 		}
 
 		// Remove the project schema root from the index
-		project.getSchemaContainerRoot().delete(bac);
+		graphProject.getSchemaContainerRoot().delete(bac);
 
 		// Remove the branch root and all branches
-		project.getBranchRoot().delete(bac);
+		graphProject.getBranchRoot().delete(bac);
 
 		// Remove the project from the index
-		bac.add(project.onDeleted());
+		bac.add(graphProject.onDeleted());
 
 		// Finally remove the project node
-		project.toProject().getVertex().remove();
+		graphProject.getVertex().remove();
 
 		bac.process(true);
 
@@ -303,19 +305,21 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper implements Project
 
 	@Override
 	public ProjectResponse transformToRestSync(HibProject project, InternalActionContext ac, int level, String... languageTags) {
+		Project graphProject = toProject(project);
+
 		GenericParameters generic = ac.getGenericParameters();
 		FieldsSet fields = generic.getFields();
 
 		ProjectResponse restProject = new ProjectResponse();
 		if (fields.has("name")) {
-			restProject.setName(project.getName());
+			restProject.setName(graphProject.getName());
 		}
 		if (fields.has("rootNode")) {
-			restProject.setRootNode(project.getBaseNode().transformToReference(ac));
+			restProject.setRootNode(graphProject.getBaseNode().transformToReference(ac));
 		}
 
-		project.toProject().fillCommonRestFields(ac, fields, restProject);
-		setRolePermissions(project.toProject(), ac, restProject);
+		graphProject.fillCommonRestFields(ac, fields, restProject);
+		setRolePermissions(graphProject, ac, restProject);
 
 		return restProject;
 
@@ -329,7 +333,8 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper implements Project
 
 	@Override
 	public String getETag(HibProject project, InternalActionContext ac) {
-		return project.toProject().getETag(ac);
+		Project graphProject = toProject(project);
+		return graphProject.getETag(ac);
 	}
 
 }

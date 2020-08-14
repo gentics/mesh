@@ -22,6 +22,7 @@ import com.gentics.mesh.context.impl.BulkActionContextImpl;
 import com.gentics.mesh.core.action.BranchDAOActions;
 import com.gentics.mesh.core.action.DAOActionsCollection;
 import com.gentics.mesh.core.action.GroupDAOActions;
+import com.gentics.mesh.core.action.JobDAOActions;
 import com.gentics.mesh.core.action.MicroschemaDAOActions;
 import com.gentics.mesh.core.action.NodeDAOActions;
 import com.gentics.mesh.core.action.ProjectDAOActions;
@@ -33,6 +34,7 @@ import com.gentics.mesh.core.action.UserDAOActions;
 import com.gentics.mesh.core.actions.impl.BranchDAOActionsImpl;
 import com.gentics.mesh.core.actions.impl.DAOActionsCollectionImpl;
 import com.gentics.mesh.core.actions.impl.GroupDAOActionsImpl;
+import com.gentics.mesh.core.actions.impl.JobDAOActionsImpl;
 import com.gentics.mesh.core.actions.impl.MicroschemaDAOActionsImpl;
 import com.gentics.mesh.core.actions.impl.NodeDAOActionsImpl;
 import com.gentics.mesh.core.actions.impl.ProjectDAOActionsImpl;
@@ -250,9 +252,12 @@ public abstract class BindModule {
 	abstract NodeDAOActions nodeDAOActions(NodeDAOActionsImpl e);
 
 	@Binds
-	abstract MicroschemaDAOActions micrDAOoschemaActions(MicroschemaDAOActionsImpl e);
+	abstract MicroschemaDAOActions microschemaDAOActions(MicroschemaDAOActionsImpl e);
 
 	@Binds
-	abstract SchemaDAOActions scheDAOmaActions(SchemaDAOActionsImpl e);
+	abstract SchemaDAOActions schemaDAOActions(SchemaDAOActionsImpl e);
+
+	@Binds
+	abstract JobDAOActions jobDAOActions(JobDAOActionsImpl e);
 
 }

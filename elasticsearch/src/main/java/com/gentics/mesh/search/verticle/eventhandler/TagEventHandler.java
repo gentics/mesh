@@ -58,7 +58,7 @@ public class TagEventHandler implements EventHandler {
 			String projectUuid = model.getProject().getUuid();
 
 			if (event == TAG_CREATED || event == TAG_UPDATED) {
-				return helper.getDb().tx(() -> {
+				return helper.getDb().tx(tx -> {
 					// We also need to update the tag family
 					Optional<HibTag> tag = entities.tag.getElement(model);
 					Optional<HibTagFamily> tagFamily = tag.map(HibTag::getTagFamily);
@@ -85,7 +85,7 @@ public class TagEventHandler implements EventHandler {
 		});
 	}
 
-	private Stream<CreateDocumentRequest> taggedNodes(MeshProjectElementEventModel model, Tag tag) {
+	private Stream<CreateDocumentRequest> taggedNodes(MeshProjectElementEventModel model, HibTag tag) {
 		TagDaoWrapper tagDao = helper.getBoot().tagDao();
 		return findElementByUuidStream(helper.getBoot().projectRoot(), model.getProject().getUuid())
 			.flatMap(project -> project.getBranchRoot().findAll().stream()

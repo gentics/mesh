@@ -19,8 +19,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -80,7 +78,7 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 		});
 
 		try (Tx tx = tx()) {
-			newBranch = project.getBranchRoot().create("newbranch", user(), batch);
+			newBranch = tx.data().branchDao().create(project, "newbranch", user(), batch);
 			assertThat(newBranch.isMigrated()).as("Branch migration status").isEqualTo(false);
 			tx.success();
 		}
@@ -134,7 +132,9 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testStartAgain() throws Throwable {
 		EventQueueBatch batch = createBatch();
-		HibBranch newBranch = tx(() -> project().getBranchRoot().create("newbranch", user(), batch));
+		HibBranch newBranch = tx(tx -> {
+			return tx.data().branchDao().create(project(), "newbranch", user(), batch);
+		});
 		String jobUuidA = requestBranchMigration(newBranch);
 		triggerAndWaitForJob(jobUuidA, COMPLETED);
 
@@ -150,8 +150,12 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 	public void testStartOrder() throws Throwable {
 		HibProject project = project();
 		EventQueueBatch batch = createBatch();
-		HibBranch newBranch = tx(() -> project.getBranchRoot().create("newbranch", user(), batch));
-		HibBranch newestBranch = tx(() -> project.getBranchRoot().create("newestbranch", user(), batch));
+		HibBranch newBranch = tx(tx -> {
+			return tx.data().branchDao().create(project, "newbranch", user(), batch);
+		});
+		HibBranch newestBranch = tx(tx -> {
+			return tx.data().branchDao().create(project, "newestbranch", user(), batch);
+		});
 
 		try (Tx tx = tx()) {
 			triggerAndWaitForJob(requestBranchMigration(newestBranch), FAILED);
@@ -221,7 +225,7 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 				future.get();
 			}
 
-			newBranch = project().getBranchRoot().create("newbranch", user(), batch);
+			newBranch = tx.data().branchDao().create(project(), "newbranch", user(), batch);
 			tx.success();
 		}
 

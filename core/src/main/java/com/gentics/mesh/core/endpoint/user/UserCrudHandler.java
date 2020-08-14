@@ -15,6 +15,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.action.UserDAOActions;
 import com.gentics.mesh.core.actions.impl.UserDAOActionsImpl;
 import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
@@ -48,15 +49,10 @@ public class UserCrudHandler extends AbstractCrudHandler<HibUser, UserResponse> 
 	private MeshJWTAuthProvider authProvider;
 
 	@Inject
-	public UserCrudHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, MeshJWTAuthProvider authProvider, WriteLock writeLock) {
-		super(db, utils, writeLock);
+	public UserCrudHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, MeshJWTAuthProvider authProvider, WriteLock writeLock, UserDAOActions userActions) {
+		super(db, utils, writeLock, userActions);
 		this.boot = boot;
 		this.authProvider = authProvider;
-	}
-
-	@Override
-	public UserDAOActionsImpl crudActions() {
-		return new UserDAOActionsImpl();
 	}
 
 	/**

@@ -152,13 +152,6 @@ public interface HibBranch extends HibCoreElement {
 	Branch getPreviousBranch();
 
 	/**
-	 * Get the root vertex.
-	 * 
-	 * @return branch root to which the branch belongs
-	 */
-	BranchRoot getRoot();
-
-	/**
 	 * Assign the given schema version to the branch and queue a job which will trigger the migration.
 	 * 
 	 * @param user
