@@ -15,6 +15,7 @@ import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
@@ -270,6 +271,7 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<HibUser>, DaoTransfo
 	/**
 	 * Check whether the given token code is valid. This method will also clear the token code if the token has expired.
 	 *
+	 * @parm user
 	 * @param token
 	 *            Token Code
 	 * @param maxTokenAgeMins
@@ -293,4 +295,12 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<HibUser>, DaoTransfo
 		return isTokenMatch && !isExpired;
 	}
 
+	/**
+	 * Add the user to the given group.
+	 *
+	 * @param user
+	 * @param group
+	 * @return Fluent API
+	 */
+	HibUser addGroup(HibUser user, HibGroup group);
 }

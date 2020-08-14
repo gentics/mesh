@@ -1,8 +1,8 @@
 package com.gentics.mesh.demo;
 
-import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.user.HibUser;
 
 /**
@@ -13,7 +13,7 @@ public class UserInfo {
 	private HibUser user;
 	private String userUuid;
 
-	private Group group;
+	private HibGroup group;
 	private String groupUuid;
 
 	private Role role;
@@ -21,7 +21,7 @@ public class UserInfo {
 
 	private String password;
 
-	public UserInfo(HibUser user, Group group, Role role, String password) {
+	public UserInfo(HibUser user, HibGroup group, Role role, String password) {
 		this.user = user;
 		this.userUuid = user.getUuid();
 		this.group = group;
@@ -39,11 +39,11 @@ public class UserInfo {
 		this.user = user;
 	}
 
-	public void setGroup(Group group) {
+	public void setGroup(HibGroup group) {
 		this.group = group;
 	}
 
-	public Group getGroup() {
+	public HibGroup getGroup() {
 		return group;
 	}
 

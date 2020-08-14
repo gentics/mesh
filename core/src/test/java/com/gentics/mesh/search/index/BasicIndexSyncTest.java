@@ -131,7 +131,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 		// Assert deletion
 		tx(() -> {
-			boot().groupDao().findByName("group_3").getElement().remove();
+			boot().groupDao().findByName("group_3").removeElement();
 		});
 		syncIndex();
 		assertMetrics("group", 0, 0, 1);

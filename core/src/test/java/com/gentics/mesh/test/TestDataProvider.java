@@ -39,6 +39,7 @@ import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.GroupRoot;
@@ -115,7 +116,7 @@ public class TestDataProvider {
 	private Map<String, HibTag> tags = new HashMap<>();
 	private Map<String, HibUser> users = new HashMap<>();
 	private Map<String, Role> roles = new HashMap<>();
-	private Map<String, Group> groups = new HashMap<>();
+	private Map<String, HibGroup> groups = new HashMap<>();
 
 	private String contentUuid;
 
@@ -348,7 +349,7 @@ public class TestDataProvider {
 
 		String groupName = username + "_group";
 		GroupRoot groupRoot = root.getGroupRoot();
-		Group group = groupDao.create(groupName, user);
+		HibGroup group = groupDao.create(groupName, user);
 		groupDao.addUser(group, user);
 		group.setCreator(user);
 		group.setCreationTimestamp();
@@ -387,7 +388,7 @@ public class TestDataProvider {
 
 		if (getSize() == FULL) {
 			// Guest Group / Role
-			Group guestGroup = groupDao.create("guests", userInfo.getUser());
+			HibGroup guestGroup = groupDao.create("guests", userInfo.getUser());
 			groups.put("guests", guestGroup);
 
 			Role guestRole = roleDao.create("guest_role", userInfo.getUser());
@@ -396,13 +397,13 @@ public class TestDataProvider {
 
 			// Extra User
 			HibUser user = userDao.create("guest", userInfo.getUser());
-			user.addGroup(guestGroup);
+			userDao.addGroup(user, guestGroup);
 			user.setFirstname("Guest Firstname");
 			user.setLastname("Guest Lastname");
 			user.setEmailAddress("guest@spam.gentics.com");
 			users.put(user.getUsername(), user);
 
-			Group group = groupDao.create("extra_group", userInfo.getUser());
+			HibGroup group = groupDao.create("extra_group", userInfo.getUser());
 			groups.put(group.getName(), group);
 
 			Role role = roleDao.create("extra_role", userInfo.getUser());
@@ -694,7 +695,7 @@ public class TestDataProvider {
 		return users;
 	}
 
-	public Map<String, Group> getGroups() {
+	public Map<String, HibGroup> getGroups() {
 		return groups;
 	}
 
@@ -731,7 +732,7 @@ public class TestDataProvider {
 		return getUserInfo().getUser();
 	}
 
-	public Group group() {
+	public HibGroup group() {
 		return getUserInfo().getGroup();
 	}
 

@@ -11,7 +11,8 @@ import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
+import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserResponse;
@@ -47,10 +48,11 @@ public class GroupEndpointETagTest extends AbstractMeshTest {
 	@Test
 	public void testReadOne() {
 		try (Tx tx = tx()) {
-			Group group = group();
+			GroupDaoWrapper groupDao = tx.data().groupDao();
+			HibGroup group = group();
 
 			String actualEtag = callETag(() -> client().findGroupByUuid(group.getUuid()));
-			String etag = group.getETag(mockActionContext());
+			String etag = groupDao.getETag(group, mockActionContext());
 			assertEquals(etag, actualEtag);
 
 			// Check whether 304 is returned for correct etag

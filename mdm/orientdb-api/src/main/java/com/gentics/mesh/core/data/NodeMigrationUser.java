@@ -271,11 +271,6 @@ public class NodeMigrationUser implements MeshAuthUser {
 	}
 
 	@Override
-	public HibUser addGroup(Group group) {
-		return this;
-	}
-
-	@Override
 	public void setEditor(HibUser user) {
 
 	}

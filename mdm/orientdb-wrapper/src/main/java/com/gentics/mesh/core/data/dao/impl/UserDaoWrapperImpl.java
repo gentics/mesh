@@ -7,6 +7,8 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_ROLE;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGroup;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toUser;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -33,7 +35,6 @@ import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.NodeMigrationUser;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
@@ -42,6 +43,7 @@ import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
+import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
@@ -146,7 +148,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWra
 		batch.add(user.onCreated());
 
 		if (!isEmpty(groupUuid)) {
-			Group parentGroup = groupDao.loadObjectByUuid(ac, groupUuid, CREATE_PERM);
+			HibGroup parentGroup = groupDao.loadObjectByUuid(ac, groupUuid, CREATE_PERM);
 			groupDao.addUser(parentGroup, user);
 			// batch.add(parentGroup.onUpdated());
 			inheritRolePermissions(requestUser, parentGroup, user);
@@ -375,7 +377,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWra
 	 */
 	private void setGroups(HibUser user, InternalActionContext ac, UserResponse restUser) {
 		// TODO filter by permissions
-		for (Group group : user.getGroups()) {
+		for (HibGroup group : user.getGroups()) {
 			GroupReference reference = group.transformToReference();
 			restUser.getGroups().add(reference);
 		}
@@ -600,7 +602,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWra
 			keyBuilder.append(referencedNode.getUuid());
 			keyBuilder.append(referencedNode.getProject().getName());
 		}
-		for (Group group : user.getGroups()) {
+		for (HibGroup group : user.getGroups()) {
 			keyBuilder.append(group.getUuid());
 		}
 		keyBuilder.append(String.valueOf(user.isAdmin()));
@@ -662,6 +664,14 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWra
 		for (Role role : sourceNode.getRolesWithPerm(permission)) {
 			roleDao.grantPermissions(role, targetNode, toGrant);
 		}
+		return user;
+	}
+
+	@Override
+	public HibUser addGroup(HibUser user, HibGroup group) {
+		User graphUser = toUser(user);
+		Group graphGroup = toGroup(group);
+		graphUser.addGroup(graphGroup);
 		return user;
 	}
 

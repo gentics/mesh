@@ -25,6 +25,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.Microschema;
@@ -70,7 +71,7 @@ public class MeshEntities {
 	private final ComplianceMode complianceMode;
 
 	public final MeshEntity<HibUser> user;
-	public final MeshEntity<Group> group;
+	public final MeshEntity<HibGroup> group;
 	public final MeshEntity<Role> role;
 	public final MeshEntity<HibProject> project;
 	public final MeshEntity<HibTag> tag;
@@ -100,7 +101,7 @@ public class MeshEntities {
 		schema = new SimpleMeshEntity<>(schemaTransformer, Schema.TYPE_INFO, byUuid(uuid -> boot.schemaDao().findByUuid(uuid)));
 		microschema = new SimpleMeshEntity<>(microschemaTransformer, Microschema.TYPE_INFO, byUuid(uuid -> boot.microschemaDao().findByUuid(uuid)));
 		user = new SimpleMeshEntity<>(userTransformer, User.TYPE_INFO, byHibElementUuid(uuid -> boot.userDao().findByUuid(uuid)));
-		group = new SimpleMeshEntity<>(groupTransformer, Group.TYPE_INFO, byUuid(uuid -> boot.groupDao().findByUuid(uuid)));
+		group = new SimpleMeshEntity<>(groupTransformer, Group.TYPE_INFO, byHibElementUuid(uuid -> boot.groupDao().findByUuid(uuid)));
 		role = new SimpleMeshEntity<>(roleTransformer, Role.TYPE_INFO, byUuid(uuid -> boot.roleDao().findByUuid(uuid)));
 		project = new SimpleMeshEntity<>(projectTransformer, Project.TYPE_INFO, byHibElementUuid(uuid -> boot.projectDao().findByUuid(uuid)));
 		tagFamily = new SimpleMeshEntity<>(tagFamilyTransformer, TagFamily.TYPE_INFO, this::toTagFamily);
@@ -135,7 +136,7 @@ public class MeshEntities {
 	 * The Group {@link MeshEntity}.
 	 * @return
 	 */
-	public MeshEntity<Group> getGroup() {
+	public MeshEntity<HibGroup> getGroup() {
 		return group;
 	}
 
@@ -250,7 +251,7 @@ public class MeshEntities {
 	 * @param element
 	 * @return
 	 */
-	public CreateDocumentRequest createRequest(Group element) {
+	public CreateDocumentRequest createRequest(HibGroup element) {
 		return helper.createDocumentRequest(Group.composeIndexName(), element.getUuid(), group.transform(element), complianceMode);
 	}
 

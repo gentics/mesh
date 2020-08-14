@@ -41,7 +41,6 @@ import com.gentics.mesh.cache.CacheRegistryImpl;
 import com.gentics.mesh.changelog.ChangelogSystem;
 import com.gentics.mesh.changelog.ReindexAction;
 import com.gentics.mesh.changelog.highlevel.HighLevelChangelogSystem;
-import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
@@ -58,6 +57,7 @@ import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -1044,7 +1044,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				log.debug("Created schema container {" + schema.getName() + "} uuid: {" + binarySchemaContainer.getUuid() + "}");
 			}
 
-			Group adminGroup = groupRoot.findByName("admin");
+			HibGroup adminGroup = groupRoot.findByName("admin");
 			if (adminGroup == null) {
 				adminGroup = groupDao.create("admin", adminUser);
 				groupDao.addUser(adminGroup, adminUser);
@@ -1092,7 +1092,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				}
 
 				GroupRoot groupRoot = meshRoot.getGroupRoot();
-				Group anonymousGroup = groupRoot.findByName("anonymous");
+				HibGroup anonymousGroup = groupRoot.findByName("anonymous");
 				if (anonymousGroup == null) {
 					anonymousGroup = groupDao.create("anonymous", anonymousUser);
 					groupDao.addUser(anonymousGroup, anonymousUser);

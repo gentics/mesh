@@ -98,4 +98,9 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 		return groupDao.transformToRestSync(this, ac, level, languageTags);
 	}
 
+	@Override
+	public void removeElement() {
+		getElement().remove();
+	}
+
 }

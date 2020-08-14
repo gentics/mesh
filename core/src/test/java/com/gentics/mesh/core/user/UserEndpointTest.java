@@ -49,11 +49,11 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.UserRoot;
@@ -384,7 +384,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertEquals(1, user.getGroups().count());
 
 			for (int i = 0; i < 10; i++) {
-				Group extraGroup = groupDao.create("group_" + i, user());
+				HibGroup extraGroup = groupDao.create("group_" + i, user());
 				tx.data().groupDao().addUser(extraGroup, user());
 			}
 			assertEquals(11, user().getGroups().count());
@@ -456,7 +456,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// Test missing permission
 		updateRequest.setAdmin(false);
-		call(() -> client().updateUser(response.getUuid(),updateRequest), FORBIDDEN, "user_error_admin_privilege_needed_for_admin_flag");
+		call(() -> client().updateUser(response.getUuid(), updateRequest), FORBIDDEN, "user_error_admin_privilege_needed_for_admin_flag");
 	}
 
 	@Test
@@ -485,7 +485,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			invisibleUser.setLastname("should_not_be_listed");
 			invisibleUser.setFirstname("should_not_be_listed");
 			invisibleUser.setEmailAddress("should_not_be_listed");
-			invisibleUser.addGroup(group());
+			userDao.addGroup(invisibleUser, group());
 			foundUsers = userRoot.computeCount();
 			tx.success();
 		}
@@ -1039,7 +1039,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			// Create an user with a conflicting username
 			HibUser user = userDao.create("existing_username", user());
-			user.addGroup(group());
+			userDao.addGroup(user, group());
 			tx.success();
 		}
 
@@ -1063,10 +1063,10 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			UserDaoWrapper userDao = tx.data().userDao();
-			
+
 			// Create an user with a conflicting username
 			HibUser user = userDao.create("existing_username", user());
-			user.addGroup(group());
+			userDao.addGroup(user, group());
 
 			// Add update permission to group in order to create the user in
 			// that group
@@ -1363,8 +1363,9 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			UserDaoWrapper userDao = tx.data().userDao();
+
 			HibUser user = userDao.create("extraUser", user());
-			user.addGroup(group());
+			userDao.addGroup(user, group());
 			uuid = user.getUuid();
 			assertNotNull(uuid);
 			roleDao.grantPermissions(role(), user, UPDATE_PERM);
@@ -1398,10 +1399,10 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			UserDaoWrapper userDao = tx.data().userDao();
-			
+
 			String name = "extraUser";
 			HibUser extraUser = userDao.create(name, user());
-			extraUser.addGroup(group());
+			userDao.addGroup(extraUser, group());
 			uuid = extraUser.getUuid();
 			roleDao.grantPermissions(role(), extraUser, DELETE_PERM);
 			assertTrue(roleDao.hasPermission(role(), DELETE_PERM, extraUser));

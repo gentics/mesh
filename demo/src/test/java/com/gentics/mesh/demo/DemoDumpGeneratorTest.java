@@ -13,13 +13,13 @@ import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -69,7 +69,7 @@ public class DemoDumpGeneratorTest {
 			HibUser user = userDao.findByUsername("webclient");
 			assertNotNull("The webclient user should have been created but could not be found.", user);
 			assertFalse("The webclient user should also have at least one group assigned to it.", !user.getGroups().iterator().hasNext());
-			Group group = user.getGroups().iterator().next();
+			HibGroup group = user.getGroups().iterator().next();
 			Role role = groupDao.getRoles(group).iterator().next();
 			assertNotNull("The webclient group should also have a role assigned to it", role);
 

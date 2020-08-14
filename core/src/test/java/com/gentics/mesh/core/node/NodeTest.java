@@ -309,7 +309,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			try (Tx tx2 = tx()) {
 				UserDaoWrapper userDao = tx2.data().userDao();
 				HibUser newUser = userDao.create("newUser", user());
-				newUser.addGroup(group());
+				userDao.addGroup(newUser,group());
 				assertEquals(user().getUuid(), node.getCreator().getUuid());
 				System.out.println(newUser.getUuid());
 				node.setCreator(newUser);

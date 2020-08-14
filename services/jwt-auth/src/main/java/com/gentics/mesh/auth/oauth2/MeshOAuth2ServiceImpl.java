@@ -24,11 +24,11 @@ import com.gentics.mesh.auth.MeshOAuthService;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
@@ -394,7 +394,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 						// Now create the groups and assign the user to the listed groups
 						for (GroupResponse mappedGroup : mappedGroups) {
 							String groupName = mappedGroup.getName();
-							Group group = groupDao.findByName(groupName);
+							HibGroup group = groupDao.findByName(groupName);
 
 							// Group not found - Lets create it
 							boolean created = false;
@@ -467,7 +467,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 							for (GroupReference assignedGroup : mappedRole.getGroups()) {
 								String groupName = assignedGroup.getName();
 								String groupUuid = assignedGroup.getUuid();
-								Group group = null;
+								HibGroup group = null;
 								// Try name
 								if (groupName != null) {
 									group = groupDao.findByName(groupName);
@@ -490,7 +490,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 					// 7. Check if the plugin wants to remove the user user from any of its current groups.
 					GroupFilter groupFilter = result.getGroupFilter();
 					if (groupFilter != null) {
-						for (Group group : user.getGroups()) {
+						for (HibGroup group : user.getGroups()) {
 							if (groupFilter.filter(group.getName())) {
 								requiresWrite();
 								log.info("Unassigning group {" + group.getName() + "} from user {" + user.getUsername() + "}");

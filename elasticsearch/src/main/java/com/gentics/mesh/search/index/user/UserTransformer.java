@@ -11,7 +11,7 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.madl.traversal.TraversalResult;
@@ -42,7 +42,7 @@ public class UserTransformer extends AbstractTransformer<HibUser> {
 		StringBuilder builder = new StringBuilder();
 		builder.append(user.toUser().getElementVersion());
 		builder.append("|");
-		for (Group group : user.getGroups()) {
+		for (HibGroup group : user.getGroups()) {
 			builder.append(group.getElementVersion());
 			builder.append("|");
 		}
@@ -88,10 +88,10 @@ public class UserTransformer extends AbstractTransformer<HibUser> {
 	 * @param document
 	 * @param groups
 	 */
-	private void addGroups(JsonObject document, TraversalResult<? extends Group> groups) {
+	private void addGroups(JsonObject document, TraversalResult<? extends HibGroup> groups) {
 		List<String> groupUuids = new ArrayList<>();
 		List<String> groupNames = new ArrayList<>();
-		for (Group group : groups) {
+		for (HibGroup group : groups) {
 			groupUuids.add(group.getUuid());
 			groupNames.add(group.getName());
 		}

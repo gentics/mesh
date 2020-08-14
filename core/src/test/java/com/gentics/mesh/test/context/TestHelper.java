@@ -27,8 +27,8 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.MeshRoot;
@@ -114,7 +114,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return data().getMeshRoot();
 	}
 
-	default Group group() {
+	default HibGroup group() {
 		return data().getUserInfo().getGroup();
 	}
 
@@ -236,7 +236,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return "de";
 	}
 
-	default Map<String, Group> groups() {
+	default Map<String, HibGroup> groups() {
 		return data().getGroups();
 	}
 

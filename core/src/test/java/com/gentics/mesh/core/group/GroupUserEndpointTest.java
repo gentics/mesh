@@ -24,11 +24,11 @@ import java.util.Map;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ListResponse;
@@ -149,7 +149,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			UserDaoWrapper userDao = tx.data().userDao();
 
-			Group group = group();
+			HibGroup group = group();
 			extraUser = userDao.create("extraUser", user());
 			roleDao.grantPermissions(role(), extraUser, READ_PERM);
 			roleDao.revokePermissions(role(), group, UPDATE_PERM);

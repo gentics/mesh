@@ -20,10 +20,10 @@ import java.util.Set;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.group.GroupRoleAssignModel;
 import com.gentics.mesh.core.rest.group.GroupReference;
@@ -244,7 +244,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 
-			Group group = group();
+			HibGroup group = group();
 			extraRole = roleDao.create("extraRole", user());
 			roleDao.revokePermissions(role(), group, UPDATE_PERM);
 			tx.success();
@@ -275,7 +275,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			GroupDaoWrapper groupDao = tx.data().groupDao();
 
-			Group group = group();
+			HibGroup group = group();
 			extraRole = roleDao.create("extraRole", user());
 			groupDao.addRole(group, extraRole);
 
@@ -307,7 +307,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			GroupDaoWrapper groupDao = tx.data().groupDao();
 
-			Group group = group();
+			HibGroup group = group();
 			extraRole = roleDao.create("extraRole", user());
 			extraRoleUuid = extraRole.getUuid();
 			groupDao.addRole(group, extraRole);

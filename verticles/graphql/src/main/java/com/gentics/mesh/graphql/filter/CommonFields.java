@@ -9,6 +9,7 @@ import com.gentics.graphqlfilter.filter.FilterField;
 import com.gentics.graphqlfilter.filter.MappedFilter;
 import com.gentics.graphqlfilter.filter.StringFilter;
 import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.HibNamedElement;
 import com.gentics.mesh.core.data.NamedElement;
 import com.gentics.mesh.core.data.UserTrackingVertex;
 import com.gentics.mesh.core.data.user.HibUserTracking;
@@ -41,15 +42,32 @@ public final class CommonFields {
 	/**
 	 * Filters by name
 	 */
+	@Deprecated
 	public static <T extends NamedElement> FilterField<T, Map<String, ?>> nameFilter() {
 		return new MappedFilter<>("name", "Filters by name", StringFilter.filter(), NamedElement::getName);
 	}
 
 	/**
-	 * Filters by created time, creator, edited time and editor.
+	 * Filters by name
 	 */
+	public static <T extends HibNamedElement> FilterField<T, Map<String, ?>> hibNameFilter() {
+		return new MappedFilter<>("name", "Filters by name", StringFilter.filter(), HibNamedElement::getName);
+	}
+
+	/**
+	 * Filters by created time, creator, edited time and editor.
+	 * @deprecated Use {@link #hibUserTrackingFilter()}
+	 */
+	@Deprecated
 	public static <T extends UserTrackingVertex> List<FilterField<T, Map<String, ?>>> userTrackingFilter() {
 		return userTrackingFilter(UserFilter.filter());
+	}
+
+	/**
+	 * Filters by created time, creator, edited time and editor.
+	 */
+	public static <T extends HibUserTracking> List<FilterField<T, Map<String, ?>>> hibUserTrackingFilter() {
+		return hibUserTrackingFilter(UserFilter.filter());
 	}
 
 	/**

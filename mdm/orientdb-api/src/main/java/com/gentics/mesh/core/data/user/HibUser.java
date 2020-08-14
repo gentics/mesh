@@ -4,6 +4,7 @@ import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.rest.user.UserReference;
@@ -251,7 +252,7 @@ public interface HibUser extends HibCoreElement, HibUserTracking {
 	 * @return
 	 */
 	// TODO we want to use this to the user dao
-	TraversalResult<? extends Group> getGroups();
+	TraversalResult<? extends HibGroup> getGroups();
 
 	/**
 	 * A CRC32 hash of the users {@link #getRoles roles}.
@@ -259,15 +260,6 @@ public interface HibUser extends HibCoreElement, HibUserTracking {
 	 * @return A hash of the users roles
 	 */
 	String getRolesHash();
-
-	/**
-	 * Add the user to the given group.
-	 *
-	 * @param group
-	 * @return Fluent API
-	 */
-	// TODO we want to use this to the user dao 
-	HibUser addGroup(Group group);
 
 	/**
 	 * Convert this back to the non-mdm User

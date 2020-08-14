@@ -42,6 +42,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -122,7 +123,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 		try (Tx tx = tx()) {
 			assertThat(restGroup).matches(request);
-			Group reloadedGroup = tx.data().groupDao().findByUuid(uuid);
+			HibGroup reloadedGroup = tx.data().groupDao().findByUuid(uuid);
 			assertEquals("The group should have been updated", name, reloadedGroup.getName());
 		}
 	}
@@ -191,7 +192,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 			GroupResponse restGroup = call(() -> client().createGroup(request));
 			assertThat(restGroup).matches(request);
 
-			Group foundGroup = tx.data().groupDao().findByUuid(restGroup.getUuid());
+			HibGroup foundGroup = tx.data().groupDao().findByUuid(restGroup.getUuid());
 			assertNotNull("Group should have been created.", foundGroup);
 
 			call(() -> client().findGroupByUuid(restGroup.getUuid()));
@@ -245,7 +246,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 			// Create and save some groups
 			groupDao.create(extraGroupName, user());
 			for (int i = 0; i < nGroups; i++) {
-				Group group = groupDao.create("group_" + i, user());
+				HibGroup group = groupDao.create("group_" + i, user());
 				roleDao.grantPermissions(role(), group, READ_PERM);
 			}
 			tx.success();
@@ -327,7 +328,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 	public void testReadByUUIDWithMissingPermission() throws Exception {
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
-			Group group = group();
+			HibGroup group = group();
 			roleDao.revokePermissions(role(), group, READ_PERM);
 			assertNotNull("The UUID of the group must not be null.", group.getUuid());
 			tx.success();
@@ -365,7 +366,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 		try (Tx tx = tx()) {
 			assertThat(restGroup).matches(request);
-			Group reloadedGroup = tx.data().groupDao().findByUuid(groupUuid);
+			HibGroup reloadedGroup = tx.data().groupDao().findByUuid(groupUuid);
 			assertEquals("The group should have been updated", name, reloadedGroup.getName());
 		}
 	}
@@ -393,7 +394,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		String oldName;
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
-			Group group = group();
+			HibGroup group = group();
 			oldName = group.getName();
 			roleDao.grantPermissions(role(), group, UPDATE_PERM);
 			tx.success();
@@ -402,7 +403,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		call(() -> client().updateGroup(groupUuid(), request), BAD_REQUEST, "error_name_must_be_set");
 
 		try (Tx tx = tx()) {
-			Group reloadedGroup = tx.data().groupDao().findByUuid(groupUuid());
+			HibGroup reloadedGroup = tx.data().groupDao().findByUuid(groupUuid());
 			assertEquals("The group should not have been updated", oldName, reloadedGroup.getName());
 		}
 	}
@@ -418,7 +419,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		awaitEvents();
 
 		try (Tx tx = tx()) {
-			Group reloadedGroup = tx.data().groupDao().findByUuid(groupUuid());
+			HibGroup reloadedGroup = tx.data().groupDao().findByUuid(groupUuid());
 			assertEquals("The group should be the same", name, reloadedGroup.getName());
 		}
 	}
@@ -443,7 +444,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 		try (Tx tx = tx()) {
 			GroupDaoWrapper groupDao = tx.data().groupDao();
-			Group reloadedGroup = groupDao.findByUuid(group().getUuid());
+			HibGroup reloadedGroup = groupDao.findByUuid(group().getUuid());
 			assertEquals("The group should not have been updated", group().getName(), reloadedGroup.getName());
 		}
 

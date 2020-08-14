@@ -25,12 +25,12 @@ import org.junit.Test;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -326,7 +326,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			InternalActionContext ac = mockActionContext();
 
-			Group newGroup = groupDao.create("extraGroup", user());
+			HibGroup newGroup = groupDao.create("extraGroup", user());
 			newUser = userDao.create("Anton", user());
 			groupDao.addUser(newGroup, newUser);
 
@@ -425,7 +425,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertEquals(1, user.getGroups().count());
 
 			for (int i = 0; i < 10; i++) {
-				Group extraGroup = groupDao.create("group_" + i, user());
+				HibGroup extraGroup = groupDao.create("group_" + i, user());
 				// Multiple calls should not affect the result
 				groupDao.addUser(extraGroup, user);
 				groupDao.addUser(extraGroup, user);
@@ -576,7 +576,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			HibUser oldUser = user();
 			HibUser newUser = userDao.create("newuser", oldUser);
-			Group newGroup = groupDao.create("newgroup", oldUser);
+			HibGroup newGroup = groupDao.create("newgroup", oldUser);
 
 			groupDao.getRoles(group()).forEach(role -> groupDao.addRole(newGroup, role));
 			groupDao.addUser(newGroup, newUser);
