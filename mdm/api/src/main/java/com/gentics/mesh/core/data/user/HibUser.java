@@ -1,15 +1,9 @@
 package com.gentics.mesh.core.data.user;
 
-import com.gentics.mesh.core.data.Group;
+
 import com.gentics.mesh.core.data.HibCoreElement;
-import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.group.HibGroup;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.HibNode;
 import com.gentics.mesh.core.rest.user.UserReference;
-import com.gentics.mesh.madl.traversal.TraversalResult;
-import com.gentics.mesh.parameter.PagingParameters;
 
 public interface HibUser extends HibCoreElement, HibUserTracking {
 
@@ -156,7 +150,7 @@ public interface HibUser extends HibCoreElement, HibUserTracking {
 	 * @return
 	 */
 	// TODO we want to use this to the user dao
-	Iterable<? extends Role> getRoles();
+//	Iterable<? extends Role> getRoles();
 
 	/**
 	 * Reset the API token id and issue timestamp and thus invalidating the token.
@@ -226,7 +220,7 @@ public interface HibUser extends HibCoreElement, HibUserTracking {
 	 *
 	 * @return Referenced node or null when no node was assigned to the user.
 	 */
-	Node getReferencedNode();
+	HibNode getReferencedNode();
 
 	/**
 	 * Set the referenced node.
@@ -234,25 +228,8 @@ public interface HibUser extends HibCoreElement, HibUserTracking {
 	 * @param node
 	 * @return Fluent API
 	 */
-	HibUser setReferencedNode(Node node);
+	HibUser setReferencedNode(HibNode node);
 
-	/**
-	 * Return a page of groups which the user was assigned to.
-	 *
-	 * @param user
-	 * @param params
-	 * @return
-	 */
-	// TODO we want to move this into the dao
-	Page<? extends Group> getGroups(HibUser user, PagingParameters params);
-
-	/**
-	 * Return a traversal result of groups to which the user was assigned.
-	 *
-	 * @return
-	 */
-	// TODO we want to use this to the user dao
-	TraversalResult<? extends HibGroup> getGroups();
 
 	/**
 	 * A CRC32 hash of the users {@link #getRoles roles}.
@@ -261,14 +238,8 @@ public interface HibUser extends HibCoreElement, HibUserTracking {
 	 */
 	String getRolesHash();
 
-	/**
-	 * Convert this back to the non-mdm User
-	 * @return
-	 * @deprecated This method should only be used when there is really no other way 
-	 */
-	@Deprecated
-	default User toUser() {
-		return (User) this;
-	}
+	String getElementVersion();
+
+	MeshAuthUser toAuthUser();
 
 }

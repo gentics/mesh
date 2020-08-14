@@ -1,5 +1,9 @@
 package com.gentics.mesh.core.data;
 
-public interface HibNode {
+import com.gentics.mesh.core.data.user.HibCreatorTracking;
+
+public interface HibNode extends HibCoreElement, HibCreatorTracking {
+
+	String getElementVersion();
 
 }

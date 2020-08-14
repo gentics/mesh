@@ -12,8 +12,8 @@ import com.gentics.mesh.core.action.ProjectDAOActions;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -27,7 +27,7 @@ public class ProjectDAOActionsImpl implements ProjectDAOActions {
 	}
 
 	@Override
-	public HibProject loadByUuid(DAOActionContext ctx, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+	public HibProject loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
 		ProjectDaoWrapper projectDao = ctx.tx().data().projectDao();
 		if (perm == null) {
 			return projectDao.findByUuid(uuid);
@@ -37,7 +37,7 @@ public class ProjectDAOActionsImpl implements ProjectDAOActions {
 	}
 
 	@Override
-	public HibProject loadByName(DAOActionContext ctx, String name, GraphPermission perm, boolean errorIfNotFound) {
+	public HibProject loadByName(DAOActionContext ctx, String name, InternalPermission perm, boolean errorIfNotFound) {
 		if (perm == null) {
 			return ctx.tx().data().projectDao().findByName(name);
 		} else {

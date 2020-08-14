@@ -17,6 +17,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
+import com.gentics.mesh.core.data.HibNode;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -64,7 +65,7 @@ import io.reactivex.Single;
  * this node and to the created nodes in order to create a project data structure. Each node may be linked to one or more {@link NodeGraphFieldContainer}
  * vertices which contain the language specific data.
  */
-public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackingVertex, Taggable, ProjectElement {
+public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackingVertex, Taggable, ProjectElement, HibNode {
 
 	String BRANCH_UUID_KEY = "branchUuid";
 

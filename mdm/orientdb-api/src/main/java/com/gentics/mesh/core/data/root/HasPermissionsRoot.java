@@ -2,7 +2,7 @@ package com.gentics.mesh.core.data.root;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibElement;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.madl.traversal.TraversalResult;
@@ -25,5 +25,5 @@ public interface HasPermissionsRoot {
 	 * @param perm
 	 * @return
 	 */
-	TraversalResult<? extends HibRole> getRolesWithPerm(HibElement element, GraphPermission perm);
+	TraversalResult<? extends HibRole> getRolesWithPerm(HibElement element, InternalPermission perm);
 }

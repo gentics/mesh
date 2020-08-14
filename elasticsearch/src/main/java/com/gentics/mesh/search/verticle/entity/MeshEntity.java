@@ -1,16 +1,17 @@
 package com.gentics.mesh.search.verticle.entity;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModelImpl;
 import com.gentics.mesh.search.index.Transformer;
 import com.gentics.mesh.search.verticle.eventhandler.EventVertexMapper;
-import io.vertx.core.json.JsonObject;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import io.vertx.core.json.JsonObject;
 
 /**
  * Useful functions for a type of elements in mesh.
@@ -82,6 +83,7 @@ public abstract class MeshEntity<T> {
 
 	/**
 	 * Transforms an element to an elasticsearch document.
+	 * 
 	 * @param element
 	 * @return
 	 */
@@ -100,6 +102,7 @@ public abstract class MeshEntity<T> {
 
 	/**
 	 * Gets the elasticsearch document described in an event.
+	 * @param tx 
 	 * @param event
 	 * @return
 	 */

@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.actions.impl;
 
+import static com.gentics.mesh.core.data.util.HibClassConverter.toUser;
+
 import java.util.function.Predicate;
 
 import javax.inject.Inject;
@@ -9,10 +11,11 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.DAOActionContext;
 import com.gentics.mesh.core.action.UserDAOActions;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.user.UserResponse;
@@ -27,7 +30,7 @@ public class UserDAOActionsImpl implements UserDAOActions {
 	}
 
 	@Override
-	public HibUser loadByUuid(DAOActionContext ctx, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+	public HibUser loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
 		UserDaoWrapper userDao = ctx.tx().data().userDao();
 		if (perm == null) {
 			return userDao.findByUuid(uuid);
@@ -37,7 +40,7 @@ public class UserDAOActionsImpl implements UserDAOActions {
 	}
 
 	@Override
-	public HibUser loadByName(DAOActionContext ctx, String name, GraphPermission perm, boolean errorIfNotFound) {
+	public HibUser loadByName(DAOActionContext ctx, String name, InternalPermission perm, boolean errorIfNotFound) {
 		UserDaoWrapper userDao = ctx.tx().data().userDao();
 		if (perm == null) {
 			return userDao.findByName(name);
@@ -79,13 +82,14 @@ public class UserDAOActionsImpl implements UserDAOActions {
 
 	@Override
 	public String getAPIPath(Tx tx, InternalActionContext ac, HibUser user) {
-		// UserDaoWrapper userDao = tx.data().userDao();
-		return user.toUser().getAPIPath(ac);
+		User graphUser = toUser(user);
+		return graphUser.getAPIPath(ac);
 	}
 
 	@Override
 	public String getETag(Tx tx, InternalActionContext ac, HibUser user) {
-		return user.toUser().getETag(ac);
+		User graphUser = toUser(user);
+		return graphUser.getETag(ac);
 	}
 
 }

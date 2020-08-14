@@ -7,7 +7,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
@@ -22,7 +22,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 // TODO move the contents of this to GroupDao once migration is done
 public interface GroupDaoWrapper extends GroupDao, DaoWrapper<HibGroup>, DaoTransformable<HibGroup, GroupResponse> {
 
-	HibGroup loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm);
+	HibGroup loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm);
 
 	TraversalResult<? extends HibGroup> findAll();
 
@@ -191,7 +191,7 @@ public interface GroupDaoWrapper extends GroupDao, DaoWrapper<HibGroup>, DaoTran
 
 	boolean update(HibGroup group, InternalActionContext ac, EventQueueBatch batch);
 
-	HibGroup loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound);
+	HibGroup loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound);
 
 	HibGroup create(InternalActionContext ac, EventQueueBatch batch, String uuid);
 

@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.project;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
 import static com.gentics.mesh.test.TestSize.PROJECT;
 import static com.gentics.mesh.test.util.MeshAssert.assertElement;
 import static org.junit.Assert.assertEquals;
@@ -18,8 +18,8 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
@@ -204,7 +204,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	public void testReadPermission() {
 		try (Tx tx = tx()) {
 			HibProject newProject = createProject("newProject", "folder");
-			testPermission(GraphPermission.READ_PERM, newProject);
+			testPermission(InternalPermission.READ_PERM, newProject);
 		}
 	}
 
@@ -213,7 +213,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	public void testDeletePermission() {
 		try (Tx tx = tx()) {
 			HibProject newProject = createProject("newProject", "folder");
-			testPermission(GraphPermission.DELETE_PERM, newProject);
+			testPermission(InternalPermission.DELETE_PERM, newProject);
 		}
 	}
 
@@ -222,7 +222,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	public void testUpdatePermission() {
 		try (Tx tx = tx()) {
 			HibProject newProject = createProject("newProject", "folder");
-			testPermission(GraphPermission.UPDATE_PERM, newProject);
+			testPermission(InternalPermission.UPDATE_PERM, newProject);
 		}
 	}
 
@@ -231,7 +231,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	public void testCreatePermission() {
 		try (Tx tx = tx()) {
 			HibProject newProject = createProject("newProject", "folder");
-			testPermission(GraphPermission.CREATE_PERM, newProject);
+			testPermission(InternalPermission.CREATE_PERM, newProject);
 		}
 	}
 

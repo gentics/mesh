@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.root.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.Arrays;
@@ -15,7 +15,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
@@ -48,13 +48,13 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	}
 
 	@Override
-	public TraversalResult<? extends HibRole> getRolesWithPerm(GraphPermission perm) {
+	public TraversalResult<? extends HibRole> getRolesWithPerm(InternalPermission perm) {
 		return mesh().permissionProperties().getRolesWithPerm(this, perm);
 	}
 
 	@Override
-	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
-		Set<GraphPermission> permissionsToRevoke) {
+	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<InternalPermission> permissionsToGrant,
+		Set<InternalPermission> permissionsToRevoke) {
 		if (recursive) {
 			for (T t : findAll()) {
 				t.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
@@ -69,7 +69,7 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	}
 
 	@Override
-	public TraversalResult<? extends HibRole> getRolesWithPerm(HibElement vertex, GraphPermission perm) {
+	public TraversalResult<? extends HibRole> getRolesWithPerm(HibElement vertex, InternalPermission perm) {
 		return mesh().permissionProperties().getRolesWithPerm(vertex, perm);
 	}
 
@@ -110,9 +110,9 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 		if (!isEmpty(roleUuid)) {
 			Role role = mesh().boot().meshRoot().getRoleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 			if (role != null) {
-				Set<GraphPermission> permSet = roleDao.getPermissions(role, element);
+				Set<InternalPermission> permSet = roleDao.getPermissions(role, element);
 				Set<String> humanNames = new HashSet<>();
-				for (GraphPermission permission : permSet) {
+				for (InternalPermission permission : permSet) {
 					humanNames.add(permission.getRestPerm().getName());
 				}
 				String[] names = humanNames.toArray(new String[humanNames.size()]);

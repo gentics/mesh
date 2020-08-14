@@ -25,7 +25,7 @@ import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
@@ -115,7 +115,7 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 		return node.transformToRestSync(ac, 0).toJson();
 	}
 
-	protected void testPermission(GraphPermission perm, HibElement element) {
+	protected void testPermission(InternalPermission perm, HibElement element) {
 		RoutingContext rc = tx(() -> mockRoutingContext());
 
 		try (Tx tx = tx()) {

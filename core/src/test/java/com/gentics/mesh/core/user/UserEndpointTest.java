@@ -2,10 +2,10 @@ package com.gentics.mesh.core.user;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.User.composeIndexName;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.DELETE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.MeshEvent.USER_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.USER_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.USER_UPDATED;
@@ -55,7 +55,7 @@ import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -343,11 +343,11 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			data().addTagFamilies();
 			tagFamily = data().getTagFamily("colors");
-			roleDao.grantPermissions(role(), tagFamily, GraphPermission.values());
+			roleDao.grantPermissions(role(), tagFamily, InternalPermission.values());
 
 			// Add permission on own role
-			roleDao.grantPermissions(role(), tagFamily, GraphPermission.UPDATE_PERM);
-			assertTrue(roleDao.hasPermission(role(), GraphPermission.UPDATE_PERM, tagFamily));
+			roleDao.grantPermissions(role(), tagFamily, InternalPermission.UPDATE_PERM);
+			assertTrue(roleDao.hasPermission(role(), InternalPermission.UPDATE_PERM, tagFamily));
 			pathToElement = "projects/" + project().getUuid() + "/tagFamilies/" + tagFamily.getUuid();
 			tx.success();
 		}
@@ -360,8 +360,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			// Revoke single permission and check again
-			roleDao.revokePermissions(role(), tagFamily, GraphPermission.UPDATE_PERM);
-			assertFalse(roleDao.hasPermission(role(), GraphPermission.UPDATE_PERM, tagFamily));
+			roleDao.revokePermissions(role(), tagFamily, InternalPermission.UPDATE_PERM);
+			assertFalse(roleDao.hasPermission(role(), InternalPermission.UPDATE_PERM, tagFamily));
 			tx.success();
 		}
 		UserPermissionResponse permissionResponse = call(() -> client().readUserPermissions(userUuid, pathToElement));
@@ -380,14 +380,16 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testReadUserWithMultipleGroups() {
 		try (Tx tx = tx()) {
 			GroupDaoWrapper groupDao = tx.data().groupDao();
+			UserDaoWrapper userDao = tx.data().userDao();
+
 			HibUser user = user();
-			assertEquals(1, user.getGroups().count());
+			assertEquals(1, userDao.getGroups(user).count());
 
 			for (int i = 0; i < 10; i++) {
 				HibGroup extraGroup = groupDao.create("group_" + i, user());
 				tx.data().groupDao().addUser(extraGroup, user());
 			}
-			assertEquals(11, user().getGroups().count());
+			assertEquals(11, userDao.getGroups(user()).count());
 			tx.success();
 		}
 
@@ -1407,7 +1409,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			roleDao.grantPermissions(role(), extraUser, DELETE_PERM);
 			assertTrue(roleDao.hasPermission(role(), DELETE_PERM, extraUser));
 			HibUser user = userDao.findByUuid(uuid);
-			assertEquals(1, user.getGroups().count());
+			assertEquals(1, userDao.getGroups(user).count());
 			assertTrue("The user should be enabled", user.isEnabled());
 			tx.success();
 		}

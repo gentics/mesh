@@ -18,7 +18,7 @@ import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.SchemaRoot;
 import com.gentics.mesh.core.data.schema.Schema;
@@ -187,10 +187,10 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 
 			SchemaVersionModel schema = FieldUtil.createMinimalValidSchema();
 			Schema newContainer = schemaDao.create(schema, user());
-			assertFalse(roleDao.hasPermission(role(), GraphPermission.CREATE_PERM, newContainer));
+			assertFalse(roleDao.hasPermission(role(), InternalPermission.CREATE_PERM, newContainer));
 			userDao.inheritRolePermissions(getRequestUser(), meshRoot().getSchemaContainerRoot(), newContainer);
 			assertTrue("The addCRUDPermissionOnRole method should add the needed permissions on the new schema container.",
-				roleDao.hasPermission(role(), GraphPermission.CREATE_PERM, newContainer));
+				roleDao.hasPermission(role(), InternalPermission.CREATE_PERM, newContainer));
 		}
 
 	}
@@ -251,7 +251,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 			SchemaVersionModel schema = FieldUtil.createMinimalValidSchema();
 			Schema newContainer = schemaDao.create(schema, user());
-			testPermission(GraphPermission.READ_PERM, newContainer);
+			testPermission(InternalPermission.READ_PERM, newContainer);
 		}
 	}
 
@@ -262,7 +262,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 			SchemaVersionModel schema = FieldUtil.createMinimalValidSchema();
 			Schema newContainer = schemaDao.create(schema, user());
-			testPermission(GraphPermission.DELETE_PERM, newContainer);
+			testPermission(InternalPermission.DELETE_PERM, newContainer);
 		}
 	}
 
@@ -273,7 +273,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 			SchemaVersionModel schema = FieldUtil.createMinimalValidSchema();
 			Schema newContainer = schemaDao.create(schema, user());
-			testPermission(GraphPermission.UPDATE_PERM, newContainer);
+			testPermission(InternalPermission.UPDATE_PERM, newContainer);
 		}
 	}
 
@@ -284,7 +284,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 			SchemaVersionModel schema = FieldUtil.createMinimalValidSchema();
 			Schema newContainer = schemaDao.create(schema, user());
-			testPermission(GraphPermission.CREATE_PERM, newContainer);
+			testPermission(InternalPermission.CREATE_PERM, newContainer);
 		}
 	}
 

@@ -27,6 +27,7 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.node.Node;
@@ -103,7 +104,8 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	}
 
 	default MeshAuthUser getRequestUser() {
-		return data().getUserInfo().getUser().toUser().reframe(MeshAuthUserImpl.class);
+		User graphUser = (User)data().getUserInfo().getUser();
+		return graphUser.reframe(MeshAuthUserImpl.class);
 	}
 
 	default HibRole anonymousRole() {

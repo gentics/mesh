@@ -7,10 +7,11 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
@@ -31,11 +32,12 @@ public class TagPermissionSearchTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			TagDaoWrapper tagDao = tx.data().tagDao();
+			UserDaoWrapper userDao = tx.data().userDao();
 
 			HibTag tag = tagDao.findByUuid(tagFamily("colors"), response.getUuid());
 			System.out.println("Tag Uuid:" + response.getUuid());
-			for (Role role : user().getRoles()) {
-				roleDao.revokePermissions(role, tag, GraphPermission.READ_PERM);
+			for (HibRole role : userDao.getRoles(user())) {
+				roleDao.revokePermissions(role, tag, InternalPermission.READ_PERM);
 			}
 			tx.success();
 		}
@@ -49,13 +51,14 @@ public class TagPermissionSearchTest extends AbstractMeshTest {
 
 		// Now add the perm
 		try (Tx tx = tx()) {
+			UserDaoWrapper userDao = tx.data().userDao();
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			TagDaoWrapper tagDao = tx.data().tagDao();
 
 			HibTag tag = tagDao.findByUuid(tagFamily("colors"), response.getUuid());
 			System.out.println("Tag Uuid:" + response.getUuid());
-			for (Role role : user().getRoles()) {
-				roleDao.grantPermissions(role, tag, GraphPermission.READ_PERM);
+			for (HibRole role : userDao.getRoles(user())) {
+				roleDao.grantPermissions(role, tag, InternalPermission.READ_PERM);
 			}
 			tx.success();
 		}

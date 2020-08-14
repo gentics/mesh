@@ -6,8 +6,8 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -23,9 +23,9 @@ public interface BranchDaoWrapper extends BranchDao, DaoTransformable<HibBranch,
 
 	Page<? extends HibBranch> findAll(HibProject project, InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibBranch> extraFilter);
 
-	HibBranch loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, GraphPermission perm);
+	HibBranch loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, InternalPermission perm);
 
-	HibBranch loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound);
+	HibBranch loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound);
 
 	/**
 	 * Find the branch of the project by uuid.

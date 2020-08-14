@@ -243,7 +243,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 						UserRoot userRoot = boot.userRoot();
 						HibUser admin = userDao.findByUsername("admin");
 						HibUser createdUser = userDao.create(username, admin);
-						userDao.inheritRolePermissions(admin, userRoot, createdUser.toUser());
+						userDao.inheritRolePermissions(admin, userRoot, createdUser);
 
 						MeshAuthUser user = userDao.findMeshAuthUserByUsername(username);
 						String uuid = user.getUuid();
@@ -361,7 +361,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 					if (mappedUser != null) {
 						InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 						ac.setBody(mappedUser);
-						ac.setUser(admin.toUser().toAuthUser());
+						ac.setUser(admin.toAuthUser());
 						if (!delegator.canWrite() && userDao.updateDry(user, ac)) {
 							throw new CannotWriteException();
 						}
@@ -490,7 +490,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 					// 7. Check if the plugin wants to remove the user user from any of its current groups.
 					GroupFilter groupFilter = result.getGroupFilter();
 					if (groupFilter != null) {
-						for (HibGroup group : user.getGroups()) {
+						for (HibGroup group : userDao.getGroups(user)) {
 							if (groupFilter.filter(group.getName())) {
 								requiresWrite();
 								log.info("Unassigning group {" + group.getName() + "} from user {" + user.getUsername() + "}");

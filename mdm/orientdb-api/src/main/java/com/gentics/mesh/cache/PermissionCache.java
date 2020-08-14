@@ -1,6 +1,6 @@
 package com.gentics.mesh.cache;
 
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 
 public interface PermissionCache extends MeshCache<String, Boolean> {
 
@@ -20,7 +20,7 @@ public interface PermissionCache extends MeshCache<String, Boolean> {
 	 * @param elementId
 	 * @return
 	 */
-	boolean hasPermission(Object userId, GraphPermission permission, Object elementId);
+	boolean hasPermission(Object userId, InternalPermission permission, Object elementId);
 
 	/**
 	 * Store the granting permission in the perm store.
@@ -30,6 +30,6 @@ public interface PermissionCache extends MeshCache<String, Boolean> {
 	 * @param permission
 	 * @param elementId
 	 */
-	void store(Object userId, GraphPermission permission, Object elementId);
+	void store(Object userId, InternalPermission permission, Object elementId);
 
 }

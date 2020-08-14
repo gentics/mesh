@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.endpoint.schema;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.rest.Messages.message;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -23,8 +23,8 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.dao.impl.SchemaDaoWrapperImpl;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.SchemaRoot;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.Schema;
@@ -236,7 +236,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<Schema, SchemaRespons
 				HibProject project = ac.getProject();
 				String projectUuid = project.getUuid();
 				UserDaoWrapper userDao = tx.data().userDao();
-				if (!userDao.hasPermission(ac.getUser(), project, GraphPermission.UPDATE_PERM)) {
+				if (!userDao.hasPermission(ac.getUser(), project, InternalPermission.UPDATE_PERM)) {
 					throw error(FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
 				}
 				SchemaDaoWrapper schemaDao = tx.data().schemaDao();
@@ -273,7 +273,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<Schema, SchemaRespons
 				HibProject project = ac.getProject();
 				String projectUuid = project.getUuid();
 
-				if (!userDao.hasPermission(ac.getUser(), project, GraphPermission.UPDATE_PERM)) {
+				if (!userDao.hasPermission(ac.getUser(), project, InternalPermission.UPDATE_PERM)) {
 					throw error(FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
 				}
 

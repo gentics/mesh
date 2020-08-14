@@ -10,8 +10,8 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -87,11 +87,11 @@ public interface TagDaoWrapper extends TagDao, DaoWrapper<HibTag>, DaoTransforma
 
 	String getAPIPath(HibTag tag, InternalActionContext ac);
 
-	HibTag loadObjectByUuid(HibBranch branch, InternalActionContext ac, String tagUuid, GraphPermission perm);
+	HibTag loadObjectByUuid(HibBranch branch, InternalActionContext ac, String tagUuid, InternalPermission perm);
 
 	TraversalResult<? extends HibTag> findAllGlobal();
 
-	HibTag loadObjectByUuid(HibProject project, InternalActionContext ac, String tagUuid, GraphPermission readPerm);
+	HibTag loadObjectByUuid(HibProject project, InternalActionContext ac, String tagUuid, InternalPermission readPerm);
 
 	/**
 	 * Return a page of nodes that are visible to the user and which are tagged by this tag. Use the paging and language information provided.

@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import org.assertj.core.api.AbstractAssert;
 
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.AbstractNameUuidReference;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserResponse;
@@ -32,7 +33,7 @@ public class UserResponseAssert extends AbstractAssert<UserResponseAssert, UserR
 		assertEquals(user.getFirstname(), actual.getFirstname());
 		assertEquals(user.getLastname(), actual.getLastname());
 		assertEquals(user.getUuid(), actual.getUuid());
-		assertEquals(user.getGroups().count(), actual.getGroups().size());
+		assertEquals(Tx.get().data().userDao().getGroups(user).count(), actual.getGroups().size());
 		// TODO groups
 		return this;
 	}

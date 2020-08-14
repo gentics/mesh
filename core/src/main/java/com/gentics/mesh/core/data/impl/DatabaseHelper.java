@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.data.impl;
 
+import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
+import static com.gentics.mesh.madl.type.EdgeTypeDefinition.edgeType;
+
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.data.binary.impl.BinaryImpl;
@@ -28,7 +31,7 @@ import com.gentics.mesh.core.data.node.field.list.impl.NumberGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.relationship.GraphRelationships;
 import com.gentics.mesh.core.data.root.impl.BranchRootImpl;
 import com.gentics.mesh.core.data.root.impl.GroupRootImpl;
@@ -79,7 +82,7 @@ public final class DatabaseHelper {
 
 		// Edges
 		GraphRelationships.init(type, index);
-		GraphPermission.init(type, index);
+		initPermissions(type, index);
 		GraphFieldContainerEdgeImpl.init(type, index);
 		MicronodeGraphFieldImpl.init(type, index);
 		TagEdgeImpl.init(type, index);
@@ -153,6 +156,13 @@ public final class DatabaseHelper {
 		// Changelog
 		ChangeMarkerVertexImpl.init(type, index);
 
+	}
+
+	public static void initPermissions(TypeHandler type, IndexHandler index) {
+		for (String label : InternalPermission.labels()) {
+			type.createType(edgeType(label));
+			index.createIndex(edgeIndex(label).withInOut());
+		}
 	}
 
 }

@@ -2,7 +2,8 @@ package com.gentics.mesh.core.data;
 
 import java.util.Set;
 
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.event.EventQueueBatch;
 
 public interface HibElement {
@@ -27,7 +28,7 @@ public interface HibElement {
 	 * @param permission
 	 * @return
 	 */
-	Set<String> getRoleUuidsForPerm(GraphPermission permission);
+	Set<String> getRoleUuidsForPerm(InternalPermission permission);
 
 	/**
 	 * Set the role uuid for the given permission.
@@ -35,7 +36,7 @@ public interface HibElement {
 	 * @param permission
 	 * @param allowedRoles
 	 */
-	void setRoleUuidForPerm(GraphPermission permission, Set<String> allowedRoles);
+	void setRoleUuidForPerm(InternalPermission permission, Set<String> allowedRoles);
 
 	/**
 	 * Tests if the {@link GraphPermission}s READ_PUBLISHED_PERM and READ_PUBLISHED can be set for this element.
@@ -45,17 +46,5 @@ public interface HibElement {
 	default boolean hasPublishPermissions() {
 		return false;
 	}
-
-	/**
-	 * Grant the set of permissions and revoke the other set of permissions to this element using the role.
-	 * 
-	 * @param batch
-	 * @param role
-	 * @param recursive
-	 * @param permissionsToGrant
-	 * @param permissionsToRevoke
-	 */
-	void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
-		Set<GraphPermission> permissionsToRevoke);
 
 }

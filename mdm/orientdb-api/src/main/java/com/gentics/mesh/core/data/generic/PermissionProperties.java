@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.generic;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.Objects;
@@ -14,7 +14,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.madl.traversal.TraversalResult;
@@ -29,7 +29,7 @@ public class PermissionProperties {
 		this.boot = boot;
 	}
 
-	public TraversalResult<? extends HibRole> getRolesWithPerm(HibElement element, GraphPermission perm) {
+	public TraversalResult<? extends HibRole> getRolesWithPerm(HibElement element, InternalPermission perm) {
 		Set<String> roleUuids = element.getRoleUuidsForPerm(perm);
 		Stream<String> stream = roleUuids == null
 			? Stream.empty()
@@ -46,8 +46,8 @@ public class PermissionProperties {
 			HibRole role = roleDao.loadObjectByUuid(ac, roleUuid, READ_PERM);
 			if (role != null) {
 				PermissionInfo permissionInfo = new PermissionInfo();
-				Set<GraphPermission> permSet = roleDao.getPermissions(role, element);
-				for (GraphPermission permission : permSet) {
+				Set<InternalPermission> permSet = roleDao.getPermissions(role, element);
+				for (InternalPermission permission : permSet) {
 					permissionInfo.set(permission.getRestPerm(), true);
 				}
 				permissionInfo.setOthers(false);

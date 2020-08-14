@@ -7,8 +7,8 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -20,7 +20,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 
 public interface MicroschemaDaoWrapper extends MicroschemaDao {
 
-	Microschema loadObjectByUuid(InternalActionContext ac, String schemaUuid, GraphPermission perm);
+	Microschema loadObjectByUuid(InternalActionContext ac, String schemaUuid, InternalPermission perm);
 
 	Microschema findByUuid(String uuid);
 
@@ -58,7 +58,7 @@ public interface MicroschemaDaoWrapper extends MicroschemaDao {
 
 	Page<? extends Microschema> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Microschema> extraFilter);
 
-	Microschema loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound);
+	Microschema loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound);
 
 	Microschema findByName(String name);
 

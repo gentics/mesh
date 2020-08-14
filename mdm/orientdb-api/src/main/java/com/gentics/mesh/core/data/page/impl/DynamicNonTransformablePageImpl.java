@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.page.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 
 import java.util.Spliterator;
 import java.util.concurrent.atomic.AtomicLong;
@@ -10,7 +10,7 @@ import java.util.stream.StreamSupport;
 
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
@@ -74,7 +74,7 @@ public class DynamicNonTransformablePageImpl<T extends HibCoreElement> extends A
 	 *            Whether to frame the found value explicitily
 	 *
 	 */
-	public DynamicNonTransformablePageImpl(HibUser requestUser, RootVertex<? extends T> root, PagingParameters pagingInfo, GraphPermission perm,
+	public DynamicNonTransformablePageImpl(HibUser requestUser, RootVertex<? extends T> root, PagingParameters pagingInfo, InternalPermission perm,
 		Predicate<T> extraFilter, boolean frameExplicitly) {
 		this(requestUser, pagingInfo, extraFilter, frameExplicitly);
 		init(root.getPersistanceClass(), "e." + root.getRootLabel().toLowerCase() + "_out", root.id(), Direction.IN, root.getGraph(), perm);
@@ -103,7 +103,7 @@ public class DynamicNonTransformablePageImpl<T extends HibCoreElement> extends A
 	 *            Whether to frame the found value explicitily
 	 */
 	public DynamicNonTransformablePageImpl(HibUser requestUser, String indexName, Object indexKey, Direction dir, Class<T> clazz, PagingParameters pagingInfo,
-		GraphPermission perm, Predicate<T> extraFilter, boolean frameExplicitly) {
+		InternalPermission perm, Predicate<T> extraFilter, boolean frameExplicitly) {
 		this(requestUser, pagingInfo, extraFilter, frameExplicitly);
 		init(clazz, indexName, indexKey, dir, Tx.getActive().getGraph(), perm);
 	}
@@ -122,13 +122,13 @@ public class DynamicNonTransformablePageImpl<T extends HibCoreElement> extends A
 	 * @param clazz
 	 *            Element class used to reframe the found elements
 	 */
-	public DynamicNonTransformablePageImpl(HibUser user, VertexTraversal<?, ?, ?> traversal, PagingParameters pagingInfo, GraphPermission perm,
+	public DynamicNonTransformablePageImpl(HibUser user, VertexTraversal<?, ?, ?> traversal, PagingParameters pagingInfo, InternalPermission perm,
 		Class<? extends T> clazz) {
 		this(user, pagingInfo, null, true);
 		init(clazz, traversal, perm);
 	}
 
-	private void init(Class<? extends T> clazz, VertexTraversal<?, ?, ?> traversal, GraphPermission perm) {
+	private void init(Class<? extends T> clazz, VertexTraversal<?, ?, ?> traversal, InternalPermission perm) {
 		// Iterate over all vertices that are managed by this root vertex
 		Stream<Vertex> stream = StreamSupport.stream(traversal.spliterator(), false).map(item -> {
 			return item.getElement();
@@ -143,7 +143,7 @@ public class DynamicNonTransformablePageImpl<T extends HibCoreElement> extends A
 	 * @param clazz
 	 * @param perm
 	 */
-	private void applyPagingAndPermChecks(Stream<Vertex> stream, Class<? extends T> clazz, GraphPermission perm) {
+	private void applyPagingAndPermChecks(Stream<Vertex> stream, Class<? extends T> clazz, InternalPermission perm) {
 		AtomicLong pageCounter = new AtomicLong();
 		FramedGraph graph = Tx.get().getGraph();
 
@@ -216,7 +216,7 @@ public class DynamicNonTransformablePageImpl<T extends HibCoreElement> extends A
 	 *            Graph permission to filter by
 	 */
 	private void init(Class<? extends T> clazz, String indexName, Object indexKey, Direction vertexDirection, FramedGraph graph,
-		GraphPermission perm) {
+		InternalPermission perm) {
 
 		// Iterate over all vertices that are managed by this root vertex
 		Spliterator<Edge> itemEdges = graph.getEdges(indexName, indexKey).spliterator();

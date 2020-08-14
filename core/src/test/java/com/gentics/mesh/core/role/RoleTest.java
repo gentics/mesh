@@ -1,9 +1,9 @@
 package com.gentics.mesh.core.role;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.DELETE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
 import static com.gentics.mesh.test.TestSize.PROJECT;
 import static com.gentics.mesh.test.util.MeshAssert.assertElement;
 import static org.junit.Assert.assertEquals;
@@ -27,7 +27,7 @@ import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
@@ -89,7 +89,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// englishContainer.setI18nProperty("content", "Test");
 			roleDao.grantPermissions(role, node2, READ_PERM, DELETE_PERM);
 			roleDao.grantPermissions(role, node2, CREATE_PERM);
-			Set<GraphPermission> permissions = roleDao.getPermissions(role, node2);
+			Set<InternalPermission> permissions = roleDao.getPermissions(role, node2);
 
 			assertNotNull(permissions);
 			assertTrue(permissions.contains(CREATE_PERM));
@@ -122,7 +122,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			roleDao.grantPermissions(role, node, CREATE_PERM);
 			roleDao.grantPermissions(role, node, CREATE_PERM);
 
-			Set<GraphPermission> permissions = roleDao.getPermissions(role, node);
+			Set<InternalPermission> permissions = roleDao.getPermissions(role, node);
 			assertNotNull(permissions);
 			assertTrue(permissions.contains(CREATE_PERM));
 			assertTrue(permissions.contains(READ_PERM));
@@ -149,7 +149,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			Node node = folder("news");
 			roleDao.revokePermissions(role, node, CREATE_PERM);
 
-			Set<GraphPermission> permissions = roleDao.getPermissions(role, node);
+			Set<InternalPermission> permissions = roleDao.getPermissions(role, node);
 			assertNotNull(permissions);
 			assertFalse(permissions.contains(CREATE_PERM));
 			assertTrue(permissions.contains(DELETE_PERM));
@@ -197,7 +197,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			// Grant all permissions to all roles
 			for (HibRole role : roles().values()) {
-				for (GraphPermission perm : GraphPermission.values()) {
+				for (InternalPermission perm : InternalPermission.values()) {
 					roleDao.grantPermissions(role, parentNode, perm);
 				}
 			}
@@ -212,7 +212,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			try (Tx tx2 = tx()) {
 				for (HibRole role : roles().values()) {
-					for (GraphPermission permission : GraphPermission.values()) {
+					for (InternalPermission permission : InternalPermission.values()) {
 						assertTrue("The role {" + role.getName() + "} does not grant perm {" + permission.getRestPerm().getName() + "} to the node {"
 							+ node.getUuid() + "} but it should since the parent object got this role permission.",
 							roleDao.hasPermission(role, permission,
@@ -336,10 +336,10 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			MeshRoot root = meshRoot();
 			InternalActionContext ac = mockActionContext();
 			HibRole role = roleDao.create("SuperUser", user());
-			assertFalse(userDao.hasPermission(user(), role, GraphPermission.CREATE_PERM));
+			assertFalse(userDao.hasPermission(user(), role, InternalPermission.CREATE_PERM));
 			userDao.inheritRolePermissions(user(), root.getUserRoot(), role);
 			ac.data().clear();
-			assertTrue(userDao.hasPermission(user(), role, GraphPermission.CREATE_PERM));
+			assertTrue(userDao.hasPermission(user(), role, InternalPermission.CREATE_PERM));
 		}
 	}
 
@@ -402,7 +402,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testReadPermission() {
 		try (Tx tx = tx()) {
-			testPermission(GraphPermission.READ_PERM, role());
+			testPermission(InternalPermission.READ_PERM, role());
 		}
 	}
 
@@ -410,7 +410,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testDeletePermission() {
 		try (Tx tx = tx()) {
-			testPermission(GraphPermission.DELETE_PERM, role());
+			testPermission(InternalPermission.DELETE_PERM, role());
 		}
 	}
 
@@ -418,7 +418,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testUpdatePermission() {
 		try (Tx tx = tx()) {
-			testPermission(GraphPermission.UPDATE_PERM, role());
+			testPermission(InternalPermission.UPDATE_PERM, role());
 		}
 	}
 
@@ -426,7 +426,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testCreatePermission() {
 		try (Tx tx = tx()) {
-			testPermission(GraphPermission.CREATE_PERM, role());
+			testPermission(InternalPermission.CREATE_PERM, role());
 		}
 	}
 }

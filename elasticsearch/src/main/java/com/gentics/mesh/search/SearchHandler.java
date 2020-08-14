@@ -8,7 +8,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.error.InvalidArgumentException;
@@ -39,7 +39,7 @@ public interface SearchHandler<T extends HibCoreElement, RM extends RestModel> {
 	 * @throws ExecutionException
 	 * @throws TimeoutException
 	 */
-	Page<? extends T> query(InternalActionContext ac, String query, PagingParameters pagingInfo, GraphPermission... permissions)
+	Page<? extends T> query(InternalActionContext ac, String query, PagingParameters pagingInfo, InternalPermission... permissions)
 		throws MeshConfigurationException, InterruptedException, ExecutionException, TimeoutException;
 
 	/**

@@ -6,8 +6,8 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
@@ -29,7 +29,7 @@ public interface ProjectDaoWrapper extends ProjectDao, DaoWrapper<HibProject>, D
 
 	HibProject findByName(String name);
 
-	HibProject findByName(InternalActionContext ac, String projectName, GraphPermission perm);
+	HibProject findByName(InternalActionContext ac, String projectName, InternalPermission perm);
 
 	HibProject findByUuid(String uuid);
 
@@ -37,9 +37,9 @@ public interface ProjectDaoWrapper extends ProjectDao, DaoWrapper<HibProject>, D
 
 	boolean update(HibProject element, InternalActionContext ac, EventQueueBatch batch);
 
-	HibProject loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm);
+	HibProject loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm);
 
-	HibProject loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound);
+	HibProject loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound);
 
 	HibProject create(InternalActionContext ac, EventQueueBatch batch, String uuid);
 

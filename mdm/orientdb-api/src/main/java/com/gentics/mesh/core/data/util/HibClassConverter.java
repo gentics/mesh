@@ -5,6 +5,7 @@ import java.util.Objects;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.HibNode;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
@@ -12,6 +13,7 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.group.HibGroup;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.tag.HibTag;
@@ -50,6 +52,10 @@ public final class HibClassConverter {
 
 	public static Role toRole(HibRole role) {
 		return checkAndCast(role, Role.class);
+	}
+
+	public static Node toNode(HibNode node) {
+		return checkAndCast(node, Node.class);
 	}
 
 	@SuppressWarnings("unchecked")

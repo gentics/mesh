@@ -13,7 +13,7 @@ import com.gentics.mesh.core.data.dao.JobDaoWrapper;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -27,7 +27,7 @@ public class JobDAOActionsImpl implements JobDAOActions {
 	}
 
 	@Override
-	public Job loadByUuid(DAOActionContext ctx, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+	public Job loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
 		JobDaoWrapper jobDao = ctx.tx().data().jobDao();
 		if (perm == null) {
 			return jobDao.findByUuid(uuid);
@@ -37,7 +37,7 @@ public class JobDAOActionsImpl implements JobDAOActions {
 	}
 
 	@Override
-	public Job loadByName(DAOActionContext ctx, String name, GraphPermission perm, boolean errorIfNotFound) {
+	public Job loadByName(DAOActionContext ctx, String name, InternalPermission perm, boolean errorIfNotFound) {
 		JobDaoWrapper jobDao = ctx.tx().data().jobDao();
 		if (perm == null) {
 			return jobDao.findByName(name);

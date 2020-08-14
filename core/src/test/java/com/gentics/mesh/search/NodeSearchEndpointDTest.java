@@ -23,8 +23,8 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
@@ -172,7 +172,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 				MicronodeGraphField vcardField = fieldContainer.createMicronode("vcard", microschemaContainers().get("vcard").getLatestVersion());
 				vcardField.getMicronode().createString("firstName").setString("Mickey");
 				vcardField.getMicronode().createString("lastName").setString("Mouse");
-				roleDao.grantPermissions(role(), node, GraphPermission.READ_PERM);
+				roleDao.grantPermissions(role(), node, InternalPermission.READ_PERM);
 			}
 			tx.success();
 		}

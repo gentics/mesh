@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.dao.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -23,8 +23,8 @@ import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.impl.MicroschemaWrapper;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MicroschemaRoot;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
@@ -57,7 +57,7 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper implements Mic
 		MeshAuthUser requestUser = ac.getUser();
 		MicroschemaVersionModel microschema = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModelImpl.class);
 		microschema.validate();
-		if (!userRoot.hasPermission(requestUser, microschemaRoot, GraphPermission.CREATE_PERM)) {
+		if (!userRoot.hasPermission(requestUser, microschemaRoot, InternalPermission.CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", microschemaRoot.getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
 		Microschema container = create(microschema, requestUser, uuid, batch);
@@ -176,14 +176,14 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper implements Mic
 	}
 
 	@Override
-	public Microschema loadObjectByUuid(InternalActionContext ac, String schemaUuid, GraphPermission perm) {
+	public Microschema loadObjectByUuid(InternalActionContext ac, String schemaUuid, InternalPermission perm) {
 		// TODO check for project in context?
 		MicroschemaRoot microschemaRoot = boot.get().microschemaContainerRoot();
 		return MicroschemaWrapper.wrap(microschemaRoot.loadObjectByUuid(ac, schemaUuid, perm));
 	}
 
 	@Override
-	public Microschema loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+	public Microschema loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
 		// TODO check for project in context?
 		MicroschemaRoot microschemaRoot = boot.get().microschemaContainerRoot();
 		return MicroschemaWrapper.wrap(microschemaRoot.loadObjectByUuid(ac, uuid, perm, errorIfNotFound));

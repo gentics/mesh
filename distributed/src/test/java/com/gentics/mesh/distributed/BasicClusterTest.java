@@ -1,6 +1,6 @@
 package com.gentics.mesh.distributed;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.util.TestUtils.getJson;
 import static com.gentics.mesh.util.TokenUtil.randomToken;

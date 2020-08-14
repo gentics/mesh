@@ -25,7 +25,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.root.MicroschemaRoot;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
@@ -197,7 +197,7 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 			MicroschemaVersionModel schema = new MicroschemaModelImpl();
 			schema.setName("someNewMicroschema");
 			Microschema container = createMicroschema(schema);
-			testPermission(GraphPermission.READ_PERM, container);
+			testPermission(InternalPermission.READ_PERM, container);
 		}
 	}
 
@@ -208,7 +208,7 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 			MicroschemaVersionModel schema = new MicroschemaModelImpl();
 			schema.setName("someNewMicroschema");
 			Microschema container = createMicroschema(schema);
-			testPermission(GraphPermission.DELETE_PERM, container);
+			testPermission(InternalPermission.DELETE_PERM, container);
 		}
 
 	}
@@ -220,7 +220,7 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 			MicroschemaVersionModel schema = new MicroschemaModelImpl();
 			schema.setName("someNewMicroschema");
 			Microschema container = createMicroschema(schema);
-			testPermission(GraphPermission.UPDATE_PERM, container);
+			testPermission(InternalPermission.UPDATE_PERM, container);
 		}
 	}
 
@@ -231,7 +231,7 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 			MicroschemaVersionModel schema = new MicroschemaModelImpl();
 			schema.setName("someNewMicroschema");
 			Microschema container = createMicroschema(schema);
-			testPermission(GraphPermission.CREATE_PERM, container);
+			testPermission(InternalPermission.CREATE_PERM, container);
 		}
 	}
 
@@ -265,10 +265,10 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 			schema.setName("someNewMicroschema");
 			Microschema container = createMicroschema(schema);
 
-			assertFalse(roleDao.hasPermission(role(), GraphPermission.CREATE_PERM, container));
+			assertFalse(roleDao.hasPermission(role(), InternalPermission.CREATE_PERM, container));
 			userDao.inheritRolePermissions(getRequestUser(), meshRoot().getMicroschemaContainerRoot(), container);
 			assertTrue("The addCRUDPermissionOnRole method should add the needed permissions on the new microschema container.",
-				roleDao.hasPermission(role(), GraphPermission.CREATE_PERM, container));
+				roleDao.hasPermission(role(), InternalPermission.CREATE_PERM, container));
 		}
 	}
 

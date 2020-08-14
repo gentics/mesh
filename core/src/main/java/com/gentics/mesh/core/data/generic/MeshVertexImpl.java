@@ -19,7 +19,7 @@ import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.AbstractVertexFrame;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.graph.GraphAttribute;
@@ -111,16 +111,16 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 	}
 
 	@Override
-	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
-		Set<GraphPermission> permissionsToRevoke) {
+	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<InternalPermission> permissionsToGrant,
+		Set<InternalPermission> permissionsToRevoke) {
 		applyVertexPermissions(batch, role, permissionsToGrant, permissionsToRevoke);
 	}
 
-	protected void applyVertexPermissions(EventQueueBatch batch, Role role, Set<GraphPermission> permissionsToGrant,
-		Set<GraphPermission> permissionsToRevoke) {
+	protected void applyVertexPermissions(EventQueueBatch batch, Role role, Set<InternalPermission> permissionsToGrant,
+		Set<InternalPermission> permissionsToRevoke) {
 		RoleDaoWrapper roleDao = mesh().boot().roleDao();
-		roleDao.grantPermissions(role, this, permissionsToGrant.toArray(new GraphPermission[permissionsToGrant.size()]));
-		roleDao.revokePermissions(role, this, permissionsToRevoke.toArray(new GraphPermission[permissionsToRevoke.size()]));
+		roleDao.grantPermissions(role, this, permissionsToGrant.toArray(new InternalPermission[permissionsToGrant.size()]));
+		roleDao.revokePermissions(role, this, permissionsToRevoke.toArray(new InternalPermission[permissionsToRevoke.size()]));
 
 		if (this instanceof MeshCoreVertex) {
 			MeshCoreVertex<?, ?> coreVertex = (MeshCoreVertex<?, ?>) this;
@@ -176,7 +176,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 	}
 
 	@Override
-	public Set<String> getRoleUuidsForPerm(GraphPermission permission) {
+	public Set<String> getRoleUuidsForPerm(InternalPermission permission) {
 		Set<String> oset = property(permission.propertyKey());
 		if (oset == null) {
 			return new HashSet<>(10);
@@ -186,7 +186,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 	}
 
 	@Override
-	public void setRoleUuidForPerm(GraphPermission permission, Set<String> allowedRoles) {
+	public void setRoleUuidForPerm(InternalPermission permission, Set<String> allowedRoles) {
 		property(permission.propertyKey(), allowedRoles);
 	}
 

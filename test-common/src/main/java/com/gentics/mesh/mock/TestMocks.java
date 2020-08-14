@@ -51,7 +51,7 @@ import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
@@ -88,7 +88,7 @@ public final class TestMocks {
 		when(project.getCreationTimestamp()).thenReturn(TIMESTAMP_OLD);
 		when(project.getEditor()).thenReturn(user);
 		when(project.getLastEditedTimestamp()).thenReturn(TIMESTAMP_NEW);
-		when(project.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(createEmptyTraversal());
+		when(project.getRolesWithPerm(InternalPermission.READ_PERM)).thenReturn(createEmptyTraversal());
 		when(project.getElementVersion()).thenReturn(UUID_1);
 		return project;
 	}
@@ -139,7 +139,7 @@ public final class TestMocks {
 		when(role.getLastEditedTimestamp()).thenReturn(TIMESTAMP_NEW);
 		when(role.getName()).thenReturn(roleName);
 		when(role.getUuid()).thenReturn(ROLE_CLIENT_UUID);
-		when(role.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(createEmptyTraversal());
+		when(role.getRolesWithPerm(InternalPermission.READ_PERM)).thenReturn(createEmptyTraversal());
 		when(role.getElementVersion()).thenReturn(UUID_4);
 		return role;
 	}
@@ -152,7 +152,7 @@ public final class TestMocks {
 		when(group.getLastEditedTimestamp()).thenReturn(TIMESTAMP_NEW);
 		when(group.getName()).thenReturn(groupName);
 		when(group.getUuid()).thenReturn(GROUP_CLIENT_UUID);
-		when(group.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(createEmptyTraversal());
+		when(group.getRolesWithPerm(InternalPermission.READ_PERM)).thenReturn(createEmptyTraversal());
 		when(group.getElementVersion()).thenReturn(UUID_5);
 		return group;
 	}
@@ -163,7 +163,6 @@ public final class TestMocks {
 
 	public static User mockUser(String username, String firstname, String lastname, User creator) {
 		User user = mock(User.class);
-		when(user.toUser()).thenReturn(user);
 		when(user.getUsername()).thenReturn(username);
 		when(user.getFirstname()).thenReturn(firstname);
 		when(user.getLastname()).thenReturn(lastname);
@@ -175,7 +174,7 @@ public final class TestMocks {
 			when(user.getCreator()).thenReturn(creator);
 			when(user.getEditor()).thenReturn(creator);
 		}
-		when(user.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(createEmptyTraversal());
+		when(user.getRolesWithPerm(InternalPermission.READ_PERM)).thenReturn(createEmptyTraversal());
 		when(user.getElementVersion()).thenReturn(UUID_1);
 		return user;
 	}
@@ -198,7 +197,7 @@ public final class TestMocks {
 		when(tagFamily.getName()).thenReturn(name);
 		when(tagFamily.getUuid()).thenReturn(TAGFAMILY_FUELS_UUID);
 		when(tagFamily.getProject()).thenReturn(project);
-		when(tagFamily.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(createEmptyTraversal());
+		when(tagFamily.getRolesWithPerm(InternalPermission.READ_PERM)).thenReturn(createEmptyTraversal());
 		when(tagFamily.getElementVersion()).thenReturn(UUID_2);
 		return tagFamily;
 	}
@@ -213,7 +212,7 @@ public final class TestMocks {
 		when(tag.getUuid()).thenReturn(TAG_BLUE_UUID);
 		when(tag.getTagFamily()).thenReturn(tagFamily);
 		when(tag.getProject()).thenReturn(project);
-		when(tag.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(createEmptyTraversal());
+		when(tag.getRolesWithPerm(InternalPermission.READ_PERM)).thenReturn(createEmptyTraversal());
 		when(tag.getElementVersion()).thenReturn(UUID_3);
 		return tag;
 	}
@@ -235,7 +234,7 @@ public final class TestMocks {
 		when(container.getCreationTimestamp()).thenReturn(TIMESTAMP_OLD);
 		when(container.getEditor()).thenReturn(user);
 		when(container.getLastEditedTimestamp()).thenReturn(TIMESTAMP_NEW);
-		when(container.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(createEmptyTraversal());
+		when(container.getRolesWithPerm(InternalPermission.READ_PERM)).thenReturn(createEmptyTraversal());
 		return container;
 	}
 
@@ -251,7 +250,7 @@ public final class TestMocks {
 		when(container.getCreationTimestamp()).thenReturn(TIMESTAMP_OLD);
 		when(container.getEditor()).thenReturn(user);
 		when(container.getLastEditedTimestamp()).thenReturn(TIMESTAMP_NEW);
-		when(container.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(createEmptyTraversal());
+		when(container.getRolesWithPerm(InternalPermission.READ_PERM)).thenReturn(createEmptyTraversal());
 		when(container.getElementVersion()).thenReturn(UUID_5);
 		return container;
 	}
@@ -308,8 +307,8 @@ public final class TestMocks {
 		when(node.getSchemaContainer()).thenReturn(schemaContainer);
 		when(node.getCreator()).thenReturn(user);
 		when(node.getUuid()).thenReturn(NODE_DELOREAN_UUID);
-		when(node.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(createEmptyTraversal());
-		when(node.getRolesWithPerm(GraphPermission.READ_PUBLISHED_PERM)).thenReturn(createEmptyTraversal());
+		when(node.getRolesWithPerm(InternalPermission.READ_PERM)).thenReturn(createEmptyTraversal());
+		when(node.getRolesWithPerm(InternalPermission.READ_PUBLISHED_PERM)).thenReturn(createEmptyTraversal());
 
 		NodeGraphFieldContainer container = mockContainer(languageTag, user);
 		when(container.getSchemaContainerVersion()).thenReturn(latestVersion);

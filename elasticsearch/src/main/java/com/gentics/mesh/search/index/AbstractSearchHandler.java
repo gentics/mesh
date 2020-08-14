@@ -27,10 +27,10 @@ import com.gentics.elasticsearch.client.okhttp.RequestBuilder;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.DAOActions;
 import com.gentics.mesh.core.data.HibCoreElement;
-import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
@@ -109,9 +109,9 @@ public abstract class AbstractSearchHandler<T extends HibCoreElement, RM extends
 		try {
 			JsonObject userJson = new JsonObject(searchQuery);
 
-			JsonArray roleUuids = db.tx(() -> {
+			JsonArray roleUuids = db.tx(tx -> {
 				JsonArray json = new JsonArray();
-				for (Role role : ac.getUser().getRoles()) {
+				for (HibRole role : tx.data().userDao().getRoles(ac.getUser())) {
 					json.add(role.getUuid());
 				}
 				return json;
@@ -367,7 +367,7 @@ public abstract class AbstractSearchHandler<T extends HibCoreElement, RM extends
 	}
 
 	@Override
-	public Page<? extends T> query(InternalActionContext ac, String query, PagingParameters pagingInfo, GraphPermission... permissions)
+	public Page<? extends T> query(InternalActionContext ac, String query, PagingParameters pagingInfo, InternalPermission... permissions)
 		throws MeshConfigurationException, InterruptedException, ExecutionException, TimeoutException {
 		ElasticsearchClient<JsonObject> client = searchProvider.getClient();
 		if (log.isDebugEnabled()) {

@@ -11,9 +11,10 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.core.data.HibNode;
 import com.gentics.mesh.core.data.group.HibGroup;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.search.index.AbstractTransformer;
 import com.gentics.mesh.util.ETag;
@@ -40,13 +41,13 @@ public class UserTransformer extends AbstractTransformer<HibUser> {
 	@Override
 	public String generateVersion(HibUser user) {
 		StringBuilder builder = new StringBuilder();
-		builder.append(user.toUser().getElementVersion());
+		builder.append(user.getElementVersion());
 		builder.append("|");
-		for (HibGroup group : user.getGroups()) {
+		for (HibGroup group : Tx.get().data().userDao().getGroups(user)) {
 			builder.append(group.getElementVersion());
 			builder.append("|");
 		}
-		Node referencedNode = user.getReferencedNode();
+		HibNode referencedNode = user.getReferencedNode();
 		if (referencedNode != null) {
 			builder.append(referencedNode.getElementVersion());
 			builder.append("|");
@@ -57,7 +58,8 @@ public class UserTransformer extends AbstractTransformer<HibUser> {
 
 	/**
 	 * Transform the user to the document which can be stored in ES.
-	 * 
+	 *
+	 * @param tx
 	 * @param user
 	 * @param withVersion
 	 *            Whether to include the version number.
@@ -71,10 +73,10 @@ public class UserTransformer extends AbstractTransformer<HibUser> {
 		document.put(EMAIL_KEY, user.getEmailAddress());
 		document.put(FIRSTNAME_KEY, user.getFirstname());
 		document.put(LASTNAME_KEY, user.getLastname());
-		addGroups(document, user.getGroups());
+		addGroups(document, Tx.get().data().userDao().getGroups(user));
 		addPermissionInfo(document, user);
 		// TODO add disabled / enabled flag
-		Node referencedNode = user.getReferencedNode();
+		HibNode referencedNode = user.getReferencedNode();
 		if (referencedNode != null) {
 			document.put(NODEREFERECE_KEY, referencedNode.getUuid());
 		}

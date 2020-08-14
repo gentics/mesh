@@ -4,8 +4,8 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.SchemaRoot;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
@@ -23,9 +23,9 @@ public interface SchemaDaoWrapper extends SchemaDao, DaoWrapper<Schema> {
 
 	Schema findByName(String name);
 
-	Schema loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm);
+	Schema loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm);
 
-	Schema loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound);
+	Schema loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound);
 
 	TraversalResult<? extends Schema> findAll();
 

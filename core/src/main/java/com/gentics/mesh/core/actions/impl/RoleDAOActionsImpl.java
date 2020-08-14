@@ -12,7 +12,7 @@ import com.gentics.mesh.core.action.RoleDAOActions;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.role.RoleResponse;
@@ -27,7 +27,7 @@ public class RoleDAOActionsImpl implements RoleDAOActions {
 	}
 
 	@Override
-	public HibRole loadByUuid(DAOActionContext ctx, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+	public HibRole loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
 		RoleDaoWrapper roleDao = ctx.tx().data().roleDao();
 		if (perm == null) {
 			return roleDao.findByUuid(uuid);
@@ -37,7 +37,7 @@ public class RoleDAOActionsImpl implements RoleDAOActions {
 	}
 
 	@Override
-	public HibRole loadByName(DAOActionContext ctx, String name, GraphPermission perm, boolean errorIfNotFound) {
+	public HibRole loadByName(DAOActionContext ctx, String name, InternalPermission perm, boolean errorIfNotFound) {
 		RoleDaoWrapper roleDao = ctx.tx().data().roleDao();
 		if (perm == null) {
 			return roleDao.findByName(name);

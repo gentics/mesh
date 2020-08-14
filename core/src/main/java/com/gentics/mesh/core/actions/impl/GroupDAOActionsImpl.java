@@ -13,7 +13,7 @@ import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -27,7 +27,7 @@ public class GroupDAOActionsImpl implements GroupDAOActions {
 	}
 
 	@Override
-	public HibGroup loadByUuid(DAOActionContext ctx, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+	public HibGroup loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
 		GroupDaoWrapper groupDao = ctx.tx().data().groupDao();
 		if (perm == null) {
 			return groupDao.findByUuid(uuid);
@@ -37,7 +37,7 @@ public class GroupDAOActionsImpl implements GroupDAOActions {
 	}
 
 	@Override
-	public HibGroup loadByName(DAOActionContext ctx, String name, GraphPermission perm, boolean errorIfNotFound) {
+	public HibGroup loadByName(DAOActionContext ctx, String name, InternalPermission perm, boolean errorIfNotFound) {
 		GroupDaoWrapper groupDao = ctx.tx().data().groupDao();
 		if (perm == null) {
 			return groupDao.findByName(name);

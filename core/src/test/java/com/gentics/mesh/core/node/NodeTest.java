@@ -30,8 +30,8 @@ import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.data.tag.HibTag;
@@ -225,10 +225,10 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			UserDaoWrapper userDao = tx.data().userDao();
 			Node node = folder("2015").create(user(), getSchemaContainer().getLatestVersion(), project());
 			InternalActionContext ac = mockActionContext("");
-			assertFalse(userDao.hasPermission(user(), node, GraphPermission.CREATE_PERM));
+			assertFalse(userDao.hasPermission(user(), node, InternalPermission.CREATE_PERM));
 			userDao.inheritRolePermissions(user(), folder("2015"), node);
 			ac.data().clear();
-			assertTrue(userDao.hasPermission(user(), node, GraphPermission.CREATE_PERM));
+			assertTrue(userDao.hasPermission(user(), node, InternalPermission.CREATE_PERM));
 		}
 	}
 
@@ -326,7 +326,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testReadPermission() {
 		try (Tx tx = tx()) {
-			testPermission(GraphPermission.READ_PERM, content());
+			testPermission(InternalPermission.READ_PERM, content());
 		}
 	}
 
@@ -334,7 +334,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testDeletePermission() {
 		try (Tx tx = tx()) {
-			testPermission(GraphPermission.DELETE_PERM, content());
+			testPermission(InternalPermission.DELETE_PERM, content());
 		}
 	}
 
@@ -342,7 +342,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testUpdatePermission() {
 		try (Tx tx = tx()) {
-			testPermission(GraphPermission.UPDATE_PERM, content());
+			testPermission(InternalPermission.UPDATE_PERM, content());
 		}
 	}
 
@@ -350,7 +350,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testCreatePermission() {
 		try (Tx tx = tx()) {
-			testPermission(GraphPermission.CREATE_PERM, content());
+			testPermission(InternalPermission.CREATE_PERM, content());
 		}
 	}
 
@@ -470,8 +470,8 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 				RoleDaoWrapper roleDao = tx2.data().roleDao();
 				Node folder = project.getBaseNode().create(user(), folderSchema, project);
 				BulkActionContext bac2 = createBulkContext();
-				roleDao.applyPermissions(folder, bac.batch(), role(), false, new HashSet<>(Arrays.asList(GraphPermission.READ_PERM,
-					GraphPermission.READ_PUBLISHED_PERM)), Collections.emptySet());
+				roleDao.applyPermissions(folder, bac.batch(), role(), false, new HashSet<>(Arrays.asList(InternalPermission.READ_PERM,
+					InternalPermission.READ_PUBLISHED_PERM)), Collections.emptySet());
 				folder.createGraphFieldContainer(english(), initialBranch, user()).createString("name").setString("Folder");
 				folder.publish(mockActionContext(), bac2);
 				assertEquals(1, bac2.batch().size());
@@ -523,8 +523,8 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 				Node folder = project.getBaseNode().create(user(), folderSchema, project);
 				BulkActionContext bac = createBulkContext();
 				RoleDaoWrapper roleDao = tx.data().roleDao();
-				roleDao.applyPermissions(folder, bac.batch(), role(), false, new HashSet<>(Arrays.asList(GraphPermission.READ_PERM,
-					GraphPermission.READ_PUBLISHED_PERM)), Collections.emptySet());
+				roleDao.applyPermissions(folder, bac.batch(), role(), false, new HashSet<>(Arrays.asList(InternalPermission.READ_PERM,
+					InternalPermission.READ_PUBLISHED_PERM)), Collections.emptySet());
 				folder.createGraphFieldContainer(english(), initialBranch, user()).createString("name").setString("Folder");
 				folder.publish(mockActionContext(), bac);
 				return folder.getUuid();

@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.tag;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -28,8 +28,8 @@ import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.data.tag.HibTag;
@@ -478,10 +478,10 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			UserDaoWrapper userDao = tx.data().userDao();
 			HibTagFamily tagFamily = tagFamily("basic");
 			HibTag tag = tagDao.create(tagFamily, "someTag", project(), user());
-			assertTrue(userDao.hasPermission(user(), tagFamily, GraphPermission.READ_PERM));
-			assertFalse(userDao.hasPermission(user(), tag, GraphPermission.READ_PERM));
+			assertTrue(userDao.hasPermission(user(), tagFamily, InternalPermission.READ_PERM));
+			assertFalse(userDao.hasPermission(user(), tag, InternalPermission.READ_PERM));
 			userDao.inheritRolePermissions(getRequestUser(), tagFamily, tag);
-			assertTrue(userDao.hasPermission(user(), tag, GraphPermission.READ_PERM));
+			assertTrue(userDao.hasPermission(user(), tag, InternalPermission.READ_PERM));
 		}
 	}
 
@@ -528,7 +528,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testReadPermission() {
 		try (Tx tx = tx()) {
-			testPermission(GraphPermission.READ_PERM, tag("red"));
+			testPermission(InternalPermission.READ_PERM, tag("red"));
 		}
 	}
 
@@ -536,7 +536,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testDeletePermission() {
 		try (Tx tx = tx()) {
-			testPermission(GraphPermission.DELETE_PERM, tag("red"));
+			testPermission(InternalPermission.DELETE_PERM, tag("red"));
 		}
 	}
 
@@ -544,7 +544,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testUpdatePermission() {
 		try (Tx tx = tx()) {
-			testPermission(GraphPermission.UPDATE_PERM, tag("red"));
+			testPermission(InternalPermission.UPDATE_PERM, tag("red"));
 		}
 	}
 
@@ -552,7 +552,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testCreatePermission() {
 		try (Tx tx = tx()) {
-			testPermission(GraphPermission.CREATE_PERM, tag("red"));
+			testPermission(InternalPermission.CREATE_PERM, tag("red"));
 		}
 	}
 

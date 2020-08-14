@@ -6,7 +6,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -27,9 +27,9 @@ public interface DAOActions<T extends HibCoreElement, RM extends RestModel> exte
 
 	T create(Tx tx, InternalActionContext ac, EventQueueBatch batch, String uuid);
 
-	T loadByUuid(DAOActionContext ctx, String uuid, GraphPermission perm, boolean errorIfNotFound);
+	T loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound);
 
-	T loadByName(DAOActionContext ctx, String name, GraphPermission perm, boolean errorIfNotFound);
+	T loadByName(DAOActionContext ctx, String name, InternalPermission perm, boolean errorIfNotFound);
 
 	Page<? extends T> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, Predicate<T> extraFilter);
 

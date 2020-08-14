@@ -19,8 +19,8 @@ import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -78,13 +78,13 @@ public class BranchDaoWrapperImpl extends AbstractDaoWrapper implements BranchDa
 	}
 
 	@Override
-	public HibBranch loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, GraphPermission perm) {
+	public HibBranch loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, InternalPermission perm) {
 		Project graphProject = toProject(project);
 		return graphProject.getBranchRoot().loadObjectByUuid(ac, uuid, perm);
 	}
 
 	@Override
-	public HibBranch loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+	public HibBranch loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
 		Project graphProject = toProject(project);
 		return graphProject.getBranchRoot().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
 	}

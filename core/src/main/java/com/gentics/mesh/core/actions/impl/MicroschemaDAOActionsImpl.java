@@ -12,7 +12,7 @@ import com.gentics.mesh.core.action.MicroschemaDAOActions;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
@@ -27,7 +27,7 @@ public class MicroschemaDAOActionsImpl implements MicroschemaDAOActions {
 	}
 
 	@Override
-	public Microschema loadByUuid(DAOActionContext ctx, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+	public Microschema loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
 		MicroschemaDaoWrapper microschemaDao = ctx.tx().data().microschemaDao();
 		if (perm == null) {
 			return microschemaDao.findByUuid(uuid);
@@ -37,7 +37,7 @@ public class MicroschemaDAOActionsImpl implements MicroschemaDAOActions {
 	}
 	
 	@Override
-	public Microschema loadByName(DAOActionContext ctx, String name, GraphPermission perm, boolean errorIfNotFound) {
+	public Microschema loadByName(DAOActionContext ctx, String name, InternalPermission perm, boolean errorIfNotFound) {
 		MicroschemaDaoWrapper microschemaDao = ctx.tx().data().microschemaDao();
 		if (perm == null) {
 			return microschemaDao.findByName(name);

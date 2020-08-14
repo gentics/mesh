@@ -8,7 +8,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.cache.impl.EventAwareCacheFactory;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.vertx.core.Vertx;
@@ -62,7 +62,7 @@ public class PermissionCacheImpl extends AbstractMeshCache<String, Boolean> impl
 	 *            Vertex id of the element to which permissions should be checked
 	 * @return true, if a granting permission was found or false if the permission could not be found in the cache
 	 */
-	public boolean hasPermission(Object userId, GraphPermission permission, Object elementId) {
+	public boolean hasPermission(Object userId, InternalPermission permission, Object elementId) {
 		String key = createCacheKey(userId, permission, elementId);
 		Boolean cachedPerm = cache.get(key);
 		return cachedPerm != null && cachedPerm;
@@ -76,7 +76,7 @@ public class PermissionCacheImpl extends AbstractMeshCache<String, Boolean> impl
 	 * @param elementId
 	 * @return
 	 */
-	private String createCacheKey(Object userId, GraphPermission permission, Object elementId) {
+	private String createCacheKey(Object userId, InternalPermission permission, Object elementId) {
 		return userId + "-" + permission.ordinal() + "-" + elementId;
 	}
 
@@ -114,7 +114,7 @@ public class PermissionCacheImpl extends AbstractMeshCache<String, Boolean> impl
 	 * @param elementId
 	 *            Id of the element to which a permission is granted
 	 */
-	public void store(Object userId, GraphPermission permission, Object elementId) {
+	public void store(Object userId, InternalPermission permission, Object elementId) {
 		cache.put(createCacheKey(userId, permission, elementId), true);
 	}
 }

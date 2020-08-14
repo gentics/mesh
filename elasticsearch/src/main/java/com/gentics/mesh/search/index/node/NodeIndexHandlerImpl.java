@@ -29,8 +29,8 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.search.MoveDocumentEntry;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
@@ -627,12 +627,12 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 	}
 
 	@Override
-	public GraphPermission getReadPermission(InternalActionContext ac) {
+	public InternalPermission getReadPermission(InternalActionContext ac) {
 		switch (ContainerType.forVersion(ac.getVersioningParameters().getVersion())) {
 		case PUBLISHED:
-			return GraphPermission.READ_PUBLISHED_PERM;
+			return InternalPermission.READ_PUBLISHED_PERM;
 		default:
-			return GraphPermission.READ_PERM;
+			return InternalPermission.READ_PERM;
 		}
 	}
 

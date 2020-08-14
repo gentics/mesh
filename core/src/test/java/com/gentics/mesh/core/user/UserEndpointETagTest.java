@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.user;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
 import static com.gentics.mesh.test.ClientHelper.callETag;
 import static com.gentics.mesh.test.ClientHelper.callETagRaw;
 import static com.gentics.mesh.test.TestSize.FULL;
@@ -11,6 +11,7 @@ import static org.junit.Assert.assertNull;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
@@ -64,9 +65,10 @@ public class UserEndpointETagTest extends AbstractMeshTest {
 	public void testReadOne() {
 		String etag;
 		try (Tx tx = tx()) {
+			UserDaoWrapper userDao = tx.data().userDao();
 			HibUser user = user();
 
-			etag = user().toUser().getETag(mockActionContext());
+			etag = userDao.getETag(user(), mockActionContext());
 			callETag(() -> client().findUserByUuid(user.getUuid()), etag, true, 304);
 
 			// Check whether 304 is returned for correct etag

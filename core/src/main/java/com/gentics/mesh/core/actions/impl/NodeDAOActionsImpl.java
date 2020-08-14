@@ -12,7 +12,7 @@ import com.gentics.mesh.core.action.NodeDAOActions;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -26,7 +26,7 @@ public class NodeDAOActionsImpl implements NodeDAOActions {
 	}
 
 	@Override
-	public Node loadByUuid(DAOActionContext ctx, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+	public Node loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
 		if (perm == null) {
 			return ctx.project().getNodeRoot().findByUuid(uuid);
 		} else {
@@ -35,7 +35,7 @@ public class NodeDAOActionsImpl implements NodeDAOActions {
 	}
 	
 	@Override
-	public Node loadByName(DAOActionContext ctx, String name, GraphPermission perm, boolean errorIfNotFound) {
+	public Node loadByName(DAOActionContext ctx, String name, InternalPermission perm, boolean errorIfNotFound) {
 		//NodeDaoWrapper nodeDao = tx.data().nodeDao();
 		if (perm == null) {
 			return ctx.project().getNodeRoot().findByName(name);

@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.dao.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toProject;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
@@ -30,8 +30,8 @@ import com.gentics.mesh.core.data.impl.ProjectWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
@@ -119,7 +119,7 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper implements Project
 	}
 
 	@Override
-	public Project findByName(InternalActionContext ac, String projectName, GraphPermission perm) {
+	public Project findByName(InternalActionContext ac, String projectName, InternalPermission perm) {
 		ProjectRoot root = boot.get().projectRoot();
 		Project project = root.findByName(ac, projectName, perm);
 		return ProjectWrapper.wrap(project);
@@ -138,14 +138,14 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper implements Project
 	}
 
 	@Override
-	public Project loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
+	public Project loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm) {
 		ProjectRoot root = boot.get().projectRoot();
 		Project project = root.loadObjectByUuid(ac, uuid, perm);
 		return ProjectWrapper.wrap(project);
 	}
 
 	@Override
-	public Project loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+	public Project loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
 		ProjectRoot root = boot.get().projectRoot();
 		Project project = root.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
 		return ProjectWrapper.wrap(project);

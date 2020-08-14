@@ -12,7 +12,7 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.HibSchema;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.Schema;
@@ -108,7 +108,7 @@ public class SchemaWrapper implements Schema, HibSchema {
 		delegate.setCreator(user);
 	}
 
-	public TraversalResult<? extends HibRole> getRolesWithPerm(GraphPermission perm) {
+	public TraversalResult<? extends HibRole> getRolesWithPerm(InternalPermission perm) {
 		return delegate.getRolesWithPerm(perm);
 	}
 
@@ -232,8 +232,8 @@ public class SchemaWrapper implements Schema, HibSchema {
 		return delegate.findVersionByUuid(uuid);
 	}
 
-	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
-		Set<GraphPermission> permissionsToRevoke) {
+	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<InternalPermission> permissionsToGrant,
+		Set<InternalPermission> permissionsToRevoke) {
 		delegate.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
 	}
 
@@ -445,11 +445,11 @@ public class SchemaWrapper implements Schema, HibSchema {
 		return delegate.reframeExplicit(kind);
 	}
 
-	public Set<String> getRoleUuidsForPerm(GraphPermission permission) {
+	public Set<String> getRoleUuidsForPerm(InternalPermission permission) {
 		return delegate.getRoleUuidsForPerm(permission);
 	}
 
-	public void setRoleUuidForPerm(GraphPermission permission, Set<String> allowedRoles) {
+	public void setRoleUuidForPerm(InternalPermission permission, Set<String> allowedRoles) {
 		delegate.setRoleUuidForPerm(permission, allowedRoles);
 	}
 

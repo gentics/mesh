@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.dao.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toBranch;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toProject;
@@ -33,8 +33,8 @@ import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
@@ -92,14 +92,14 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper implements TagDaoWrapp
 	}
 
 	@Override
-	public HibTag loadObjectByUuid(HibBranch branch, InternalActionContext ac, String tagUuid, GraphPermission perm) {
+	public HibTag loadObjectByUuid(HibBranch branch, InternalActionContext ac, String tagUuid, InternalPermission perm) {
 		TagRoot tagRoot = boot.get().tagRoot();
 		HibTag tag = branch.findTagByUuid(tagUuid);
 		return tagRoot.checkPerms(tag.toTag(), tagUuid, ac, perm, true);
 	}
 
 	@Override
-	public Tag loadObjectByUuid(HibProject project, InternalActionContext ac, String tagUuid, GraphPermission perm) {
+	public Tag loadObjectByUuid(HibProject project, InternalActionContext ac, String tagUuid, InternalPermission perm) {
 		// TODO this is an old bug in mesh. The global tag root is used to load tags. Instead the project specific tags should be checked.
 		// This code is used for branch tagging. The case makes incorrect usage of the root.
 		TagRoot tagRoot = boot.get().tagRoot();

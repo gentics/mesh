@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.root;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -23,7 +23,7 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicNonTransformablePageImpl;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
@@ -65,7 +65,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @param permission
 	 *            Needed permission
 	 */
-	default Stream<? extends T> findAllStream(InternalActionContext ac, GraphPermission permission) {
+	default Stream<? extends T> findAllStream(InternalActionContext ac, InternalPermission permission) {
 		MeshAuthUser user = ac.getUser();
 		FramedTransactionalGraph graph = Tx.get().getGraph();
 		UserDaoWrapper userDao = Tx.get().data().userDao();
@@ -152,7 +152,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 *            Permission that must be granted in order to load the object
 	 * @return
 	 */
-	default T findByName(InternalActionContext ac, String name, GraphPermission perm) {
+	default T findByName(InternalActionContext ac, String name, InternalPermission perm) {
 		T element = findByName(name);
 		if (element == null) {
 			throw error(NOT_FOUND, "object_not_found_for_name", name);
@@ -201,7 +201,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 *            Permission that must be granted in order to load the object
 	 * @return Loaded element. A not found error will be thrown if the element could not be found. Returned value will never be null.
 	 */
-	default T loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
+	default T loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm) {
 		return loadObjectByUuid(ac, uuid, perm, true);
 	}
 
@@ -219,12 +219,12 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @return Loaded element. If errorIfNotFound is true, a not found error will be thrown if the element could not be found and the returned value will never
 	 *         be null.
 	 */
-	default T loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+	default T loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
 		T element = findByUuid(uuid);
 		return checkPerms(element, uuid, ac, perm, errorIfNotFound);
 	}
 
-	default T checkPerms(T element, String uuid, InternalActionContext ac, GraphPermission perm, boolean errorIfNotFound) {
+	default T checkPerms(T element, String uuid, InternalActionContext ac, InternalPermission perm, boolean errorIfNotFound) {
 		if (element == null) {
 			if (errorIfNotFound) {
 				throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);
@@ -377,7 +377,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @param perm
 	 * @return
 	 */
-	default TraversalResult<? extends HibRole> getRolesWithPerm(HibElement vertex, GraphPermission perm) {
+	default TraversalResult<? extends HibRole> getRolesWithPerm(HibElement vertex, InternalPermission perm) {
 		// TODO implement
 		throw new RuntimeException("Not implemented");
 	}

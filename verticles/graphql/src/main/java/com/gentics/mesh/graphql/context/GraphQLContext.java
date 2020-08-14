@@ -6,7 +6,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.NodeContent;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.rest.error.PermissionException;
 import com.gentics.mesh.plugin.graphql.GraphQLPluginContext;
 
@@ -26,7 +26,7 @@ public interface GraphQLContext extends InternalActionContext, GraphQLPluginCont
 	 * @return Provided element will be returned if at least one of the permissions grants access
 	 * @throws PermissionException
 	 */
-	<T extends HibCoreElement> T requiresPerm(T element, GraphPermission... permission);
+	<T extends HibCoreElement> T requiresPerm(T element, InternalPermission... permission);
 
 	/**
 	 * Check whether the current user of the context has read permission on the container (via type and parent node).

@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.endpoint.navroot;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.util.URIUtils.decodeSegment;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;

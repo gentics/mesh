@@ -14,7 +14,7 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -28,7 +28,7 @@ public class BranchDAOActionsImpl implements BranchDAOActions {
 	}
 
 	@Override
-	public HibBranch loadByUuid(DAOActionContext ctx, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+	public HibBranch loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
 		BranchDaoWrapper branchDao = ctx.tx().data().branchDao();
 		if (perm == null) {
 			return branchDao.findByUuid(ctx.project(), uuid);
@@ -39,7 +39,7 @@ public class BranchDAOActionsImpl implements BranchDAOActions {
 	}
 
 	@Override
-	public HibBranch loadByName(DAOActionContext ctx, String name, GraphPermission perm, boolean errorIfNotFound) {
+	public HibBranch loadByName(DAOActionContext ctx, String name, InternalPermission perm, boolean errorIfNotFound) {
 		if (perm == null) {
 			BranchDaoWrapper branchDao = ctx.tx().data().branchDao();
 			return branchDao.findByName(ctx.project(), name);

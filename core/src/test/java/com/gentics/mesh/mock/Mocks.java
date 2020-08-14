@@ -13,6 +13,7 @@ import org.mockito.Mockito;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -59,7 +60,7 @@ public final class Mocks {
 		});
 		paramMap.entrySet().stream().forEach(entry -> when(request.getParam(entry.getKey())).thenReturn(entry.getValue()));
 		if (user != null) {
-			MeshAuthUserImpl requestUser = Tx.get().getGraph().frameElement(user.toUser().getElement(), MeshAuthUserImpl.class);
+			MeshAuthUserImpl requestUser = Tx.get().getGraph().frameElement(((User)user).getElement(), MeshAuthUserImpl.class);
 			when(rc.user()).thenReturn(requestUser);
 			// JsonObject principal = new JsonObject();
 			// principal.put("uuid", user.getUuid());

@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.dao.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toRole;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
@@ -31,7 +31,7 @@ import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -89,13 +89,13 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper implements RoleDaoWra
 	}
 
 	@Override
-	public Set<GraphPermission> getPermissions(HibRole role, HibElement element) {
-		Set<GraphPermission> permissions = new HashSet<>();
-		GraphPermission[] possiblePermissions = element.hasPublishPermissions()
-			? GraphPermission.values()
-			: GraphPermission.basicPermissions();
+	public Set<InternalPermission> getPermissions(HibRole role, HibElement element) {
+		Set<InternalPermission> permissions = new HashSet<>();
+		InternalPermission[] possiblePermissions = element.hasPublishPermissions()
+			? InternalPermission.values()
+			: InternalPermission.basicPermissions();
 
-		for (GraphPermission permission : possiblePermissions) {
+		for (InternalPermission permission : possiblePermissions) {
 			if (hasPermission(role, permission, element)) {
 				permissions.add(permission);
 			}
@@ -104,14 +104,14 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper implements RoleDaoWra
 	}
 
 	@Override
-	public boolean hasPermission(HibRole role, GraphPermission permission, HibElement vertex) {
+	public boolean hasPermission(HibRole role, InternalPermission permission, HibElement vertex) {
 		Set<String> allowedUuids = vertex.getRoleUuidsForPerm(permission);
 		return allowedUuids != null && allowedUuids.contains(role.getUuid());
 	}
 
 	@Override
-	public void grantPermissions(HibRole role, HibElement vertex, GraphPermission... permissions) {
-		for (GraphPermission permission : permissions) {
+	public void grantPermissions(HibRole role, HibElement vertex, InternalPermission... permissions) {
+		for (InternalPermission permission : permissions) {
 			Set<String> allowedRoles = vertex.getRoleUuidsForPerm(permission);
 			if (allowedRoles == null) {
 				vertex.setRoleUuidForPerm(permission, Collections.singleton(role.getUuid()));
@@ -123,9 +123,9 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper implements RoleDaoWra
 	}
 
 	@Override
-	public void revokePermissions(HibRole role, HibElement vertex, GraphPermission... permissions) {
+	public void revokePermissions(HibRole role, HibElement vertex, InternalPermission... permissions) {
 		boolean permissionRevoked = false;
-		for (GraphPermission permission : permissions) {
+		for (InternalPermission permission : permissions) {
 			Set<String> allowedRoles = vertex.getRoleUuidsForPerm(permission);
 			if (allowedRoles != null) {
 				permissionRevoked = allowedRoles.remove(role.getUuid()) || permissionRevoked;
@@ -268,13 +268,13 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper implements RoleDaoWra
 	}
 
 	@Override
-	public HibRole loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
+	public HibRole loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm) {
 		RoleRoot roleRoot = boot.get().roleRoot();
 		return roleRoot.loadObjectByUuid(ac, uuid, perm);
 	}
 
 	@Override
-	public HibRole loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+	public HibRole loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
 		RoleRoot roleRoot = boot.get().roleRoot();
 		return roleRoot.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
 	}
@@ -298,8 +298,8 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper implements RoleDaoWra
 	}
 	
 	@Override
-	public void applyPermissions(HibElement element, EventQueueBatch batch, HibRole role, boolean recursive, Set<GraphPermission> permissionsToGrant,
-		Set<GraphPermission> permissionsToRevoke) {
+	public void applyPermissions(HibElement element, EventQueueBatch batch, HibRole role, boolean recursive, Set<InternalPermission> permissionsToGrant,
+		Set<InternalPermission> permissionsToRevoke) {
 		Role graphRole = toRole(role);
 		
 	}

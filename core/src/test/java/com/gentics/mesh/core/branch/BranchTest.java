@@ -20,8 +20,8 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
@@ -194,7 +194,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	public void testReadPermission() throws Exception {
 		try (Tx tx = tx()) {
 			HibBranch newBranch = createBranch("New Branch");
-			testPermission(GraphPermission.READ_PERM, newBranch);
+			testPermission(InternalPermission.READ_PERM, newBranch);
 		}
 	}
 
@@ -203,7 +203,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	public void testDeletePermission() throws Exception {
 		try (Tx tx = tx()) {
 			HibBranch newBranch = createBranch("New Branch");
-			testPermission(GraphPermission.DELETE_PERM, newBranch);
+			testPermission(InternalPermission.DELETE_PERM, newBranch);
 		}
 	}
 
@@ -212,7 +212,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	public void testUpdatePermission() throws Exception {
 		try (Tx tx = tx()) {
 			HibBranch newBranch = createBranch("New Branch");
-			testPermission(GraphPermission.UPDATE_PERM, newBranch);
+			testPermission(InternalPermission.UPDATE_PERM, newBranch);
 		}
 	}
 
@@ -221,7 +221,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	public void testCreatePermission() throws Exception {
 		try (Tx tx = tx()) {
 			HibBranch newBranch = createBranch("New Branch");
-			testPermission(GraphPermission.CREATE_PERM, newBranch);
+			testPermission(InternalPermission.CREATE_PERM, newBranch);
 		}
 	}
 

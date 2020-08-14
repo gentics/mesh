@@ -1,10 +1,10 @@
 package com.gentics.mesh.core.role;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.DELETE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.MeshEvent.ROLE_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.ROLE_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.ROLE_UPDATED;
@@ -37,7 +37,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.db.Tx;
@@ -429,7 +429,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		// Add the missing permission and try again
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
-			roleDao.grantPermissions(role(), role(), GraphPermission.UPDATE_PERM);
+			roleDao.grantPermissions(role(), role(), InternalPermission.UPDATE_PERM);
 			tx.success();
 		}
 

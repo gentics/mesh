@@ -10,7 +10,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.parameter.ParameterProvider;
@@ -40,10 +40,10 @@ public class GraphQLPermissionTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			for (Node node : project().getNodeRoot().findAll()) {
-				roleDao.revokePermissions(role(), node, GraphPermission.READ_PERM);
+				roleDao.revokePermissions(role(), node, InternalPermission.READ_PERM);
 			}
 			// Explicitly remove read_publish for a single node
-			roleDao.revokePermissions(role(), folder("news"), GraphPermission.READ_PUBLISHED_PERM);
+			roleDao.revokePermissions(role(), folder("news"), InternalPermission.READ_PUBLISHED_PERM);
 			tx.success();
 		}
 

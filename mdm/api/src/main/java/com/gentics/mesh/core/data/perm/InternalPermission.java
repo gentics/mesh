@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.data.relationship;
+package com.gentics.mesh.core.data.perm;
 
 import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
@@ -6,17 +6,13 @@ import static com.gentics.mesh.core.rest.common.Permission.PUBLISH;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.READ_PUBLISHED;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
-import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
-import static com.gentics.mesh.madl.type.EdgeTypeDefinition.edgeType;
 
-import com.gentics.madl.index.IndexHandler;
-import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.rest.common.Permission;
 
 /**
  * Internal enum which provides labels for graph permission edges that are created between the target element and a role.
  */
-public enum GraphPermission {
+public enum InternalPermission {
 
 	CREATE_PERM("permission_create", CREATE),
 
@@ -30,13 +26,6 @@ public enum GraphPermission {
 
 	PUBLISH_PERM("permission_publish", PUBLISH);
 
-	public static void init(TypeHandler type, IndexHandler index) {
-		for (String label : GraphPermission.labels()) {
-			type.createType(edgeType(label));
-			index.createIndex(edgeIndex(label).withInOut());
-		}
-	}
-
 	private String propertyKey;
 	private Permission restPerm;
 
@@ -47,7 +36,7 @@ public enum GraphPermission {
 	 * @param restPerm
 	 *            Rest permission representation
 	 */
-	GraphPermission(String propertyKey, Permission restPerm) {
+	InternalPermission(String propertyKey, Permission restPerm) {
 		this.propertyKey = propertyKey;
 		this.restPerm = restPerm;
 	}
@@ -58,7 +47,7 @@ public enum GraphPermission {
 	 * @return
 	 */
 	public static String[] labels() {
-		GraphPermission[] permissions = values();
+		InternalPermission[] permissions = values();
 		String[] names = new String[permissions.length];
 
 		for (int i = 0; i < permissions.length; i++) {
@@ -83,8 +72,8 @@ public enum GraphPermission {
 	 * @param propertyKey
 	 * @return
 	 */
-	public static GraphPermission valueOfLabel(String propertyKey) {
-		for (GraphPermission p : GraphPermission.values()) {
+	public static InternalPermission valueOfLabel(String propertyKey) {
+		for (InternalPermission p : InternalPermission.values()) {
 			if (propertyKey.equals(p.propertyKey())) {
 				return p;
 			}
@@ -106,7 +95,7 @@ public enum GraphPermission {
 		return propertyKey;
 	}
 
-	public static GraphPermission[] basicPermissions() {
-		return new GraphPermission[] { CREATE_PERM, READ_PERM, UPDATE_PERM, DELETE_PERM };
+	public static InternalPermission[] basicPermissions() {
+		return new InternalPermission[] { CREATE_PERM, READ_PERM, UPDATE_PERM, DELETE_PERM };
 	}
 }

@@ -1,5 +1,6 @@
 package com.gentics.mesh.context.impl;
 
+import static com.gentics.mesh.core.data.util.HibClassConverter.toUser;
 import static com.gentics.mesh.rest.client.AbstractMeshRestHttpClient.getQuery;
 
 import java.util.HashMap;
@@ -193,7 +194,7 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	 * @param projectName
 	 */
 	public void setProject(String projectName) {
-		MeshComponent mesh = user.toUser().getGraphAttribute(GraphAttribute.MESH_COMPONENT);
+		MeshComponent mesh = toUser(user).getGraphAttribute(GraphAttribute.MESH_COMPONENT);
 		this.project = mesh.database().tx(tx -> {
 			return tx.data().projectDao().findByName(projectName);
 		});

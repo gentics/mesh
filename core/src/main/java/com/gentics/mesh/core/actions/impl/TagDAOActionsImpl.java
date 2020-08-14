@@ -14,7 +14,7 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.util.HibClassConverter;
@@ -37,7 +37,7 @@ public class TagDAOActionsImpl implements TagDAOActions {
 	}
 
 	@Override
-	public HibTag loadByUuid(DAOActionContext ctx, String tagUuid, GraphPermission perm, boolean errorIfNotFound) {
+	public HibTag loadByUuid(DAOActionContext ctx, String tagUuid, InternalPermission perm, boolean errorIfNotFound) {
 		HibTagFamily hibTagFamily = ctx.parent();
 		TagFamily tagFamily = HibClassConverter.toTagFamily(hibTagFamily);
 		if (perm == null) {
@@ -50,7 +50,7 @@ public class TagDAOActionsImpl implements TagDAOActions {
 	}
 
 	@Override
-	public HibTag loadByName(DAOActionContext ctx, String name, GraphPermission perm, boolean errorIfNotFound) {
+	public HibTag loadByName(DAOActionContext ctx, String name, InternalPermission perm, boolean errorIfNotFound) {
 		TagDaoWrapper tagDao = ctx.tx().data().tagDao();
 		HibTagFamily tagFamily = ctx.parent();
 		if (perm == null) {

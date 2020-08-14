@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.dao.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toTag;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toTagFamily;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;

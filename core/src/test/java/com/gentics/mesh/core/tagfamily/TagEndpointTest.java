@@ -20,7 +20,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
@@ -176,7 +176,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	public void testReadPermission() {
 		try (Tx tx = tx()) {
 			TagFamily tagFamily = project().getTagFamilyRoot().create("newProject", user());
-			testPermission(GraphPermission.READ_PERM, tagFamily);
+			testPermission(InternalPermission.READ_PERM, tagFamily);
 		}
 	}
 
@@ -185,7 +185,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	public void testDeletePermission() {
 		try (Tx tx = tx()) {
 			HibTagFamily tagFamily = project().getTagFamilyRoot().create("newProject", user());
-			testPermission(GraphPermission.DELETE_PERM, tagFamily);
+			testPermission(InternalPermission.DELETE_PERM, tagFamily);
 		}
 	}
 
@@ -194,7 +194,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	public void testUpdatePermission() {
 		try (Tx tx = tx()) {
 			HibTagFamily tagFamily = project().getTagFamilyRoot().create("newProject", user());
-			testPermission(GraphPermission.UPDATE_PERM, tagFamily);
+			testPermission(InternalPermission.UPDATE_PERM, tagFamily);
 		}
 	}
 
@@ -203,7 +203,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	public void testCreatePermission() {
 		try (Tx tx = tx()) {
 			HibTagFamily tagFamily = project().getTagFamilyRoot().create("newProject", user());
-			testPermission(GraphPermission.CREATE_PERM, tagFamily);
+			testPermission(InternalPermission.CREATE_PERM, tagFamily);
 		}
 	}
 
@@ -249,9 +249,9 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 			UserDaoWrapper userDao = tx.data().userDao();
 			TagFamilyRoot root = project().getTagFamilyRoot();
 			HibTagFamily tagFamily = root.create("test123", user());
-			assertFalse(userDao.hasPermission(user(), tagFamily, GraphPermission.CREATE_PERM));
+			assertFalse(userDao.hasPermission(user(), tagFamily, InternalPermission.CREATE_PERM));
 			userDao.inheritRolePermissions(user(), root, tagFamily);
-			assertTrue(userDao.hasPermission(user(), tagFamily, GraphPermission.CREATE_PERM));
+			assertTrue(userDao.hasPermission(user(), tagFamily, InternalPermission.CREATE_PERM));
 		}
 	}
 

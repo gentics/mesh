@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.dao.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
@@ -40,7 +40,7 @@ import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -124,18 +124,22 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper implements GroupDaoW
 	@Override
 	public void addUser(HibGroup group, HibUser user) {
 		Group graphGroup = toGroup(group);
-		graphGroup.setUniqueLinkInTo(user.toUser(), HAS_USER);
+		User graphUser = toUser(user);
+
+		graphGroup.setUniqueLinkInTo(graphUser, HAS_USER);
 
 		// Add shortcut edge from user to roles of this group
 		for (Role role : getRoles(group)) {
-			user.toUser().setUniqueLinkOutTo(role, ASSIGNED_TO_ROLE);
+			graphUser.setUniqueLinkOutTo(role, ASSIGNED_TO_ROLE);
 		}
 	}
 
 	@Override
 	public void removeUser(HibGroup group, HibUser user) {
 		Group graphGroup = toGroup(group);
-		graphGroup.unlinkIn(user.toUser(), HAS_USER);
+		User graphUser = toUser(user);
+
+		graphGroup.unlinkIn(graphUser, HAS_USER);
 
 		// The user does no longer belong to the group so lets update the shortcut edges
 		user.updateShortcutEdges();
@@ -369,13 +373,13 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper implements GroupDaoW
 	}
 
 	@Override
-	public HibGroup loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
+	public HibGroup loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm) {
 		GroupRoot groupRoot = boot.get().groupRoot();
 		return groupRoot.loadObjectByUuid(ac, uuid, perm);
 	}
 
 	@Override
-	public HibGroup loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+	public HibGroup loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
 		GroupRoot groupRoot = boot.get().groupRoot();
 		return groupRoot.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
 	}
