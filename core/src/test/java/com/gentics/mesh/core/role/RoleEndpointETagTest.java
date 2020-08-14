@@ -9,7 +9,8 @@ import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
@@ -43,9 +44,10 @@ public class RoleEndpointETagTest extends AbstractMeshTest {
 	@Test
 	public void testReadOne() {
 		try (Tx tx = tx()) {
-			Role role = role();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
+			HibRole role = role();
 			String responseEtag = callETag(() -> client().findRoleByUuid(role.getUuid()));
-			String etag = role.getETag(mockActionContext());
+			String etag = roleDao.getETag(role, mockActionContext());
 			assertEquals(etag, responseEtag);
 
 			// Check whether 304 is returned for correct etag

@@ -14,6 +14,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.root.MicroschemaRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
@@ -116,7 +117,7 @@ public class ProjectWrapper implements Project {
 		delegate.setCreator(user);
 	}
 
-	public TraversalResult<? extends Role> getRolesWithPerm(GraphPermission perm) {
+	public TraversalResult<? extends HibRole> getRolesWithPerm(GraphPermission perm) {
 		return delegate.getRolesWithPerm(perm);
 	}
 

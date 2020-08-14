@@ -42,10 +42,9 @@ import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.data.root.RoleRoot;
-import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
@@ -115,7 +114,7 @@ public class TestDataProvider {
 	private Map<String, Node> contents = new HashMap<>();
 	private Map<String, HibTag> tags = new HashMap<>();
 	private Map<String, HibUser> users = new HashMap<>();
-	private Map<String, Role> roles = new HashMap<>();
+	private Map<String, HibRole> roles = new HashMap<>();
 	private Map<String, HibGroup> groups = new HashMap<>();
 
 	private String contentUuid;
@@ -161,7 +160,7 @@ public class TestDataProvider {
 
 			root = boot.meshRoot();
 
-			addBootstrappedData();
+			addBootstrappedData(tx);
 			addSchemaContainers();
 			addUserGroupRoleProject();
 			if (getSize() == FULL) {
@@ -222,10 +221,10 @@ public class TestDataProvider {
 	private void addPermissions(Collection<? extends HibElement> elements) {
 		RoleDaoWrapper roleDao = Tx.get().data().roleDao();
 
-		Role role = userInfo.getRole();
+		HibRole role = userInfo.getRole();
 		for (HibElement meshVertex : elements) {
 			if (log.isTraceEnabled()) {
-				log.trace("Granting CRUD permissions on {" + meshVertex.getId() + "} with role {" + role.getElement().getId() + "}");
+				log.trace("Granting CRUD permissions on {" + meshVertex.getId() + "} with role {" + role.getId() + "}");
 			}
 			roleDao.grantPermissions(role, meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM, READ_PUBLISHED_PERM, PUBLISH_PERM);
 		}
@@ -233,8 +232,9 @@ public class TestDataProvider {
 
 	/**
 	 * Add data to the internal maps which was created within the {@link BootstrapInitializer} (eg. admin groups, roles, users)
+	 * @param tx 
 	 */
-	private void addBootstrappedData() {
+	private void addBootstrappedData(Tx tx) {
 		for (Group group : root.getGroupRoot().findAll()) {
 			groups.put(group.getName(), group);
 		}
@@ -358,7 +358,7 @@ public class TestDataProvider {
 		groups.put(groupName, group);
 
 		String roleName = username + "_role";
-		Role role = roleDao.create(roleName, user);
+		HibRole role = roleDao.create(roleName, user);
 		groupDao.addRole(group, role);
 		roleDao.grantPermissions(role, role, READ_PERM);
 		roles.put(roleName, role);
@@ -373,9 +373,6 @@ public class TestDataProvider {
 
 		// User, Groups, Roles
 		userInfo = createUserInfo("joe1", "Joe", "Doe");
-		UserRoot userRoot = getMeshRoot().getUserRoot();
-		GroupRoot groupRoot = getMeshRoot().getGroupRoot();
-		RoleRoot roleRoot = getMeshRoot().getRoleRoot();
 		ProjectDaoWrapper projectDao = boot.projectDao();
 		EventQueueBatch batch = Mockito.mock(EventQueueBatch.class);
 		project = projectDao.create(PROJECT_NAME, null, null, null, userInfo.getUser(), getSchemaContainer("folder").getLatestVersion(), batch);
@@ -391,7 +388,7 @@ public class TestDataProvider {
 			HibGroup guestGroup = groupDao.create("guests", userInfo.getUser());
 			groups.put("guests", guestGroup);
 
-			Role guestRole = roleDao.create("guest_role", userInfo.getUser());
+			HibRole guestRole = roleDao.create("guest_role", userInfo.getUser());
 			groupDao.addRole(guestGroup, guestRole);
 			roles.put(guestRole.getName(), guestRole);
 
@@ -406,7 +403,7 @@ public class TestDataProvider {
 			HibGroup group = groupDao.create("extra_group", userInfo.getUser());
 			groups.put(group.getName(), group);
 
-			Role role = roleDao.create("extra_role", userInfo.getUser());
+			HibRole role = roleDao.create("extra_role", userInfo.getUser());
 			roles.put(role.getName(), role);
 		}
 		// Publish the project basenode
@@ -699,7 +696,7 @@ public class TestDataProvider {
 		return groups;
 	}
 
-	public Map<String, Role> getRoles() {
+	public Map<String, HibRole> getRoles() {
 		return roles;
 	}
 
@@ -724,7 +721,7 @@ public class TestDataProvider {
 		return tagFamilies;
 	}
 
-	public Role role() {
+	public HibRole role() {
 		return getUserInfo().getRole();
 	}
 
@@ -736,7 +733,7 @@ public class TestDataProvider {
 		return getUserInfo().getGroup();
 	}
 
-	public Role getAnonymousRole() {
+	public HibRole getAnonymousRole() {
 		return roles.get("anonymous");
 	}
 

@@ -20,9 +20,9 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.RoleDAOActions;
 import com.gentics.mesh.core.data.HibElement;
-import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionResponse;
@@ -34,7 +34,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
+public class RoleCrudHandler extends AbstractCrudHandler<HibRole, RoleResponse> {
 
 	private static final Logger log = LoggerFactory.getLogger(RoleCrudHandler.class);
 
@@ -69,7 +69,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 				log.debug("Handling permission request for element on path {" + pathToElement + "}");
 			}
 			// 1. Load the role that should be used - read perm implies that the user is able to read the attached permissions
-			Role role = roleDao.loadObjectByUuid(ac, roleUuid, READ_PERM);
+			HibRole role = roleDao.loadObjectByUuid(ac, roleUuid, READ_PERM);
 
 			// 2. Resolve the path to element that is targeted
 			HibElement targetElement = boot.meshRoot().resolvePathToElement(pathToElement);
@@ -115,7 +115,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 
 				RoleDaoWrapper roleDao = tx.data().roleDao();
 				// 1. Load the role that should be used
-				Role role = roleDao.loadObjectByUuid(ac, roleUuid, UPDATE_PERM);
+				HibRole role = roleDao.loadObjectByUuid(ac, roleUuid, UPDATE_PERM);
 
 				// 2. Resolve the path to element that is targeted
 				HibElement element = boot.meshRoot().resolvePathToElement(pathToElement);
@@ -148,7 +148,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 						}
 					}
 					// 3. Apply the permission actions
-					element.applyPermissions(batch, role, BooleanUtils.isTrue(requestModel.getRecursive()), permissionsToGrant, permissionsToRevoke);
+					roleDao.applyPermissions(element, batch, role, BooleanUtils.isTrue(requestModel.getRecursive()), permissionsToGrant, permissionsToRevoke);
 					return role.getName();
 				});
 				if (ac.getSecurityLogger().isInfoEnabled()) {

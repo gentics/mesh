@@ -1,16 +1,16 @@
 package com.gentics.mesh.graphql.filter;
 
-import com.gentics.graphqlfilter.filter.FilterField;
-import com.gentics.graphqlfilter.filter.StartMainFilter;
-import com.gentics.mesh.core.data.Role;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import com.gentics.graphqlfilter.filter.FilterField;
+import com.gentics.graphqlfilter.filter.StartMainFilter;
+import com.gentics.mesh.core.data.role.HibRole;
 
 /**
  * Filters roles in GraphQl. This filter should be used whenever a list of roles is returned.
  */
-public class RoleFilter extends StartMainFilter<Role> {
+public class RoleFilter extends StartMainFilter<HibRole> {
 
 	private static final String NAME = "RoleFilter";
 
@@ -27,11 +27,11 @@ public class RoleFilter extends StartMainFilter<Role> {
 	}
 
 	@Override
-	protected List<FilterField<Role, ?>> getFilters() {
-		List<FilterField<Role, ?>> filters = new ArrayList<>();
-		filters.add(CommonFields.nameFilter());
-		filters.add(CommonFields.uuidFilter());
-		filters.addAll(CommonFields.userTrackingFilter());
+	protected List<FilterField<HibRole, ?>> getFilters() {
+		List<FilterField<HibRole, ?>> filters = new ArrayList<>();
+		filters.add(CommonFields.hibNameFilter());
+		filters.add(CommonFields.hibUuidFilter());
+		filters.addAll(CommonFields.hibUserTrackingFilter());
 		return filters;
 	}
 }

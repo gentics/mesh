@@ -21,7 +21,6 @@ import org.jsoup.Jsoup;
 
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
@@ -41,6 +40,7 @@ import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
@@ -123,13 +123,13 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	private void addPermissionInfo(JsonObject document, Node node, ContainerType type) {
 		List<String> roleUuids = new ArrayList<>();
 
-		for (Role role : node.getRolesWithPerm(READ_PERM)) {
+		for (HibRole role : node.getRolesWithPerm(READ_PERM)) {
 			roleUuids.add(role.getUuid());
 		}
 
 		// Also add the roles which would grant read on published nodes if the container is published.
 		if (type == PUBLISHED) {
-			for (Role role : node.getRolesWithPerm(READ_PUBLISHED_PERM)) {
+			for (HibRole role : node.getRolesWithPerm(READ_PUBLISHED_PERM)) {
 				roleUuids.add(role.getUuid());
 			}
 		}

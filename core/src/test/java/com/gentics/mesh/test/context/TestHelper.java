@@ -27,10 +27,10 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.Schema;
@@ -98,7 +98,7 @@ import io.vertx.test.core.TestUtils;
 
 public interface TestHelper extends EventHelper, ClientHelper {
 
-	default Role role() {
+	default HibRole role() {
 		return data().role();
 	}
 
@@ -106,7 +106,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return data().getUserInfo().getUser().toUser().reframe(MeshAuthUserImpl.class);
 	}
 
-	default Role anonymousRole() {
+	default HibRole anonymousRole() {
 		return data().getAnonymousRole();
 	}
 
@@ -220,7 +220,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return data().getSchemaContainers();
 	}
 
-	default Map<String, Role> roles() {
+	default Map<String, HibRole> roles() {
 		return data().getRoles();
 	}
 

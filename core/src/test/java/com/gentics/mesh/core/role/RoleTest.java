@@ -28,6 +28,7 @@ import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
@@ -64,7 +65,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 		try (Tx tx = tx()) {
 			String roleName = "test";
 			RoleDaoWrapper roleDao = tx.data().roleDao();
-			Role createdRole = roleDao.create(roleName, user());
+			HibRole createdRole = roleDao.create(roleName, user());
 			assertNotNull(createdRole);
 			String uuid = createdRole.getUuid();
 			Role role = boot().roleRoot().findByUuid(uuid);
@@ -77,7 +78,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testGrantPermission() {
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
-			Role role = role();
+			HibRole role = role();
 			Node node = folder("news");
 			roleDao.grantPermissions(role, node, CREATE_PERM, READ_PERM, UPDATE_PERM, DELETE_PERM);
 
@@ -115,7 +116,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testGrantPermissionTwice() {
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
-			Role role = role();
+			HibRole role = role();
 			Node node = folder("news");
 
 			roleDao.grantPermissions(role, node, CREATE_PERM);
@@ -134,7 +135,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testGetPermissions() {
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
-			Role role = role();
+			HibRole role = role();
 			Node node = folder("news");
 			assertEquals(6, roleDao.getPermissions(role, node).size());
 		}
@@ -144,7 +145,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testRevokePermission() {
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
-			Role role = role();
+			HibRole role = role();
 			Node node = folder("news");
 			roleDao.revokePermissions(role, node, CREATE_PERM);
 
@@ -177,7 +178,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			final String roleName = "test2";
 			RoleDaoWrapper roleDao = tx.data().roleDao();
-			Role role = roleDao.create(roleName, user());
+			HibRole role = roleDao.create(roleName, user());
 			assertNotNull(role);
 			long nRolesAfter = root.computeCount();
 			assertEquals(nRolesBefore + 1, nRolesAfter);
@@ -195,7 +196,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertNotNull(parentNode);
 
 			// Grant all permissions to all roles
-			for (Role role : roles().values()) {
+			for (HibRole role : roles().values()) {
 				for (GraphPermission perm : GraphPermission.values()) {
 					roleDao.grantPermissions(role, parentNode, perm);
 				}
@@ -210,7 +211,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertEquals(6, userDao.getPermissions(requestUser, node).size());
 
 			try (Tx tx2 = tx()) {
-				for (Role role : roles().values()) {
+				for (HibRole role : roles().values()) {
 					for (GraphPermission permission : GraphPermission.values()) {
 						assertTrue("The role {" + role.getName() + "} does not grant perm {" + permission.getRestPerm().getName() + "} to the node {"
 							+ node.getUuid() + "} but it should since the parent object got this role permission.",
@@ -227,24 +228,25 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
-			GroupDaoWrapper groupRoot = tx.data().groupDao();
+			GroupDaoWrapper groupDao = tx.data().groupDao();
 
-			Role extraRole = roleDao.create("extraRole", user());
-			groupRoot.addRole(group(), extraRole);
+			HibRole extraRole = roleDao.create("extraRole", user());
+			groupDao.addRole(group(), extraRole);
 
 			// Multiple add role calls should not affect the result
-			groupRoot.addRole(group(), extraRole);
-			groupRoot.addRole(group(), extraRole);
-			groupRoot.addRole(group(), extraRole);
-			groupRoot.addRole(group(), extraRole);
+			groupDao.addRole(group(), extraRole);
+			groupDao.addRole(group(), extraRole);
+			groupDao.addRole(group(), extraRole);
+			groupDao.addRole(group(), extraRole);
 
 			roleDao.grantPermissions(role(), extraRole, READ_PERM);
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			MeshAuthUser requestUser = ac.getUser();
-			Page<? extends Role> roles = groupRoot.getRoles(group(), requestUser, new PagingParametersImpl(1, 10L));
+			Page<? extends HibRole> roles = groupDao.getRoles(group(), requestUser, new PagingParametersImpl(1, 10L));
 			assertEquals(2, roles.getSize());
-			assertEquals(1, extraRole.getGroups().count());
+			
+			assertEquals(1, roleDao.getGroups(extraRole).count());
 
 			// assertEquals(2, roles.getTotalElements());
 		}
@@ -291,10 +293,12 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testTransformation() throws Exception {
 		try (Tx tx = tx()) {
-			Role role = role();
+			RoleDaoWrapper roleDao = tx.data().roleDao();
+			
+			HibRole role = role();
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			RoleResponse restModel = role.transformToRestSync(ac, 0);
+			RoleResponse restModel = roleDao.transformToRestSync(role, ac, 0);
 
 			assertNotNull(restModel);
 			assertEquals(role.getName(), restModel.getName());
@@ -310,13 +314,13 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 
-			Role role = roleDao.create(roleName, user());
+			HibRole role = roleDao.create(roleName, user());
 			String uuid = role.getUuid();
 			role = roleDao.findByUuid(uuid);
 			assertNotNull(role);
 			BulkActionContext context = createBulkContext();
-			role.delete(context);
-			Role foundRole = roleDao.findByUuid(uuid);
+			roleDao.delete(role, context);
+			HibRole foundRole = roleDao.findByUuid(uuid);
 			assertNull(foundRole);
 		}
 
@@ -331,7 +335,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			MeshRoot root = meshRoot();
 			InternalActionContext ac = mockActionContext();
-			Role role = roleDao.create("SuperUser", user());
+			HibRole role = roleDao.create("SuperUser", user());
 			assertFalse(userDao.hasPermission(user(), role, GraphPermission.CREATE_PERM));
 			userDao.inheritRolePermissions(user(), root.getUserRoot(), role);
 			ac.data().clear();
@@ -352,7 +356,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testRead() {
 		try (Tx tx = tx()) {
-			Role role = role();
+			HibRole role = role();
 			assertEquals("joe1_role", role.getName());
 			assertNotNull(role.getUuid());
 
@@ -371,9 +375,10 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			String uuid;
 			BulkActionContext context = createBulkContext();
 			try (Tx tx2 = tx()) {
-				Role role = role();
+				RoleDaoWrapper roleDao = tx2.data().roleDao();
+				HibRole role = role();
 				uuid = role.getUuid();
-				role.delete(context);
+				roleDao.delete(role, context);
 				tx2.success();
 			}
 			assertElement(boot().roleRoot(), uuid, false);
@@ -385,7 +390,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testUpdate() {
 		try (Tx tx = tx()) {
-			Role role = role();
+			HibRole role = role();
 			role.setName("newName");
 			assertEquals("newName", role.getName());
 			// assertEquals(1,role.getProjects());

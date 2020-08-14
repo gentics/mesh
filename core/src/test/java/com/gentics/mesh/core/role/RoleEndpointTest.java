@@ -38,6 +38,7 @@ import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -202,7 +203,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	@Override
 	public void testReadByUUID() throws Exception {
-		Role extraRole;
+		HibRole extraRole;
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			GroupDaoWrapper groupDao = tx.data().groupDao();
@@ -236,7 +237,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			GroupDaoWrapper groupRoot = tx.data().groupDao();
 			RoleRoot roleRoot = meshRoot().getRoleRoot();
-			Role extraRole = roleDao.create("extra role", user());
+			HibRole extraRole = roleDao.create("extra role", user());
 			extraRoleUuid = extraRole.getUuid();
 			groupRoot.addRole(group(), extraRole);
 			// Revoke read permission from the role
@@ -270,12 +271,12 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			GroupDaoWrapper groupRoot = tx.data().groupDao();
 
-			Role noPermRole = roleDao.create(noPermRoleName, user());
+			HibRole noPermRole = roleDao.create(noPermRoleName, user());
 			roleDao.grantPermissions(role(), group(), READ_PERM);
 
 			// Create and save some roles
 			for (int i = 0; i < nRoles; i++) {
-				Role extraRole = roleDao.create("extra role " + i, user());
+				HibRole extraRole = roleDao.create("extra role " + i, user());
 				groupRoot.addRole(group(), extraRole);
 				roleDao.grantPermissions(role(), extraRole, READ_PERM);
 			}
@@ -349,7 +350,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			GroupDaoWrapper groupDao = tx.data().groupDao();
 			RoleRoot roleRoot = meshRoot().getRoleRoot();
-			Role extraRole = roleDao.create("extra role", user());
+			HibRole extraRole = roleDao.create("extra role", user());
 			groupDao.addRole(group(), extraRole);
 			roleDao.grantPermissions(role(), extraRole, UPDATE_PERM);
 			return extraRole.getUuid();
@@ -449,7 +450,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String extraRoleUuid = tx(tx -> {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			GroupDaoWrapper groupDao = tx.data().groupDao();
-			Role extraRole = roleDao.create("extra role", user());
+			HibRole extraRole = roleDao.create("extra role", user());
 			groupDao.addRole(group(), extraRole);
 			roleDao.grantPermissions(role(), extraRole, DELETE_PERM);
 			return extraRole.getUuid();

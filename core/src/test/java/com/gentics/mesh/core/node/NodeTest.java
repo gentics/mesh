@@ -26,6 +26,7 @@ import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
@@ -142,13 +143,13 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	@Ignore("No need to cover this by test")
 	public void testFindAllVisible() throws InvalidArgumentException {
-//		try (Tx tx = tx()) {
-//			List<String> languageTags = new ArrayList<>();
-//			languageTags.add("de");
-//			languageTags.add("en");
-//			Page<? extends Node> page = project().getNodeRoot().findAll(getRequestUser(), languageTags, new PagingParametersImpl(1, 25L));
-//			assertNotNull(page);
-//		}
+		// try (Tx tx = tx()) {
+		// List<String> languageTags = new ArrayList<>();
+		// languageTags.add("de");
+		// languageTags.add("en");
+		// Page<? extends Node> page = project().getNodeRoot().findAll(getRequestUser(), languageTags, new PagingParametersImpl(1, 25L));
+		// assertNotNull(page);
+		// }
 	}
 
 	@Test
@@ -309,7 +310,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			try (Tx tx2 = tx()) {
 				UserDaoWrapper userDao = tx2.data().userDao();
 				HibUser newUser = userDao.create("newUser", user());
-				userDao.addGroup(newUser,group());
+				userDao.addGroup(newUser, group());
 				assertEquals(user().getUuid(), node.getCreator().getUuid());
 				System.out.println(newUser.getUuid());
 				node.setCreator(newUser);
@@ -465,10 +466,11 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			SchemaVersion folderSchema = schemaContainer("folder").getLatestVersion();
 
 			// 1. create folder and publish
-			String folderUuid = tx(() -> {
+			String folderUuid = tx(tx2 -> {
+				RoleDaoWrapper roleDao = tx2.data().roleDao();
 				Node folder = project.getBaseNode().create(user(), folderSchema, project);
 				BulkActionContext bac2 = createBulkContext();
-				folder.applyPermissions(bac.batch(), role(), false, new HashSet<>(Arrays.asList(GraphPermission.READ_PERM,
+				roleDao.applyPermissions(folder, bac.batch(), role(), false, new HashSet<>(Arrays.asList(GraphPermission.READ_PERM,
 					GraphPermission.READ_PUBLISHED_PERM)), Collections.emptySet());
 				folder.createGraphFieldContainer(english(), initialBranch, user()).createString("name").setString("Folder");
 				folder.publish(mockActionContext(), bac2);
@@ -517,10 +519,11 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			SchemaVersion folderSchema = schemaContainer("folder").getLatestVersion();
 
 			// 1. create folder and publish
-			String folderUuid = tx(() -> {
+			String folderUuid = tx(tx2 -> {
 				Node folder = project.getBaseNode().create(user(), folderSchema, project);
 				BulkActionContext bac = createBulkContext();
-				folder.applyPermissions(bac.batch(), role(), false, new HashSet<>(Arrays.asList(GraphPermission.READ_PERM,
+				RoleDaoWrapper roleDao = tx.data().roleDao();
+				roleDao.applyPermissions(folder, bac.batch(), role(), false, new HashSet<>(Arrays.asList(GraphPermission.READ_PERM,
 					GraphPermission.READ_PUBLISHED_PERM)), Collections.emptySet());
 				folder.createGraphFieldContainer(english(), initialBranch, user()).createString("name").setString("Folder");
 				folder.publish(mockActionContext(), bac);

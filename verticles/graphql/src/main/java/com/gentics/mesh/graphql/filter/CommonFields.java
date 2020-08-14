@@ -24,7 +24,9 @@ public final class CommonFields {
 
 	/**
 	 * Filters by uuid
+	 * @deprecated Use {@link #hibUuidFilter()} instead.
 	 */
+	@Deprecated
 	public static <T extends MeshElement> FilterField<T, Map<String, ?>> uuidFilter() {
 		return new MappedFilter<>("uuid", "Filters by uuid", StringFilter.filter(), MeshElement::getUuid);
 	}

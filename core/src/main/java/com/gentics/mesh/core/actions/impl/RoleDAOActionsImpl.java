@@ -9,11 +9,11 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.DAOActionContext;
 import com.gentics.mesh.core.action.RoleDAOActions;
-import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -27,7 +27,7 @@ public class RoleDAOActionsImpl implements RoleDAOActions {
 	}
 
 	@Override
-	public Role loadByUuid(DAOActionContext ctx, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+	public HibRole loadByUuid(DAOActionContext ctx, String uuid, GraphPermission perm, boolean errorIfNotFound) {
 		RoleDaoWrapper roleDao = ctx.tx().data().roleDao();
 		if (perm == null) {
 			return roleDao.findByUuid(uuid);
@@ -37,7 +37,7 @@ public class RoleDAOActionsImpl implements RoleDAOActions {
 	}
 
 	@Override
-	public Role loadByName(DAOActionContext ctx, String name, GraphPermission perm, boolean errorIfNotFound) {
+	public HibRole loadByName(DAOActionContext ctx, String name, GraphPermission perm, boolean errorIfNotFound) {
 		RoleDaoWrapper roleDao = ctx.tx().data().roleDao();
 		if (perm == null) {
 			return roleDao.findByName(name);
@@ -47,43 +47,45 @@ public class RoleDAOActionsImpl implements RoleDAOActions {
 	}
 
 	@Override
-	public TransformablePage<? extends Role> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
+	public TransformablePage<? extends HibRole> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
 		return ctx.tx().data().roleDao().findAll(ctx.ac(), pagingInfo);
 	}
 
 	@Override
-	public Page<? extends Role> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, Predicate<Role> extraFilter) {
-		return ctx.tx().data().roleDao().findAll(ctx.ac(), pagingInfo, extraFilter);
+	public Page<? extends HibRole> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, Predicate<HibRole> extraFilter) {
+		return ctx.tx().data().roleDao().findAll(ctx.ac(), pagingInfo, role -> {
+			return extraFilter.test(role);
+		});
 	}
 
 	@Override
-	public Role create(Tx tx, InternalActionContext ac, EventQueueBatch batch, String uuid) {
+	public HibRole create(Tx tx, InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		return tx.data().roleDao().create(ac, batch, uuid);
 	}
 
 	@Override
-	public boolean update(Tx tx, Role role, InternalActionContext ac, EventQueueBatch batch) {
+	public boolean update(Tx tx, HibRole role, InternalActionContext ac, EventQueueBatch batch) {
 		return tx.data().roleDao().update(role, ac, batch);
 	}
 
 	@Override
-	public void delete(Tx tx, Role role, BulkActionContext bac) {
+	public void delete(Tx tx, HibRole role, BulkActionContext bac) {
 		tx.data().roleDao().delete(role, bac);
 	}
 
 	@Override
-	public RoleResponse transformToRestSync(Tx tx, Role element, InternalActionContext ac, int level, String... languageTags) {
-		return tx.data().roleDao().transformToRestSync(element, ac, 0);
+	public RoleResponse transformToRestSync(Tx tx, HibRole role, InternalActionContext ac, int level, String... languageTags) {
+		return tx.data().roleDao().transformToRestSync(role, ac, 0);
 	}
 
 	@Override
-	public String getAPIPath(Tx tx, InternalActionContext ac, Role role) {
-		return role.getAPIPath(ac);
+	public String getAPIPath(Tx tx, InternalActionContext ac, HibRole role) {
+		return tx.data().roleDao().getAPIPath(role, ac);
 	}
 
 	@Override
-	public String getETag(Tx tx, InternalActionContext ac, Role role) {
-		return role.getETag(ac);
+	public String getETag(Tx tx, InternalActionContext ac, HibRole role) {
+		return tx.data().roleDao().getETag(role, ac);
 	}
 
 }

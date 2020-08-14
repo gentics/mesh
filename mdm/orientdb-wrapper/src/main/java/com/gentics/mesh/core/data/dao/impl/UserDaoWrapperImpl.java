@@ -35,7 +35,6 @@ import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.NodeMigrationUser;
-import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
@@ -49,6 +48,7 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -661,7 +661,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWra
 		RoleDaoWrapper roleDao = Tx.get().data().roleDao();
 
 		// 2. Add CRUD permission to identified roles and target node
-		for (Role role : sourceNode.getRolesWithPerm(permission)) {
+		for (HibRole role : sourceNode.getRolesWithPerm(permission)) {
 			roleDao.grantPermissions(role, targetNode, toGrant);
 		}
 		return user;

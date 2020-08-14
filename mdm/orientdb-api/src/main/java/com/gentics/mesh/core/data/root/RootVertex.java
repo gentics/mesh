@@ -18,13 +18,13 @@ import com.gentics.mesh.core.data.HasPermissions;
 import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicNonTransformablePageImpl;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
@@ -360,12 +360,12 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	/**
 	 * Get the permissions of a role for this element.
 	 *
-	 * @param vertex
+	 * @param element
 	 * @param ac
 	 * @param roleUuid
 	 * @return
 	 */
-	default PermissionInfo getRolePermissions(MeshVertex vertex, InternalActionContext ac, String roleUuid) {
+	default PermissionInfo getRolePermissions(HibElement element, InternalActionContext ac, String roleUuid) {
 		// TODO implement
 		throw new RuntimeException("Not implemented");
 	}
@@ -377,7 +377,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @param perm
 	 * @return
 	 */
-	default TraversalResult<? extends Role> getRolesWithPerm(MeshVertex vertex, GraphPermission perm) {
+	default TraversalResult<? extends HibRole> getRolesWithPerm(HibElement vertex, GraphPermission perm) {
 		// TODO implement
 		throw new RuntimeException("Not implemented");
 	}

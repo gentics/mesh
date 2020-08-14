@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.dao.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toRole;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -27,10 +28,11 @@ import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
-import com.gentics.mesh.core.data.impl.RoleWrapper;
+import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
@@ -58,7 +60,8 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper implements RoleDaoWra
 	}
 
 	@Override
-	public RoleResponse transformToRestSync(Role role, InternalActionContext ac, int level, String... languageTags) {
+	public RoleResponse transformToRestSync(HibRole role, InternalActionContext ac, int level, String... languageTags) {
+		Role graphRole = toRole(role);
 		GenericParameters generic = ac.getGenericParameters();
 		FieldsSet fields = generic.getFields();
 
@@ -71,21 +74,22 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper implements RoleDaoWra
 		if (fields.has("groups")) {
 			setGroups(role, ac, restRole);
 		}
-		role.fillCommonRestFields(ac, fields, restRole);
+		graphRole.fillCommonRestFields(ac, fields, restRole);
 
-		setRolePermissions(role, ac, restRole);
+		setRolePermissions(graphRole, ac, restRole);
 		return restRole;
 
 	}
 
-	private void setGroups(Role role, InternalActionContext ac, RoleResponse restRole) {
-		for (Group group : role.getGroups()) {
+	private void setGroups(HibRole role, InternalActionContext ac, RoleResponse restRole) {
+		Role graphRole = toRole(role);
+		for (Group group : graphRole.getGroups()) {
 			restRole.getGroups().add(group.transformToReference());
 		}
 	}
 
 	@Override
-	public Set<GraphPermission> getPermissions(Role role, HibElement element) {
+	public Set<GraphPermission> getPermissions(HibRole role, HibElement element) {
 		Set<GraphPermission> permissions = new HashSet<>();
 		GraphPermission[] possiblePermissions = element.hasPublishPermissions()
 			? GraphPermission.values()
@@ -100,13 +104,13 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper implements RoleDaoWra
 	}
 
 	@Override
-	public boolean hasPermission(Role role, GraphPermission permission, HibElement vertex) {
+	public boolean hasPermission(HibRole role, GraphPermission permission, HibElement vertex) {
 		Set<String> allowedUuids = vertex.getRoleUuidsForPerm(permission);
 		return allowedUuids != null && allowedUuids.contains(role.getUuid());
 	}
 
 	@Override
-	public void grantPermissions(Role role, HibElement vertex, GraphPermission... permissions) {
+	public void grantPermissions(HibRole role, HibElement vertex, GraphPermission... permissions) {
 		for (GraphPermission permission : permissions) {
 			Set<String> allowedRoles = vertex.getRoleUuidsForPerm(permission);
 			if (allowedRoles == null) {
@@ -119,7 +123,7 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper implements RoleDaoWra
 	}
 
 	@Override
-	public void revokePermissions(Role role, HibElement vertex, GraphPermission... permissions) {
+	public void revokePermissions(HibRole role, HibElement vertex, GraphPermission... permissions) {
 		boolean permissionRevoked = false;
 		for (GraphPermission permission : permissions) {
 			Set<String> allowedRoles = vertex.getRoleUuidsForPerm(permission);
@@ -135,19 +139,19 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper implements RoleDaoWra
 	}
 
 	@Override
-	public void delete(Role role, BulkActionContext bac) {
+	public void delete(HibRole role, BulkActionContext bac) {
 		bac.add(role.onDeleted());
-		role.getVertex().remove();
+		role.removeElement();
 		bac.process();
 		permissionCache.get().clear();
 	}
 
 	@Override
-	public boolean update(Role role, InternalActionContext ac, EventQueueBatch batch) {
+	public boolean update(HibRole role, InternalActionContext ac, EventQueueBatch batch) {
 		RoleUpdateRequest requestModel = ac.fromJson(RoleUpdateRequest.class);
 		if (shouldUpdate(requestModel.getName(), role.getName())) {
 			// Check for conflict
-			Role roleWithSameName = findByName(requestModel.getName());
+			HibRole roleWithSameName = findByName(requestModel.getName());
 			if (roleWithSameName != null && !roleWithSameName.getUuid().equals(role.getUuid())) {
 				throw conflict(roleWithSameName.getUuid(), requestModel.getName(), "role_conflicting_name");
 			}
@@ -160,30 +164,37 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper implements RoleDaoWra
 	}
 
 	@Override
-	public Role findByUuid(String uuid) {
+	public HibRole findByUuid(String uuid) {
 		RoleRoot roleRoot = boot.get().roleRoot();
-		return RoleWrapper.wrap(roleRoot.findByUuid(uuid));
+		return roleRoot.findByUuid(uuid);
 	}
 
 	@Override
-	public Role findByUuidGlobal(String uuid) {
+	public HibRole findByUuidGlobal(String uuid) {
 		return findByUuid(uuid);
 	}
 
 	@Override
-	public Role findByName(String name) {
+	public HibRole findByName(String name) {
 		RoleRoot roleRoot = boot.get().roleRoot();
-		return RoleWrapper.wrap(roleRoot.findByName(name));
+		return roleRoot.findByName(name);
 	}
 
 	@Override
-	public Page<? extends Group> getGroups(Role role, HibUser user, PagingParameters pagingInfo) {
+	public Page<? extends HibGroup> getGroups(HibRole role, HibUser user, PagingParameters pagingInfo) {
+		Role graphRole = toRole(role);
 		RoleRoot roleRoot = boot.get().roleRoot();
-		return roleRoot.getGroups(role, user, pagingInfo);
+		return roleRoot.getGroups(graphRole, user, pagingInfo);
 	}
 
 	@Override
-	public Role create(String name, HibUser creator, String uuid) {
+	public TraversalResult<? extends HibGroup> getGroups(HibRole role) {
+		Role graphRole = toRole(role);
+		return graphRole.getGroups();
+	}
+
+	@Override
+	public HibRole create(String name, HibUser creator, String uuid) {
 		RoleRoot roleRoot = boot.get().roleRoot();
 
 		Role role = roleRoot.create();
@@ -196,7 +207,7 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper implements RoleDaoWra
 		return role;
 	}
 
-	public Role create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
+	public HibRole create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		RoleCreateRequest requestModel = ac.fromJson(RoleCreateRequest.class);
 		String roleName = requestModel.getName();
 		UserDaoWrapper userDao = Tx.get().data().userDao();
@@ -207,7 +218,7 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper implements RoleDaoWra
 			throw error(BAD_REQUEST, "error_name_must_be_set");
 		}
 
-		Role conflictingRole = findByName(roleName);
+		HibRole conflictingRole = findByName(roleName);
 		if (conflictingRole != null) {
 			throw conflict(conflictingRole.getUuid(), roleName, "role_conflicting_name");
 		}
@@ -217,7 +228,7 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper implements RoleDaoWra
 			throw error(FORBIDDEN, "error_missing_perm", roleRoot.getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
 
-		Role role = create(requestModel.getName(), requestUser, uuid);
+		HibRole role = create(requestModel.getName(), requestUser, uuid);
 		userDao.inheritRolePermissions(requestUser, roleRoot, role);
 		batch.add(role.onCreated());
 		return role;
@@ -225,51 +236,72 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper implements RoleDaoWra
 	}
 
 	@Override
-	public TraversalResult<? extends Role> findAll() {
+	public TraversalResult<? extends HibRole> findAll() {
 		RoleRoot roleRoot = boot.get().roleRoot();
 		return roleRoot.findAll();
 	}
 
 	@Override
-	public void addRole(Role role) {
+	public void addRole(HibRole role) {
+		Role graphRole = toRole(role);
 		RoleRoot roleRoot = boot.get().roleRoot();
-		roleRoot.addRole(role);
+		roleRoot.addRole(graphRole);
 	}
 
 	@Override
-	public void removeRole(Role role) {
+	public void removeRole(HibRole role) {
+		Role graphRole = toRole(role);
 		RoleRoot roleRoot = boot.get().roleRoot();
-		roleRoot.removeRole(role);
+		roleRoot.removeRole(graphRole);
 	}
 
 	@Override
-	public TransformablePage<? extends Role> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
+	public TransformablePage<? extends HibRole> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 		RoleRoot roleRoot = boot.get().roleRoot();
 		return roleRoot.findAll(ac, pagingInfo);
 	}
 
 	@Override
-	public Page<? extends Role> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Role> extraFilter) {
+	public Page<? extends HibRole> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Role> extraFilter) {
 		RoleRoot roleRoot = boot.get().roleRoot();
 		return roleRoot.findAll(ac, pagingInfo, extraFilter);
 	}
 
 	@Override
-	public Role loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
+	public HibRole loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
 		RoleRoot roleRoot = boot.get().roleRoot();
-		return RoleWrapper.wrap(roleRoot.loadObjectByUuid(ac, uuid, perm));
+		return roleRoot.loadObjectByUuid(ac, uuid, perm);
 	}
 
 	@Override
-	public Role loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+	public HibRole loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
 		RoleRoot roleRoot = boot.get().roleRoot();
-		return RoleWrapper.wrap(roleRoot.loadObjectByUuid(ac, uuid, perm, errorIfNotFound));
+		return roleRoot.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
 	}
 
 	@Override
 	public long computeGlobalCount() {
 		RoleRoot roleRoot = boot.get().roleRoot();
 		return roleRoot.computeCount();
+	}
+
+	@Override
+	public String getAPIPath(HibRole role, InternalActionContext ac) {
+		Role graphRole = toRole(role);
+		return graphRole.getAPIPath(ac);
+	}
+
+	@Override
+	public String getETag(HibRole role, InternalActionContext ac) {
+		Role graphRole = toRole(role);
+		return graphRole.getETag(ac);
+	}
+	
+	@Override
+	public void applyPermissions(HibElement element, EventQueueBatch batch, HibRole role, boolean recursive, Set<GraphPermission> permissionsToGrant,
+		Set<GraphPermission> permissionsToRevoke) {
+		Role graphRole = toRole(role);
+		
 	}
 
 }

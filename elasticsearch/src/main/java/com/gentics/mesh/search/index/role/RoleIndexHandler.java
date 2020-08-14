@@ -12,6 +12,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
@@ -30,7 +31,7 @@ import io.reactivex.Flowable;
  * Handler for the elasticsearch role index.
  */
 @Singleton
-public class RoleIndexHandler extends AbstractIndexHandler<Role> {
+public class RoleIndexHandler extends AbstractIndexHandler<HibRole> {
 
 	@Inject
 	RoleTransformer transformer;
@@ -97,12 +98,12 @@ public class RoleIndexHandler extends AbstractIndexHandler<Role> {
 	}
 
 	@Override
-	public Function<String, Role> elementLoader() {
+	public Function<String, HibRole> elementLoader() {
 		return (uuid) -> boot.meshRoot().getRoleRoot().findByUuid(uuid);
 	}
 
 	@Override
-	public Stream<? extends Role> loadAllElements(Tx tx) {
+	public Stream<? extends HibRole> loadAllElements(Tx tx) {
 		return tx.data().roleDao().findAll().stream();
 	}
 

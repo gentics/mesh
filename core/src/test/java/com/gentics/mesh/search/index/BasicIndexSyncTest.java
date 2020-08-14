@@ -157,7 +157,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 		// Assert deletion
 		tx(() -> {
-			boot().roleDao().findByName("role_3").getElement().remove();
+			boot().roleDao().findByName("role_3").removeElement();
 		});
 		syncIndex();
 		assertMetrics("role", 0, 0, 1);

@@ -11,12 +11,12 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.GroupDAOActions;
-import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
@@ -50,10 +50,10 @@ public class GroupCrudHandler extends AbstractCrudHandler<HibGroup, GroupRespons
 	 */
 	public void handleGroupRolesList(InternalActionContext ac, String groupUuid) {
 		utils.syncTx(ac, tx -> {
-			GroupDaoWrapper groupRoot = tx.data().groupDao();
-			HibGroup group = tx.data().groupDao().loadObjectByUuid(ac, groupUuid, READ_PERM);
+			GroupDaoWrapper groupDao = tx.data().groupDao();
+			HibGroup group = groupDao.loadObjectByUuid(ac, groupUuid, READ_PERM);
 			PagingParametersImpl pagingInfo = new PagingParametersImpl(ac);
-			TransformablePage<? extends Role> rolePage = groupRoot.getRoles(group, ac.getUser(), pagingInfo);
+			TransformablePage<? extends HibRole> rolePage = groupDao.getRoles(group, ac.getUser(), pagingInfo);
 			return rolePage.transformToRestSync(ac, 0);
 		}, model -> ac.send(model, OK));
 	}
@@ -75,7 +75,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<HibGroup, GroupRespons
 				RoleDaoWrapper roleDao = tx.data().roleDao();
 
 				HibGroup group = groupDao.loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
-				Role role = roleDao.loadObjectByUuid(ac, roleUuid, READ_PERM);
+				HibRole role = roleDao.loadObjectByUuid(ac, roleUuid, READ_PERM);
 				// Handle idempotency
 				if (groupDao.hasRole(group, role)) {
 					if (log.isDebugEnabled()) {
@@ -114,7 +114,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<HibGroup, GroupRespons
 				RoleDaoWrapper roleDao = tx.data().roleDao();
 
 				HibGroup group = groupDao.loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
-				Role role = roleDao.loadObjectByUuid(ac, roleUuid, READ_PERM);
+				HibRole role = roleDao.loadObjectByUuid(ac, roleUuid, READ_PERM);
 
 				// No need to update the group if it is not assigned
 				if (!groupDao.hasRole(group, role)) {

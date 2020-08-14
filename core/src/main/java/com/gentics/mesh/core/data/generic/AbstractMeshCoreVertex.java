@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
@@ -57,7 +58,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	}
 
 	@Override
-	public TraversalResult<? extends Role> getRolesWithPerm(GraphPermission perm) {
+	public TraversalResult<? extends HibRole> getRolesWithPerm(GraphPermission perm) {
 		return mesh().permissionProperties().getRolesWithPerm(this, perm);
 	}
 

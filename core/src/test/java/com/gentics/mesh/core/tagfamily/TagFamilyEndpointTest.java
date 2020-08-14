@@ -41,7 +41,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.branch.HibBranch;
@@ -50,6 +49,7 @@ import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
@@ -108,7 +108,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			TagFamilyDaoWrapper tagFamilyDao = tx.data().tagFamilyDao();
-			Role role = role();
+			HibRole role = role();
 			HibTagFamily tagFamily = tagFamilyDao.findAll(project()).iterator().next();
 			uuid = tagFamily.getUuid();
 			assertNotNull(tagFamily);
@@ -373,7 +373,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		HibTagFamily basicTagFamily = tagFamily("basic");
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
-			Role role = role();
+			HibRole role = role();
 			roleDao.revokePermissions(role, basicTagFamily, DELETE_PERM);
 			tx.success();
 		}

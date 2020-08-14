@@ -4,11 +4,11 @@ import java.util.function.Predicate;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.event.group.GroupRoleAssignModel;
@@ -79,7 +79,7 @@ public interface GroupDaoWrapper extends GroupDao, DaoWrapper<HibGroup>, DaoTran
 	 * @param assignment
 	 * @return
 	 */
-	GroupRoleAssignModel createRoleAssignmentEvent(HibGroup group, Role role, Assignment assignment);
+	GroupRoleAssignModel createRoleAssignmentEvent(HibGroup group, HibRole role, Assignment assignment);
 
 	/**
 	 * Add the group to the aggregation vertex.
@@ -119,7 +119,7 @@ public interface GroupDaoWrapper extends GroupDao, DaoWrapper<HibGroup>, DaoTran
 	 * @param group
 	 * @param role
 	 */
-	void addRole(HibGroup group, Role role);
+	void addRole(HibGroup group, HibRole role);
 
 	/**
 	 * Unassign the role from this group.
@@ -127,7 +127,7 @@ public interface GroupDaoWrapper extends GroupDao, DaoWrapper<HibGroup>, DaoTran
 	 * @param group
 	 * @param role
 	 */
-	void removeRole(HibGroup group, Role role);
+	void removeRole(HibGroup group, HibRole role);
 
 	/**
 	 * Return a traversal of users that are assigned to the group.
@@ -143,7 +143,7 @@ public interface GroupDaoWrapper extends GroupDao, DaoWrapper<HibGroup>, DaoTran
 	 * @param group
 	 * @return Traversal of roles
 	 */
-	TraversalResult<? extends Role> getRoles(HibGroup group);
+	TraversalResult<? extends HibRole> getRoles(HibGroup group);
 
 	/**
 	 * Check whether the user has been assigned to the group.
@@ -161,7 +161,7 @@ public interface GroupDaoWrapper extends GroupDao, DaoWrapper<HibGroup>, DaoTran
 	 * @param role
 	 * @return
 	 */
-	boolean hasRole(HibGroup group, Role role);
+	boolean hasRole(HibGroup group, HibRole role);
 
 	/**
 	 * Return a page with all visible roles that the given user can see.
@@ -173,7 +173,7 @@ public interface GroupDaoWrapper extends GroupDao, DaoWrapper<HibGroup>, DaoTran
 	 *            Paging information
 	 * @return Page which contains the retrieved items
 	 */
-	TransformablePage<? extends Role> getRoles(HibGroup group, HibUser user, PagingParameters pagingInfo);
+	TransformablePage<? extends HibRole> getRoles(HibGroup group, HibUser user, PagingParameters pagingInfo);
 
 	/**
 	 * Return a page with all users that the given user can see.

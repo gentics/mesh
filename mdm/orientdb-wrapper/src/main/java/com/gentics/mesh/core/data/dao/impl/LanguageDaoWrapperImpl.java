@@ -23,6 +23,7 @@ import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -76,7 +77,7 @@ public class LanguageDaoWrapperImpl extends AbstractDaoWrapper implements Langua
 		return boot.get().languageRoot().create(languageName, languageTag, uuid);
 	}
 
-	public TraversalResult<? extends Role> getRolesWithPerm(GraphPermission perm) {
+	public TraversalResult<? extends HibRole> getRolesWithPerm(GraphPermission perm) {
 		return boot.get().languageRoot().getRolesWithPerm(perm);
 	}
 
@@ -397,7 +398,7 @@ public class LanguageDaoWrapperImpl extends AbstractDaoWrapper implements Langua
 		return boot.get().languageRoot().getRolePermissions(vertex, ac, roleUuid);
 	}
 
-	public TraversalResult<? extends Role> getRolesWithPerm(MeshVertex vertex, GraphPermission perm) {
+	public TraversalResult<? extends HibRole> getRolesWithPerm(MeshVertex vertex, GraphPermission perm) {
 		return boot.get().languageRoot().getRolesWithPerm(vertex, perm);
 	}
 

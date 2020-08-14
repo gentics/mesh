@@ -5,6 +5,8 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNE
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGroup;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toRole;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toUser;
 import static com.gentics.mesh.core.rest.MeshEvent.GROUP_ROLE_ASSIGNED;
 import static com.gentics.mesh.core.rest.MeshEvent.GROUP_ROLE_UNASSIGNED;
 import static com.gentics.mesh.core.rest.MeshEvent.GROUP_USER_ASSIGNED;
@@ -39,6 +41,7 @@ import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
@@ -154,21 +157,23 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper implements GroupDaoW
 	}
 
 	@Override
-	public void addRole(HibGroup group, Role role) {
+	public void addRole(HibGroup group, HibRole role) {
 		Group graphGroup = toGroup(group);
-		graphGroup.setUniqueLinkInTo(role, HAS_ROLE);
+		Role graphRole = toRole(role);
+		graphGroup.setUniqueLinkInTo(graphRole, HAS_ROLE);
 
 		// Add shortcut edges from role to users of this group
 		for (HibUser user : getUsers(group)) {
-			((User) user).setUniqueLinkOutTo(role, ASSIGNED_TO_ROLE);
+			toUser(user).setUniqueLinkOutTo(graphRole, ASSIGNED_TO_ROLE);
 		}
 
 	}
 
 	@Override
-	public void removeRole(HibGroup group, Role role) {
+	public void removeRole(HibGroup group, HibRole role) {
+		Role graphRole = toRole(role);
 		Group graphGroup = toGroup(group);
-		graphGroup.unlinkIn(role, HAS_ROLE);
+		graphGroup.unlinkIn(graphRole, HAS_ROLE);
 
 		// Update the shortcut edges since the role does no longer belong to the group
 		for (HibUser user : getUsers(group)) {
@@ -178,9 +183,10 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper implements GroupDaoW
 	}
 
 	@Override
-	public boolean hasRole(HibGroup group, Role role) {
+	public boolean hasRole(HibGroup group, HibRole role) {
+		Role graphRole = toRole(role);
 		Group graphGroup = toGroup(group);
-		return graphGroup.in(HAS_ROLE).retain(role).hasNext();
+		return graphGroup.in(HAS_ROLE).retain(graphRole).hasNext();
 	}
 
 	@Override
@@ -204,7 +210,7 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper implements GroupDaoW
 	}
 
 	@Override
-	public GroupRoleAssignModel createRoleAssignmentEvent(HibGroup group, Role role, Assignment assignment) {
+	public GroupRoleAssignModel createRoleAssignmentEvent(HibGroup group, HibRole role, Assignment assignment) {
 		GroupRoleAssignModel model = new GroupRoleAssignModel();
 		model.setGroup(group.transformToReference());
 		model.setRole(role.transformToReference());
@@ -383,7 +389,8 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper implements GroupDaoW
 	@Override
 	public String getETag(HibGroup group, InternalActionContext ac) {
 		Group graphGroup = toGroup(group);
-		return boot.get().groupRoot().getETag(graphGroup, ac);
+		return graphGroup.getETag(ac);
+		//return boot.get().groupRoot().getETag(graphGroup, ac);
 	}
 
 }

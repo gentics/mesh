@@ -15,6 +15,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.SchemaChange;
@@ -92,7 +93,7 @@ public class MicroschemaVersionWrapper implements MicroschemaVersion, HibMicrosc
 		return delegate.getAPIPath(ac);
 	}
 
-	public TraversalResult<? extends Role> getRolesWithPerm(GraphPermission perm) {
+	public TraversalResult<? extends HibRole> getRolesWithPerm(GraphPermission perm) {
 		return delegate.getRolesWithPerm(perm);
 	}
 

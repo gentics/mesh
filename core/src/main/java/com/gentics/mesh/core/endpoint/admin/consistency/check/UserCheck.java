@@ -13,6 +13,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.impl.UserImpl;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.impl.UserRootImpl;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.consistency.AbstractConsistencyCheck;
@@ -60,10 +61,10 @@ public class UserCheck extends AbstractConsistencyCheck {
 	private void assertShortcutRoleEdges(User user, ConsistencyCheckResult result) {
 		GroupDaoWrapper groupDao = Tx.get().data().groupDao();
 		String uuid = user.getUuid();
-		Set<Role> roles = user.getGroups().stream()
+		Set<HibRole> roles = user.getGroups().stream()
 			.flatMap(g -> groupDao.getRoles(g).stream())
 			.collect(Collectors.toSet());
-		Set<Role> shortCutRoles = new HashSet<>();
+		Set<HibRole> shortCutRoles = new HashSet<>();
 
 		for (Role role : user.getRolesViaShortcut()) {
 			shortCutRoles.add(role);
@@ -73,11 +74,11 @@ public class UserCheck extends AbstractConsistencyCheck {
 			+ "groups/roles. Missing shortcut role {%s}";
 		String extraShortcutMsg = "Found shortcut role edge for role {%s} which should not exist for the user.";
 
-		for (Role role : Sets.difference(roles, shortCutRoles)) {
+		for (HibRole role : Sets.difference(roles, shortCutRoles)) {
 			result.addInconsistency(String.format(missingShortcutMsg, role.getUuid()), uuid, HIGH);
 		}
 
-		for (Role role : Sets.difference(shortCutRoles, roles)) {
+		for (HibRole role : Sets.difference(shortCutRoles, roles)) {
 			result.addInconsistency(String.format(extraShortcutMsg, role.getUuid()), uuid, HIGH);
 		}
 	}

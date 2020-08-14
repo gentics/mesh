@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
@@ -95,7 +96,7 @@ public class SchemaVersionWrapper implements SchemaVersion, HibSchemaVersion {
 		return delegate.getAPIPath(ac);
 	}
 
-	public TraversalResult<? extends Role> getRolesWithPerm(GraphPermission perm) {
+	public TraversalResult<? extends HibRole> getRolesWithPerm(GraphPermission perm) {
 		return delegate.getRolesWithPerm(perm);
 	}
 

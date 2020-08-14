@@ -25,6 +25,7 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -74,7 +75,7 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper implements JobDaoWrapp
 		boot.get().jobRoot().setUniqueLinkOutTo(vertex, labels);
 	}
 
-	public TraversalResult<? extends Role> getRolesWithPerm(GraphPermission perm) {
+	public TraversalResult<? extends HibRole> getRolesWithPerm(GraphPermission perm) {
 		return boot.get().jobRoot().getRolesWithPerm(perm);
 	}
 

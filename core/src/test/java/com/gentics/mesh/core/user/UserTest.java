@@ -25,7 +25,6 @@ import org.junit.Test;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
@@ -34,6 +33,7 @@ import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -317,12 +317,12 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			Node targetNode = folder("2015");
 			HibUser newUser;
 
-			Role roleWithDeletePerm;
-			Role roleWithReadPerm;
-			Role roleWithUpdatePerm;
-			Role roleWithAllPerm;
-			Role roleWithNoPerm;
-			Role roleWithCreatePerm;
+			HibRole roleWithDeletePerm;
+			HibRole roleWithReadPerm;
+			HibRole roleWithUpdatePerm;
+			HibRole roleWithAllPerm;
+			HibRole roleWithNoPerm;
+			HibRole roleWithCreatePerm;
 
 			InternalActionContext ac = mockActionContext();
 

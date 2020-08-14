@@ -61,6 +61,7 @@ import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
@@ -195,7 +196,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	// TODO: Changing the role name or deleting the role would cause code that utilizes this field to break.
 	// This is however a rare case.
-	private Role anonymousRole;
+	private HibRole anonymousRole;
 
 	private MeshImpl mesh;
 
@@ -776,7 +777,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	 * @return
 	 */
 	@Override
-	public Role anonymousRole() {
+	public HibRole anonymousRole() {
 		if (anonymousRole == null) {
 			synchronized (BootstrapInitializer.class) {
 				// Load the role if it has not been yet loaded
@@ -1051,7 +1052,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				log.debug("Created admin group {" + adminGroup.getUuid() + "}");
 			}
 
-			Role adminRole = roleRoot.findByName("admin");
+			HibRole adminRole = roleRoot.findByName("admin");
 			if (adminRole == null) {
 				adminRole = roleDao.create("admin", adminUser);
 				groupDao.addRole(adminGroup, adminRole);
