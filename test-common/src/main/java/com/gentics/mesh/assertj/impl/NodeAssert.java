@@ -51,7 +51,8 @@ public class NodeAssert extends AbstractAssert<NodeAssert, Node> {
 	 * @return fluent API
 	 */
 	public NodeAssert hasTranslation(String languageTag) {
-		assertThat(actual.getAvailableLanguageNames()).as(descriptionText() + " languages").contains(languageTag);
+		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+		assertThat(nodeDao.getAvailableLanguageNames(actual)).as(descriptionText() + " languages").contains(languageTag);
 		return this;
 	}
 
@@ -63,7 +64,8 @@ public class NodeAssert extends AbstractAssert<NodeAssert, Node> {
 	 * @return fluent API
 	 */
 	public NodeAssert doesNotHaveTranslation(String languageTag) {
-		assertThat(actual.getAvailableLanguageNames()).as(descriptionText() + " languages").doesNotContain(languageTag);
+		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+		assertThat(nodeDao.getAvailableLanguageNames(actual)).as(descriptionText() + " languages").doesNotContain(languageTag);
 		return this;
 	}
 
@@ -127,7 +129,7 @@ public class NodeAssert extends AbstractAssert<NodeAssert, Node> {
 	 */
 	public NodeAssert hasNotChildren(HibBranch branch, Node... nodes) {
 		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
-		assertThat((Iterable<Node>)nodeDao.getChildren(actual, branch.getUuid()))
+		assertThat(nodeDao.getChildren(actual, branch.getUuid()))
 			.as(descriptionText() + " children")
 			.usingElementComparatorOnFields("uuid")
 			.doesNotContain(nodes);

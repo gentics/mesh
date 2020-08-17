@@ -32,6 +32,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
@@ -246,6 +247,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		MeshAuthUser requestUser = ac.getUser();
 		BootstrapInitializer boot = mesh().boot();
 		UserDaoWrapper userRoot = boot.userDao();
+		NodeDaoWrapper nodeDao = boot.nodeDao();
 
 		NodeCreateRequest requestModel = ac.fromJson(NodeCreateRequest.class);
 		if (requestModel.getParentNode() == null || isEmpty(requestModel.getParentNode().getUuid())) {
@@ -261,7 +263,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		HibBranch branch = ac.getBranch();
 		// BUG: Don't use the latest version. Use the version which is linked to the
 		// branch!
-		Node node = parentNode.create(requestUser, schemaVersion, project, branch, uuid);
+		Node node = nodeDao.create(parentNode, requestUser, schemaVersion, project, branch, uuid);
 
 		// Add initial permissions to the created node
 		userRoot.inheritRolePermissions(requestUser, parentNode, node);

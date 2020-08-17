@@ -630,11 +630,12 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testReadMultipleAndAssertOrder() {
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			Node parentNode = folder("2015");
 			int nNodes = 20;
 			for (int i = 0; i < nNodes; i++) {
-				Node node = parentNode.create(user(), schemaContainer("content").getLatestVersion(), project());
+				Node node = nodeDao.create(parentNode, user(), schemaContainer("content").getLatestVersion(), project());
 				node.createGraphFieldContainer(english(), initialBranch(), user());
 				assertNotNull(node);
 				roleDao.grantPermissions(role(), node, READ_PERM);
@@ -683,9 +684,10 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Override
 	public void testReadMultiple() throws Exception {
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			Node parentNode = folder("2015");
 			// Don't grant permissions to the no perm node. We want to make sure that this one will not be listed.
-			Node noPermNode = parentNode.create(user(), schemaContainer("content").getLatestVersion(), project());
+			Node noPermNode = nodeDao.create(parentNode, user(), schemaContainer("content").getLatestVersion(), project());
 			String noPermNodeUUID = noPermNode.getUuid();
 
 			// Create 20 drafts
@@ -1548,12 +1550,13 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testReadNodeByUUIDNoLanguage() throws Exception {
 		Node node;
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			// Create node with nl language
 			Node parentNode = folder("products");
 			Language languageNl = meshRoot().getLanguageRoot().findByLanguageTag("nl");
 			SchemaVersion version = schemaContainer("content").getLatestVersion();
-			node = parentNode.create(user(), version, project());
+			node = nodeDao.create(parentNode, user(), version, project());
 			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(languageNl.getLanguageTag(),
 				node.getProject().getLatestBranch(), user());
 			englishContainer.createString("teaser").setString("name");

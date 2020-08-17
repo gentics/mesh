@@ -15,6 +15,7 @@ import org.junit.Test;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.db.Tx;
@@ -271,18 +272,19 @@ public class LinkRendererTest extends AbstractMeshTest {
 	@Test
 	public void testNodeReplace() throws IOException, InterruptedException, ExecutionException {
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			String german = german();
 			String english = english();
 			Node parentNode = folder("2015");
 
 			SchemaVersion schemaVersion = schemaContainer("content").getLatestVersion();
 			// Create some dummy content
-			Node content = parentNode.create(user(), schemaVersion, project());
+			Node content = nodeDao.create(parentNode, user(), schemaVersion, project());
 			NodeGraphFieldContainer germanContainer = content.createGraphFieldContainer(german, content.getProject().getLatestBranch(), user());
 			germanContainer.createString("displayName").setString("german name");
 			germanContainer.createString("name").setString("german.html");
 
-			Node content2 = parentNode.create(user(), schemaContainer("content").getLatestVersion(), project());
+			Node content2 = nodeDao.create(parentNode, user(), schemaContainer("content").getLatestVersion(), project());
 			NodeGraphFieldContainer englishContainer = content2.createGraphFieldContainer(english, content2.getProject().getLatestBranch(), user());
 			englishContainer.createString("displayName").setString("content 2 english");
 			englishContainer.createString("name").setString("english.html");

@@ -85,7 +85,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			Node newsNode = content("news overview");
 			assertNotNull(newsNode);
 			Node newSubNode;
-			newSubNode = newsNode.create(user(), getSchemaContainer().getLatestVersion(), project());
+			newSubNode = nodeDao.create(newsNode, user(), getSchemaContainer().getLatestVersion(), project());
 
 			assertEquals(1, size(nodeDao.getChildren(newsNode)));
 			Node firstChild = nodeDao.getChildren(newsNode).iterator().next();
@@ -131,6 +131,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testMeshNodeFields() throws IOException {
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			Node newsNode = content("news overview");
 			String german = german();
 			InternalActionContext ac = mockActionContext("lang=de,en&version=draft");
@@ -138,7 +139,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			NodeGraphFieldContainer germanFields = newsNode.getLatestDraftFieldContainer(german);
 			String expectedDisplayName = germanFields.getString(newsNode.getSchemaContainer().getLatestVersion().getSchema().getDisplayField())
 				.getString();
-			assertEquals("The display name value did not match up", expectedDisplayName, newsNode.getDisplayName(ac));
+			assertEquals("The display name value did not match up", expectedDisplayName, nodeDao.getDisplayName(newsNode, ac));
 			// TODO add some fields
 		}
 	}
@@ -213,8 +214,9 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testCreateDelete() {
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			Node folder = folder("2015");
-			Node subNode = folder.create(user(), getSchemaContainer().getLatestVersion(), project());
+			Node subNode = nodeDao.create(folder, user(), getSchemaContainer().getLatestVersion(), project());
 			assertNotNull(subNode.getUuid());
 			BulkActionContext context = createBulkContext();
 			InternalActionContext ac = mockActionContext("");
@@ -226,8 +228,9 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testCRUDPermissions() {
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			UserDaoWrapper userDao = tx.data().userDao();
-			Node node = folder("2015").create(user(), getSchemaContainer().getLatestVersion(), project());
+			Node node = nodeDao.create(folder("2015"), user(), getSchemaContainer().getLatestVersion(), project());
 			InternalActionContext ac = mockActionContext("");
 			assertFalse(userDao.hasPermission(user(), node, InternalPermission.CREATE_PERM));
 			userDao.inheritRolePermissions(user(), folder("2015"), node);
@@ -252,10 +255,11 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testCreate() {
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			HibUser user = user();
 			Node parentNode = folder("2015");
 			SchemaVersion schemaVersion = schemaContainer("content").getLatestVersion();
-			Node node = parentNode.create(user, schemaVersion, project());
+			Node node = nodeDao.create(parentNode, user, schemaVersion, project());
 			long ts = System.currentTimeMillis();
 			node.setCreationTimestamp(ts);
 			Long creationTimeStamp = node.getCreationTimestamp();
@@ -362,18 +366,19 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testDeleteWithChildren() {
 		BulkActionContext bac = createBulkContext();
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			HibProject project = project();
 			HibBranch initialBranch = project.getInitialBranch();
 			SchemaVersion folderSchema = schemaContainer("folder").getLatestVersion();
 
 			// 1. create folder with subfolder and subsubfolder
-			Node folder = project.getBaseNode().create(user(), folderSchema, project);
+			Node folder = nodeDao.create(project.getBaseNode(), user(), folderSchema, project);
 			folder.createGraphFieldContainer(english(), initialBranch, user()).createString("name").setString("Folder");
 			String folderUuid = folder.getUuid();
-			Node subFolder = folder.create(user(), folderSchema, project);
+			Node subFolder = nodeDao.create(folder, user(), folderSchema, project);
 			subFolder.createGraphFieldContainer(english(), initialBranch, user()).createString("name").setString("SubFolder");
 			String subFolderUuid = subFolder.getUuid();
-			Node subSubFolder = subFolder.create(user(), folderSchema, project);
+			Node subSubFolder = nodeDao.create(subFolder, user(), folderSchema, project);
 			subSubFolder.createGraphFieldContainer(english(), initialBranch, user()).createString("name").setString("SubSubFolder");
 			String subSubFolderUuid = subSubFolder.getUuid();
 
@@ -398,16 +403,17 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 		HibProject project = project();
 
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			BulkActionContext bac = createBulkContext();
 			SchemaVersion folderSchema = schemaContainer("folder").getLatestVersion();
 
 			// 1. create folder with subfolder and subsubfolder
-			Node folder = project.getBaseNode().create(user(), folderSchema, project);
+			Node folder = nodeDao.create(project.getBaseNode(), user(), folderSchema, project);
 			folder.createGraphFieldContainer(english(), initialBranch, user()).createString("name").setString("Folder");
-			Node subFolder = folder.create(user(), folderSchema, project);
+			Node subFolder = nodeDao.create(folder, user(), folderSchema, project);
 			subFolder.createGraphFieldContainer(english(), initialBranch, user()).createString("name").setString("SubFolder");
 			String subFolderUuid = subFolder.getUuid();
-			Node subSubFolder = subFolder.create(user(), folderSchema, project);
+			Node subSubFolder = nodeDao.create(subFolder, user(), folderSchema, project);
 			subSubFolder.createGraphFieldContainer(english(), initialBranch, user()).createString("name").setString("SubSubFolder");
 			String subSubFolderUuid = subSubFolder.getUuid();
 
@@ -427,8 +433,8 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			EventQueueBatch batch = createBatch();
 			// 5. reverse folders in new branch
-			subSubFolder.moveTo(mockActionContext(), folder, batch);
-			subFolder.moveTo(mockActionContext(), subSubFolder, batch);
+			nodeDao.moveTo(subSubFolder, mockActionContext(), folder, batch);
+			nodeDao.moveTo(subFolder, mockActionContext(), subSubFolder, batch);
 
 			// 6. assert for new branch
 			assertThat(folder).as("folder").hasChildren(newBranch, subSubFolder);
@@ -471,13 +477,14 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			// 1. create folder and publish
 			String folderUuid = tx(tx2 -> {
+				NodeDaoWrapper nodeDao = tx2.data().nodeDao();
 				RoleDaoWrapper roleDao = tx2.data().roleDao();
-				Node folder = project.getBaseNode().create(user(), folderSchema, project);
+				Node folder = nodeDao.create(project.getBaseNode(), user(), folderSchema, project);
 				BulkActionContext bac2 = createBulkContext();
 				roleDao.applyPermissions(folder, bac.batch(), role(), false, new HashSet<>(Arrays.asList(InternalPermission.READ_PERM,
 					InternalPermission.READ_PUBLISHED_PERM)), Collections.emptySet());
 				folder.createGraphFieldContainer(english(), initialBranch, user()).createString("name").setString("Folder");
-				folder.publish(mockActionContext(), bac2);
+				nodeDao.publish(folder, mockActionContext(), bac2);
 				assertEquals(1, bac2.batch().size());
 				return folder.getUuid();
 			});
@@ -524,13 +531,14 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			// 1. create folder and publish
 			String folderUuid = tx(tx2 -> {
-				Node folder = project.getBaseNode().create(user(), folderSchema, project);
+				NodeDaoWrapper nodeDao = tx2.data().nodeDao();
+				Node folder = nodeDao.create(project.getBaseNode(), user(), folderSchema, project);
 				BulkActionContext bac = createBulkContext();
 				RoleDaoWrapper roleDao = tx.data().roleDao();
 				roleDao.applyPermissions(folder, bac.batch(), role(), false, new HashSet<>(Arrays.asList(InternalPermission.READ_PERM,
 					InternalPermission.READ_PUBLISHED_PERM)), Collections.emptySet());
 				folder.createGraphFieldContainer(english(), initialBranch, user()).createString("name").setString("Folder");
-				folder.publish(mockActionContext(), bac);
+				nodeDao.publish(folder, mockActionContext(), bac);
 				return folder.getUuid();
 			});
 

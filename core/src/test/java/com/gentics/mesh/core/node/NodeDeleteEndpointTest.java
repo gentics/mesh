@@ -280,10 +280,11 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 		Node node = content("concorde");
 		String uuid = tx(() -> node.getUuid());
 
-		HibBranch newBranch = tx(() -> {
+		HibBranch newBranch = tx(tx -> {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			// Publish the node
 			BulkActionContext bac = createBulkContext();
-			node.publish(mockActionContext(), bac);
+			nodeDao.publish(node, mockActionContext(), bac);
 
 			// Create new branch
 			HibBranch b = createBranch("newbranch");

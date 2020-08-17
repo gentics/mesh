@@ -34,6 +34,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
@@ -534,14 +535,15 @@ public class TestDataProvider {
 	}
 
 	public Node addFolder(Node rootNode, String englishName, String germanName, String uuid) {
+		NodeDaoWrapper nodeDao = boot.nodeDao();
 		InternalActionContext ac = new NodeMigrationActionContextImpl();
 		SchemaVersion schemaVersion = schemaContainers.get("folder").getLatestVersion();
 		HibBranch branch = project.getLatestBranch();
 		Node folderNode;
 		if (uuid == null) {
-			folderNode = rootNode.create(userInfo.getUser(), schemaVersion, project);
+			folderNode = nodeDao.create(rootNode, userInfo.getUser(), schemaVersion, project);
 		} else {
-			folderNode = rootNode.create(userInfo.getUser(), schemaVersion, project, branch, uuid);
+			folderNode = nodeDao.create(rootNode, userInfo.getUser(), schemaVersion, project, branch, uuid);
 		}
 		if (germanName != null) {
 			NodeGraphFieldContainer germanContainer = folderNode.createGraphFieldContainer(german, branch, userInfo.getUser());
@@ -592,13 +594,14 @@ public class TestDataProvider {
 	}
 
 	private Node addContent(Node parentNode, String name, String englishContent, String germanContent, String uuid) {
+		NodeDaoWrapper nodeDao = boot.nodeDao();
 		InternalActionContext ac = new NodeMigrationActionContextImpl();
 		HibBranch branch = project.getLatestBranch();
 		Node node;
 		if (uuid == null) {
-			node = parentNode.create(userInfo.getUser(), schemaContainers.get("content").getLatestVersion(), project);
+			node = nodeDao.create(parentNode, userInfo.getUser(), schemaContainers.get("content").getLatestVersion(), project);
 		} else {
-			node = parentNode.create(userInfo.getUser(), schemaContainers.get("content").getLatestVersion(), project, branch, uuid);
+			node = nodeDao.create(parentNode, userInfo.getUser(), schemaContainers.get("content").getLatestVersion(), project, branch, uuid);
 		}
 		if (englishContent != null) {
 			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, branch, userInfo.getUser());

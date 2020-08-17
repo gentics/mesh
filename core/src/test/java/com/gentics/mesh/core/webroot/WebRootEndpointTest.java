@@ -26,6 +26,7 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -136,6 +137,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 	public void testReadContentWithNodeRefByPath() throws Exception {
 
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			Node parentNode = folder("2015");
 			// Update content schema and add node field
@@ -147,7 +149,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 			// Create content which is only german
 			Schema contentSchema = schemaContainer("content");
-			Node node = parentNode.create(user(), contentSchema.getLatestVersion(), project());
+			Node node = nodeDao.create(parentNode, user(), contentSchema.getLatestVersion(), project());
 
 			// Grant permissions to the node otherwise it will not be able to be loaded
 			roleDao.grantPermissions(role(), node, InternalPermission.values());
@@ -423,9 +425,10 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 		// 2. Publish nodes
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			BulkActionContext bac = createBulkContext();
-			folder("news").publish(mockActionContext(), bac);
-			folder("2015").publish(mockActionContext(), bac);
+			nodeDao.publish(folder("news"), mockActionContext(), bac);
+			nodeDao.publish(folder("2015"), mockActionContext(), bac);
 			tx.success();
 		}
 
@@ -467,10 +470,11 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		String draftPath = "/News_draft/2015_draft";
 
 		// 1. Publish nodes
-		tx(() -> {
+		tx(tx -> {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			BulkActionContext bac = createBulkContext();
-			folder("news").publish(mockActionContext(), bac);
-			folder("2015").publish(mockActionContext(), bac);
+			nodeDao.publish(folder("news"), mockActionContext(), bac);
+			nodeDao.publish(folder("2015"), mockActionContext(), bac);
 		});
 
 		// 2. Change names
@@ -486,7 +490,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		});
 
 		// 4. Assert published path in draft
-		tx(() -> {
+		tx(tx -> {
 			call(() -> client().webroot(PROJECT_NAME, publishedPath, new VersioningParametersImpl().draft()), NOT_FOUND, "node_not_found_for_path",
 				publishedPath);
 		});

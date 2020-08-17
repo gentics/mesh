@@ -58,8 +58,8 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 			// publish the node and its parent
 			InternalActionContext ac = mockActionContext();
 			BulkActionContext bac = createBulkContext();
-			nodeDao.getParentNode(content("concorde"), project().getLatestBranch().getUuid()).publish(ac, bac);
-			content("concorde").publish(ac, bac);
+			nodeDao.publish(nodeDao.getParentNode(content("concorde"), project().getLatestBranch().getUuid()), ac, bac);
+			nodeDao.publish(content("concorde"), ac, bac);
 
 			nodeList = call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid()));
 			NodeResponse concorde = new NodeResponse();

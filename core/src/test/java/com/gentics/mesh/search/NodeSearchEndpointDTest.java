@@ -168,7 +168,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 			SchemaVersion schemaVersion = concorde.getSchemaContainer().getLatestVersion();
 
 			for (int i = 0; i < numAdditionalNodes; i++) {
-				Node node = parentNode.create(user, schemaVersion, project);
+				Node node = nodeDao.create(parentNode, user, schemaVersion, project);
 				NodeGraphFieldContainer fieldContainer = node.createGraphFieldContainer(english, node.getProject().getLatestBranch(), user);
 				fieldContainer.createString("name").setString("Name_" + i);
 				MicronodeGraphField vcardField = fieldContainer.createMicronode("vcard", microschemaContainers().get("vcard").getLatestVersion());

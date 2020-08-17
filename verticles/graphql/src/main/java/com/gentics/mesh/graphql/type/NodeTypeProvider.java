@@ -242,12 +242,13 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			// .availableLanguages
 			newFieldDefinition().name("availableLanguages").description("List all available languages for the node").type(new GraphQLList(
 				GraphQLString)).dataFetcher(env -> {
+					NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
 					NodeContent content = env.getSource();
 					if (content == null) {
 						return null;
 					}
 					// TODO handle branch!
-					return content.getNode().getAvailableLanguageNames();
+					return nodeDao.getAvailableLanguageNames(content.getNode());
 				}).build(),
 
 			// .languages

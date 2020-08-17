@@ -22,6 +22,7 @@ import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
@@ -124,6 +125,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testNodeTagging() throws Exception {
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			TagDaoWrapper tagDao = tx.data().tagDao();
 			// 1. Create the tag
 			HibTagFamily root = tagFamily("basic");
@@ -136,7 +138,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 2. Create the node
 			final String GERMAN_TEST_FILENAME = "german.html";
 			Node parentNode = folder("2015");
-			Node node = parentNode.create(user(), getSchemaContainer().getLatestVersion(), project);
+			Node node = nodeDao.create(parentNode, user(), getSchemaContainer().getLatestVersion(), project);
 			String german = "de";
 			NodeGraphFieldContainer germanContainer = node.createGraphFieldContainer(german, branch, user());
 
@@ -168,6 +170,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testNodeTaggingInBranch() throws Exception {
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			TagDaoWrapper tagDao = tx.data().tagDao();
 			// 1. Create the tag
 			HibTagFamily root = tagFamily("basic");
@@ -188,7 +191,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			branchMigrationHandler.migrateBranch(context).blockingAwait();
 
 			// 4. Create and Tag a node
-			Node node = folder("2015").create(user(), getSchemaContainer().getLatestVersion(), project);
+			Node node = nodeDao.create(folder("2015"), user(), getSchemaContainer().getLatestVersion(), project);
 			tagDao.addTag(node, tag, initialBranch);
 
 			// 5. Assert

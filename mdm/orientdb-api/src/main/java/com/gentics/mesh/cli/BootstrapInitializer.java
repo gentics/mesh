@@ -11,6 +11,7 @@ import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.JobDaoWrapper;
 import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
@@ -151,6 +152,8 @@ public interface BootstrapInitializer {
 
 	SchemaDaoWrapper schemaDao();
 
+	NodeDaoWrapper nodeDao();
+
 	/**
 	 * Return the mesh root element. All other mesh graph elements are connected to this element. It represents the main root of the whole mesh graph.
 	 * 
@@ -190,7 +193,7 @@ public interface BootstrapInitializer {
 
 	/**
 	 * Setup the optional data. Optional data will only be setup during the first setup. Mesh will not try to recreate those elements on each setup. The
-	 * {@link #initMandatoryData()} method on the other hand will setup elements which must exist and thus will enforce creation of those elements.
+	 * {@link #initMandatoryData(MeshOptions)} method on the other hand will setup elements which must exist and thus will enforce creation of those elements.
 	 * 
 	 * @param isEmptyInstallation
 	 */

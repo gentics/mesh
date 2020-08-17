@@ -58,7 +58,6 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.BranchParentEntry;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
@@ -155,8 +154,6 @@ import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Vertex;
 
-import io.reactivex.Observable;
-import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -321,7 +318,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// A published node must have also a published parent node.
 		if (isPublished) {
-			Node parentNode = getParentNode(branchUuid);
+			NodeImpl parentNode = getParentNode(branchUuid);
 
 			// Only assert consistency of parent nodes which are not project
 			// base nodes.
@@ -340,7 +337,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (!isPublished) {
 
 			for (Node node : getChildren(branchUuid)) {
-				if (node.hasPublishedContent(branchUuid)) {
+				NodeImpl impl = (NodeImpl) node;
+				if (impl.hasPublishedContent(branchUuid)) {
 					log.error("Found published field container for node {" + node.getUuid() + "} in branch {" + branchUuid + "}. Node is child of {"
 						+ getUuid() + "}");
 					throw error(BAD_REQUEST, "node_error_children_containers_still_published", node.getUuid());
@@ -359,8 +357,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return TagEdgeImpl.hasTag(this, tag, branch);
 	}
 
-	@Override
-	public boolean hasPublishedContent(String branchUuid) {
+	private boolean hasPublishedContent(String branchUuid) {
 		return GraphFieldContainerEdgeImpl.matchesBranchAndType(getId(), branchUuid, PUBLISHED);
 	}
 
@@ -564,7 +561,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Node getParentNode(String branchUuid) {
+	public NodeImpl getParentNode(String branchUuid) {
 		Set<String> parents = property(BRANCH_PARENTS_KEY_PROPERTY);
 		if (parents == null) {
 			return null;
@@ -979,28 +976,26 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Single<NavigationResponse> transformToNavigation(InternalActionContext ac) {
+	public NavigationResponse transformToNavigation(InternalActionContext ac) {
 		NavigationParametersImpl parameters = new NavigationParametersImpl(ac);
 		if (parameters.getMaxDepth() < 0) {
 			throw error(BAD_REQUEST, "navigation_error_invalid_max_depth");
 		}
-		return db().asyncTx(() -> {
-			// TODO assure that the schema version is correct
-			if (!getSchemaContainer().getLatestVersion().getSchema().getContainer()) {
-				throw error(BAD_REQUEST, "navigation_error_no_container");
-			}
-			String etagKey = buildNavigationEtagKey(ac, this, parameters.getMaxDepth(), 0, ac.getBranch(getProject()).getUuid(), forVersion(ac
-				.getVersioningParameters().getVersion()));
-			String etag = ETag.hash(etagKey);
-			ac.setEtag(etag, true);
-			if (ac.matches(etag, true)) {
-				return Single.error(new NotModifiedException());
-			} else {
-				NavigationResponse response = new NavigationResponse();
-				return buildNavigationResponse(ac, this, parameters.getMaxDepth(), 0, response, response, ac.getBranch(getProject()).getUuid(),
-					forVersion(ac.getVersioningParameters().getVersion()));
-			}
-		});
+		// TODO assure that the schema version is correct
+		if (!getSchemaContainer().getLatestVersion().getSchema().getContainer()) {
+			throw error(BAD_REQUEST, "navigation_error_no_container");
+		}
+		String etagKey = buildNavigationEtagKey(ac, this, parameters.getMaxDepth(), 0, ac.getBranch(getProject()).getUuid(), forVersion(ac
+			.getVersioningParameters().getVersion()));
+		String etag = ETag.hash(etagKey);
+		ac.setEtag(etag, true);
+		if (ac.matches(etag, true)) {
+			throw new NotModifiedException();
+		} else {
+			NavigationResponse response = new NavigationResponse();
+			return buildNavigationResponse(ac, this, parameters.getMaxDepth(), 0, response, response, ac.getBranch(getProject()).getUuid(),
+				forVersion(ac.getVersioningParameters().getVersion()));
+		}
 	}
 
 	@Override
@@ -1037,7 +1032,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		StringBuilder builder = new StringBuilder();
 		builder.append(node.getETag(ac));
 
-		List<? extends Node> nodes = node.getChildren(ac.getUser(), branchUuid, null, type).collect(Collectors.toList());
+		List<Node> nodes = node.getChildren(ac.getUser(), branchUuid, null, type).collect(Collectors.toList());
 
 		// Abort recursion when we reach the max level or when no more children
 		// can be found.
@@ -1075,23 +1070,20 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 *            container type to be used for transformation
 	 * @return
 	 */
-	private Single<NavigationResponse> buildNavigationResponse(InternalActionContext ac, NodeImpl node, int maxDepth, int level,
+	private NavigationResponse buildNavigationResponse(InternalActionContext ac, NodeImpl node, int maxDepth, int level,
 		NavigationResponse navigation, NavigationElement currentElement, String branchUuid, ContainerType type) {
 		List<? extends Node> nodes = node.getChildren(ac.getUser(), branchUuid, null, type).collect(Collectors.toList());
-		List<Single<NavigationResponse>> obsResponses = new ArrayList<>();
+		List<NavigationResponse> responses = new ArrayList<>();
 
-		obsResponses.add(node.transformToRest(ac, 0).map(response -> {
-			// Set current element data
-			currentElement.setUuid(response.getUuid());
-			currentElement.setNode(response);
-			return navigation;
-		}));
+		NodeResponse response = node.transformToRestSync(ac, 0);
+		currentElement.setUuid(response.getUuid());
+		currentElement.setNode(response);
+		responses.add(navigation);
 
 		// Abort recursion when we reach the max level or when no more children
 		// can be found.
 		if (level == maxDepth || nodes.isEmpty()) {
-			List<Observable<NavigationResponse>> obsList = obsResponses.stream().map(ele -> ele.toObservable()).collect(Collectors.toList());
-			return Observable.merge(obsList).lastOrError();
+			return responses.get(responses.size() - 1);
 		}
 		NavigationParameters parameters = new NavigationParametersImpl(ac);
 		// Add children
@@ -1105,7 +1097,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					currentElement.setChildren(new ArrayList<>());
 				}
 				currentElement.getChildren().add(childElement);
-				obsResponses.add(buildNavigationResponse(ac, (NodeImpl)child, maxDepth, level + 1, navigation, childElement, branchUuid, type));
+				responses.add(buildNavigationResponse(ac, (NodeImpl)child, maxDepth, level + 1, navigation, childElement, branchUuid, type));
 			} else if (parameters.isIncludeAll()) {
 				// We found at least one child so lets create the array
 				if (currentElement.getChildren() == null) {
@@ -1113,11 +1105,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				}
 				NavigationElement childElement = new NavigationElement();
 				currentElement.getChildren().add(childElement);
-				obsResponses.add(buildNavigationResponse(ac, (NodeImpl)child, maxDepth, level, navigation, childElement, branchUuid, type));
+				responses.add(buildNavigationResponse(ac, (NodeImpl)child, maxDepth, level, navigation, childElement, branchUuid, type));
 			}
 		}
-		List<Observable<NavigationResponse>> obsList = obsResponses.stream().map(ele -> ele.toObservable()).collect(Collectors.toList());
-		return Observable.merge(obsList).lastOrError();
+		return responses.get(responses.size() - 1);
 	}
 
 	@Override
@@ -1238,13 +1229,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		bac.process();
 	}
 
-	@Override
-	public void takeOffline(InternalActionContext ac, BulkActionContext bac, HibBranch branch, PublishParameters parameters) {
-
-		// Handle recursion first to start at the leafs
+	private void takeOffline(InternalActionContext ac, BulkActionContext bac, HibBranch branch, PublishParameters parameters) {
+		// Handle recursion first to start at the leaves
 		if (parameters.isRecursive()) {
 			for (Node node : getChildren(branch.getUuid())) {
-				node.takeOffline(ac, bac, branch, parameters);
+				NodeImpl impl = (NodeImpl) node;
+				impl.takeOffline(ac, bac, branch, parameters);
 			}
 		}
 
@@ -1419,15 +1409,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		List<String> languageTags = new ArrayList<>();
 		// TODO it would be better to store the languagetag along with the edge
 		for (GraphFieldContainer container : getDraftGraphFieldContainers()) {
-			languageTags.add(container.getLanguageTag());
-		}
-		return languageTags;
-	}
-
-	@Override
-	public List<String> getAvailableLanguageNames(Branch branch, ContainerType type) {
-		List<String> languageTags = new ArrayList<>();
-		for (GraphFieldContainer container : getGraphFieldContainers(branch, type)) {
 			languageTags.add(container.getLanguageTag());
 		}
 		return languageTags;

@@ -8,12 +8,12 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 import org.junit.Test;
 
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.db.Tx;
@@ -32,8 +32,9 @@ public class NodeLanguagesEndpointTest extends AbstractMeshTest {
 		Node node = content();
 		int nLanguagesBefore;
 		try (Tx tx = tx()) {
-			nLanguagesBefore = node.getAvailableLanguageNames().size();
-			assertThat(node.getAvailableLanguageNames()).contains("en", "de");
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			nLanguagesBefore = nodeDao.getAvailableLanguageNames(node).size();
+			assertThat(nodeDao.getAvailableLanguageNames(node)).contains("en", "de");
 		}
 
 		// Delete the english version
@@ -51,10 +52,11 @@ public class NodeLanguagesEndpointTest extends AbstractMeshTest {
 		waitForSearchIdleEvent();
 		
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			// Check the deletion
 			assertThat(trackingSearchProvider()).recordedDeleteEvents(2);
-			assertFalse(node.getAvailableLanguageNames().contains("en"));
-			assertEquals(nLanguagesBefore - 1, node.getAvailableLanguageNames().size());
+			assertFalse(nodeDao.getAvailableLanguageNames(node).contains("en"));
+			assertEquals(nLanguagesBefore - 1, nodeDao.getAvailableLanguageNames(node).size());
 		}
 
 		// Now delete the remaining german version

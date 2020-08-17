@@ -12,6 +12,7 @@ import javax.inject.Inject;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.service.WebRootServiceImpl;
@@ -50,6 +51,7 @@ public class NavRootHandler {
 			Path nodePath = webrootService.findByProjectPath(ac, path, type);
 			PathSegment lastSegment = nodePath.getLast();
 			UserDaoWrapper userDao = tx.data().userDao();
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 
 			if (lastSegment == null) {
 				throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(path));
@@ -62,8 +64,8 @@ public class NavRootHandler {
 			if (!userDao.hasPermission(requestUser, node, READ_PUBLISHED_PERM)) {
 				throw error(FORBIDDEN, "error_missing_perm", node.getUuid(), READ_PUBLISHED_PERM.getRestPerm().getName());
 			}
-			return node;
-		}, node -> node.transformToNavigation(ac).subscribe(model -> ac.send(model, OK), ac::fail));
+			return nodeDao.transformToNavigation(node, ac);
+		}, model -> ac.send(model, OK));
 
 	}
 }

@@ -15,7 +15,6 @@ import com.gentics.mesh.ElementType;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.HibNode;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -47,12 +46,9 @@ import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.parameter.PublishParameters;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.syncleus.ferma.EdgeFrame;
-
-import io.reactivex.Single;
 
 /**
  * The Node Domain Model interface.
@@ -247,17 +243,6 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	List<String> getAvailableLanguageNames();
 
 	/**
-	 * Return a list of language names for versions of given type in the given branch.
-	 *
-	 * @param branch
-	 *            branch
-	 * @param type
-	 *            container version type
-	 * @return
-	 */
-	List<String> getAvailableLanguageNames(Branch branch, ContainerType type);
-
-	/**
 	 * Set the project of the node.
 	 *
 	 * @param project
@@ -387,13 +372,6 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	}
 
 	/**
-	 * Tests if the node has at least one content that is published.
-	 *
-	 * @param branchUuid
-	 */
-	boolean hasPublishedContent(String branchUuid);
-
-	/**
 	 * Find a node field container that matches the nearest possible value for the language parameter.
 	 *
 	 * @param ac
@@ -438,7 +416,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param ac
 	 * @return
 	 */
-	Single<NavigationResponse> transformToNavigation(InternalActionContext ac);
+	NavigationResponse transformToNavigation(InternalActionContext ac);
 
 	/**
 	 * Transform the node into a publish status response rest model.
@@ -465,17 +443,6 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @return
 	 */
 	void takeOffline(InternalActionContext ac, BulkActionContext bac);
-
-	/**
-	 * Take the node offline.
-	 *
-	 * @param ac
-	 * @param bac
-	 * @param branch
-	 * @param parameters
-	 * @return
-	 */
-	void takeOffline(InternalActionContext ac, BulkActionContext bac, HibBranch branch, PublishParameters parameters);
 
 	/**
 	 * Transform the node language into a publish status response rest model.

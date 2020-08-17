@@ -25,6 +25,7 @@ import com.gentics.mesh.core.action.NodeDAOActions;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
@@ -127,7 +128,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		validateParameter(toUuid, "toUuid");
 
 		try (WriteLock lock = writeLock.lock(ac)) {
-			utils.syncTx(ac, () -> {
+			utils.syncTx(ac, tx -> {
+				NodeDaoWrapper nodeDao = tx.data().nodeDao();
 				HibProject project = ac.getProject();
 
 				// TODO Add support for moving nodes across projects.
@@ -141,7 +143,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				Node targetNode = nodeRoot.loadObjectByUuid(ac, toUuid, UPDATE_PERM);
 
 				utils.eventAction(batch -> {
-					sourceNode.moveTo(ac, targetNode, batch);
+					nodeDao.moveTo(sourceNode, ac, targetNode, batch);
 				});
 			}, () -> ac.send(NO_CONTENT));
 		}
@@ -159,11 +161,11 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handleNavigation(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		Node node = db.tx(tx -> {
-			return crudActions().loadByUuid(context(tx, ac), uuid, READ_PERM, true);
-		});
-		node.transformToNavigation(ac).subscribe(model -> ac.send(model, OK), ac::fail);
-
+		utils.syncTx(ac, tx -> {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			Node node = crudActions().loadByUuid(context(tx, ac), uuid, READ_PERM, true);
+			return nodeDao.transformToNavigation(node, ac);
+		}, model -> ac.send(model, OK));
 	}
 
 	/**
@@ -321,8 +323,10 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		validateParameter(uuid, "uuid");
 
 		utils.syncTx(ac, (tx) -> {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+
 			Node node = ac.getProject().getNodeRoot().loadObjectByUuid(ac, uuid, READ_PERM);
-			return node.transformToPublishStatus(ac);
+			return nodeDao.transformToPublishStatus(node, ac);
 		}, model -> ac.send(model, OK));
 	}
 
@@ -339,11 +343,14 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
+				NodeDaoWrapper nodeDao = tx.data().nodeDao();
+
 				Node node = ac.getProject().getNodeRoot().loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 				utils.bulkableAction(bac -> {
-					node.publish(ac, bac);
+					nodeDao.publish(node, ac, bac);
 				});
-				return node.transformToPublishStatus(ac);
+
+				return nodeDao.transformToPublishStatus(node, ac);
 			}, model -> ac.send(model, OK));
 		}
 	}
@@ -361,9 +368,10 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
+				NodeDaoWrapper nodeDao = tx.data().nodeDao();
 				Node node = ac.getProject().getNodeRoot().loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 				utils.bulkableAction(bac -> {
-					node.takeOffline(ac, bac);
+					nodeDao.takeOffline(node, ac, bac);
 				});
 			}, () -> ac.send(NO_CONTENT));
 		}
@@ -383,8 +391,9 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		validateParameter(uuid, "uuid");
 
 		utils.syncTx(ac, tx -> {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			Node node = ac.getProject().getNodeRoot().loadObjectByUuid(ac, uuid, READ_PERM);
-			return node.transformToPublishStatus(ac, languageTag);
+			return nodeDao.transformToPublishStatus(node, ac, languageTag);
 		}, model -> ac.send(model, OK));
 	}
 
@@ -403,11 +412,12 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
+				NodeDaoWrapper nodeDao = tx.data().nodeDao();
 				Node node = ac.getProject().getNodeRoot().loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 				utils.bulkableAction(bac -> {
-					node.publish(ac, bac, languageTag);
+					nodeDao.publish(node, ac, bac, languageTag);
 				});
-				return node.transformToPublishStatus(ac, languageTag);
+				return nodeDao.transformToPublishStatus(node, ac, languageTag);
 
 			}, model -> ac.send(model, OK));
 		}
@@ -428,10 +438,12 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
+				NodeDaoWrapper nodeDao = tx.data().nodeDao();
+
 				Node node = ac.getProject().getNodeRoot().loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 				utils.bulkableAction(bac -> {
 					HibBranch branch = ac.getBranch(ac.getProject());
-					node.takeOffline(ac, bac, branch, languageTag);
+					nodeDao.takeOffline(node, ac, bac, branch, languageTag);
 				});
 			}, () -> ac.send(NO_CONTENT));
 		}

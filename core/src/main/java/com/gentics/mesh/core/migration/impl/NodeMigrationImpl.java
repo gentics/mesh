@@ -19,9 +19,11 @@ import javax.inject.Singleton;
 import com.gentics.mesh.context.NodeMigrationActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.core.migration.AbstractMigrationHandler;
@@ -216,6 +218,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 		Set<String> touchedFields,
 		SchemaVersionModel newSchema, VersionNumber nextDraftVersion)
 		throws Exception {
+		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
 
 		String branchUuid = branch.getUuid();
 		String languageTag = container.getLanguageTag();
@@ -235,7 +238,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 		// Ensure that the migrated version is also published since the old version was
 		if (publish) {
 			migrated.setVersion(container.getVersion().nextPublished());
-			node.setPublished(ac, migrated, branchUuid);
+			nodeDao.setPublished(node, ac, migrated, branchUuid);
 		} else {
 			if (nextDraftVersion == null) {
 				nextDraftVersion = container.getVersion().nextDraft();
@@ -274,6 +277,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 	private VersionNumber migratePublishedContainer(NodeMigrationActionContext ac, EventQueueBatch sqb, HibBranch branch, Node node,
 		NodeGraphFieldContainer container, GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion, SchemaVersion toVersion,
 		Set<String> touchedFields, SchemaVersionModel newSchema) throws Exception {
+		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
 
 		String languageTag = container.getLanguageTag();
 		String branchUuid = branch.getUuid();
@@ -285,7 +289,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 		NodeGraphFieldContainer migrated = node.createGraphFieldContainer(container.getLanguageTag(), branch, container.getEditor(), container, true);
 
 		migrated.setVersion(container.getVersion().nextPublished());
-		node.setPublished(ac, migrated, branchUuid);
+		nodeDao.setPublished(node, ac, migrated, branchUuid);
 
 		migrate(ac, migrated, restModel, fromVersion, toVersion, touchedFields);
 		sqb.add(migrated.onUpdated(branchUuid, PUBLISHED));

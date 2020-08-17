@@ -53,7 +53,6 @@ import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.parameter.PublishParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
@@ -490,10 +489,6 @@ public class NodeWrapper implements Node {
 		return delegate.getAvailableLanguageNames();
 	}
 
-	public List<String> getAvailableLanguageNames(Branch branch, ContainerType type) {
-		return delegate.getAvailableLanguageNames(branch, type);
-	}
-
 	public void setProject(HibProject project) {
 		delegate.setProject(project);
 	}
@@ -547,10 +542,6 @@ public class NodeWrapper implements Node {
 		return ContentWrapper.wrap(delegate.findVersion(languageTag, branchUuid, version));
 	}
 
-	public boolean hasPublishedContent(String branchUuid) {
-		return delegate.hasPublishedContent(branchUuid);
-	}
-
 	public ContentWrapper findVersion(InternalActionContext ac, List<String> languageTags, String version) {
 		return ContentWrapper.wrap(delegate.findVersion(ac, languageTags, version));
 	}
@@ -567,7 +558,7 @@ public class NodeWrapper implements Node {
 		return delegate.transformToReference(ac);
 	}
 
-	public Single<NavigationResponse> transformToNavigation(InternalActionContext ac) {
+	public NavigationResponse transformToNavigation(InternalActionContext ac) {
 		return delegate.transformToNavigation(ac);
 	}
 
@@ -581,10 +572,6 @@ public class NodeWrapper implements Node {
 
 	public void takeOffline(InternalActionContext ac, BulkActionContext bac) {
 		delegate.takeOffline(ac, bac);
-	}
-
-	public void takeOffline(InternalActionContext ac, BulkActionContext bac, HibBranch branch, PublishParameters parameters) {
-		delegate.takeOffline(ac, bac, branch, parameters);
 	}
 
 	public PublishStatusModel transformToPublishStatus(InternalActionContext ac, String languageTag) {

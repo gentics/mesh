@@ -7,12 +7,22 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.PublishStatusModel;
+import com.gentics.mesh.core.rest.node.PublishStatusResponse;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 
@@ -46,6 +56,16 @@ public class NodeDaoWrapperImpl implements NodeDaoWrapper {
 
 
 	@Override
+	public Node create(Node parentNode, HibUser creator, SchemaVersion schemaVersion, HibProject project) {
+		return parentNode.create(creator, schemaVersion, project);
+	}
+
+	@Override
+	public Node create(Node parentNode, HibUser creator, SchemaVersion schemaVersion, HibProject project, HibBranch branch, String uuid) {
+		return parentNode.create(creator, schemaVersion, project, branch, uuid);
+	}
+
+	@Override
 	public TraversalResult<Node> getChildren(Node node) {
 		return node.getChildren();
 	}
@@ -73,5 +93,60 @@ public class NodeDaoWrapperImpl implements NodeDaoWrapper {
 	@Override
 	public TransformablePage<Node> getChildren(Node node, InternalActionContext ac, List<String> languageTags, String branchUuid, ContainerType type, PagingParameters pagingParameter) {
 		return node.getChildren(ac, languageTags, branchUuid, type, pagingParameter);
+	}
+
+	@Override
+	public List<String> getAvailableLanguageNames(Node node) {
+		return node.getAvailableLanguageNames();
+	}
+
+	@Override
+	public String getDisplayName(Node node, InternalActionContext ac) {
+		return node.getDisplayName(ac);
+	}
+
+	@Override
+	public void moveTo(Node sourceNode, InternalActionContext ac, Node targetNode, EventQueueBatch batch) {
+		sourceNode.moveTo(ac, targetNode, batch);
+	}
+
+	@Override
+	public NavigationResponse transformToNavigation(Node node, InternalActionContext ac) {
+		return node.transformToNavigation(ac);
+	}
+
+	@Override
+	public PublishStatusResponse transformToPublishStatus(Node node, InternalActionContext ac) {
+		return node.transformToPublishStatus(ac);
+	}
+
+	@Override
+	public void publish(Node node, InternalActionContext ac, BulkActionContext bac) {
+		node.publish(ac, bac);
+	}
+
+	@Override
+	public void takeOffline(Node node, InternalActionContext ac, BulkActionContext bac) {
+		node.takeOffline(ac, bac);
+	}
+
+	@Override
+	public PublishStatusModel transformToPublishStatus(Node node, InternalActionContext ac, String languageTag) {
+		return node.transformToPublishStatus(ac, languageTag);
+	}
+
+	@Override
+	public void publish(Node node, InternalActionContext ac, BulkActionContext bac, String languageTag) {
+		node.publish(ac, bac, languageTag);
+	}
+
+	@Override
+	public void setPublished(Node node, InternalActionContext ac, NodeGraphFieldContainer container, String branchUuid) {
+		node.setPublished(ac, container, branchUuid);
+	}
+
+	@Override
+	public void takeOffline(Node node, InternalActionContext ac, BulkActionContext bac, HibBranch branch, String languageTag) {
+		node.takeOffline(ac, bac, branch, languageTag);
 	}
 }

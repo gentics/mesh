@@ -10,7 +10,6 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -27,13 +26,13 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.dao.JobDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Micronode;
@@ -410,6 +409,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 		container = tx(() -> createDummySchemaWithChanges(oldFieldName, newFieldName, false));
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			versionB = container.getLatestVersion();
 			versionA = versionB.getPreviousVersion();
 
@@ -422,12 +422,12 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			// create a node based on the old schema
 			String english = english();
 			Node parentNode = folder("2015");
-			firstNode = parentNode.create(user, versionA, project());
+			firstNode = nodeDao.create(parentNode, user, versionA, project());
 			NodeGraphFieldContainer firstEnglishContainer = firstNode.createGraphFieldContainer(english, firstNode.getProject().getLatestBranch(),
 				user);
 			firstEnglishContainer.createString(oldFieldName).setString("first content");
 
-			secondNode = parentNode.create(user, versionA, project());
+			secondNode = nodeDao.create(parentNode, user, versionA, project());
 			NodeGraphFieldContainer secondEnglishContainer = secondNode.createGraphFieldContainer(english, secondNode.getProject().getLatestBranch(),
 				user);
 			secondEnglishContainer.createString(oldFieldName).setString("second content");
@@ -538,6 +538,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		Node firstNode;
 		String jobAUuid;
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			container = createDummySchemaWithChanges(oldFieldName, newFieldName, false);
 			versionB = container.getLatestVersion();
 			versionA = versionB.getPreviousVersion();
@@ -550,7 +551,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			// create a node based on the old schema
 			String english = english();
 			Node parentNode = folder("2015");
-			firstNode = parentNode.create(user, versionA, project());
+			firstNode = nodeDao.create(parentNode, user, versionA, project());
 			NodeGraphFieldContainer firstEnglishContainer = firstNode.createGraphFieldContainer(english, firstNode.getProject().getLatestBranch(),
 				user);
 			firstEnglishContainer.createString(oldFieldName).setString("first content");
@@ -587,6 +588,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		Node node;
 
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			container = createDummySchemaWithChanges(oldFieldName, fieldName, false);
 			versionB = container.getLatestVersion();
 			versionA = versionB.getPreviousVersion();
@@ -595,12 +597,12 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			project().getLatestBranch().assignSchemaVersion(user(), versionA, batch);
 
 			// create a node and publish
-			node = folder("2015").create(user(), versionA, project());
+			node = nodeDao.create(folder("2015"), user(), versionA, project());
 			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english(), project().getLatestBranch(), user());
 			englishContainer.createString(fieldName).setString("content");
 			englishContainer.createString("name").setString("someName");
 			InternalActionContext ac = new InternalRoutingActionContextImpl(mockRoutingContext());
-			node.publish(ac, createBulkContext(), "en");
+			nodeDao.publish(node, ac, createBulkContext(), "en");
 
 			project().getLatestBranch().assignSchemaVersion(user(), versionB, batch);
 			tx.success();

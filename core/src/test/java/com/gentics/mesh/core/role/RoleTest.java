@@ -22,6 +22,7 @@ import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
@@ -77,6 +78,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testGrantPermission() {
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			HibRole role = role();
 			Node node = folder("news");
@@ -84,7 +86,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			// node2
 			Node parentNode = folder("2015");
-			Node node2 = parentNode.create(user(), getSchemaContainer().getLatestVersion(), project());
+			Node node2 = nodeDao.create(parentNode, user(), getSchemaContainer().getLatestVersion(), project());
 			// NodeFieldContainer englishContainer = node2.getFieldContainer(english());
 			// englishContainer.setI18nProperty("content", "Test");
 			roleDao.grantPermissions(role, node2, READ_PERM, DELETE_PERM);
@@ -188,6 +190,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testRoleAddCrudPermissions() {
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			UserDaoWrapper userDao = tx.data().userDao();
 			MeshAuthUser requestUser = ((User)user()).reframe(MeshAuthUserImpl.class);
@@ -204,7 +207,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			Node node = parentNode.create(user(), getSchemaContainer().getLatestVersion(), project());
+			Node node = nodeDao.create(parentNode, user(), getSchemaContainer().getLatestVersion(), project());
 			assertEquals(0, userDao.getPermissions(requestUser, node).size());
 			userDao.inheritRolePermissions(requestUser, parentNode, node);
 			ac.data().clear();
