@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.dao;
 
 import java.util.List;
+import java.util.Stack;
 import java.util.stream.Stream;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -17,9 +18,12 @@ import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
+import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.path.Path;
 
 public interface NodeDaoWrapper extends NodeDao, DaoWrapper<Node>, DaoTransformable<Node, NodeResponse> {
 
@@ -211,4 +215,71 @@ public interface NodeDaoWrapper extends NodeDao, DaoWrapper<Node>, DaoTransforma
 	 */
 	void takeOffline(Node node, InternalActionContext ac, BulkActionContext bac, HibBranch branch, String languageTag);
 
+	/**
+	 * Return the webroot path to the node in the given language. If more than one language is given, the path will lead to the first available language of the
+	 * node.
+	 *
+	 * @param ac
+	 * @param branchUuid
+	 *            branch Uuid
+	 * @param type
+	 *            edge type
+	 * @param languageTag
+	 *
+	 * @return
+	 */
+	String getPath(Node node, ActionContext ac, String branchUuid, ContainerType type, String... languageTag);
+
+	/**
+	 * Resolve the given path and return the path object that contains the resolved nodes.
+	 *
+	 * @param branchUuid
+	 * @param type
+	 *            edge type
+	 * @param nodePath
+	 * @param pathStack
+	 * @return
+	 */
+	Path resolvePath(Node baseNode, String branchUuid, ContainerType type, Path nodePath, Stack<String> pathStack);
+
+	/**
+	 * Delete the node. Please use {@link ContentDaoWrapper#deleteFromBranch(InternalActionContext, HibBranch, BulkActionContext, boolean)} if you want to delete the node just from a specific branch.
+	 *
+	 * @param bac
+	 * @param ignoreChecks
+	 * @param recursive
+	 */
+	void delete(Node node, BulkActionContext bac, boolean ignoreChecks, boolean recursive);
+
+	/**
+	 * Return the breadcrumb nodes.
+	 *
+	 * @param ac
+	 * @return Deque with breadcrumb nodes
+	 */
+	TraversalResult<Node> getBreadcrumbNodes(Node node, InternalActionContext ac);
+
+	/**
+	 * Check whether the node is the base node of its project
+	 *
+	 * @return true for base node
+	 */
+	boolean isBaseNode(Node node);
+
+	/**
+	 * Check whether the node is visible in the given branch (that means has at least one DRAFT graphfieldcontainer in the branch)
+	 *
+	 * @param branchUuid
+	 *            branch uuid
+	 * @return true if the node is visible in the branch
+	 */
+	boolean isVisibleInBranch(Node node, String branchUuid);
+
+	/**
+	 * Transform the node information to a version list response.
+	 *
+	 * @param ac
+	 * @return Versions response
+	 */
+	NodeVersionsResponse transformToVersionList(Node node, InternalActionContext ac);
 }

@@ -513,7 +513,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		utils.syncTx(ac, tx -> {
 			Node node = ac.getProject().getNodeRoot().loadObjectByUuid(ac, uuid, READ_PERM);
-			return node.transformToVersionList(ac);
+			return boot.nodeDao().transformToVersionList(node, ac);
 		}, model -> {
 			ac.send(model, OK);
 		});

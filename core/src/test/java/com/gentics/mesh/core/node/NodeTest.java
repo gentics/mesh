@@ -69,9 +69,11 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testGetPath() throws Exception {
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+
 			Node newsNode = content("news overview");
 			InternalActionContext ac = mockActionContext();
-			String path = newsNode.getPath(ac, project().getLatestBranch().getUuid(), ContainerType.DRAFT, english());
+			String path = nodeDao.getPath(newsNode, ac, project().getLatestBranch().getUuid(), ContainerType.DRAFT, english());
 			assertEquals("/News/News%20Overview.en.html", path);
 			String pathSegementFieldValue = newsNode.getPathSegment(project().getLatestBranch().getUuid(), ContainerType.DRAFT, english());
 			assertEquals("News Overview.en.html", pathSegementFieldValue);

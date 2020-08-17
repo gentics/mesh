@@ -17,6 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -246,6 +247,8 @@ public class WebRootLinkReplacer {
 	public String resolve(InternalActionContext ac, String branchNameOrUuid, ContainerType edgeType, Node node, LinkType type,
 		boolean forceAbsolute,
 		String... languageTags) {
+		NodeDaoWrapper nodeDao = boot.nodeDao();
+
 		String defaultLanguage = options.getDefaultLanguage();
 		if (languageTags == null || languageTags.length == 0) {
 			languageTags = new String[] { defaultLanguage };
@@ -272,7 +275,7 @@ public class WebRootLinkReplacer {
 			log.debug("Resolving link to " + node.getUuid() + " in language " + Arrays.toString(languageTags) + " with type " + type.name());
 		}
 
-		String path = node.getPath(ac, branch.getUuid(), edgeType, languageTags);
+		String path = nodeDao.getPath(node, ac, branch.getUuid(), edgeType, languageTags);
 		if (path == null) {
 			path = "/error/404";
 		}

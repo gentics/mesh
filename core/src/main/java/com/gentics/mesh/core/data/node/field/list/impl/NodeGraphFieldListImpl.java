@@ -25,6 +25,7 @@ import com.gentics.mesh.core.data.node.field.impl.NodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.AbstractReferencingGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
+import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
@@ -156,7 +157,7 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 		} else {
 			NodeFieldList restModel = new NodeFieldListImpl();
 			for (com.gentics.mesh.core.data.node.field.nesting.NodeGraphField item : getList()) {
-				Node node = item.getNode();
+				NodeImpl node = (NodeImpl) item.getNode();
 				if (!userDao.canReadNode(ac.getUser(), ac, node)) {
 					continue;
 				}

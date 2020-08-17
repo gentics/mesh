@@ -926,8 +926,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 	}
 
-	@Override
-	public Map<String, String> getLanguagePaths(InternalActionContext ac, LinkType linkType, HibBranch branch) {
+	private Map<String, String> getLanguagePaths(InternalActionContext ac, LinkType linkType, HibBranch branch) {
 		VersioningParameters versioiningParameters = ac.getVersioningParameters();
 		String branchUuid = ac.getBranch(getProject()).getUuid();
 		ContainerType type = forVersion(versioiningParameters.getVersion());
@@ -1138,7 +1137,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return ref;
 	}
 
-	@Override
 	public NodeFieldListItem toListItem(InternalActionContext ac, String[] languageTags) {
 		// Create the rest field and populate the fields
 		NodeFieldListItemImpl listItem = new NodeFieldListItemImpl(getUuid());
@@ -1907,8 +1905,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	}
 
-	@Override
-	public PathSegment getSegment(String branchUuid, ContainerType type, String segment) {
+	private PathSegment getSegment(String branchUuid, ContainerType type, String segment) {
 
 		// Check the different language versions
 		for (NodeGraphFieldContainer container : getGraphFieldContainers(branchUuid, type)) {
@@ -1959,7 +1956,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			.iterator();
 		if (edges.hasNext()) {
 			GraphFieldContainerEdge edge = edges.next();
-			Node childNode = edge.getNode();
+			NodeImpl childNode = (NodeImpl)edge.getNode();
 			PathSegment pathSegment = childNode.getSegment(branchUuid, type, segment);
 			if (pathSegment != null) {
 				path.addSegment(pathSegment);

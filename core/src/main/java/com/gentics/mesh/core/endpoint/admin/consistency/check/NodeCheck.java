@@ -126,7 +126,7 @@ public class NodeCheck extends AbstractConsistencyCheck {
 			// parent node has to exist and has to have at least one DRAFT graphfieldcontainer in the branch
 			if (branchParent == null) {
 				result.addInconsistency(String.format("The node does not have a parent node in branch %s", branchUuid), node.getUuid(), HIGH);
-			} else if (!branchParent.isBaseNode() && !branchParent.isVisibleInBranch(branchUuid)) {
+			} else if (!nodeDao.isBaseNode(branchParent) && !nodeDao.isVisibleInBranch(branchParent, branchUuid)) {
 				result.addInconsistency(String.format(
 						"The node references parent node %s in branch %s, but the parent node does not have any DRAFT graphfieldcontainer in the branch",
 						branchParent.getUuid(), branchUuid), node.getUuid(), HIGH);

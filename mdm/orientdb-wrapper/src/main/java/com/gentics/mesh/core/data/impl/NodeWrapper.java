@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.data.impl;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.function.Function;
@@ -37,7 +36,6 @@ import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
-import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
@@ -51,11 +49,9 @@ import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.madl.frame.VertexFrame;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
 import com.gentics.mesh.madl.traversal.TraversalResult;
-import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.path.Path;
-import com.gentics.mesh.path.PathSegment;
 import com.google.gson.JsonObject;
 import com.syncleus.ferma.ClassInitializer;
 import com.syncleus.ferma.FramedGraph;
@@ -599,10 +595,6 @@ public class NodeWrapper implements Node {
 		return delegate.resolvePath(branchUuid, type, nodePath, pathStack);
 	}
 
-	public PathSegment getSegment(String branchUuid, ContainerType type, String segment) {
-		return delegate.getSegment(branchUuid, type, segment);
-	}
-
 	public String getPath(ActionContext ac, String branchUuid, ContainerType type, String... languageTag) {
 		return delegate.getPath(ac, branchUuid, type, languageTag);
 	}
@@ -643,10 +635,6 @@ public class NodeWrapper implements Node {
 		delegate.publish(ac, branch, bac);
 	}
 
-	public NodeFieldListItem toListItem(InternalActionContext ac, String[] languageTags) {
-		return delegate.toListItem(ac, languageTags);
-	}
-
 	public void delete(BulkActionContext bac, boolean ignoreChecks, boolean recusive) {
 		delegate.delete(bac, ignoreChecks, recusive);
 	}
@@ -659,11 +647,7 @@ public class NodeWrapper implements Node {
 		delegate.updateTags(ac, batch, list);
 	}
 
-	public Map<String, String> getLanguagePaths(InternalActionContext ac, LinkType linkType, HibBranch branch) {
-		return delegate.getLanguagePaths(ac, linkType, branch);
-	}
-
-	public TraversalResult<? extends Node> getBreadcrumbNodes(InternalActionContext ac) {
+	public TraversalResult<Node> getBreadcrumbNodes(InternalActionContext ac) {
 		return delegate.getBreadcrumbNodes(ac);
 	}
 

@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.dao.impl;
 
 import java.util.List;
+import java.util.Stack;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -22,9 +23,12 @@ import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
+import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.path.Path;
 
 import dagger.Lazy;
 
@@ -148,5 +152,40 @@ public class NodeDaoWrapperImpl implements NodeDaoWrapper {
 	@Override
 	public void takeOffline(Node node, InternalActionContext ac, BulkActionContext bac, HibBranch branch, String languageTag) {
 		node.takeOffline(ac, bac, branch, languageTag);
+	}
+
+	@Override
+	public String getPath(Node node, ActionContext ac, String branchUuid, ContainerType type, String... languageTag) {
+		return node.getPath(ac, branchUuid, type, languageTag);
+	}
+
+	@Override
+	public Path resolvePath(Node baseNode, String branchUuid, ContainerType type, Path nodePath, Stack<String> pathStack) {
+		return baseNode.resolvePath(branchUuid, type, nodePath, pathStack);
+	}
+
+	@Override
+	public void delete(Node node, BulkActionContext bac, boolean ignoreChecks, boolean recursive) {
+		node.delete(bac, ignoreChecks, recursive);
+	}
+
+	@Override
+	public TraversalResult<Node> getBreadcrumbNodes(Node node, InternalActionContext ac) {
+		return node.getBreadcrumbNodes(ac);
+	}
+
+	@Override
+	public boolean isBaseNode(Node node) {
+		return node.isBaseNode();
+	}
+
+	@Override
+	public boolean isVisibleInBranch(Node node, String branchUuid) {
+		return node.isVisibleInBranch(branchUuid);
+	}
+
+	@Override
+	public NodeVersionsResponse transformToVersionList(Node node, InternalActionContext ac) {
+		return node.transformToVersionList(ac);
 	}
 }

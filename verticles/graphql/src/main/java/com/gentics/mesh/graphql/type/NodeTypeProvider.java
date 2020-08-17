@@ -154,6 +154,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	}
 
 	public Object breadcrumbFetcher(DataFetchingEnvironment env) {
+		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
 		GraphQLContext gc = env.getContext();
 		NodeContent content = env.getSource();
 		if (content == null) {
@@ -161,7 +162,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		}
 
 		ContainerType type = getNodeVersion(env);
-		return content.getNode().getBreadcrumbNodes(gc).stream().map(node -> {
+		return nodeDao.getBreadcrumbNodes(content.getNode(), gc).stream().map(node -> {
 			List<String> languageTags = getLanguageArgument(env, content);
 			NodeGraphFieldContainer container = node.findVersion(gc, languageTags, type);
 			return new NodeContent(node, container, languageTags, type);
@@ -422,7 +423,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				ContainerType containerType = getNodeVersion(env);
 				String branchUuid = gc.getBranch().getUuid();
 				String languageTag = container.getLanguageTag();
-				return container.getParentNode().getPath(gc, branchUuid, containerType, languageTag);
+				return boot.nodeDao().getPath(container.getParentNode(), gc, branchUuid, containerType, languageTag);
 			}).build(),
 
 			// .edited

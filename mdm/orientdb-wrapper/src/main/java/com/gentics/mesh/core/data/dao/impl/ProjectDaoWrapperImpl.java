@@ -22,6 +22,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
@@ -263,19 +264,20 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper implements Project
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting project {" + project.getName() + "}");
 		}
+		NodeDaoWrapper nodeDao = boot.get().nodeDao();
 
 		Project graphProject = toProject(project);
 
 		// Remove the nodes in the project hierarchy
 		Node base = graphProject.getBaseNode();
-		base.delete(bac, true, true);
+		nodeDao.delete(base, bac, true, true);
 
 		// Remove the tagfamilies from the index
 		graphProject.getTagFamilyRoot().delete(bac);
 
 		// Remove all nodes in this project
 		for (Node node : graphProject.findNodes()) {
-			node.delete(bac, true, false);
+			nodeDao.delete(node, bac, true, false);
 			bac.inc();
 		}
 

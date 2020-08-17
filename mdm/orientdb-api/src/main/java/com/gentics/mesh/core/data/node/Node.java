@@ -7,7 +7,6 @@ import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Stack;
 import java.util.stream.Stream;
 
@@ -36,7 +35,6 @@ import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
-import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
@@ -44,10 +42,8 @@ import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.madl.traversal.TraversalResult;
-import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.path.Path;
-import com.gentics.mesh.path.PathSegment;
 import com.syncleus.ferma.EdgeFrame;
 
 /**
@@ -509,19 +505,6 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	Path resolvePath(String branchUuid, ContainerType type, Path nodePath, Stack<String> pathStack);
 
 	/**
-	 * Check whether the node provides the given segment for any language or binary attribute filename return the segment information.
-	 *
-	 * @param branchUuid
-	 *            branch Uuid
-	 * @param type
-	 *            edge type
-	 * @param segment
-	 *
-	 * @return Segment information or null if this node is not providing the given segment
-	 */
-	PathSegment getSegment(String branchUuid, ContainerType type, String segment);
-
-	/**
 	 * Return the webroot path to the node in the given language. If more than one language is given, the path will lead to the first available language of the
 	 * node.
 	 *
@@ -650,22 +633,13 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	void publish(InternalActionContext ac, HibBranch branch, BulkActionContext bac);
 
 	/**
-	 * Transform the node into a node list item.
-	 *
-	 * @param ac
-	 * @param languageTags
-	 * @return
-	 */
-	NodeFieldListItem toListItem(InternalActionContext ac, String[] languageTags);
-
-	/**
 	 * Delete the node. Please use {@link #deleteFromBranch(InternalActionContext, HibBranch, BulkActionContext, boolean)} if you want to delete the node just from a specific branch.
 	 *
 	 * @param bac
 	 * @param ignoreChecks
-	 * @param recusive
+	 * @param recursive
 	 */
-	void delete(BulkActionContext bac, boolean ignoreChecks, boolean recusive);
+	void delete(BulkActionContext bac, boolean ignoreChecks, boolean recursive);
 
 	/**
 	 * Handle the update tags request.
@@ -689,22 +663,12 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	void updateTags(InternalActionContext ac, EventQueueBatch batch, List<TagReference> list);
 
 	/**
-	 * Return a map with language tags and resolved link types
-	 *
-	 * @param ac
-	 * @param linkType
-	 * @param branch
-	 * @return
-	 */
-	Map<String, String> getLanguagePaths(InternalActionContext ac, LinkType linkType, HibBranch branch);
-
-	/**
 	 * Return the breadcrumb nodes.
 	 *
 	 * @param ac
 	 * @return Deque with breadcrumb nodes
 	 */
-	TraversalResult<? extends Node> getBreadcrumbNodes(InternalActionContext ac);
+	TraversalResult<Node> getBreadcrumbNodes(InternalActionContext ac);
 
 	/**
 	 * Create the node specific delete event.
