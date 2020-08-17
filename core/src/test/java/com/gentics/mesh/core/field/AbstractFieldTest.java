@@ -12,6 +12,7 @@ import org.mockito.Mockito;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
@@ -40,6 +41,8 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 	abstract protected FS createFieldSchema(boolean isRequired);
 
 	protected Tuple<Node, NodeGraphFieldContainer> createNode(boolean isRequiredField, String segmentField) {
+		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+
 		Schema container = Tx.get().getGraph().addFramedVertex(SchemaContainerImpl.class);
 		SchemaContainerVersionImpl version = Tx.get().getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 		version.setSchemaContainer(container);
@@ -52,7 +55,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 		}
 		version.setSchema(schema);
 		Node node = project().getNodeRoot().create(user(), version, project());
-		node.setParentNode(initialBranchUuid(), project().getBaseNode());
+		nodeDao.setParentNode(node, initialBranchUuid(), project().getBaseNode());
 		EventQueueBatch batch = Mockito.mock(EventQueueBatch.class);
 		initialBranch().assignSchemaVersion(user(), version, batch);
 		NodeGraphFieldContainer nodeContainer = node.createGraphFieldContainer(english(), initialBranch(), user());

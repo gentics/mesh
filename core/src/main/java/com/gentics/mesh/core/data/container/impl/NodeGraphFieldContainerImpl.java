@@ -47,6 +47,7 @@ import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -70,6 +71,7 @@ import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.NameConflictException;
@@ -372,13 +374,15 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	private boolean updateWebrootPathInfo(Node node, GraphFieldContainerEdge edge, String languageTag, String branchUuid, String segmentFieldName,
 		String conflictI18n,
 		ContainerType type) {
+		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+
 		// Determine the webroot path of the container parent node
 		String segment = node.getPathSegment(branchUuid, type, getLanguageTag());
 
 		// The webroot uniqueness will be checked by validating that the string [segmentValue-branchUuid-parentNodeUuid] is only listed once within the given
 		// specific index for (drafts or published nodes)
 		if (segment != null) {
-			Node parentNode = node.getParentNode(branchUuid);
+			Node parentNode = nodeDao.getParentNode(node, branchUuid);
 			String segmentInfo = GraphFieldContainerEdgeImpl.composeSegmentInfo(parentNode, segment);
 			Object webRootIndexKey = GraphFieldContainerEdgeImpl.composeWebrootIndexKey(db(), segmentInfo, branchUuid, type);
 			// check for uniqueness of webroot path

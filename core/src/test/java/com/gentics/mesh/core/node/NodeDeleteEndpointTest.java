@@ -35,6 +35,7 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
@@ -83,8 +84,9 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 
 		Set<String> childrenUuids = new HashSet<>();
 		try (Tx tx = tx()) {
-			assertThat(node.getChildren(initialBranchUuid())).as("The node must have children").isNotEmpty();
-			for (Node child : node.getChildren(initialBranchUuid())) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			assertThat(nodeDao.getChildren(node, initialBranchUuid())).as("The node must have children").isNotEmpty();
+			for (Node child : nodeDao.getChildren(node, initialBranchUuid())) {
 				collectUuids(child, childrenUuids);
 			}
 		}
@@ -619,8 +621,9 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 	 * @param childrenUuids
 	 */
 	private void collectUuids(Node child, Set<String> childrenUuids) {
+		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
 		childrenUuids.add(child.getUuid());
-		for (Node subchild : child.getChildren(initialBranchUuid())) {
+		for (Node subchild : nodeDao.getChildren(child, initialBranchUuid())) {
 			collectUuids(subchild, childrenUuids);
 		}
 	}

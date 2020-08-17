@@ -18,6 +18,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.db.Tx;
@@ -43,42 +44,48 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testMoveNodeIntoNonFolderNode() {
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+
 			String branchUuid = project().getLatestBranch().getUuid();
 			Node sourceNode = folder("news");
 			Node targetNode = content("concorde");
-			String oldParentUuid = sourceNode.getParentNode(branchUuid).getUuid();
-			assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode(branchUuid).getUuid());
+			String oldParentUuid = nodeDao.getParentNode(sourceNode, branchUuid).getUuid();
+			assertNotEquals(targetNode.getUuid(), nodeDao.getParentNode(sourceNode, branchUuid).getUuid());
 			call(() -> client().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid()), BAD_REQUEST,
 				"node_move_error_targetnode_is_no_folder");
-			assertEquals("The node should not have been moved but it was.", oldParentUuid, folder("news").getParentNode(branchUuid).getUuid());
+			assertEquals("The node should not have been moved but it was.", oldParentUuid, nodeDao.getParentNode(folder("news"), branchUuid).getUuid());
 		}
 	}
 
 	@Test
 	public void testMoveNodesSame() {
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+
 			String branchUuid = project().getLatestBranch().getUuid();
 			Node sourceNode = folder("news");
-			String oldParentUuid = sourceNode.getParentNode(branchUuid).getUuid();
-			assertNotEquals(sourceNode.getUuid(), sourceNode.getParentNode(branchUuid).getUuid());
+			String oldParentUuid = nodeDao.getParentNode(sourceNode, branchUuid).getUuid();
+			assertNotEquals(sourceNode.getUuid(), nodeDao.getParentNode(sourceNode, branchUuid).getUuid());
 			call(() -> client().moveNode(PROJECT_NAME, sourceNode.getUuid(), sourceNode.getUuid()), BAD_REQUEST, "node_move_error_same_nodes");
-			assertEquals("The node should not have been moved but it was.", oldParentUuid, folder("news").getParentNode(branchUuid).getUuid());
+			assertEquals("The node should not have been moved but it was.", oldParentUuid, nodeDao.getParentNode(folder("news"), branchUuid).getUuid());
 		}
 	}
 
 	@Test
 	public void testMoveNodeIntoChildNode() {
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+
 			String branchUuid = project().getLatestBranch().getUuid();
 			Node sourceNode = folder("news");
 			Node targetNode = folder("2015");
-			String oldParentUuid = sourceNode.getParentNode(branchUuid).getUuid();
-			assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode(branchUuid).getUuid());
+			String oldParentUuid = nodeDao.getParentNode(sourceNode, branchUuid).getUuid();
+			assertNotEquals(targetNode.getUuid(), nodeDao.getParentNode(sourceNode, branchUuid).getUuid());
 
 			call(() -> client().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid()), BAD_REQUEST,
 				"node_move_error_not_allowed_to_move_node_into_one_of_its_children");
 
-			assertEquals("The node should not have been moved but it was.", oldParentUuid, sourceNode.getParentNode(branchUuid).getUuid());
+			assertEquals("The node should not have been moved but it was.", oldParentUuid, nodeDao.getParentNode(sourceNode, branchUuid).getUuid());
 		}
 	}
 
@@ -88,17 +95,21 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 		Node targetNode = folder("2015");
 
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+
 			RoleDaoWrapper roleDao = tx.data().roleDao();
-			assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode(initialBranchUuid()).getUuid());
+			assertNotEquals(targetNode.getUuid(), nodeDao.getParentNode(sourceNode, initialBranchUuid()).getUuid());
 			roleDao.revokePermissions(role(), sourceNode, UPDATE_PERM);
 			tx.success();
 		}
 
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+
 			call(() -> client().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid()), FORBIDDEN, "error_missing_perm",
 				sourceNode.getUuid(), UPDATE_PERM.getRestPerm().getName());
 			assertNotEquals("The source node should not have been moved.", targetNode.getUuid(),
-				folder("deals").getParentNode(initialBranchUuid()).getUuid());
+				nodeDao.getParentNode(folder("deals"), initialBranchUuid()).getUuid());
 		}
 	}
 
@@ -109,8 +120,14 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 		String branchUuid = initialBranchUuid();
 		String sourceNodeUuid = tx(() -> sourceNode.getUuid());
 		String targetNodeUuid = tx(() -> targetNode.getUuid());
-		String oldSourceParentId = tx(() -> sourceNode.getParentNode(branchUuid).getUuid());
-		assertNotEquals(targetNodeUuid, tx(() -> sourceNode.getParentNode(branchUuid).getUuid()));
+		String oldSourceParentId = tx(tx -> {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			return nodeDao.getParentNode(sourceNode, branchUuid).getUuid();
+		});
+		assertNotEquals(targetNodeUuid, tx(tx -> {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			return nodeDao.getParentNode(sourceNode, branchUuid).getUuid();
+		}));
 
 		expect(NODE_MOVED).match(1, NodeMovedEventModel.class, event -> {
 			assertEquals(sourceNodeUuid, event.getUuid());
@@ -122,11 +139,13 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 		awaitEvents();
 		waitForSearchIdleEvent();
 
-		try (Tx tx2 = tx()) {
+		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+
 			assertNotEquals("The source node parent uuid should have been updated.", oldSourceParentId,
-				sourceNode.getParentNode(branchUuid).getUuid());
+				nodeDao.getParentNode(sourceNode, branchUuid).getUuid());
 			assertEquals("The source node should have been moved and the target uuid should match the parent node uuid of the source node.",
-				targetNode.getUuid(), sourceNode.getParentNode(branchUuid).getUuid());
+				targetNode.getUuid(), nodeDao.getParentNode(sourceNode, branchUuid).getUuid());
 			assertEquals("A store event for each language variation per version should occure", 4, trackingSearchProvider().getStoreEvents().size());
 		}
 		// TODO assert entries

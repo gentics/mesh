@@ -25,6 +25,7 @@ import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
@@ -80,13 +81,14 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testMeshNodeStructure() {
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			Node newsNode = content("news overview");
 			assertNotNull(newsNode);
 			Node newSubNode;
 			newSubNode = newsNode.create(user(), getSchemaContainer().getLatestVersion(), project());
 
-			assertEquals(1, size(newsNode.getChildren()));
-			Node firstChild = newsNode.getChildren().iterator().next();
+			assertEquals(1, size(nodeDao.getChildren(newsNode)));
+			Node firstChild = nodeDao.getChildren(newsNode).iterator().next();
 			assertEquals(newSubNode.getUuid(), firstChild.getUuid());
 		}
 	}

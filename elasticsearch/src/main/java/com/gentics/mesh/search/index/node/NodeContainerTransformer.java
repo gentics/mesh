@@ -22,6 +22,7 @@ import org.jsoup.Jsoup;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
@@ -496,6 +497,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	 */
 	public JsonObject toDocument(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
 		TagDaoWrapper tagDao = Tx.get().data().tagDao();
+		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
 		Node node = container.getParentNode();
 		JsonObject document = new JsonObject();
 		document.put("uuid", node.getUuid());
@@ -511,8 +513,8 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 		addPermissionInfo(document, node, type);
 
 		// The basenode has no parent.
-		if (node.getParentNode(branchUuid) != null) {
-			addParentNodeInfo(document, node.getParentNode(branchUuid));
+		if (nodeDao.getParentNode(node, branchUuid) != null) {
+			addParentNodeInfo(document, nodeDao.getParentNode(node, branchUuid));
 		}
 
 		String language = container.getLanguageTag();

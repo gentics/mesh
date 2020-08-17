@@ -7,12 +7,13 @@ import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.changelog.highlevel.AbstractHighLevelChange;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.FramedTransactionalGraph;
@@ -52,6 +53,8 @@ public class RestructureWebrootIndex extends AbstractHighLevelChange {
 
 	@Override
 	public void apply() {
+		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+
 		log.info("Applying change: " + getName());
 		FramedTransactionalGraph graph = Tx.getActive().getGraph();
 		Iterable<? extends GraphFieldContainerEdgeImpl> edges = graph.getFramedEdgesExplicit("@class", HAS_FIELD_CONTAINER,
@@ -72,7 +75,7 @@ public class RestructureWebrootIndex extends AbstractHighLevelChange {
 				if (segment != null && !segment.trim().isEmpty()) {
 					Node node = container.getParentNode();
 					if (node != null) {
-						node = node.getParentNode(branchUuid);
+						node = nodeDao.getParentNode(node, branchUuid);
 					}
 					String newInfo = GraphFieldContainerEdgeImpl.composeSegmentInfo(node, segment);
 					edge.setSegmentInfo(newInfo);

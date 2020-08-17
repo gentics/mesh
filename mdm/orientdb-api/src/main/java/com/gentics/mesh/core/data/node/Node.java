@@ -18,12 +18,10 @@ import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.HibNode;
-import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.ProjectElement;
 import com.gentics.mesh.core.data.Taggable;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.page.TransformablePage;
@@ -32,7 +30,6 @@ import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeTaggedEventModel;
@@ -182,9 +179,9 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	NodeGraphFieldContainer createGraphFieldContainer(String languageTag, HibBranch branch, HibUser user);
 
 	/**
-	 * Like {@link #createGraphFieldContainer(Language, HibBranch, User)}, but let the new graph field container be a clone of the given original (if not null).
+	 * Like {@link #createGraphFieldContainer(String, HibBranch, HibUser)}, but let the new graph field container be a clone of the given original (if not null).
 	 *
-	 * @param language
+	 * @param languageTag
 	 * @param branch
 	 * @param editor
 	 *            User which will be set as editor
@@ -272,7 +269,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *
 	 * @return
 	 */
-	TraversalResult<? extends Node> getChildren();
+	TraversalResult<Node> getChildren();
 
 	/**
 	 * Return the children for this node in the given branch.
@@ -280,26 +277,12 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param branchUuid
 	 * @return
 	 */
-	TraversalResult<? extends Node> getChildren(String branchUuid);
+	TraversalResult<Node> getChildren(String branchUuid);
 
 	/**
 	 * Return the children for this node. Only fetches nodes from the provided branch and also checks permissions.
 	 */
 	Stream<Node> getChildrenStream(InternalActionContext ac);
-
-	/**
-	 * Return the list of children for this node, that the given user has read permission for. Filter by the provides information.
-	 *
-	 * @param requestUser
-	 *            user
-	 * @param branchUuid
-	 *            branch Uuid
-	 * @param languageTags
-	 * @param type
-	 *            edge type
-	 * @return
-	 */
-	Stream<? extends Node> getChildren(MeshAuthUser requestUser, String branchUuid, List<String> languageTags, ContainerType type);
 
 	/**
 	 * Returns the parent node of this node.
@@ -366,7 +349,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param pagingParameter
 	 * @return
 	 */
-	TransformablePage<? extends Node> getChildren(InternalActionContext ac, List<String> languageTags, String branchUuid, ContainerType type,
+	TransformablePage<Node> getChildren(InternalActionContext ac, List<String> languageTags, String branchUuid, ContainerType type,
 		PagingParameters pagingParameter);
 
 	/**
@@ -709,7 +692,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	NodeFieldListItem toListItem(InternalActionContext ac, String[] languageTags);
 
 	/**
-	 * Delete the node. Please use {@link #deleteFromBranch(Branch, EventQueueBatch)} if you want to delete the node just from a specific branch.
+	 * Delete the node. Please use {@link #deleteFromBranch(InternalActionContext, HibBranch, BulkActionContext, boolean)} if you want to delete the node just from a specific branch.
 	 *
 	 * @param bac
 	 * @param ignoreChecks

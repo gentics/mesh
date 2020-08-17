@@ -26,7 +26,6 @@ import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
@@ -499,20 +498,16 @@ public class NodeWrapper implements Node {
 		delegate.setProject(project);
 	}
 
-	public TraversalResult<? extends Node> getChildren() {
+	public TraversalResult<Node> getChildren() {
 		return delegate.getChildren();
 	}
 
-	public TraversalResult<? extends Node> getChildren(String branchUuid) {
+	public TraversalResult<Node> getChildren(String branchUuid) {
 		return delegate.getChildren(branchUuid);
 	}
 
 	public Stream<Node> getChildrenStream(InternalActionContext ac) {
 		return delegate.getChildrenStream(ac).map(NodeWrapper::new);
-	}
-
-	public Stream<? extends Node> getChildren(MeshAuthUser requestUser, String branchUuid, List<String> languageTags, ContainerType type) {
-		return delegate.getChildren(requestUser, branchUuid, languageTags, type);
 	}
 
 	public NodeWrapper getParentNode(String branchUuid) {
@@ -535,7 +530,7 @@ public class NodeWrapper implements Node {
 		return wrap(delegate.create(creator, schemaVersion, project, branch, uuid));
 	}
 
-	public TransformablePage<? extends Node> getChildren(InternalActionContext ac, List<String> languageTags, String branchUuid, ContainerType type,
+	public TransformablePage<Node> getChildren(InternalActionContext ac, List<String> languageTags, String branchUuid, ContainerType type,
 		PagingParameters pagingParameter) {
 		return delegate.getChildren(ac, languageTags, branchUuid, type, pagingParameter);
 	}

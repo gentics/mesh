@@ -18,7 +18,6 @@ import static com.gentics.mesh.example.ExampleUuids.UUID_2;
 import static com.gentics.mesh.example.ExampleUuids.UUID_3;
 import static com.gentics.mesh.example.ExampleUuids.UUID_4;
 import static com.gentics.mesh.example.ExampleUuids.UUID_5;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -295,7 +294,6 @@ public final class TestMocks {
 	public static Node mockNode(Node parentNode, Project project, User user, String languageTag, Tag tagA, Tag tagB) {
 		Node node = mock(Node.class);
 
-		when(node.getParentNode(anyString())).thenReturn(parentNode);
 		when(node.getProject()).thenReturn(project);
 
 		TraversalResult<HibTag> tagResult = new TraversalResult<>(Arrays.asList(tagA, tagB));

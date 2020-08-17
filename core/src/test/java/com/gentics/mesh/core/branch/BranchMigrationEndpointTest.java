@@ -20,6 +20,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Tx;
@@ -67,7 +68,9 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 
 		published = Arrays.asList(folder("news"), folder("2015"), folder("2014"), folder("march"));
 		try (Tx tx = tx()) {
-			nodes = project.getNodeRoot().findAll().stream().filter(node -> node.getParentNode(project.getLatestBranch().getUuid()) != null)
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+
+			nodes = project.getNodeRoot().findAll().stream().filter(node -> nodeDao.getParentNode(node, project.getLatestBranch().getUuid()) != null)
 				.collect(Collectors.toList());
 			assertThat(nodes).as("Nodes list").isNotEmpty();
 		}
@@ -92,6 +95,8 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 		triggerAndWaitForJob(requestBranchMigration(newBranch));
 
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+
 			assertThat(newBranch.isMigrated()).as("Branch migration status").isEqualTo(true);
 
 			nodes.forEach(node -> {
@@ -108,11 +113,11 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 						.isNotNull().isEmpty();
 				}
 
-				Node initialParent = node.getParentNode(initialBranchUuid());
+				Node initialParent = nodeDao.getParentNode(node, initialBranchUuid());
 				if (initialParent == null) {
-					assertThat(node.getParentNode(newBranch.getUuid())).as("Parent in new branch").isNull();
+					assertThat(nodeDao.getParentNode(node, newBranch.getUuid())).as("Parent in new branch").isNull();
 				} else {
-					assertThat(node.getParentNode(newBranch.getUuid())).as("Parent in new branch").isNotNull()
+					assertThat(nodeDao.getParentNode(node, newBranch.getUuid())).as("Parent in new branch").isNotNull()
 						.isEqualToComparingOnlyGivenFields(initialParent, "uuid");
 				}
 

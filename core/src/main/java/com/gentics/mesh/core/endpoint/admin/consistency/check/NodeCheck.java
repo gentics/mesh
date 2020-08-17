@@ -10,6 +10,7 @@ import java.util.Set;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.node.Node;
@@ -88,7 +89,7 @@ public class NodeCheck extends AbstractConsistencyCheck {
 	 * Check that the node has not more than one GFC of the type for each branch
 	 * @param node node
 	 * @param type GFC type
-	 * @param response check response
+	 * @param result check response
 	 */
 	private void checkGraphFieldContainerUniqueness(Node node, ContainerType type, ConsistencyCheckResult result) {
 		String uuid = node.getUuid();
@@ -112,6 +113,8 @@ public class NodeCheck extends AbstractConsistencyCheck {
 	 * @param result check response
 	 */
 	private void checkParentNodes(Node node, ConsistencyCheckResult result) {
+		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+
 		Set<String> branchUuids = new HashSet<>();
 		for (GraphFieldContainerEdgeImpl edge : node.outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.INITIAL.getCode())
 				.frameExplicit(GraphFieldContainerEdgeImpl.class)) {
@@ -119,7 +122,7 @@ public class NodeCheck extends AbstractConsistencyCheck {
 		}
 
 		for (String branchUuid : branchUuids) {
-			Node branchParent = node.getParentNode(branchUuid);
+			Node branchParent = nodeDao.getParentNode(node, branchUuid);
 			// parent node has to exist and has to have at least one DRAFT graphfieldcontainer in the branch
 			if (branchParent == null) {
 				result.addInconsistency(String.format("The node does not have a parent node in branch %s", branchUuid), node.getUuid(), HIGH);

@@ -14,6 +14,7 @@ import org.junit.Test;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
@@ -47,6 +48,7 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testReadPublishedNodesForTag() {
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 
 			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParametersImpl().setRecursive(true)));
 			NodeListResponse nodeList = call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
@@ -56,7 +58,7 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 			// publish the node and its parent
 			InternalActionContext ac = mockActionContext();
 			BulkActionContext bac = createBulkContext();
-			content("concorde").getParentNode(project().getLatestBranch().getUuid()).publish(ac, bac);
+			nodeDao.getParentNode(content("concorde"), project().getLatestBranch().getUuid()).publish(ac, bac);
 			content("concorde").publish(ac, bac);
 
 			nodeList = call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid()));

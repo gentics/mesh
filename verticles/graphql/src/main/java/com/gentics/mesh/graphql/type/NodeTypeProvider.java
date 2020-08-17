@@ -34,6 +34,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
@@ -113,13 +114,15 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	 * @return
 	 */
 	public Object parentNodeFetcher(DataFetchingEnvironment env) {
+		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+
 		NodeContent content = env.getSource();
 		if (content == null) {
 			return null;
 		}
 		GraphQLContext gc = env.getContext();
 		String uuid = gc.getBranch().getUuid();
-		Node parentNode = content.getNode().getParentNode(uuid);
+		Node parentNode = nodeDao.getParentNode(content.getNode(), uuid);
 		// The project root node can have no parent. Lets check this and exit early.
 		if (parentNode == null) {
 			return null;
@@ -316,6 +319,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 			// .children
 			newPagingFieldWithFetcherBuilder("children", "Load child nodes of the node.", (env) -> {
+				NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
 				GraphQLContext gc = env.getContext();
 				NodeContent content = env.getSource();
 				if (content == null) {
@@ -325,7 +329,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				List<String> languageTags = getLanguageArgument(env, content);
 				ContainerType type = getNodeVersion(env);
 
-				Stream<NodeContent> nodes = content.getNode().getChildrenStream(gc)
+				Stream<NodeContent> nodes = nodeDao.getChildrenStream(content.getNode(), gc)
 					.map(item -> new NodeContent(item, item.findVersion(gc, languageTags, type), languageTags, type))
 					.filter(item -> item.getContainer() != null)
 					.filter(item -> gc.hasReadPerm(item.getContainer()));

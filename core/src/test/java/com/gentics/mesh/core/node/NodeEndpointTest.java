@@ -27,7 +27,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
@@ -52,6 +51,7 @@ import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -774,6 +774,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		HibBranch newBranch = tx(() -> createBranch("newbranch"));
 
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+
 			NodeListResponse restResponse = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 1000L),
 				new VersioningParametersImpl().draft()));
 			assertThat(restResponse.getData()).as("Node List for latest branch").isEmpty();
@@ -785,7 +787,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			// update a single node in the new branch
 			Node node = folder("news");
 			NodeCreateRequest create = new NodeCreateRequest();
-			create.setParentNodeUuid(node.getParentNode(project().getInitialBranch().getUuid()).getUuid());
+			create.setParentNodeUuid(nodeDao.getParentNode(node, project().getInitialBranch().getUuid()).getUuid());
 			create.setLanguage("en");
 			create.getFields().put("name", FieldUtil.createStringField("News new branch"));
 			call(() -> client().createNode(node.getUuid(), PROJECT_NAME, create));
@@ -1151,10 +1153,12 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String folderUuid = tx(() -> folder("2015").getUuid());
 		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, folderUuid, new VersioningParametersImpl().draft()));
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+
 			String branchUuid = project().getLatestBranch().getUuid();
 			assertThat(folder("2015")).matches(response);
 			assertNotNull(response.getParentNode());
-			assertEquals(folder("2015").getParentNode(branchUuid).getUuid(), response.getParentNode().getUuid());
+			assertEquals(nodeDao.getParentNode(folder("2015"), branchUuid).getUuid(), response.getParentNode().getUuid());
 			assertEquals("News", response.getParentNode().getDisplayName());
 			assertEquals("en", response.getLanguage());
 		}
@@ -1174,10 +1178,12 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, folderUuid, new VersioningParametersImpl().draft()));
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+
 			String branchUuid = project().getLatestBranch().getUuid();
 			assertThat(folder("2015")).matches(response);
 			assertNotNull(response.getParentNode());
-			assertEquals(folder("2015").getParentNode(branchUuid).getUuid(), response.getParentNode().getUuid());
+			assertEquals(nodeDao.getParentNode(folder("2015"), branchUuid).getUuid(), response.getParentNode().getUuid());
 			assertEquals("News", response.getParentNode().getDisplayName());
 			assertEquals("en", response.getLanguage());
 		}

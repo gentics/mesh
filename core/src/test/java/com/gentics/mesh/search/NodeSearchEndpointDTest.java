@@ -19,6 +19,7 @@ import org.junit.runners.Parameterized;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
@@ -154,6 +155,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 	public void testSearchManyNodesWithMicronodes() throws Exception {
 		long numAdditionalNodes = 99;
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			String branchUuid = project().getLatestBranch().getUuid();
 			addMicronodeField();
@@ -162,7 +164,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 			Node concorde = content("concorde");
 
 			HibProject project = concorde.getProject();
-			Node parentNode = concorde.getParentNode(branchUuid);
+			Node parentNode = nodeDao.getParentNode(concorde, branchUuid);
 			SchemaVersion schemaVersion = concorde.getSchemaContainer().getLatestVersion();
 
 			for (int i = 0; i < numAdditionalNodes; i++) {
