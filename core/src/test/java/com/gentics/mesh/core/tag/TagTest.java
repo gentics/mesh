@@ -22,6 +22,7 @@ import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
@@ -124,6 +125,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testNodeTagging() throws Exception {
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			TagDaoWrapper tagDao = tx.data().tagDao();
 			// 1. Create the tag
 			HibTagFamily root = tagFamily("basic");
@@ -144,7 +146,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			germanContainer.createString("name").setString("german node name");
 
 			// 3. Assign the tag to the node
-			node.addTag(tag, branch);
+			nodeDao.addTag(node, tag, branch);
 
 			// 4. Reload the tag and inspect the tagged nodes
 			HibTag reloadedTag = meshRoot().getTagRoot().findByUuid(tag.getUuid());
@@ -168,6 +170,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testNodeTaggingInBranch() throws Exception {
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			TagDaoWrapper tagDao = tx.data().tagDao();
 			// 1. Create the tag
 			HibTagFamily root = tagFamily("basic");
@@ -189,10 +192,10 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			// 4. Create and Tag a node
 			Node node = folder("2015").create(user(), getSchemaContainer().getLatestVersion(), project);
-			node.addTag(tag, initialBranch);
+			nodeDao.addTag(node, tag, initialBranch);
 
 			// 5. Assert
-			assertThat(new ArrayList<HibTag>(node.getTags(initialBranch).list())).as("Tags in initial Release")
+			assertThat(new ArrayList<HibTag>(nodeDao.getTags(node, initialBranch).list())).as("Tags in initial Release")
 				.usingElementComparatorOnFields("uuid", "name")
 				.containsOnly(tag);
 			assertThat(new ArrayList<Node>(tagDao.getNodes(tag, initialBranch).list())).as("Nodes with tag in initial Release")
@@ -200,14 +203,14 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 					"uuid")
 				.containsOnly(node);
 
-			assertThat(node.getTags(newBranch).list()).as("Tags in new Branch").isEmpty();
+			assertThat(nodeDao.getTags(node, newBranch).list()).as("Tags in new Branch").isEmpty();
 			assertThat(new ArrayList<Node>(tagDao.getNodes(tag, newBranch).list())).as("Nodes with tag in new Branch").isEmpty();
 
 			// 6. Tag in new branch
-			node.addTag(tag, newBranch);
+			nodeDao.addTag(node, tag, newBranch);
 
 			// 7. Assert again
-			assertThat(new ArrayList<HibTag>(node.getTags(initialBranch).list())).as("Tags in initial Release")
+			assertThat(new ArrayList<HibTag>(nodeDao.getTags(node, initialBranch).list())).as("Tags in initial Release")
 				.usingElementComparatorOnFields("uuid", "name")
 				.containsOnly(tag);
 			assertThat(new ArrayList<Node>(tagDao.getNodes(tag, initialBranch).list())).as("Nodes with tag in initial Release")
@@ -215,7 +218,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 					"uuid")
 				.containsOnly(node);
 
-			assertThat(new ArrayList<HibTag>(node.getTags(newBranch).list())).as("Tags in new Release").usingElementComparatorOnFields("uuid", "name")
+			assertThat(new ArrayList<HibTag>(nodeDao.getTags(node, newBranch).list())).as("Tags in new Release").usingElementComparatorOnFields("uuid", "name")
 				.containsOnly(tag);
 			assertThat(new ArrayList<Node>(tagDao.getNodes(tag, newBranch).list())).as("Nodes with tag in new Release").usingElementComparatorOnFields("uuid")
 				.containsOnly(node);
@@ -225,6 +228,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testMigrateTagsForBranch() throws Exception {
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			TagDaoWrapper tagDao = tx.data().tagDao();
 			// 1. Create the tag
 			HibTagFamily root = tagFamily("basic");
@@ -236,8 +240,8 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			// 2. Create and Tag a node
 			Node node = folder("2015");
-			node.removeAllTags(initialBranch);
-			node.addTag(tag, initialBranch);
+			nodeDao.removeAllTags(node, initialBranch);
+			nodeDao.addTag(node, tag, initialBranch);
 
 			// 3. Create new branch
 			HibBranch newBranch = createBranch("newbranch");
@@ -249,12 +253,12 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			branchMigrationHandler.migrateBranch(context).blockingAwait();
 
 			// 5. Assert
-			assertThat(new ArrayList<HibTag>(node.getTags(initialBranch).list())).as("Tags in initial Branch")
+			assertThat(new ArrayList<HibTag>(nodeDao.getTags(node, initialBranch).list())).as("Tags in initial Branch")
 				.usingElementComparatorOnFields("uuid", "name").containsOnly(tag);
 			assertThat(new ArrayList<Node>(tagDao.getNodes(tag, initialBranch).list())).as("Nodes with tag in initial Branch").usingElementComparatorOnFields(
 				"uuid").containsOnly(node);
 
-			assertThat(new ArrayList<HibTag>(node.getTags(newBranch).list())).as("Tags in new Branch").usingElementComparatorOnFields("uuid", "name")
+			assertThat(new ArrayList<HibTag>(nodeDao.getTags(node, newBranch).list())).as("Tags in new Branch").usingElementComparatorOnFields("uuid", "name")
 				.containsOnly(tag);
 			assertThat(new ArrayList<Node>(tagDao.getNodes(tag, newBranch).list())).as("Nodes with tag in new Branch").usingElementComparatorOnFields("uuid")
 				.containsOnly(node);
@@ -270,6 +274,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 		HibTag tag = null;
 
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			TagDaoWrapper tagDao = tx.data().tagDao();
 			// 1. Create the tag
 			HibTagFamily root = tagFamily("basic");
@@ -279,8 +284,8 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertNotNull(tagDao.findByUuid(root, uuid));
 
 			// 2. Create and Tag a node
-			node.removeAllTags(initialBranch);
-			node.addTag(tag, initialBranch);
+			nodeDao.removeAllTags(node, initialBranch);
+			nodeDao.addTag(node, tag, initialBranch);
 
 			// 3. Create new branch
 			newBranch = createBranch("newbranch");
@@ -295,15 +300,16 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 		branchMigrationHandler.migrateBranch(context).blockingAwait();
 
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			TagDaoWrapper tagDao = tx.data().tagDao();
 			// 5. Untag in initial branch
-			node.removeTag(tag, initialBranch);
+			nodeDao.removeTag(node, tag, initialBranch);
 
 			// 6. Assert
-			assertThat(node.getTags(initialBranch).list()).as("Tags in initial Branch").isEmpty();
+			assertThat(nodeDao.getTags(node, initialBranch).list()).as("Tags in initial Branch").isEmpty();
 			assertThat(new ArrayList<Node>(tagDao.getNodes(tag, initialBranch).list())).as("Nodes with tag in initial Branch").isEmpty();
 
-			assertThat(new ArrayList<HibTag>(node.getTags(newBranch).list())).as("Tags in new Branch").usingElementComparatorOnFields("uuid", "name")
+			assertThat(new ArrayList<HibTag>(nodeDao.getTags(node, newBranch).list())).as("Tags in new Branch").usingElementComparatorOnFields("uuid", "name")
 				.containsOnly(tag);
 			assertThat(new ArrayList<Node>(tagDao.getNodes(tag, newBranch).list())).as("Nodes with tag in new Branch").usingElementComparatorOnFields("uuid")
 				.containsOnly(node);

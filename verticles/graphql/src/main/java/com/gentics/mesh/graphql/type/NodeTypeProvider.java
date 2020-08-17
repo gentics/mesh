@@ -34,6 +34,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
@@ -42,6 +43,7 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -346,13 +348,15 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			// .tags
 			newFieldDefinition().name("tags").argument(createPagingArgs()).type(new GraphQLTypeReference(TAG_PAGE_TYPE_NAME)).dataFetcher((
 				env) -> {
+				NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+
 				GraphQLContext gc = env.getContext();
 				NodeContent content = env.getSource();
 				if (content == null) {
 					return null;
 				}
 				Node node = content.getNode();
-				return node.getTags(gc.getUser(), getPagingInfo(env), gc.getBranch());
+				return nodeDao.getTags(node, gc.getUser(), getPagingInfo(env), gc.getBranch());
 			}).build(),
 
 			// TODO Fix name confusion and check what version of schema should be used to determine this type

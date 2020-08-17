@@ -403,11 +403,11 @@ public class NodeWrapper implements Node {
 		delegate.linkIn(vertex, labels);
 	}
 
-	public TraversalResult<? extends HibTag> getTags(HibBranch branch) {
+	public TraversalResult<HibTag> getTags(HibBranch branch) {
 		return delegate.getTags(branch);
 	}
 
-	public TransformablePage<? extends HibTag> getTags(HibUser user, PagingParameters params, HibBranch branch) {
+	public TransformablePage<HibTag> getTags(HibUser user, PagingParameters params, HibBranch branch) {
 		return delegate.getTags(user, params, branch);
 	}
 

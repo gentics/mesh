@@ -16,6 +16,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.context.BranchMigrationContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -97,12 +98,13 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 	 * @param node
 	 * @param batch
 	 * @param oldBranch
-	 * @param newBranc
+	 * @param newBranch
 	 * @param errorsDetected
 	 */
 	private void migrateNode(Node node, EventQueueBatch batch, HibBranch oldBranch, HibBranch newBranch, List<Exception> errorsDetected) {
 		try {
 			db.tx((tx) -> {
+				NodeDaoWrapper nodeDao = tx.data().nodeDao();
 
 				// Check whether the node already has an initial container and thus was already migrated
 				if (node.getGraphFieldContainers(newBranch, INITIAL).hasNext()) {
@@ -160,7 +162,7 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 				});
 
 				// Migrate tags
-				node.getTags(oldBranch).forEach(tag -> node.addTag(tag, newBranch));
+				nodeDao.getTags(node, oldBranch).forEach(tag -> nodeDao.addTag(node, tag, newBranch));
 			});
 		} catch (Exception e1) {
 			log.error("Error while handling node {" + node.getUuid() + "} during schema migration.", e1);

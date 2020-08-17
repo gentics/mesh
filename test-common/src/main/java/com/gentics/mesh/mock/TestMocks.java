@@ -298,8 +298,8 @@ public final class TestMocks {
 		when(node.getParentNode(anyString())).thenReturn(parentNode);
 		when(node.getProject()).thenReturn(project);
 
-		TraversalResult<? extends HibTag> tagResult = new TraversalResult<>(Arrays.asList(tagA, tagB));
-		Mockito.<TraversalResult<? extends HibTag>>when(node.getTags(Mockito.any())).thenReturn(tagResult);
+		TraversalResult<HibTag> tagResult = new TraversalResult<>(Arrays.asList(tagA, tagB));
+		Mockito.when(node.getTags(Mockito.any())).thenReturn(tagResult);
 
 		Schema schemaContainer = mockSchemaContainer("content", user);
 		SchemaVersion latestVersion = schemaContainer.getLatestVersion();

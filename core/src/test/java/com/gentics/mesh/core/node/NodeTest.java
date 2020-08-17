@@ -4,7 +4,6 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.rest.SortOrder.UNSORTED;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.util.TestUtils.size;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -27,6 +26,7 @@ import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
@@ -94,16 +94,18 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testTaggingOfMeshNode() {
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+
 			Node newsNode = content("news overview");
 			assertNotNull(newsNode);
 
 			HibTag carTag = tag("car");
 			assertNotNull(carTag);
 
-			newsNode.addTag(carTag, project().getLatestBranch());
+			nodeDao.addTag(newsNode, carTag, project().getLatestBranch());
 
-			assertEquals(1, newsNode.getTags(project().getLatestBranch()).count());
-			HibTag firstTag = newsNode.getTags(project().getLatestBranch()).iterator().next();
+			assertEquals(1, nodeDao.getTags(newsNode, project().getLatestBranch()).count());
+			HibTag firstTag = nodeDao.getTags(newsNode, project().getLatestBranch()).iterator().next();
 			assertEquals(carTag.getUuid(), firstTag.getUuid());
 		}
 	}

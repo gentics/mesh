@@ -347,7 +347,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public TraversalResult<? extends Tag> getTags(HibBranch branch) {
+	public TraversalResult<HibTag> getTags(HibBranch branch) {
 		return new TraversalResult<>(TagEdgeImpl.getTagTraversal(this, branch).frameExplicit(TagImpl.class));
 	}
 
@@ -1580,9 +1580,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public TransformablePage<? extends Tag> getTags(HibUser user, PagingParameters params, HibBranch branch) {
+	public TransformablePage<HibTag> getTags(HibUser user, PagingParameters params, HibBranch branch) {
 		VertexTraversal<?, ?, ?> traversal = TagEdgeImpl.getTagTraversal(this, branch);
-		return new DynamicTransformablePageImpl<Tag>(user, traversal, params, READ_PERM, TagImpl.class);
+		return new DynamicTransformablePageImpl<>(user, traversal, params, READ_PERM, TagImpl.class);
 	}
 
 	@Override

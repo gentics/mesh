@@ -110,7 +110,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param branch
 	 * @return
 	 */
-	TraversalResult<? extends HibTag> getTags(HibBranch branch);
+	TraversalResult<HibTag> getTags(HibBranch branch);
 
 	/**
 	 * Return a page of all visible tags that are assigned to the node.
@@ -120,7 +120,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param branch
 	 * @return Page which contains the result
 	 */
-	TransformablePage<? extends HibTag> getTags(HibUser user, PagingParameters params, HibBranch branch);
+	TransformablePage<HibTag> getTags(HibUser user, PagingParameters params, HibBranch branch);
 
 	/**
 	 * Tests if the node is tagged with the given tag.

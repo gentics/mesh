@@ -55,6 +55,7 @@ import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.JobDaoWrapper;
 import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
@@ -67,6 +68,7 @@ import com.gentics.mesh.core.data.dao.impl.GroupDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.JobDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.LanguageDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.MicroschemaDaoWrapperImpl;
+import com.gentics.mesh.core.data.dao.impl.NodeDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.ProjectDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.RoleDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.SchemaDaoWrapperImpl;
@@ -187,6 +189,9 @@ public abstract class BindModule {
 
 	@Binds
 	abstract ProjectDaoWrapper bindProjectDao(ProjectDaoWrapperImpl e);
+
+	@Binds
+	abstract NodeDaoWrapper bindNodeDao(NodeDaoWrapperImpl e);
 
 	@Binds
 	abstract JobDaoWrapper bindJobDao(JobDaoWrapperImpl e);

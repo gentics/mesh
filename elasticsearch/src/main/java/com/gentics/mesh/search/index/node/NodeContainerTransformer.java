@@ -22,6 +22,7 @@ import org.jsoup.Jsoup;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
@@ -43,6 +44,7 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -493,6 +495,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	 * @return
 	 */
 	public JsonObject toDocument(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
+		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
 		Node node = container.getParentNode();
 		JsonObject document = new JsonObject();
 		document.put("uuid", node.getUuid());
@@ -502,9 +505,9 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 		document.put("created", toISO8601(node.getCreationTimestamp()));
 
 		addProject(document, node.getProject());
-		TraversalResult<? extends HibTag> tags = node.getTags(node.getProject().getLatestBranch());
+		TraversalResult<HibTag> tags = node.getTags(node.getProject().getLatestBranch());
 		addTags(document, tags);
-		addTagFamilies(document, node.getTags(node.getProject().getLatestBranch()));
+		addTagFamilies(document, nodeDao.getTags(node, node.getProject().getLatestBranch()));
 		addPermissionInfo(document, node, type);
 
 		// The basenode has no parent.

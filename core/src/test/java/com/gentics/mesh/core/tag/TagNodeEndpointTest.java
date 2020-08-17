@@ -14,6 +14,7 @@ import org.junit.Test;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
@@ -95,6 +96,7 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testTagOrder() {
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			TagDaoWrapper tagDao = tx.data().tagDao();
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			HibTagFamily root = tagFamily("basic");
@@ -104,9 +106,9 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 
 			Node node = content();
 
-			node.addTag(tag1, latestBranch());
-			node.addTag(tag3, latestBranch());
-			node.addTag(tag2, latestBranch());
+			nodeDao.addTag(node, tag1, latestBranch());
+			nodeDao.addTag(node, tag3, latestBranch());
+			nodeDao.addTag(node, tag2, latestBranch());
 
 			roleDao.grantPermissions(role(), tag1, READ_PERM);
 			roleDao.grantPermissions(role(), tag2, READ_PERM);
