@@ -14,7 +14,6 @@ import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.Node;
@@ -415,7 +414,7 @@ public class NodeWrapper implements Node {
 		delegate.unlinkOut(vertex, labels);
 	}
 
-	public boolean hasTag(Tag tag, HibBranch branch) {
+	public boolean hasTag(HibTag tag, HibBranch branch) {
 		return delegate.hasTag(tag, branch);
 	}
 

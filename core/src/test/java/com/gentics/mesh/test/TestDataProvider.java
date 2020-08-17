@@ -34,7 +34,6 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
@@ -248,7 +247,7 @@ public class TestDataProvider {
 	}
 
 	private void addContents() {
-		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+		TagDaoWrapper tagDao = Tx.get().data().tagDao();
 
 		Schema contentSchema = schemaContainers.get("content");
 
@@ -267,21 +266,21 @@ public class TestDataProvider {
 		Node concorde = addContent(folders.get("products"), "Concorde",
 			"Aérospatiale-BAC Concorde is a turbojet-powered supersonic passenger jet airliner that was in service from 1976 to 2003.",
 			"Die Aérospatiale-BAC Concorde 101/102, kurz Concorde (französisch und englisch für Eintracht, Einigkeit), ist ein Überschall-Passagierflugzeug, das von 1976 bis 2003 betrieben wurde.");
-		nodeDao.addTag(concorde, tags.get("plane"), project.getLatestBranch());
-		nodeDao.addTag(concorde, tags.get("twinjet"), project.getLatestBranch());
-		nodeDao.addTag(concorde, tags.get("red"), project.getLatestBranch());
+		tagDao.addTag(concorde, tags.get("plane"), project.getLatestBranch());
+		tagDao.addTag(concorde, tags.get("twinjet"), project.getLatestBranch());
+		tagDao.addTag(concorde, tags.get("red"), project.getLatestBranch());
 
 		Node hondaNR = addContent(folders.get("products"), "Honda NR",
 			"The Honda NR (New Racing) was a V-four motorcycle engine series started by Honda in 1979 with the 500cc NR500 Grand Prix racer that used oval pistons.",
 			"Die NR750 ist ein Motorrad mit Ovalkolben-Motor des japanischen Motorradherstellers Honda, von dem in den Jahren 1991 und 1992 300 Exemplare gebaut wurden.");
-		nodeDao.addTag(hondaNR, tags.get("vehicle"), project.getLatestBranch());
-		nodeDao.addTag(hondaNR, tags.get("motorcycle"), project.getLatestBranch());
-		nodeDao.addTag(hondaNR, tags.get("green"), project.getLatestBranch());
+		tagDao.addTag(hondaNR, tags.get("vehicle"), project.getLatestBranch());
+		tagDao.addTag(hondaNR, tags.get("motorcycle"), project.getLatestBranch());
+		tagDao.addTag(hondaNR, tags.get("green"), project.getLatestBranch());
 
 	}
 
 	private void addFolderStructure() {
-		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+		TagDaoWrapper tagDao = Tx.get().data().tagDao();
 
 		Node baseNode = project.getBaseNode();
 		// rootNode.addProject(project);
@@ -289,10 +288,10 @@ public class TestDataProvider {
 		Node news = addFolder(baseNode, "News", "Neuigkeiten", NEWS_UUID);
 		Node news2015 = addFolder(news, "2015", null);
 		if (getSize() == FULL) {
-			nodeDao.addTag(news2015, tags.get("car"), project.getLatestBranch());
-			nodeDao.addTag(news2015, tags.get("bike"), project.getLatestBranch());
-			nodeDao.addTag(news2015, tags.get("plane"), project.getLatestBranch());
-			nodeDao.addTag(news2015, tags.get("jeep"), project.getLatestBranch());
+			tagDao.addTag(news2015, tags.get("car"), project.getLatestBranch());
+			tagDao.addTag(news2015, tags.get("bike"), project.getLatestBranch());
+			tagDao.addTag(news2015, tags.get("plane"), project.getLatestBranch());
+			tagDao.addTag(news2015, tags.get("jeep"), project.getLatestBranch());
 
 			Node news2014 = addFolder(news, "2014", null);
 			addFolder(news2014, "March", "März");

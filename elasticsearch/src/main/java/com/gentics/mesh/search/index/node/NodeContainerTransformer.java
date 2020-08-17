@@ -22,7 +22,7 @@ import org.jsoup.Jsoup;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.binary.Binary;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
@@ -44,9 +44,9 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
@@ -495,7 +495,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	 * @return
 	 */
 	public JsonObject toDocument(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
-		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+		TagDaoWrapper tagDao = Tx.get().data().tagDao();
 		Node node = container.getParentNode();
 		JsonObject document = new JsonObject();
 		document.put("uuid", node.getUuid());
@@ -507,7 +507,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 		addProject(document, node.getProject());
 		TraversalResult<HibTag> tags = node.getTags(node.getProject().getLatestBranch());
 		addTags(document, tags);
-		addTagFamilies(document, nodeDao.getTags(node, node.getProject().getLatestBranch()));
+		addTagFamilies(document, tagDao.getTags(node, node.getProject().getLatestBranch()));
 		addPermissionInfo(document, node, type);
 
 		// The basenode has no parent.

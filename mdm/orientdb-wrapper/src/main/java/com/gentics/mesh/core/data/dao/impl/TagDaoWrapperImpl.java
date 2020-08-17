@@ -319,4 +319,34 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper implements TagDaoWrapp
 		TagFamily graphTagFamily = toTagFamily(tagFamily);
 		return graphTagFamily.computeCount();
 	}
+
+	@Override
+	public void addTag(Node node, HibTag tag, HibBranch branch) {
+		node.addTag(tag, branch);
+	}
+
+	@Override
+	public void removeTag(Node node, HibTag tag, HibBranch branch) {
+		node.removeTag(tag, branch);
+	}
+
+	@Override
+	public void removeAllTags(Node node, HibBranch branch) {
+		node.removeAllTags(branch);
+	}
+
+	@Override
+	public TraversalResult<HibTag> getTags(Node node, HibBranch branch) {
+		return node.getTags(branch);
+	}
+
+	@Override
+	public TransformablePage<? extends HibTag> getTags(Node node, HibUser user, PagingParameters params, HibBranch branch) {
+		return node.getTags(user, params, branch);
+	}
+
+	@Override
+	public boolean hasTag(Node node, HibTag tag, HibBranch branch) {
+		return node.hasTag(tag, branch);
+	}
 }

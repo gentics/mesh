@@ -5,7 +5,6 @@ import java.util.function.Predicate;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
@@ -127,4 +126,53 @@ public interface TagDaoWrapper extends TagDao, DaoWrapper<HibTag>, DaoTransforma
 
 	long computeCount(HibTagFamily tagFamily);
 
+	/**
+	 * Add the given tag to the list of tags for this node in the given branch.
+	 *
+	 * @param tag
+	 * @param branch
+	 */
+	void addTag(Node node, HibTag tag, HibBranch branch);
+
+	/**
+	 * Remove the given tag from the list of tags for this node in the given branch.
+	 *
+	 * @param tag
+	 * @param branch
+	 */
+	void removeTag(Node node, HibTag tag, HibBranch branch);
+
+	/**
+	 * Remove all tags for the given branch.
+	 *
+	 * @param branch
+	 */
+	void removeAllTags(Node node, HibBranch branch);
+
+	/**
+	 * Return a list of all tags that were assigned to this node in the given branch.
+	 *
+	 * @param branch
+	 * @return
+	 */
+	TraversalResult<HibTag> getTags(Node node, HibBranch branch);
+
+	/**
+	 * Return a page of all visible tags that are assigned to the node.
+	 *
+	 * @param user
+	 * @param params
+	 * @param branch
+	 * @return Page which contains the result
+	 */
+	TransformablePage<? extends HibTag> getTags(Node node, HibUser user, PagingParameters params, HibBranch branch);
+
+	/**
+	 * Tests if the node is tagged with the given tag.
+	 *
+	 * @param tag
+	 * @param branch
+	 * @return
+	 */
+	boolean hasTag(Node node, HibTag tag, HibBranch branch);
 }

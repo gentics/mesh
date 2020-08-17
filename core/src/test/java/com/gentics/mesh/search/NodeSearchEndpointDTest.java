@@ -19,9 +19,8 @@ import org.junit.runners.Parameterized;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -197,10 +196,10 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 		recreateIndices();
 
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			TagDaoWrapper tagDao = tx.data().tagDao();
 
 			Node node = content("concorde");
-			long previousTagCount = nodeDao.getTags(node, project().getLatestBranch()).count();
+			long previousTagCount = tagDao.getTags(node, project().getLatestBranch()).count();
 			// Create tags:
 			int tagCount = 20;
 			for (int i = 0; i < tagCount; i++) {

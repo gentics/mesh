@@ -34,7 +34,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
@@ -348,7 +348,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			// .tags
 			newFieldDefinition().name("tags").argument(createPagingArgs()).type(new GraphQLTypeReference(TAG_PAGE_TYPE_NAME)).dataFetcher((
 				env) -> {
-				NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+				TagDaoWrapper tagDao = Tx.get().data().tagDao();
 
 				GraphQLContext gc = env.getContext();
 				NodeContent content = env.getSource();
@@ -356,7 +356,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					return null;
 				}
 				Node node = content.getNode();
-				return nodeDao.getTags(node, gc.getUser(), getPagingInfo(env), gc.getBranch());
+				return tagDao.getTags(node, gc.getUser(), getPagingInfo(env), gc.getBranch());
 			}).build(),
 
 			// TODO Fix name confusion and check what version of schema should be used to determine this type

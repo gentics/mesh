@@ -20,7 +20,6 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
@@ -174,7 +173,6 @@ public class TxTest extends AbstractMeshTest {
 					for (int retry = 0; retry < maxRetry; retry++) {
 						try {
 							try (Tx tx = tx()) {
-								NodeDaoWrapper nodeDao = tx.data().nodeDao();
 								TagDaoWrapper tagDao = tx.data().tagDao();
 								if (retry == 0) {
 									try {
@@ -194,7 +192,7 @@ public class TxTest extends AbstractMeshTest {
 
 								HibTag tag = tagDao.create(reloadedTagFamily, "bogus_" + threadNo + "_" + currentRun, project(), reloadedUser);
 								// Reload the node
-								nodeDao.addTag(reloadedNode, tag, reloadedProject.getLatestBranch());
+								tagDao.addTag(reloadedNode, tag, reloadedProject.getLatestBranch());
 								tx.success();
 								if (retry == 0) {
 									try {
@@ -226,13 +224,13 @@ public class TxTest extends AbstractMeshTest {
 			}
 			// Thread.sleep(1000);
 			try (Tx tx = tx()) {
-				NodeDaoWrapper nodeDao = tx.data().nodeDao();
+				TagDaoWrapper tagDao = tx.data().tagDao();
 
 				int expect = nThreads * (r + 1);
 				Node reloadedNode = tx.getGraph().getFramedVertexExplicit(NodeImpl.class, node.getId());
 				// node.reload();
 				assertEquals("Expected {" + expect + "} tags since this is run {" + r + "}.", expect,
-						nodeDao.getTags(reloadedNode, project().getLatestBranch()).count());
+						tagDao.getTags(reloadedNode, project().getLatestBranch()).count());
 			}
 		}
 	}

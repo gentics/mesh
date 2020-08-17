@@ -25,7 +25,7 @@ import com.gentics.mesh.core.action.NodeDAOActions;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -217,10 +217,10 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		validateParameter(uuid, "uuid");
 
 		utils.syncTx(ac, tx -> {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			Node node = ac.getProject().getNodeRoot().loadObjectByUuid(ac, uuid, READ_PERM);
 			//TODO use DAO
-			TransformablePage<? extends HibTag> tagPage = nodeDao.getTags(node, ac.getUser(), ac.getPagingParameters(), ac.getBranch());
+			TransformablePage<? extends HibTag> tagPage = tagDao.getTags(node, ac.getUser(), ac.getPagingParameters(), ac.getBranch());
 			// Handle etag
 			if (ac.getGenericParameters().getETag()) {
 				String etag = tagPage.getETag(ac);
@@ -249,19 +249,19 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				NodeDaoWrapper nodeDao = tx.data().nodeDao();
+				TagDaoWrapper tagDao = tx.data().tagDao();
 				HibProject project = ac.getProject();
 				HibBranch branch = ac.getBranch();
 				Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 				Tag tag = boot.meshRoot().getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
 
-				if (nodeDao.hasTag(node, tag, branch)) {
+				if (tagDao.hasTag(node, tag, branch)) {
 					if (log.isDebugEnabled()) {
 						log.debug("Node {{}} is already tagged with tag {{}}", node.getUuid(), tag.getUuid());
 					}
 				} else {
 					utils.eventAction(batch -> {
-						nodeDao.addTag(node, tag, branch);
+						tagDao.addTag(node, tag, branch);
 
 						batch.add(node.onTagged(tag, branch, ASSIGNED));
 					});
@@ -289,15 +289,15 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				NodeDaoWrapper nodeDao = tx.data().nodeDao();
+				TagDaoWrapper tagDao = tx.data().tagDao();
 				HibProject project = ac.getProject();
 				HibBranch branch = ac.getBranch();
 				Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 				Tag tag = boot.meshRoot().getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
 
-				if (nodeDao.hasTag(node, tag, branch)) {
+				if (tagDao.hasTag(node, tag, branch)) {
 					utils.eventAction(batch -> {
-						nodeDao.removeTag(node, tag, branch);
+						tagDao.removeTag(node, tag, branch);
 						batch.add(node.onTagged(tag, branch, UNASSIGNED));
 					});
 				} else {

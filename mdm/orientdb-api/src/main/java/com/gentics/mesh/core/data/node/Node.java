@@ -22,7 +22,6 @@ import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.ProjectElement;
-import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.Taggable;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.branch.HibBranch;
@@ -129,7 +128,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param branch
 	 * @return
 	 */
-	boolean hasTag(Tag tag, HibBranch branch);
+	boolean hasTag(HibTag tag, HibBranch branch);
 
 	/**
 	 * Return the draft field container for the given language in the latest branch.
