@@ -1,9 +1,10 @@
 package com.gentics.mesh.core.data.dao;
 
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.madl.traversal.TraversalResult;
@@ -17,7 +18,7 @@ public interface NodeDaoWrapper extends NodeDao, DaoWrapper<Node>, DaoTransforma
 	 * @param tag
 	 * @param branch
 	 */
-	void addTag(Node node, Tag tag, Branch branch);
+	void addTag(Node node, HibTag tag, HibBranch branch);
 
 	/**
 	 * Remove the given tag from the list of tags for this node in the given branch.
@@ -25,14 +26,14 @@ public interface NodeDaoWrapper extends NodeDao, DaoWrapper<Node>, DaoTransforma
 	 * @param tag
 	 * @param branch
 	 */
-	void removeTag(Node node, Tag tag, Branch branch);
+	void removeTag(Node node, HibTag tag, HibBranch branch);
 
 	/**
 	 * Remove all tags for the given branch.
 	 *
 	 * @param branch
 	 */
-	void removeAllTags(Node node, Branch branch);
+	void removeAllTags(Node node, HibBranch branch);
 
 	/**
 	 * Return a list of all tags that were assigned to this node in the given branch.
@@ -40,7 +41,7 @@ public interface NodeDaoWrapper extends NodeDao, DaoWrapper<Node>, DaoTransforma
 	 * @param branch
 	 * @return
 	 */
-	TraversalResult<Tag> getTags(Node node, Branch branch);
+	TraversalResult<HibTag> getTags(Node node, HibBranch branch);
 
 	/**
 	 * Return a page of all visible tags that are assigned to the node.
@@ -50,7 +51,7 @@ public interface NodeDaoWrapper extends NodeDao, DaoWrapper<Node>, DaoTransforma
 	 * @param branch
 	 * @return Page which contains the result
 	 */
-	TransformablePage<Tag> getTags(Node node, HibUser user, PagingParameters params, Branch branch);
+	TransformablePage<? extends HibTag> getTags(Node node, HibUser user, PagingParameters params, HibBranch branch);
 
 	/**
 	 * Tests if the node is tagged with the given tag.
@@ -59,6 +60,6 @@ public interface NodeDaoWrapper extends NodeDao, DaoWrapper<Node>, DaoTransforma
 	 * @param branch
 	 * @return
 	 */
-	boolean hasTag(Node node, Tag tag, Branch branch);
+	boolean hasTag(Node node, Tag tag, HibBranch branch);
 
 }

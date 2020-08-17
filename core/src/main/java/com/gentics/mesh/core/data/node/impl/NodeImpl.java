@@ -70,6 +70,7 @@ import com.gentics.mesh.core.data.TagEdge;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.generic.AbstractGenericFieldContainerVertex;
@@ -893,7 +894,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 */
 	private void setTagsToRest(InternalActionContext ac, NodeResponse restNode, HibBranch branch) {
 		List<TagReference> list = getTags(branch).stream()
-			.map(Tag::transformToReference)
+			.map(HibTag::transformToReference)
 			.collect(Collectors.toList());
 		restNode.setTags(list);
 	}
@@ -1580,7 +1581,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public TransformablePage<HibTag> getTags(HibUser user, PagingParameters params, HibBranch branch) {
+	public TransformablePage<? extends HibTag> getTags(HibUser user, PagingParameters params, HibBranch branch) {
 		VertexTraversal<?, ?, ?> traversal = TagEdgeImpl.getTagTraversal(this, branch);
 		return new DynamicTransformablePageImpl<>(user, traversal, params, READ_PERM, TagImpl.class);
 	}
@@ -1780,7 +1781,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public TransformablePage<? extends Tag> updateTags(InternalActionContext ac, EventQueueBatch batch) {
+	public TransformablePage<? extends HibTag> updateTags(InternalActionContext ac, EventQueueBatch batch) {
 		List<HibTag> tags = getTagsToSet(ac, batch);
 		HibBranch branch = ac.getBranch();
 		applyTags(branch, tags, batch);
@@ -1796,7 +1797,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	private void applyTags(HibBranch branch, List<? extends HibTag> tags, EventQueueBatch batch) {
-		List<? extends Tag> currentTags = getTags(branch).list();
+		List<HibTag> currentTags = getTags(branch).list();
 
 		List<HibTag> toBeAdded = tags.stream()
 			.filter(StreamUtil.not(new HashSet<>(currentTags)::contains))
@@ -1998,6 +1999,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public String getSubETag(InternalActionContext ac) {
 		UserDaoWrapper userDao = Tx.get().data().userDao();
+		TagDaoWrapper tagDao = Tx.get().data().tagDao();
 		StringBuilder keyBuilder = new StringBuilder();
 
 		// Parameters
@@ -2057,10 +2059,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		keyBuilder.append(expandedFields);
 
 		// branch specific tags
-		for (Tag tag : getTags(branch)) {
+		for (HibTag tag : getTags(branch)) {
 			// Tags can't be moved across branches thus we don't need to add the
 			// tag family etag
-			keyBuilder.append(tag.getETag(ac));
+			keyBuilder.append(tagDao.getETag(tag, ac));
 		}
 
 		// branch specific children

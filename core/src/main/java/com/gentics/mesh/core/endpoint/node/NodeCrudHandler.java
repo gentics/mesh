@@ -220,7 +220,6 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			Node node = ac.getProject().getNodeRoot().loadObjectByUuid(ac, uuid, READ_PERM);
 			//TODO use DAO
-			asdf
 			TransformablePage<? extends HibTag> tagPage = nodeDao.getTags(node, ac.getUser(), ac.getPagingParameters(), ac.getBranch());
 			// Handle etag
 			if (ac.getGenericParameters().getETag()) {
@@ -479,7 +478,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			utils.syncTx(ac, tx -> {
 				HibProject project = ac.getProject();
 				Node node = project.getNodeRoot().loadObjectByUuid(ac, nodeUuid, UPDATE_PERM);
-				TransformablePage<? extends Tag> page = utils.eventAction(batch -> {
+				TransformablePage<? extends HibTag> page = utils.eventAction(batch -> {
 					return node.updateTags(ac, batch);
 				});
 

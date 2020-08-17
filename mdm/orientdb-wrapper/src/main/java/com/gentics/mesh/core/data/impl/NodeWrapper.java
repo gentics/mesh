@@ -407,7 +407,7 @@ public class NodeWrapper implements Node {
 		return delegate.getTags(branch);
 	}
 
-	public TransformablePage<HibTag> getTags(HibUser user, PagingParameters params, HibBranch branch) {
+	public TransformablePage<? extends HibTag> getTags(HibUser user, PagingParameters params, HibBranch branch) {
 		return delegate.getTags(user, params, branch);
 	}
 
@@ -670,7 +670,7 @@ public class NodeWrapper implements Node {
 		delegate.delete(bac, ignoreChecks, recusive);
 	}
 
-	public TransformablePage<? extends Tag> updateTags(InternalActionContext ac, EventQueueBatch batch) {
+	public TransformablePage<? extends HibTag> updateTags(InternalActionContext ac, EventQueueBatch batch) {
 		return delegate.updateTags(ac, batch);
 	}
 
