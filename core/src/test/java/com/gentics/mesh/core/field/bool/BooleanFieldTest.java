@@ -15,6 +15,7 @@ import org.junit.Test;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
@@ -53,6 +54,7 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 		Node node = folder("2015");
 
 		try (Tx tx = tx()) {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 			// Update the schema and add a boolean field
 			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 			BooleanFieldSchemaImpl booleanFieldSchema = new BooleanFieldSchemaImpl();
@@ -62,7 +64,7 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 			schema.addField(booleanFieldSchema);
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
-			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
+			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			BooleanGraphField field = container.createBoolean(BOOLEAN_FIELD);
 			field.setBoolean(true);
 			tx.success();

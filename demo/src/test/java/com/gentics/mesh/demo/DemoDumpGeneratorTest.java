@@ -14,6 +14,7 @@ import org.junit.Test;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
@@ -63,6 +64,7 @@ public class DemoDumpGeneratorTest {
 			UserDaoWrapper userDao = tx.data().userDao();
 			GroupDaoWrapper groupDao = tx.data().groupDao();
 			ProjectDaoWrapper projectDao = tx.data().projectDao();
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 
 			HibProject project = projectDao.findByName("demo");
 			assertTrue(project.getNodeRoot().computeCount() > 0);
@@ -84,7 +86,7 @@ public class DemoDumpGeneratorTest {
 
 			// Verify that all documents are stored in the index
 			for (Node node : project.getNodeRoot().findAll()) {
-				NodeGraphFieldContainer container = node.getLatestDraftFieldContainer("en");
+				NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, "en");
 				String languageTag = "en";
 				String projectUuid = node.getProject().getUuid();
 				String branchUuid = node.getProject().getInitialBranch().getUuid();

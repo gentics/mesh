@@ -25,6 +25,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.Node;
@@ -256,6 +257,7 @@ public class BinaryUploadHandler extends AbstractHandler {
 		String binaryUuid = context.getBinaryUuid();
 
 		return db.singleTxWriteLock(tx -> {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 			HibProject project = ac.getProject();
 			HibBranch branch = ac.getBranch();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, nodeUuid, UPDATE_PERM);
@@ -273,7 +275,7 @@ public class BinaryUploadHandler extends AbstractHandler {
 				}
 
 				// Load the current latest draft
-				NodeGraphFieldContainer latestDraftVersion = node.getGraphFieldContainer(languageTag, branch, ContainerType.DRAFT);
+				NodeGraphFieldContainer latestDraftVersion = contentDao.getGraphFieldContainer(node, languageTag, branch, ContainerType.DRAFT);
 
 				if (latestDraftVersion == null) {
 					// latestDraftVersion = node.createGraphFieldContainer(language, branch, ac.getUser());

@@ -136,7 +136,7 @@ abstract class AbstractEdgeTraversal<C, S, M> extends AbstractTraversal<EdgeFram
 	}
 
 	@Override
-	public <T> Iterable<T> frameExplicit(final Class<T> kind) {
+	public <T> Iterable<T> frameExplicit(final Class<? extends T> kind) {
 		return Iterables.transform(getPipeline(), new Function() {
 
 			@Override

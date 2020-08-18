@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
 import com.gentics.mesh.core.db.Tx;
@@ -211,8 +212,9 @@ public class StringFieldListEndpointTest extends AbstractListFieldEndpointTest {
 
 		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 			Node node = folder("2015");
-			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
+			NodeGraphFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getStringList(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getStringList(FIELD_NAME)).isNotNull();

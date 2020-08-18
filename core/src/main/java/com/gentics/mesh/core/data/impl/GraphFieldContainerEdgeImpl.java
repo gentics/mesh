@@ -12,7 +12,6 @@ import java.util.List;
 
 import com.gentics.madl.annotations.GraphElement;
 import com.gentics.madl.index.IndexHandler;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.data.BasicFieldContainer;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
@@ -22,6 +21,7 @@ import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.dagger.MeshComponent;
@@ -218,12 +218,12 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 		}
 	}
 
-	public static TraversalResult<? extends GraphFieldContainerEdgeImpl> findEdges(Object nodeId, String branchUuid, ContainerType type) {
+	public static TraversalResult<GraphFieldContainerEdgeImpl> findEdges(Object nodeId, String branchUuid, ContainerType type) {
 		FramedGraph graph = Tx.get().getGraph();
 		MeshComponent mesh = graph.getAttribute(GraphAttribute.MESH_COMPONENT);
 		Iterable<Edge> edges = graph.getEdges("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_field",
 			mesh.database().index().createComposedIndexKey(nodeId, branchUuid, type.getCode()));
-		Iterator<? extends GraphFieldContainerEdgeImpl> frames = graph.frameExplicit(edges.iterator(), GraphFieldContainerEdgeImpl.class);
+		Iterator<GraphFieldContainerEdgeImpl> frames = graph.frameExplicit(edges.iterator(), GraphFieldContainerEdgeImpl.class);
 		return new TraversalResult<>(() -> frames);
 	}
 

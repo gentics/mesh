@@ -44,6 +44,7 @@ public class OrientDBDaoCollection implements DaoCollection {
 	private final MicroschemaDAOActions microschemaActions;
 
 	private final NodeDaoWrapper nodeDao;
+	private final ContentDaoWrapper contentDao;
 
 	private final LanguageDaoWrapper languageDao;
 	private final BinaryDaoWrapper binaryDao;
@@ -79,6 +80,7 @@ public class OrientDBDaoCollection implements DaoCollection {
 		MicroschemaDAOActions microschemaActions,
 
 		NodeDaoWrapper nodeDao,
+		ContentDaoWrapper contentDao,
 
 		LanguageDaoWrapper languageDao,
 		BinaryDaoWrapper binaryDao,
@@ -108,6 +110,7 @@ public class OrientDBDaoCollection implements DaoCollection {
 		this.microschemaActions = microschemaActions;
 
 		this.nodeDao = nodeDao;
+		this.contentDao = contentDao;
 
 		this.projectDao = projectDao;
 		this.projectActions = projectActions;
@@ -222,7 +225,13 @@ public class OrientDBDaoCollection implements DaoCollection {
 		return binaryDao;
 	}
 
+	@Override
 	public NodeDaoWrapper nodeDao() {
 		return nodeDao;
+	}
+
+	@Override
+	public ContentDaoWrapper contentDao() {
+		return contentDao;
 	}
 }

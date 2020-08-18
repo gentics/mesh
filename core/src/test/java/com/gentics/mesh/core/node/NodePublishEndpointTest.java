@@ -28,6 +28,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
@@ -154,7 +155,10 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		String nodeUuid = tx(() -> node.getUuid());
 		String schemaUuid = tx(() -> schemaContainer("folder").getUuid());
 		String branchUuid = tx(() -> project().getLatestBranch().getUuid());
-		String schemaContainerVersionUuid = tx(() -> node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid());
+		String schemaContainerVersionUuid = tx(tx -> {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
+			return contentDao.getLatestDraftFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
+		});
 
 		call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParametersImpl().setRecursive(true)));
 		waitForSearchIdleEvent();
@@ -200,7 +204,10 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		String nodeUuid = tx(() -> node.getUuid());
 		String schemaUuid = tx(() -> schemaContainer("folder").getUuid());
 		String branchUuid = tx(() -> project().getLatestBranch().getUuid());
-		String schemaContainerVersionUuid = tx(() -> node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid());
+		String schemaContainerVersionUuid = tx(tx -> {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
+			return contentDao.getLatestDraftFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
+		});
 
 		// Add german language
 		NodeUpdateRequest request = new NodeUpdateRequest();

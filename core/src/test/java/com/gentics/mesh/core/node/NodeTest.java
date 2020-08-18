@@ -25,6 +25,7 @@ import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
@@ -133,12 +134,13 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testMeshNodeFields() throws IOException {
 		try (Tx tx = tx()) {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			Node newsNode = content("news overview");
 			String german = german();
 			InternalActionContext ac = mockActionContext("lang=de,en&version=draft");
 			assertThat(ac.getNodeParameters().getLanguages()).containsExactly("de", "en");
-			NodeGraphFieldContainer germanFields = newsNode.getLatestDraftFieldContainer(german);
+			NodeGraphFieldContainer germanFields = contentDao.getLatestDraftFieldContainer(newsNode, german);
 			String expectedDisplayName = germanFields.getString(newsNode.getSchemaContainer().getLatestVersion().getSchema().getDisplayField())
 				.getString();
 			assertEquals("The display name value did not match up", expectedDisplayName, nodeDao.getDisplayName(newsNode, ac));
@@ -257,6 +259,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testCreate() {
 		try (Tx tx = tx()) {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			HibUser user = user();
 			Node parentNode = folder("2015");
@@ -286,7 +289,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			germanContainer.createString("content").setString("german content");
 			assertEquals(2, TestUtils.size(node.getDraftGraphFieldContainers()));
 
-			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english);
+			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english);
 			assertNotNull(container);
 			String text = container.getString("content").getString();
 			assertNotNull(text);

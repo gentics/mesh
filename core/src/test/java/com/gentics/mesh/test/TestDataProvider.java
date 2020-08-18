@@ -32,6 +32,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
@@ -639,9 +640,10 @@ public class TestDataProvider {
 	 * Returns the path to the tag for the given language.
 	 */
 	public String getPathForNews2015Tag(String languageTag) {
+		ContentDaoWrapper contentDao = boot.contentDao();
 
-		String name = folders.get("news").getLatestDraftFieldContainer(languageTag).getString("name").getString();
-		String name2 = folders.get("2015").getLatestDraftFieldContainer(languageTag).getString("name").getString();
+		String name = contentDao.getLatestDraftFieldContainer(folders.get("news"), languageTag).getString("name").getString();
+		String name2 = contentDao.getLatestDraftFieldContainer(folders.get("2015"), languageTag).getString("name").getString();
 		return name + "/" + name2;
 	}
 

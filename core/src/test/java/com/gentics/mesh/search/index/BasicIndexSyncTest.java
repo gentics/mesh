@@ -15,6 +15,7 @@ import org.mockito.Mockito;
 
 import com.gentics.mesh.context.impl.BulkActionContextImpl;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
@@ -269,16 +270,18 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		assertMetrics("node", 0, 0, 0);
 
 		// Assert update
-		tx(() -> {
-			NodeGraphFieldContainer draft = content().getGraphFieldContainer(english(), latestBranch(), ContainerType.DRAFT);
+		tx(tx -> {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
+			NodeGraphFieldContainer draft = contentDao.getGraphFieldContainer(content(), english(), latestBranch(), ContainerType.DRAFT);
 			draft.getString("slug").setString("updated");
 		});
 		syncIndex();
 		assertMetrics("node", 0, 2, 0);
 
 		// Assert deletion
-		tx(() -> {
-			NodeGraphFieldContainer draft = folder("2015").getGraphFieldContainer(german(), latestBranch(), ContainerType.DRAFT);
+		tx(tx -> {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
+			NodeGraphFieldContainer draft = contentDao.getGraphFieldContainer(folder("2015"), german(), latestBranch(), ContainerType.DRAFT);
 			draft.remove();
 		});
 		syncIndex();

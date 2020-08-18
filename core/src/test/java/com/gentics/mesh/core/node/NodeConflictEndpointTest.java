@@ -20,6 +20,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.i18n.I18NUtil;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
@@ -130,12 +131,13 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 	public void testDeduplicationDuringUpdate() {
 		disableAutoPurge();
 
-		try (Tx trx = tx()) {
+		try (Tx tx = tx()) {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 			updateSchema();
-			NodeGraphFieldContainer origContainer = getTestNode().getLatestDraftFieldContainer(english());
+			NodeGraphFieldContainer origContainer = contentDao.getLatestDraftFieldContainer(getTestNode(), english());
 			assertEquals("Concorde_english_name", origContainer.getString("teaser").getString());
 			assertEquals("Concorde english title", origContainer.getString("title").getString());
-			trx.success();
+			tx.success();
 		}
 
 		// First request - Update 1.0 and add basic fields and complex fields -> 1.1
@@ -295,12 +297,13 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 	public void testConflictInMicronode() {
 		disableAutoPurge();
 
-		try (Tx trx = tx()) {
+		try (Tx tx = tx()) {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 			updateSchema();
-			NodeGraphFieldContainer origContainer = getTestNode().getLatestDraftFieldContainer(english());
+			NodeGraphFieldContainer origContainer = contentDao.getLatestDraftFieldContainer(getTestNode(), english());
 			assertEquals("Concorde_english_name", origContainer.getString("teaser").getString());
 			assertEquals("Concorde english title", origContainer.getString("title").getString());
-			trx.success();
+			tx.success();
 		}
 
 		// First request - Update 1.0 and add basic fields and complex fields

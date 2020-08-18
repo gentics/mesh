@@ -20,6 +20,7 @@ import com.gentics.mesh.context.NodeMigrationActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -97,6 +98,7 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 	}
 
 	private boolean fixNodeVersionOrder(NodeMigrationActionContext context, Node node, NodeGraphFieldContainer initialContent) {
+		ContentDaoWrapper contentDao = boot.get().contentDao();
 		Set<VersionNumber> seenVersions = new HashSet<>();
 		TreeSet<NodeGraphFieldContainer> versions = new TreeSet<>(Comparator.comparing(NodeGraphFieldContainer::getVersion));
 		NodeGraphFieldContainer highestVersion = null;
@@ -108,10 +110,10 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 		String languageTag = initialContent.getLanguageTag();
 
 		EdgeFrame originalDraftEdge = node.getGraphFieldContainerEdgeFrame(languageTag, branchUuid, ContainerType.DRAFT);
-		Optional<Object> originalDraftId = Optional.ofNullable(node.getGraphFieldContainer(languageTag, branchUuid, ContainerType.DRAFT))
+		Optional<Object> originalDraftId = Optional.ofNullable(contentDao.getGraphFieldContainer(node, languageTag, branchUuid, ContainerType.DRAFT))
 			.map(ElementFrame::id);
 		EdgeFrame originalPublishedEdge = node.getGraphFieldContainerEdgeFrame(languageTag, branchUuid, ContainerType.PUBLISHED);
-		Optional<Object> originalPublishedId = Optional.ofNullable(node.getGraphFieldContainer(languageTag, branchUuid, ContainerType.PUBLISHED))
+		Optional<Object> originalPublishedId = Optional.ofNullable(contentDao.getGraphFieldContainer(node, languageTag, branchUuid, ContainerType.PUBLISHED))
 			.map(ElementFrame::id);
 
 		if (log.isDebugEnabled()) {

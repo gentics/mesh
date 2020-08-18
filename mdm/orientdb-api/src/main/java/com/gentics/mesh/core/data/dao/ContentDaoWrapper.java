@@ -8,6 +8,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -20,7 +21,7 @@ public interface ContentDaoWrapper extends ContentDao {
 	 * @param languageTag
 	 * @return
 	 */
-	NodeGraphFieldContainer getLatestDraftFieldContainer(String languageTag);
+	NodeGraphFieldContainer getLatestDraftFieldContainer(Node node, String languageTag);
 
 	/**
 	 * Return the field container for the given language, type and branch.
@@ -31,7 +32,7 @@ public interface ContentDaoWrapper extends ContentDao {
 	 *            type
 	 * @return
 	 */
-	NodeGraphFieldContainer getGraphFieldContainer(String languageTag, HibBranch branch, ContainerType type);
+	NodeGraphFieldContainer getGraphFieldContainer(Node node, String languageTag, HibBranch branch, ContainerType type);
 
 	/**
 	 * Return the draft field container for the given language in the latest branch.
@@ -39,7 +40,7 @@ public interface ContentDaoWrapper extends ContentDao {
 	 * @param languageTag
 	 * @return
 	 */
-	NodeGraphFieldContainer getGraphFieldContainer(String languageTag);
+	NodeGraphFieldContainer getGraphFieldContainer(Node node, String languageTag);
 
 	/**
 	 * Return the field container for the given language, type and branch Uuid.
@@ -49,7 +50,7 @@ public interface ContentDaoWrapper extends ContentDao {
 	 * @param type
 	 * @return
 	 */
-	NodeGraphFieldContainer getGraphFieldContainer(String languageTag, String branchUuid, ContainerType type);
+	NodeGraphFieldContainer getGraphFieldContainer(Node node, String languageTag, String branchUuid, ContainerType type);
 
 	/**
 	 * Create a new graph field container for the given language and assign the schema version of the branch to the container. The graph field container will be
@@ -63,10 +64,10 @@ public interface ContentDaoWrapper extends ContentDao {
 	 *            user
 	 * @return
 	 */
-	NodeGraphFieldContainer createGraphFieldContainer(String languageTag, HibBranch branch, HibUser user);
+	NodeGraphFieldContainer createGraphFieldContainer(Node node, String languageTag, HibBranch branch, HibUser user);
 
 	/**
-	 * Like {@link #createGraphFieldContainer(String, HibBranch, HibUser)}, but let the new graph field container be a clone of the given original (if not null).
+	 * Like {@link #createGraphFieldContainer(Node, String, HibBranch, HibUser)}, but let the new graph field container be a clone of the given original (if not null).
 	 *
 	 * @param languageTag
 	 * @param branch
@@ -78,7 +79,7 @@ public interface ContentDaoWrapper extends ContentDao {
 	 *            Whether to move the existing draft edge or create a new draft edge to the new container
 	 * @return Created container
 	 */
-	NodeGraphFieldContainer createGraphFieldContainer(String languageTag, HibBranch branch, HibUser editor, NodeGraphFieldContainer original,
+	NodeGraphFieldContainer createGraphFieldContainer(Node node, String languageTag, HibBranch branch, HibUser editor, NodeGraphFieldContainer original,
 		boolean handleDraftEdge);
 
 	/**
@@ -86,7 +87,7 @@ public interface ContentDaoWrapper extends ContentDao {
 	 *
 	 * @return
 	 */
-	TraversalResult<NodeGraphFieldContainer> getDraftGraphFieldContainers();
+	TraversalResult<NodeGraphFieldContainer> getDraftGraphFieldContainers(Node node);
 
 	/**
 	 * Return a traversal of graph field containers of given type for the node in the given branch.
@@ -95,8 +96,8 @@ public interface ContentDaoWrapper extends ContentDao {
 	 * @param type
 	 * @return
 	 */
-	default TraversalResult<NodeGraphFieldContainer> getGraphFieldContainers(HibBranch branch, ContainerType type) {
-		return getGraphFieldContainers(branch.getUuid(), type);
+	default TraversalResult<NodeGraphFieldContainer> getGraphFieldContainers(Node node, HibBranch branch, ContainerType type) {
+		return getGraphFieldContainers(node, branch.getUuid(), type);
 	}
 
 	/**
@@ -106,7 +107,7 @@ public interface ContentDaoWrapper extends ContentDao {
 	 * @param type
 	 * @return
 	 */
-	TraversalResult<NodeGraphFieldContainer> getGraphFieldContainers(String branchUuid, ContainerType type);
+	TraversalResult<NodeGraphFieldContainer> getGraphFieldContainers(Node node, String branchUuid, ContainerType type);
 
 	/**
 	 * Return containers of the given type
@@ -114,14 +115,14 @@ public interface ContentDaoWrapper extends ContentDao {
 	 * @param type
 	 * @return
 	 */
-	TraversalResult<NodeGraphFieldContainer> getGraphFieldContainers(ContainerType type);
+	TraversalResult<NodeGraphFieldContainer> getGraphFieldContainers(Node node, ContainerType type);
 
 	/**
 	 * Return the number of field containers of the node of type DRAFT or PUBLISHED in any branch.
 	 *
 	 * @return
 	 */
-	long getGraphFieldContainerCount();
+	long getGraphFieldContainerCount(Node node);
 
 	/**
 	 * Find a node field container that matches the nearest possible value for the language parameter. When a user requests a node using ?lang=de,en and there
@@ -134,7 +135,7 @@ public interface ContentDaoWrapper extends ContentDao {
 	 *            requested version. This must either be "draft" or "published" or a version number with pattern [major.minor]
 	 * @return Next matching field container or null when no language matches
 	 */
-	NodeGraphFieldContainer findVersion(List<String> languageTags, String branchUuid, String version);
+	NodeGraphFieldContainer findVersion(Node node, List<String> languageTags, String branchUuid, String version);
 
 	/**
 	 * Iterate the version chain from the back in order to find the given version.
@@ -144,8 +145,8 @@ public interface ContentDaoWrapper extends ContentDao {
 	 * @param version
 	 * @return Found version or null when no version could be found.
 	 */
-	default NodeGraphFieldContainer findVersion(String languageTag, String branchUuid, String version) {
-		return findVersion(Arrays.asList(languageTag), branchUuid, version);
+	default NodeGraphFieldContainer findVersion(Node node, String languageTag, String branchUuid, String version) {
+		return findVersion(node, Arrays.asList(languageTag), branchUuid, version);
 	}
 
 	/**
@@ -155,8 +156,8 @@ public interface ContentDaoWrapper extends ContentDao {
 	 * @param languageTags
 	 * @return Next matching field container or null when no language matches
 	 */
-	default NodeGraphFieldContainer findVersion(InternalActionContext ac, List<String> languageTags, String version) {
-		return findVersion(languageTags, ac.getBranch().getUuid(), version);
+	default NodeGraphFieldContainer findVersion(Node node, InternalActionContext ac, List<String> languageTags, String version) {
+		return findVersion(node, languageTags, ac.getBranch().getUuid(), version);
 	}
 
 	/**
@@ -167,8 +168,8 @@ public interface ContentDaoWrapper extends ContentDao {
 	 * @param type
 	 * @return
 	 */
-	default NodeGraphFieldContainer findVersion(InternalActionContext ac, List<String> languageTags, ContainerType type) {
-		return findVersion(ac, languageTags, type.getHumanCode());
+	default NodeGraphFieldContainer findVersion(Node node, InternalActionContext ac, List<String> languageTags, ContainerType type) {
+		return findVersion(node, ac, languageTags, type.getHumanCode());
 	}
 
 	/**
@@ -183,7 +184,7 @@ public interface ContentDaoWrapper extends ContentDao {
 	 * @param failForLastContainer
 	 *            Whether to execute the last container check and fail or not.
 	 */
-	void deleteLanguageContainer(InternalActionContext ac, HibBranch branch, String languageTag, BulkActionContext bac, boolean failForLastContainer);
+	void deleteLanguageContainer(Node node, InternalActionContext ac, HibBranch branch, String languageTag, BulkActionContext bac, boolean failForLastContainer);
 
 	/**
 	 * Return the path segment value of this node preferable in the given language.
@@ -204,7 +205,7 @@ public interface ContentDaoWrapper extends ContentDao {
 	 *
 	 * @return
 	 */
-	String getPathSegment(String branchUuid, ContainerType type, boolean anyLanguage, String... languageTag);
+	String getPathSegment(Node node, String branchUuid, ContainerType type, boolean anyLanguage, String... languageTag);
 
 	/**
 	 * Return the path segment value of this node in the given language. If more than one language is given, the path will lead to the first available language
@@ -218,8 +219,8 @@ public interface ContentDaoWrapper extends ContentDao {
 	 *
 	 * @return
 	 */
-	default String getPathSegment(String branchUuid, ContainerType type, String... languageTag) {
-		return getPathSegment(branchUuid, type, false, languageTag);
+	default String getPathSegment(Node node, String branchUuid, ContainerType type, String... languageTag) {
+		return getPathSegment(node, branchUuid, type, false, languageTag);
 	}
 
 	/**
@@ -229,7 +230,7 @@ public interface ContentDaoWrapper extends ContentDao {
 	 * @param type
 	 * @param languageTag
 	 */
-	void postfixPathSegment(String releaseUuid, ContainerType type, String languageTag);
+	void postfixPathSegment(Node node, String releaseUuid, ContainerType type, String languageTag);
 
 	/**
 	 * Delete the node from the given branch. This will also delete children from the branch.
@@ -241,7 +242,7 @@ public interface ContentDaoWrapper extends ContentDao {
 	 * @param bac
 	 * @param ignoreChecks
 	 */
-	void deleteFromBranch(InternalActionContext ac, HibBranch branch, BulkActionContext bac, boolean ignoreChecks);
+	void deleteFromBranch(Node node, InternalActionContext ac, HibBranch branch, BulkActionContext bac, boolean ignoreChecks);
 
 	/**
 	 * Check the publish consistency by validating the following constraints:
@@ -257,7 +258,7 @@ public interface ContentDaoWrapper extends ContentDao {
 	 * @param branch
 	 *            Branch to be used to check the consistency state
 	 */
-	void assertPublishConsistency(InternalActionContext ac, HibBranch branch);
+	void assertPublishConsistency(Node node, InternalActionContext ac, HibBranch branch);
 
 	/**
 	 * Create a new published version of the given language in the branch.
@@ -272,7 +273,7 @@ public interface ContentDaoWrapper extends ContentDao {
 	 *            user
 	 * @return published field container
 	 */
-	NodeGraphFieldContainer publish(InternalActionContext ac, String languageTag, HibBranch branch, HibUser user);
+	NodeGraphFieldContainer publish(Node node, InternalActionContext ac, String languageTag, HibBranch branch, HibUser user);
 
 	/**
 	 * Publish the node for the specified branch.
@@ -282,11 +283,11 @@ public interface ContentDaoWrapper extends ContentDao {
 	 * @param bac
 	 * @return
 	 */
-	void publish(InternalActionContext ac, HibBranch branch, BulkActionContext bac);
+	void publish(Node node, InternalActionContext ac, HibBranch branch, BulkActionContext bac);
 
 	/**
 	 * Gets all NodeGraphField edges that reference this node.
 	 * @return
 	 */
-	Stream<NodeGraphField> getInboundReferences();
+	Stream<NodeGraphField> getInboundReferences(Node node);
 }

@@ -22,6 +22,7 @@ import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
@@ -125,6 +126,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testNodeTagging() throws Exception {
 		try (Tx tx = tx()) {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			TagDaoWrapper tagDao = tx.data().tagDao();
 			// 1. Create the tag
@@ -152,7 +154,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			HibTag reloadedTag = meshRoot().getTagRoot().findByUuid(tag.getUuid());
 			assertEquals("The tag should have exactly one node.", 1, tagDao.getNodes(reloadedTag, branch).count());
 			Node contentFromTag = tagDao.getNodes(reloadedTag, branch).iterator().next();
-			NodeGraphFieldContainer fieldContainer = contentFromTag.getLatestDraftFieldContainer(german);
+			NodeGraphFieldContainer fieldContainer = contentDao.getLatestDraftFieldContainer(contentFromTag, german);
 
 			assertNotNull(contentFromTag);
 			assertEquals("We did not get the correct content.", node.getUuid(), contentFromTag.getUuid());

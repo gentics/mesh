@@ -191,7 +191,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *
 	 * @return
 	 */
-	default TraversalResult<? extends NodeGraphFieldContainer> getDraftGraphFieldContainers() {
+	default TraversalResult<NodeGraphFieldContainer> getDraftGraphFieldContainers() {
 		// FIX ME: We should not rely on specific branches.
 		return getGraphFieldContainers(getProject().getLatestBranch(), DRAFT);
 	}
@@ -203,7 +203,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param type
 	 * @return
 	 */
-	default TraversalResult<? extends NodeGraphFieldContainer> getGraphFieldContainers(HibBranch branch, ContainerType type) {
+	default TraversalResult<NodeGraphFieldContainer> getGraphFieldContainers(HibBranch branch, ContainerType type) {
 		return getGraphFieldContainers(branch.getUuid(), type);
 	}
 
@@ -214,7 +214,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param type
 	 * @return
 	 */
-	TraversalResult<? extends NodeGraphFieldContainer> getGraphFieldContainers(String branchUuid, ContainerType type);
+	TraversalResult<NodeGraphFieldContainer> getGraphFieldContainers(String branchUuid, ContainerType type);
 
 	/**
 	 * Return containers of the given type
@@ -222,7 +222,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param type
 	 * @return
 	 */
-	TraversalResult<? extends NodeGraphFieldContainer> getGraphFieldContainers(ContainerType type);
+	TraversalResult<NodeGraphFieldContainer> getGraphFieldContainers(ContainerType type);
 
 	/**
 	 * Return the number of field containers of the node of type DRAFT or PUBLISHED in any branch.
@@ -746,5 +746,5 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * Gets all NodeGraphField edges that reference this node.
 	 * @return
 	 */
-	Stream<? extends NodeGraphField> getInboundReferences();
+	Stream<NodeGraphField> getInboundReferences();
 }

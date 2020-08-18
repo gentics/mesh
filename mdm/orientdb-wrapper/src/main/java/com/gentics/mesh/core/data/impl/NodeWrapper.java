@@ -461,19 +461,19 @@ public class NodeWrapper implements Node {
 		return delegate.createGraphFieldContainer(languageTag, branch, editor, original, handleDraftEdge);
 	}
 
-	public TraversalResult<? extends NodeGraphFieldContainer> getDraftGraphFieldContainers() {
+	public TraversalResult<NodeGraphFieldContainer> getDraftGraphFieldContainers() {
 		return delegate.getDraftGraphFieldContainers();
 	}
 
-	public TraversalResult<? extends NodeGraphFieldContainer> getGraphFieldContainers(Branch branch, ContainerType type) {
+	public TraversalResult<NodeGraphFieldContainer> getGraphFieldContainers(Branch branch, ContainerType type) {
 		return delegate.getGraphFieldContainers(branch, type);
 	}
 
-	public TraversalResult<? extends NodeGraphFieldContainer> getGraphFieldContainers(String branchUuid, ContainerType type) {
+	public TraversalResult<NodeGraphFieldContainer> getGraphFieldContainers(String branchUuid, ContainerType type) {
 		return delegate.getGraphFieldContainers(branchUuid, type);
 	}
 
-	public TraversalResult<? extends NodeGraphFieldContainer> getGraphFieldContainers(ContainerType type) {
+	public TraversalResult<NodeGraphFieldContainer> getGraphFieldContainers(ContainerType type) {
 		return delegate.getGraphFieldContainers(type);
 	}
 
@@ -683,7 +683,7 @@ public class NodeWrapper implements Node {
 		return delegate.transformToVersionList(ac);
 	}
 
-	public Stream<? extends NodeGraphField> getInboundReferences() {
+	public Stream<NodeGraphField> getInboundReferences() {
 		return delegate.getInboundReferences();
 	}
 

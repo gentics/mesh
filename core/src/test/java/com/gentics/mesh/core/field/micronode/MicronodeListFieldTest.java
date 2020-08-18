@@ -16,6 +16,7 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.GraphField;
@@ -54,10 +55,11 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 		Node node = folder("2015");
 		
 		try (Tx tx = tx()) {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 			prepareNode(node, MICRONODE_LIST, "micronode");
 			InternalActionContext ac = mockActionContext("");
 
-			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
+			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 
 			MicronodeFieldListImpl field = new MicronodeFieldListImpl();
 			MicronodeResponse micronodeA = new MicronodeResponse();

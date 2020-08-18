@@ -45,6 +45,7 @@ import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.DaoCollection;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.JobDaoWrapper;
@@ -896,6 +897,11 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	@Override
 	public NodeDaoWrapper nodeDao() {
 		return daoCollection.nodeDao();
+	}
+
+	@Override
+	public ContentDaoWrapper contentDao() {
+		return daoCollection.contentDao();
 	}
 
 	/**

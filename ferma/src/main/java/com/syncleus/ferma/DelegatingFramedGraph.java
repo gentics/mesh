@@ -174,7 +174,7 @@ public class DelegatingFramedGraph<G extends Graph> extends WrappedGraph<G> impl
 	}
 
 	@Override
-	public <T> Iterator<? extends T> frameExplicit(final Iterator<? extends Element> pipeline, final Class<T> kind) {
+	public <T> Iterator<T> frameExplicit(final Iterator<? extends Element> pipeline, final Class<T> kind) {
 		return Iterators.transform(pipeline, new Function<Element, T>() {
 
 			@Override

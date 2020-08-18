@@ -9,6 +9,7 @@ import java.util.List;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.ListGraphField;
 import com.gentics.mesh.core.db.Tx;
@@ -71,8 +72,9 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 		nodeUpdateRequest.setLanguage("en");
 		nodeUpdateRequest.getFields().put(fieldKey, field);
 		try (Tx tx = tx()) {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 			Node node = folder("2015");
-			nodeUpdateRequest.setVersion(node.getLatestDraftFieldContainer(english()).getVersion().toString());
+			nodeUpdateRequest.setVersion(contentDao.getLatestDraftFieldContainer(node, english()).getVersion().toString());
 			tx.success();
 		}
 		String uuid = tx(() -> folder("2015").getUuid());
@@ -87,7 +89,9 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
 		nodeUpdateRequest.setLanguage("en");
 		nodeUpdateRequest.getFields().put(fieldKey, field);
-		nodeUpdateRequest.setVersion(tx(() -> node.getLatestDraftFieldContainer(english()).getVersion().toString()));
+		nodeUpdateRequest.setVersion(tx(tx -> {
+			return tx.data().contentDao().getLatestDraftFieldContainer(node, english()).getVersion().toString();
+		}));
 
 		call(() -> client().updateNode(PROJECT_NAME, tx(() -> node.getUuid()), nodeUpdateRequest, new NodeParametersImpl().setLanguages("en")),
 			status, bodyMessageI18nKey, i18nParams);

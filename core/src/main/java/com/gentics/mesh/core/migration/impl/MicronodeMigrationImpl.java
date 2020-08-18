@@ -17,6 +17,7 @@ import com.gentics.mesh.context.MicronodeMigrationContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
@@ -192,12 +193,13 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 		// Run the actual migration in a dedicated transaction
 		try {
 			db.tx((tx) -> {
+				ContentDaoWrapper contentDao = tx.data().contentDao();
 
 				Node node = container.getParentNode();
 				String languageTag = container.getLanguageTag();
 				ac.getNodeParameters().setLanguages(languageTag);
 				ac.getVersioningParameters().setVersion("draft");
-				NodeGraphFieldContainer oldPublished = node.getGraphFieldContainer(languageTag, branchUuid, PUBLISHED);
+				NodeGraphFieldContainer oldPublished = contentDao.getGraphFieldContainer(node, languageTag, branchUuid, PUBLISHED);
 
 				VersionNumber nextDraftVersion = null;
 				// 1. Check whether there is any other published container which we need to handle separately

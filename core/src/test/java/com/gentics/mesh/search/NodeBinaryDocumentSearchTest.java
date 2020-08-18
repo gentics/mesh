@@ -19,6 +19,7 @@ import org.junit.runners.Parameterized;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.db.Tx;
@@ -50,6 +51,7 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 		Node nodeB = content();
 
 		try (Tx tx = tx()) {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 			SchemaVersionModel schema = nodeA.getSchemaContainer().getLatestVersion().getSchema();
 
 			List<String> names = Arrays.asList("binary", "binary2", "binary3");
@@ -69,7 +71,7 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 			Binary binaryA = mesh().binaries().create("someHashA", 200L).runInExistingTx(tx);
 			binaryA.setImageHeight(200);
 			binaryA.setImageWidth(400);
-			nodeA.getLatestDraftFieldContainer(english()).createBinary("binary", binaryA).setFileName("somefile.jpg").setMimeType("image/jpeg")
+			contentDao.getLatestDraftFieldContainer(nodeA, english()).createBinary("binary", binaryA).setFileName("somefile.jpg").setMimeType("image/jpeg")
 				.setImageDominantColor("#super");
 
 			// file
@@ -77,9 +79,9 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 			byte[] bytes = Base64.getDecoder().decode("e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0=");
 			mesh().binaryStorage().store(Flowable.fromArray(Buffer.buffer(bytes)), binaryB.getUuid()).blockingAwait();
 
-			nodeB.getLatestDraftFieldContainer(english()).createBinary("binary", binaryB).setFileName("somefile.dat")
+			contentDao.getLatestDraftFieldContainer(nodeB, english()).createBinary("binary", binaryB).setFileName("somefile.dat")
 				.setMimeType("text/plain");
-			nodeB.getLatestDraftFieldContainer(english()).createBinary("binary2", binaryB).setFileName("somefile.dat")
+			contentDao.getLatestDraftFieldContainer(nodeB, english()).createBinary("binary2", binaryB).setFileName("somefile.dat")
 				.setMimeType("text/plain");
 			tx.success();
 		}
@@ -118,6 +120,7 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 		Node nodeB = content();
 
 		try (Tx tx = tx()) {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 			SchemaVersionModel schema = nodeA.getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(new BinaryFieldSchemaImpl().setName("binary"));
 			nodeA.getSchemaContainer().getLatestVersion().setSchema(schema);
@@ -126,12 +129,12 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 			Binary binaryA = mesh().binaries().create("someHashA", 200L).runInExistingTx(tx);
 			binaryA.setImageHeight(200);
 			binaryA.setImageWidth(400);
-			nodeA.getLatestDraftFieldContainer(english()).createBinary("binary", binaryA).setFileName("somefile.jpg").setMimeType("image/jpeg")
+			contentDao.getLatestDraftFieldContainer(nodeA, english()).createBinary("binary", binaryA).setFileName("somefile.jpg").setMimeType("image/jpeg")
 				.setImageDominantColor("#super");
 
 			// file
 			Binary binaryB = mesh().binaries().create("someHashB", 200L).runInExistingTx(tx);
-			BinaryGraphField binary = nodeB.getLatestDraftFieldContainer(english()).createBinary("binary", binaryB).setFileName("somefile.dat")
+			BinaryGraphField binary = contentDao.getLatestDraftFieldContainer(nodeB, english()).createBinary("binary", binaryB).setFileName("somefile.dat")
 				.setMimeType("text/plain");
 			byte[] bytes = Base64.getDecoder().decode("e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0=");
 			mesh().binaryStorage().store(Flowable.fromArray(Buffer.buffer(bytes)), binary.getBinary().getUuid()).blockingAwait();

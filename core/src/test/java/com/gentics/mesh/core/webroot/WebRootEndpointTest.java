@@ -26,6 +26,7 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
@@ -60,10 +61,11 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		String nodeUuid = tx(() -> node.getUuid());
 
 		try (Tx tx = tx()) {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 			// 1. Transform the node into a binary content
 			Schema container = schemaContainer("binary_content");
 			node.setSchemaContainer(container);
-			node.getLatestDraftFieldContainer(english()).setSchemaContainerVersion(container.getLatestVersion());
+			contentDao.getLatestDraftFieldContainer(node, english()).setSchemaContainerVersion(container.getLatestVersion());
 			prepareSchema(node, "image/*", "binary");
 			tx.success();
 		}
@@ -102,7 +104,8 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		Node content = content("news_2015");
 
 		try (Tx tx = tx()) {
-			content.getLatestDraftFieldContainer(english()).getHtml("content")
+			ContentDaoWrapper contentDao = tx.data().contentDao();
+			contentDao.getLatestDraftFieldContainer(content, english()).getHtml("content")
 				.setHtml("<a href=\"{{mesh.link('" + content.getUuid() + "', 'en')}}\">somelink</a>");
 			tx.success();
 		}
@@ -137,6 +140,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 	public void testReadContentWithNodeRefByPath() throws Exception {
 
 		try (Tx tx = tx()) {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			Node parentNode = folder("2015");
@@ -160,7 +164,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			englishContainer.createString("slug").setString("test.de.html");
 
 			// Add node reference to node 2015
-			parentNode.getLatestDraftFieldContainer(english()).createNode("nodeRef", node);
+			contentDao.getLatestDraftFieldContainer(parentNode, english()).createNode("nodeRef", node);
 			tx.success();
 		}
 

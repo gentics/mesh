@@ -362,14 +362,14 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public TraversalResult<? extends NodeGraphFieldContainer> getGraphFieldContainers(String branchUuid, ContainerType type) {
-		TraversalResult<? extends GraphFieldContainerEdgeImpl> it = GraphFieldContainerEdgeImpl.findEdges(this.getId(), branchUuid, type);
+	public TraversalResult<NodeGraphFieldContainer> getGraphFieldContainers(String branchUuid, ContainerType type) {
+		TraversalResult<GraphFieldContainerEdgeImpl> it = GraphFieldContainerEdgeImpl.findEdges(this.getId(), branchUuid, type);
 		Iterator<NodeGraphFieldContainer> it2 = it.stream().map(e -> e.getNodeContainer()).iterator();
 		return new TraversalResult<>(it2);
 	}
 
 	@Override
-	public TraversalResult<? extends NodeGraphFieldContainer> getGraphFieldContainers(ContainerType type) {
+	public TraversalResult<NodeGraphFieldContainer> getGraphFieldContainers(ContainerType type) {
 		return new TraversalResult<>(
 			outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).inV()
 				.frameExplicit(NodeGraphFieldContainerImpl.class));
@@ -1448,7 +1448,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Stream<? extends NodeGraphField> getInboundReferences() {
+	public Stream<NodeGraphField> getInboundReferences() {
 		return toStream(inE(HAS_FIELD, HAS_ITEM)
 			.has(NodeGraphFieldImpl.class)
 			.frameExplicit(NodeGraphFieldImpl.class));

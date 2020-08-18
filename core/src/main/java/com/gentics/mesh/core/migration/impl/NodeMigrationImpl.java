@@ -19,6 +19,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.context.NodeMigrationActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
@@ -151,6 +152,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 	private void migrateContainer(NodeMigrationActionContext ac, EventQueueBatch batch, NodeGraphFieldContainer container,
 		GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion, SchemaVersionModel newSchema, List<Exception> errorsDetected,
 		Set<String> touchedFields) {
+		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 
 		String containerUuid = container.getUuid();
 		String parentNodeUuid = container.getParentNode().getUuid();
@@ -167,7 +169,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 			ac.getVersioningParameters().setVersion("draft");
 
 			VersionNumber nextDraftVersion = null;
-			NodeGraphFieldContainer oldPublished = node.getGraphFieldContainer(languageTag, branch.getUuid(), PUBLISHED);
+			NodeGraphFieldContainer oldPublished = contentDao.getGraphFieldContainer(node, languageTag, branch.getUuid(), PUBLISHED);
 
 			// 1. Check whether there is any other published container which we need to handle separately
 			if (oldPublished != null && !oldPublished.equals(container)) {

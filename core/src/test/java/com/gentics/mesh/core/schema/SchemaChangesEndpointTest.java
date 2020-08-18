@@ -31,6 +31,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
@@ -213,7 +214,8 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		Schema schemaContainer = schemaContainer("content");
 
 		try (Tx tx = tx()) {
-			content.getLatestDraftFieldContainer(english()).getHtml("content").setHtml("42.1");
+			ContentDaoWrapper contentDao = tx.data().contentDao();
+			contentDao.getLatestDraftFieldContainer(content, english()).getHtml("content").setHtml("42.1");
 
 			// 1. Create update request by removing the content field from schema and adding a new content with different type
 			request = JsonUtil.readValue(schemaContainer.getLatestVersion().getJson(), SchemaUpdateRequest.class);
@@ -600,10 +602,12 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 		// node must be migrated for initial branch
 		try (Tx tx = tx()) {
-			assertThat(content.getGraphFieldContainer("en", initialBranchUuid(), ContainerType.DRAFT)).isOf(schemaContainer.getLatestVersion());
+			ContentDaoWrapper contentDao = tx.data().contentDao();
+
+			assertThat(contentDao.getGraphFieldContainer(content, "en", initialBranchUuid(), ContainerType.DRAFT)).isOf(schemaContainer.getLatestVersion());
 
 			// node must not be migrated for new branch
-			assertThat(content.getGraphFieldContainer("en", newBranch.getUuid(), ContainerType.DRAFT))
+			assertThat(contentDao.getGraphFieldContainer(content, "en", newBranch.getUuid(), ContainerType.DRAFT))
 				.isOf(schemaContainer.getLatestVersion().getPreviousVersion());
 		}
 	}

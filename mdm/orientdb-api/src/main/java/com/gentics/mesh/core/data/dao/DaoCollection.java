@@ -56,4 +56,6 @@ public interface DaoCollection {
 
 	NodeDaoWrapper nodeDao();
 
+	ContentDaoWrapper contentDao();
+
 }

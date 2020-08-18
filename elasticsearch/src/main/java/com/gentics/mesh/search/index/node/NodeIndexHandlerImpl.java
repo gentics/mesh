@@ -28,6 +28,7 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -449,8 +450,9 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 	 * @param context
 	 */
 	private void store(Set<Single<String>> obs, Node node, String branchUuid, ContainerType type, GenericEntryContext context) {
+		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 		if (context.getLanguageTag() != null) {
-			NodeGraphFieldContainer container = node.getGraphFieldContainer(context.getLanguageTag(), branchUuid, type);
+			NodeGraphFieldContainer container = contentDao.getGraphFieldContainer(node, context.getLanguageTag(), branchUuid, type);
 			if (container == null) {
 				log.warn("Node {" + node.getUuid() + "} has no language container for languageTag {" + context.getLanguageTag()
 					+ "}. I can't store the search index document. This may be normal in cases if mesh is handling an outdated search queue batch entry.");
@@ -522,8 +524,10 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 	 * @return
 	 */
 	private Observable<IndexBulkEntry> storeForBulk(Node node, String branchUuid, ContainerType type, GenericEntryContext context) {
+		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+
 		if (context.getLanguageTag() != null) {
-			NodeGraphFieldContainer container = node.getGraphFieldContainer(context.getLanguageTag(), branchUuid, type);
+			NodeGraphFieldContainer container = contentDao.getGraphFieldContainer(node, context.getLanguageTag(), branchUuid, type);
 			if (container == null) {
 				log.warn("Node {" + node.getUuid() + "} has no language container for languageTag {" + context.getLanguageTag()
 					+ "}. I can't store the search index document. This may be normal in cases if mesh is handling an outdated search queue batch entry.");

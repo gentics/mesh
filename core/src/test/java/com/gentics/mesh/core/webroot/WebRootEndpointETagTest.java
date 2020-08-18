@@ -12,6 +12,7 @@ import java.io.IOException;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.db.Tx;
@@ -30,13 +31,14 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 	@Test
 	public void testResizeImage() throws IOException {
 		try (Tx tx = tx()) {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 			String path = "/News/2015/blume.jpg";
 			Node node = content("news_2015");
 
 			// 1. Transform the node into a binary content
 			Schema container = schemaContainer("binary_content");
 			node.setSchemaContainer(container);
-			node.getLatestDraftFieldContainer(english()).setSchemaContainerVersion(container.getLatestVersion());
+			contentDao.getLatestDraftFieldContainer(node, english()).setSchemaContainerVersion(container.getLatestVersion());
 			prepareSchema(node, "image/*", "binary");
 
 			// 2. Upload image
@@ -63,10 +65,12 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 		String fileName = "somefile.dat";
 
 		try (Tx tx = tx()) {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
+
 			// 1. Transform the node into a binary content
 			Schema container = schemaContainer("binary_content");
 			node.setSchemaContainer(container);
-			node.getLatestDraftFieldContainer(english()).setSchemaContainerVersion(container.getLatestVersion());
+			contentDao.getLatestDraftFieldContainer(node, english()).setSchemaContainerVersion(container.getLatestVersion());
 			prepareSchema(node, "image/*", "binary");
 			tx.success();
 		}

@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -271,7 +272,8 @@ public class BinaryTransformHandler extends AbstractHandler {
 	}
 
 	private NodeGraphFieldContainer loadTargetedContent(Node node, String languageTag, String fieldName) {
-		NodeGraphFieldContainer latestDraftVersion = node.getLatestDraftFieldContainer(languageTag);
+		ContentDaoWrapper contentDao = boot.get().contentDao();
+		NodeGraphFieldContainer latestDraftVersion = contentDao.getLatestDraftFieldContainer(node, languageTag);
 		if (latestDraftVersion == null) {
 			throw error(NOT_FOUND, "error_language_not_found", languageTag);
 		}

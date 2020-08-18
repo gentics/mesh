@@ -25,6 +25,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
@@ -203,12 +204,13 @@ public class MeshEntities {
 	}
 
 	private Optional<NodeGraphFieldContainer> toNodeContent(MeshElementEventModel eventModel) {
+		ContentDaoWrapper contentDao = boot.contentDao();
 		NodeMeshEventModel event = Util.requireType(NodeMeshEventModel.class, eventModel);
 		return findElementByUuid(boot.projectRoot(), event.getProject().getUuid())
 			.flatMap(project -> findElementByUuid(project.getNodeRoot(), eventModel.getUuid()))
 			.flatMap(node -> warningOptional(
 				"Could not find NodeGraphFieldContainer for event " + eventModel.toJson(),
-				node.getGraphFieldContainer(event.getLanguageTag(), event.getBranchUuid(), event.getType())
+				contentDao.getGraphFieldContainer(node, event.getLanguageTag(), event.getBranchUuid(), event.getType())
 			));
 	}
 

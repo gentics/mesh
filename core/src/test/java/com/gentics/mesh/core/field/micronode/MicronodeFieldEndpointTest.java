@@ -22,6 +22,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
@@ -163,12 +164,13 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		// Assert that a null field value request will delete the micronode
 		NodeResponse secondResponse = updateNode(FIELD_NAME, null);
 		try (Tx tx = tx()) {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 			assertThat(secondResponse.getFields().getMicronodeField(FIELD_NAME)).isNull();
 			assertThat(secondResponse.getVersion()).as("New version number").isNotEqualTo(oldNumber);
 
 			// Assert that the old version was not modified
 			Node node = folder("2015");
-			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
+			NodeGraphFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getMicronode(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getMicronode(FIELD_NAME)).as("The old version micronode field could not be found.").isNotNull();
@@ -381,8 +383,9 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	public void testReadNodeWithExistingField() throws IOException {
 		Node node = folder("2015");
 		try (Tx tx = tx()) {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 			MicroschemaVersion microschema = microschemaContainers().get("vcard").getLatestVersion();
-			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
+			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			MicronodeGraphField micronodeField = container.createMicronode(FIELD_NAME, microschema);
 			micronodeField.getMicronode().createString("firstName").setString("Max");
 			tx.success();

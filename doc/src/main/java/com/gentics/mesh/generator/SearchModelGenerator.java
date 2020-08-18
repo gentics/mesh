@@ -32,8 +32,10 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.dao.impl.ContentDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.TagDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.UserDaoWrapperImpl;
 import com.gentics.mesh.core.data.group.HibGroup;
@@ -166,9 +168,10 @@ public class SearchModelGenerator extends AbstractGenerator {
 		Tag tagB = mockTag("red", user, tagFamily, project);
 		Node parentNode = mockNodeBasic("folder", user);
 		Node node = mockNode(parentNode, project, user, language, tagA, tagB);
+		ContentDaoWrapper contentDao = mock(ContentDaoWrapperImpl.class);
 
 		NodeIndexHandlerImpl nodeIndexHandler = meshDagger.nodeContainerIndexHandler();
-		nodeIndexHandler.storeContainer(node.getLatestDraftFieldContainer(language), UUID_1, ContainerType.PUBLISHED).toCompletable()
+		nodeIndexHandler.storeContainer(contentDao.getLatestDraftFieldContainer(node, language), UUID_1, ContainerType.PUBLISHED).toCompletable()
 			.blockingAwait();
 		writeStoreEvent("node.search");
 	}

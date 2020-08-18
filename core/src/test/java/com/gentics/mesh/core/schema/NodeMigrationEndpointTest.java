@@ -31,6 +31,7 @@ import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.JobDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
@@ -472,7 +473,8 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		String nodeUuid = contentUuid();
 		// Add some really long string value to the content
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
+			ContentDaoWrapper contentDao = tx.data().contentDao();
+			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			container.getString("title").setString(TestUtils.getRandomHash(40_000));
 			container.getString("teaser").setString(TestUtils.getRandomHash(40_000));
 			tx.success();
@@ -611,8 +613,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		doSchemaMigration(versionA, versionB);
 
 		try (Tx tx = tx()) {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 			assertThat(node.getGraphFieldContainer("en")).as("Migrated draft").isOf(versionB).hasVersion("2.0");
-			assertThat(node.getGraphFieldContainer("en", project().getLatestBranch().getUuid(), ContainerType.PUBLISHED)).as("Migrated published")
+			assertThat(contentDao.getGraphFieldContainer(node, "en", project().getLatestBranch().getUuid(), ContainerType.PUBLISHED)).as("Migrated published")
 				.isOf(versionB).hasVersion("2.0");
 		}
 
@@ -1020,6 +1023,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		Node secondNode;
 
 		try (Tx tx = tx()) {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 			// create version 1 of the microschema
 			container = tx.getGraph().addFramedVertex(MicroschemaContainerImpl.class);
 			container.setCreated(user());
@@ -1066,7 +1070,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 			// Create the new container version with the specified content which will be migrated
 			HibBranch branch = firstNode.getProject().getLatestBranch();
-			NodeGraphFieldContainer oldContainer = firstNode.getGraphFieldContainer(en, branch, DRAFT);
+			NodeGraphFieldContainer oldContainer = contentDao.getGraphFieldContainer(firstNode, en, branch, DRAFT);
 			NodeGraphFieldContainer newContainer = firstNode.createGraphFieldContainer(en, branch, user(),
 				oldContainer, true);
 			firstMicronodeListField = newContainer.createMicronodeFieldList(micronodeFieldName);
@@ -1076,7 +1080,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 			secondNode = folder("news");
 			HibBranch branch2 = secondNode.getProject().getLatestBranch();
-			NodeGraphFieldContainer oldContainer2 = secondNode.getGraphFieldContainer(en, branch2, DRAFT);
+			NodeGraphFieldContainer oldContainer2 = contentDao.getGraphFieldContainer(secondNode, en, branch2, DRAFT);
 			secondMicronodeListField = secondNode.createGraphFieldContainer(en, branch2, user(), oldContainer2, true)
 				.createMicronodeFieldList(micronodeFieldName);
 
@@ -1142,6 +1146,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		Node firstNode;
 
 		try (Tx tx = tx()) {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 			// create version 1 of the microschema
 			container = tx.getGraph().addFramedVertex(MicroschemaContainerImpl.class);
 			container.setCreated(user());
@@ -1187,7 +1192,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			firstNode.getSchemaContainer().getLatestVersion().setSchema(schema);
 
 			// 1.0
-			NodeGraphFieldContainer org = firstNode.getGraphFieldContainer(english, firstNode.getProject().getLatestBranch(), ContainerType.DRAFT);
+			NodeGraphFieldContainer org = contentDao.getGraphFieldContainer(firstNode, english, firstNode.getProject().getLatestBranch(), ContainerType.DRAFT);
 			NodeGraphFieldContainer newContainer = firstNode.createGraphFieldContainer(english, firstNode.getProject().getLatestBranch(), user(),
 				org, true);
 
