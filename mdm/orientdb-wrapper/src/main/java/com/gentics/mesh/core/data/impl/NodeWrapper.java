@@ -607,10 +607,6 @@ public class NodeWrapper implements Node {
 		return delegate.getPathSegment(branchUuid, type, languageTag);
 	}
 
-	public void postfixPathSegment(String releaseUuid, ContainerType type, String languageTag) {
-		delegate.postfixPathSegment(releaseUuid, type, languageTag);
-	}
-
 	public void deleteFromBranch(InternalActionContext ac, HibBranch branch, BulkActionContext bac, boolean ignoreChecks) {
 		delegate.deleteFromBranch(ac, branch, bac, ignoreChecks);
 	}
@@ -621,18 +617,6 @@ public class NodeWrapper implements Node {
 
 	public void setSchemaContainer(Schema container) {
 		delegate.setSchemaContainer(container);
-	}
-
-	public void assertPublishConsistency(InternalActionContext ac, HibBranch branch) {
-		delegate.assertPublishConsistency(ac, branch);
-	}
-
-	public ContentWrapper publish(InternalActionContext ac, String languageTag, HibBranch branch, HibUser user) {
-		return ContentWrapper.wrap(delegate.publish(ac, languageTag, branch, user));
-	}
-
-	public void publish(InternalActionContext ac, HibBranch branch, BulkActionContext bac) {
-		delegate.publish(ac, branch, bac);
 	}
 
 	public void delete(BulkActionContext bac, boolean ignoreChecks, boolean recusive) {

@@ -28,7 +28,7 @@ public class NodeDAOActionsImpl implements NodeDAOActions {
 	@Override
 	public Node loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
 		if (perm == null) {
-			return ctx.project().getNodeRoot().findByUuid(uuid);
+			return ctx.tx().data().nodeDao().findByUuid(ctx.project(), uuid);
 		} else {
 			return ctx.project().getNodeRoot().loadObjectByUuid(ctx.ac(), uuid, perm, errorIfNotFound);
 		}

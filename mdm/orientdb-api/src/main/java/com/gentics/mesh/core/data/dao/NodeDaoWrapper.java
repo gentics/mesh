@@ -28,6 +28,14 @@ import com.gentics.mesh.path.Path;
 public interface NodeDaoWrapper extends NodeDao, DaoWrapper<Node>, DaoTransformable<Node, NodeResponse> {
 
 	/**
+	 * Finds a node in a project by its uuid.
+	 * @param project
+	 * @param uuid
+	 * @return The found node. Null if the node could not be found in the project.
+	 */
+	Node findByUuid(HibProject project, String uuid);
+
+	/**
 	 * Create a child node in the latest branch of the project.
 	 *
 	 * @param parentNode

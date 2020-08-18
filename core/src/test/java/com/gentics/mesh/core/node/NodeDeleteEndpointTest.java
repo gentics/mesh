@@ -323,7 +323,7 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 
 			call(() -> client().deleteNode(PROJECT_NAME, uuid), METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
 
-			Node foundNode = project().getNodeRoot().findByUuid(uuid);
+			Node foundNode = boot().nodeDao().findByUuid(project(), uuid);
 			assertNotNull("The node should still exist.", foundNode);
 		}
 	}

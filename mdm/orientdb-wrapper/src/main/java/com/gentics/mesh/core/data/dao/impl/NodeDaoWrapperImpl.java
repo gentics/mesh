@@ -42,6 +42,11 @@ public class NodeDaoWrapperImpl implements NodeDaoWrapper {
 	}
 
 	@Override
+	public Node findByUuid(HibProject project, String uuid) {
+		return project.getNodeRoot().findByUuid(uuid);
+	}
+
+	@Override
 	public Node findByUuidGlobal(String uuid) {
 		// TODO Probably wrong interface hierarchy. There is no need for this method
 		throw new RuntimeException("Not implemented");

@@ -557,15 +557,6 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	}
 
 	/**
-	 * Update the path segment and increment any found postfix number.
-	 *
-	 * @param releaseUuid
-	 * @param type
-	 * @param languageTag
-	 */
-	void postfixPathSegment(String releaseUuid, ContainerType type, String languageTag);
-
-	/**
 	 * Delete the node from the given branch. This will also delete children from the branch.
 	 *
 	 * If the node is deleted from its last branch, it is (permanently) deleted from the db.
@@ -590,47 +581,6 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param container
 	 */
 	void setSchemaContainer(Schema container);
-
-	/**
-	 * Check the publish consistency by validating the following constraints:
-	 *
-	 * <ul>
-	 * <li>A node can only be published if all parent nodes are also published (within the scope of the branch)
-	 * <li>A published node can only be moved if the target node is also a published node.
-	 * <li>A node can only be taken offline if the node has no children which are still published.
-	 * </ul>
-	 *
-	 * @param ac
-	 *            Current action context
-	 * @param branch
-	 *            Branch to be used to check the consistency state
-	 */
-	void assertPublishConsistency(InternalActionContext ac, HibBranch branch);
-
-	/**
-	 * Create a new published version of the given language in the branch.
-	 *
-	 * @param ac
-	 *            Action Context
-	 * @param languageTag
-	 *            language
-	 * @param branch
-	 *            branch
-	 * @param user
-	 *            user
-	 * @return published field container
-	 */
-	NodeGraphFieldContainer publish(InternalActionContext ac, String languageTag, HibBranch branch, HibUser user);
-
-	/**
-	 * Publish the node for the specified branch.
-	 *
-	 * @param ac
-	 * @param branch
-	 * @param bac
-	 * @return
-	 */
-	void publish(InternalActionContext ac, HibBranch branch, BulkActionContext bac);
 
 	/**
 	 * Delete the node. Please use {@link #deleteFromBranch(InternalActionContext, HibBranch, BulkActionContext, boolean)} if you want to delete the node just from a specific branch.

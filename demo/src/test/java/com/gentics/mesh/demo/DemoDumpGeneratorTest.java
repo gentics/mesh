@@ -16,6 +16,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
@@ -65,6 +66,7 @@ public class DemoDumpGeneratorTest {
 			GroupDaoWrapper groupDao = tx.data().groupDao();
 			ProjectDaoWrapper projectDao = tx.data().projectDao();
 			ContentDaoWrapper contentDao = tx.data().contentDao();
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 
 			HibProject project = projectDao.findByName("demo");
 			assertTrue(project.getNodeRoot().computeCount() > 0);
@@ -82,7 +84,7 @@ public class DemoDumpGeneratorTest {
 			assertTrue("We expected to find at least 5 nodes.", project.getNodeRoot().computeCount() > 5);
 
 			// Verify that the uuids have been updated
-			assertNotNull(project.getNodeRoot().findByUuid("df8beb3922c94ea28beb3922c94ea2f6"));
+			assertNotNull(nodeDao.findByUuid(project, "df8beb3922c94ea28beb3922c94ea2f6"));
 
 			// Verify that all documents are stored in the index
 			for (Node node : project.getNodeRoot().findAll()) {

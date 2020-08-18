@@ -412,7 +412,7 @@ public class TestDataProvider {
 		}
 		// Publish the project basenode
 		InternalActionContext ac = new NodeMigrationActionContextImpl();
-		project.getBaseNode().publish(ac, getEnglish(), getProject().getLatestBranch(), getUserInfo().getUser());
+		boot.contentDao().publish(project.getBaseNode(), ac, getEnglish(), getProject().getLatestBranch(), getUserInfo().getUser());
 		contentCount++;
 
 	}
@@ -553,7 +553,7 @@ public class TestDataProvider {
 			germanContainer.createString("slug").setString(germanName);
 			germanContainer.updateDisplayFieldValue();
 			contentCount++;
-			folderNode.publish(ac, getGerman(), branch, getUserInfo().getUser());
+			boot.contentDao().publish(folderNode, ac, getGerman(), branch, getUserInfo().getUser());
 		}
 		if (englishName != null) {
 			NodeGraphFieldContainer englishContainer = boot.contentDao().createGraphFieldContainer(folderNode, english, branch, userInfo.getUser());
@@ -562,7 +562,7 @@ public class TestDataProvider {
 			englishContainer.createString("slug").setString(englishName);
 			englishContainer.updateDisplayFieldValue();
 			contentCount++;
-			folderNode.publish(ac, getEnglish(), branch, getUserInfo().getUser());
+			boot.contentDao().publish(folderNode, ac, getEnglish(), branch, getUserInfo().getUser());
 		}
 
 		if (englishName == null || StringUtils.isEmpty(englishName)) {
@@ -613,7 +613,7 @@ public class TestDataProvider {
 			englishContainer.createHTML("content").setHtml(englishContent);
 			englishContainer.updateDisplayFieldValue();
 			contentCount++;
-			node.publish(ac, getEnglish(), branch, getUserInfo().getUser());
+			boot.contentDao().publish(node, ac, getEnglish(), branch, getUserInfo().getUser());
 		}
 
 		if (germanContent != null) {
@@ -625,7 +625,7 @@ public class TestDataProvider {
 			germanContainer.createHTML("content").setHtml(germanContent);
 			germanContainer.updateDisplayFieldValue();
 			contentCount++;
-			node.publish(ac, getGerman(), branch, getUserInfo().getUser());
+			boot.contentDao().publish(node, ac, getGerman(), branch, getUserInfo().getUser());
 		}
 
 		if (contents.containsKey(name.toLowerCase())) {

@@ -7,10 +7,11 @@ import static com.gentics.mesh.util.StreamUtil.toStream;
 import java.util.stream.Stream;
 
 import com.gentics.graphqlfilter.util.Lazy;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
-import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 
 /**
@@ -36,9 +37,9 @@ public class NodeReferenceIn {
 	 * @return
 	 */
 	public static Stream<NodeReferenceIn> fromContent(GraphQLContext context, NodeContent content, ContainerType type) {
+		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 		String branchUuid = context.getBranch().getUuid();
-		return content.getNode()
-			.getInboundReferences()
+		return contentDao.getInboundReferences(content.getNode())
 			.flatMap(ref -> toStream(ref.getReferencingContents()
 				.filter(container -> {
 					if (type == DRAFT && container.isDraft(branchUuid)) {

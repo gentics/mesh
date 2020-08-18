@@ -48,6 +48,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.action.DAOActionsCollection;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
@@ -56,6 +57,7 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.PermissionException;
 import com.gentics.mesh.core.rest.error.UuidNotFoundException;
@@ -253,8 +255,9 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	public Object nodeFetcher(DataFetchingEnvironment env) {
 		String uuid = env.getArgument("uuid");
 		if (uuid != null) {
+			NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
 			GraphQLContext gc = env.getContext();
-			Node node = gc.getProject().getNodeRoot().findByUuid(uuid);
+			Node node = nodeDao.findByUuid(gc.getProject(), uuid);
 			if (node == null) {
 				// TODO Throw graphql aware not found exception
 				return null;

@@ -227,7 +227,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return null;
 	}
 
-	@Override
 	public void postfixPathSegment(String branchUuid, ContainerType type, String languageTag) {
 
 		// Check whether this node is the base node.
@@ -308,8 +307,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	}
 
-	@Override
-	public void assertPublishConsistency(InternalActionContext ac, HibBranch branch) {
+	private void assertPublishConsistency(InternalActionContext ac, HibBranch branch) {
 
 		String branchUuid = branch.getUuid();
 		// Check whether the node got a published version and thus is published
@@ -1184,21 +1182,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void publish(InternalActionContext ac, HibBranch branch, BulkActionContext bac) {
-		PublishParameters parameters = ac.getPublishParameters();
-
-		bac.batch().add(onUpdated());
-
-		// Handle recursion
-		if (parameters.isRecursive()) {
-			for (Node child : getChildren(branch.getUuid())) {
-				child.publish(ac, branch, bac);
-			}
-		}
-		assertPublishConsistency(ac, branch);
-	}
-
-	@Override
 	public void publish(InternalActionContext ac, BulkActionContext bac) {
 
 		HibBranch branch = ac.getBranch(getProject());
@@ -1363,8 +1346,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		container.updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_publish");
 	}
 
-	@Override
-	public NodeGraphFieldContainer publish(InternalActionContext ac, String languageTag, HibBranch branch, HibUser user) {
+	private NodeGraphFieldContainer publish(InternalActionContext ac, String languageTag, HibBranch branch, HibUser user) {
 		String branchUuid = branch.getUuid();
 
 		// create published version

@@ -80,7 +80,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				}
 				// Create the batch first since we can't delete the container and access it later in batch creation
 				utils.bulkableAction(bac -> {
-					node.deleteFromBranch(ac, ac.getBranch(), bac, false);
+					tx.data().contentDao().deleteFromBranch(node, ac, ac.getBranch(), bac, false);
 				});
 			}, () -> ac.send(NO_CONTENT));
 		}
@@ -107,7 +107,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
 				}
 				utils.bulkableAction(bac -> {
-					node.deleteLanguageContainer(ac, ac.getBranch(), languageTag, bac, true);
+					tx.data().contentDao().deleteLanguageContainer(node, ac, ac.getBranch(), languageTag, bac, true);
 				});
 			}, () -> ac.send(NO_CONTENT));
 		}

@@ -183,7 +183,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testFindByUUID() throws Exception {
 		try (Tx tx = tx()) {
 			Node newsNode = content("news overview");
-			Node node = project().getNodeRoot().findByUuid(newsNode.getUuid());
+			Node node = boot().nodeDao().findByUuid(project(), newsNode.getUuid());
 			assertNotNull(node);
 			assertEquals(newsNode.getUuid(), node.getUuid());
 		}
@@ -224,7 +224,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertNotNull(subNode.getUuid());
 			BulkActionContext context = createBulkContext();
 			InternalActionContext ac = mockActionContext("");
-			subNode.deleteFromBranch(ac, project().getLatestBranch(), context, false);
+			boot().contentDao().deleteFromBranch(subNode, ac, project().getLatestBranch(), context, false);
 		}
 	}
 
@@ -307,7 +307,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			InternalActionContext ac = mockActionContext("");
 			ac.getDeleteParameters().setRecursive(true);
 			try (Tx tx2 = tx()) {
-				node.deleteFromBranch(ac, project().getLatestBranch(), createBulkContext(), false);
+				boot().contentDao().deleteFromBranch(node, ac, project().getLatestBranch(), createBulkContext(), false);
 				tx2.success();
 			}
 
@@ -390,7 +390,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 2. delete folder for initial release
 			InternalActionContext ac = mockActionContext("");
 			ac.getDeleteParameters().setRecursive(true);
-			subFolder.deleteFromBranch(ac, initialBranch, bac, false);
+			boot().contentDao().deleteFromBranch(subFolder, ac, initialBranch, bac, false);
 
 			// 3. assert for new branch
 			assertThat(folder).as("folder").hasNoChildren(initialBranch);
@@ -454,7 +454,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 8. delete folder for initial release
 			InternalActionContext ac = mockActionContext("");
 			ac.getDeleteParameters().setRecursive(true);
-			subFolder.deleteFromBranch(ac, initialBranch, bac, false);
+			boot().contentDao().deleteFromBranch(subFolder, ac, initialBranch, bac, false);
 
 			// 9. assert for new branch
 			assertThat(folder).as("folder").hasChildren(newBranch, subSubFolder);
@@ -509,7 +509,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 3. delete
 			InternalActionContext ac = mockActionContext("");
 			tx(() -> {
-				project().getNodeRoot().findByUuid(folderUuid).deleteFromBranch(ac, initialBranch, bac, false);
+				boot().contentDao().deleteFromBranch(boot().nodeDao().findByUuid(project(), folderUuid), ac, initialBranch, bac, false);
 			});
 
 			// 4. assert published and draft gone
@@ -558,7 +558,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 3. delete from initial branch
 			InternalActionContext ac = mockActionContext("");
 			tx(() -> {
-				project().getNodeRoot().findByUuid(folderUuid).deleteFromBranch(ac, initialBranch, createBulkContext(), false);
+				boot().contentDao().deleteFromBranch(boot().nodeDao().findByUuid(project(), folderUuid), ac, initialBranch, createBulkContext(), false);
 			});
 
 			// 4. assert published and draft gone from initial branch

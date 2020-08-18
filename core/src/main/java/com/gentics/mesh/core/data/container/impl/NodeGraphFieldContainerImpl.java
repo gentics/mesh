@@ -47,6 +47,7 @@ import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
@@ -111,7 +112,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	public static final String VERSION_PROPERTY_KEY = "version";
 
 	// Cached instance of the parent node.
-	private Node parentNodeRef;
+	private NodeImpl parentNodeRef;
 
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createType(vertexType(NodeGraphFieldContainerImpl.class, MeshVertexImpl.class)
@@ -332,7 +333,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	protected void updateWebrootPathInfo(InternalActionContext ac, GraphFieldContainerEdge edge, String branchUuid, String conflictI18n,
 		ContainerType type) {
 		final int MAX_NUMBER = 255;
-		Node node = getParentNode();
+		NodeImpl node = getParentNode();
 		String segmentFieldName = getSchemaContainerVersion().getSchema().getSegmentField();
 		String languageTag = getLanguageTag();
 
@@ -375,9 +376,10 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		String conflictI18n,
 		ContainerType type) {
 		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 
 		// Determine the webroot path of the container parent node
-		String segment = node.getPathSegment(branchUuid, type, getLanguageTag());
+		String segment = contentDao.getPathSegment(node, branchUuid, type, getLanguageTag());
 
 		// The webroot uniqueness will be checked by validating that the string [segmentValue-branchUuid-parentNodeUuid] is only listed once within the given
 		// specific index for (drafts or published nodes)
@@ -417,18 +419,18 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	 * 
 	 * @return parent node
 	 */
-	public Node getParentNode() {
+	public NodeImpl getParentNode() {
 		// Return pre-loaded instance
 		if (parentNodeRef != null) {
 			return parentNodeRef;
 		}
 
-		Node parentNode = in(HAS_FIELD_CONTAINER, NodeImpl.class).nextOrNull();
+		NodeImpl parentNode = in(HAS_FIELD_CONTAINER, NodeImpl.class).nextOrNull();
 		if (parentNode == null) {
 			// the field container is not directly linked to its Node, get the
 			// initial field container
-			NodeGraphFieldContainer initial = null;
-			NodeGraphFieldContainer previous = getPreviousVersion();
+			NodeGraphFieldContainerImpl initial = null;
+			NodeGraphFieldContainerImpl previous = getPreviousVersion();
 			while (previous != null) {
 				initial = previous;
 				previous = previous.getPreviousVersion();
@@ -475,7 +477,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public NodeGraphFieldContainer getPreviousVersion() {
+	public NodeGraphFieldContainerImpl getPreviousVersion() {
 		return in(HAS_VERSION, NodeGraphFieldContainerImpl.class).nextOrNull();
 	}
 

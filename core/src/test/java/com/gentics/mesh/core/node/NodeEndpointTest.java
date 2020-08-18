@@ -405,7 +405,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		try (Tx tx = tx()) {
 			ContentDaoWrapper contentDao = tx.data().contentDao();
-			Node newNode = project().getNodeRoot().findByUuid(nodeResponse.getUuid());
+			Node newNode = boot().nodeDao().findByUuid(project(), nodeResponse.getUuid());
 			for (ContainerType type : Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT)) {
 				assertThat(contentDao.getGraphFieldContainer(newNode, "en", initialBranchUuid, type)).as(type + " Field container for initial branch")
 					.isNotNull().hasVersion("0.1");
@@ -434,7 +434,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		try (Tx tx = tx()) {
 			ContentDaoWrapper contentDao = tx.data().contentDao();
-			Node newNode = project().getNodeRoot().findByUuid(nodeResponse.getUuid());
+			Node newNode = boot().nodeDao().findByUuid(project(), nodeResponse.getUuid());
 			for (ContainerType type : Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT)) {
 				assertThat(contentDao.getGraphFieldContainer(newNode, "en", initialBranchUuid, type)).as(type + " Field container for initial branch")
 					.isNotNull().hasVersion("0.1");
@@ -463,7 +463,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			NodeResponse nodeResponse = call(() -> client().createNode(PROJECT_NAME, request));
 
-			Node newNode = project().getNodeRoot().findByUuid(nodeResponse.getUuid());
+			Node newNode = boot().nodeDao().findByUuid(project(), nodeResponse.getUuid());
 
 			for (ContainerType type : Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT)) {
 				assertThat(contentDao.getGraphFieldContainer(newNode, "en", initialBranchUuid(), type)).as(type + " Field container for initial branch")
@@ -527,7 +527,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertThat(trackingSearchProvider()).recordedStoreEvents(1);
 			assertThat(restNode).matches(request);
 
-			Node node = project().getNodeRoot().findByUuid(restNode.getUuid());
+			Node node = boot().nodeDao().findByUuid(project(), restNode.getUuid());
 			assertNotNull(node);
 			assertThat(node).matches(request);
 
@@ -538,7 +538,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			// Delete the node
 			call(() -> client().deleteNode(PROJECT_NAME, restNode2.getUuid()));
 
-			Node deletedNode = project().getNodeRoot().findByUuid(restNode2.getUuid());
+			Node deletedNode = boot().nodeDao().findByUuid(project(), restNode2.getUuid());
 			assertNull("The node should have been deleted.", deletedNode);
 		}
 	}
@@ -2105,7 +2105,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		call(() -> client().deleteNode(PROJECT_NAME, uuid), FORBIDDEN, "error_missing_perm", uuid, DELETE_PERM.getRestPerm().getName());
 		try (Tx tx = tx()) {
-			assertNotNull(project().getNodeRoot().findByUuid(uuid));
+			assertNotNull(boot().nodeDao().findByUuid(project(), uuid));
 		}
 	}
 

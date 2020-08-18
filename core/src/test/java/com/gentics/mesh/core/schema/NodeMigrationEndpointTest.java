@@ -817,7 +817,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 	private void printVersionInfo(String uuid) {
 		try (Tx tx = tx()) {
 			System.out.println();
-			Node node = project().getNodeRoot().findByUuid(uuid);
+			Node node = boot().nodeDao().findByUuid(project(), uuid);
 			for (GraphFieldContainerEdgeImpl e : node.outE("HAS_FIELD_CONTAINER").frameExplicit(GraphFieldContainerEdgeImpl.class)) {
 				NodeGraphFieldContainer container = e.getNodeContainer();
 				System.out.println("Type: " + e.getType() + " " + container.getUuid() + " version: " + container.getVersion());
