@@ -36,7 +36,7 @@ public class BinaryDownloadHandler extends AbstractHandler {
 
 	public void handleReadBinaryField(RoutingContext rc, String uuid, String fieldName) {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-		db.tx(() -> {
+		db.tx(tx -> {
 			HibProject project = ac.getProject();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, READ_PUBLISHED_PERM);
 			// Language language = boot.get().languageRoot().findByLanguageTag(languageTag);
@@ -45,7 +45,7 @@ public class BinaryDownloadHandler extends AbstractHandler {
 			// }
 
 			HibBranch branch = ac.getBranch(node.getProject());
-			NodeGraphFieldContainer fieldContainer = node.findVersion(ac.getNodeParameters().getLanguageList(options), branch.getUuid(),
+			NodeGraphFieldContainer fieldContainer = tx.data().contentDao().findVersion(node, ac.getNodeParameters().getLanguageList(options), branch.getUuid(),
 				ac.getVersioningParameters().getVersion());
 			if (fieldContainer == null) {
 				throw error(NOT_FOUND, "object_not_found_for_version", ac.getVersioningParameters().getVersion());
