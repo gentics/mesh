@@ -116,6 +116,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	 */
 	public Object parentNodeFetcher(DataFetchingEnvironment env) {
 		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 
 		NodeContent content = env.getSource();
 		if (content == null) {
@@ -133,13 +134,14 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		List<String> languageTags = getLanguageArgument(env, content);
 		ContainerType type = getNodeVersion(env);
 
-		NodeGraphFieldContainer container = parentNode.findVersion(gc, languageTags, type);
+		NodeGraphFieldContainer container = contentDao.findVersion(parentNode, gc, languageTags, type);
 		container = gc.requiresReadPermSoft(container, env);
 
 		return new NodeContent(parentNode, container, languageTags, type);
 	}
 
 	public Object nodeLanguageFetcher(DataFetchingEnvironment env) {
+		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 		NodeContent content = env.getSource();
 		if (content == null) {
 			return null;
@@ -149,12 +151,13 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 		Node node = content.getNode();
 		ContainerType type = getNodeVersion(env);
-		NodeGraphFieldContainer container = node.findVersion(gc, languageTags, type);
+		NodeGraphFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
 		container = gc.requiresReadPermSoft(container, env);
 		return new NodeContent(node, container, languageTags, type);
 	}
 
 	public Object breadcrumbFetcher(DataFetchingEnvironment env) {
+		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
 		GraphQLContext gc = env.getContext();
 		NodeContent content = env.getSource();
@@ -165,7 +168,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		ContainerType type = getNodeVersion(env);
 		return nodeDao.getBreadcrumbNodes(content.getNode(), gc).stream().map(node -> {
 			List<String> languageTags = getLanguageArgument(env, content);
-			NodeGraphFieldContainer container = node.findVersion(gc, languageTags, type);
+			NodeGraphFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
 			return new NodeContent(node, container, languageTags, type);
 		})
 			.filter(item -> item.getContainer() != null)
@@ -323,6 +326,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 			// .children
 			newPagingFieldWithFetcherBuilder("children", "Load child nodes of the node.", (env) -> {
+				ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 				NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
 				GraphQLContext gc = env.getContext();
 				NodeContent content = env.getSource();
@@ -334,7 +338,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				ContainerType type = getNodeVersion(env);
 
 				Stream<NodeContent> nodes = nodeDao.getChildrenStream(content.getNode(), gc)
-					.map(item -> new NodeContent(item, item.findVersion(gc, languageTags, type), languageTags, type))
+					.map(item -> new NodeContent(item, contentDao.findVersion(item, gc, languageTags, type), languageTags, type))
 					.filter(item -> item.getContainer() != null)
 					.filter(item -> gc.hasReadPerm(item.getContainer()));
 

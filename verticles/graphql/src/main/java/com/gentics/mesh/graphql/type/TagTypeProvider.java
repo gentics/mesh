@@ -14,6 +14,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.tag.HibTag;
@@ -72,6 +73,7 @@ public class TagTypeProvider extends AbstractTypeProvider {
 				.argument(createLanguageTagArg(true))
 				.argument(createNodeVersionArg())
 				.dataFetcher((env) -> {
+					ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 					GraphQLContext gc = env.getContext();
 					Tag tag = env.getSource();
 					TagDaoWrapper tagDao = Tx.get().data().tagDao();
@@ -81,7 +83,7 @@ public class TagTypeProvider extends AbstractTypeProvider {
 
 					Stream<NodeContent> contents = tagDao.findTaggedNodes(tag, gc).stream()
 						// Now lets try to load the containers for those found nodes - apply the language fallback
-						.map(node -> new NodeContent(node, node.findVersion(gc, languageTags, type), languageTags, type))
+						.map(node -> new NodeContent(node, contentDao.findVersion(node, gc, languageTags, type), languageTags, type))
 						// Filter nodes without a container
 						.filter(content -> content.getContainer() != null)
 						.filter(gc::hasReadPerm);

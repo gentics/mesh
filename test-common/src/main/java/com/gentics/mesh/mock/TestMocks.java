@@ -313,7 +313,6 @@ public final class TestMocks {
 		when(container.getParentNode()).thenReturn(node);
 		when(container.getElementVersion()).thenReturn(UUID_5);
 		when(node.getElementVersion()).thenReturn(UUID_4);
-		Mockito.<Iterable<? extends NodeGraphFieldContainer>> when(node.getDraftGraphFieldContainers()).thenReturn(createEmptyTraversal());
 		return node;
 	}
 

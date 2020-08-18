@@ -71,12 +71,13 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testGetPath() throws Exception {
 		try (Tx tx = tx()) {
 			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 
 			Node newsNode = content("news overview");
 			InternalActionContext ac = mockActionContext();
 			String path = nodeDao.getPath(newsNode, ac, project().getLatestBranch().getUuid(), ContainerType.DRAFT, english());
 			assertEquals("/News/News%20Overview.en.html", path);
-			String pathSegementFieldValue = newsNode.getPathSegment(project().getLatestBranch().getUuid(), ContainerType.DRAFT, english());
+			String pathSegementFieldValue = contentDao.getPathSegment(newsNode, project().getLatestBranch().getUuid(), ContainerType.DRAFT, english());
 			assertEquals("News Overview.en.html", pathSegementFieldValue);
 		}
 	}
@@ -281,13 +282,13 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertEquals(user.getUuid(), englishContainer.getEditor().getUuid());
 			assertNotNull(englishContainer.getLastEditedTimestamp());
 
-			List<? extends GraphFieldContainer> allProperties = TestUtils.toList(node.getDraftGraphFieldContainers());
+			List<? extends GraphFieldContainer> allProperties = TestUtils.toList(contentDao.getDraftGraphFieldContainers(node));
 			assertNotNull(allProperties);
 			assertEquals(1, allProperties.size());
 
 			NodeGraphFieldContainer germanContainer = boot().contentDao().createGraphFieldContainer(node, german, node.getProject().getLatestBranch(), user);
 			germanContainer.createString("content").setString("german content");
-			assertEquals(2, TestUtils.size(node.getDraftGraphFieldContainers()));
+			assertEquals(2, TestUtils.size(contentDao.getDraftGraphFieldContainers(node)));
 
 			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english);
 			assertNotNull(container);

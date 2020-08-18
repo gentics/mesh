@@ -288,7 +288,7 @@ public class BinaryUploadHandler extends AbstractHandler {
 				}
 
 				// Load the base version field container in order to create the diff
-				NodeGraphFieldContainer baseVersionContainer = node.findVersion(languageTag, branch.getUuid(), nodeVersion);
+				NodeGraphFieldContainer baseVersionContainer = contentDao.findVersion(node, languageTag, branch.getUuid(), nodeVersion);
 				if (baseVersionContainer == null) {
 					throw error(BAD_REQUEST, "node_error_draft_not_found", nodeVersion, languageTag);
 				}

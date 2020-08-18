@@ -48,6 +48,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.action.DAOActionsCollection;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
@@ -202,6 +203,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 * @return A page containing all found nodes matching the given UUIDs
 	 */
 	private Page<NodeContent> fetchNodesByUuid(DataFetchingEnvironment env) {
+		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 		List<String> uuids = env.getArgument("uuids");
 
 		if (uuids == null || uuids.isEmpty()) {
@@ -237,7 +239,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			})
 			.filter(Objects::nonNull)
 			.map(node -> {
-				NodeGraphFieldContainer container = node.findVersion(gc, languageTags, type);
+				NodeGraphFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
 				return new NodeContent(node, container, languageTags, type);
 			})
 			.filter(content -> content.getContainer() != null)
@@ -253,6 +255,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 * @return
 	 */
 	public Object nodeFetcher(DataFetchingEnvironment env) {
+		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 		String uuid = env.getArgument("uuid");
 		if (uuid != null) {
 			NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
@@ -266,7 +269,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			ContainerType type = getNodeVersion(env);
 
 			node = gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
-			NodeGraphFieldContainer container = node.findVersion(gc, languageTags, type);
+			NodeGraphFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
 			if (container != null) {
 				container = gc.requiresReadPermSoft(container, env);
 			}
@@ -341,6 +344,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 * @return
 	 */
 	public Object rootNodeFetcher(DataFetchingEnvironment env) {
+		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 		GraphQLContext gc = env.getContext();
 		HibProject project = gc.getProject();
 		if (project != null) {
@@ -348,7 +352,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 			List<String> languageTags = getLanguageArgument(env);
 			ContainerType type = getNodeVersion(env);
-			NodeGraphFieldContainer container = node.findVersion(gc, languageTags, type);
+			NodeGraphFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
 			container = gc.requiresReadPermSoft(container, env);
 			return new NodeContent(node, container, languageTags, type);
 		}

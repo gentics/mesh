@@ -32,6 +32,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -175,6 +176,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 			return null;
 		}
 		UserDaoWrapper userDao = mesh().boot().userDao();
+		ContentDaoWrapper contentDao = mesh().boot().contentDao();
 		if (element == null) {
 			throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);
 		}
@@ -184,8 +186,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 			HibBranch branch = ac.getBranch(element.getProject());
 
 			List<String> requestedLanguageTags = ac.getNodeParameters().getLanguageList(options());
-			NodeGraphFieldContainer fieldContainer = element.findVersion(requestedLanguageTags, branch.getUuid(),
-				ac.getVersioningParameters().getVersion());
+			NodeGraphFieldContainer fieldContainer = contentDao.findVersion(element, requestedLanguageTags, branch.getUuid(), ac.getVersioningParameters().getVersion());
 
 			if (fieldContainer == null) {
 				throw error(NOT_FOUND, "node_error_published_not_found_for_uuid_branch_language", uuid,

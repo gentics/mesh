@@ -26,6 +26,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
@@ -45,6 +46,7 @@ import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
@@ -267,6 +269,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		}
 
 		return fieldType.dataFetcher(env -> {
+			ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 			GraphFieldContainer container = env.getSource();
 			GraphQLContext gc = env.getContext();
 
@@ -331,7 +334,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 						throw error(HttpResponseStatus.INTERNAL_SERVER_ERROR, "container can only be NodeGraphFieldContainer or Micronode");
 					}
 					// TODO we need to add more assertions and check what happens if the itemContainer is null
-					NodeGraphFieldContainer itemContainer = node.findVersion(gc, languageTags, nodeType);
+					NodeGraphFieldContainer itemContainer = contentDao.findVersion(node, gc, languageTags, nodeType);
 					return new NodeContent(node, itemContainer, languageTags, nodeType);
 				});
 				if (filterArgument != null) {
@@ -406,6 +409,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 			.argument(createNodeVersionArg())
 			.description(schema.getLabel())
 			.type(new GraphQLTypeReference(NODE_TYPE_NAME)).dataFetcher(env -> {
+				ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 				GraphQLContext gc = env.getContext();
 				GraphFieldContainer source = env.getSource();
 				ContainerType type = getNodeVersion(env);
@@ -419,7 +423,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 						List<String> languageTags = getLanguageArgument(env, source);
 						// Check permissions for the linked node
 						gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
-						NodeGraphFieldContainer container = node.findVersion(gc, languageTags, type);
+						NodeGraphFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
 						container = gc.requiresReadPermSoft(container, env);
 						return new NodeContent(node, container, languageTags, type);
 					}

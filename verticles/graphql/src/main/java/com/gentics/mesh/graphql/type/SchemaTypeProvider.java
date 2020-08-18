@@ -14,9 +14,11 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.NamedElement;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
@@ -98,6 +100,7 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 		// .nodes
 		schemaType
 			.field(newPagingFieldWithFetcherBuilder("nodes", "Load nodes with this schema", env -> {
+			ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 			GraphQLContext gc = env.getContext();
 			List<String> languageTags = getLanguageArgument(env);
 			ContainerType type = getNodeVersion(env);
@@ -108,7 +111,7 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 					ContainerType.forVersion(gc.getVersioningParameters().getVersion())
 			).stream()
 			.map(node -> {
-				NodeGraphFieldContainer container = node.findVersion(gc, languageTags, type);
+				NodeGraphFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
 				return new NodeContent(node, container, languageTags, type);
 			})
 			.filter(content -> content.getContainer() != null)

@@ -158,7 +158,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 		Node node = getTestNode();
 		String nodeUuid = tx(() -> node.getUuid());
 
-		NodeGraphFieldContainer oldContainer = tx(() -> node.findVersion("en", project().getLatestBranch().getUuid(), "1.0"));
+		NodeGraphFieldContainer oldContainer = tx(() -> boot().contentDao().findVersion(node, "en", project().getLatestBranch().getUuid(), "1.0"));
 		NodeUpdateRequest request = prepareNameFieldUpdateRequest("1234", "1.0");
 		// Add micronode / string list
 		request.getFields().put("stringList", FieldUtil.createStringListField("a", "b", "c"));
@@ -172,7 +172,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			assertNotNull("The old version should have a new version 1.1", oldContainer.getNextVersions().iterator().next());
-			NodeGraphFieldContainer newContainer = node.findVersion("en", project().getLatestBranch().getUuid(), "1.1");
+			NodeGraphFieldContainer newContainer = boot().contentDao().findVersion(node, "en", project().getLatestBranch().getUuid(), "1.1");
 			assertEquals("The name field value of the old container version should not have been changed.", "Concorde_english_name", oldContainer
 				.getString("teaser").getString());
 			assertEquals("The name field value of the new container version should contain the expected value.", "1234", newContainer.getString(

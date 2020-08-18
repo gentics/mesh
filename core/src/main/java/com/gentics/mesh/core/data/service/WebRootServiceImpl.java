@@ -1,11 +1,9 @@
 package com.gentics.mesh.core.data.service;
 
 import static com.gentics.mesh.core.data.GraphFieldContainerEdge.WEBROOT_URLFIELD_INDEX_NAME;
-import static com.gentics.mesh.util.URIUtils.decodeSegment;
 
 import java.util.Iterator;
 import java.util.Stack;
-import java.util.stream.IntStream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -15,6 +13,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
@@ -25,6 +24,8 @@ import com.gentics.mesh.core.webroot.PathPrefixUtil;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
+import com.gentics.mesh.util.StreamUtil;
+import com.gentics.mesh.util.URIUtils;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -47,6 +48,7 @@ public class WebRootServiceImpl implements WebRootService {
 	@Override
 	public Path findByProjectPath(InternalActionContext ac, String path, ContainerType type) {
 		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 		HibProject project = ac.getProject();
 		HibBranch branch = ac.getBranch();
 
@@ -84,7 +86,7 @@ public class WebRootServiceImpl implements WebRootService {
 		// Handle path to project root (baseNode)
 		if ("/".equals(strippedPath) || strippedPath.isEmpty()) {
 			// TODO Why this container? Any other container would also be fine?
-			Iterator<? extends NodeGraphFieldContainer> it = baseNode.getDraftGraphFieldContainers().iterator();
+			Iterator<NodeGraphFieldContainer> it = contentDao.getDraftGraphFieldContainers(baseNode).iterator();
 			NodeGraphFieldContainer container = it.next();
 			nodePath.addSegment(new PathSegment(container, null, null, "/"));
 			stack.push("/");
@@ -97,9 +99,8 @@ public class WebRootServiceImpl implements WebRootService {
 		String sanitizedPath = strippedPath.replaceAll("^/+", "");
 		String[] elements = sanitizedPath.split("\\/");
 
-		IntStream.iterate(elements.length - 1, i -> i - 1)
-			.limit(elements.length)
-			.mapToObj(i -> decodeSegment(elements[i]))
+		StreamUtil.reverseOf(elements)
+			.map(URIUtils::decodeSegment)
 			.forEach(stack::add);
 
 		Object clone = stack.clone();
