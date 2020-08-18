@@ -69,51 +69,36 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 
 	@Override
 	public long getGraphFieldContainerCount(Node node) {
-		return 0;
+		return node.getGraphFieldContainerCount();
 	}
 
 	@Override
 	public NodeGraphFieldContainer findVersion(Node node, List<String> languageTags, String branchUuid, String version) {
-		return null;
+		return node.findVersion(languageTags, branchUuid, version);
 	}
 
 	@Override
 	public void deleteLanguageContainer(Node node, InternalActionContext ac, HibBranch branch, String languageTag, BulkActionContext bac, boolean failForLastContainer) {
-
+		node.deleteLanguageContainer(ac, branch, languageTag, bac, failForLastContainer);
 	}
 
 	@Override
 	public String getPathSegment(Node node, String branchUuid, ContainerType type, boolean anyLanguage, String... languageTag) {
-		return null;
-	}
-
-	@Override
-	public void postfixPathSegment(Node node, String releaseUuid, ContainerType type, String languageTag) {
-
+		return node.getPathSegment(branchUuid, type, anyLanguage, languageTag);
 	}
 
 	@Override
 	public void deleteFromBranch(Node node, InternalActionContext ac, HibBranch branch, BulkActionContext bac, boolean ignoreChecks) {
-
-	}
-
-	@Override
-	public void assertPublishConsistency(Node node, InternalActionContext ac, HibBranch branch) {
-
+		node.deleteFromBranch(ac, branch, bac, ignoreChecks);
 	}
 
 	@Override
 	public NodeGraphFieldContainer publish(Node node, InternalActionContext ac, String languageTag, HibBranch branch, HibUser user) {
-		return null;
-	}
-
-	@Override
-	public void publish(Node node, InternalActionContext ac, HibBranch branch, BulkActionContext bac) {
-
+		return node.publish(ac, languageTag, branch, user);
 	}
 
 	@Override
 	public Stream<NodeGraphField> getInboundReferences(Node node) {
-		return null;
+		return node.getInboundReferences();
 	}
 }

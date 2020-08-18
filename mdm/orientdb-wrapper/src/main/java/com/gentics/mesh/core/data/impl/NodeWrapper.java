@@ -679,4 +679,8 @@ public class NodeWrapper implements Node {
 		delegate.setRoleUuidForPerm(permission, allowedRoles);
 	}
 
+	@Override
+	public NodeGraphFieldContainer publish(InternalActionContext ac, String languageTag, HibBranch branch, HibUser user) {
+		return delegate.publish(ac, languageTag, branch, user);
+	}
 }

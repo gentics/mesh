@@ -224,15 +224,6 @@ public interface ContentDaoWrapper extends ContentDao {
 	}
 
 	/**
-	 * Update the path segment and increment any found postfix number.
-	 *
-	 * @param releaseUuid
-	 * @param type
-	 * @param languageTag
-	 */
-	void postfixPathSegment(Node node, String releaseUuid, ContainerType type, String languageTag);
-
-	/**
 	 * Delete the node from the given branch. This will also delete children from the branch.
 	 *
 	 * If the node is deleted from its last branch, it is (permanently) deleted from the db.
@@ -243,22 +234,6 @@ public interface ContentDaoWrapper extends ContentDao {
 	 * @param ignoreChecks
 	 */
 	void deleteFromBranch(Node node, InternalActionContext ac, HibBranch branch, BulkActionContext bac, boolean ignoreChecks);
-
-	/**
-	 * Check the publish consistency by validating the following constraints:
-	 *
-	 * <ul>
-	 * <li>A node can only be published if all parent nodes are also published (within the scope of the branch)
-	 * <li>A published node can only be moved if the target node is also a published node.
-	 * <li>A node can only be taken offline if the node has no children which are still published.
-	 * </ul>
-	 *
-	 * @param ac
-	 *            Current action context
-	 * @param branch
-	 *            Branch to be used to check the consistency state
-	 */
-	void assertPublishConsistency(Node node, InternalActionContext ac, HibBranch branch);
 
 	/**
 	 * Create a new published version of the given language in the branch.
@@ -274,16 +249,6 @@ public interface ContentDaoWrapper extends ContentDao {
 	 * @return published field container
 	 */
 	NodeGraphFieldContainer publish(Node node, InternalActionContext ac, String languageTag, HibBranch branch, HibUser user);
-
-	/**
-	 * Publish the node for the specified branch.
-	 *
-	 * @param ac
-	 * @param branch
-	 * @param bac
-	 * @return
-	 */
-	void publish(Node node, InternalActionContext ac, HibBranch branch, BulkActionContext bac);
 
 	/**
 	 * Gets all NodeGraphField edges that reference this node.

@@ -1346,7 +1346,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		container.updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_publish");
 	}
 
-	private NodeGraphFieldContainer publish(InternalActionContext ac, String languageTag, HibBranch branch, HibUser user) {
+	@Override
+	public NodeGraphFieldContainer publish(InternalActionContext ac, String languageTag, HibBranch branch, HibUser user) {
 		String branchUuid = branch.getUuid();
 
 		// create published version

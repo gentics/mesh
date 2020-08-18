@@ -380,7 +380,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Find the content that matches the given parameters (languages, type).
-	 * 
+	 *
 	 * @param ac
 	 * @param languageTags
 	 * @param type
@@ -448,6 +448,21 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @return
 	 */
 	PublishStatusModel transformToPublishStatus(InternalActionContext ac, String languageTag);
+
+	/**
+	 * Create a new published version of the given language in the branch.
+	 *
+	 * @param ac
+	 *            Action Context
+	 * @param languageTag
+	 *            language
+	 * @param branch
+	 *            branch
+	 * @param user
+	 *            user
+	 * @return published field container
+	 */
+	NodeGraphFieldContainer publish(InternalActionContext ac, String languageTag, HibBranch branch, HibUser user);
 
 	/**
 	 * Publish a language of the node
