@@ -60,7 +60,7 @@ public class ProjectVersionPurgeHandler {
 	}
 
 	private void purgeNode(Tx tx, Node node, ZonedDateTime maxAge) {
-		Iterable<? extends NodeGraphFieldContainer> initials = node.getGraphFieldContainers(ContainerType.INITIAL);
+		Iterable<? extends NodeGraphFieldContainer> initials = tx.data().contentDao().getGraphFieldContainers(node, ContainerType.INITIAL);
 		for (NodeGraphFieldContainer initial : initials) {
 			Long counter = 0L;
 			purgeVersion(tx, counter, bulkProvider.get(), initial, initial, false, maxAge);

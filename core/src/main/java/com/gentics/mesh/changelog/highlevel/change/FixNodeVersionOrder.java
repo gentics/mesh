@@ -83,7 +83,7 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 				if (count != 0 && count % 1000 == 0) {
 					log.info("Checked {} nodes. Found and fixed {} broken nodes", count, fixedNodes.get());
 				}
-				node.getGraphFieldContainers(ContainerType.INITIAL).stream()
+				boot.get().contentDao().getGraphFieldContainers(node, ContainerType.INITIAL).stream()
 					.forEach(content -> {
 						boolean mutated = fixNodeVersionOrder(context, node, content);
 						if (mutated) {
