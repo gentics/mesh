@@ -296,17 +296,17 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 			vcard.applyChanges(ac, model, batch);
 			MicroschemaVersion newVCard = microschemaContainer("vcard").getLatestVersion();
 
-			NodeGraphFieldContainer containerWithBoth = folder("2015").getGraphFieldContainer("en");
+			NodeGraphFieldContainer containerWithBoth = boot().contentDao().getGraphFieldContainer(folder("2015"), "en");
 			containerWithBoth.createMicronode("single", vcard);
 			containerWithBoth.createMicronodeFieldList("list").createMicronode().setSchemaContainerVersion(vcard);
 
-			NodeGraphFieldContainer containerWithField = folder("news").getGraphFieldContainer("en");
+			NodeGraphFieldContainer containerWithField = boot().contentDao().getGraphFieldContainer(folder("news"), "en");
 			containerWithField.createMicronode("single", vcard);
 
-			NodeGraphFieldContainer containerWithList = folder("products").getGraphFieldContainer("en");
+			NodeGraphFieldContainer containerWithList = boot().contentDao().getGraphFieldContainer(folder("products"), "en");
 			containerWithList.createMicronodeFieldList("list").createMicronode().setSchemaContainerVersion(vcard);
 
-			NodeGraphFieldContainer containerWithOtherVersion = folder("deals").getGraphFieldContainer("en");
+			NodeGraphFieldContainer containerWithOtherVersion = boot().contentDao().getGraphFieldContainer(folder("deals"), "en");
 			containerWithOtherVersion.createMicronode("single", newVCard);
 
 			List<? extends NodeGraphFieldContainer> containers = vcard.getDraftFieldContainers(project().getLatestBranch().getUuid()).list();

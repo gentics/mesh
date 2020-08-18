@@ -120,7 +120,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 		List<List<Node>> valueCombinations = Arrays.asList(Arrays.asList(targetNode), Arrays.asList(targetNode2, targetNode), Collections.emptyList(),
 			Arrays.asList(targetNode, targetNode2), Arrays.asList(targetNode2));
 
-		NodeGraphFieldContainer container = tx(() -> node.getGraphFieldContainer("en"));
+		NodeGraphFieldContainer container = tx(() -> boot().contentDao().getGraphFieldContainer(node, "en"));
 		for (int i = 0; i < 20; i++) {
 			List<Node> oldValue;
 			List<Node> newValue;

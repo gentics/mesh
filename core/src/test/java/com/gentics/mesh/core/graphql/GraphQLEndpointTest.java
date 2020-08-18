@@ -221,12 +221,12 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			Node node = folder("2015");
 			Node folder = folder("news");
-			folder.getGraphFieldContainer("de").updateWebrootPathInfo(initialBranchUuid(), null);
-			folder.getGraphFieldContainer("de").updateWebrootPathInfo(initialBranchUuid(), null);
+			boot().contentDao().getGraphFieldContainer(folder, "de").updateWebrootPathInfo(initialBranchUuid(), null);
+			boot().contentDao().getGraphFieldContainer(folder, "de").updateWebrootPathInfo(initialBranchUuid(), null);
 
 			Node node2 = content();
-			node2.getGraphFieldContainer("en").updateWebrootPathInfo(initialBranchUuid(), null);
-			node2.getGraphFieldContainer("de").updateWebrootPathInfo(initialBranchUuid(), null);
+			boot().contentDao().getGraphFieldContainer(node2, "en").updateWebrootPathInfo(initialBranchUuid(), null);
+			boot().contentDao().getGraphFieldContainer(node2, "de").updateWebrootPathInfo(initialBranchUuid(), null);
 			Node node3 = folder("2014");
 
 			// Update the folder schema to contain all fields
@@ -321,7 +321,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			schemaContainer("folder").getLatestVersion().setSchema(schema);
 
 			// Setup some test data
-			NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
+			NodeGraphFieldContainer container = boot().contentDao().getGraphFieldContainer(node, "en");
 
 			// node
 			container.createNode("nodeRef", node2);

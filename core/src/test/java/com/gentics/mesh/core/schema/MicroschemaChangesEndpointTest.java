@@ -78,7 +78,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 		// 4. Assert migrated node
 		try (Tx tx = tx()) {
 			assertNotNull("The change should have been added to the schema.", beforeVersion.getNextChange());
-			NodeGraphFieldContainer fieldContainer = node.getGraphFieldContainer("en");
+			NodeGraphFieldContainer fieldContainer = boot().contentDao().getGraphFieldContainer(node, "en");
 			assertNotNull("The node should have a micronode graph field", fieldContainer.getMicronode("micronodeField"));
 		}
 	}
@@ -178,7 +178,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 		NodeResponse response = createNode("micronodeField", micronode);
 		Node node = project().getNodeRoot().findByUuid(response.getUuid());
 		assertNotNull("The node should have been created.", node);
-		assertNotNull("The node should have a micronode graph field", node.getGraphFieldContainer("en").getMicronode("micronodeField"));
+		assertNotNull("The node should have a micronode graph field", boot().contentDao().getGraphFieldContainer(node, "en").getMicronode("micronodeField"));
 
 		return node;
 

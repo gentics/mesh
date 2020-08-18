@@ -77,7 +77,7 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 		for (int i = 0; i < 20; i++) {
 			try (Tx tx = tx()) {
 				Node node = folder("2015");
-				NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
+				NodeGraphFieldContainer container = boot().contentDao().getGraphFieldContainer(node, "en");
 				String oldValue = getStringValue(container, FIELD_NAME);
 
 				String newValue = "content " + i;

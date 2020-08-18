@@ -120,7 +120,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 		disableAutoPurge();
 		Node node = folder("2015");
 
-		NodeGraphFieldContainer container = tx(() -> node.getGraphFieldContainer("en"));
+		NodeGraphFieldContainer container = tx(() -> boot().contentDao().getGraphFieldContainer(node, "en"));
 		for (int i = 0; i < 20; i++) {
 
 			final NodeGraphFieldContainer currentContainer = container;

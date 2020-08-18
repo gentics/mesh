@@ -442,12 +442,12 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			// assert that migration worked
 			assertThat(firstNode).as("Migrated Node").isOf(container).hasTranslation("en");
-			assertThat(firstNode.getGraphFieldContainer("en")).as("Migrated field container").isOf(versionB).hasVersion("0.2");
-			assertThat(firstNode.getGraphFieldContainer("en").getString(newFieldName).getString()).as("Migrated field value").isEqualTo(
+			assertThat(boot().contentDao().getGraphFieldContainer(firstNode, "en")).as("Migrated field container").isOf(versionB).hasVersion("0.2");
+			assertThat(boot().contentDao().getGraphFieldContainer(firstNode, "en").getString(newFieldName).getString()).as("Migrated field value").isEqualTo(
 				"first content");
 			assertThat(secondNode).as("Migrated Node").isOf(container).hasTranslation("en");
-			assertThat(secondNode.getGraphFieldContainer("en")).as("Migrated field container").isOf(versionB).hasVersion("0.2");
-			assertThat(secondNode.getGraphFieldContainer("en").getString(newFieldName).getString()).as("Migrated field value").isEqualTo(
+			assertThat(boot().contentDao().getGraphFieldContainer(secondNode, "en")).as("Migrated field container").isOf(versionB).hasVersion("0.2");
+			assertThat(boot().contentDao().getGraphFieldContainer(secondNode, "en").getString(newFieldName).getString()).as("Migrated field value").isEqualTo(
 				"second content");
 
 			// Two containers are moved from on index to another -> 2 Store / 2 Delete
@@ -570,8 +570,8 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 			// assert that migration worked, but was only performed once
 			assertThat(firstNode).as("Migrated Node").isOf(container).hasTranslation("en");
-			assertThat(firstNode.getGraphFieldContainer("en")).as("Migrated field container").isOf(versionB).hasVersion("0.2");
-			assertThat(firstNode.getGraphFieldContainer("en").getString(newFieldName).getString()).as("Migrated field value").isEqualTo(
+			assertThat(boot().contentDao().getGraphFieldContainer(firstNode, "en")).as("Migrated field container").isOf(versionB).hasVersion("0.2");
+			assertThat(boot().contentDao().getGraphFieldContainer(firstNode, "en").getString(newFieldName).getString()).as("Migrated field value").isEqualTo(
 				"first content");
 		}
 
@@ -614,7 +614,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			ContentDaoWrapper contentDao = tx.data().contentDao();
-			assertThat(node.getGraphFieldContainer("en")).as("Migrated draft").isOf(versionB).hasVersion("2.0");
+			assertThat(boot().contentDao().getGraphFieldContainer(node, "en")).as("Migrated draft").isOf(versionB).hasVersion("2.0");
 			assertThat(contentDao.getGraphFieldContainer(node, "en", project().getLatestBranch().getUuid(), ContainerType.PUBLISHED)).as("Migrated published")
 				.isOf(versionB).hasVersion("2.0");
 		}
@@ -986,19 +986,19 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertThat(firstMicronodeField.getMicronode()).as("Old Micronode").isOf(versionA);
 			assertThat(firstMicronodeField.getMicronode().getString(oldFieldName).getString()).as("Old field value").isEqualTo("first content");
 
-			assertThat(firstNode.getGraphFieldContainer("en")).as("Migrated field container").hasVersion("1.2");
-			assertThat(firstNode.getGraphFieldContainer("en").getMicronode(micronodeFieldName).getMicronode()).as("Migrated Micronode").isOf(
+			assertThat(boot().contentDao().getGraphFieldContainer(firstNode, "en")).as("Migrated field container").hasVersion("1.2");
+			assertThat(boot().contentDao().getGraphFieldContainer(firstNode, "en").getMicronode(micronodeFieldName).getMicronode()).as("Migrated Micronode").isOf(
 				versionB);
-			assertThat(firstNode.getGraphFieldContainer("en").getMicronode(micronodeFieldName).getMicronode().getString(newFieldName).getString()).as(
+			assertThat(boot().contentDao().getGraphFieldContainer(firstNode, "en").getMicronode(micronodeFieldName).getMicronode().getString(newFieldName).getString()).as(
 				"Migrated field value").isEqualTo("first content");
 
 			assertThat(secondMicronodeField.getMicronode()).as("Old Micronode").isOf(versionA);
 			assertThat(secondMicronodeField.getMicronode().getString(oldFieldName).getString()).as("Old field value").isEqualTo("second content");
 
-			assertThat(secondNode.getGraphFieldContainer("en")).as("Migrated field container").hasVersion("1.2");
-			assertThat(secondNode.getGraphFieldContainer("en").getMicronode(micronodeFieldName).getMicronode()).as("Migrated Micronode").isOf(
+			assertThat(boot().contentDao().getGraphFieldContainer(secondNode, "en")).as("Migrated field container").hasVersion("1.2");
+			assertThat(boot().contentDao().getGraphFieldContainer(secondNode, "en").getMicronode(micronodeFieldName).getMicronode()).as("Migrated Micronode").isOf(
 				versionB);
-			assertThat(secondNode.getGraphFieldContainer("en").getMicronode(micronodeFieldName).getMicronode().getString(newFieldName).getString())
+			assertThat(boot().contentDao().getGraphFieldContainer(secondNode, "en").getMicronode(micronodeFieldName).getMicronode().getString(newFieldName).getString())
 				.as(
 					"Migrated field value")
 				.isEqualTo("second content");
@@ -1103,10 +1103,10 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertThat(firstMicronodeListField.getList().get(0).getMicronode().getString(oldFieldName).getString()).as("Old field value").isEqualTo(
 				"first content");
 
-			assertThat(firstNode.getGraphFieldContainer("en")).as("Migrated field container").hasVersion("2.1");
-			assertThat(firstNode.getGraphFieldContainer("en").getMicronodeList(micronodeFieldName).getList().get(0).getMicronode()).as(
+			assertThat(boot().contentDao().getGraphFieldContainer(firstNode, "en")).as("Migrated field container").hasVersion("2.1");
+			assertThat(boot().contentDao().getGraphFieldContainer(firstNode, "en").getMicronodeList(micronodeFieldName).getList().get(0).getMicronode()).as(
 				"Migrated Micronode").isOf(versionB);
-			assertThat(firstNode.getGraphFieldContainer("en").getMicronodeList(micronodeFieldName).getList().get(0).getMicronode().getString(
+			assertThat(boot().contentDao().getGraphFieldContainer(firstNode, "en").getMicronodeList(micronodeFieldName).getList().get(0).getMicronode().getString(
 				newFieldName).getString()).as("Migrated field value").isEqualTo("first content");
 
 			assertThat(secondMicronodeListField.getList().get(0).getMicronode()).as("Old Micronode").isOf(versionA);
@@ -1116,14 +1116,14 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertThat(secondMicronodeListField.getList().get(1).getMicronode().getString(oldFieldName).getString()).as("Old field value").isEqualTo(
 				"third content");
 
-			assertThat(secondNode.getGraphFieldContainer("en")).as("Migrated field container").hasVersion("2.1");
-			assertThat(secondNode.getGraphFieldContainer("en").getMicronodeList(micronodeFieldName).getList().get(0).getMicronode()).as(
+			assertThat(boot().contentDao().getGraphFieldContainer(secondNode, "en")).as("Migrated field container").hasVersion("2.1");
+			assertThat(boot().contentDao().getGraphFieldContainer(secondNode, "en").getMicronodeList(micronodeFieldName).getList().get(0).getMicronode()).as(
 				"Migrated Micronode").isOf(versionB);
-			assertThat(secondNode.getGraphFieldContainer("en").getMicronodeList(micronodeFieldName).getList().get(0).getMicronode().getString(
+			assertThat(boot().contentDao().getGraphFieldContainer(secondNode, "en").getMicronodeList(micronodeFieldName).getList().get(0).getMicronode().getString(
 				newFieldName).getString()).as("Migrated field value").isEqualTo("second content");
-			assertThat(secondNode.getGraphFieldContainer("en").getMicronodeList(micronodeFieldName).getList().get(1).getMicronode()).as(
+			assertThat(boot().contentDao().getGraphFieldContainer(secondNode, "en").getMicronodeList(micronodeFieldName).getList().get(1).getMicronode()).as(
 				"Migrated Micronode").isOf(versionB);
-			assertThat(secondNode.getGraphFieldContainer("en").getMicronodeList(micronodeFieldName).getList().get(1).getMicronode().getString(
+			assertThat(boot().contentDao().getGraphFieldContainer(secondNode, "en").getMicronodeList(micronodeFieldName).getList().get(1).getMicronode().getString(
 				newFieldName).getString()).as("Migrated field value").isEqualTo("third content");
 		}
 
@@ -1224,15 +1224,15 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertThat(firstMicronodeListField.getList().get(1).getMicronode().getString("firstName").getString()).as("Old field value").isEqualTo(
 				"Max");
 
-			assertThat(firstNode.getGraphFieldContainer("en")).as("Migrated field container").hasVersion("2.1");
-			assertThat(firstNode.getGraphFieldContainer("en").getMicronodeList(micronodeFieldName).getList().get(0).getMicronode()).as(
+			assertThat(boot().contentDao().getGraphFieldContainer(firstNode, "en")).as("Migrated field container").hasVersion("2.1");
+			assertThat(boot().contentDao().getGraphFieldContainer(firstNode, "en").getMicronodeList(micronodeFieldName).getList().get(0).getMicronode()).as(
 				"Migrated Micronode").isOf(versionB);
-			assertThat(firstNode.getGraphFieldContainer("en").getMicronodeList(micronodeFieldName).getList().get(0).getMicronode().getString(
+			assertThat(boot().contentDao().getGraphFieldContainer(firstNode, "en").getMicronodeList(micronodeFieldName).getList().get(0).getMicronode().getString(
 				newFieldName).getString()).as("Migrated field value").isEqualTo("first content");
 
-			assertThat(firstNode.getGraphFieldContainer("en").getMicronodeList(micronodeFieldName).getList().get(1).getMicronode()).as(
+			assertThat(boot().contentDao().getGraphFieldContainer(firstNode, "en").getMicronodeList(micronodeFieldName).getList().get(1).getMicronode()).as(
 				"Not migrated Micronode").isOf(microschemaContainer("vcard").getLatestVersion());
-			assertThat(firstNode.getGraphFieldContainer("en").getMicronodeList(micronodeFieldName).getList().get(1).getMicronode().getString(
+			assertThat(boot().contentDao().getGraphFieldContainer(firstNode, "en").getMicronodeList(micronodeFieldName).getList().get(1).getMicronode().getString(
 				"firstName").getString()).as("Not migrated field value").isEqualTo("Max");
 		}
 

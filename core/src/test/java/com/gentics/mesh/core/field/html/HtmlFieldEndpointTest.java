@@ -59,7 +59,7 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 		Node node = folder("2015");
 		for (int i = 0; i < 20; i++) {
 			try (Tx tx = tx()) {
-				NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
+				NodeGraphFieldContainer container = boot().contentDao().getGraphFieldContainer(node, "en");
 				String oldValue = getHtmlValue(container, FIELD_NAME);
 
 				String newValue = "some<b>html <i>" + i + "</i>";

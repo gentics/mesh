@@ -78,7 +78,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		List<Node> targetNodes = Arrays.asList(folder("news"), folder("deals"));
 		for (int i = 0; i < 20; i++) {
 			try (Tx tx = tx()) {
-				NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
+				NodeGraphFieldContainer container = boot().contentDao().getGraphFieldContainer(node, "en");
 				Node oldValue = getNodeValue(container, FIELD_NAME);
 
 				Node newValue = targetNodes.get(i % 2);

@@ -128,7 +128,7 @@ public class BooleanListFieldEndpointTest extends AbstractListFieldEndpointTest 
 			List<Boolean> newValue;
 
 			try (Tx tx = tx()) {
-				container = node.getGraphFieldContainer("en");
+				container = boot().contentDao().getGraphFieldContainer(node, "en");
 				oldValue = getListValues(container, BooleanGraphFieldListImpl.class, FIELD_NAME);
 				newValue = valueCombinations.get(i % valueCombinations.size());
 

@@ -72,7 +72,7 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 		Node node = folder("2015");
 		for (int i = 0; i < 20; i++) {
 			boolean flag = false;
-			NodeGraphFieldContainer container = tx(() -> node.getGraphFieldContainer("en"));
+			NodeGraphFieldContainer container = tx(() -> boot().contentDao().getGraphFieldContainer(node, "en"));
 			final NodeGraphFieldContainer currentContainer = container;
 			Boolean oldValue = tx(() -> getBooleanValue(currentContainer, FIELD_NAME));
 			String expectedVersion = tx(() -> currentContainer.getVersion().nextDraft().toString());
@@ -84,7 +84,7 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 
 			try (Tx tx = tx()) {
 				assertEquals("Check old value", oldValue, getBooleanValue(container, FIELD_NAME));
-				container = node.getGraphFieldContainer("en");
+				container = boot().contentDao().getGraphFieldContainer(node, "en");
 				oldValue = getBooleanValue(container, FIELD_NAME);
 				response = updateNode(FIELD_NAME, new BooleanFieldImpl().setValue(!flag));
 				field = response.getFields().getBooleanField(FIELD_NAME);

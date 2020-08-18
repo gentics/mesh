@@ -66,7 +66,7 @@ public class NumberFieldEndpointTest extends AbstractNumberFieldEndpointTest {
 
 		Node node = folder("2015");
 		for (int i = 0; i < 20; i++) {
-			NodeGraphFieldContainer container = tx(() -> node.getGraphFieldContainer("en"));
+			NodeGraphFieldContainer container = tx(() -> boot().contentDao().getGraphFieldContainer(node, "en"));
 			Number oldValue;
 			Number newValue;
 			try (Tx tx = tx()) {

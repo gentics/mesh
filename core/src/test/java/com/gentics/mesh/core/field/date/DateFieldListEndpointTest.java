@@ -136,7 +136,7 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 			NodeGraphFieldContainer container;
 			List<Long> oldValue;
 			try (Tx tx = tx()) {
-				container = node.getGraphFieldContainer("en");
+				container = boot().contentDao().getGraphFieldContainer(node, "en");
 				oldValue = getListValues(container, DateGraphFieldListImpl.class, FIELD_NAME);
 				List<String> newValue = valueCombinations.get(i % valueCombinations.size());
 				for (String value : newValue) {

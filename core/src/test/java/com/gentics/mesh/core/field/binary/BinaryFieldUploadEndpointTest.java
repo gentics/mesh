@@ -133,7 +133,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		for (int i = 0; i < 20; i++) {
 			String newFileName = "somefile" + i + ".dat";
 			String oldFilename = null;
-			NodeGraphFieldContainer container = tx(() -> node.getGraphFieldContainer("en"));
+			NodeGraphFieldContainer container = tx(() -> boot().contentDao().getGraphFieldContainer(node, "en"));
 			try (Tx tx = tx()) {
 				BinaryGraphField oldValue = container.getBinary("binary");
 				if (oldValue != null) {
@@ -200,7 +200,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		}
 
 		String uuid = tx(() -> folder("news").getUuid());
-		VersionNumber version = tx(() -> folder("news").getGraphFieldContainer("en").getVersion());
+		VersionNumber version = tx(() -> boot().contentDao().getGraphFieldContainer(folder("news"), "en").getVersion());
 
 		Map<String, Buffer> data = new HashMap<>();
 		for (String field : fields) {
@@ -618,11 +618,11 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		// The test nodes
 		Node nodeA = folder("news");
 		String uuidA = tx(() -> nodeA.getUuid());
-		String versionA = tx(() -> nodeA.getGraphFieldContainer("en").getVersion()).toString();
+		String versionA = tx(() -> boot().contentDao().getGraphFieldContainer(nodeA, "en").getVersion()).toString();
 
 		Node nodeB = folder("products");
 		String uuidB = tx(() -> nodeB.getUuid());
-		String versionB = tx(() -> nodeA.getGraphFieldContainer("en").getVersion()).toString();
+		String versionB = tx(() -> boot().contentDao().getGraphFieldContainer(nodeA, "en").getVersion()).toString();
 
 		// Setup the schemas
 		try (Tx tx = tx()) {

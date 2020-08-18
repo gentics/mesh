@@ -68,7 +68,7 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 			Long oldValue;
 
 			try (Tx tx = tx()) {
-				container = node.getGraphFieldContainer("en");
+				container = boot().contentDao().getGraphFieldContainer(node, "en");
 				oldValue = getDateValue(container, FIELD_NAME);
 			}
 
