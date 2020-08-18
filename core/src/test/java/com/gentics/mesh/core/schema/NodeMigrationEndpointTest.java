@@ -1068,8 +1068,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			// Create the new container version with the specified content which will be migrated
 			HibBranch branch = firstNode.getProject().getLatestBranch();
 			NodeGraphFieldContainer oldContainer = contentDao.getGraphFieldContainer(firstNode, en, branch, DRAFT);
-			NodeGraphFieldContainer newContainer = firstNode.createGraphFieldContainer(en, branch, user(),
-				oldContainer, true);
+			NodeGraphFieldContainer newContainer = contentDao.createGraphFieldContainer(firstNode, en, branch, user(),
+	oldContainer,
+	true);
 			firstMicronodeListField = newContainer.createMicronodeFieldList(micronodeFieldName);
 			Micronode micronode = firstMicronodeListField.createMicronode();
 			micronode.setSchemaContainerVersion(versionA);
@@ -1078,7 +1079,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			secondNode = folder("news");
 			HibBranch branch2 = secondNode.getProject().getLatestBranch();
 			NodeGraphFieldContainer oldContainer2 = contentDao.getGraphFieldContainer(secondNode, en, branch2, DRAFT);
-			secondMicronodeListField = secondNode.createGraphFieldContainer(en, branch2, user(), oldContainer2, true)
+			secondMicronodeListField = contentDao.createGraphFieldContainer(secondNode, en, branch2, user(),
+	oldContainer2,
+	true)
 				.createMicronodeFieldList(micronodeFieldName);
 
 			micronode = secondMicronodeListField.createMicronode();
@@ -1190,8 +1193,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 			// 1.0
 			NodeGraphFieldContainer org = contentDao.getGraphFieldContainer(firstNode, english, firstNode.getProject().getLatestBranch(), ContainerType.DRAFT);
-			NodeGraphFieldContainer newContainer = firstNode.createGraphFieldContainer(english, firstNode.getProject().getLatestBranch(), user(),
-				org, true);
+			NodeGraphFieldContainer newContainer = contentDao.createGraphFieldContainer(firstNode, english, firstNode.getProject().getLatestBranch(), user(),
+	org,
+	true);
 
 			firstMicronodeListField = newContainer
 				.createMicronodeFieldList(micronodeFieldName);

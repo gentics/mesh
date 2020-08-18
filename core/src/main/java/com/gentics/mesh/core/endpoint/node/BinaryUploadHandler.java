@@ -325,9 +325,9 @@ public class BinaryUploadHandler extends AbstractHandler {
 				}
 
 				// Create a new node version field container to store the upload
-				NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(languageTag, branch, ac.getUser(),
-					latestDraftVersion,
-					true);
+				NodeGraphFieldContainer newDraftVersion = contentDao.createGraphFieldContainer(node, languageTag, branch, ac.getUser(),
+	latestDraftVersion,
+	true);
 
 				// Get the potential existing field
 				BinaryGraphField oldField = newDraftVersion.getBinary(fieldName);

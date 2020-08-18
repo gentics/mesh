@@ -221,6 +221,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 		SchemaVersionModel newSchema, VersionNumber nextDraftVersion)
 		throws Exception {
 		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 
 		String branchUuid = branch.getUuid();
 		String languageTag = container.getLanguageTag();
@@ -235,7 +236,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 		NodeResponse restModel = node.transformToRestSync(ac, 0, languageTag);
 
 		// Actual migration - Create the new version
-		NodeGraphFieldContainer migrated = node.createGraphFieldContainer(container.getLanguageTag(), branch, container.getEditor(), container, true);
+		NodeGraphFieldContainer migrated = contentDao.createGraphFieldContainer(node, container.getLanguageTag(), branch, container.getEditor(), container, true);
 
 		// Ensure that the migrated version is also published since the old version was
 		if (publish) {
@@ -280,6 +281,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 		NodeGraphFieldContainer container, GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion, SchemaVersion toVersion,
 		Set<String> touchedFields, SchemaVersionModel newSchema) throws Exception {
 		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 
 		String languageTag = container.getLanguageTag();
 		String branchUuid = branch.getUuid();
@@ -288,7 +290,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 		ac.getGenericParameters().setFields("fields");
 		NodeResponse restModel = node.transformToRestSync(ac, 0, languageTag);
 
-		NodeGraphFieldContainer migrated = node.createGraphFieldContainer(container.getLanguageTag(), branch, container.getEditor(), container, true);
+		NodeGraphFieldContainer migrated = contentDao.createGraphFieldContainer(node, container.getLanguageTag(), branch, container.getEditor(), container, true);
 
 		migrated.setVersion(container.getVersion().nextPublished());
 		nodeDao.setPublished(node, ac, migrated, branchUuid);
