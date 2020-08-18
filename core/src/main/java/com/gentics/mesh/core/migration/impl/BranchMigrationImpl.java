@@ -16,6 +16,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.context.BranchMigrationContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
@@ -106,11 +107,11 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 		try {
 			db.tx((tx) -> {
 				NodeDaoWrapper nodeDao = tx.data().nodeDao();
-
 				TagDaoWrapper tagDao = tx.data().tagDao();
+				ContentDaoWrapper contentDao = tx.data().contentDao();
 
 				// Check whether the node already has an initial container and thus was already migrated
-				if (node.getGraphFieldContainers(newBranch, INITIAL).hasNext()) {
+				if (contentDao.getGraphFieldContainers(node, newBranch, INITIAL).hasNext()) {
 					return;
 				}
 
@@ -119,8 +120,8 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 					nodeDao.setParentNode(node, newBranch.getUuid(), parent);
 				}
 
-				TraversalResult<? extends NodeGraphFieldContainer> drafts = node.getGraphFieldContainers(oldBranch, DRAFT);
-				TraversalResult<? extends NodeGraphFieldContainer> published = node.getGraphFieldContainers(oldBranch, PUBLISHED);
+				TraversalResult<? extends NodeGraphFieldContainer> drafts = contentDao.getGraphFieldContainers(node, oldBranch, DRAFT);
+				TraversalResult<? extends NodeGraphFieldContainer> published = contentDao.getGraphFieldContainers(node, oldBranch, PUBLISHED);
 
 				// 1. Migrate draft containers first
 				drafts.forEach(container -> {

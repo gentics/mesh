@@ -298,7 +298,7 @@ public class MeshEntities {
 		NodeContainerTransformer transformer = (NodeContainerTransformer) nodeContent.getTransformer();
 		return findElementByUuidStream(project.getNodeRoot(), nodeUuid)
 		.flatMap(node -> latestVersionTypes()
-		.flatMap(type -> node.getGraphFieldContainers(branch, type).stream()
+		.flatMap(type -> boot.contentDao().getGraphFieldContainers(node, branch, type).stream()
 		.map(container -> helper.createDocumentRequest(
 			NodeGraphFieldContainer.composeIndexName(
 				project.getUuid(),

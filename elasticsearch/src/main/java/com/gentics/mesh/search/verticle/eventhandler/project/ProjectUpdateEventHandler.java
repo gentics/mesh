@@ -74,7 +74,7 @@ public class ProjectUpdateEventHandler implements EventHandler {
 				return project.findNodes().stream()
 					.flatMap(node -> Stream.of(DRAFT, PUBLISHED)
 						.flatMap(type -> branches.stream()
-							.flatMap(branch -> node.getGraphFieldContainers(branch, type).stream()
+							.flatMap(branch -> tx.data().contentDao().getGraphFieldContainers(node, branch, type).stream()
 								.map(container -> helper.createDocumentRequest(
 									NodeGraphFieldContainer.composeIndexName(
 										project.getUuid(),

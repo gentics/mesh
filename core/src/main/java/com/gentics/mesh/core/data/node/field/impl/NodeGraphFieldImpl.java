@@ -24,6 +24,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
@@ -35,6 +36,7 @@ import com.gentics.mesh.core.data.node.field.list.ListGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.field.NodeField;
@@ -180,6 +182,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 			nodeField.setUuid(node.getUuid());
 			LinkType type = ac.getNodeParameters().getResolveLinks();
 			if (type != LinkType.OFF) {
+				ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 
 				WebRootLinkReplacer linkReplacer = mesh().webRootLinkReplacer();
 				HibBranch branch = ac.getBranch();
@@ -191,7 +194,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 
 				// Set the languagePaths for all field containers
 				Map<String, String> languagePaths = new HashMap<>();
-				for (GraphFieldContainer currentFieldContainer : node.getGraphFieldContainers(branch, containerType)) {
+				for (GraphFieldContainer currentFieldContainer : contentDao.getGraphFieldContainers(node, branch, containerType)) {
 					String currLanguage = currentFieldContainer.getLanguageTag();
 					String languagePath = linkReplacer.resolve(ac, branch.getUuid(), containerType, node, type, currLanguage);
 					languagePaths.put(currLanguage, languagePath);

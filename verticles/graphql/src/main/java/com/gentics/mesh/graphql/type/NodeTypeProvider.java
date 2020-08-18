@@ -34,6 +34,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
@@ -177,12 +178,13 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		if (content == null) {
 			return null;
 		}
+		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 		GraphQLContext gc = env.getContext();
 		HibBranch branch = gc.getBranch();
 
 		ContainerType type = getNodeVersion(env);
 		Stream<? extends NodeGraphFieldContainer> stream = StreamSupport
-			.stream(content.getNode().getGraphFieldContainers(branch, type).spliterator(), false);
+			.stream(contentDao.getGraphFieldContainers(content.getNode(), branch, type).spliterator(), false);
 		return stream
 			.filter(gc::hasReadPerm)
 			.map(container -> {
@@ -495,6 +497,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			newFieldDefinition().name("versions").description("List of versions of the node.")
 				.argument(createSingleLanguageTagArg(true))
 				.type(GraphQLList.list(GraphQLTypeReference.typeRef(NODE_CONTENT_VERSION_TYPE_NAME))).dataFetcher(env -> {
+					ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 					GraphQLContext gc = env.getContext();
 					String languageTag = getSingleLanguageArgument(env);
 					NodeContent content = env.getSource();
@@ -504,7 +507,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					}
 					// TODO this is hardcoding the draft versions. We maybe want both or check which type of nodecontent is currently loaded.
 					// This would not have been a problem if contents would be reflected as a type in graphql
-					return node.getGraphFieldContainers(gc.getBranch(), DRAFT).stream().filter(c -> {
+					return contentDao.getGraphFieldContainers(node, gc.getBranch(), DRAFT).stream().filter(c -> {
 						String lang = c.getLanguageTag();
 						return lang.equals(languageTag);
 					}).findFirst().map(NodeGraphFieldContainer::versions).orElse(null);

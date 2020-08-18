@@ -336,10 +336,10 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 			TagDaoWrapper tagDao = tx.data().tagDao();
 			tags.forEach(t -> {
 				tagDao.getNodes(t, initialBranch()).forEach(n -> {
-					n.getGraphFieldContainers(initialBranch(), DRAFT).forEach(c -> {
+					boot().contentDao().getGraphFieldContainers(n, initialBranch(), DRAFT).forEach(c -> {
 						taggedDraftContentUuids.add(c.getUuid());
 					});
-					n.getGraphFieldContainers(initialBranch(), PUBLISHED).forEach(c -> {
+					boot().contentDao().getGraphFieldContainers(n, initialBranch(), PUBLISHED).forEach(c -> {
 						taggedPublishedContentUuids.add(c.getUuid());
 					});
 				});
@@ -471,7 +471,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 					if (!taggedNodes.contains(node.getUuid())) {
 						taggedNodes.add(node.getUuid());
 						for (ContainerType containerType : Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED)) {
-							for (NodeGraphFieldContainer fieldContainer : node.getGraphFieldContainers(branch, containerType)) {
+							for (NodeGraphFieldContainer fieldContainer : boot().contentDao().getGraphFieldContainers(node, branch, containerType)) {
 								SchemaVersion schema = node.getSchemaContainer().getLatestVersion();
 								storeCount++;
 								assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch

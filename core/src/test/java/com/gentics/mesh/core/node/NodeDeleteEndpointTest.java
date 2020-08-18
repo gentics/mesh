@@ -268,8 +268,8 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 		// Assert that the node was only deleted in the new branch
 		try (Tx tx = tx()) {
 			assertElement(project().getNodeRoot(), uuid, true);
-			assertThat(node.getGraphFieldContainers(initialBranch(), DRAFT)).as("draft containers for initial branch").isNotEmpty();
-			assertThat(node.getGraphFieldContainers(newBranch, DRAFT)).as("draft containers for new branch").isEmpty();
+			assertThat(boot().contentDao().getGraphFieldContainers(node, initialBranch(), DRAFT)).as("draft containers for initial branch").isNotEmpty();
+			assertThat(boot().contentDao().getGraphFieldContainers(node, newBranch, DRAFT)).as("draft containers for new branch").isEmpty();
 		}
 
 	}
@@ -307,11 +307,11 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 		// Assert deletion - nodes should only be deleted for new branch
 		try (Tx tx = tx()) {
 			assertElement(project().getNodeRoot(), uuid, true);
-			assertThat(node.getGraphFieldContainers(initialBranch(), ContainerType.DRAFT)).as("draft containers for initial branch").isNotEmpty();
-			assertThat(node.getGraphFieldContainers(initialBranch(), ContainerType.PUBLISHED)).as("published containers for initial branch")
+			assertThat(boot().contentDao().getGraphFieldContainers(node, initialBranch(), ContainerType.DRAFT)).as("draft containers for initial branch").isNotEmpty();
+			assertThat(boot().contentDao().getGraphFieldContainers(node, initialBranch(), ContainerType.PUBLISHED)).as("published containers for initial branch")
 				.isNotEmpty();
-			assertThat(node.getGraphFieldContainers(newBranch, ContainerType.DRAFT)).as("draft containers for new branch").isEmpty();
-			assertThat(node.getGraphFieldContainers(newBranch, ContainerType.PUBLISHED)).as("published containers for new branch").isEmpty();
+			assertThat(boot().contentDao().getGraphFieldContainers(node, newBranch, ContainerType.DRAFT)).as("draft containers for new branch").isEmpty();
+			assertThat(boot().contentDao().getGraphFieldContainers(node, newBranch, ContainerType.PUBLISHED)).as("published containers for new branch").isEmpty();
 		}
 	}
 

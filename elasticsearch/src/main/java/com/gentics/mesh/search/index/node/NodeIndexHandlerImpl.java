@@ -28,6 +28,7 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -460,7 +461,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 				obs.add(storeContainer(container, branchUuid, type));
 			}
 		} else {
-			for (NodeGraphFieldContainer container : node.getGraphFieldContainers(branchUuid, type)) {
+			for (NodeGraphFieldContainer container : contentDao.getGraphFieldContainers(node, branchUuid, type)) {
 				obs.add(storeContainer(container, branchUuid, type));
 			}
 		}
@@ -536,7 +537,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 			}
 		} else {
 			Set<Observable<IndexBulkEntry>> obs = new HashSet<>();
-			for (NodeGraphFieldContainer container : node.getGraphFieldContainers(branchUuid, type)) {
+			for (NodeGraphFieldContainer container : contentDao.getGraphFieldContainers(node, branchUuid, type)) {
 				obs.add(storeContainerForBulk(container, branchUuid, type).toObservable());
 			}
 			return Observable.merge(obs);
@@ -651,15 +652,17 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 			// Not found
 			throw error(INTERNAL_SERVER_ERROR, "error_element_not_found", uuid);
 		} else {
-			HibProject project = node.getProject();
+			BranchDaoWrapper branchDao = Tx.get().data().branchDao();
+			ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 
+			HibProject project = node.getProject();
 			List<UpdateBulkEntry> entries = new ArrayList<>();
 
 			// Determine which documents need to be updated. The node could have multiple documents in various indices.
-			for (HibBranch branch : Tx.get().data().branchDao().findAll(project)) {
+			for (HibBranch branch : branchDao.findAll(project)) {
 				for (ContainerType type : Arrays.asList(DRAFT, PUBLISHED)) {
 					JsonObject json = getTransformer().toPermissionPartial(node, type);
-					for (NodeGraphFieldContainer container : node.getGraphFieldContainers(branch, type)) {
+					for (NodeGraphFieldContainer container : contentDao.getGraphFieldContainers(node, branch, type)) {
 						String indexName = container.getIndexName(project.getUuid(), branch.getUuid(), type);
 						String documentId = container.getDocumentId();
 						entries.add(new UpdateBulkEntry(indexName, documentId, json, complianceMode));
