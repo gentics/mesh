@@ -281,12 +281,12 @@ public class LinkRendererTest extends AbstractMeshTest {
 			SchemaVersion schemaVersion = schemaContainer("content").getLatestVersion();
 			// Create some dummy content
 			Node content = nodeDao.create(parentNode, user(), schemaVersion, project());
-			NodeGraphFieldContainer germanContainer = content.createGraphFieldContainer(german, content.getProject().getLatestBranch(), user());
+			NodeGraphFieldContainer germanContainer = boot().contentDao().createGraphFieldContainer(content, german, content.getProject().getLatestBranch(), user());
 			germanContainer.createString("displayName").setString("german name");
 			germanContainer.createString("name").setString("german.html");
 
 			Node content2 = nodeDao.create(parentNode, user(), schemaContainer("content").getLatestVersion(), project());
-			NodeGraphFieldContainer englishContainer = content2.createGraphFieldContainer(english, content2.getProject().getLatestBranch(), user());
+			NodeGraphFieldContainer englishContainer = boot().contentDao().createGraphFieldContainer(content2, english, content2.getProject().getLatestBranch(), user());
 			englishContainer.createString("displayName").setString("content 2 english");
 			englishContainer.createString("name").setString("english.html");
 

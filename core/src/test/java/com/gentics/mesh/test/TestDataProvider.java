@@ -547,7 +547,7 @@ public class TestDataProvider {
 			folderNode = nodeDao.create(rootNode, userInfo.getUser(), schemaVersion, project, branch, uuid);
 		}
 		if (germanName != null) {
-			NodeGraphFieldContainer germanContainer = folderNode.createGraphFieldContainer(german, branch, userInfo.getUser());
+			NodeGraphFieldContainer germanContainer = boot.contentDao().createGraphFieldContainer(folderNode, german, branch, userInfo.getUser());
 			// germanContainer.createString("displayName").setString(germanName);
 			germanContainer.createString("teaser").setString(germanName);
 			germanContainer.createString("slug").setString(germanName);
@@ -556,7 +556,7 @@ public class TestDataProvider {
 			folderNode.publish(ac, getGerman(), branch, getUserInfo().getUser());
 		}
 		if (englishName != null) {
-			NodeGraphFieldContainer englishContainer = folderNode.createGraphFieldContainer(english, branch, userInfo.getUser());
+			NodeGraphFieldContainer englishContainer = boot.contentDao().createGraphFieldContainer(folderNode, english, branch, userInfo.getUser());
 			// englishContainer.createString("displayName").setString(englishName);
 			englishContainer.createString("name").setString(englishName);
 			englishContainer.createString("slug").setString(englishName);
@@ -605,7 +605,7 @@ public class TestDataProvider {
 			node = nodeDao.create(parentNode, userInfo.getUser(), schemaContainers.get("content").getLatestVersion(), project, branch, uuid);
 		}
 		if (englishContent != null) {
-			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, branch, userInfo.getUser());
+			NodeGraphFieldContainer englishContainer = boot.contentDao().createGraphFieldContainer(node, english, branch, userInfo.getUser());
 			englishContainer.createString("teaser").setString(name + "_english_name");
 			englishContainer.createString("title").setString(name + " english title");
 			englishContainer.createString("displayName").setString(name + " english displayName");
@@ -617,7 +617,7 @@ public class TestDataProvider {
 		}
 
 		if (germanContent != null) {
-			NodeGraphFieldContainer germanContainer = node.createGraphFieldContainer(german, branch, userInfo.getUser());
+			NodeGraphFieldContainer germanContainer = boot.contentDao().createGraphFieldContainer(node, german, branch, userInfo.getUser());
 			germanContainer.createString("teaser").setString(name + " german");
 			germanContainer.createString("title").setString(name + " german title");
 			germanContainer.createString("displayName").setString(name + " german");

@@ -169,7 +169,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 			for (int i = 0; i < numAdditionalNodes; i++) {
 				Node node = nodeDao.create(parentNode, user, schemaVersion, project);
-				NodeGraphFieldContainer fieldContainer = node.createGraphFieldContainer(english, node.getProject().getLatestBranch(), user);
+				NodeGraphFieldContainer fieldContainer = boot().contentDao().createGraphFieldContainer(node, english, node.getProject().getLatestBranch(), user);
 				fieldContainer.createString("name").setString("Name_" + i);
 				MicronodeGraphField vcardField = fieldContainer.createMicronode("vcard", microschemaContainers().get("vcard").getLatestVersion());
 				vcardField.getMicronode().createString("firstName").setString("Mickey");

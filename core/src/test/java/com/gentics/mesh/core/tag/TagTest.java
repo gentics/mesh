@@ -142,7 +142,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			Node parentNode = folder("2015");
 			Node node = nodeDao.create(parentNode, user(), getSchemaContainer().getLatestVersion(), project);
 			String german = "de";
-			NodeGraphFieldContainer germanContainer = node.createGraphFieldContainer(german, branch, user());
+			NodeGraphFieldContainer germanContainer = boot().contentDao().createGraphFieldContainer(node, german, branch, user());
 
 			germanContainer.createString("displayName").setString(GERMAN_TEST_FILENAME);
 			germanContainer.createString("name").setString("german node name");

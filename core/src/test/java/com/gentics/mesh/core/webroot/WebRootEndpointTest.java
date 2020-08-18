@@ -157,7 +157,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 			// Grant permissions to the node otherwise it will not be able to be loaded
 			roleDao.grantPermissions(role(), node, InternalPermission.values());
-			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(german(), project().getLatestBranch(), user());
+			NodeGraphFieldContainer englishContainer = boot().contentDao().createGraphFieldContainer(node, german(), project().getLatestBranch(), user());
 			englishContainer.createString("teaser").setString("german teaser");
 			englishContainer.createString("title").setString("german title");
 			englishContainer.createString("displayName").setString("german displayName");

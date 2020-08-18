@@ -424,13 +424,11 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			String english = english();
 			Node parentNode = folder("2015");
 			firstNode = nodeDao.create(parentNode, user, versionA, project());
-			NodeGraphFieldContainer firstEnglishContainer = firstNode.createGraphFieldContainer(english, firstNode.getProject().getLatestBranch(),
-				user);
+			NodeGraphFieldContainer firstEnglishContainer = boot().contentDao().createGraphFieldContainer(firstNode, english, firstNode.getProject().getLatestBranch(), user);
 			firstEnglishContainer.createString(oldFieldName).setString("first content");
 
 			secondNode = nodeDao.create(parentNode, user, versionA, project());
-			NodeGraphFieldContainer secondEnglishContainer = secondNode.createGraphFieldContainer(english, secondNode.getProject().getLatestBranch(),
-				user);
+			NodeGraphFieldContainer secondEnglishContainer = boot().contentDao().createGraphFieldContainer(secondNode, english, secondNode.getProject().getLatestBranch(), user);
 			secondEnglishContainer.createString(oldFieldName).setString("second content");
 
 			jobUuid = project().getLatestBranch().assignSchemaVersion(user, versionB, batch).getUuid();
@@ -554,8 +552,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			String english = english();
 			Node parentNode = folder("2015");
 			firstNode = nodeDao.create(parentNode, user, versionA, project());
-			NodeGraphFieldContainer firstEnglishContainer = firstNode.createGraphFieldContainer(english, firstNode.getProject().getLatestBranch(),
-				user);
+			NodeGraphFieldContainer firstEnglishContainer = boot().contentDao().createGraphFieldContainer(firstNode, english, firstNode.getProject().getLatestBranch(), user);
 			firstEnglishContainer.createString(oldFieldName).setString("first content");
 
 			// do the schema migration twice
@@ -600,7 +597,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 			// create a node and publish
 			node = nodeDao.create(folder("2015"), user(), versionA, project());
-			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english(), project().getLatestBranch(), user());
+			NodeGraphFieldContainer englishContainer = boot().contentDao().createGraphFieldContainer(node, english(), project().getLatestBranch(), user());
 			englishContainer.createString(fieldName).setString("content");
 			englishContainer.createString("name").setString("someName");
 			InternalActionContext ac = new InternalRoutingActionContextImpl(mockRoutingContext());
@@ -966,12 +963,12 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			schema.getField(micronodeFieldName, MicronodeFieldSchema.class).setAllowedMicroSchemas(versionA.getName());
 			firstNode.getSchemaContainer().getLatestVersion().setSchema(schema);
 
-			firstMicronodeField = firstNode.createGraphFieldContainer(english, firstNode.getProject().getLatestBranch(), user()).createMicronode(
+			firstMicronodeField = boot().contentDao().createGraphFieldContainer(firstNode, english, firstNode.getProject().getLatestBranch(), user()).createMicronode(
 				micronodeFieldName, versionA);
 			firstMicronodeField.getMicronode().createString(oldFieldName).setString("first content");
 
 			secondNode = folder("news");
-			secondMicronodeField = secondNode.createGraphFieldContainer(english, secondNode.getProject().getLatestBranch(), user()).createMicronode(
+			secondMicronodeField = boot().contentDao().createGraphFieldContainer(secondNode, english, secondNode.getProject().getLatestBranch(), user()).createMicronode(
 				micronodeFieldName, versionA);
 			secondMicronodeField.getMicronode().createString(oldFieldName).setString("second content");
 			tx.success();
