@@ -33,9 +33,11 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.dao.impl.ContentDaoWrapperImpl;
+import com.gentics.mesh.core.data.dao.impl.NodeDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.TagDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.UserDaoWrapperImpl;
 import com.gentics.mesh.core.data.group.HibGroup;
@@ -131,12 +133,17 @@ public class SearchModelGenerator extends AbstractGenerator {
 
 		try {
 			TxData txData = mockTx();
+			NodeDaoWrapper nodeDao = mock(NodeDaoWrapperImpl.class);
+			ContentDaoWrapper contentDao = mock(ContentDaoWrapperImpl.class);
 			UserDaoWrapper userDao = mock(UserDaoWrapperImpl.class);
 			TagDaoWrapper tagDao = mock(TagDaoWrapperImpl.class);
+
+			when(txData.nodeDao()).thenReturn(nodeDao);
+			when(txData.contentDao()).thenReturn(contentDao);
 			when(txData.userDao()).thenReturn(userDao);
 			when(txData.tagDao()).thenReturn(tagDao);
 
-			writeNodeDocumentExample();
+			writeNodeDocumentExample(nodeDao, contentDao, tagDao);
 			writeTagDocumentExample();
 			writeGroupDocumentExample();
 			writeUserDocumentExample(userDao);
@@ -159,7 +166,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		return txData;
 	}
 
-	private void writeNodeDocumentExample() throws Exception {
+	private void writeNodeDocumentExample(NodeDaoWrapper nodeDao, ContentDaoWrapper contentDao, TagDaoWrapper tagDao) throws Exception {
 		String language = "de";
 		User user = mockUser("joe1", "Joe", "Doe");
 		Project project = mockProject(user);
@@ -167,14 +174,14 @@ public class SearchModelGenerator extends AbstractGenerator {
 		Tag tagA = mockTag("green", user, tagFamily, project);
 		Tag tagB = mockTag("red", user, tagFamily, project);
 		Node parentNode = mockNodeBasic("folder", user);
-		Node node = mockNode(parentNode, project, user, language, tagA, tagB);
-		ContentDaoWrapper contentDao = mock(ContentDaoWrapperImpl.class);
+		Node node = mockNode(nodeDao, contentDao, tagDao, parentNode, project, user, language, tagA, tagB);
 
 		NodeIndexHandlerImpl nodeIndexHandler = meshDagger.nodeContainerIndexHandler();
 		nodeIndexHandler.storeContainer(contentDao.getLatestDraftFieldContainer(node, language), UUID_1, ContainerType.PUBLISHED).toCompletable()
 			.blockingAwait();
 		writeStoreEvent("node.search");
 	}
+
 
 	private void writeProjectDocumentExample() throws Exception {
 		User creator = mockUser("admin", "Admin", "", null);

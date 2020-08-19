@@ -18,6 +18,7 @@ import static com.gentics.mesh.example.ExampleUuids.UUID_2;
 import static com.gentics.mesh.example.ExampleUuids.UUID_3;
 import static com.gentics.mesh.example.ExampleUuids.UUID_4;
 import static com.gentics.mesh.example.ExampleUuids.UUID_5;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -34,6 +35,9 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
@@ -291,13 +295,14 @@ public final class TestMocks {
 		return microschema;
 	}
 
-	public static Node mockNode(Node parentNode, Project project, User user, String languageTag, Tag tagA, Tag tagB) {
+	public static Node mockNode(NodeDaoWrapper nodeDao, ContentDaoWrapper contentDao, TagDaoWrapper tagDao, Node parent, Project project, User user, String languageTag, Tag tagA, Tag tagB) {
 		Node node = mock(Node.class);
 
 		when(node.getProject()).thenReturn(project);
+		when(nodeDao.getParentNode(same(node), Mockito.any())).thenReturn(parent);
 
 		TraversalResult<HibTag> tagResult = new TraversalResult<>(Arrays.asList(tagA, tagB));
-		Mockito.when(node.getTags(Mockito.any())).thenReturn(tagResult);
+		when(tagDao.getTags(same(node), Mockito.any())).thenReturn(tagResult);
 
 		Schema schemaContainer = mockSchemaContainer("content", user);
 		SchemaVersion latestVersion = schemaContainer.getLatestVersion();
@@ -312,6 +317,9 @@ public final class TestMocks {
 		when(container.getSchemaContainerVersion()).thenReturn(latestVersion);
 		when(container.getParentNode()).thenReturn(node);
 		when(container.getElementVersion()).thenReturn(UUID_5);
+
+		when(contentDao.getLatestDraftFieldContainer(node, languageTag)).thenReturn(container);
+
 		when(node.getElementVersion()).thenReturn(UUID_4);
 		return node;
 	}

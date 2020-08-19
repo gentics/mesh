@@ -507,7 +507,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 		document.put("created", toISO8601(node.getCreationTimestamp()));
 
 		addProject(document, node.getProject());
-		TraversalResult<HibTag> tags = node.getTags(node.getProject().getLatestBranch());
+		TraversalResult<HibTag> tags = tagDao.getTags(node, node.getProject().getLatestBranch());
 		addTags(document, tags);
 		addTagFamilies(document, tagDao.getTags(node, node.getProject().getLatestBranch()));
 		addPermissionInfo(document, node, type);
