@@ -1,25 +1,27 @@
 package com.gentics.mesh.plugin.comment.integration.mail;
 
-import co.unruly.matchers.StreamMatchers;
+import static com.gentics.mesh.plugin.comment.TestUtil.loadResource;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.time.Duration;
+import java.util.stream.Stream;
+
+import javax.mail.Address;
+import javax.mail.internet.MimeMessage;
+
+import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.Test;
 
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.plugin.comment.integration.AbstractLocalIntegrationTest;
 import com.gentics.mesh.plugin.comment.model.request.CreateCommentRequest;
 import com.icegreen.greenmail.junit.GreenMailRule;
 import com.icegreen.greenmail.util.ServerSetupTest;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
 
-import javax.mail.Address;
-import javax.mail.internet.MimeMessage;
-import java.time.Duration;
-import java.util.stream.Stream;
-
-import static com.gentics.mesh.plugin.comment.TestUtil.loadResource;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import co.unruly.matchers.StreamMatchers;
 
 public class MailServiceTest extends AbstractLocalIntegrationTest {
 	@Rule
@@ -53,7 +55,7 @@ public class MailServiceTest extends AbstractLocalIntegrationTest {
 
 	@Test
 	public void testLinkRendering() throws Exception {
-		NodeResponse folder = createFolder(playground, String.format("{{mesh.link(\"%s\", \"en\")}}", playground.getUuid()));
+		NodeResponse folder = testClient.createFolder(playground, String.format("{{mesh.link(\"%s\", \"en\")}}", playground.getUuid()));
 		client.addComment(new CreateCommentRequest()
 			.setComment("This is a link rendering test!")
 			.setNode(folder.getUuid())
