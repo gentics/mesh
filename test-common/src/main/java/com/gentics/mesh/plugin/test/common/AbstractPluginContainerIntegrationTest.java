@@ -11,6 +11,7 @@ import java.nio.file.Paths;
 import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
 import org.junit.ClassRule;
+import org.testcontainers.Testcontainers;
 
 import com.gentics.mesh.core.rest.plugin.PluginDeploymentRequest;
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
@@ -38,6 +39,16 @@ public abstract class AbstractPluginContainerIntegrationTest {
 	static {
 		// Use slf4j instead of JUL
 		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
+
+		/*
+		The comment plugin requires this port to be exposed to the container.
+		Other plugin tests should not be affected by this.
+		This cannot be in a static block in the comment plugin because then it would be executed after the container
+		was started which is too late.
+
+		See also https://www.testcontainers.org/features/networking/#exposing-host-ports-to-the-container
+		 */
+		Testcontainers.exposeHostPorts(3025);
 	}
 
 	@ClassRule

@@ -1,5 +1,9 @@
 package com.gentics.mesh.plugin.comment;
 
+import java.io.IOException;
+import java.util.Map;
+import java.util.Optional;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
@@ -7,35 +11,40 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.plugin.comment.integration.TestDataSetup;
 import com.gentics.mesh.plugin.comment.model.Comment;
 import com.gentics.mesh.plugin.comment.model.CommentStatus;
 import com.gentics.mesh.plugin.comment.model.Order;
 import com.gentics.mesh.plugin.comment.model.request.CreateCommentRequest;
 import com.gentics.mesh.plugin.comment.model.request.UpdateCommentRequest;
-import com.gentics.mesh.test.MeshTestServer;
+
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.Optional;
-
 public class TestCommentClient {
 
-	private final MeshTestServer server;
+	private final String baseUrl;
 	private final String projectName;
 	private final NodeResponse commentedNode;
 	private final Map<User, String> tokens;
 	private User currentUser = User.ANONYMOUS;
 
-	public TestCommentClient(MeshTestServer server, String projectName, NodeResponse commentedNode, Map<User, String> tokens) {
-		this.server = server;
+	public TestCommentClient(String baseUrl, String projectName, NodeResponse commentedNode, Map<User, String> tokens) {
+		this.baseUrl = baseUrl;
 		this.projectName = projectName;
 		this.commentedNode = commentedNode;
 		this.tokens = tokens;
+	}
+
+	public TestCommentClient(String host, int port, TestDataSetup.TestData testData) {
+		this("http://" + host + ":" + port, testData);
+	}
+
+	public TestCommentClient(String baseUrl, TestDataSetup.TestData testData) {
+		this(baseUrl, testData.project.getName(), testData.publicNode, testData.tokens);
 	}
 
 	private OkHttpClient client() {
@@ -54,7 +63,7 @@ public class TestCommentClient {
 		RequestBody body = json == null ? null : RequestBody.create(MediaType.parse("application/json"), json);
 		Request.Builder requestBuilder = new Request.Builder()
 			.header("Accept", "application/json, application/javascript")
-			.url("http://" + server.getHostname() + ":" + server.getPort() + "/api/v1" + baseEndpoint + path)
+			.url(baseUrl + "/api/v1" + baseEndpoint + path)
 			.method(method, body);
 
 		Optional<String> token = Optional.ofNullable(tokens.get(currentUser));

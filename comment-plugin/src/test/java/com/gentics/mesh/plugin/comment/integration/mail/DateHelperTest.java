@@ -21,6 +21,7 @@ import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.plugin.comment.integration.AbstractLocalIntegrationTest;
+import com.gentics.mesh.plugin.comment.integration.TestDataSetup;
 import com.gentics.mesh.plugin.comment.model.request.CreateCommentRequest;
 import com.icegreen.greenmail.junit.GreenMailRule;
 import com.icegreen.greenmail.util.ServerSetupTest;
@@ -56,11 +57,11 @@ public class DateHelperTest extends AbstractLocalIntegrationTest {
 			.setName("dateSchema")
 			.setFields(Collections.singletonList(new DateFieldSchemaImpl().setName("somedate")))
 		).blockingGet();
-		server.client().assignSchemaToProject(PROJECT_NAME, schemaResponse.getUuid()).blockingAwait();
+		server.client().assignSchemaToProject(TestDataSetup.PROJECT_NAME, schemaResponse.getUuid()).blockingAwait();
 	}
 
 	private NodeResponse createNode() {
-		return server.client().createNode(PROJECT_NAME, new NodeCreateRequest()
+		return server.client().createNode(TestDataSetup.PROJECT_NAME, new NodeCreateRequest()
 			.setSchemaName("dateSchema")
 			.setLanguage("en")
 			.setParentNodeUuid(playground.getUuid())

@@ -1,0 +1,13 @@
+commentRoot: "/comments"
+projectNames:
+  - test
+requiredForAnonymous: []
+moderatorEmails:
+  - moderator@example.com
+  - admin@example.com
+mailServerConfig:
+  hostname: host.testcontainers.internal
+  port: 3025
+mailSubjects:
+  commentCreated: "A test comment has been created"
+mailSender: Testmailer <test@mailer.com>
