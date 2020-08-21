@@ -26,7 +26,6 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
@@ -191,8 +190,8 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		assertThat(statusResponse).as("Publish status").isNotNull().isPublished("en").hasVersion("en", "2.0");
 
 		try (Tx tx = tx()) {
-			assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid(), branchUuid,
-				schemaContainerVersionUuid, PUBLISHED), NodeGraphFieldContainer.composeDocumentId(nodeUuid, "en"));
+			assertThat(trackingSearchProvider()).hasStore(ContentDaoWrapper.composeIndexName(projectUuid(), branchUuid,
+				schemaContainerVersionUuid, PUBLISHED), ContentDaoWrapper.composeDocumentId(nodeUuid, "en"));
 			// The draft of the node must still remain in the index
 			assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 		}
@@ -245,8 +244,8 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		assertThat(statusResponse).as("Publish status").isNotNull().isPublished("en").hasVersion("en", "2.0");
 
 		try (Tx tx = tx()) {
-			assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid(), branchUuid,
-				schemaContainerVersionUuid, PUBLISHED), NodeGraphFieldContainer.composeDocumentId(nodeUuid, "en"));
+			assertThat(trackingSearchProvider()).hasStore(ContentDaoWrapper.composeIndexName(projectUuid(), branchUuid,
+				schemaContainerVersionUuid, PUBLISHED), ContentDaoWrapper.composeDocumentId(nodeUuid, "en"));
 			// The draft of the node must still remain in the index
 			assertThat(trackingSearchProvider()).hasEvents(2, 0, 0, 0, 0);
 		}

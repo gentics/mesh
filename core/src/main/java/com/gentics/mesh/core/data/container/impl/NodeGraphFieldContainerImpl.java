@@ -202,7 +202,6 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		bac.inc();
 	}
 
-	@Override
 	@SuppressWarnings("unchecked")
 	public void deleteFromBranch(HibBranch branch, BulkActionContext bac) {
 		String branchUuid = branch.getUuid();
@@ -408,8 +407,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		}
 	}
 
-	@Override
-	public Node getParentNode(String branchUuid) {
+	private Node getParentNode(String branchUuid) {
 		return inE(HAS_FIELD_CONTAINER).has(
 			GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid).outV().nextOrDefaultExplicit(NodeImpl.class, null);
 	}
@@ -509,7 +507,6 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		return traversal.frameExplicit(GraphFieldContainerEdgeImpl.class).iterator();
 	}
 
-	@Override
 	public Set<Tuple<String, ContainerType>> getBranchTypes() {
 		Set<Tuple<String, ContainerType>> typeSet = new HashSet<>();
 		inE(HAS_FIELD_CONTAINER).frameExplicit(GraphFieldContainerEdgeImpl.class).forEach(edge -> typeSet.add(Tuple.tuple(edge.getBranchUuid(), edge

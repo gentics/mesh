@@ -14,13 +14,13 @@ import javax.inject.Singleton;
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.HibElement;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.schema.Microschema;
@@ -91,12 +91,12 @@ public class PermissionChangedEventHandler implements EventHandler {
 						.flatMap(branchUuid -> Util.latestVersionTypes()
 							.flatMap(type -> tx.data().contentDao().getGraphFieldContainers(node, branchUuid, type).stream()
 								.map(container -> meshHelper.updateDocumentRequest(
-									NodeGraphFieldContainer.composeIndexName(
+									ContentDaoWrapper.composeIndexName(
 										model.getProject().getUuid(),
 										branchUuid,
 										container.getSchemaContainerVersion().getUuid(),
 										type),
-									NodeGraphFieldContainer.composeDocumentId(model.getUuid(), container.getLanguageTag()),
+									ContentDaoWrapper.composeDocumentId(model.getUuid(), container.getLanguageTag()),
 									tf.toPermissionPartial(node, type), complianceMode))))))
 				.collect(toFlowable());
 		});

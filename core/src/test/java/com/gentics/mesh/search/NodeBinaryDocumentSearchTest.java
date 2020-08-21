@@ -17,7 +17,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
@@ -89,9 +88,9 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 		recreateIndices();
 
 		try (Tx tx = tx()) {
-			String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(),
+			String indexName = ContentDaoWrapper.composeIndexName(projectUuid(), initialBranchUuid(),
 				nodeB.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT);
-			String id = NodeGraphFieldContainer.composeDocumentId(nodeB.getUuid(), "en");
+			String id = ContentDaoWrapper.composeDocumentId(nodeB.getUuid(), "en");
 			JsonObject doc = getProvider().getDocument(indexName, id).blockingGet();
 			assertFalse(doc.getJsonObject("_source").getJsonObject("fields").getJsonObject("binary").containsKey("file"));
 			tx.success();
@@ -144,9 +143,9 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 		recreateIndices();
 
 		try (Tx tx = tx()) {
-			String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(),
+			String indexName = ContentDaoWrapper.composeIndexName(projectUuid(), initialBranchUuid(),
 				nodeB.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT);
-			String id = NodeGraphFieldContainer.composeDocumentId(nodeB.getUuid(), "en");
+			String id = ContentDaoWrapper.composeDocumentId(nodeB.getUuid(), "en");
 			JsonObject doc = getProvider().getDocument(indexName, id).blockingGet();
 			assertFalse(doc.getJsonObject("_source").getJsonObject("fields").getJsonObject("binary").containsKey("file"));
 			tx.success();

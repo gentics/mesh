@@ -44,6 +44,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
@@ -474,8 +475,8 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 							for (NodeGraphFieldContainer fieldContainer : boot().contentDao().getGraphFieldContainers(node, branch, containerType)) {
 								SchemaVersion schema = node.getSchemaContainer().getLatestVersion();
 								storeCount++;
-								assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch
-									.getUuid(), schema.getUuid(), containerType), NodeGraphFieldContainer.composeDocumentId(node.getUuid(),
+								assertThat(trackingSearchProvider()).hasStore(ContentDaoWrapper.composeIndexName(project.getUuid(), branch
+									.getUuid(), schema.getUuid(), containerType), ContentDaoWrapper.composeDocumentId(node.getUuid(),
 										fieldContainer.getLanguageTag()));
 							}
 						}

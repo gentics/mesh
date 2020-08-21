@@ -54,7 +54,6 @@ import com.gentics.mesh.madl.frame.VertexFrame;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.path.Path;
-import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.VersionNumber;
 import com.google.gson.JsonObject;
 import com.syncleus.ferma.ClassInitializer;
@@ -531,10 +530,6 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		return delegate.getReferencedNodes();
 	}
 
-	public Node getParentNode(String uuid) {
-		return delegate.getParentNode(uuid);
-	}
-
 	public void updateWebrootPathInfo(InternalActionContext ac, String branchUuid, String conflictI18n) {
 		delegate.updateWebrootPathInfo(ac, branchUuid, conflictI18n);
 	}
@@ -609,10 +604,6 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 
 	public boolean isType(ContainerType type, String branchUuid) {
 		return delegate.isType(type, branchUuid);
-	}
-
-	public Set<Tuple<String, ContainerType>> getBranchTypes() {
-		return delegate.getBranchTypes();
 	}
 
 	public Set<String> getBranches(ContainerType type) {

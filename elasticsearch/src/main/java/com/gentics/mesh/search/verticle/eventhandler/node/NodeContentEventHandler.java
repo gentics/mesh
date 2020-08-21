@@ -16,7 +16,7 @@ import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
@@ -104,18 +104,18 @@ public class NodeContentEventHandler implements EventHandler {
 			return entities.nodeContent.getDocument(message);
 		}).map(doc -> helper.createDocumentRequest(
 				getIndexName(message, getSchemaVersionUuid(message).runInNewTx()),
-				NodeGraphFieldContainer.composeDocumentId(message.getUuid(), message.getLanguageTag()),
+				ContentDaoWrapper.composeDocumentId(message.getUuid(), message.getLanguageTag()),
 				doc, complianceMode));
 	}
 
 	private DeleteDocumentRequest deleteNodes(NodeMeshEventModel message, String schemaVersionUuid) {
 		return helper.deleteDocumentRequest(
-			getIndexName(message, schemaVersionUuid), NodeGraphFieldContainer.composeDocumentId(message.getUuid(), message.getLanguageTag()),
+			getIndexName(message, schemaVersionUuid), ContentDaoWrapper.composeDocumentId(message.getUuid(), message.getLanguageTag()),
 			complianceMode);
 	}
 
 	private String getIndexName(NodeMeshEventModel message, String schemaVersionUuid) {
-		return NodeGraphFieldContainer.composeIndexName(
+		return ContentDaoWrapper.composeIndexName(
 			message.getProject().getUuid(),
 			message.getBranchUuid(),
 			schemaVersionUuid,

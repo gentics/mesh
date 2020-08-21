@@ -1715,8 +1715,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		});
 
 		waitForSearchIdleEvent();
-		assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid,
-			ContainerType.DRAFT), NodeGraphFieldContainer.composeDocumentId(uuid, "en"));
+		assertThat(trackingSearchProvider()).hasStore(ContentDaoWrapper.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid,
+			ContainerType.DRAFT), ContentDaoWrapper.composeDocumentId(uuid, "en"));
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 
 		// 4. Assert that new version 1.1 was created. (1.0 was the published 0.1 draft)
@@ -1744,9 +1744,9 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertThat(origContainer.getPreviousVersion()).isFirst();
 
 			// Verify that exactly the selected language was updated
-			String indexName = NodeGraphFieldContainer.composeIndexName(project().getUuid(), project().getLatestBranch().getUuid(), origContainer
+			String indexName = ContentDaoWrapper.composeIndexName(project().getUuid(), project().getLatestBranch().getUuid(), origContainer
 				.getSchemaContainerVersion().getUuid(), ContainerType.DRAFT);
-			String documentId = NodeGraphFieldContainer.composeDocumentId(uuid, "en");
+			String documentId = ContentDaoWrapper.composeDocumentId(uuid, "en");
 			assertThat(trackingSearchProvider()).hasStore(indexName, documentId);
 			assertThat(trackingSearchProvider()).recordedStoreEvents(1);
 		}
@@ -1794,8 +1794,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertEquals("de", restNode.getLanguage());
 		waitForSearchIdleEvent();
 		// Only the new language container is stored in the index. The existing one does not need to be updated since it does not reference other languages
-		assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid,
-			ContainerType.DRAFT), NodeGraphFieldContainer.composeDocumentId(uuid, "de"));
+		assertThat(trackingSearchProvider()).hasStore(ContentDaoWrapper.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid,
+			ContainerType.DRAFT), ContentDaoWrapper.composeDocumentId(uuid, "de"));
 
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 	}

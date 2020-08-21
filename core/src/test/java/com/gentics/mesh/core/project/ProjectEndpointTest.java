@@ -47,10 +47,10 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
@@ -639,7 +639,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			droppedIndices.add(Tag.composeIndexName(projectUuid()));
 
 			// 1. Determine a list all project indices which must be dropped
-			droppedIndices.add(NodeGraphFieldContainer.composeIndexPattern(uuid));
+			droppedIndices.add(ContentDaoWrapper.composeIndexPattern(uuid));
 			// for (Branch branch : project.getBranchRoot().findAll()) {
 			// for (SchemaContainerVersion version : branch.findActiveSchemaVersions()) {
 			// String schemaContainerVersionUuid = version.getUuid();

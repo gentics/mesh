@@ -3,7 +3,6 @@ package com.gentics.mesh.assertj.impl;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -16,10 +15,10 @@ import java.util.stream.IntStream;
 
 import org.assertj.core.api.AbstractAssert;
 
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.search.request.Bulkable;
@@ -184,8 +183,8 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 				String projectUuid = project.getUuid();
 				String branchUuid = branch.getUuid();
 				String schemaVersionUuid = node.getSchemaContainer().getLatestVersion().getUuid();
-				assertThat(actual).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid, schemaVersionUuid, type),
-						NodeGraphFieldContainer.composeDocumentId(node.getUuid(), lang));
+				assertThat(actual).hasStore(ContentDaoWrapper.composeIndexName(projectUuid, branchUuid, schemaVersionUuid, type),
+						ContentDaoWrapper.composeDocumentId(node.getUuid(), lang));
 			}
 		}
 		return this;

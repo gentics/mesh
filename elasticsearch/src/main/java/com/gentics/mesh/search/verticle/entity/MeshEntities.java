@@ -300,13 +300,13 @@ public class MeshEntities {
 		.flatMap(node -> latestVersionTypes()
 		.flatMap(type -> boot.contentDao().getGraphFieldContainers(node, branch, type).stream()
 		.map(container -> helper.createDocumentRequest(
-			NodeGraphFieldContainer.composeIndexName(
+			ContentDaoWrapper.composeIndexName(
 				project.getUuid(),
 				branch.getUuid(),
 				container.getSchemaContainerVersion().getUuid(),
 				type
 			),
-			NodeGraphFieldContainer.composeDocumentId(nodeUuid, container.getLanguageTag()),
+			ContentDaoWrapper.composeDocumentId(nodeUuid, container.getLanguageTag()),
 			transformer.toDocument(container, branch.getUuid(), type), complianceMode
 		))));
 	}

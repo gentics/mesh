@@ -16,10 +16,10 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
@@ -76,12 +76,12 @@ public class ProjectUpdateEventHandler implements EventHandler {
 						.flatMap(type -> branches.stream()
 							.flatMap(branch -> tx.data().contentDao().getGraphFieldContainers(node, branch, type).stream()
 								.map(container -> helper.createDocumentRequest(
-									NodeGraphFieldContainer.composeIndexName(
+									ContentDaoWrapper.composeIndexName(
 										project.getUuid(),
 										branch.getUuid(),
 										container.getSchemaContainerVersion().getUuid(),
 										type),
-									NodeGraphFieldContainer.composeDocumentId(node.getUuid(), container.getLanguageTag()),
+									ContentDaoWrapper.composeDocumentId(node.getUuid(), container.getLanguageTag()),
 									((NodeContainerTransformer) entities.nodeContent.getTransformer()).toDocument(
 										container,
 										branch.getUuid(),

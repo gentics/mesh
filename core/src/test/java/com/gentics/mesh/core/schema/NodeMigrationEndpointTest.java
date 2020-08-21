@@ -124,9 +124,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		assertThat(adminCall(() -> client().findJobs())).isEmpty();
 
 		waitForSearchIdleEvent();
-		assertThat(trackingSearchProvider()).hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(), versionUuid,
+		assertThat(trackingSearchProvider()).hasCreate(ContentDaoWrapper.composeIndexName(projectUuid(), initialBranchUuid(), versionUuid,
 			DRAFT));
-		assertThat(trackingSearchProvider()).hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(), versionUuid,
+		assertThat(trackingSearchProvider()).hasCreate(ContentDaoWrapper.composeIndexName(projectUuid(), initialBranchUuid(), versionUuid,
 			PUBLISHED));
 
 		/**
@@ -160,9 +160,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertNotNull(edge2.getJobUuid());
 			assertEquals("The migration should be queued", QUEUED, edge2.getMigrationStatus());
 			assertTrue("The assignment should be active.", edge2.isActive());
-			assertThat(trackingSearchProvider()).hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(), versionBUuid,
+			assertThat(trackingSearchProvider()).hasCreate(ContentDaoWrapper.composeIndexName(projectUuid(), initialBranchUuid(), versionBUuid,
 				DRAFT)).hasNoDropEvents();
-			assertThat(trackingSearchProvider()).hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(), versionBUuid,
+			assertThat(trackingSearchProvider()).hasCreate(ContentDaoWrapper.composeIndexName(projectUuid(), initialBranchUuid(), versionBUuid,
 				PUBLISHED)).hasNoDropEvents();
 			assertThat(adminCall(() -> client().findJobs())).hasInfos(1);
 		}
@@ -184,7 +184,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		// The initial index should have been removed
 		waitForSearchIdleEvent();
 		assertThat(trackingSearchProvider())
-			.hasDrop(NodeGraphFieldContainer.composeIndexPattern(projectUuid(), initialBranchUuid(), versionUuid));
+			.hasDrop(ContentDaoWrapper.composeIndexPattern(projectUuid(), initialBranchUuid(), versionUuid));
 
 		/**
 		 * 4. Create a node and update the schema again. This node should be migrated. A deleteDocument call must be recorded for the old index. A store event
@@ -204,7 +204,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		waitForSearchIdleEvent();
 
 		assertThat(trackingSearchProvider()).hasStore(
-			NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(), versionBUuid, DRAFT),
+			ContentDaoWrapper.composeIndexName(projectUuid(), initialBranchUuid(), versionBUuid, DRAFT),
 			response.getUuid() + "-en");
 
 		updateRequest.addField(FieldUtil.createStringFieldSchema("text3"));
@@ -229,9 +229,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertFalse("The previous assignment should be inactive.", edge1.isActive());
 			assertTrue("The previous assignment should be active since it has not yet been migrated.", edge2.isActive());
 			assertTrue("The assignment should be active.", edge3.isActive());
-			assertThat(trackingSearchProvider()).hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(), versionCUuid,
+			assertThat(trackingSearchProvider()).hasCreate(ContentDaoWrapper.composeIndexName(projectUuid(), initialBranchUuid(), versionCUuid,
 				DRAFT)).hasNoDropEvents();
-			assertThat(trackingSearchProvider()).hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(), versionCUuid,
+			assertThat(trackingSearchProvider()).hasCreate(ContentDaoWrapper.composeIndexName(projectUuid(), initialBranchUuid(), versionCUuid,
 				PUBLISHED)).hasNoDropEvents();
 			assertThat(adminCall(() -> client().findJobs())).hasInfos(2);
 		}
@@ -257,13 +257,13 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 		// The old index should have been removed
 		assertThat(trackingSearchProvider())
-			.hasDrop(NodeGraphFieldContainer.composeIndexPattern(projectUuid(), initialBranchUuid(), versionBUuid));
+			.hasDrop(ContentDaoWrapper.composeIndexPattern(projectUuid(), initialBranchUuid(), versionBUuid));
 
 		// The node should have been removed from the old index and placed in the new one
-		assertThat(trackingSearchProvider()).hasDelete(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(), versionBUuid,
+		assertThat(trackingSearchProvider()).hasDelete(ContentDaoWrapper.composeIndexName(projectUuid(), initialBranchUuid(), versionBUuid,
 			DRAFT), response.getUuid() + "-en");
 		assertThat(trackingSearchProvider()).hasStore(
-			NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(), versionCUuid, DRAFT),
+			ContentDaoWrapper.composeIndexName(projectUuid(), initialBranchUuid(), versionCUuid, DRAFT),
 			response.getUuid() + "-en");
 
 	}
@@ -290,9 +290,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertEquals(0, TestUtils.toList(jobDao.findAll()).size());
 		}
 
-		assertThat(trackingSearchProvider()).hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(), versionUuid,
+		assertThat(trackingSearchProvider()).hasCreate(ContentDaoWrapper.composeIndexName(projectUuid(), initialBranchUuid(), versionUuid,
 			DRAFT));
-		assertThat(trackingSearchProvider()).hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(), versionUuid,
+		assertThat(trackingSearchProvider()).hasCreate(ContentDaoWrapper.composeIndexName(projectUuid(), initialBranchUuid(), versionUuid,
 			PUBLISHED));
 
 	}

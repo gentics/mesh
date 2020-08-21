@@ -37,7 +37,6 @@ import java.util.stream.Collectors;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
@@ -258,10 +257,10 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			for (Node node : nodes) {
 				String schemaContainerVersionUuid = contentDao.getLatestDraftFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
 				for (ContainerType type : Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED)) {
-					assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid,
-						schemaContainerVersionUuid, type), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "en"));
-					assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid,
-						schemaContainerVersionUuid, type), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "de"));
+					assertThat(trackingSearchProvider()).hasStore(ContentDaoWrapper.composeIndexName(projectUuid, branchUuid,
+						schemaContainerVersionUuid, type), ContentDaoWrapper.composeDocumentId(node.getUuid(), "en"));
+					assertThat(trackingSearchProvider()).hasStore(ContentDaoWrapper.composeIndexName(projectUuid, branchUuid,
+						schemaContainerVersionUuid, type), ContentDaoWrapper.composeDocumentId(node.getUuid(), "de"));
 				}
 			}
 			assertThat(trackingSearchProvider()).hasStore(TagFamily.composeIndexName(projectUuid), TagFamily.composeDocumentId(parentTagFamily
@@ -381,8 +380,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			// Assert that all nodes which previously referenced the tag were updated in the index
 			for (Node node : nodes) {
 				String schemaContainerVersionUuid = contentDao.getLatestDraftFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
-				assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid,
-					schemaContainerVersionUuid, ContainerType.DRAFT), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "en"));
+				assertThat(trackingSearchProvider()).hasStore(ContentDaoWrapper.composeIndexName(projectUuid, branchUuid,
+					schemaContainerVersionUuid, ContainerType.DRAFT), ContentDaoWrapper.composeDocumentId(node.getUuid(), "en"));
 			}
 			assertThat(trackingSearchProvider()).hasEvents(4, 0, 1, 0, 0);
 
