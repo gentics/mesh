@@ -315,7 +315,7 @@ public final class TestMocks {
 
 		NodeGraphFieldContainer container = mockContainer(languageTag, user);
 		when(container.getSchemaContainerVersion()).thenReturn(latestVersion);
-		when(container.getParentNode()).thenReturn(node);
+		when(contentDao.getNode(container)).thenReturn(node);
 		when(container.getElementVersion()).thenReturn(UUID_5);
 
 		when(contentDao.getLatestDraftFieldContainer(node, languageTag)).thenReturn(container);

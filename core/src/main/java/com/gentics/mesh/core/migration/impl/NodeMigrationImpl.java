@@ -155,7 +155,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 
 		String containerUuid = container.getUuid();
-		String parentNodeUuid = container.getParentNode().getUuid();
+		String parentNodeUuid = contentDao.getNode(container).getUuid();
 		if (log.isDebugEnabled()) {
 			log.debug("Migrating container {" + containerUuid + "} of node {" + parentNodeUuid + "}");
 		}
@@ -163,7 +163,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 		HibBranch branch = ac.getBranch();
 		SchemaVersion toVersion = ac.getToVersion();
 		try {
-			Node node = container.getParentNode();
+			Node node = contentDao.getNode(container);
 			String languageTag = container.getLanguageTag();
 			ac.getNodeParameters().setLanguages(languageTag);
 			ac.getVersioningParameters().setVersion("draft");

@@ -12,7 +12,7 @@ public interface BasicFieldContainer extends MeshVertex {
 	/**
 	 * Set the language for the field container.
 	 * 
-	 * @param language
+	 * @param languageTag
 	 */
 	void setLanguageTag(String languageTag);
 

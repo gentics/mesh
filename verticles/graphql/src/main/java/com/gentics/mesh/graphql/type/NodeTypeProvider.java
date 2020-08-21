@@ -309,7 +309,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 						NodeGraphFieldContainer containerFromPath = lastSegment.getContainer();
 						Node nodeFromPath = null;
 						if (containerFromPath != null) {
-							nodeFromPath = containerFromPath.getParentNode();
+							nodeFromPath = boot.contentDao().getNode(containerFromPath);
 							gc.requiresPerm(nodeFromPath, READ_PERM, READ_PUBLISHED_PERM);
 							containerFromPath = gc.requiresReadPermSoft(containerFromPath, env);
 						} else {
@@ -429,7 +429,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				ContainerType containerType = getNodeVersion(env);
 				String branchUuid = gc.getBranch().getUuid();
 				String languageTag = container.getLanguageTag();
-				return boot.nodeDao().getPath(container.getParentNode(), gc, branchUuid, containerType, languageTag);
+				return boot.nodeDao().getPath(boot.contentDao().getNode(container), gc, branchUuid, containerType, languageTag);
 			}).build(),
 
 			// .edited
@@ -534,7 +534,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				if (container == null) {
 					return null;
 				}
-				return container.getDisplayFieldValue();
+				return boot.contentDao().getDisplayFieldValue(container);
 			}).build());
 
 		Supplier<List<GraphQLFieldDefinition>> withNodeFieldsSupplier = () -> {

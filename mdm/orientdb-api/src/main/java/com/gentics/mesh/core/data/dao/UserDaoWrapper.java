@@ -1,16 +1,10 @@
 package com.gentics.mesh.core.data.dao;
 
-import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
-import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-
 import java.util.Set;
 import java.util.function.Predicate;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.HasPermissions;
 import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -80,15 +74,7 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<HibUser>, DaoTransfo
 	 * @param branchUuid
 	 * @param requestedVersion
 	 */
-	default void failOnNoReadPermission(HibUser user, NodeGraphFieldContainer container, String branchUuid, String requestedVersion) {
-		Node node = container.getParentNode();
-		if (!hasReadPermission(user, container, branchUuid, requestedVersion)) {
-			throw error(FORBIDDEN, "error_missing_perm", node.getUuid(),
-				"published".equals(requestedVersion)
-					? READ_PUBLISHED_PERM.getRestPerm().getName()
-					: READ_PERM.getRestPerm().getName());
-		}
-	}
+	void failOnNoReadPermission(HibUser user, NodeGraphFieldContainer container, String branchUuid, String requestedVersion);
 
 	/**
 	 * Check whether the user is allowed to read the given node. Internally this check the currently configured version scope and check for

@@ -196,7 +196,7 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 			db.tx((tx) -> {
 				ContentDaoWrapper contentDao = tx.data().contentDao();
 
-				Node node = container.getParentNode();
+				Node node = contentDao.getNode(container);
 				String languageTag = container.getLanguageTag();
 				ac.getNodeParameters().setLanguages(languageTag);
 				ac.getVersioningParameters().setVersion("draft");

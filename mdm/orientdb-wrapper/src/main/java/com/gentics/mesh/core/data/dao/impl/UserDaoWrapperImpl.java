@@ -37,6 +37,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.NodeMigrationUser;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
@@ -615,7 +616,8 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWra
 
 	@Override
 	public boolean hasReadPermission(HibUser user, NodeGraphFieldContainer container, String branchUuid, String requestedVersion) {
-		Node node = container.getParentNode();
+		ContentDaoWrapper contentDao = boot.get().contentDao();
+		Node node = contentDao.getNode(container);
 		if (hasPermission(user, node, READ_PERM)) {
 			return true;
 		}
@@ -700,4 +702,15 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWra
 		return graphUser.getRoles();
 	}
 
+	@Override
+	public void failOnNoReadPermission(HibUser user, NodeGraphFieldContainer container, String branchUuid, String requestedVersion) {
+		ContentDaoWrapper contentDao = boot.get().contentDao();
+		Node node = contentDao.getNode(container);
+		if (!hasReadPermission(user, container, branchUuid, requestedVersion)) {
+			throw error(FORBIDDEN, "error_missing_perm", node.getUuid(),
+				"published".equals(requestedVersion)
+					? READ_PUBLISHED_PERM.getRestPerm().getName()
+					: READ_PERM.getRestPerm().getName());
+		}
+	}
 }

@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.rest.error.Errors.missingPerm;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
@@ -50,7 +51,8 @@ public class GraphQLContextImpl extends InternalRoutingActionContextImpl impleme
 
 	@Override
 	public boolean hasReadPerm(NodeGraphFieldContainer container) {
-		Node node = container.getParentNode();
+		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+		Node node = contentDao.getNode(container);
 		Object nodeId = node.id();
 		UserDaoWrapper userDao = Tx.get().data().userDao();
 
@@ -67,13 +69,14 @@ public class GraphQLContextImpl extends InternalRoutingActionContextImpl impleme
 
 	@Override
 	public NodeGraphFieldContainer requiresReadPermSoft(NodeGraphFieldContainer container, DataFetchingEnvironment env) {
+		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 		if (container == null) {
 			return null;
 		}
 		if (hasReadPerm(container)) {
 			return container;
 		} else {
-			PermissionException error = new PermissionException("node", container.getParentNode().getUuid());
+			PermissionException error = new PermissionException("node", contentDao.getNode(container).getUuid());
 			env.getExecutionContext()
 				.addError(new ExceptionWhileDataFetching(env.getFieldTypeInfo().getPath(), error, env.getField().getSourceLocation()));
 		}

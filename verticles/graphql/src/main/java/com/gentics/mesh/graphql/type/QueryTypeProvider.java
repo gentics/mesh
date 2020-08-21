@@ -287,7 +287,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			}
 
 			NodeGraphFieldContainer container = pathResult.getLast().getContainer();
-			Node nodeOfContainer = container.getParentNode();
+			Node nodeOfContainer = contentDao.getNode(container);
 
 			nodeOfContainer = gc.requiresPerm(nodeOfContainer, READ_PERM, READ_PUBLISHED_PERM);
 			container = gc.requiresReadPermSoft(container, env);

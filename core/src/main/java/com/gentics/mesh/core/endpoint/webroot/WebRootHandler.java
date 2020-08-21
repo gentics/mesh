@@ -18,6 +18,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
@@ -122,7 +123,7 @@ public class WebRootHandler {
 				}
 
 				String version = ac.getVersioningParameters().getVersion();
-				Node node = container.getParentNode();
+				Node node = tx.data().contentDao().getNode(container);
 				addCacheControl(rc, node, version);
 				userDao.failOnNoReadPermission(requestUser, container, branchUuid, version);
 
@@ -216,7 +217,8 @@ public class WebRootHandler {
 
 		String uuid = null;
 		try (WriteLock lock = writeLock.lock(ac)) {
-			uuid = db.tx(() -> {
+			uuid = db.tx(tx -> {
+				ContentDaoWrapper contentDao = tx.data().contentDao();
 
 				// Load all nodes for the given path
 				ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
@@ -244,7 +246,7 @@ public class WebRootHandler {
 						request.setLanguage(lang);
 					}
 					ac.setBody(request);
-					return container.getParentNode().getUuid();
+					return contentDao.getNode(container).getUuid();
 				} else {
 					int diff = nodePath.getInitialStack().size() - nodePath.getSegments().size();
 					if (diff > 1) {
@@ -262,7 +264,7 @@ public class WebRootHandler {
 							parentNode = ac.getProject().getBaseNode();
 						} else {
 							PathSegment parentSegment = segments.get(segments.size() - 1);
-							parentNode = parentSegment.getContainer().getParentNode();
+							parentNode = contentDao.getNode(parentSegment.getContainer());
 						}
 						String parentUuid = parentNode.getUuid();
 						log.debug("Using deduced parent node uuid: " + parentUuid);

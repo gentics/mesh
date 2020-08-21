@@ -522,8 +522,8 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		return delegate.getDisplayFieldValue();
 	}
 
-	public Node getParentNode() {
-		return delegate.getParentNode();
+	public Node getNode() {
+		return delegate.getNode();
 	}
 
 	public Iterable<? extends Node> getReferencedNodes() {
@@ -554,7 +554,7 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		return delegate.hasNextVersion();
 	}
 
-	public Iterable<? extends NodeGraphFieldContainer> getNextVersions() {
+	public Iterable<NodeGraphFieldContainer> getNextVersions() {
 		return delegate.getNextVersions();
 	}
 
@@ -622,11 +622,11 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		return delegate.getSchemaContainerVersion();
 	}
 
-	public List<? extends MicronodeGraphField> getMicronodeFields(MicroschemaVersion version) {
+	public List<MicronodeGraphField> getMicronodeFields(MicroschemaVersion version) {
 		return delegate.getMicronodeFields(version);
 	}
 
-	public TraversalResult<? extends MicronodeGraphFieldList> getMicronodeListFields(MicroschemaVersion version) {
+	public TraversalResult<MicronodeGraphFieldList> getMicronodeListFields(MicroschemaVersion version) {
 		return delegate.getMicronodeListFields(version);
 	}
 
@@ -654,7 +654,7 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		return delegate.getPath(ac);
 	}
 
-	public Iterator<? extends GraphFieldContainerEdge> getContainerEdge(ContainerType type, String branchUuid) {
+	public Iterator<GraphFieldContainerEdge> getContainerEdge(ContainerType type, String branchUuid) {
 		return delegate.getContainerEdge(type, branchUuid);
 	}
 

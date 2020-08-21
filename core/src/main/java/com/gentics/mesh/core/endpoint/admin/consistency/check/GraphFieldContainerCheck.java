@@ -7,6 +7,7 @@ import static com.gentics.mesh.core.rest.admin.consistency.RepairAction.DELETE;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.db.Tx;
@@ -83,7 +84,8 @@ public class GraphFieldContainerCheck extends AbstractConsistencyCheck {
 				if (notSameDraft && notLargerVersion) {
 					String nodeInfo = "unknown";
 					try {
-						Node node = container.getParentNode();
+						ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+						Node node = contentDao.getNode(container);
 						nodeInfo = node.getUuid();
 					} catch (Exception e) {
 						log.debug("Could not load node uuid", e);
@@ -103,7 +105,8 @@ public class GraphFieldContainerCheck extends AbstractConsistencyCheck {
 		if (!container.hasNextVersion() && !container.isDraft()) {
 			String nodeInfo = "unknown";
 			try {
-				Node node = container.getParentNode();
+				ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+				Node node = contentDao.getNode(container);
 				nodeInfo = node.getUuid();
 			} catch (Exception e) {
 				log.debug("Could not load node uuid", e);

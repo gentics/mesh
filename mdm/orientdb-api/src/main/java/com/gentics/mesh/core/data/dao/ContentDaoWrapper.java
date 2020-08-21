@@ -1,19 +1,38 @@
 package com.gentics.mesh.core.data.dao;
 
+import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.core.rest.common.ContainerType.INITIAL;
+import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
+
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.DummyBulkActionContext;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
+import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.rest.error.Errors;
+import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
+import com.gentics.mesh.core.rest.node.FieldMap;
+import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.madl.traversal.TraversalResult;
+import com.gentics.mesh.path.Path;
+import com.gentics.mesh.util.VersionNumber;
 
 public interface ContentDaoWrapper extends ContentDao {
 	/**
@@ -394,4 +413,416 @@ public interface ContentDaoWrapper extends ContentDao {
 	 * @return
 	 */
 	Stream<NodeGraphField> getInboundReferences(Node node);
+
+	/**
+	 * Return the index name for the given parameters.
+	 *
+	 * @param projectUuid
+	 * @param branchUuid
+	 * @param type
+	 * @return
+	 */
+	default String getIndexName(NodeGraphFieldContainer content, String projectUuid, String branchUuid, ContainerType type) {
+		return ContentDaoWrapper.composeIndexName(projectUuid, branchUuid, getSchemaContainerVersion(content).getUuid(), type);
+	}
+
+	/**
+	 * Return the document id for the container.
+	 *
+	 * @return
+	 */
+	default String getDocumentId(NodeGraphFieldContainer content) {
+		return ContentDaoWrapper.composeDocumentId(getNode(content).getUuid(), getLanguageTag(content));
+	}
+
+	/**
+	 * Delete the field container. This will also delete linked elements like lists. If the container has a "next" container, that container will be deleted as
+	 * well.
+	 *
+	 * @param bac
+	 */
+	void delete(NodeGraphFieldContainer content, BulkActionContext bac);
+
+	/**
+	 * Delete the field container. This will also delete linked elements like lists.
+	 *
+	 * @param bac
+	 * @param deleteNext
+	 *            true to also delete all "next" containers, false to only delete this container
+	 */
+	void delete(NodeGraphFieldContainer content, BulkActionContext bac, boolean deleteNext);
+
+	/**
+	 * "Delete" the field container from the branch. This will not actually delete the container itself, but will remove DRAFT and PUBLISHED edges
+	 *
+	 * @param branch
+	 * @param bac
+	 */
+	void deleteFromBranch(NodeGraphFieldContainer content, HibBranch branch, BulkActionContext bac);
+
+	/**
+	 * Return the display field value for this container.
+	 *
+	 * @return
+	 */
+	String getDisplayFieldValue(NodeGraphFieldContainer content);
+
+	/**
+	 * Get the parent node to which this container belongs.
+	 *
+	 * @return
+	 */
+	Node getNode(NodeGraphFieldContainer content);
+
+	/**
+	 * Update the property webroot path info. This will also check for uniqueness conflicts of the webroot path and will throw a
+	 * {@link Errors#conflict(String, String, String, String...)} if one found.
+	 *
+	 * @param ac
+	 * @param branchUuid
+	 *            branch Uuid
+	 * @param conflictI18n
+	 *            key of the message in case of conflicts
+	 */
+	void updateWebrootPathInfo(NodeGraphFieldContainer content, InternalActionContext ac, String branchUuid, String conflictI18n);
+
+	/**
+	 * Update the property webroot path info. This will also check for uniqueness conflicts of the webroot path and will throw a
+	 * {@link Errors#conflict(String, String, String, String...)} if one found.
+	 *
+	 * @param branchUuid
+	 * @param conflictI18n
+	 */
+	default void updateWebrootPathInfo(NodeGraphFieldContainer content, String branchUuid, String conflictI18n) {
+		updateWebrootPathInfo(content, null, branchUuid, conflictI18n);
+	}
+
+	/**
+	 * Get the Version Number or null if no version set.
+	 *
+	 * @return Version Number
+	 */
+	VersionNumber getVersion(NodeGraphFieldContainer content);
+
+	/**
+	 * Set the Version Number.
+	 *
+	 * @param version
+	 */
+	void setVersion(NodeGraphFieldContainer content, VersionNumber version);
+
+	/**
+	 * Check whether the field container has a next version
+	 *
+	 * @return true iff the field container has a next version
+	 */
+	boolean hasNextVersion(NodeGraphFieldContainer content);
+
+	/**
+	 * Get the next versions.
+	 *
+	 * @return iterable for all next versions
+	 */
+	Iterable<NodeGraphFieldContainer> getNextVersions(NodeGraphFieldContainer content);
+
+	/**
+	 * Set the next version.
+	 *
+	 * @param current
+	 * @param next
+	 */
+	void setNextVersion(NodeGraphFieldContainer current, NodeGraphFieldContainer next);
+
+	/**
+	 * Check whether the field container has a previous version
+	 *
+	 * @return true if the field container has a previous version
+	 */
+	boolean hasPreviousVersion(NodeGraphFieldContainer content);
+
+	/**
+	 * Get the previous version.
+	 *
+	 * @return previous version or null
+	 */
+	NodeGraphFieldContainer getPreviousVersion(NodeGraphFieldContainer content);
+
+	/**
+	 * Make this container a clone of the given container. Property Vertices are reused.
+	 *
+	 * @param dest
+	 * @param src
+	 */
+	void clone(NodeGraphFieldContainer dest, NodeGraphFieldContainer src);
+
+	/**
+	 * Check whether this field container is the initial version for any branch.
+	 *
+	 * @return true if it is the initial, false if not
+	 */
+	default boolean isInitial(NodeGraphFieldContainer content) {
+		return isType(content, INITIAL);
+	}
+
+	/**
+	 * Check whether this field container is the draft version for any branch.
+	 *
+	 * @return true if it is the draft, false if not
+	 */
+	default boolean isDraft(NodeGraphFieldContainer content) {
+		return isType(content, DRAFT);
+	}
+
+	/**
+	 * Check whether this field container is the published version for any branch.
+	 *
+	 * @return true if it is published, false if not
+	 */
+	default boolean isPublished(NodeGraphFieldContainer content) {
+		return isType(content, PUBLISHED);
+	}
+
+	/**
+	 * Check whether this field container has the given type for any branch.
+	 *
+	 * @param type
+	 * @return true if it matches the type, false if not
+	 */
+	boolean isType(NodeGraphFieldContainer content, ContainerType type);
+
+	/**
+	 * Check whether this field container is the initial version for the given branch.
+	 *
+	 * @param branchUuid
+	 *            branch Uuid
+	 * @return true if it is the initial, false if not
+	 */
+	default boolean isInitial(NodeGraphFieldContainer content, String branchUuid) {
+		return isType(content, INITIAL, branchUuid);
+	}
+
+	/**
+	 * Check whether this field container is the draft version for the given branch.
+	 *
+	 * @param branchUuid
+	 *            branch Uuid
+	 * @return true if it is the draft, false if not
+	 */
+	default boolean isDraft(NodeGraphFieldContainer content, String branchUuid) {
+		return isType(content, DRAFT, branchUuid);
+	}
+
+	/**
+	 * Check whether this field container is the published version for the given branch.
+	 *
+	 * @param branchUuid
+	 *            branch Uuid
+	 * @return true if it is published, false if not
+	 */
+	default boolean isPublished(NodeGraphFieldContainer content, String branchUuid) {
+		return isType(content, PUBLISHED, branchUuid);
+	}
+
+	/**
+	 * Check whether this field container has the given type in the given branch.
+	 *
+	 * @param type
+	 * @param branchUuid
+	 * @return true if it matches the type, false if not
+	 */
+	boolean isType(NodeGraphFieldContainer content, ContainerType type, String branchUuid);
+
+	/**
+	 * Get the branch Uuids for which this container is the container of given type.
+	 *
+	 * @param type
+	 *            type
+	 * @return set of branch Uuids (may be empty, but never null)
+	 */
+	Set<String> getBranches(NodeGraphFieldContainer content, ContainerType type);
+
+	/**
+	 * Compare the container values of both containers and return a list of differences.
+	 *
+	 * @param container
+	 */
+	List<FieldContainerChange> compareTo(NodeGraphFieldContainer content, NodeGraphFieldContainer container);
+
+	/**
+	 * Compare the values of this container with the values of the given fieldmap and return a list of detected differences.
+	 *
+	 * @param fieldMap
+	 * @return
+	 */
+	List<FieldContainerChange> compareTo(NodeGraphFieldContainer content, FieldMap fieldMap);
+
+	SchemaVersion getSchemaContainerVersion(NodeGraphFieldContainer content);
+
+	/**
+	 * Get all micronode fields that have a micronode using the given microschema container version.
+	 *
+	 * @param version
+	 *            microschema container version
+	 * @return list of micronode fields
+	 */
+	List<MicronodeGraphField> getMicronodeFields(NodeGraphFieldContainer content, MicroschemaVersion version);
+
+	/**
+	 * Get all micronode list fields that have at least one micronode using the given microschema container version.
+	 *
+	 * @param version
+	 *            microschema container version
+	 * @return list of micronode list fields
+	 */
+	TraversalResult<MicronodeGraphFieldList> getMicronodeListFields(NodeGraphFieldContainer content, MicroschemaVersion version);
+
+	/**
+	 * Return the ETag for the field container.
+	 *
+	 * @param ac
+	 * @return Generated entity tag
+	 */
+	String getETag(NodeGraphFieldContainer content, InternalActionContext ac);
+
+	/**
+	 * Determine the display field value by checking the schema and the referenced field and store it as a property.
+	 */
+	void updateDisplayFieldValue(NodeGraphFieldContainer content);
+
+	/**
+	 * Returns the segment field value of this container.
+	 *
+	 * @return Determined segment field value or null if no segment field was specified or yet set
+	 */
+	String getSegmentFieldValue(NodeGraphFieldContainer content);
+
+	/**
+	 * Update the current segment field and increment any found postfix number.
+	 */
+	void postfixSegmentFieldValue(NodeGraphFieldContainer content);
+
+	/**
+	 * Return the URL field values for the container.
+	 *
+	 * @return
+	 */
+	Set<String> getUrlFieldValues(NodeGraphFieldContainer content);
+
+	/**
+	 * Traverse to the base node and build up the path to this container.
+	 *
+	 * @param ac
+	 * @return
+	 */
+	Path getPath(NodeGraphFieldContainer content, InternalActionContext ac);
+
+	/**
+	 * Return an iterator over the edges for the given type and branch.
+	 *
+	 * @param type
+	 * @param branchUuid
+	 * @return
+	 */
+	Iterator<GraphFieldContainerEdge> getContainerEdge(NodeGraphFieldContainer content, ContainerType type, String branchUuid);
+
+	/**
+	 * Create the specific delete event.
+	 *
+	 * @param branchUuid
+	 * @param type
+	 * @return
+	 */
+	NodeMeshEventModel onDeleted(NodeGraphFieldContainer content, String branchUuid, ContainerType type);
+
+	/**
+	 * Create the specific create event.
+	 *
+	 * @param branchUuid
+	 * @param type
+	 * @return
+	 */
+	NodeMeshEventModel onCreated(NodeGraphFieldContainer content, String branchUuid, ContainerType type);
+
+	/**
+	 * Create the specific update event.
+	 *
+	 * @param branchUuid
+	 * @param type
+	 * @return
+	 */
+	NodeMeshEventModel onUpdated(NodeGraphFieldContainer content, String branchUuid, ContainerType type);
+
+	/**
+	 * Create the taken offline event.
+	 *
+	 * @param branchUuid
+	 * @return
+	 */
+	NodeMeshEventModel onTakenOffline(NodeGraphFieldContainer content, String branchUuid);
+
+	/**
+	 * Create the publish event.
+	 *
+	 * @param branchUuid
+	 * @return
+	 */
+	NodeMeshEventModel onPublish(NodeGraphFieldContainer content, String branchUuid);
+
+	/**
+	 * Transform the container into a version info object.
+	 *
+	 * @param ac
+	 * @return
+	 */
+	VersionInfo transformToVersionInfo(NodeGraphFieldContainer content, InternalActionContext ac);
+
+	/**
+	 * A container is purgeable when it is not being utilized as draft, published or initial version in any branch.
+	 *
+	 * @return
+	 */
+	boolean isPurgeable(NodeGraphFieldContainer content);
+
+	/**
+	 * Check whether auto purge is enabled globally or for the schema of the container.
+	 *
+	 * @return
+	 */
+	boolean isAutoPurgeEnabled(NodeGraphFieldContainer content);
+
+	/**
+	 * Purge the container from the version history and ensure that the links between versions are consistent.
+	 *
+	 * @param bac
+	 *            Action context for the deletion process
+	 */
+	void purge(NodeGraphFieldContainer content, BulkActionContext bac);
+
+	/**
+	 * Purge the container from the version without the use of a Bulk Action Context.
+	 */
+	default void purge(NodeGraphFieldContainer content) {
+		purge(content, new DummyBulkActionContext());
+	}
+
+	/**
+	 * Return all versions.
+	 *
+	 * @return
+	 */
+	TraversalResult<NodeGraphFieldContainer> versions(NodeGraphFieldContainer content);
+
+	/**
+	 * Return the language tag of the field container.
+	 *
+	 * @return
+	 */
+	String getLanguageTag(NodeGraphFieldContainer content);
+
+	/**
+	 * Set the language for the field container.
+	 *
+	 * @param languageTag
+	 */
+	void setLanguageTag(NodeGraphFieldContainer content, String languageTag);
 }

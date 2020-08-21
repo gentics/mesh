@@ -247,7 +247,8 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 	 * @return indexName -> documentName -> NodeGraphFieldContainer
 	 */
 	private Map<String, Map<String, NodeGraphFieldContainer>> loadVersionsFromGraph(Branch branch, SchemaVersion version, ContainerType type) {
-		Map<String, Map<String, NodeGraphFieldContainer>> tx = db.tx(() -> {
+		return db.tx(tx -> {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 			String branchUuid = branch.getUuid();
 			List<String> indexLanguages = version.getSchema().findOverriddenSearchLanguages().collect(Collectors.toList());
 
@@ -266,10 +267,9 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 								: null
 						);
 					},
-					Collectors.toMap(c -> c.getParentNode().getUuid() + "-" + c.getLanguageTag(), Function.identity())
+					Collectors.toMap(c -> contentDao.getNode(c).getUuid() + "-" + c.getLanguageTag(), Function.identity())
 				));
 		});
-		return tx;
 	}
 
 	/**
@@ -560,18 +560,19 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 			branchUuid, type));
 	}
 
-	public Observable<? extends BulkEntry> moveForBulk(MoveDocumentEntry entry) {
+	public Observable<BulkEntry> moveForBulk(MoveDocumentEntry entry) {
+		ContentDaoWrapper contentDao = boot.contentDao();
 		MoveEntryContext context = entry.getContext();
 		ContainerType type = context.getContainerType();
 		String releaseUuid = context.getBranchUuid();
 
 		NodeGraphFieldContainer newContainer = context.getNewContainer();
-		String newProjectUuid = newContainer.getParentNode().getProject().getUuid();
+		String newProjectUuid = contentDao.getNode(newContainer).getProject().getUuid();
 		String newIndexName = ContentDaoWrapper.composeIndexName(newProjectUuid, releaseUuid,
 			newContainer.getSchemaContainerVersion().getUuid(),
 			type);
 		String newLanguageTag = newContainer.getLanguageTag();
-		String newDocumentId = ContentDaoWrapper.composeDocumentId(newContainer.getParentNode().getUuid(), newLanguageTag);
+		String newDocumentId = ContentDaoWrapper.composeDocumentId(contentDao.getNode(newContainer).getUuid(), newLanguageTag);
 		JsonObject doc = transformer.toDocument(newContainer, releaseUuid, type);
 		return Observable.just(new IndexBulkEntry(newIndexName, newDocumentId, doc, complianceMode));
 
@@ -586,8 +587,9 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 	 * @return
 	 */
 	private Completable deleteContainer(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
-		String projectUuid = container.getParentNode().getProject().getUuid();
-		return searchProvider.deleteDocument(container.getIndexName(projectUuid, branchUuid, type), container.getDocumentId());
+		ContentDaoWrapper contentDao = boot.contentDao();
+		String projectUuid = contentDao.getNode(container).getProject().getUuid();
+		return searchProvider.deleteDocument(contentDao.getIndexName(container, projectUuid, branchUuid, type), contentDao.getDocumentId(container));
 	}
 
 	/**
@@ -599,14 +601,15 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 	 * @return Single with affected index name
 	 */
 	public Single<String> storeContainer(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
+		ContentDaoWrapper contentDao = boot.contentDao();
 		JsonObject doc = transformer.toDocument(container, branchUuid, type);
-		String projectUuid = container.getParentNode().getProject().getUuid();
+		String projectUuid = contentDao.getNode(container).getProject().getUuid();
 		String indexName = ContentDaoWrapper.composeIndexName(projectUuid, branchUuid, container.getSchemaContainerVersion().getUuid(), type);
 		if (log.isDebugEnabled()) {
-			log.debug("Storing node {" + container.getParentNode().getUuid() + "} into index {" + indexName + "}");
+			log.debug("Storing node {" + contentDao.getNode(container).getUuid() + "} into index {" + indexName + "}");
 		}
 		String languageTag = container.getLanguageTag();
-		String documentId = ContentDaoWrapper.composeDocumentId(container.getParentNode().getUuid(), languageTag);
+		String documentId = ContentDaoWrapper.composeDocumentId(contentDao.getNode(container).getUuid(), languageTag);
 		return searchProvider.storeDocument(indexName, documentId, doc).andThen(Single.just(indexName));
 	}
 
@@ -619,14 +622,15 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 	 * @return Single with the bulk entry
 	 */
 	public Single<IndexBulkEntry> storeContainerForBulk(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
+		ContentDaoWrapper contentDao = boot.contentDao();
 		JsonObject doc = transformer.toDocument(container, branchUuid, type);
-		String projectUuid = container.getParentNode().getProject().getUuid();
+		String projectUuid = contentDao.getNode(container).getProject().getUuid();
 		String indexName = ContentDaoWrapper.composeIndexName(projectUuid, branchUuid, container.getSchemaContainerVersion().getUuid(), type);
 		if (log.isDebugEnabled()) {
-			log.debug("Storing node {" + container.getParentNode().getUuid() + "} into index {" + indexName + "}");
+			log.debug("Storing node {" + contentDao.getNode(container).getUuid() + "} into index {" + indexName + "}");
 		}
 		String languageTag = container.getLanguageTag();
-		String documentId = ContentDaoWrapper.composeDocumentId(container.getParentNode().getUuid(), languageTag);
+		String documentId = ContentDaoWrapper.composeDocumentId(contentDao.getNode(container).getUuid(), languageTag);
 
 		return Single.just(new IndexBulkEntry(indexName, documentId, doc, complianceMode));
 	}
@@ -663,8 +667,8 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 				for (ContainerType type : Arrays.asList(DRAFT, PUBLISHED)) {
 					JsonObject json = getTransformer().toPermissionPartial(node, type);
 					for (NodeGraphFieldContainer container : contentDao.getGraphFieldContainers(node, branch, type)) {
-						String indexName = container.getIndexName(project.getUuid(), branch.getUuid(), type);
-						String documentId = container.getDocumentId();
+						String indexName = boot.contentDao().getIndexName(container, project.getUuid(), branch.getUuid(), type);
+						String documentId = boot.contentDao().getDocumentId(container);
 						entries.add(new UpdateBulkEntry(indexName, documentId, json, complianceMode));
 					}
 				}

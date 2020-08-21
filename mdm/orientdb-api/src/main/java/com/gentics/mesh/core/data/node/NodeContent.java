@@ -1,9 +1,11 @@
 package com.gentics.mesh.core.data.node;
 
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.rest.common.ContainerType;
-
 import java.util.List;
+
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.common.ContainerType;
 
 /**
  * Container object for handling nodes in combination with a specific known container.
@@ -31,8 +33,9 @@ public class NodeContent {
 	}
 
 	public Node getNode() {
+		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 		if (node == null && container != null) {
-			node = container.getParentNode();
+			node = contentDao.getNode(container);
 		}
 		return node;
 	}

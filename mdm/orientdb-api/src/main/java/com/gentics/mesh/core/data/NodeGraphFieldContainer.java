@@ -51,7 +51,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * @return
 	 */
 	default String getDocumentId() {
-		return ContentDaoWrapper.composeDocumentId(getParentNode().getUuid(), getLanguageTag());
+		return ContentDaoWrapper.composeDocumentId(getNode().getUuid(), getLanguageTag());
 	}
 
 	/**
@@ -87,11 +87,11 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	String getDisplayFieldValue();
 
 	/**
-	 * Get the parent node to which this container belongs.
+	 * Get the node to which this container belongs.
 	 *
 	 * @return
 	 */
-	Node getParentNode();
+	Node getNode();
 
 	/**
 	 * Update the property webroot path info. This will also check for uniqueness conflicts of the webroot path and will throw a
@@ -142,7 +142,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * 
 	 * @return iterable for all next versions
 	 */
-	Iterable<? extends NodeGraphFieldContainer> getNextVersions();
+	Iterable<NodeGraphFieldContainer> getNextVersions();
 
 	/**
 	 * Set the next version.
@@ -284,7 +284,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 *            microschema container version
 	 * @return list of micronode fields
 	 */
-	List<? extends MicronodeGraphField> getMicronodeFields(MicroschemaVersion version);
+	List<MicronodeGraphField> getMicronodeFields(MicroschemaVersion version);
 
 	/**
 	 * Get all micronode list fields that have at least one micronode using the given microschema container version.
@@ -293,7 +293,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 *            microschema container version
 	 * @return list of micronode list fields
 	 */
-	TraversalResult<? extends MicronodeGraphFieldList> getMicronodeListFields(MicroschemaVersion version);
+	TraversalResult<MicronodeGraphFieldList> getMicronodeListFields(MicroschemaVersion version);
 
 	/**
 	 * Return the ETag for the field container.
@@ -342,7 +342,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * @param branchUuid
 	 * @return
 	 */
-	Iterator<? extends GraphFieldContainerEdge> getContainerEdge(ContainerType type, String branchUuid);
+	Iterator<GraphFieldContainerEdge> getContainerEdge(ContainerType type, String branchUuid);
 
 	/**
 	 * Create the specific delete event.

@@ -22,6 +22,7 @@ import org.jsoup.Jsoup;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.node.Micronode;
@@ -401,7 +402,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	/**
 	 * Transform the given microschema container and add it to the source map.
 	 * 
-	 * @param map
+	 * @param document
 	 * @param microschemaVersion
 	 */
 	private void addMicroschema(JsonObject document, MicroschemaVersion microschemaVersion) {
@@ -461,7 +462,8 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	}
 
 	public String generateVersion(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
-		Node node = container.getParentNode();
+		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+		Node node = contentDao.getNode(container);
 		HibProject project = node.getProject();
 
 		StringBuilder builder = new StringBuilder();
@@ -498,7 +500,9 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	public JsonObject toDocument(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
 		TagDaoWrapper tagDao = Tx.get().data().tagDao();
 		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
-		Node node = container.getParentNode();
+		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+
+		Node node = contentDao.getNode(container);
 		JsonObject document = new JsonObject();
 		document.put("uuid", node.getUuid());
 		addUser(document, "editor", container.getEditor());
@@ -531,7 +535,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 		// Add display field value
 		JsonObject displayField = new JsonObject();
 		displayField.put("key", container.getSchemaContainerVersion().getSchema().getDisplayField());
-		displayField.put("value", container.getDisplayFieldValue());
+		displayField.put("value", contentDao.getDisplayFieldValue(container));
 		document.put("displayField", displayField);
 		document.put("branchUuid", branchUuid);
 		document.put(VERSION_KEY, generateVersion(container, branchUuid, type));

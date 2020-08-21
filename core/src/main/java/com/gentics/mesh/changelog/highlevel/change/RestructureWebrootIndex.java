@@ -10,6 +10,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.changelog.highlevel.AbstractHighLevelChange;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
@@ -54,6 +55,7 @@ public class RestructureWebrootIndex extends AbstractHighLevelChange {
 	@Override
 	public void apply() {
 		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 
 		log.info("Applying change: " + getName());
 		FramedTransactionalGraph graph = Tx.getActive().getGraph();
@@ -73,7 +75,7 @@ public class RestructureWebrootIndex extends AbstractHighLevelChange {
 				edge.setUrlFieldInfo(container.getUrlFieldValues());
 				String segment = container.getSegmentFieldValue();
 				if (segment != null && !segment.trim().isEmpty()) {
-					Node node = container.getParentNode();
+					Node node = contentDao.getNode(container);
 					if (node != null) {
 						node = nodeDao.getParentNode(node, branchUuid);
 					}
