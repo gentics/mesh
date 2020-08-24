@@ -10,6 +10,11 @@
 
 = Mesh Search Plugin Changelog
 
+[[v1.4.12]]
+== 1.4.12 (2020-08-24)
+
+icon:plus[] BasicHitTransformer: add all information from the GraphQl Search results
+
 [[v1.4.8]]
 == 1.4.8 (2020-06-05)
 
