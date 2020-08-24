@@ -156,11 +156,12 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 
 			// Assert the update response
 			try (Tx tx = tx()) {
+				ContentDaoWrapper contentDao = tx.data().contentDao();
 				HtmlFieldListImpl field = response.getFields().getHtmlFieldList(FIELD_NAME);
 				assertThat(field.getItems()).as("Updated field").containsExactlyElementsOf(list.getItems());
 
 				// Assert the update within the graph
-				NodeGraphFieldContainer updatedContainer = container.getNextVersions().iterator().next();
+				NodeGraphFieldContainer updatedContainer = contentDao.getNextVersions(container).iterator().next();
 				assertEquals("The container version number did not match up with the response version number.",
 					updatedContainer.getVersion().toString(), response.getVersion());
 				assertEquals("We expected container {" + container.getVersion().toString() + "} to contain the old value.", newValue,

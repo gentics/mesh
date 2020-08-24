@@ -293,7 +293,7 @@ public class BinaryUploadHandler extends AbstractHandler {
 					throw error(BAD_REQUEST, "node_error_draft_not_found", nodeVersion, languageTag);
 				}
 
-				List<FieldContainerChange> baseVersionDiff = baseVersionContainer.compareTo(latestDraftVersion);
+				List<FieldContainerChange> baseVersionDiff = contentDao.compareTo(baseVersionContainer, latestDraftVersion);
 				List<FieldContainerChange> requestVersionDiff = Arrays.asList(new FieldContainerChange(fieldName, FieldChangeTypes.UPDATED));
 
 				// Compare both sets of change sets
@@ -360,11 +360,11 @@ public class BinaryUploadHandler extends AbstractHandler {
 				}
 				// If the binary field is the segment field, we need to update the webroot info in the node
 				if (field.getFieldKey().equals(newDraftVersion.getSchemaContainerVersion().getSchema().getSegmentField())) {
-					newDraftVersion.updateWebrootPathInfo(branch.getUuid(), "node_conflicting_segmentfield_upload");
+					contentDao.updateWebrootPathInfo(newDraftVersion, branch.getUuid(), "node_conflicting_segmentfield_upload");
 				}
 
 				if (ac.isPurgeAllowed() && newDraftVersion.isAutoPurgeEnabled() && latestDraftVersion.isPurgeable()) {
-					latestDraftVersion.purge();
+					contentDao.purge(latestDraftVersion);
 				}
 
 				batch.add(newDraftVersion.onUpdated(branch.getUuid(), DRAFT));

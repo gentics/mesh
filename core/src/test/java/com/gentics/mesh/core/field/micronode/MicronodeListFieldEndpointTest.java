@@ -172,7 +172,8 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 			boolean bothEmpty = oldValue != null && newValue.getItems().isEmpty() && oldValue.isEmpty();
 			if (!bothEmpty) {
 				try (Tx tx = tx()) {
-					NodeGraphFieldContainer newContainer = container.getNextVersions().iterator().next();
+					ContentDaoWrapper contentDao = tx.data().contentDao();
+					NodeGraphFieldContainer newContainer = contentDao.getNextVersions(container).iterator().next();
 					assertNotNull("No new container version was created. {" + i % 3 + "}", newContainer);
 					assertEquals("Check version number", newContainer.getVersion().toString(), response.getVersion());
 					assertEquals("Check old value for run {" + i % 3 + "}", oldValue,

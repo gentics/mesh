@@ -145,7 +145,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 
 			try (Tx tx = tx()) {
 				ContentDaoWrapper contentDao = tx.data().contentDao();
-				NodeGraphFieldContainer newContainer = container.getNextVersions().iterator().next();
+				NodeGraphFieldContainer newContainer = contentDao.getNextVersions(container).iterator().next();
 				assertNotNull("No new version was created.", newContainer);
 				assertEquals(newContainer.getUuid(), contentDao.getLatestDraftFieldContainer(node, english()).getUuid());
 

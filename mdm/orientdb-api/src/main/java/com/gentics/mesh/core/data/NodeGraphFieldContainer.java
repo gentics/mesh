@@ -133,7 +133,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	/**
 	 * Check whether the field container has a next version
 	 * 
-	 * @return true iff the field container has a next version
+	 * @return true if the field container has a next version
 	 */
 	boolean hasNextVersion();
 
@@ -154,7 +154,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	/**
 	 * Check whether the field container has a previous version
 	 * 
-	 * @return true iff the field container has a previous version
+	 * @return true if the field container has a previous version
 	 */
 	boolean hasPreviousVersion();
 
@@ -346,7 +346,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 
 	/**
 	 * Create the specific delete event.
-	 * 
+	 *
 	 * @param branchUuid
 	 * @param type
 	 * @return
@@ -355,7 +355,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 
 	/**
 	 * Create the specific create event.
-	 * 
+	 *
 	 * @param branchUuid
 	 * @param type
 	 * @return
@@ -364,7 +364,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 
 	/**
 	 * Create the specific update event.
-	 * 
+	 *
 	 * @param branchUuid
 	 * @param type
 	 * @return
@@ -373,7 +373,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 
 	/**
 	 * Create the taken offline event.
-	 * 
+	 *
 	 * @param branchUuid
 	 * @return
 	 */
@@ -381,7 +381,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 
 	/**
 	 * Create the publish event.
-	 * 
+	 *
 	 * @param branchUuid
 	 * @return
 	 */
@@ -389,7 +389,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 
 	/**
 	 * Transform the container into a version info object.
-	 * 
+	 *
 	 * @param ac
 	 * @return
 	 */
@@ -397,21 +397,21 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 
 	/**
 	 * A container is purgeable when it is not being utilized as draft, published or initial version in any branch.
-	 * 
+	 *
 	 * @return
 	 */
 	boolean isPurgeable();
 
 	/**
 	 * Check whether auto purge is enabled globally or for the schema of the container.
-	 * 
+	 *
 	 * @return
 	 */
 	boolean isAutoPurgeEnabled();
 
 	/**
 	 * Purge the container from the version history and ensure that the links between versions are consistent.
-	 * 
+	 *
 	 * @param bac
 	 *            Action context for the deletion process
 	 */
@@ -426,7 +426,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 
 	/**
 	 * Return all versions.
-	 * 
+	 *
 	 * @return
 	 */
 	TraversalResult<NodeGraphFieldContainer> versions();

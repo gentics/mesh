@@ -221,12 +221,12 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			Node node = folder("2015");
 			Node folder = folder("news");
-			boot().contentDao().getGraphFieldContainer(folder, "de").updateWebrootPathInfo(initialBranchUuid(), null);
-			boot().contentDao().getGraphFieldContainer(folder, "de").updateWebrootPathInfo(initialBranchUuid(), null);
+			boot().contentDao().updateWebrootPathInfo(boot().contentDao().getGraphFieldContainer(folder, "de"), initialBranchUuid(), null);
+			boot().contentDao().updateWebrootPathInfo(boot().contentDao().getGraphFieldContainer(folder, "de"), initialBranchUuid(), null);
 
 			Node node2 = content();
-			boot().contentDao().getGraphFieldContainer(node2, "en").updateWebrootPathInfo(initialBranchUuid(), null);
-			boot().contentDao().getGraphFieldContainer(node2, "de").updateWebrootPathInfo(initialBranchUuid(), null);
+			boot().contentDao().updateWebrootPathInfo(boot().contentDao().getGraphFieldContainer(node2, "en"), initialBranchUuid(), null);
+			boot().contentDao().updateWebrootPathInfo(boot().contentDao().getGraphFieldContainer(node2, "de"), initialBranchUuid(), null);
 			Node node3 = folder("2014");
 
 			// Update the folder schema to contain all fields
@@ -419,7 +419,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 				micronodeField.getMicronode().createString("address").setString("Somewhere");
 				micronodeField.getMicronode().createString("postcode").setString("1010");
 			}
-			container.updateWebrootPathInfo(initialBranchUuid(), null);
+			boot().contentDao().updateWebrootPathInfo(container, initialBranchUuid(), null);
 			tx.success();
 		}
 

@@ -135,7 +135,7 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 					draftEdge.setLanguageTag(container.getLanguageTag());
 					draftEdge.setType(DRAFT);
 					draftEdge.setBranchUuid(newBranch.getUuid());
-					String value = container.getSegmentFieldValue();
+					String value = contentDao.getSegmentFieldValue(container);
 					if (value != null) {
 						draftEdge.setSegmentInfo(parent, value);
 					} else {
@@ -155,7 +155,7 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 					publishEdge.setLanguageTag(container.getLanguageTag());
 					publishEdge.setType(PUBLISHED);
 					publishEdge.setBranchUuid(newBranch.getUuid());
-					String value = container.getSegmentFieldValue();
+					String value = contentDao.getSegmentFieldValue(container);
 					if (value != null) {
 						publishEdge.setSegmentInfo(parent, value);
 					} else {

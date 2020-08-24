@@ -137,7 +137,8 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 			assertThat(field.getItems()).as("Updated field").usingElementComparatorOnFields("uuid").containsExactlyElementsOf(list.getItems());
 
 			try (Tx tx = tx()) {
-				NodeGraphFieldContainer newContainerVersion = container.getNextVersions().iterator().next();
+				ContentDaoWrapper contentDao = tx.data().contentDao();
+				NodeGraphFieldContainer newContainerVersion = contentDao.getNextVersions(container).iterator().next();
 				assertEquals("Check version number", newContainerVersion.getVersion().toString(), response.getVersion());
 				assertEquals("Check old value", oldValue, getListValues(container, NodeGraphFieldListImpl.class, FIELD_NAME));
 				container = newContainerVersion;

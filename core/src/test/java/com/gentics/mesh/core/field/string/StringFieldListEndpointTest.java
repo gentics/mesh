@@ -184,7 +184,8 @@ public class StringFieldListEndpointTest extends AbstractListFieldEndpointTest {
 			assertThat(field.getItems()).as("Updated field").containsExactlyElementsOf(list.getItems());
 
 			try (Tx tx = tx()) {
-				NodeGraphFieldContainer newContainerVersion = container.getNextVersions().iterator().next();
+				ContentDaoWrapper contentDao = tx.data().contentDao();
+				NodeGraphFieldContainer newContainerVersion = contentDao.getNextVersions(container).iterator().next();
 				assertEquals("The old container version did not match", container.getVersion().nextDraft().toString(),
 					response.getVersion().toString());
 				assertEquals("Check version number", newContainerVersion.getVersion().toString(), response.getVersion());

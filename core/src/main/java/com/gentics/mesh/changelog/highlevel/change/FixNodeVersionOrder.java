@@ -122,7 +122,7 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 
 		while (currentContainer != null) {
 			// Since we only look at single branch projects, there can at most only be one next version.
-			NodeGraphFieldContainer nextContainer = Iterables.getFirst(currentContainer.getNextVersions(), null);
+			NodeGraphFieldContainer nextContainer = Iterables.getFirst(contentDao.getNextVersions(currentContainer), null);
 			VersionNumber currentVersion = currentContainer.getVersion();
 			boolean isDuplicate = !seenVersions.add(currentVersion);
 			if (isDuplicate) {

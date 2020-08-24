@@ -816,6 +816,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 	private void printVersionInfo(String uuid) {
 		try (Tx tx = tx()) {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 			System.out.println();
 			Node node = boot().nodeDao().findByUuid(project(), uuid);
 			for (GraphFieldContainerEdgeImpl e : node.outE("HAS_FIELD_CONTAINER").frameExplicit(GraphFieldContainerEdgeImpl.class)) {
@@ -828,7 +829,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 					prev = prev.getPreviousVersion();
 				}
 
-				for (NodeGraphFieldContainer next : container.getNextVersions()) {
+				for (NodeGraphFieldContainer next : contentDao.getNextVersions(container)) {
 					System.out.println("Next: " + next.getUuid() + " version:" + next.getVersion());
 				}
 				System.out.println("--");

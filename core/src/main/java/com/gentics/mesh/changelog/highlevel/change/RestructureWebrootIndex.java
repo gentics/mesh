@@ -72,8 +72,8 @@ public class RestructureWebrootIndex extends AbstractHighLevelChange {
 				if (container == null) {
 					continue;
 				}
-				edge.setUrlFieldInfo(container.getUrlFieldValues());
-				String segment = container.getSegmentFieldValue();
+				edge.setUrlFieldInfo(contentDao.getUrlFieldValues(container));
+				String segment = contentDao.getSegmentFieldValue(container);
 				if (segment != null && !segment.trim().isEmpty()) {
 					Node node = contentDao.getNode(container);
 					if (node != null) {

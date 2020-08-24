@@ -1864,7 +1864,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				// since the GFC "toDelete" was only used by this branch, it can not have more than one "next" GFC
 				// (multiple "next" would have to belong to different branches, and for every branch, there would have to be
 				// an INITIAL, which would have to be either this GFC or a previous)
-				dangling = toDelete.getNextVersions().iterator().next();
+				dangling = mesh().boot().contentDao().getNextVersions(toDelete).iterator().next();
 				toDelete.delete(bac, false);
 			}
 		}

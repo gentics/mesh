@@ -9,6 +9,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Tx;
@@ -85,15 +86,16 @@ public class ProjectVersionPurgeHandler {
 	private void purgeVersion(Tx tx, Long txCounter, BulkActionContext bac, NodeGraphFieldContainer lastRemaining, NodeGraphFieldContainer version,
 		boolean previousRemoved, ZonedDateTime maxAge) {
 
+		ContentDaoWrapper contentDao = tx.data().contentDao();
 		// We need to load some information first since we may remove the version in this step
-		List<? extends NodeGraphFieldContainer> nextVersions = Lists.newArrayList(version.getNextVersions());
+		List<NodeGraphFieldContainer> nextVersions = Lists.newArrayList(contentDao.getNextVersions(version));
 		boolean isNewerThanMaxAge = maxAge != null && !isOlderThanMaxAge(version, maxAge);
 		boolean isInTimeFrame = maxAge == null || isOlderThanMaxAge(version, maxAge);
 
 		if (isInTimeFrame && version.isPurgeable()) {
 			log.info("Purging container " + version.getUuid() + "@" + version.getVersion());
 			// Delete this version - This will also take care of removing the version references
-			tx.data().contentDao().delete(version, bac, false);
+			contentDao.delete(version, bac, false);
 			previousRemoved = true;
 			txCounter++;
 		} else {
@@ -102,7 +104,7 @@ public class ProjectVersionPurgeHandler {
 				log.info("Linking {" + lastRemaining.getUuid() + "@" + lastRemaining.getVersion() + " to " + version.getUuid() + "@"
 					+ version.getVersion());
 				// We only need to link to the previous version if it has been removed in an earlier step
-				lastRemaining.setNextVersion(version);
+				contentDao.setNextVersion(lastRemaining, version);
 				txCounter++;
 			}
 			if (txCounter % meshOptions.getVersionPurgeMaxBatchSize() == 0 && txCounter != 0) {

@@ -254,7 +254,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 			}
 			// If the binary field is the segment field, we need to update the webroot info in the node
 			if (field.getFieldKey().equals(newDraftVersion.getSchemaContainerVersion().getSchema().getSegmentField())) {
-				newDraftVersion.updateWebrootPathInfo(branch.getUuid(), "node_conflicting_segmentfield_upload");
+				contentDao.updateWebrootPathInfo(newDraftVersion, branch.getUuid(), "node_conflicting_segmentfield_upload");
 			}
 			BranchDaoWrapper branchDao = tx.data().branchDao();
 			// TODO maybe use a fixed method in project?
@@ -262,7 +262,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 
 			// Purge the old draft
 			if (ac.isPurgeAllowed() && newDraftVersion.isAutoPurgeEnabled() && latestDraftVersion.isPurgeable()) {
-				latestDraftVersion.purge();
+				contentDao.purge(latestDraftVersion);
 			}
 
 			batch.add(newDraftVersion.onCreated(branchUuid, DRAFT));

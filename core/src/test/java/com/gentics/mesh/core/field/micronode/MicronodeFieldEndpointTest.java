@@ -117,10 +117,11 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			NodeResponse response = updateNode(FIELD_NAME, field);
 
 			try (Tx tx = tx()) {
+				ContentDaoWrapper contentDao = tx.data().contentDao();
 				MicronodeResponse fieldResponse = response.getFields().getMicronodeField(FIELD_NAME);
 				assertThat(fieldResponse).hasStringField("firstName", "Max").hasStringField("lastName", newLastName);
 
-				container.getNextVersions().iterator().next();
+				contentDao.getNextVersions(container).iterator().next();
 				assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion());
 				if (oldValue == null) {
 					assertThat(getMicronodeValue(container, FIELD_NAME)).as("old value").isNull();

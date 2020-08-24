@@ -5,7 +5,9 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import org.assertj.core.api.AbstractObjectAssert;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.db.Tx;
 
 public class NodeGraphFieldContainerAssert extends AbstractObjectAssert<NodeGraphFieldContainerAssert, NodeGraphFieldContainer> {
 
@@ -40,7 +42,6 @@ public class NodeGraphFieldContainerAssert extends AbstractObjectAssert<NodeGrap
 	/**
 	 * Assert that the field container has no previous container
 	 * 
-	 * @param container
 	 * @return fluent API
 	 */
 	public NodeGraphFieldContainerAssert isFirst() {
@@ -51,11 +52,11 @@ public class NodeGraphFieldContainerAssert extends AbstractObjectAssert<NodeGrap
 	/**
 	 * Assert that the field container has no next container
 	 * 
-	 * @param container
 	 * @return fluent API
 	 */
 	public NodeGraphFieldContainerAssert isLast() {
-		assertThat(actual.getNextVersions()).as(descriptionText() + " next container").isEmpty();
+		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+		assertThat(contentDao.getNextVersions(actual)).as(descriptionText() + " next container").isEmpty();
 		return this;
 	}
 
@@ -66,7 +67,8 @@ public class NodeGraphFieldContainerAssert extends AbstractObjectAssert<NodeGrap
 	 * @return fluent API
 	 */
 	public NodeGraphFieldContainerAssert hasNext(NodeGraphFieldContainer container) {
-		Iterable<NodeGraphFieldContainer> next = (Iterable<NodeGraphFieldContainer>) actual.getNextVersions();
+		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+		Iterable<NodeGraphFieldContainer> next = (Iterable<NodeGraphFieldContainer>) contentDao.getNextVersions(actual);
 		assertThat(next).as(descriptionText() + " next container").isNotNull().usingFieldByFieldElementComparator().contains(container);
 		return this;
 	}
