@@ -22,12 +22,12 @@ public final class StreamUtil {
 
 	}
 
-	public static <T> Stream<T> toStream(Iterable<T> iterable) {
-		return StreamSupport.stream(iterable.spliterator(), false);
+	public static <T> Stream<T> toStream(Iterable<? extends T> iterable) {
+		return (Stream<T>)StreamSupport.stream(iterable.spliterator(), false);
 	}
 
-	public static <T> Stream<T> toStream(Iterator<T> iterator) {
-		return toStream(() -> iterator);
+	public static <T> Stream<T> toStream(Iterator<? extends T> iterator) {
+		return toStream(() -> (Iterator<T>)iterator);
 	}
 
 	/**

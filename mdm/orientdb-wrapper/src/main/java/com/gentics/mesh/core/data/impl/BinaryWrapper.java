@@ -285,7 +285,7 @@ public class BinaryWrapper implements Binary {
 		return delegate.getGraphAttribute(key);
 	}
 
-	public TraversalResult<? extends BinaryGraphField> findFields() {
+	public TraversalResult<BinaryGraphField> findFields() {
 		return delegate.findFields();
 	}
 

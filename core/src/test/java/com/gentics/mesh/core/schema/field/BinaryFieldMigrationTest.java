@@ -23,6 +23,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.DataProvider;
@@ -79,11 +80,12 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 	@Override
 	public void testChangeToBinary() throws Exception {
 		changeType(CREATEBINARY, FILL, FETCH, CREATEBINARY, (container, name) -> {
+			BinaryDaoWrapper binaryDao = Tx.get().data().binaryDao();
 			assertThat(container.getBinary(name)).as(NEWFIELD).isNotNull();
 			assertThat(container.getBinary(name).getFileName()).as(NEWFIELDVALUE).isEqualTo(FILENAME);
 			assertThat(container.getBinary(name).getMimeType()).as(NEWFIELDVALUE).isEqualTo(MIMETYPE);
 			assertThat(container.getBinary(name).getBinary().getSHA512Sum()).as(NEWFIELDVALUE).isEqualTo(hash);
-			Buffer contents = RxUtil.readEntireData(container.getBinary(name).getBinary().getStream()).blockingGet();
+			Buffer contents = RxUtil.readEntireData(binaryDao.getStream(container.getBinary(name).getBinary())).blockingGet();
 			assertThat(contents.toString()).as(NEWFIELDVALUE).isEqualTo(FILECONTENTS);
 		});
 	}

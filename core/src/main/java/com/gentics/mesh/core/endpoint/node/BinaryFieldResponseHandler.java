@@ -10,7 +10,9 @@ import javax.inject.Singleton;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.handler.RangeRequestHandler;
@@ -20,6 +22,7 @@ import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.EncodeUtil;
 import com.gentics.mesh.util.MimeTypeUtils;
+
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.http.impl.MimeMapping;
@@ -88,6 +91,7 @@ public class BinaryFieldResponseHandler {
 	}
 
 	private void respond(RoutingContext rc, BinaryGraphField binaryField) {
+		BinaryDaoWrapper binaryDao = Tx.get().data().binaryDao();
 		HttpServerResponse response = rc.response();
 
 		Binary binary = binaryField.getBinary();
@@ -115,7 +119,7 @@ public class BinaryFieldResponseHandler {
 			}
 			response.putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
 			response.putHeader(HttpHeaders.CONTENT_LENGTH, contentLength);
-			binary.getStream().subscribe(response::write, rc::fail, response::end);
+			binaryDao.getStream(binary).subscribe(response::write, rc::fail, response::end);
 		}
 
 	}

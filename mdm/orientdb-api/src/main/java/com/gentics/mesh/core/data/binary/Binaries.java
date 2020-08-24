@@ -35,5 +35,5 @@ public interface Binaries {
 		return create(UUIDUtil.randomUUID(), hash, size);
 	}
 
-	Transactional<Stream<? extends Binary>> findAll();
+	Transactional<Stream<Binary>> findAll();
 }
