@@ -10,6 +10,11 @@
 
 = Mesh Search Plugin Changelog
 
+[[v1.5.6]]
+== 1.5.6 (2020-08-24)
+
+icon:plus[] BasicHitTransformer: add all information from the GraphQl Search results
+
 [[v1.5.5]]
 == 1.5.5 (2020-07-23)
 
@@ -24,6 +29,11 @@ icon:check[] SearchHandler: Fix branch UUID detection for language specific indi
 == 1.5.1 (2020-06-05)
 
 icon:check[] Added JSON Content-type headers to the search response in the Custom search handler
+
+[[v1.4.12]]
+== 1.4.12 (2020-08-24)
+
+icon:plus[] BasicHitTransformer: add all information from the GraphQl Search results
 
 [[v1.4.8]]
 == 1.4.8 (2020-06-05)
