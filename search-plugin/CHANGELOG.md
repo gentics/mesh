@@ -10,8 +10,8 @@
 
 = Mesh Search Plugin Changelog
 
-[[v1.5.6]]
-== 1.5.6 (2020-08-24)
+[[v1.5.7]]
+== 1.5.7 (2020-08-24)
 
 icon:plus[] BasicHitTransformer: add all information from the GraphQl Search results
 
