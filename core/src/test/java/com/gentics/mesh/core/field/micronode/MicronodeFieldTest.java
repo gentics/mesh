@@ -7,6 +7,7 @@ import static com.gentics.mesh.core.field.micronode.MicronodeFieldHelper.FILL;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.util.DateUtils.fromISO8601;
 import static com.gentics.mesh.util.DateUtils.toISO8601;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -37,7 +38,7 @@ import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
-import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldTest;
@@ -91,7 +92,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	 * @return
 	 * @throws MeshJsonException
 	 */
-	protected Microschema createDummyMicroschema() throws MeshJsonException {
+	protected HibMicroschema createDummyMicroschema() throws MeshJsonException {
 		MicroschemaVersionModel dummyMicroschema = new MicroschemaModelImpl();
 		dummyMicroschema.setName("dummymicroschema");
 
@@ -106,7 +107,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	/**
 	 * Dummy microschema
 	 */
-	protected Microschema dummyMicroschema;
+	protected HibMicroschema dummyMicroschema;
 
 	@Before
 	public void addDummySchema() throws Exception {
@@ -145,7 +146,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 			fullMicroschema.addField(new NumberFieldSchemaImpl().setName("numberfield").setLabel("Number Field"));
 			fullMicroschema.addField(new StringFieldSchemaImpl().setName("stringfield").setLabel("String Field"));
 
-			Microschema microschema = microschemaDao.create(fullMicroschema, getRequestUser(), createBatch());
+			HibMicroschema microschema = microschemaDao.create(fullMicroschema, getRequestUser(), createBatch());
 
 			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(new MicronodeFieldSchemaImpl().setName("micronodefield").setLabel("Micronode Field"));

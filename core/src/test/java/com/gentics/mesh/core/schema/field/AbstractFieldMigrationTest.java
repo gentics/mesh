@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.schema.field;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.lang.annotation.ElementType;
@@ -20,7 +21,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.job.Job;
+import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.schema.FieldTypeChange;
@@ -409,7 +410,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		VersionNumber oldVersion = oldContainer.getVersion();
 
 		// migrate the micronode
-		Job job = project().getLatestBranch().assignMicroschemaVersion(user(), versionB, createBatch());
+		HibJob job = project().getLatestBranch().assignMicroschemaVersion(user(), versionB, createBatch());
 		Tx.getActive().getGraph().commit();
 		if (job != null) {
 			triggerAndWaitForJob(job.getUuid());

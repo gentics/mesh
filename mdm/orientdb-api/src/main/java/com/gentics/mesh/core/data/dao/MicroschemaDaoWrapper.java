@@ -1,28 +1,34 @@
 package com.gentics.mesh.core.data.dao;
 
+import java.util.Map;
 import java.util.function.Predicate;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.Microschema;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
+import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 
 public interface MicroschemaDaoWrapper extends MicroschemaDao {
 
-	Microschema loadObjectByUuid(InternalActionContext ac, String schemaUuid, InternalPermission perm);
+	HibMicroschema loadObjectByUuid(InternalActionContext ac, String schemaUuid, InternalPermission perm);
 
-	Microschema findByUuid(String uuid);
+	HibMicroschema findByUuid(String uuid);
 
 	// boolean update(MicroschemaContainer microschema, InternalActionContext ac, EventQueueBatch batch);
 
@@ -35,7 +41,7 @@ public interface MicroschemaDaoWrapper extends MicroschemaDao {
 	 * @param batch
 	 * @return
 	 */
-	default Microschema create(MicroschemaVersionModel microschema, HibUser user, EventQueueBatch batch) {
+	default HibMicroschema create(MicroschemaVersionModel microschema, HibUser user, EventQueueBatch batch) {
 		return create(microschema, user, null, batch);
 	}
 
@@ -50,7 +56,7 @@ public interface MicroschemaDaoWrapper extends MicroschemaDao {
 	 * @param batch
 	 * @return
 	 */
-	Microschema create(MicroschemaVersionModel microschema, HibUser user, String uuid, EventQueueBatch batch);
+	HibMicroschema create(MicroschemaVersionModel microschema, HibUser user, String uuid, EventQueueBatch batch);
 
 	Microschema create(InternalActionContext ac, EventQueueBatch batch, String uuid);
 
@@ -58,13 +64,13 @@ public interface MicroschemaDaoWrapper extends MicroschemaDao {
 
 	Page<? extends Microschema> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Microschema> extraFilter);
 
-	Microschema loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound);
+	HibMicroschema loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound);
 
-	Microschema findByName(String name);
+	HibMicroschema findByName(String name);
 
 	TraversalResult<? extends Microschema> findAll();
 
-	default MicroschemaVersion fromReference(MicroschemaReference reference) {
+	default HibMicroschemaVersion fromReference(MicroschemaReference reference) {
 		return fromReference(null, reference);
 	}
 
@@ -75,7 +81,7 @@ public interface MicroschemaDaoWrapper extends MicroschemaDao {
 	 *            reference
 	 * @return
 	 */
-	default MicroschemaVersion fromReference(HibProject project, MicroschemaReference reference) {
+	default HibMicroschemaVersion fromReference(HibProject project, MicroschemaReference reference) {
 		return fromReference(project, reference, null);
 	}
 
@@ -90,8 +96,28 @@ public interface MicroschemaDaoWrapper extends MicroschemaDao {
 	 *            branch
 	 * @return
 	 */
-	MicroschemaVersion fromReference(HibProject project, MicroschemaReference reference, HibBranch branch);
+	HibMicroschemaVersion fromReference(HibProject project, MicroschemaReference reference, HibBranch branch);
 
-	void delete(Microschema microschema, BulkActionContext bac);
+	void delete(HibMicroschema microschema, BulkActionContext bac);
+
+	boolean isLinkedToProject(HibMicroschema microschema, HibProject project);
+
+	HibMicroschemaVersion applyChanges(HibMicroschemaVersion version, InternalActionContext ac, EventQueueBatch batch);
+
+	HibMicroschemaVersion applyChanges(HibMicroschemaVersion version, InternalActionContext ac, SchemaChangesListModel model, EventQueueBatch batch);
+
+	SchemaChangesListModel diff(HibMicroschemaVersion version, InternalActionContext ac, MicroschemaModel requestModel);
+
+	Iterable<? extends HibMicroschemaVersion> findAllVersions(HibMicroschema microschema);
+
+	Map<HibBranch, HibMicroschemaVersion> findReferencedBranches(HibMicroschema microschema);
+
+	TraversalResult<? extends NodeGraphFieldContainer> findDraftFieldContainers(HibMicroschemaVersion version, String branchUuid);
+
+	void unlink(HibMicroschema microschema, HibProject project, EventQueueBatch batch);
+
+	MicroschemaResponse transformToRestSync(HibMicroschema microschema, InternalActionContext ac, int level, String... languageTags);
+
+	String getETag(HibMicroschema schema, InternalActionContext ac);
 
 }

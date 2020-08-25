@@ -1,12 +1,14 @@
 package com.gentics.mesh.core.graphql;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toSchema;
 import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_VERSION;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.CONTENT_UUID;
 import static com.gentics.mesh.test.TestDataProvider.NEWS_UUID;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static java.util.Objects.hash;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -39,8 +41,8 @@ import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.Microschema;
-import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
@@ -230,7 +232,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			Node node3 = folder("2014");
 
 			// Update the folder schema to contain all fields
-			Schema schemaContainer = schemaContainer("folder");
+			HibSchema schemaContainer = schemaContainer("folder");
 			safelySetUuid(tx, schemaContainer, FOLDER_SCHEMA_UUID);
 			SchemaVersionModel schema = schemaContainer.getLatestVersion().getSchema();
 			schema.setUrlFields("niceUrl");
@@ -484,11 +486,11 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 	 * @param schemaContainer
 	 * @param uuid
 	 */
-	private void safelySetUuid(Tx tx, Schema schemaContainer, String uuid) {
+	private void safelySetUuid(Tx tx, HibSchema schemaContainer, String uuid) {
 		for (Vertex node : tx.getGraph().getVertices("schema", schemaContainer.getUuid())) {
 			node.setProperty("schema", uuid);
 		}
-		schemaContainer.setUuid(uuid);
+		toSchema(schemaContainer).setUuid(uuid);
 	}
 
 	private long dateToMilis(String date) throws ParseException {

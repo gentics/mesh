@@ -47,8 +47,8 @@ import com.gentics.mesh.core.data.root.impl.NodeRootImpl;
 import com.gentics.mesh.core.data.root.impl.ProjectMicroschemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.ProjectSchemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
-import com.gentics.mesh.core.data.schema.Microschema;
-import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
@@ -265,7 +265,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
-	public ProjectSchemaEventModel onSchemaAssignEvent(Schema schema, Assignment assigned) {
+	public ProjectSchemaEventModel onSchemaAssignEvent(HibSchema schema, Assignment assigned) {
 		ProjectSchemaEventModel model = new ProjectSchemaEventModel();
 		switch (assigned) {
 		case ASSIGNED:
@@ -281,7 +281,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
-	public ProjectMicroschemaEventModel onMicroschemaAssignEvent(Microschema microschema, Assignment assigned) {
+	public ProjectMicroschemaEventModel onMicroschemaAssignEvent(HibMicroschema microschema, Assignment assigned) {
 		ProjectMicroschemaEventModel model = new ProjectMicroschemaEventModel();
 		switch (assigned) {
 		case ASSIGNED:

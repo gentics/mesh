@@ -18,8 +18,8 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
-import com.gentics.mesh.core.data.job.Job;
-import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.job.HibJob;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.job.JobListResponse;
@@ -87,7 +87,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 	public void testHandlingOfFailedJobs() {
 
 		String jobUuid = tx(() -> {
-			Job job = boot().jobRoot().enqueueBranchMigration(user(), initialBranch());
+			HibJob job = boot().jobRoot().enqueueBranchMigration(user(), initialBranch());
 			return job.getUuid();
 		});
 
@@ -130,19 +130,19 @@ public class JobEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testReadJob() {
 		String jobUuid = tx(() -> {
-			Job job = boot().jobRoot().enqueueBranchMigration(user(), initialBranch());
+			HibJob job = boot().jobRoot().enqueueBranchMigration(user(), initialBranch());
 			return job.getUuid();
 		});
 
 		tx(() -> {
-			Schema schema = schemaContainer("content");
-			Job job = boot().jobRoot().enqueueSchemaMigration(user(), initialBranch(), schema.getLatestVersion(), schema.getLatestVersion());
+			HibSchema schema = schemaContainer("content");
+			HibJob job = boot().jobRoot().enqueueSchemaMigration(user(), initialBranch(), schema.getLatestVersion(), schema.getLatestVersion());
 			return job.getUuid();
 		});
 
 		String job3Uuid = tx(() -> {
-			Schema schema = schemaContainer("folder");
-			Job job = boot().jobRoot().enqueueSchemaMigration(user(), initialBranch(), schema.getLatestVersion(), schema.getLatestVersion());
+			HibSchema schema = schemaContainer("folder");
+			HibJob job = boot().jobRoot().enqueueSchemaMigration(user(), initialBranch(), schema.getLatestVersion(), schema.getLatestVersion());
 			return job.getUuid();
 		});
 
@@ -150,7 +150,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 		JobResponse jobResponse = call(() -> client().findJobByUuid(job3Uuid));
 		try (Tx tx = tx()) {
-			Schema schema = schemaContainer("folder");
+			HibSchema schema = schemaContainer("folder");
 			assertEquals(initialBranchUuid(), jobResponse.getProperties().get("branchUuid"));
 			assertEquals(schema.getUuid(), jobResponse.getProperties().get("schemaUuid"));
 			assertEquals(schema.getLatestVersion().getVersion(), jobResponse.getProperties().get("fromVersion"));
@@ -166,7 +166,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 	public void testRetryJob() {
 
 		String jobUuid = tx(() -> {
-			Job job = boot().jobRoot().enqueueBranchMigration(user(), initialBranch());
+			HibJob job = boot().jobRoot().enqueueBranchMigration(user(), initialBranch());
 			return job.getUuid();
 		});
 
@@ -188,7 +188,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testProcessJob() {
-		Job job = tx(() -> boot().jobRoot().enqueueBranchMigration(user(), initialBranch()));
+		HibJob job = tx(() -> boot().jobRoot().enqueueBranchMigration(user(), initialBranch()));
 		String jobUuid = tx(() -> job.getUuid());
 
 		call(() -> client().processJob(jobUuid), FORBIDDEN, "error_admin_permission_required");

@@ -45,6 +45,8 @@ import com.gentics.mesh.core.data.page.impl.DynamicTransformableStreamPageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.NodeRoot;
+import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -210,7 +212,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public Node create(HibUser creator, SchemaVersion version, HibProject project, String uuid) {
+	public Node create(HibUser creator, HibSchemaVersion version, HibProject project, String uuid) {
 		// TODO check whether the mesh node is in fact a folder node.
 		NodeImpl node = getGraph().addFramedVertex(NodeImpl.class);
 		if (uuid != null) {
@@ -242,7 +244,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	 * @return
 	 */
 	// TODO use schema container version instead of container
-	private Node createNode(InternalActionContext ac, SchemaVersion schemaVersion, EventQueueBatch batch,
+	private Node createNode(InternalActionContext ac, HibSchemaVersion schemaVersion, EventQueueBatch batch,
 		String uuid) {
 		HibProject project = ac.getProject();
 		MeshAuthUser requestUser = ac.getUser();
@@ -320,9 +322,9 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 		if (!isEmpty(schemaInfo.getSchema().getUuid())) {
 			// 2. Use schema reference by uuid first
-			Schema schemaByUuid = project.getSchemaContainerRoot().loadObjectByUuid(ac,
+			HibSchema schemaByUuid = project.getSchemaContainerRoot().loadObjectByUuid(ac,
 				schemaInfo.getSchema().getUuid(), READ_PERM);
-			SchemaVersion schemaVersion = branch.findLatestSchemaVersion(schemaByUuid);
+			HibSchemaVersion schemaVersion = branch.findLatestSchemaVersion(schemaByUuid);
 			if (schemaVersion == null) {
 				throw error(BAD_REQUEST, "schema_error_schema_not_linked_to_branch", schemaByUuid.getName(), branch.getName(), project.getName());
 			}
@@ -337,7 +339,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 				String schemaName = schemaByName.getName();
 				String schemaUuid = schemaByName.getUuid();
 				if (userDao.hasPermission(requestUser, schemaByName, READ_PERM)) {
-					SchemaVersion schemaVersion = branch.findLatestSchemaVersion(schemaByName);
+					HibSchemaVersion schemaVersion = branch.findLatestSchemaVersion(schemaByName);
 					if (schemaVersion == null) {
 						throw error(BAD_REQUEST, "schema_error_schema_not_linked_to_branch", schemaByName.getName(), branch.getName(),
 							project.getName());

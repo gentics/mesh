@@ -4,7 +4,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.action.MicroschemaDAOActions;
-import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -12,7 +12,7 @@ import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractSearchHandler;
 
 @Singleton
-public class MicroschemaSearchHandler extends AbstractSearchHandler<Microschema, MicroschemaResponse> {
+public class MicroschemaSearchHandler extends AbstractSearchHandler<HibMicroschema, MicroschemaResponse> {
 
 	@Inject
 	public MicroschemaSearchHandler(Database db, SearchProvider searchProvider, MicroschemaContainerIndexHandler indexHandler, MeshOptions options,

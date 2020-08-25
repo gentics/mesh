@@ -12,7 +12,7 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -78,7 +78,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 	public void testCreateDuplicateWebrootPath() {
 		String conflictingName = "filename.html";
 		Node parent = tx(() -> folder("2015"));
-		Schema contentSchema = tx(() -> schemaContainer("content"));
+		HibSchema contentSchema = tx(() -> schemaContainer("content"));
 
 		tx(() -> {
 			// create the initial content
@@ -111,7 +111,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 		String conflictingName = "filename.html";
 		String nonConflictingName = "otherfilename.html";
 		Node parent = tx(() -> folder("2015"));
-		Schema contentSchema = tx(() -> schemaContainer("content"));
+		HibSchema contentSchema = tx(() -> schemaContainer("content"));
 
 		tx(() -> {
 			// create the initial content
@@ -151,7 +151,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 	public void testTranslateDuplicateWebrootPath() {
 		String conflictingName = "filename.html";
 		Node parent = tx(() -> folder("2015"));
-		Schema contentSchema = tx(() -> schemaContainer("content"));
+		HibSchema contentSchema = tx(() -> schemaContainer("content"));
 
 		tx(() -> {
 			// create the initial content

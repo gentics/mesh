@@ -20,7 +20,7 @@ import java.util.List;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
+import com.gentics.mesh.core.data.schema.handler.SchemaComparatorImpl;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
@@ -30,7 +30,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 @MeshTestSetting(testSize = FULL, startServer = false)
 public class SchemaComparatorSchemaTest extends AbstractMeshTest {
 
-	private SchemaComparator comparator = new SchemaComparator();
+	private SchemaComparatorImpl comparator = new SchemaComparatorImpl();
 
 	@Test
 	public void testEmptySchema() throws IOException {

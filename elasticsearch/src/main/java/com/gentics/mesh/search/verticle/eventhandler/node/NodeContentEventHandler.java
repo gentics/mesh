@@ -16,10 +16,12 @@ import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.schema.Schema;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.search.request.BulkRequest;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.DeleteDocumentRequest;
@@ -31,7 +33,6 @@ import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
-import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.Transactional;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.entity.MeshEntities;
@@ -103,9 +104,9 @@ public class NodeContentEventHandler implements EventHandler {
 		return helper.getDb().tx(tx -> {
 			return entities.nodeContent.getDocument(message);
 		}).map(doc -> helper.createDocumentRequest(
-				getIndexName(message, getSchemaVersionUuid(message).runInNewTx()),
-				ContentDaoWrapper.composeDocumentId(message.getUuid(), message.getLanguageTag()),
-				doc, complianceMode));
+			getIndexName(message, getSchemaVersionUuid(message).runInNewTx()),
+			ContentDaoWrapper.composeDocumentId(message.getUuid(), message.getLanguageTag()),
+			doc, complianceMode));
 	}
 
 	private DeleteDocumentRequest deleteNodes(NodeMeshEventModel message, String schemaVersionUuid) {
@@ -133,12 +134,12 @@ public class NodeContentEventHandler implements EventHandler {
 
 	private Transactional<String> getSchemaVersionUuid(NodeMeshEventModel message) {
 		return findLatestSchemaVersion(message)
-			.mapInTx(MeshElement::getUuid);
+			.mapInTx(HibElement::getUuid);
 	}
 
-	private Transactional<SchemaVersion> findLatestSchemaVersion(NodeMeshEventModel message) {
+	private Transactional<HibSchemaVersion> findLatestSchemaVersion(NodeMeshEventModel message) {
 		return helper.getDb().transactional(tx -> {
-			Schema schema = tx.data().schemaDao().findByUuid(message.getSchema().getUuid());
+			HibSchema schema = tx.data().schemaDao().findByUuid(message.getSchema().getUuid());
 			HibProject project = tx.data().projectDao().findByUuid(message.getProject().getUuid());
 			return tx.data().branchDao().findByUuid(project, message.getBranchUuid())
 				.findLatestSchemaVersion(schema);
@@ -147,10 +148,10 @@ public class NodeContentEventHandler implements EventHandler {
 
 	private String getSchemaVersionUuid(SchemaReference reference) {
 		return helper.getDb().tx(tx -> {
-			return tx.data().schemaDao()
-				.findByUuid(reference.getUuid())
-				.findVersionByRev(reference.getVersion())
-				.getUuid();
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			HibSchema schema = schemaDao
+				.findByUuid(reference.getUuid());
+			return schemaDao.findVersionByRev(schema, reference.getVersion()).getUuid();
 		});
 	}
 }

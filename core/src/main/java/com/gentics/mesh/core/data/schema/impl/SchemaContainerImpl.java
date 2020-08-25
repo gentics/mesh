@@ -68,4 +68,10 @@ public class SchemaContainerImpl extends
 		return mesh().userProperties().getEditor(this);
 	}
 
+	@Override
+	public void deleteElement() {
+		remove();
+	}
+
+
 }

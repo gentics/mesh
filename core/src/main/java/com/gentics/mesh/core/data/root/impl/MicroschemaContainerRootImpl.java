@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_ITEM;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toMicroschema;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static com.gentics.mesh.madl.type.EdgeTypeDefinition.edgeType;
 
@@ -14,6 +15,7 @@ import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.root.MicroschemaRoot;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -41,13 +43,15 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 	}
 
 	@Override
-	public void addMicroschema(HibUser user, Microschema container, EventQueueBatch batch) {
-		addItem(container);
+	public void addMicroschema(HibUser user, HibMicroschema container, EventQueueBatch batch) {
+		Microschema graphMicroschema = toMicroschema(container);
+		addItem(graphMicroschema);
 	}
 
 	@Override
-	public void removeMicroschema(Microschema container, EventQueueBatch batch) {
-		removeItem(container);
+	public void removeMicroschema(HibMicroschema container, EventQueueBatch batch) {
+		Microschema graphMicroschema = toMicroschema(container);
+		removeItem(graphMicroschema);
 	}
 
 	@Override
@@ -56,12 +60,8 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 	}
 
 	@Override
-	public boolean contains(Microschema microschema) {
-		if (findByUuid(microschema.getUuid()) == null) {
-			return false;
-		} else {
-			return true;
-		}
+	public boolean contains(HibMicroschema microschema) {
+		return !(findByUuid(microschema.getUuid()) == null);
 	}
 
 	@Override

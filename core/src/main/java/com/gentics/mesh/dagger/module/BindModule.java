@@ -77,6 +77,10 @@ import com.gentics.mesh.core.data.dao.impl.SchemaDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.TagDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.TagFamilyDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.UserDaoWrapperImpl;
+import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
+import com.gentics.mesh.core.data.schema.handler.MicroschemaComparatorImpl;
+import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
+import com.gentics.mesh.core.data.schema.handler.SchemaComparatorImpl;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.data.service.WebRootServiceImpl;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
@@ -269,5 +273,11 @@ public abstract class BindModule {
 
 	@Binds
 	abstract JobDAOActions jobDAOActions(JobDAOActionsImpl e);
+
+	@Binds
+	abstract MicroschemaComparator microschemaComparator(MicroschemaComparatorImpl e);
+
+	@Binds
+	abstract SchemaComparator schemaComparator(SchemaComparatorImpl e);
 
 }

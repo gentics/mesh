@@ -11,6 +11,7 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import static com.gentics.mesh.util.DateUtils.toISO8601;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -27,8 +28,8 @@ import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
-import com.gentics.mesh.core.data.schema.Microschema;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldEndpointTest;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
@@ -385,7 +386,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		Node node = folder("2015");
 		try (Tx tx = tx()) {
 			ContentDaoWrapper contentDao = tx.data().contentDao();
-			MicroschemaVersion microschema = microschemaContainers().get("vcard").getLatestVersion();
+			HibMicroschemaVersion microschema = microschemaContainers().get("vcard").getLatestVersion();
 			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			MicronodeGraphField micronodeField = container.createMicronode(FIELD_NAME, microschema);
 			micronodeField.getMicronode().createString("firstName").setString("Max");
@@ -422,7 +423,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 				nodeMicroschema.addField(new NodeFieldSchemaImpl().setName("nodefield_" + i));
 			}
 			// TODO Maybe add project()
-			Microschema microschemaContainer = microschemaDao.create(nodeMicroschema, getRequestUser(), createBatch());
+			HibMicroschema microschemaContainer = microschemaDao.create(nodeMicroschema, getRequestUser(), createBatch());
 			microschemaContainers().put("noderef", microschemaContainer);
 			// TODO use dao instead
 			project().getMicroschemaContainerRoot().addMicroschema(user(), microschemaContainer, createBatch());
@@ -486,7 +487,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 			// 2. Add the microschema to the list of microschemas of the project
 			// TODO maybe add project()
-			Microschema microschemaContainer = microschemaDao.create(fullMicroschema, getRequestUser(), createBatch());
+			HibMicroschema microschemaContainer = microschemaDao.create(fullMicroschema, getRequestUser(), createBatch());
 			microschemaContainers().put("full", microschemaContainer);
 			// TODO use DAO to add microschema
 			project().getMicroschemaContainerRoot().addMicroschema(user(), microschemaContainer, createBatch());

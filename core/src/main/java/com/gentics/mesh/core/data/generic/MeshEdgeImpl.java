@@ -1,9 +1,9 @@
 package com.gentics.mesh.core.data.generic;
 
 import com.gentics.madl.annotations.GraphElement;
+import com.gentics.mesh.core.data.MeshEdge;
 import com.gentics.mesh.core.db.AbstractEdgeFrame;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.data.MeshEdge;
 import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;

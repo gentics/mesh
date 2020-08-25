@@ -29,7 +29,7 @@ import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
@@ -89,7 +89,7 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 		}
 
 		MicroschemaDaoWrapper microschemaDao = Tx.get().data().microschemaDao();
-		MicroschemaVersion microschemaVersion = microschemaDao.fromReference(ac.getProject(), microschemaReference,
+		HibMicroschemaVersion microschemaVersion = microschemaDao.fromReference(ac.getProject(), microschemaReference,
 			ac.getBranch());
 
 		Micronode micronode = null;

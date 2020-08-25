@@ -10,6 +10,7 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -40,6 +41,7 @@ import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
@@ -149,7 +151,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 		// Assert that the indices have been created and the job has been queued
 		BranchSchemaEdge edge2;
-		SchemaVersion versionB;
+		HibSchemaVersion versionB;
 		String versionBUuid;
 		try (Tx tx = tx()) {
 			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
@@ -213,13 +215,14 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		waitForSearchIdleEvent();
 
 		BranchSchemaEdge edge3;
-		SchemaVersion versionC;
+		HibSchemaVersion versionC;
 		String versionCUuid;
 		try (Tx tx = tx()) {
 			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			
 			versionC = tx(() -> schemaDao.findByName("dummy").getLatestVersion());
 			versionCUuid = versionC.getUuid();
-			assertTrue("There should be editable containers (one draft) which should be linked to the version.", versionB.getDraftFieldContainers(
+			assertTrue("There should be editable containers (one draft) which should be linked to the version.", schemaDao.findDraftFieldContainers(versionB, 
 				initialBranchUuid()).hasNext());
 			assertNotEquals("A new latest version should have been created.", versionBUuid, versionCUuid);
 
@@ -242,17 +245,15 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		waitForSearchIdleEvent();
 
 		try (Tx tx = tx()) {
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 			assertNotNull(edge3.getJobUuid());
 			assertEquals(COMPLETED, edge3.getMigrationStatus());
 			assertFalse("The previous assignment should be inactive.", edge1.isActive());
 			assertFalse("The previous assignment should be inactive since it has been been migrated.", edge2.isActive());
 			assertTrue("The assignment should be active.", edge3.isActive());
 			assertFalse(
-				"There should no longer be an editable container (one draft) linked to the version since the migration should have updated the link.",
-				versionB.getDraftFieldContainers(initialBranchUuid()).hasNext());
-			assertTrue("There should now be versions linked to the new schema version instead.", versionC.getDraftFieldContainers(
-				initialBranchUuid()).hasNext());
-
+				"There should no longer be an editable container (one draft) linked to the version since the migration should have updated the link.", schemaDao.findDraftFieldContainers(versionB, initialBranchUuid()).hasNext());
+			assertTrue("There should now be versions linked to the new schema version instead.", schemaDao.findDraftFieldContainers(versionC, initialBranchUuid()).hasNext());
 		}
 
 		// The old index should have been removed
@@ -315,7 +316,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		// Add elasticsearch setting to content field
 		SchemaVersionModel schemaModel = tx(() -> {
 			JsonObject setting = new JsonObject().put("test", "123");
-			SchemaVersion version = schemaContainer("content").getLatestVersion();
+			HibSchemaVersion version = schemaContainer("content").getLatestVersion();
 			SchemaVersionModel schema = version.getSchema();
 			schema.getField("slug").setElasticsearch(setting);
 			version.setJson(schema.toJson());
@@ -343,7 +344,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		// Add elasticsearch setting to schema
 		SchemaVersionModel schemaModel = tx(() -> {
 			JsonObject setting = new JsonObject().put("test", "123");
-			SchemaVersion version = schemaContainer("content").getLatestVersion();
+			HibSchemaVersion version = schemaContainer("content").getLatestVersion();
 			SchemaVersionModel schema = version.getSchema();
 			schema.setElasticsearch(setting);
 			version.setJson(schema.toJson());
@@ -736,7 +737,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		// Run 10 migrations which should all fail
 		for (int i = 0; i < 10; i++) {
 			tx(() -> {
-				SchemaVersion version = schemaContainer("content").getLatestVersion();
+				HibSchemaVersion version = schemaContainer("content").getLatestVersion();
 				return boot().jobRoot().enqueueSchemaMigration(user(), initialBranch(), version, version);
 			});
 		}

@@ -3,6 +3,8 @@ target
 .classpath
 .project
 /build.sh
+/build8.sh
+/build11.sh
 .settings
 .bin
 .pmd*

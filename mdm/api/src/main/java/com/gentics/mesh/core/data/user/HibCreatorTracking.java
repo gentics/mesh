@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.user;
 
+import com.gentics.mesh.util.DateUtils;
+
 public interface HibCreatorTracking {
 
 	/**
@@ -31,6 +33,16 @@ public interface HibCreatorTracking {
 	 * Set the creation timestamp using the current time.
 	 */
 	void setCreationTimestamp();
+
+	/**
+	 * Return the ISO 8601 formatted creation date.
+	 * 
+	 * @return
+	 */
+	default String getCreationDate() {
+		return DateUtils.toISO8601(getCreationTimestamp(), 0);
+	}
+
 
 	Long getCreationTimestamp();
 

@@ -17,7 +17,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.generic.UserProperties;
-import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
+import com.gentics.mesh.core.data.schema.handler.SchemaComparatorImpl;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.core.endpoint.role.RoleCrudHandler;
@@ -135,7 +135,7 @@ public interface MeshComponent {
 
 	ImageManipulator imageManipulator();
 
-	SchemaComparator schemaComparator();
+	SchemaComparatorImpl schemaComparator();
 
 	RestAPIVerticle restApiVerticle();
 

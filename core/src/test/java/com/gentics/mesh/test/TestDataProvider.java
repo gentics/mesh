@@ -47,9 +47,9 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.data.schema.Microschema;
-import com.gentics.mesh.core.data.schema.Schema;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -108,8 +108,8 @@ public class TestDataProvider {
 
 	private TestSize size;
 
-	private Map<String, Schema> schemaContainers = new HashMap<>();
-	private Map<String, Microschema> microschemaContainers = new HashMap<>();
+	private Map<String, HibSchema> schemaContainers = new HashMap<>();
+	private Map<String, HibMicroschema> microschemaContainers = new HashMap<>();
 	private Map<String, HibTagFamily> tagFamilies = new HashMap<>();
 	private long contentCount = 0;
 	private Map<String, Node> folders = new HashMap<>();
@@ -234,7 +234,8 @@ public class TestDataProvider {
 
 	/**
 	 * Add data to the internal maps which was created within the {@link BootstrapInitializer} (eg. admin groups, roles, users)
-	 * @param tx 
+	 * 
+	 * @param tx
 	 */
 	private void addBootstrappedData(Tx tx) {
 		for (Group group : root.getGroupRoot().findAll()) {
@@ -251,7 +252,7 @@ public class TestDataProvider {
 	private void addContents() {
 		TagDaoWrapper tagDao = Tx.get().data().tagDao();
 
-		Schema contentSchema = schemaContainers.get("content");
+		HibSchema contentSchema = schemaContainers.get("content");
 
 		addContent(folders.get("2014"), "News_2014", "News!", "Neuigkeiten!");
 		addContent(folders.get("march"), "New_in_March_2014", "This is new in march 2014.", "Das ist neu im März 2014");
@@ -374,6 +375,7 @@ public class TestDataProvider {
 		UserDaoWrapper userDao = Tx.get().data().userDao();
 		RoleDaoWrapper roleDao = Tx.get().data().roleDao();
 		GroupDaoWrapper groupDao = Tx.get().data().groupDao();
+		SchemaDaoWrapper schemaDao = Tx.get().data().schemaDao();
 
 		// User, Groups, Roles
 		userInfo = createUserInfo("joe1", "Joe", "Doe");
@@ -381,9 +383,9 @@ public class TestDataProvider {
 		EventQueueBatch batch = Mockito.mock(EventQueueBatch.class);
 		project = projectDao.create(PROJECT_NAME, null, null, null, userInfo.getUser(), getSchemaContainer("folder").getLatestVersion(), batch);
 		HibUser jobUser = userInfo.getUser();
-		project.getSchemaContainerRoot().addSchemaContainer(jobUser, getSchemaContainer("folder"), batch);
-		project.getSchemaContainerRoot().addSchemaContainer(jobUser, getSchemaContainer("content"), batch);
-		project.getSchemaContainerRoot().addSchemaContainer(jobUser, getSchemaContainer("binary_content"), batch);
+		schemaDao.addSchema(getSchemaContainer("folder"), project, jobUser, batch);
+		schemaDao.addSchema(getSchemaContainer("content"), project, jobUser, batch);
+		schemaDao.addSchema(getSchemaContainer("binary_content"), project, jobUser, batch);
 		projectUuid = project.getUuid();
 		branchUuid = project.getInitialBranch().getUuid();
 
@@ -435,15 +437,15 @@ public class TestDataProvider {
 		SchemaDaoWrapper schemaDao = Tx.get().data().schemaDao();
 
 		// folder
-		Schema folderSchemaContainer = schemaDao.findByName("folder");
+		HibSchema folderSchemaContainer = schemaDao.findByName("folder");
 		schemaContainers.put("folder", folderSchemaContainer);
 
 		// content
-		Schema contentSchemaContainer = schemaDao.findByName("content");
+		HibSchema contentSchemaContainer = schemaDao.findByName("content");
 		schemaContainers.put("content", contentSchemaContainer);
 
 		// binary_content
-		Schema binaryContentSchemaContainer = schemaDao.findByName("binary_content");
+		HibSchema binaryContentSchemaContainer = schemaDao.findByName("binary_content");
 		schemaContainers.put("binary_content", binaryContentSchemaContainer);
 
 	}
@@ -496,7 +498,7 @@ public class TestDataProvider {
 		postcodeFieldSchema.setLabel("Post Code");
 		vcardMicroschema.addField(postcodeFieldSchema);
 
-		Microschema vcardMicroschemaContainer = microschemaDao.create(vcardMicroschema, userInfo.getUser(), createBatch());
+		HibMicroschema vcardMicroschemaContainer = microschemaDao.create(vcardMicroschema, userInfo.getUser(), createBatch());
 		microschemaContainers.put(vcardMicroschemaContainer.getName(), vcardMicroschemaContainer);
 		project.getMicroschemaContainerRoot().addMicroschema(user(), vcardMicroschemaContainer, createBatch());
 	}
@@ -526,7 +528,7 @@ public class TestDataProvider {
 		captionFieldSchema.setLabel("Caption");
 		captionedImageMicroschema.addField(captionFieldSchema);
 
-		Microschema microschema = microschemaDao.create(captionedImageMicroschema, userInfo.getUser(), createBatch());
+		HibMicroschema microschema = microschemaDao.create(captionedImageMicroschema, userInfo.getUser(), createBatch());
 		microschemaContainers.put(captionedImageMicroschema.getName(), microschema);
 		project.getMicroschemaContainerRoot().addMicroschema(user(), microschema, createBatch());
 	}
@@ -538,7 +540,7 @@ public class TestDataProvider {
 	public Node addFolder(Node rootNode, String englishName, String germanName, String uuid) {
 		NodeDaoWrapper nodeDao = boot.nodeDao();
 		InternalActionContext ac = new NodeMigrationActionContextImpl();
-		SchemaVersion schemaVersion = schemaContainers.get("folder").getLatestVersion();
+		HibSchemaVersion schemaVersion = schemaContainers.get("folder").getLatestVersion();
 		HibBranch branch = project.getLatestBranch();
 		Node folderNode;
 		if (uuid == null) {
@@ -679,7 +681,7 @@ public class TestDataProvider {
 		return tags.get(name);
 	}
 
-	public Schema getSchemaContainer(String name) {
+	public HibSchema getSchemaContainer(String name) {
 		return schemaContainers.get(name);
 	}
 
@@ -707,11 +709,11 @@ public class TestDataProvider {
 		return roles;
 	}
 
-	public Map<String, Schema> getSchemaContainers() {
+	public Map<String, HibSchema> getSchemaContainers() {
 		return schemaContainers;
 	}
 
-	public Map<String, Microschema> getMicroschemaContainers() {
+	public Map<String, HibMicroschema> getMicroschemaContainers() {
 		return microschemaContainers;
 	}
 

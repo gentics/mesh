@@ -8,7 +8,8 @@ import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -32,10 +33,12 @@ public class SchemaEndpointETagTest extends AbstractMeshTest {
 	@Test
 	public void testReadOne() {
 		try (Tx tx = tx()) {
-			Schema schema = schemaContainer("content");
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+
+			HibSchema schema = schemaContainer("content");
 
 			String responseTag = callETag(() -> client().findSchemaByUuid(schema.getUuid()));
-			String etag = schema.getETag(mockActionContext());
+			String etag = schemaDao.getETag(schema, mockActionContext());
 			assertEquals(etag, responseTag);
 
 			// Check whether 304 is returned for correct etag

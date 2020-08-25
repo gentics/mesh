@@ -35,7 +35,8 @@ import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -378,7 +379,7 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		delegate.linkIn(vertex, labels);
 	}
 
-	public MicronodeGraphField createMicronode(String key, MicroschemaVersion microschemaVersion) {
+	public MicronodeGraphField createMicronode(String key, HibMicroschemaVersion microschemaVersion) {
 		return delegate.createMicronode(key, microschemaVersion);
 	}
 
@@ -514,7 +515,7 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		delegate.deleteFromBranch(branch, bac);
 	}
 
-	public void setSchemaContainerVersion(GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> version) {
+	public void setSchemaContainerVersion(HibFieldSchemaVersionElement version) {
 		delegate.setSchemaContainerVersion(version);
 	}
 

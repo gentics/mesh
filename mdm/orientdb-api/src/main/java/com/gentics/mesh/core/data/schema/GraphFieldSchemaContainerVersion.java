@@ -6,7 +6,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.ReferenceableElement;
-import com.gentics.mesh.core.data.job.Job;
+import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
@@ -225,12 +225,12 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 	 *
 	 * @return
 	 */
-	Iterable<Job> referencedJobsViaTo();
+	Iterable<? extends HibJob> referencedJobsViaTo();
 
 	/**
 	 * Return an iterable of all jobs which reference the version via the _from_ reference.
 	 *
 	 * @return
 	 */
-	Iterable<Job> referencedJobsViaFrom();
+	Iterable<? extends HibJob> referencedJobsViaFrom();
 }

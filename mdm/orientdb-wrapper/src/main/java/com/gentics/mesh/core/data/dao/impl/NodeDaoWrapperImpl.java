@@ -16,7 +16,7 @@ import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
@@ -65,12 +65,12 @@ public class NodeDaoWrapperImpl implements NodeDaoWrapper {
 
 
 	@Override
-	public Node create(Node parentNode, HibUser creator, SchemaVersion schemaVersion, HibProject project) {
+	public Node create(Node parentNode, HibUser creator, HibSchemaVersion schemaVersion, HibProject project) {
 		return parentNode.create(creator, schemaVersion, project);
 	}
 
 	@Override
-	public Node create(Node parentNode, HibUser creator, SchemaVersion schemaVersion, HibProject project, HibBranch branch, String uuid) {
+	public Node create(Node parentNode, HibUser creator, HibSchemaVersion schemaVersion, HibProject project, HibBranch branch, String uuid) {
 		return parentNode.create(creator, schemaVersion, project, branch, uuid);
 	}
 

@@ -33,8 +33,8 @@ import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.data.schema.Microschema;
-import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -214,11 +214,11 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return data().getTag(key);
 	}
 
-	default Schema schemaContainer(String key) {
+	default HibSchema schemaContainer(String key) {
 		return data().getSchemaContainer(key);
 	}
 
-	default Map<String, Schema> schemaContainers() {
+	default Map<String, HibSchema> schemaContainers() {
 		return data().getSchemaContainers();
 	}
 
@@ -242,11 +242,11 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return data().getGroups();
 	}
 
-	default Map<String, Microschema> microschemaContainers() {
+	default Map<String, HibMicroschema> microschemaContainers() {
 		return data().getMicroschemaContainers();
 	}
 
-	default Microschema microschemaContainer(String key) {
+	default HibMicroschema microschemaContainer(String key) {
 		return data().getMicroschemaContainers().get(key);
 	}
 
@@ -663,9 +663,8 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return client;
 	}
 
-	default public Schema getSchemaContainer() {
-		Schema container = data().getSchemaContainer("content");
-		return container;
+	default public HibSchema getSchemaContainer() {
+		return data().getSchemaContainer("content");
 	}
 
 	default public BulkActionContext createBulkContext() {

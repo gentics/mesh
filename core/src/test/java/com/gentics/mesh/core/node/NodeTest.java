@@ -4,6 +4,7 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.rest.SortOrder.UNSORTED;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.util.TestUtils.size;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -34,6 +35,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.data.tag.HibTag;
@@ -264,7 +266,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			HibUser user = user();
 			Node parentNode = folder("2015");
-			SchemaVersion schemaVersion = schemaContainer("content").getLatestVersion();
+			HibSchemaVersion schemaVersion = schemaContainer("content").getLatestVersion();
 			Node node = nodeDao.create(parentNode, user, schemaVersion, project());
 			long ts = System.currentTimeMillis();
 			node.setCreationTimestamp(ts);
@@ -375,7 +377,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			HibProject project = project();
 			HibBranch initialBranch = project.getInitialBranch();
-			SchemaVersion folderSchema = schemaContainer("folder").getLatestVersion();
+			HibSchemaVersion folderSchema = schemaContainer("folder").getLatestVersion();
 
 			// 1. create folder with subfolder and subsubfolder
 			Node folder = nodeDao.create(project.getBaseNode(), user(), folderSchema, project);
@@ -411,7 +413,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 		try (Tx tx = tx()) {
 			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			BulkActionContext bac = createBulkContext();
-			SchemaVersion folderSchema = schemaContainer("folder").getLatestVersion();
+			HibSchemaVersion folderSchema = schemaContainer("folder").getLatestVersion();
 
 			// 1. create folder with subfolder and subsubfolder
 			Node folder = nodeDao.create(project.getBaseNode(), user(), folderSchema, project);
@@ -479,7 +481,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 		BulkActionContext bac = createBulkContext();
 
 		try (Tx tx = tx()) {
-			SchemaVersion folderSchema = schemaContainer("folder").getLatestVersion();
+			HibSchemaVersion folderSchema = schemaContainer("folder").getLatestVersion();
 
 			// 1. create folder and publish
 			String folderUuid = tx(tx2 -> {
@@ -533,7 +535,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 		try (Tx tx = tx()) {
 			HibProject project = project();
 			HibBranch initialBranch = project.getInitialBranch();
-			SchemaVersion folderSchema = schemaContainer("folder").getLatestVersion();
+			HibSchemaVersion folderSchema = schemaContainer("folder").getLatestVersion();
 
 			// 1. create folder and publish
 			String folderUuid = tx(tx2 -> {

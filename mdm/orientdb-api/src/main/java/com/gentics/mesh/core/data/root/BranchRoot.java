@@ -32,7 +32,7 @@ public interface BranchRoot extends RootVertex<Branch>, TransformableElementRoot
 	 * @param batch
 	 * @return new Branch
 	 */
-	default HibBranch create(String name, HibUser creator, EventQueueBatch batch) {
+	default Branch create(String name, HibUser creator, EventQueueBatch batch) {
 		return create(name, creator, null, true, getLatestBranch(), batch);
 	}
 
@@ -52,7 +52,7 @@ public interface BranchRoot extends RootVertex<Branch>, TransformableElementRoot
 	 * @param batch
 	 * @return new Branch
 	 */
-	HibBranch create(String name, HibUser creator, String uuid, boolean setLatest, HibBranch baseBranch, EventQueueBatch batch);
+	Branch create(String name, HibUser creator, String uuid, boolean setLatest, HibBranch baseBranch, EventQueueBatch batch);
 
 	/**
 	 * Get the initial branch of this root.

@@ -8,7 +8,7 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -44,11 +44,11 @@ public interface ProjectDaoWrapper extends ProjectDao, DaoWrapper<HibProject>, D
 	HibProject create(InternalActionContext ac, EventQueueBatch batch, String uuid);
 
 	default HibProject create(String projectName, String hostname, Boolean ssl, String pathPrefix, HibUser creator,
-		SchemaVersion schemaVersion, EventQueueBatch batch) {
+		HibSchemaVersion schemaVersion, EventQueueBatch batch) {
 		return create(projectName, hostname, ssl, pathPrefix, creator, schemaVersion, null, batch);
 	}
 
-	HibProject create(String name, String hostname, Boolean ssl, String pathPrefix, HibUser creator, SchemaVersion schemaVersion,
+	HibProject create(String name, String hostname, Boolean ssl, String pathPrefix, HibUser creator, HibSchemaVersion schemaVersion,
 		String uuid, EventQueueBatch batch);
 
 	String getETag(HibProject project, InternalActionContext ac);

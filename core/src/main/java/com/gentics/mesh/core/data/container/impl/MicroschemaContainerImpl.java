@@ -62,4 +62,9 @@ public class MicroschemaContainerImpl extends
 		return mesh().userProperties().getEditor(this);
 	}
 
+	@Override
+	public void deleteElement() {
+		remove();
+	}
+
 }

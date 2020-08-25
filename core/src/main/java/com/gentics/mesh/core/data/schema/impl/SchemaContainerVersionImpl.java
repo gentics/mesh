@@ -27,6 +27,7 @@ import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.BranchImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
+import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.Schema;
@@ -79,11 +80,12 @@ public class SchemaContainerVersionImpl extends
 	public Iterator<? extends NodeGraphFieldContainer> getDraftFieldContainers(String branchUuid) {
 		return toStream(mesh().database().getVertices(
 			NodeGraphFieldContainerImpl.class,
-			new String[]{SCHEMA_CONTAINER_VERSION_KEY_PROPERTY},
-			new Object[]{getUuid()}
-		)).filter(v -> toStream(v.getEdges(Direction.IN, HAS_FIELD_CONTAINER))
-		.anyMatch(e -> e.getProperty(BRANCH_UUID_KEY).equals(branchUuid) && ContainerType.get(e.getProperty(EDGE_TYPE_KEY)).equals(DRAFT)))
-		.map(v -> graph.frameElementExplicit(v, NodeGraphFieldContainerImpl.class)).iterator();
+			new String[] { SCHEMA_CONTAINER_VERSION_KEY_PROPERTY },
+			new Object[] { getUuid() })).filter(
+				v -> toStream(v.getEdges(Direction.IN, HAS_FIELD_CONTAINER))
+					.anyMatch(
+						e -> e.getProperty(BRANCH_UUID_KEY).equals(branchUuid) && ContainerType.get(e.getProperty(EDGE_TYPE_KEY)).equals(DRAFT)))
+				.map(v -> graph.frameElementExplicit(v, NodeGraphFieldContainerImpl.class)).iterator();
 	}
 
 	@Override
@@ -91,18 +93,19 @@ public class SchemaContainerVersionImpl extends
 		UserDaoWrapper userDao = Tx.get().data().userDao();
 		SchemaDaoWrapper schemaDao = Tx.get().data().schemaDao();
 		return new TraversalResult<>(schemaDao.getNodes(getSchemaContainer()).stream()
-			.filter(node -> GraphFieldContainerEdgeImpl.matchesBranchAndType(node.getId(), branchUuid, type) && userDao.hasPermissionForId(user, node.getId(), READ_PUBLISHED_PERM)));
+			.filter(node -> GraphFieldContainerEdgeImpl.matchesBranchAndType(node.getId(), branchUuid, type)
+				&& userDao.hasPermissionForId(user, node.getId(), READ_PUBLISHED_PERM)));
 	}
 
 	@Override
 	public Stream<NodeGraphFieldContainerImpl> getFieldContainers(String branchUuid) {
 		return toStream(mesh().database().getVertices(
 			NodeGraphFieldContainerImpl.class,
-			new String[]{SCHEMA_CONTAINER_VERSION_KEY_PROPERTY},
-			new Object[]{getUuid()}
-		)).filter(v -> toStream(v.getEdges(Direction.IN, HAS_FIELD_CONTAINER))
-		.anyMatch(e -> e.getProperty(BRANCH_UUID_KEY).equals(branchUuid)))
-		.map(v -> graph.frameElementExplicit(v, NodeGraphFieldContainerImpl.class));
+			new String[] { SCHEMA_CONTAINER_VERSION_KEY_PROPERTY },
+			new Object[] { getUuid() })).filter(
+				v -> toStream(v.getEdges(Direction.IN, HAS_FIELD_CONTAINER))
+					.anyMatch(e -> e.getProperty(BRANCH_UUID_KEY).equals(branchUuid)))
+				.map(v -> graph.frameElementExplicit(v, NodeGraphFieldContainerImpl.class));
 	}
 
 	@Override
@@ -165,12 +168,12 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public Iterable<Job> referencedJobsViaTo() {
+	public Iterable<? extends HibJob> referencedJobsViaTo() {
 		return in(HAS_TO_VERSION).frame(Job.class);
 	}
 
 	@Override
-	public TraversalResult<Job> referencedJobsViaFrom() {
+	public TraversalResult<HibJob> referencedJobsViaFrom() {
 		return new TraversalResult<>(in(HAS_FROM_VERSION).frame(Job.class));
 	}
 
@@ -183,10 +186,10 @@ public class SchemaContainerVersionImpl extends
 			change.delete(context);
 		}
 		// Delete referenced jobs
-		for (Job job : referencedJobsViaFrom()) {
+		for (HibJob job : referencedJobsViaFrom()) {
 			job.remove();
 		}
-		for (Job job : referencedJobsViaTo()) {
+		for (HibJob job : referencedJobsViaTo()) {
 			job.remove();
 		}
 		// Delete version
@@ -229,6 +232,11 @@ public class SchemaContainerVersionImpl extends
 		} else {
 			return schemaAutoPurge;
 		}
+	}
+
+	@Override
+	public void deleteElement() {
+		remove();
 	}
 
 }

@@ -34,7 +34,7 @@ import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -155,14 +155,14 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 
 			// Add permission on own role
 			roleDao.grantPermissions(role(), role(), InternalPermission.UPDATE_PERM);
-			Microschema vcard = microschemaContainer("vcard");
+			HibMicroschema vcard = microschemaContainer("vcard");
 
 			// Revoke all permissions to vcard microschema
 			roleDao.revokePermissions(role(), vcard, InternalPermission.values());
 			tx.success();
 		}
 
-		Microschema vcard;
+		HibMicroschema vcard;
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 

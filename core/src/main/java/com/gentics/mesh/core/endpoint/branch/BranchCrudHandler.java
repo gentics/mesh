@@ -31,14 +31,15 @@ import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
-import com.gentics.mesh.core.data.job.Job;
+import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
@@ -118,8 +119,8 @@ public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResp
 
 					// Resolve the list of references to graph schema container versions
 					for (SchemaReference reference : schemaReferenceList.getSchemas()) {
-						SchemaVersion version = schemaDao.fromReference(project, reference);
-						SchemaVersion assignedVersion = branch.findLatestSchemaVersion(version.getSchemaContainer());
+						HibSchemaVersion version = schemaDao.fromReference(project, reference);
+						HibSchemaVersion assignedVersion = branch.findLatestSchemaVersion(version.getSchemaContainer());
 						if (assignedVersion != null && Double.valueOf(assignedVersion.getVersion()) > Double.valueOf(version.getVersion())) {
 							throw error(BAD_REQUEST, "branch_error_downgrade_schema_version", version.getName(), assignedVersion.getVersion(),
 								version.getVersion());
@@ -179,9 +180,9 @@ public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResp
 				utils.eventAction(batch -> {
 					// Transform the list of references into microschema container version vertices
 					for (MicroschemaReference reference : microschemaReferenceList.getMicroschemas()) {
-						MicroschemaVersion version = microschemaDao.fromReference(ac.getProject(), reference);
+						HibMicroschemaVersion version = microschemaDao.fromReference(ac.getProject(), reference);
 
-						MicroschemaVersion assignedVersion = branch.findLatestMicroschemaVersion(version.getSchemaContainer());
+						HibMicroschemaVersion assignedVersion = branch.findLatestMicroschemaVersion(version.getSchemaContainer());
 						if (assignedVersion != null && Double.valueOf(assignedVersion.getVersion()) > Double.valueOf(version.getVersion())) {
 							throw error(BAD_REQUEST, "branch_error_downgrade_microschema_version", version.getName(), assignedVersion.getVersion(),
 								version.getVersion());
@@ -268,7 +269,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResp
 	 *            The type of the schema version (either schema version or microschema version)
 	 */
 	private <T extends GraphFieldSchemaContainerVersion> void handleMigrateRemaining(InternalActionContext ac, String branchUuid,
-		Function<HibBranch, Iterable<T>> activeSchemas, PentaFunction<JobRoot, HibUser, HibBranch, T, T, Job> enqueueMigration) {
+		Function<HibBranch, Iterable<T>> activeSchemas, PentaFunction<JobRoot, HibUser, HibBranch, T, T, HibJob> enqueueMigration) {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				HibProject project = ac.getProject();
