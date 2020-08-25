@@ -9,10 +9,10 @@ import java.util.stream.Collectors;
 import org.assertj.core.api.AbstractAssert;
 
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.schema.Microschema;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
-import com.gentics.mesh.core.data.schema.Schema;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 
 public class BranchAssert extends AbstractAssert<BranchAssert, HibBranch> {
@@ -111,7 +111,7 @@ public class BranchAssert extends AbstractAssert<BranchAssert, HibBranch> {
 	 *            schema version
 	 * @return fluent API
 	 */
-	public BranchAssert hasSchemaVersion(SchemaVersion version) {
+	public BranchAssert hasSchemaVersion(HibSchemaVersion version) {
 		assertThat(actual.contains(version)).as(descriptionText() + " has version").isTrue();
 		return this;
 	}
@@ -123,7 +123,7 @@ public class BranchAssert extends AbstractAssert<BranchAssert, HibBranch> {
 	 *            schema version
 	 * @return fluent API
 	 */
-	public BranchAssert hasNotSchemaVersion(SchemaVersion version) {
+	public BranchAssert hasNotSchemaVersion(HibSchemaVersion version) {
 		assertThat(actual.contains(version)).as(descriptionText() + " has version").isFalse();
 		return this;
 	}
@@ -135,7 +135,7 @@ public class BranchAssert extends AbstractAssert<BranchAssert, HibBranch> {
 	 *            schema
 	 * @return fluent API
 	 */
-	public BranchAssert hasSchema(Schema schemaContainer) {
+	public BranchAssert hasSchema(HibSchema schemaContainer) {
 		assertThat(actual.contains(schemaContainer)).as(descriptionText() + " has schema").isTrue();
 		return this;
 	}
@@ -147,7 +147,7 @@ public class BranchAssert extends AbstractAssert<BranchAssert, HibBranch> {
 	 *            schema
 	 * @return fluent API
 	 */
-	public BranchAssert hasNotSchema(Schema schemaContainer) {
+	public BranchAssert hasNotSchema(HibSchema schemaContainer) {
 		assertThat(actual.contains(schemaContainer)).as(descriptionText() + " has schema").isFalse();
 		return this;
 	}
@@ -159,7 +159,7 @@ public class BranchAssert extends AbstractAssert<BranchAssert, HibBranch> {
 	 *            microschema version
 	 * @return fluent API
 	 */
-	public BranchAssert hasMicroschemaVersion(MicroschemaVersion version) {
+	public BranchAssert hasMicroschemaVersion(HibMicroschemaVersion version) {
 		assertThat(actual.contains(version)).as(descriptionText() + " has version").isTrue();
 		return this;
 	}
@@ -171,7 +171,7 @@ public class BranchAssert extends AbstractAssert<BranchAssert, HibBranch> {
 	 *            schema version
 	 * @return fluent API
 	 */
-	public BranchAssert hasNotMicroschemaVersion(MicroschemaVersion version) {
+	public BranchAssert hasNotMicroschemaVersion(HibMicroschemaVersion version) {
 		assertThat(actual.contains(version)).as(descriptionText() + " has version").isFalse();
 		return this;
 	}
@@ -183,7 +183,7 @@ public class BranchAssert extends AbstractAssert<BranchAssert, HibBranch> {
 	 *            microschema
 	 * @return fluent API
 	 */
-	public BranchAssert hasMicroschema(Microschema microschema) {
+	public BranchAssert hasMicroschema(HibMicroschema microschema) {
 		assertThat(actual.contains(microschema)).as(descriptionText() + " has schema").isTrue();
 		return this;
 	}
@@ -195,7 +195,7 @@ public class BranchAssert extends AbstractAssert<BranchAssert, HibBranch> {
 	 *            microschema
 	 * @return fluent API
 	 */
-	public BranchAssert hasNotMicroschema(Microschema microschema) {
+	public BranchAssert hasNotMicroschema(HibMicroschema microschema) {
 		assertThat(actual.contains(microschema)).as(descriptionText() + " has schema").isFalse();
 		return this;
 	}

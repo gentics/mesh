@@ -17,8 +17,8 @@ import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.SchemaRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
-import com.gentics.mesh.core.data.schema.Microschema;
-import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.HibUserTracking;
@@ -168,7 +168,7 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	 * @param assigned
 	 * @return
 	 */
-	ProjectSchemaEventModel onSchemaAssignEvent(Schema schema, Assignment assigned);
+	ProjectSchemaEventModel onSchemaAssignEvent(HibSchema schema, Assignment assigned);
 
 	/**
 	 * Create a project microschema assignment event.
@@ -177,7 +177,7 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	 * @param assigned
 	 * @return
 	 */
-	ProjectMicroschemaEventModel onMicroschemaAssignEvent(Microschema microschema, Assignment assigned);
+	ProjectMicroschemaEventModel onMicroschemaAssignEvent(HibMicroschema microschema, Assignment assigned);
 
 	/**
 	 * Find the branch via name or uuid that belongs to the project.

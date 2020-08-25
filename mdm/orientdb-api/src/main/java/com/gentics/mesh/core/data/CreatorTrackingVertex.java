@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data;
 
-
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.CREATOR_UUID_PROPERTY_KEY;
 
 import com.gentics.mesh.core.data.user.HibCreatorTracking;

@@ -17,6 +17,7 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.BranchImpl;
+import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
@@ -70,9 +71,8 @@ public class MicroschemaContainerVersionImpl extends
 	private Stream<MicronodeImpl> getMicronodeStream() {
 		return toStream(db().getVertices(
 			MicronodeImpl.class,
-			new String[]{MICROSCHEMA_VERSION_KEY_PROPERTY},
-			new Object[]{getUuid()}
-		)).map(v -> graph.frameElementExplicit(v, MicronodeImpl.class));
+			new String[] { MICROSCHEMA_VERSION_KEY_PROPERTY },
+			new Object[] { getUuid() })).map(v -> graph.frameElementExplicit(v, MicronodeImpl.class));
 	}
 
 	@Override
@@ -138,12 +138,12 @@ public class MicroschemaContainerVersionImpl extends
 	}
 
 	@Override
-	public Iterable<Job> referencedJobsViaTo() {
+	public Iterable<? extends HibJob> referencedJobsViaTo() {
 		return in(HAS_TO_VERSION).frame(Job.class);
 	}
 
 	@Override
-	public Iterable<Job> referencedJobsViaFrom() {
+	public Iterable<? extends HibJob> referencedJobsViaFrom() {
 		return in(HAS_FROM_VERSION).frame(Job.class);
 	}
 
@@ -155,10 +155,10 @@ public class MicroschemaContainerVersionImpl extends
 			change.delete(bac);
 		}
 		// Delete referenced jobs
-		for (Job job : referencedJobsViaFrom()) {
+		for (HibJob job : referencedJobsViaFrom()) {
 			job.remove();
 		}
-		for (Job job : referencedJobsViaTo()) {
+		for (HibJob job : referencedJobsViaTo()) {
 			job.remove();
 		}
 		// Delete version
@@ -174,6 +174,10 @@ public class MicroschemaContainerVersionImpl extends
 	@Override
 	public MeshElementEventModel onUpdated() {
 		return getSchemaContainer().onUpdated();
+	}
+
+	public void deleteElement() {
+		remove();
 	}
 
 }

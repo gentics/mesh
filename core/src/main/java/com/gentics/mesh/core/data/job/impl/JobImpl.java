@@ -3,6 +3,9 @@ package com.gentics.mesh.core.data.job.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FROM_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TO_VERSION;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toBranch;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toMicroschemaVersion;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toSchemaVersion;
 import static com.gentics.mesh.core.rest.job.JobStatus.STARTING;
 import static com.gentics.mesh.core.rest.job.JobStatus.UNKNOWN;
 
@@ -14,12 +17,13 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.impl.BranchImpl;
 import com.gentics.mesh.core.data.job.Job;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
@@ -193,7 +197,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 
 	@Override
 	public void setBranch(HibBranch branch) {
-		setSingleLinkOutTo(branch.toBranch(), HAS_BRANCH);
+		setSingleLinkOutTo(toBranch(branch), HAS_BRANCH);
 	}
 
 	@Override
@@ -202,8 +206,8 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 	}
 
 	@Override
-	public void setFromSchemaVersion(SchemaVersion version) {
-		setSingleLinkOutTo(version, HAS_FROM_VERSION);
+	public void setFromSchemaVersion(HibSchemaVersion version) {
+		setSingleLinkOutTo(toSchemaVersion(version), HAS_FROM_VERSION);
 	}
 
 	@Override
@@ -212,8 +216,8 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 	}
 
 	@Override
-	public void setToSchemaVersion(SchemaVersion version) {
-		setSingleLinkOutTo(version, HAS_TO_VERSION);
+	public void setToSchemaVersion(HibSchemaVersion version) {
+		setSingleLinkOutTo(toSchemaVersion(version), HAS_TO_VERSION);
 	}
 
 	@Override
@@ -222,8 +226,8 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 	}
 
 	@Override
-	public void setFromMicroschemaVersion(MicroschemaVersion fromVersion) {
-		setSingleLinkOutTo(fromVersion, HAS_FROM_VERSION);
+	public void setFromMicroschemaVersion(HibMicroschemaVersion fromVersion) {
+		setSingleLinkOutTo(toMicroschemaVersion(fromVersion), HAS_FROM_VERSION);
 	}
 
 	@Override
@@ -232,8 +236,8 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 	}
 
 	@Override
-	public void setToMicroschemaVersion(MicroschemaVersion toVersion) {
-		setSingleLinkOutTo(toVersion, HAS_TO_VERSION);
+	public void setToMicroschemaVersion(HibMicroschemaVersion toVersion) {
+		setSingleLinkOutTo(toMicroschemaVersion(toVersion), HAS_TO_VERSION);
 	}
 
 	@Override

@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.dao.impl;
 
+import static com.gentics.mesh.core.data.util.HibClassConverter.toRole;
+
 import java.time.ZonedDateTime;
 import java.util.Set;
 import java.util.Stack;
@@ -20,14 +22,15 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.JobDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
+import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -79,7 +82,7 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper implements JobDaoWrapp
 		return boot.get().jobRoot().getRolesWithPerm(perm);
 	}
 
-	public Job enqueueSchemaMigration(HibUser creator, HibBranch branch, SchemaVersion fromVersion, SchemaVersion toVersion) {
+	public HibJob enqueueSchemaMigration(HibUser creator, HibBranch branch, HibSchemaVersion fromVersion, HibSchemaVersion toVersion) {
 		return boot.get().jobRoot().enqueueSchemaMigration(creator, branch, fromVersion, toVersion);
 	}
 
@@ -95,7 +98,7 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper implements JobDaoWrapp
 		return boot.get().jobRoot().getElementVersion();
 	}
 
-	public Job enqueueBranchMigration(HibUser creator, HibBranch branch, SchemaVersion fromVersion, SchemaVersion toVersion) {
+	public HibJob enqueueBranchMigration(HibUser creator, HibBranch branch, HibSchemaVersion fromVersion, HibSchemaVersion toVersion) {
 		return boot.get().jobRoot().enqueueBranchMigration(creator, branch, fromVersion, toVersion);
 	}
 
@@ -147,8 +150,8 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper implements JobDaoWrapp
 		boot.get().jobRoot().remove();
 	}
 
-	public Job enqueueMicroschemaMigration(HibUser creator, HibBranch branch, MicroschemaVersion fromVersion,
-		MicroschemaVersion toVersion) {
+	public HibJob enqueueMicroschemaMigration(HibUser creator, HibBranch branch, HibMicroschemaVersion fromVersion,
+		HibMicroschemaVersion toVersion) {
 		return boot.get().jobRoot().enqueueMicroschemaMigration(creator, branch, fromVersion, toVersion);
 	}
 
@@ -170,7 +173,8 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper implements JobDaoWrapp
 
 	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<InternalPermission> permissionsToGrant,
 		Set<InternalPermission> permissionsToRevoke) {
-		boot.get().jobRoot().applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
+		Role graphRole = toRole(role);
+		boot.get().jobRoot().applyPermissions(batch, graphRole, recursive, permissionsToGrant, permissionsToRevoke);
 	}
 
 	public <T extends EdgeFrame> TraversalResult<? extends T> outE(String label, Class<T> clazz) {
@@ -185,7 +189,7 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper implements JobDaoWrapp
 		return boot.get().jobRoot().in(label, clazz);
 	}
 
-	public Job enqueueBranchMigration(HibUser creator, HibBranch branch) {
+	public HibJob enqueueBranchMigration(HibUser creator, HibBranch branch) {
 		return boot.get().jobRoot().enqueueBranchMigration(creator, branch);
 	}
 
@@ -213,7 +217,7 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper implements JobDaoWrapp
 		return boot.get().jobRoot().db();
 	}
 
-	public Job enqueueVersionPurge(HibUser user, HibProject project, ZonedDateTime before) {
+	public HibJob enqueueVersionPurge(HibUser user, HibProject project, ZonedDateTime before) {
 		return boot.get().jobRoot().enqueueVersionPurge(user, project, before);
 	}
 
@@ -229,7 +233,7 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper implements JobDaoWrapp
 		return boot.get().jobRoot().options();
 	}
 
-	public Job enqueueVersionPurge(HibUser user, HibProject project) {
+	public HibJob enqueueVersionPurge(HibUser user, HibProject project) {
 		return boot.get().jobRoot().enqueueVersionPurge(user, project);
 	}
 

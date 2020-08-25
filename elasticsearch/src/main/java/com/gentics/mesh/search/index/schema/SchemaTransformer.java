@@ -6,7 +6,7 @@ import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.search.index.AbstractTransformer;
 import com.gentics.mesh.util.ETag;
 
@@ -16,13 +16,13 @@ import io.vertx.core.json.JsonObject;
  * Transformer for schemas.
  */
 @Singleton
-public class SchemaTransformer extends AbstractTransformer<Schema> {
+public class SchemaTransformer extends AbstractTransformer<HibSchema> {
 
 	@Inject
 	public SchemaTransformer() {
 	}
 
-	public String generateVersion(Schema container) {
+	public String generateVersion(HibSchema container) {
 		StringBuilder builder = new StringBuilder();
 		builder.append(container.getElementVersion());
 		builder.append("|");
@@ -32,7 +32,7 @@ public class SchemaTransformer extends AbstractTransformer<Schema> {
 	}
 
 	@Override
-	public JsonObject toDocument(Schema container) {
+	public JsonObject toDocument(HibSchema container) {
 		JsonObject document = new JsonObject();
 		document.put(NAME_KEY, container.getName());
 		document.put(DESCRIPTION_KEY, container.getLatestVersion().getSchema().getDescription());

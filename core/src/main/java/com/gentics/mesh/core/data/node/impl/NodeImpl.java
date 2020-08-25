@@ -88,6 +88,8 @@ import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformableStreamPageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
@@ -512,7 +514,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void setSchemaContainer(Schema schema) {
+	public void setSchemaContainer(HibSchema schema) {
 		property(SCHEMA_CONTAINER_KEY_PROPERTY, schema.getUuid());
 	}
 
@@ -592,7 +594,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Node create(HibUser creator, SchemaVersion schemaVersion, HibProject project) {
+	public Node create(HibUser creator, HibSchemaVersion schemaVersion, HibProject project) {
 		return create(creator, schemaVersion, project, project.getLatestBranch());
 	}
 
@@ -600,15 +602,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * Create a new node and make sure to delegate the creation request to the main node root aggregation node.
 	 */
 	@Override
-	public Node create(HibUser creator, SchemaVersion schemaVersion, HibProject project, HibBranch branch, String uuid) {
+	public Node create(HibUser creator, HibSchemaVersion schemaVersion, HibProject project, HibBranch branch, String uuid) {
 		if (!isBaseNode() && !isVisibleInBranch(branch.getUuid())) {
 			log.error(String.format("Error while creating node in branch {%s}: requested parent node {%s} exists, but is not visible in branch.",
 				branch.getName(), getUuid()));
 			throw error(NOT_FOUND, "object_not_found_for_uuid", getUuid());
 		}
 
-		// We need to use the (meshRoot)--(nodeRoot) node instead of the
-		// (project)--(nodeRoot) node.
 		Node node = project.getNodeRoot().create(creator, schemaVersion, project, uuid);
 		node.setParentNode(branch.getUuid(), this);
 		node.setSchemaContainer(schemaVersion.getSchemaContainer());

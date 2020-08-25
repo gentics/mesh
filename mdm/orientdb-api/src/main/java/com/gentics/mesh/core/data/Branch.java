@@ -10,12 +10,15 @@ import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.branch.BranchMicroschemaEdge;
 import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.job.Job;
+import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.BranchRoot;
-import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
-import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -198,7 +201,7 @@ public interface Branch
 	 * @param batch
 	 * @return Job which was created to trigger the migration or null if no job was created because the version has already been assigned before
 	 */
-	Job assignSchemaVersion(HibUser user, SchemaVersion schemaVersion, EventQueueBatch batch);
+	HibJob assignSchemaVersion(HibUser user, HibSchemaVersion schemaVersion, EventQueueBatch batch);
 
 	/**
 	 * Unassign all schema versions of the given schema from this branch.
@@ -206,7 +209,7 @@ public interface Branch
 	 * @param schemaContainer
 	 * @return Fluent API
 	 */
-	Branch unassignSchema(Schema schemaContainer);
+	Branch unassignSchema(HibSchema schemaContainer);
 
 	/**
 	 * Check whether a version of this schema container is assigned to this branch.
@@ -215,7 +218,7 @@ public interface Branch
 	 *            schema
 	 * @return true iff assigned
 	 */
-	boolean contains(Schema schema);
+	boolean contains(HibSchema schema);
 
 	/**
 	 * Check whether the given schema container version is assigned to this branch.
@@ -224,7 +227,7 @@ public interface Branch
 	 *            schema container version
 	 * @return true if assigned
 	 */
-	boolean contains(SchemaVersion schemaVersion);
+	boolean contains(HibSchemaVersion schemaVersion);
 
 	/**
 	 * Get an traversal result of all schema container versions.
@@ -242,7 +245,7 @@ public interface Branch
 	 * @param batch
 	 * @return Job which has been created if the version has not yet been assigned. Otherwise null will be returned.
 	 */
-	Job assignMicroschemaVersion(HibUser user, MicroschemaVersion microschemaVersion, EventQueueBatch batch);
+	HibJob assignMicroschemaVersion(HibUser user, HibMicroschemaVersion microschemaVersion, EventQueueBatch batch);
 
 	/**
 	 * Unassigns all versions of the given microschema from this branch.
@@ -250,7 +253,7 @@ public interface Branch
 	 * @param microschema
 	 * @return Fluent API
 	 */
-	Branch unassignMicroschema(Microschema microschema);
+	HibBranch unassignMicroschema(HibMicroschema microschema);
 
 	/**
 	 * Check whether a version of this microschema container is assigned to this branch.
@@ -259,7 +262,7 @@ public interface Branch
 	 *            microschema
 	 * @return true iff assigned
 	 */
-	boolean contains(Microschema microschema);
+	boolean contains(HibMicroschema microschema);
 
 	/**
 	 * Check whether the given microschema container version is assigned to this branch.
@@ -268,7 +271,7 @@ public interface Branch
 	 *            microschema container version
 	 * @return true iff assigned
 	 */
-	boolean contains(MicroschemaVersion microschemaVersion);
+	boolean contains(HibMicroschemaVersion microschemaVersion);
 
 	/**
 	 * Get an iterable of all microschema container versions.
@@ -313,7 +316,7 @@ public interface Branch
 	 * @param project
 	 * @return Fluent API
 	 */
-	Branch setProject(Project project);
+	HibBranch setProject(HibProject project);
 
 	/**
 	 * Return all schema versions which are linked to the branch.
@@ -335,7 +338,7 @@ public interface Branch
 	 * @param schemaVersion
 	 * @return Found edge between branch and version
 	 */
-	BranchSchemaEdge findBranchSchemaEdge(SchemaVersion schemaVersion);
+	BranchSchemaEdge findBranchSchemaEdge(HibSchemaVersion schemaVersion);
 
 	/**
 	 * Find the branch microschema edge for the given version.
@@ -343,7 +346,7 @@ public interface Branch
 	 * @param microschemaVersion
 	 * @return Found edge between branch and version
 	 */
-	BranchMicroschemaEdge findBranchMicroschemaEdge(MicroschemaVersion microschemaVersion);
+	BranchMicroschemaEdge findBranchMicroschemaEdge(HibMicroschemaVersion microschemaVersion);
 
 	/**
 	 * Find the latest schema version which is assigned to the branch which matches the provided schema container
@@ -351,7 +354,7 @@ public interface Branch
 	 * @param schemaContainer
 	 * @return Found version or null if no version could be found.
 	 */
-	SchemaVersion findLatestSchemaVersion(Schema schemaContainer);
+	HibSchemaVersion findLatestSchemaVersion(HibSchema schemaContainer);
 
 	/**
 	 * Find the latest microschema version which is assigned to the branch which matches the provided microschema container
@@ -359,7 +362,7 @@ public interface Branch
 	 * @param schemaContainer
 	 * @return Found version or null if no version could be found.
 	 */
-	MicroschemaVersion findLatestMicroschemaVersion(Microschema schemaContainer);
+	HibMicroschemaVersion findLatestMicroschemaVersion(HibMicroschema schemaContainer);
 
 	/**
 	 * Add the given tag to the list of tags for this branch.
@@ -437,7 +440,7 @@ public interface Branch
 	 * @param status
 	 * @return
 	 */
-	BranchSchemaAssignEventModel onSchemaAssignEvent(SchemaVersion schemaVersion, Assignment assigned, JobStatus status);
+	BranchSchemaAssignEventModel onSchemaAssignEvent(HibSchemaVersion schemaVersion, Assignment assigned, JobStatus status);
 
 	/**
 	 * Create a project microschema assignment event.
@@ -447,7 +450,7 @@ public interface Branch
 	 * @param status
 	 * @return
 	 */
-	BranchMicroschemaAssignModel onMicroschemaAssignEvent(MicroschemaVersion microschemaVersion, Assignment assigned, JobStatus status);
+	BranchMicroschemaAssignModel onMicroschemaAssignEvent(HibMicroschemaVersion microschemaVersion, Assignment assigned, JobStatus status);
 
 	/**
 	 * Load the tag with the given uuid that was used to tag the branch.

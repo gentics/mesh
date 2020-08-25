@@ -19,7 +19,7 @@ import com.gentics.mesh.madl.traversal.TraversalResult;
  * correctly transform the micronode into its JSON representation.
  */
 public interface MicroschemaVersion extends
-		GraphFieldSchemaContainerVersion<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, MicroschemaVersion, Microschema> {
+		GraphFieldSchemaContainerVersion<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, MicroschemaVersion, Microschema>, HibMicroschemaVersion {
 
 	static final TypeInfo TYPE_INFO = new TypeInfo(MICROSCHEMAVERSION, MICROSCHEMA_CREATED, MICROSCHEMA_UPDATED, SCHEMA_DELETED);
 

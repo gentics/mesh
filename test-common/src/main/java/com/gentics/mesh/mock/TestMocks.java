@@ -55,6 +55,8 @@ import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
@@ -115,9 +117,10 @@ public final class TestMocks {
 	public static Micronode mockMicronode(String microschemaName, User user) {
 		Micronode micronode = mock(Micronode.class);
 		when(micronode.getUuid()).thenReturn(UUID_1);
-		Microschema microschemaContainer = mockMicroschemaContainer(microschemaName, user);
-		MicroschemaVersion latestVersion = microschemaContainer.getLatestVersion();
-		when(micronode.getSchemaContainerVersion()).thenReturn(latestVersion);
+		HibMicroschema microschemaContainer = mockMicroschemaContainer(microschemaName, user);
+		HibMicroschemaVersion latestVersion = microschemaContainer.getLatestVersion();
+		// TODO find a away to convert this correctly
+		when(micronode.getSchemaContainerVersion()).thenReturn((MicroschemaVersion)latestVersion);
 		MicroschemaVersionModel microschema = microschemaContainer.getLatestVersion().getSchema();
 		when(micronode.getSchemaContainerVersion().getSchema()).thenReturn(microschema);
 
@@ -241,21 +244,21 @@ public final class TestMocks {
 		return container;
 	}
 
-	public static Microschema mockMicroschemaContainer(String name, User user) {
-		Microschema container = mock(Microschema.class);
-		when(container.getName()).thenReturn(name);
-		when(container.getUuid()).thenReturn(MICROSCHEMA_UUID);
+	public static HibMicroschema mockMicroschemaContainer(String name, User user) {
+		HibMicroschema schema = mock(Microschema.class);
+		when(schema.getName()).thenReturn(name);
+		when(schema.getUuid()).thenReturn(MICROSCHEMA_UUID);
 		MicroschemaVersion latestVersion = mock(MicroschemaVersion.class);
 		when(latestVersion.getSchema()).thenReturn(mockGeolocationMicroschema());
 
-		when(container.getLatestVersion()).thenReturn(latestVersion);
-		when(container.getCreator()).thenReturn(user);
-		when(container.getCreationTimestamp()).thenReturn(TIMESTAMP_OLD);
-		when(container.getEditor()).thenReturn(user);
-		when(container.getLastEditedTimestamp()).thenReturn(TIMESTAMP_NEW);
-		when(container.getRolesWithPerm(InternalPermission.READ_PERM)).thenReturn(createEmptyTraversal());
-		when(container.getElementVersion()).thenReturn(UUID_5);
-		return container;
+		when(schema.getLatestVersion()).thenReturn(latestVersion);
+		when(schema.getCreator()).thenReturn(user);
+		when(schema.getCreationTimestamp()).thenReturn(TIMESTAMP_OLD);
+		when(schema.getEditor()).thenReturn(user);
+		when(schema.getLastEditedTimestamp()).thenReturn(TIMESTAMP_NEW);
+		when(schema.getRolesWithPerm(InternalPermission.READ_PERM)).thenReturn(createEmptyTraversal());
+		when(schema.getElementVersion()).thenReturn(UUID_5);
+		return schema;
 	}
 
 	public static SchemaVersionModel mockContentSchema() {

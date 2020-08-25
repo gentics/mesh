@@ -18,7 +18,7 @@ import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -278,7 +278,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 			String english = english();
 			Node parentNode = folder("2015");
 
-			SchemaVersion schemaVersion = schemaContainer("content").getLatestVersion();
+			HibSchemaVersion schemaVersion = schemaContainer("content").getLatestVersion();
 			// Create some dummy content
 			Node content = nodeDao.create(parentNode, user(), schemaVersion, project());
 			NodeGraphFieldContainer germanContainer = boot().contentDao().createGraphFieldContainer(content, german, content.getProject().getLatestBranch(), user());

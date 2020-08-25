@@ -2,6 +2,8 @@ package com.gentics.mesh.core.branch;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toBranch;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toSchema;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -23,12 +25,16 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.BranchRoot;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
-import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
-import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
+import com.gentics.mesh.core.data.schema.handler.MicroschemaComparatorImpl;
+import com.gentics.mesh.core.data.schema.handler.SchemaComparatorImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.db.Tx;
@@ -262,8 +268,8 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			newVersion.setVersion("4.0");
 			newVersion.setName("content");
 			versions.add(newVersion);
-			newVersion.setSchemaContainer(schemaContainer("content"));
-			branch.toBranch().linkOut(newVersion, HAS_SCHEMA_VERSION);
+			newVersion.setSchemaContainer(toSchema(schemaContainer("content")));
+			toBranch(branch).linkOut(newVersion, HAS_SCHEMA_VERSION);
 
 			List<SchemaVersion> found = new ArrayList<>();
 			for (BranchSchemaEdge versionedge : branch.findAllLatestSchemaVersionEdges()) {
@@ -282,12 +288,14 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Test
 	public void testAssignSchema() throws Exception {
 		try (Tx tx = tx()) {
-			Schema schemaContainer = createSchemaDirect("bla");
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+
+			HibSchema schemaContainer = createSchemaDirect("bla");
 			updateSchema(schemaContainer, "newfield");
-			SchemaVersion latestVersion = schemaContainer.getLatestVersion();
+			HibSchemaVersion latestVersion = schemaContainer.getLatestVersion();
 
 			assertThat(latestVersion).as("latest version").isNotNull();
-			SchemaVersion previousVersion = latestVersion.getPreviousVersion();
+			HibSchemaVersion previousVersion = latestVersion.getPreviousVersion();
 			assertThat(previousVersion).as("Previous version").isNotNull();
 
 			HibProject project = project();
@@ -301,7 +309,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 
 			// assign the schema to the project
 			EventQueueBatch batch = createBatch();
-			project.getSchemaContainerRoot().addSchemaContainer(user(), schemaContainer, batch);
+			schemaDao.addSchema(schemaContainer, project(), user(), batch);
 
 			for (HibBranch branch : Arrays.asList(initialBranch, newBranch)) {
 				assertThat(branch).as(branch.getName()).hasSchema(schemaContainer).hasSchemaVersion(latestVersion)
@@ -350,18 +358,19 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Test
 	public void testBranchSchemaVersion() throws Exception {
 		try (Tx tx = tx()) {
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 			HibProject project = project();
 
-			Schema schemaContainer = createSchemaDirect("bla");
-			SchemaVersion firstVersion = schemaContainer.getLatestVersion();
+			HibSchema schemaContainer = createSchemaDirect("bla");
+			HibSchemaVersion firstVersion = schemaContainer.getLatestVersion();
 
 			// assign the schema to the project
 			EventQueueBatch batch = createBatch();
-			project.getSchemaContainerRoot().addSchemaContainer(user(), schemaContainer, batch);
+			schemaDao.addSchema(schemaContainer, project, user(), batch);
 
 			// update schema
 			updateSchema(schemaContainer, "newfield");
-			SchemaVersion secondVersion = schemaContainer.getLatestVersion();
+			HibSchemaVersion secondVersion = schemaContainer.getLatestVersion();
 
 			HibBranch initialBranch = initialBranch();
 			HibBranch newBranch = createBranch("New Branch");
@@ -396,12 +405,12 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Test
 	public void testAssignMicroschema() throws Exception {
 		try (Tx tx = tx()) {
-			Microschema microschema = createMicroschemaDirect("bla");
+			HibMicroschema microschema = createMicroschemaDirect("bla");
 			updateMicroschema(microschema, "newfield");
-			MicroschemaVersion latestVersion = microschema.getLatestVersion();
+			HibMicroschemaVersion latestVersion = microschema.getLatestVersion();
 
 			assertThat(latestVersion).as("latest version").isNotNull();
-			MicroschemaVersion previousVersion = latestVersion.getPreviousVersion();
+			HibMicroschemaVersion previousVersion = latestVersion.getPreviousVersion();
 			assertThat(previousVersion).as("Previous version").isNotNull();
 
 			HibProject project = project();
@@ -432,8 +441,8 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	public void testUnassignMicroschema() throws Exception {
 		try (Tx tx = tx()) {
 			HibProject project = project();
-			List<? extends Microschema> microschemas = project.getMicroschemaContainerRoot().findAll().list();
-			Microschema microschema = microschemas.get(0);
+			List<? extends HibMicroschema> microschemas = project.getMicroschemaContainerRoot().findAll().list();
+			HibMicroschema microschema = microschemas.get(0);
 
 			HibBranch initialBranch = initialBranch();
 			HibBranch newBranch = createBranch("New Branch");
@@ -452,15 +461,15 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 		try (Tx tx = tx()) {
 			HibProject project = project();
 
-			Microschema microschema = createMicroschemaDirect("bla");
-			MicroschemaVersion firstVersion = microschema.getLatestVersion();
+			HibMicroschema microschema = createMicroschemaDirect("bla");
+			HibMicroschemaVersion firstVersion = microschema.getLatestVersion();
 
 			// assign the microschema to the project
 			project.getMicroschemaContainerRoot().addMicroschema(user(), microschema, createBatch());
 
 			// update microschema
 			updateMicroschema(microschema, "newfield");
-			MicroschemaVersion secondVersion = microschema.getLatestVersion();
+			HibMicroschemaVersion secondVersion = microschema.getLatestVersion();
 
 			HibBranch initialBranch = initialBranch();
 			HibBranch newBranch = createBranch("New Branch");
@@ -480,7 +489,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	 * @return schema container
 	 * @throws Exception
 	 */
-	protected Schema createSchemaDirect(String name) throws Exception {
+	protected HibSchema createSchemaDirect(String name) throws Exception {
 		SchemaVersionModel schema = new SchemaModelImpl();
 		schema.setName(name);
 		schema.addField(FieldUtil.createStringFieldSchema("name"));
@@ -498,7 +507,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	 *            new name
 	 * @throws Exception
 	 */
-	protected void updateSchema(Schema schemaContainer, String newName) throws Exception {
+	protected void updateSchema(HibSchema schemaContainer, String newName) throws Exception {
 		SchemaModel schema = schemaContainer.getLatestVersion().getSchema();
 
 		SchemaModel updatedSchema = new SchemaModelImpl();
@@ -508,11 +517,11 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 		updatedSchema.addField(FieldUtil.createStringFieldSchema(newName));
 
 		SchemaChangesListModel model = new SchemaChangesListModel();
-		model.getChanges().addAll(new SchemaComparator().diff(schema, updatedSchema));
+		model.getChanges().addAll(new SchemaComparatorImpl().diff(schema, updatedSchema));
 
 		InternalActionContext ac = mockActionContext();
 		EventQueueBatch batch = createBatch();
-		schemaContainer.getLatestVersion().applyChanges(ac, model, batch);
+		Tx.get().data().schemaDao().applyChanges(schemaContainer.getLatestVersion(), ac, model, batch);
 	}
 
 	/**
@@ -523,7 +532,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	 * @return microschema container
 	 * @throws Exception
 	 */
-	protected Microschema createMicroschemaDirect(String name) throws Exception {
+	protected HibMicroschema createMicroschemaDirect(String name) throws Exception {
 		MicroschemaModelImpl microschema = new MicroschemaModelImpl();
 		microschema.setName(name);
 		microschema.addField(FieldUtil.createStringFieldSchema("name"));
@@ -539,7 +548,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	 *            new name
 	 * @throws Exception
 	 */
-	protected void updateMicroschema(Microschema microschemaContainer, String newName) throws Exception {
+	protected void updateMicroschema(HibMicroschema microschemaContainer, String newName) throws Exception {
 		MicroschemaModel microschemaModel = microschemaContainer.getLatestVersion().getSchema();
 
 		MicroschemaModel updatedMicroschemaModel = new MicroschemaModelImpl();
@@ -548,10 +557,10 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 		updatedMicroschemaModel.addField(FieldUtil.createStringFieldSchema(newName));
 
 		SchemaChangesListModel model = new SchemaChangesListModel();
-		model.getChanges().addAll(new MicroschemaComparator().diff(microschemaModel, updatedMicroschemaModel));
+		model.getChanges().addAll(new MicroschemaComparatorImpl().diff(microschemaModel, updatedMicroschemaModel));
 
 		InternalActionContext ac = mockActionContext();
 		EventQueueBatch batch = createBatch();
-		microschemaContainer.getLatestVersion().applyChanges(ac, model, batch);
+		Tx.get().data().microschemaDao().applyChanges(microschemaContainer.getLatestVersion(), ac, model, batch);
 	}
 }

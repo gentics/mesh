@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.root;
 
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -32,7 +33,7 @@ public interface SchemaRoot extends RootVertex<Schema> {
 	 * @param schemaContainer
 	 * @param batch
 	 */
-	void removeSchemaContainer(Schema schemaContainer, EventQueueBatch batch);
+	void removeSchemaContainer(HibSchema schemaContainer, EventQueueBatch batch);
 
 	/**
 	 * Check whether the given schema is assigned to this root node.
@@ -40,7 +41,7 @@ public interface SchemaRoot extends RootVertex<Schema> {
 	 * @param schema
 	 * @return
 	 */
-	boolean contains(Schema schema);
+	boolean contains(HibSchema schema);
 
 	/**
 	 * Returns the project to which the schema container root belongs.

@@ -27,6 +27,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
@@ -56,7 +57,7 @@ import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.Permission;
@@ -1560,7 +1561,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			// Create node with nl language
 			Node parentNode = folder("products");
 			Language languageNl = meshRoot().getLanguageRoot().findByLanguageTag("nl");
-			SchemaVersion version = schemaContainer("content").getLatestVersion();
+			HibSchemaVersion version = schemaContainer("content").getLatestVersion();
 			node = nodeDao.create(parentNode, user(), version, project());
 			NodeGraphFieldContainer englishContainer = boot().contentDao().createGraphFieldContainer(node, languageNl.getLanguageTag(), node.getProject().getLatestBranch(), user());
 			englishContainer.createString("teaser").setString("name");

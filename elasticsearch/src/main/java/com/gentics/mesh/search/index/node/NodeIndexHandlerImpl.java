@@ -33,6 +33,7 @@ import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.search.MoveDocumentEntry;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
@@ -157,7 +158,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 		});
 	}
 
-	public Transactional<Map<String, IndexInfo>> getIndices(HibProject project, HibBranch branch, SchemaVersion containerVersion) {
+	public Transactional<Map<String, IndexInfo>> getIndices(HibProject project, HibBranch branch, HibSchemaVersion containerVersion) {
 		return db.transactional(tx -> {
 			Map<String, IndexInfo> indexInfos = new HashMap<>();
 			SchemaVersionModel schema = containerVersion.getSchema();

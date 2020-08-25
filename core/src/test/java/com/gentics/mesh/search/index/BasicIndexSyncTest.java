@@ -21,8 +21,8 @@ import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.schema.Microschema;
-import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -314,9 +314,9 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		// Assert deletion
 		tx(tx -> {
 			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
-			Schema schema = schemaDao.findByName("schema_3");
-			schema.getLatestVersion().remove();
-			schema.remove();
+			HibSchema schema = schemaDao.findByName("schema_3");
+			schema.getLatestVersion().deleteElement();
+			schema.deleteElement();
 		});
 		syncIndex();
 		assertMetrics("schema", 0, 0, 1);
@@ -345,9 +345,9 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		// Assert deletion
 		tx(tx -> {
 			MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
-			Microschema microschema = microschemaDao.findByName("microschema_101");
-			microschema.getLatestVersion().remove();
-			microschema.remove();
+			HibMicroschema microschema = microschemaDao.findByName("microschema_101");
+			microschema.getLatestVersion().deleteElement();
+			microschema.deleteElement();
 		});
 		syncIndex();
 		assertMetrics("microschema", 0, 0, 1);

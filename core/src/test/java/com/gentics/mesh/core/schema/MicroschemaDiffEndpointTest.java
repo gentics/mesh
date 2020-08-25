@@ -7,14 +7,15 @@ import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperatio
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.schema.Microschema;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
@@ -70,8 +71,8 @@ public class MicroschemaDiffEndpointTest extends AbstractMeshTest {
 		// Set the description to empty string
 		String microschemaUuid = tx(() -> microschemaContainer("vcard").getUuid());
 		tx(() -> {
-			Microschema microschema = tx(() -> microschemaContainer("vcard"));
-			MicroschemaVersion microschemaVersion = microschema.getLatestVersion();
+			HibMicroschema microschema = tx(() -> microschemaContainer("vcard"));
+			HibMicroschemaVersion microschemaVersion = microschema.getLatestVersion();
 			MicroschemaVersionModel schemaModel = microschemaVersion.getSchema();
 			schemaModel.setDescription("");
 			microschemaVersion.setJson(schemaModel.toJson());
@@ -91,7 +92,7 @@ public class MicroschemaDiffEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testNoDiff() {
 		try (Tx tx = tx()) {
-			Microschema microschema = microschemaContainer("vcard");
+			HibMicroschema microschema = microschemaContainer("vcard");
 			MicroschemaModel request = getMicroschema();
 
 			SchemaChangesListModel changes = call(() -> client().diffMicroschema(microschema.getUuid(), request));
@@ -135,7 +136,7 @@ public class MicroschemaDiffEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testAddUnsupportedField() {
 		try (Tx tx = tx()) {
-			Microschema microschema = microschemaContainer("vcard");
+			HibMicroschema microschema = microschemaContainer("vcard");
 			MicroschemaModel request = getMicroschema();
 			BinaryFieldSchema binaryField = FieldUtil.createBinaryFieldSchema("binaryField");
 			request.addField(binaryField);
@@ -148,7 +149,7 @@ public class MicroschemaDiffEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testRemoveField() {
 		try (Tx tx = tx()) {
-			Microschema microschema = microschemaContainer("vcard");
+			HibMicroschema microschema = microschemaContainer("vcard");
 			MicroschemaModel request = getMicroschema();
 			request.removeField("postcode");
 

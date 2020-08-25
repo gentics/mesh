@@ -42,7 +42,7 @@ import com.gentics.mesh.core.data.dao.impl.TagDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.UserDaoWrapperImpl;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.db.Tx;
@@ -252,7 +252,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 
 	private void writeMicroschemaDocumentExample() throws Exception {
 		User user = mockUser("joe1", "Joe", "Doe");
-		Microschema microschema = mockMicroschemaContainer("geolocation", user);
+		HibMicroschema microschema = mockMicroschemaContainer("geolocation", user);
 
 		MicroschemaContainerIndexHandler searchIndexHandler = meshDagger.microschemaContainerIndexHandler();
 		searchIndexHandler.store(microschema, mockUpdateDocumentEntry()).blockingAwait();

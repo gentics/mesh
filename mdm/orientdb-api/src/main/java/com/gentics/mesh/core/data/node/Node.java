@@ -24,8 +24,9 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -290,7 +291,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param project
 	 * @return
 	 */
-	Node create(HibUser creator, SchemaVersion schemaVersion, HibProject project);
+	Node create(HibUser creator, HibSchemaVersion schemaVersion, HibProject project);
 
 	/**
 	 * Create a child node in this node in the given branch
@@ -301,7 +302,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param branch
 	 * @return
 	 */
-	default Node create(HibUser creator, SchemaVersion schemaVersion, HibProject project, HibBranch branch) {
+	default Node create(HibUser creator, HibSchemaVersion schemaVersion, HibProject project, HibBranch branch) {
 		return create(creator, schemaVersion, project, branch, null);
 	}
 
@@ -315,7 +316,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param uuid
 	 * @return
 	 */
-	Node create(HibUser creator, SchemaVersion schemaVersion, HibProject project, HibBranch branch, String uuid);
+	Node create(HibUser creator, HibSchemaVersion schemaVersion, HibProject project, HibBranch branch, String uuid);
 
 	/**
 	 * Return a page with child nodes that are visible to the given user.
@@ -595,7 +596,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *
 	 * @param container
 	 */
-	void setSchemaContainer(Schema container);
+	void setSchemaContainer(HibSchema container);
 
 	/**
 	 * Delete the node. Please use {@link #deleteFromBranch(InternalActionContext, HibBranch, BulkActionContext, boolean)} if you want to delete the node just from a specific branch.

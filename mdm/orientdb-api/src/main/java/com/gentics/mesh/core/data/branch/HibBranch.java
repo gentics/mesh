@@ -4,15 +4,14 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.job.Job;
+import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.root.BranchRoot;
-import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
-import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -51,7 +50,7 @@ public interface HibBranch extends HibCoreElement {
 	 *            true for active
 	 * @return Fluent API
 	 */
-	Branch setActive(boolean active);
+	HibBranch setActive(boolean active);
 
 	/**
 	 * Get whether all nodes of the previous branch have been migrated.
@@ -82,7 +81,7 @@ public interface HibBranch extends HibCoreElement {
 	 * @param hostname
 	 * @return Fluent API
 	 */
-	Branch setHostname(String hostname);
+	HibBranch setHostname(String hostname);
 
 	/**
 	 * Return the ssl flag of the branch.
@@ -112,7 +111,7 @@ public interface HibBranch extends HibCoreElement {
 	 * @param pathPrefix
 	 * @return Fluent API
 	 */
-	Branch setPathPrefix(String pathPrefix);
+	HibBranch setPathPrefix(String pathPrefix);
 
 	/**
 	 * Get whether the branch is the latest branch
@@ -126,14 +125,14 @@ public interface HibBranch extends HibCoreElement {
 	 * 
 	 * @return
 	 */
-	Branch setLatest();
+	HibBranch setLatest();
 
 	/**
 	 * Get the next Branch.
 	 * 
 	 * @return next Branch
 	 */
-	Branch getNextBranch();
+	HibBranch getNextBranch();
 
 	/**
 	 * Set the next Branch.
@@ -142,14 +141,14 @@ public interface HibBranch extends HibCoreElement {
 	 *            next Branch
 	 * @return Fluent API
 	 */
-	Branch setNextBranch(Branch branch);
+	HibBranch setNextBranch(Branch branch);
 
 	/**
 	 * Get the previous Branch.
 	 * 
 	 * @return previous Branch
 	 */
-	Branch getPreviousBranch();
+	HibBranch getPreviousBranch();
 
 	/**
 	 * Assign the given schema version to the branch and queue a job which will trigger the migration.
@@ -159,7 +158,7 @@ public interface HibBranch extends HibCoreElement {
 	 * @param batch
 	 * @return Job which was created to trigger the migration or null if no job was created because the version has already been assigned before
 	 */
-	Job assignSchemaVersion(HibUser user, SchemaVersion schemaVersion, EventQueueBatch batch);
+	HibJob assignSchemaVersion(HibUser user, HibSchemaVersion schemaVersion, EventQueueBatch batch);
 
 	/**
 	 * Unassign all schema versions of the given schema from this branch.
@@ -167,7 +166,7 @@ public interface HibBranch extends HibCoreElement {
 	 * @param schemaContainer
 	 * @return Fluent API
 	 */
-	Branch unassignSchema(Schema schemaContainer);
+	HibBranch unassignSchema(HibSchema schemaContainer);
 
 	/**
 	 * Check whether a version of this schema container is assigned to this branch.
@@ -176,7 +175,7 @@ public interface HibBranch extends HibCoreElement {
 	 *            schema
 	 * @return true iff assigned
 	 */
-	boolean contains(Schema schema);
+	boolean contains(HibSchema schema);
 
 	/**
 	 * Check whether the given schema container version is assigned to this branch.
@@ -185,7 +184,7 @@ public interface HibBranch extends HibCoreElement {
 	 *            schema container version
 	 * @return true if assigned
 	 */
-	boolean contains(SchemaVersion schemaVersion);
+	boolean contains(HibSchemaVersion schemaVersion);
 
 	/**
 	 * Get an traversal result of all schema container versions.
@@ -203,7 +202,7 @@ public interface HibBranch extends HibCoreElement {
 	 * @param batch
 	 * @return Job which has been created if the version has not yet been assigned. Otherwise null will be returned.
 	 */
-	Job assignMicroschemaVersion(HibUser user, MicroschemaVersion microschemaVersion, EventQueueBatch batch);
+	HibJob assignMicroschemaVersion(HibUser user, HibMicroschemaVersion microschemaVersion, EventQueueBatch batch);
 
 	/**
 	 * Unassigns all versions of the given microschema from this branch.
@@ -211,7 +210,7 @@ public interface HibBranch extends HibCoreElement {
 	 * @param microschema
 	 * @return Fluent API
 	 */
-	Branch unassignMicroschema(Microschema microschema);
+	HibBranch unassignMicroschema(HibMicroschema microschema);
 
 	/**
 	 * Check whether a version of this microschema container is assigned to this branch.
@@ -220,7 +219,7 @@ public interface HibBranch extends HibCoreElement {
 	 *            microschema
 	 * @return true iff assigned
 	 */
-	boolean contains(Microschema microschema);
+	boolean contains(HibMicroschema microschema);
 
 	/**
 	 * Check whether the given microschema container version is assigned to this branch.
@@ -229,7 +228,7 @@ public interface HibBranch extends HibCoreElement {
 	 *            microschema container version
 	 * @return true iff assigned
 	 */
-	boolean contains(MicroschemaVersion microschemaVersion);
+	boolean contains(HibMicroschemaVersion microschemaVersion);
 
 	/**
 	 * Get an iterable of all microschema container versions.
@@ -274,7 +273,7 @@ public interface HibBranch extends HibCoreElement {
 	 * @param project
 	 * @return Fluent API
 	 */
-	Branch setProject(Project project);
+	HibBranch setProject(HibProject project);
 
 	/**
 	 * Return all schema versions which are linked to the branch.
@@ -296,7 +295,7 @@ public interface HibBranch extends HibCoreElement {
 	 * @param schemaVersion
 	 * @return Found edge between branch and version
 	 */
-	BranchSchemaEdge findBranchSchemaEdge(SchemaVersion schemaVersion);
+	BranchSchemaEdge findBranchSchemaEdge(HibSchemaVersion schemaVersion);
 
 	/**
 	 * Find the branch microschema edge for the given version.
@@ -304,7 +303,7 @@ public interface HibBranch extends HibCoreElement {
 	 * @param microschemaVersion
 	 * @return Found edge between branch and version
 	 */
-	BranchMicroschemaEdge findBranchMicroschemaEdge(MicroschemaVersion microschemaVersion);
+	BranchMicroschemaEdge findBranchMicroschemaEdge(HibMicroschemaVersion microschemaVersion);
 
 	/**
 	 * Find the latest schema version which is assigned to the branch which matches the provided schema container
@@ -312,7 +311,7 @@ public interface HibBranch extends HibCoreElement {
 	 * @param schemaContainer
 	 * @return Found version or null if no version could be found.
 	 */
-	SchemaVersion findLatestSchemaVersion(Schema schemaContainer);
+	HibSchemaVersion findLatestSchemaVersion(HibSchema schemaContainer);
 
 	/**
 	 * Find the latest microschema version which is assigned to the branch which matches the provided microschema container
@@ -320,7 +319,7 @@ public interface HibBranch extends HibCoreElement {
 	 * @param schemaContainer
 	 * @return Found version or null if no version could be found.
 	 */
-	MicroschemaVersion findLatestMicroschemaVersion(Microschema schemaContainer);
+	HibMicroschemaVersion findLatestMicroschemaVersion(HibMicroschema schemaContainer);
 
 	/**
 	 * Add the given tag to the list of tags for this branch.
@@ -398,7 +397,7 @@ public interface HibBranch extends HibCoreElement {
 	 * @param status
 	 * @return
 	 */
-	BranchSchemaAssignEventModel onSchemaAssignEvent(SchemaVersion schemaVersion, Assignment assigned, JobStatus status);
+	BranchSchemaAssignEventModel onSchemaAssignEvent(HibSchemaVersion schemaVersion, Assignment assigned, JobStatus status);
 
 	/**
 	 * Create a project microschema assignment event.
@@ -408,7 +407,7 @@ public interface HibBranch extends HibCoreElement {
 	 * @param status
 	 * @return
 	 */
-	BranchMicroschemaAssignModel onMicroschemaAssignEvent(MicroschemaVersion microschemaVersion, Assignment assigned, JobStatus status);
+	BranchMicroschemaAssignModel onMicroschemaAssignEvent(HibMicroschemaVersion microschemaVersion, Assignment assigned, JobStatus status);
 
 	/**
 	 * Load the tag with the given uuid that was used to tag the branch.
@@ -419,16 +418,5 @@ public interface HibBranch extends HibCoreElement {
 	HibTag findTagByUuid(String uuid);
 
 	BranchReference transformToReference();
-
-	/**
-	 * Convert this back to the non-mdm branch
-	 * 
-	 * @return
-	 * @deprecated This method should only be used when there is really no other way
-	 */
-	@Deprecated
-	default Branch toBranch() {
-		return (Branch) this;
-	}
 
 }

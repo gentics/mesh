@@ -16,6 +16,14 @@ import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -44,6 +52,22 @@ public final class HibClassConverter {
 
 	public static Branch toBranch(HibBranch branch) {
 		return checkAndCast(branch, Branch.class);
+	}
+
+	public static Schema toSchema(HibSchema schema) {
+		return checkAndCast(schema, Schema.class);
+	}
+
+	public static SchemaVersion toSchemaVersion(HibSchemaVersion version) {
+		return checkAndCast(version, SchemaVersion.class);
+	}
+
+	public static Microschema toMicroschema(HibMicroschema schema) {
+		return checkAndCast(schema, Microschema.class);
+	}
+
+	public static MicroschemaVersion toMicroschemaVersion(HibMicroschemaVersion version) {
+		return checkAndCast(version, MicroschemaVersion.class);
 	}
 
 	public static Project toProject(HibProject project) {

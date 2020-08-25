@@ -75,7 +75,7 @@ import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
-import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -973,7 +973,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			}
 
 			// Content
-			Schema contentSchemaContainer = schemaDao.findByName("content");
+			HibSchema contentSchemaContainer = schemaDao.findByName("content");
 			if (contentSchemaContainer == null) {
 				SchemaVersionModel schema = new SchemaModelImpl();
 				schema.setName("content");
@@ -1009,7 +1009,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			}
 
 			// Folder
-			Schema folderSchemaContainer = schemaDao.findByName("folder");
+			HibSchema folderSchemaContainer = schemaDao.findByName("folder");
 			if (folderSchemaContainer == null) {
 				SchemaVersionModel schema = new SchemaModelImpl();
 				schema.setName("folder");
@@ -1033,7 +1033,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			}
 
 			// Binary content for images and other downloads
-			Schema binarySchemaContainer = schemaDao.findByName("binary_content");
+			HibSchema binarySchemaContainer = schemaDao.findByName("binary_content");
 			if (binarySchemaContainer == null) {
 
 				SchemaVersionModel schema = new SchemaModelImpl();

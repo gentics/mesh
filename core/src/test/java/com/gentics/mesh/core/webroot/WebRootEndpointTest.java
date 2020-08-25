@@ -31,6 +31,7 @@ import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
@@ -63,7 +64,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			ContentDaoWrapper contentDao = tx.data().contentDao();
 			// 1. Transform the node into a binary content
-			Schema container = schemaContainer("binary_content");
+			HibSchema container = schemaContainer("binary_content");
 			node.setSchemaContainer(container);
 			contentDao.getLatestDraftFieldContainer(node, english()).setSchemaContainerVersion(container.getLatestVersion());
 			prepareSchema(node, "image/*", "binary");
@@ -145,14 +146,14 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			Node parentNode = folder("2015");
 			// Update content schema and add node field
-			Schema folderSchema = schemaContainer("folder");
+			HibSchema folderSchema = schemaContainer("folder");
 			SchemaVersionModel schema = folderSchema.getLatestVersion().getSchema();
 			schema.getFields().add(FieldUtil.createNodeFieldSchema("nodeRef"));
 			folderSchema.getLatestVersion().setSchema(schema);
 			mesh().serverSchemaStorage().addSchema(schema);
 
 			// Create content which is only german
-			Schema contentSchema = schemaContainer("content");
+			HibSchema contentSchema = schemaContainer("content");
 			Node node = nodeDao.create(parentNode, user(), contentSchema.getLatestVersion(), project());
 
 			// Grant permissions to the node otherwise it will not be able to be loaded

@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.dao.impl;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toProject;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toSchemaVersion;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
@@ -9,7 +10,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 
 import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -19,6 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
@@ -27,13 +28,13 @@ import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
-import com.gentics.mesh.core.data.impl.ProjectWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.ProjectRoot;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -94,67 +95,59 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper implements Project
 	}
 
 	@Override
-	public TraversalResult<? extends ProjectWrapper> findAll() {
-		Stream<? extends Project> nativeStream = boot.get().projectRoot().findAll().stream();
-		return new TraversalResult<>(nativeStream.map(ProjectWrapper::new));
+	public TraversalResult<? extends HibProject> findAll() {
+		return boot.get().projectRoot().findAll();
 	}
 
 	@Override
 	public TransformablePage<? extends Project> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
-		TransformablePage<? extends Project> nativePage = boot.get().projectRoot().findAll(ac, pagingInfo);
-		// TODO wrap the page
-		return nativePage;
+		return boot.get().projectRoot().findAll(ac, pagingInfo);
 	}
 
 	@Override
 	public Page<? extends HibProject> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibProject> extraFilter) {
-		Page<? extends HibProject> nativePage = boot.get().projectRoot().findAllWrapped(ac, pagingInfo, extraFilter);
-		return nativePage;
+		return boot.get().projectRoot().findAllWrapped(ac, pagingInfo, extraFilter);
 	}
 
 	@Override
 	public HibProject findByName(String name) {
 		ProjectRoot root = boot.get().projectRoot();
-		HibProject project = root.findByName(name);
-		return project;
+		return root.findByName(name);
 	}
 
 	@Override
-	public Project findByName(InternalActionContext ac, String projectName, InternalPermission perm) {
+	public HibProject findByName(InternalActionContext ac, String projectName, InternalPermission perm) {
 		ProjectRoot root = boot.get().projectRoot();
-		Project project = root.findByName(ac, projectName, perm);
-		return ProjectWrapper.wrap(project);
+		return root.findByName(ac, projectName, perm);
 	}
 
 	@Override
-	public ProjectWrapper findByUuid(String uuid) {
+	public HibProject findByUuid(String uuid) {
 		ProjectRoot root = boot.get().projectRoot();
-		Project project = root.findByUuid(uuid);
-		return ProjectWrapper.wrap(project);
+		return root.findByUuid(uuid);
 	}
 
 	@Override
-	public Project findByUuidGlobal(String uuid) {
+	public HibProject findByUuidGlobal(String uuid) {
 		return findByUuid(uuid);
 	}
 
 	@Override
-	public Project loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm) {
+	public HibProject loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm) {
 		ProjectRoot root = boot.get().projectRoot();
-		Project project = root.loadObjectByUuid(ac, uuid, perm);
-		return ProjectWrapper.wrap(project);
+		return root.loadObjectByUuid(ac, uuid, perm);
 	}
 
 	@Override
 	public Project loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
 		ProjectRoot root = boot.get().projectRoot();
-		Project project = root.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
-		return ProjectWrapper.wrap(project);
+		return root.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
 	}
 
 	@Override
-	public HibProject create(String name, String hostname, Boolean ssl, String pathPrefix, HibUser creator, SchemaVersion schemaVersion,
+	public HibProject create(String name, String hostname, Boolean ssl, String pathPrefix, HibUser creator, HibSchemaVersion schemaVersion,
 		String uuid, EventQueueBatch batch) {
+		SchemaVersion graphSchemaVersion = toSchemaVersion(schemaVersion);
 		ProjectRoot root = boot.get().projectRoot();
 
 		Project project = root.create();
@@ -166,7 +159,7 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper implements Project
 
 		// Create the initial branch for the project and add the used schema
 		// version to it
-		HibBranch branch = project.getBranchRoot().create(name, creator, batch);
+		Branch branch = project.getBranchRoot().create(name, creator, batch);
 		branch.setMigrated(true);
 		if (hostname != null) {
 			branch.setHostname(hostname);
@@ -182,10 +175,10 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper implements Project
 		branch.assignSchemaVersion(creator, schemaVersion, batch);
 
 		// Assign the provided schema container to the project
-		project.getSchemaContainerRoot().addItem(schemaVersion.getSchemaContainer());
+		project.getSchemaContainerRoot().addItem(graphSchemaVersion.getSchemaContainer());
 		// project.getLatestBranch().assignSchemaVersion(creator,
 		// schemaContainerVersion);
-		project.createBaseNode(creator, schemaVersion);
+		project.createBaseNode(creator, graphSchemaVersion);
 
 		project.setCreated(creator);
 		project.setEditor(creator);
@@ -227,7 +220,7 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper implements Project
 		if (requestModel.getSchema() == null || !requestModel.getSchema().isSet()) {
 			throw error(BAD_REQUEST, "project_error_no_schema_reference");
 		}
-		SchemaVersion schemaVersion = schemaDao.fromReference(requestModel.getSchema());
+		HibSchemaVersion schemaVersion = schemaDao.fromReference(requestModel.getSchema());
 
 		String hostname = requestModel.getHostname();
 		Boolean ssl = requestModel.getSsl();

@@ -11,6 +11,7 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -44,7 +45,7 @@ public interface NodeDaoWrapper extends NodeDao, DaoWrapper<Node>, DaoTransforma
 	 * @param project
 	 * @return
 	 */
-	Node create(Node parentNode, HibUser creator, SchemaVersion schemaVersion, HibProject project);
+	Node create(Node parentNode, HibUser creator, HibSchemaVersion schemaVersion, HibProject project);
 
 	/**
 	 * Create a child node in the given branch
@@ -71,7 +72,7 @@ public interface NodeDaoWrapper extends NodeDao, DaoWrapper<Node>, DaoTransforma
 	 * @param uuid
 	 * @return
 	 */
-	Node create(Node parentNode, HibUser creator, SchemaVersion schemaVersion, HibProject project, HibBranch branch, String uuid);
+	Node create(Node parentNode, HibUser creator, HibSchemaVersion schemaVersion, HibProject project, HibBranch branch, String uuid);
 
 	/**
 	 * Return the children for this node for all branches.

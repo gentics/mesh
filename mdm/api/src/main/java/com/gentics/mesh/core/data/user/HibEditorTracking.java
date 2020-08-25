@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.user;
 
+import com.gentics.mesh.util.DateUtils;
+
 public interface HibEditorTracking {
 
 	/**
@@ -25,6 +27,15 @@ public interface HibEditorTracking {
 	Long getLastEditedTimestamp();
 
 	/**
+	 * Return the ISO8601 formatted edited date.
+	 * 
+	 * @return
+	 */
+	default String getLastEditedDate() {
+		return DateUtils.toISO8601(getLastEditedTimestamp(), 0);
+	}
+
+	/**
 	 * Set the timestamp on which the vertex was last updated.
 	 * 
 	 * @param timestamp
@@ -36,12 +47,5 @@ public interface HibEditorTracking {
 	 * Update the last edit timestamp using the current time.
 	 */
 	void setLastEditedTimestamp();
-
-	/**
-	 * Return the ISO8601 formatted edited date.
-	 * 
-	 * @return
-	 */
-	String getLastEditedDate();
 
 }

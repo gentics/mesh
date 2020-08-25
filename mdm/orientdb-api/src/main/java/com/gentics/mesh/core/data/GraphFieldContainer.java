@@ -23,8 +23,8 @@ import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
-import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -166,7 +166,7 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	 * @param microschemaVersion
 	 * @return
 	 */
-	MicronodeGraphField createMicronode(String key, MicroschemaVersion microschemaVersion);
+	MicronodeGraphField createMicronode(String key, HibMicroschemaVersion microschemaVersion);
 
 	/**
 	 * Return the graph date list.
@@ -343,7 +343,7 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	 * 
 	 * @return schema container version
 	 */
-	GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> getSchemaContainerVersion();
+	HibFieldSchemaVersionElement getSchemaContainerVersion();
 
 	/**
 	 * Set the schema container version used by this container
@@ -351,7 +351,7 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	 * @param version
 	 *            schema container version
 	 */
-	void setSchemaContainerVersion(GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> version);
+	void setSchemaContainerVersion(HibFieldSchemaVersionElement version);
 
 	/**
 	 * Get all nodes that are in any way referenced by this node. This includes the following cases:
@@ -362,7 +362,7 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	 *     <li>Micronode list fields with node fields or node list fields</li>
 	 * </ul>
 	 */
-    Iterable<? extends Node> getReferencedNodes();
+	Iterable<? extends Node> getReferencedNodes();
 
 	/**
 	 * Gets the NodeGraphFieldContainers connected to this FieldContainer.

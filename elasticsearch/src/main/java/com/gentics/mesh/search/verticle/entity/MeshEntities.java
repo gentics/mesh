@@ -30,6 +30,8 @@ import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
@@ -78,8 +80,8 @@ public class MeshEntities {
 	public final MeshEntity<HibProject> project;
 	public final MeshEntity<HibTag> tag;
 	public final MeshEntity<HibTagFamily> tagFamily;
-	public final MeshEntity<Schema> schema;
-	public final MeshEntity<Microschema> microschema;
+	public final MeshEntity<HibSchema> schema;
+	public final MeshEntity<HibMicroschema> microschema;
 	public final MeshEntity<NodeGraphFieldContainer> nodeContent;
 	private final Map<ElementType, MeshEntity<?>> entities;
 
@@ -100,8 +102,8 @@ public class MeshEntities {
 		this.options = options;
 		this.complianceMode = options.getSearchOptions().getComplianceMode();
 
-		schema = new SimpleMeshEntity<>(schemaTransformer, Schema.TYPE_INFO, byUuid(uuid -> boot.schemaDao().findByUuid(uuid)));
-		microschema = new SimpleMeshEntity<>(microschemaTransformer, Microschema.TYPE_INFO, byUuid(uuid -> boot.microschemaDao().findByUuid(uuid)));
+		schema = new SimpleMeshEntity<>(schemaTransformer, Schema.TYPE_INFO, byHibElementUuid(uuid -> boot.schemaDao().findByUuid(uuid)));
+		microschema = new SimpleMeshEntity<>(microschemaTransformer, Microschema.TYPE_INFO, byHibElementUuid(uuid -> boot.microschemaDao().findByUuid(uuid)));
 		user = new SimpleMeshEntity<>(userTransformer, User.TYPE_INFO, byHibElementUuid(uuid -> boot.userDao().findByUuid(uuid)));
 		group = new SimpleMeshEntity<>(groupTransformer, Group.TYPE_INFO, byHibElementUuid(uuid -> boot.groupDao().findByUuid(uuid)));
 		role = new SimpleMeshEntity<>(roleTransformer, Role.TYPE_INFO, byHibElementUuid(uuid -> boot.roleDao().findByUuid(uuid)));
@@ -178,7 +180,7 @@ public class MeshEntities {
 	 * The Schema {@link MeshEntity}.
 	 * @return
 	 */
-	public MeshEntity<Schema> getSchema() {
+	public MeshEntity<HibSchema> getSchema() {
 		return schema;
 	}
 
@@ -186,7 +188,7 @@ public class MeshEntities {
 	 * The Microschema {@link MeshEntity}.
 	 * @return
 	 */
-	public MeshEntity<Microschema> getMicroschema() {
+	public MeshEntity<HibMicroschema> getMicroschema() {
 		return microschema;
 	}
 

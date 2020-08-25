@@ -9,10 +9,10 @@ import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 
 @Singleton
-public class MicroschemaComparator extends AbstractFieldSchemaContainerComparator<MicroschemaModel> {
+public class MicroschemaComparatorImpl extends AbstractFieldSchemaContainerComparator<MicroschemaModel> implements MicroschemaComparator {
 
 	@Inject
-	public MicroschemaComparator() {
+	public MicroschemaComparatorImpl() {
 	}
 
 	@Override

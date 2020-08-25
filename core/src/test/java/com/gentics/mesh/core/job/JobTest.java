@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import org.apache.cxf.jaxrs.utils.ExceptionUtils;
 import org.junit.Test;
 
+import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.job.impl.BranchMigrationJobImpl;
@@ -34,7 +35,7 @@ public class JobTest extends AbstractMeshTest {
 	public void testJob() {
 		try (Tx tx = tx()) {
 			JobRoot root = boot().jobRoot();
-			Job job = root.enqueueBranchMigration(user(), initialBranch());
+			HibJob job = root.enqueueBranchMigration(user(), initialBranch());
 			// Disabled in order to apply to contention fix
 			assertNull("The creator should not be set.",job.getCreator());
 			//assertEquals("The creator of the job was not correct", user().getUuid(), job.getCreator().getUuid());
@@ -82,7 +83,7 @@ public class JobTest extends AbstractMeshTest {
 	public void testJobErrorDetailTruncate() {
 		try (Tx tx = tx()) {
 			JobRoot root = boot().jobRoot();
-			Job job = root.enqueueBranchMigration(user(), initialBranch());
+			HibJob job = root.enqueueBranchMigration(user(), initialBranch());
 			assertNull("The job error detail should be null since it has not yet been marked as failed.", job.getErrorDetail());
 			Exception ex = buildExceptionStackTraceLongerThan(Job.ERROR_DETAIL_MAX_LENGTH * 2);
 			assertThat(ExceptionUtils.getStackTrace(ex).length()).isGreaterThan(Job.ERROR_DETAIL_MAX_LENGTH);

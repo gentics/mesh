@@ -17,8 +17,8 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.schema.Schema;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.DropIndexRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
@@ -86,19 +86,19 @@ public class SchemaMigrationEventHandler implements EventHandler {
 		Map<String, IndexInfo> map = helper.getDb().transactional(tx -> {
 			HibProject project = tx.data().projectDao().findByUuid(model.getProject().getUuid());
 			HibBranch branch = tx.data().branchDao().findByUuid(project, model.getBranch().getUuid());
-			SchemaVersion schema = getNewSchemaVersion(model).runInExistingTx(tx);
+			HibSchemaVersion schema = getNewSchemaVersion(model).runInExistingTx(tx);
 			return nodeIndexHandler.getIndices(project, branch, schema).runInExistingTx(tx);
 		}).runInNewTx();
 
 		return toRequests(map);
 	}
 
-	private Transactional<SchemaVersion> getNewSchemaVersion(BranchSchemaAssignEventModel model) {
+	private Transactional<HibSchemaVersion> getNewSchemaVersion(BranchSchemaAssignEventModel model) {
 		return helper.getDb().transactional(tx -> {
 			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 			SchemaReference schema = model.getSchema();
-			Schema container = schemaDao.findByUuid(schema.getUuid());
-			return container.findVersionByUuid(schema.getVersionUuid());
+			HibSchema container = schemaDao.findByUuid(schema.getUuid());
+			return schemaDao.findVersionByUuid(container, schema.getVersionUuid());
 		});
 	}
 
