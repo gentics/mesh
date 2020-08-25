@@ -3,9 +3,7 @@ package com.gentics.mesh.core.data.schema;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 
-public interface HibMicroschemaVersion extends HibFieldSchemaVersionElement {
-
-	MicroschemaVersionModel getSchema();
+public interface HibMicroschemaVersion extends HibFieldSchemaVersionElement<MicroschemaVersionModel> {
 
 	MicroschemaReference transformToReference();
 
@@ -14,9 +12,5 @@ public interface HibMicroschemaVersion extends HibFieldSchemaVersionElement {
 	HibMicroschemaVersion getPreviousVersion();
 
 	HibMicroschemaVersion getNextVersion();
-
-	SchemaChange<?> getNextChange();
-
-	void deleteElement();
 
 }

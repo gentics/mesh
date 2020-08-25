@@ -4,26 +4,19 @@ import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 
-public interface HibSchemaVersion extends HibFieldSchemaVersionElement {
-
-	SchemaVersionModel getSchema();
-
-	void setSchema(SchemaVersionModel schema);
+public interface HibSchemaVersion extends HibFieldSchemaVersionElement<SchemaVersionModel> {
 
 	HibSchemaVersion getPreviousVersion();
+
+	HibSchemaVersion getNextVersion();
 
 	// TODO rename method
 	HibSchema getSchemaContainer();
 
 	SchemaReference transformToReference();
 
-	SchemaChange<?> getNextChange();
-
 	String getElementVersion();
 
-	HibSchemaVersion getNextVersion();
-
-	void deleteElement();
-
 	Iterable<? extends HibJob> referencedJobsViaTo();
+
 }

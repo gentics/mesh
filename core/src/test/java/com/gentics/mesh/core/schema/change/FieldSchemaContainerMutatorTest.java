@@ -13,6 +13,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.schema.FieldTypeChange;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.UpdateFieldChange;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerMutator;
@@ -130,7 +131,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 	@Test
 	public void testAUpdateFields() {
 		try (Tx tx = tx()) {
-			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			HibSchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
 			SchemaModelImpl schema = new SchemaModelImpl("testschema");
