@@ -20,6 +20,8 @@ All fixes and changes in LTS releases will be released the next minor release. C
 [[v1.4.13]]
 == 1.4.13 (25.08.2020)
 
+icon:plus[] Plugins: The default plugin timeout has been increased from 15 seconds to two minutes.
+
 icon:plus[] Monitoring: The readiness probe will now also check for plugin status. Failed plugin deployments will let the readiness probe fail.
 
 [[v1.4.12]]

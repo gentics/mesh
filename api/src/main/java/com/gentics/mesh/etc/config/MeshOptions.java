@@ -21,7 +21,7 @@ public class MeshOptions implements Option {
 	public static final String DEFAULT_LANGUAGE = "en";
 	public static final String DEFAULT_DIRECTORY_NAME = "graphdb";
 	public static final int DEFAULT_MAX_DEPTH = 10;
-	public static final int DEFAULT_PLUGIN_TIMEOUT = 15;
+	public static final int DEFAULT_PLUGIN_TIMEOUT = 120;
 
 	public static final String MESH_DEFAULT_LANG_ENV = "MESH_DEFAULT_LANG";
 	public static final String MESH_LANGUAGES_FILE_PATH_ENV = "MESH_LANGUAGES_FILE_PATH";
@@ -114,7 +114,8 @@ public class MeshOptions implements Option {
 	private String pluginDirectory = "plugins";
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Timeout in seconds which is used for the plugin startup,initialization,de-initialization and stop processes.")
+	@JsonPropertyDescription("Timeout in seconds which is used for the plugin startup,initialization,de-initialization and stop processes. Default: "
+		+ DEFAULT_PLUGIN_TIMEOUT + " seconds.")
 	@EnvironmentVariable(name = MESH_PLUGIN_TIMEOUT_ENV, description = "Override the configured plugin timeout.")
 	private int pluginTimeout = DEFAULT_PLUGIN_TIMEOUT;
 
