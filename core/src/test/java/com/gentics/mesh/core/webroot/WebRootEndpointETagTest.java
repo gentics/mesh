@@ -13,7 +13,8 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
@@ -33,7 +34,7 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			ContentDaoWrapper contentDao = tx.data().contentDao();
 			String path = "/News/2015/blume.jpg";
-			Node node = content("news_2015");
+			HibNode node = content("news_2015");
 
 			// 1. Transform the node into a binary content
 			HibSchema container = schemaContainer("binary_content");
@@ -59,7 +60,7 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadBinaryNode() throws IOException {
-		Node node = content("news_2015");
+		HibNode node = content("news_2015");
 		String contentType = "application/octet-stream";
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
@@ -95,7 +96,7 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 	public void testReadOne() {
 		String path = "/News/2015/News_2015.en.html";
 		try (Tx tx = tx()) {
-			Node node = content("news_2015");
+			HibNode node = content("news_2015");
 			// Inject the reference node field
 			SchemaVersionModel schema = boot().contentDao().getGraphFieldContainer(node, "en").getSchemaContainerVersion().getSchema();
 			schema.addField(FieldUtil.createNodeFieldSchema("reference"));
@@ -108,8 +109,9 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 			() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(), new NodeParametersImpl().setLanguages("en", "de")));
 
 		try (Tx tx = tx()) {
-			Node node = content("news_2015");
-			String etag = node.getETag(mockActionContext());
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			HibNode node = content("news_2015");
+			String etag = nodeDao.getETag(node, mockActionContext());
 			assertEquals(etag, responseTag);
 
 			// Check whether 304 is returned for correct etag

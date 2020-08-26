@@ -7,6 +7,7 @@ import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 
 public interface HasPermissions {
+
 	/**
 	 * Get the permissions of a role for this element.
 	 *

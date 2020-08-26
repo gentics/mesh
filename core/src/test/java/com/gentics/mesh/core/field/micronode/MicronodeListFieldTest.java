@@ -17,8 +17,8 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Micronode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.db.Tx;
@@ -52,8 +52,8 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		Node node = folder("2015");
-		
+		HibNode node = folder("2015");
+
 		try (Tx tx = tx()) {
 			ContentDaoWrapper contentDao = tx.data().contentDao();
 			prepareNode(node, MICRONODE_LIST, "micronode");
@@ -77,7 +77,7 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			updateContainer(ac, container, MICRONODE_LIST, field);
 			tx.success();
 		}
-		
+
 		try (Tx tx = tx()) {
 			NodeResponse response = transform(node);
 			assertList(2, "micronodeList", "micronode", response);

@@ -14,7 +14,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.NumberGraphField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -47,7 +47,7 @@ public class NumberFieldEndpointTest extends AbstractNumberFieldEndpointTest {
 			String fieldKey = FIELD_NAME;
 			StringField field = new StringFieldImpl().setString("text");
 
-			Node node = folder("2015");
+			HibNode node = folder("2015");
 			NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 			nodeCreateRequest.setParentNodeUuid(node.getUuid());
 			nodeCreateRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
@@ -64,7 +64,7 @@ public class NumberFieldEndpointTest extends AbstractNumberFieldEndpointTest {
 	public void testUpdateNodeFieldWithField() {
 		disableAutoPurge();
 
-		Node node = folder("2015");
+		HibNode node = folder("2015");
 		for (int i = 0; i < 20; i++) {
 			NodeGraphFieldContainer container = tx(() -> boot().contentDao().getGraphFieldContainer(node, "en"));
 			Number oldValue;
@@ -123,7 +123,7 @@ public class NumberFieldEndpointTest extends AbstractNumberFieldEndpointTest {
 		try (Tx tx = tx()) {
 			ContentDaoWrapper contentDao = tx.data().contentDao();
 			// Assert that the old version was not modified
-			Node node = folder("2015");
+			HibNode node = folder("2015");
 			NodeGraphFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getNumber(FIELD_NAME)).isNull();
@@ -163,7 +163,7 @@ public class NumberFieldEndpointTest extends AbstractNumberFieldEndpointTest {
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() throws IOException {
-		Node node = folder("2015");
+		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
 			ContentDaoWrapper contentDao = tx.data().contentDao();
 			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());

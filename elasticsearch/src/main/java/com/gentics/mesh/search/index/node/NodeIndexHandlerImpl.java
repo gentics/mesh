@@ -30,6 +30,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -81,7 +82,7 @@ import io.vertx.core.logging.LoggerFactory;
  * project information.
  */
 @Singleton
-public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements NodeIndexHandler {
+public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implements NodeIndexHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeIndexHandlerImpl.class);
 
@@ -379,7 +380,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 	}
 
 	@Override
-	public Completable store(Node node, UpdateDocumentEntry entry) {
+	public Completable store(HibNode node, UpdateDocumentEntry entry) {
 		return Completable.defer(() -> {
 			GenericEntryContext context = entry.getContext();
 			Set<Single<String>> obs = new HashSet<>();
@@ -392,7 +393,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 		});
 	}
 
-	public Observable<IndexBulkEntry> storeForBulk(Node node, UpdateDocumentEntry entry) {
+	public Observable<IndexBulkEntry> storeForBulk(HibNode node, UpdateDocumentEntry entry) {
 		GenericEntryContext context = entry.getContext();
 		return db.tx(() -> {
 			return storeForBulk(node, context);
@@ -406,7 +407,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 	 * @param node
 	 * @param context
 	 */
-	private void store(Set<Single<String>> obs, Node node, GenericEntryContext context) {
+	private void store(Set<Single<String>> obs, HibNode node, GenericEntryContext context) {
 		if (context.getBranchUuid() == null) {
 			for (HibBranch branch : Tx.get().data().branchDao().findAll(node.getProject())) {
 				store(obs, node, branch.getUuid(), context);
@@ -427,7 +428,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 	 * @param branchUuid
 	 * @param context
 	 */
-	private void store(Set<Single<String>> obs, Node node, String branchUuid, GenericEntryContext context) {
+	private void store(Set<Single<String>> obs, HibNode node, String branchUuid, GenericEntryContext context) {
 		if (context.getContainerType() == null) {
 			for (ContainerType type : ContainerType.values()) {
 				// We only want to store DRAFT and PUBLISHED Types
@@ -451,7 +452,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 	 * @param type
 	 * @param context
 	 */
-	private void store(Set<Single<String>> obs, Node node, String branchUuid, ContainerType type, GenericEntryContext context) {
+	private void store(Set<Single<String>> obs, HibNode node, String branchUuid, ContainerType type, GenericEntryContext context) {
 		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 		if (context.getLanguageTag() != null) {
 			NodeGraphFieldContainer container = contentDao.getGraphFieldContainer(node, context.getLanguageTag(), branchUuid, type);
@@ -476,7 +477,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 	 * @param context
 	 * @return
 	 */
-	private Observable<IndexBulkEntry> storeForBulk(Node node, GenericEntryContext context) {
+	private Observable<IndexBulkEntry> storeForBulk(HibNode node, GenericEntryContext context) {
 		if (context.getBranchUuid() == null) {
 			Set<Observable<IndexBulkEntry>> obs = new HashSet<>();
 			for (HibBranch branch : Tx.get().data().branchDao().findAll(node.getProject())) {
@@ -499,7 +500,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 	 * @param context
 	 * @return
 	 */
-	private Observable<IndexBulkEntry> storeForBulk(Node node, String branchUuid, GenericEntryContext context) {
+	private Observable<IndexBulkEntry> storeForBulk(HibNode node, String branchUuid, GenericEntryContext context) {
 		if (context.getContainerType() == null) {
 			Set<Observable<IndexBulkEntry>> obs = new HashSet<>();
 			for (ContainerType type : ContainerType.values()) {
@@ -525,7 +526,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 	 * @param context
 	 * @return
 	 */
-	private Observable<IndexBulkEntry> storeForBulk(Node node, String branchUuid, ContainerType type, GenericEntryContext context) {
+	private Observable<IndexBulkEntry> storeForBulk(HibNode node, String branchUuid, ContainerType type, GenericEntryContext context) {
 		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 
 		if (context.getLanguageTag() != null) {
@@ -652,7 +653,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 	@Override
 	public Observable<UpdateBulkEntry> updatePermissionForBulk(UpdateDocumentEntry entry) {
 		String uuid = entry.getElementUuid();
-		Node node = elementLoader().apply(uuid);
+		HibNode node = elementLoader().apply(uuid);
 		if (node == null) {
 			// Not found
 			throw error(INTERNAL_SERVER_ERROR, "error_element_not_found", uuid);
@@ -733,12 +734,12 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 	}
 
 	@Override
-	public Function<String, Node> elementLoader() {
+	public Function<String, HibNode> elementLoader() {
 		return (uuid) -> db.index().findByUuid(Node.class, uuid);
 	}
 
 	@Override
-	public Stream<? extends Node> loadAllElements(Tx tx) {
+	public Stream<? extends HibNode> loadAllElements(Tx tx) {
 		return db.type().findAll(Node.class);
 	}
 

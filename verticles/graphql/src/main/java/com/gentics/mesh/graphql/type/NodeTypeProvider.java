@@ -37,6 +37,7 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
@@ -124,7 +125,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		}
 		GraphQLContext gc = env.getContext();
 		String uuid = gc.getBranch().getUuid();
-		Node parentNode = nodeDao.getParentNode(content.getNode(), uuid);
+		HibNode parentNode = nodeDao.getParentNode(content.getNode(), uuid);
 		// The project root node can have no parent. Lets check this and exit early.
 		if (parentNode == null) {
 			return null;
@@ -149,7 +150,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		List<String> languageTags = getLanguageArgument(env);
 		GraphQLContext gc = env.getContext();
 
-		Node node = content.getNode();
+		HibNode node = content.getNode();
 		ContainerType type = getNodeVersion(env);
 		NodeGraphFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
 		container = gc.requiresReadPermSoft(container, env);
@@ -282,7 +283,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 						if (content == null) {
 							return null;
 						}
-						Node node = content.getNode();
+						HibNode node = content.getNode();
 						// Resolve the given path and return the found container
 						HibBranch branch = gc.getBranch();
 						String branchUuid = branch.getUuid();
@@ -291,7 +292,8 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 						pathStack.add(nodePath);
 						Path path = new Path();
 						try {
-							node.resolvePath(branchUuid, type, path, pathStack);
+							NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+							nodeDao.resolvePath(node, branchUuid, type, path, pathStack);
 						} catch (GenericRestException e) {
 							// Check whether the path could not be resolved
 							if (e.getStatus() == NOT_FOUND) {
@@ -307,7 +309,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 						// Otherwise return the last segment.
 						PathSegment lastSegment = path.getSegments().get(path.getSegments().size() - 1);
 						NodeGraphFieldContainer containerFromPath = lastSegment.getContainer();
-						Node nodeFromPath = null;
+						HibNode nodeFromPath = null;
 						if (containerFromPath != null) {
 							nodeFromPath = boot.contentDao().getNode(containerFromPath);
 							gc.requiresPerm(nodeFromPath, READ_PERM, READ_PUBLISHED_PERM);
@@ -367,7 +369,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				if (content == null) {
 					return null;
 				}
-				Node node = content.getNode();
+				HibNode node = content.getNode();
 				return tagDao.getTags(node, gc.getUser(), getPagingInfo(env), gc.getBranch());
 			}).build(),
 
@@ -379,7 +381,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					if (content == null) {
 						return null;
 					}
-					Node node = content.getNode();
+					HibNode node = content.getNode();
 					return node.getSchemaContainer().getLatestVersion().getSchema().getContainer();
 				}).build(),
 
@@ -505,7 +507,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					GraphQLContext gc = env.getContext();
 					String languageTag = getSingleLanguageArgument(env);
 					NodeContent content = env.getSource();
-					Node node = content.getNode();
+					HibNode node = content.getNode();
 					if (node == null) {
 						return null;
 					}
@@ -651,7 +653,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	 * @param pagingInfo
 	 * @return
 	 */
-	public Page<? extends Node> handleSearch(GraphQLContext gc, String query, PagingParameters pagingInfo) {
+	public Page<? extends HibNode> handleSearch(GraphQLContext gc, String query, PagingParameters pagingInfo) {
 		try {
 			return nodeSearchHandler.query(gc, query, pagingInfo, READ_PERM, READ_PUBLISHED_PERM);
 		} catch (Exception e) {

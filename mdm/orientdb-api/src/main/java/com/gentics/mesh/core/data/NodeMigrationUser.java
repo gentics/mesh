@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.Set;
 
 import com.gentics.mesh.core.TypeInfo;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
@@ -245,7 +246,7 @@ public class NodeMigrationUser implements MeshAuthUser {
 	}
 
 	@Override
-	public HibUser setReferencedNode(HibNode node) {
+	public HibUser setReferencedNode(HibInNode node) {
 		return this;
 	}
 

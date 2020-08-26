@@ -17,7 +17,7 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.Tx;
@@ -104,7 +104,7 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 			HibTag tag2 = tagDao.create(root, "test2", project(), user());
 			HibTag tag3 = tagDao.create(root, "test3", project(), user());
 
-			Node node = content();
+			HibNode node = content();
 
 			tagDao.addTag(node, tag1, latestBranch());
 			tagDao.addTag(node, tag3, latestBranch());

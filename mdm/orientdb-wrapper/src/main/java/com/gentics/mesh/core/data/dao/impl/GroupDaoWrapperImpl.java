@@ -61,7 +61,7 @@ import com.gentics.mesh.parameter.value.FieldsSet;
 import dagger.Lazy;
 
 @Singleton
-public class GroupDaoWrapperImpl extends AbstractDaoWrapper implements GroupDaoWrapper {
+public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements GroupDaoWrapper {
 
 	private Lazy<PermissionCache> permissionCache;
 

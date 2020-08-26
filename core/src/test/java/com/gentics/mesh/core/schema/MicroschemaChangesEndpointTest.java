@@ -16,10 +16,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
@@ -49,7 +48,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testRemoveField() throws Exception {
 		// 1. Create node that uses the microschema
-		Node node;
+		HibNode node;
 		HibMicroschema microschemaContainer = microschemaContainer("vcard");
 		HibMicroschemaVersion beforeVersion;
 		try (Tx tx = tx()) {
@@ -158,7 +157,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 		}
 	}
 
-	private Node createMicronodeNode() {
+	private HibNode createMicronodeNode() {
 
 		// 1. Update folder schema
 		SchemaVersionModel schema = schemaContainer("folder").getLatestVersion().getSchema();
@@ -177,7 +176,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 		micronode.getFields().put("firstName", new StringFieldImpl().setString("Max"));
 		micronode.getFields().put("lastName", new StringFieldImpl().setString("Mustermann"));
 		NodeResponse response = createNode("micronodeField", micronode);
-		Node node = boot().nodeDao().findByUuid(project(), response.getUuid());
+		HibNode node = boot().nodeDao().findByUuid(project(), response.getUuid());
 		assertNotNull("The node should have been created.", node);
 		assertNotNull("The node should have a micronode graph field", boot().contentDao().getGraphFieldContainer(node, "en").getMicronode("micronodeField"));
 

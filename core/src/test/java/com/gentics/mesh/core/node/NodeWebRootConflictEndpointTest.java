@@ -11,6 +11,7 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.db.Tx;
@@ -34,7 +35,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 
 		String conflictingName = "conflictName";
 		try (Tx trx = tx()) {
-			Node folderA = folder("2014");
+			HibNode folderA = folder("2014");
 			// 1. Create nodeA
 			NodeCreateRequest requestA = new NodeCreateRequest();
 			requestA.setLanguage("en");
@@ -48,7 +49,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			call(() -> client().publishNode(PROJECT_NAME, nodeA.getUuid()));
 
 			// 3. Create nodeB
-			Node folderB = folder("2015");
+			HibNode folderB = folder("2015");
 			NodeCreateRequest requestB = new NodeCreateRequest();
 			requestB.setLanguage("en");
 			requestB.setParentNodeUuid(folderB.getUuid());
@@ -77,7 +78,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testCreateDuplicateWebrootPath() {
 		String conflictingName = "filename.html";
-		Node parent = tx(() -> folder("2015"));
+		HibNode parent = tx(() -> folder("2015"));
 		HibSchema contentSchema = tx(() -> schemaContainer("content"));
 
 		tx(() -> {
@@ -110,7 +111,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 	public void testUpdateDuplicateWebrootPath() {
 		String conflictingName = "filename.html";
 		String nonConflictingName = "otherfilename.html";
-		Node parent = tx(() -> folder("2015"));
+		HibNode parent = tx(() -> folder("2015"));
 		HibSchema contentSchema = tx(() -> schemaContainer("content"));
 
 		tx(() -> {
@@ -150,7 +151,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testTranslateDuplicateWebrootPath() {
 		String conflictingName = "filename.html";
-		Node parent = tx(() -> folder("2015"));
+		HibNode parent = tx(() -> folder("2015"));
 		HibSchema contentSchema = tx(() -> schemaContainer("content"));
 
 		tx(() -> {

@@ -46,11 +46,11 @@ import com.gentics.mesh.assertj.impl.TagMeshEventModelAssert;
 import com.gentics.mesh.assertj.impl.TagResponseAssert;
 import com.gentics.mesh.assertj.impl.UserResponseAssert;
 import com.gentics.mesh.assertj.impl.WebRootResponseAssert;
-import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Micronode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorMasterResponse;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
@@ -163,7 +163,7 @@ public class MeshAssertions extends Assertions {
 		return new NavigationResponseAssert(actual);
 	}
 
-	public static NodeAssert assertThat(Node actual) {
+	public static NodeAssert assertThat(HibNode actual) {
 		return new NodeAssert(actual);
 	}
 
@@ -239,7 +239,7 @@ public class MeshAssertions extends Assertions {
 		return new GenericMessageResponseAssert(actual);
 	}
 
-	public static LanguageAssert assertThat(Language actual) {
+	public static LanguageAssert assertThat(HibLanguage actual) {
 		return new LanguageAssert(actual);
 	}
 

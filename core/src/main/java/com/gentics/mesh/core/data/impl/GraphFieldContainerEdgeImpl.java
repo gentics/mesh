@@ -19,6 +19,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.AbstractBasicGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.db.Tx;
@@ -75,7 +76,7 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 
 	}
 
-	public void setSegmentInfo(Node parentNode, String segment) {
+	public void setSegmentInfo(HibNode parentNode, String segment) {
 		setSegmentInfo(composeSegmentInfo(parentNode, segment));
 	}
 
@@ -95,7 +96,7 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 		return db.index().createComposedIndexKey(branchUuid, type.getCode(), segmentInfo);
 	}
 
-	public static String composeSegmentInfo(Node parentNode, String segment) {
+	public static String composeSegmentInfo(HibNode parentNode, String segment) {
 		return parentNode == null ? "" : parentNode.getUuid() + segment;
 	}
 

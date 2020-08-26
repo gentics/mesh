@@ -50,7 +50,7 @@ import com.gentics.mesh.parameter.value.FieldsSet;
 import dagger.Lazy;
 
 @Singleton
-public class RoleDaoWrapperImpl extends AbstractDaoWrapper implements RoleDaoWrapper {
+public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements RoleDaoWrapper {
 
 	private final Lazy<PermissionCache> permissionCache;
 
@@ -297,7 +297,7 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper implements RoleDaoWra
 		Role graphRole = toRole(role);
 		return graphRole.getETag(ac);
 	}
-	
+
 	@Override
 	public void applyPermissions(HibElement element, EventQueueBatch batch, HibRole role, boolean recursive, Set<InternalPermission> permissionsToGrant,
 		Set<InternalPermission> permissionsToRevoke) {

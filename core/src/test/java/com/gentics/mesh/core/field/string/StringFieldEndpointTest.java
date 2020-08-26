@@ -12,7 +12,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldEndpointTest;
@@ -76,7 +76,7 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 	public void testUpdateNodeFieldWithField() {
 		for (int i = 0; i < 20; i++) {
 			try (Tx tx = tx()) {
-				Node node = folder("2015");
+				HibNode node = folder("2015");
 				NodeGraphFieldContainer container = boot().contentDao().getGraphFieldContainer(node, "en");
 				String oldValue = getStringValue(container, FIELD_NAME);
 
@@ -117,7 +117,7 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
 			ContentDaoWrapper contentDao = tx.data().contentDao();
-			Node node = folder("2015");
+			HibNode node = folder("2015");
 			NodeGraphFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getString(FIELD_NAME)).isNull();
@@ -177,7 +177,7 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() {
-		Node node = folder("2015");
+		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
 			ContentDaoWrapper contentDao = tx.data().contentDao();
 			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());

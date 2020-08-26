@@ -8,17 +8,6 @@ import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 
 public interface HibTagFamily extends HibCoreElement, HibUserTracking {
 
-	/**
-	 * Convert this back to the non-mdm tagfamily
-	 * 
-	 * @return
-	 * @deprecated This method should only be used when there is really no other way
-	 */
-	@Deprecated
-	default TagFamily toTagFamily() {
-		return (TagFamily) this;
-	}
-
 	void setName(String name);
 
 	String getName();

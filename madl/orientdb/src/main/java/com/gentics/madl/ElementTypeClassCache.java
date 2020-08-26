@@ -14,14 +14,14 @@ import com.gentics.madl.annotations.GraphElement;
  */
 public class ElementTypeClassCache {
 
-	private final Map<String, Class> classStringCache = new ConcurrentHashMap<>();
+	private final Map<String, Class<?>> classStringCache = new ConcurrentHashMap<>();
 	private String[] basePaths;
 
 	public ElementTypeClassCache(String... packagePaths) {
 		this.basePaths = packagePaths;
 	}
 
-	public Class forName(final String className) {
+	public Class<?> forName(final String className) {
 		return this.classStringCache.computeIfAbsent(className, (key) -> {
 			for (String basePath : basePaths) {
 				Set<Class<?>> graphTypeClasses = new Reflections(basePath).getTypesAnnotatedWith(GraphElement.class);

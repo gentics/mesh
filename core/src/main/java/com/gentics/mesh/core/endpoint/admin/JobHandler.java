@@ -17,6 +17,8 @@ import org.apache.commons.lang3.NotImplementedException;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.JobDAOActions;
+import com.gentics.mesh.core.data.dao.JobDaoWrapper;
+import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.page.TransformablePage;
@@ -35,7 +37,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 @Singleton
-public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
+public class JobHandler extends AbstractCrudHandler<HibJob, JobResponse> {
 
 	private static final Logger log = LoggerFactory.getLogger(JobHandler.class);
 
@@ -101,15 +103,14 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 			if (!ac.getUser().isAdmin()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
-			JobRoot jobDao = tx.data().jobDao();
-			Job job = jobDao.loadObjectByUuidNoPerm(uuid, true);
-			String etag = job.getETag(ac);
+			JobDaoWrapper jobDao = tx.data().jobDao();
+			HibJob job = jobDao.loadObjectByUuidNoPerm(uuid, true);
+			String etag = jobDao.getETag(job, ac);
 			ac.setEtag(etag, true);
 			if (ac.matches(etag, true)) {
 				throw new NotModifiedException();
 			} else {
-				// TODO Careful. Each job impl. may have a different transform impl.
-				return job.transformToRestSync(ac, 0);
+				return jobDao.transformToRestSync(job, ac, 0);
 			}
 		}, model -> ac.send(model, OK));
 	}

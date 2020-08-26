@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.dao.impl;
 
+import static com.gentics.mesh.core.data.util.HibClassConverter.toNode;
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -14,6 +16,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
@@ -36,83 +39,83 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	}
 
 	@Override
-	public NodeGraphFieldContainer getLatestDraftFieldContainer(Node node, String languageTag) {
-		return node.getLatestDraftFieldContainer(languageTag);
+	public NodeGraphFieldContainer getLatestDraftFieldContainer(HibNode node, String languageTag) {
+		return toNode(node).getLatestDraftFieldContainer(languageTag);
 	}
 
 	@Override
-	public NodeGraphFieldContainer getGraphFieldContainer(Node node, String languageTag, HibBranch branch, ContainerType type) {
-		return node.getGraphFieldContainer(languageTag, branch, type);
+	public NodeGraphFieldContainer getGraphFieldContainer(HibNode node, String languageTag, HibBranch branch, ContainerType type) {
+		return toNode(node).getGraphFieldContainer(languageTag, branch, type);
 	}
 
 	@Override
-	public NodeGraphFieldContainer getGraphFieldContainer(Node node, String languageTag) {
-		return node.getGraphFieldContainer(languageTag);
+	public NodeGraphFieldContainer getGraphFieldContainer(HibNode node, String languageTag) {
+		return toNode(node).getGraphFieldContainer(languageTag);
 	}
 
 	@Override
-	public NodeGraphFieldContainer getGraphFieldContainer(Node node, String languageTag, String branchUuid, ContainerType type) {
-		return node.getGraphFieldContainer(languageTag, branchUuid, type);
+	public NodeGraphFieldContainer getGraphFieldContainer(HibNode node, String languageTag, String branchUuid, ContainerType type) {
+		return toNode(node).getGraphFieldContainer(languageTag, branchUuid, type);
 	}
 
 	@Override
-	public NodeGraphFieldContainer createGraphFieldContainer(Node node, String languageTag, HibBranch branch, HibUser user) {
-		return node.createGraphFieldContainer(languageTag, branch, user);
+	public NodeGraphFieldContainer createGraphFieldContainer(HibNode node, String languageTag, HibBranch branch, HibUser user) {
+		return toNode(node).createGraphFieldContainer(languageTag, branch, user);
 	}
 
 	@Override
-	public NodeGraphFieldContainer createGraphFieldContainer(Node node, String languageTag, HibBranch branch, HibUser editor, NodeGraphFieldContainer original, boolean handleDraftEdge) {
-		return node.createGraphFieldContainer(languageTag, branch, editor, original, handleDraftEdge);
+	public NodeGraphFieldContainer createGraphFieldContainer(HibNode node, String languageTag, HibBranch branch, HibUser editor, NodeGraphFieldContainer original, boolean handleDraftEdge) {
+		return toNode(node).createGraphFieldContainer(languageTag, branch, editor, original, handleDraftEdge);
 	}
 
 	@Override
-	public TraversalResult<NodeGraphFieldContainer> getDraftGraphFieldContainers(Node node) {
-		return node.getDraftGraphFieldContainers();
+	public TraversalResult<NodeGraphFieldContainer> getDraftGraphFieldContainers(HibNode node) {
+		return toNode(node).getDraftGraphFieldContainers();
 	}
 
 	@Override
-	public TraversalResult<NodeGraphFieldContainer> getGraphFieldContainers(Node node, String branchUuid, ContainerType type) {
-		return node.getGraphFieldContainers(branchUuid, type);
+	public TraversalResult<NodeGraphFieldContainer> getGraphFieldContainers(HibNode node, String branchUuid, ContainerType type) {
+		return toNode(node).getGraphFieldContainers(branchUuid, type);
 	}
 
 	@Override
-	public TraversalResult<NodeGraphFieldContainer> getGraphFieldContainers(Node node, ContainerType type) {
-		return node.getGraphFieldContainers(type);
+	public TraversalResult<NodeGraphFieldContainer> getGraphFieldContainers(HibNode node, ContainerType type) {
+		return toNode(node).getGraphFieldContainers(type);
 	}
 
 	@Override
 	public long getGraphFieldContainerCount(Node node) {
-		return node.getGraphFieldContainerCount();
+		return toNode(node).getGraphFieldContainerCount();
 	}
 
 	@Override
-	public NodeGraphFieldContainer findVersion(Node node, List<String> languageTags, String branchUuid, String version) {
-		return node.findVersion(languageTags, branchUuid, version);
+	public NodeGraphFieldContainer findVersion(HibNode node, List<String> languageTags, String branchUuid, String version) {
+		return toNode(node).findVersion(languageTags, branchUuid, version);
 	}
 
 	@Override
-	public void deleteLanguageContainer(Node node, InternalActionContext ac, HibBranch branch, String languageTag, BulkActionContext bac, boolean failForLastContainer) {
-		node.deleteLanguageContainer(ac, branch, languageTag, bac, failForLastContainer);
+	public void deleteLanguageContainer(HibNode node, InternalActionContext ac, HibBranch branch, String languageTag, BulkActionContext bac, boolean failForLastContainer) {
+		toNode(node).deleteLanguageContainer(ac, branch, languageTag, bac, failForLastContainer);
 	}
 
 	@Override
-	public String getPathSegment(Node node, String branchUuid, ContainerType type, boolean anyLanguage, String... languageTag) {
-		return node.getPathSegment(branchUuid, type, anyLanguage, languageTag);
+	public String getPathSegment(HibNode node, String branchUuid, ContainerType type, boolean anyLanguage, String... languageTag) {
+		return toNode(node).getPathSegment(branchUuid, type, anyLanguage, languageTag);
 	}
 
 	@Override
-	public void deleteFromBranch(Node node, InternalActionContext ac, HibBranch branch, BulkActionContext bac, boolean ignoreChecks) {
-		node.deleteFromBranch(ac, branch, bac, ignoreChecks);
+	public void deleteFromBranch(HibNode node, InternalActionContext ac, HibBranch branch, BulkActionContext bac, boolean ignoreChecks) {
+		toNode(node).deleteFromBranch(ac, branch, bac, ignoreChecks);
 	}
 
 	@Override
-	public NodeGraphFieldContainer publish(Node node, InternalActionContext ac, String languageTag, HibBranch branch, HibUser user) {
-		return node.publish(ac, languageTag, branch, user);
+	public NodeGraphFieldContainer publish(HibNode node, InternalActionContext ac, String languageTag, HibBranch branch, HibUser user) {
+		return toNode(node).publish(ac, languageTag, branch, user);
 	}
 
 	@Override
-	public Stream<NodeGraphField> getInboundReferences(Node node) {
-		return node.getInboundReferences();
+	public Stream<NodeGraphField> getInboundReferences(HibNode node) {
+		return toNode(node).getInboundReferences();
 	}
 
 	@Override

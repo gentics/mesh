@@ -9,7 +9,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -39,7 +39,7 @@ public class BasicNodeFieldEndpointTest extends AbstractMeshTest {
 			schemaContainer("folder").getLatestVersion().setSchema(schema);
 
 			// 2. Create new node with required field value
-			Node parentNode = folder("2015");
+			HibNode parentNode = folder("2015");
 			NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 			nodeCreateRequest.setParentNodeUuid(parentNode.getUuid());
 			nodeCreateRequest.setSchema(new SchemaReferenceImpl().setName("folder"));

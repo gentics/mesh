@@ -17,6 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
@@ -42,8 +43,8 @@ import com.gentics.mesh.parameter.value.FieldsSet;
 import dagger.Lazy;
 import io.vertx.core.logging.Logger;
 
-// TODO there is no tag family root since the tag itself is the root. 
-public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper implements TagFamilyDaoWrapper {
+public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper<HibTagFamily> implements TagFamilyDaoWrapper {
+
 	private static final Logger log = getLogger(TagFamilyDaoWrapperImpl.class);
 
 	@Inject
@@ -91,6 +92,8 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper implements TagFa
 		GenericParameters generic = ac.getGenericParameters();
 		FieldsSet fields = generic.getFields();
 
+		TagFamily graphTagFamily = toTagFamily(tagFamily);
+
 		TagFamilyResponse restTagFamily = new TagFamilyResponse();
 		if (fields.has("uuid")) {
 			restTagFamily.setUuid(tagFamily.getUuid());
@@ -105,18 +108,14 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper implements TagFa
 			restTagFamily.setName(tagFamily.getName());
 		}
 
-		tagFamily.toTagFamily().fillCommonRestFields(ac, fields, restTagFamily);
+		graphTagFamily.fillCommonRestFields(ac, fields, restTagFamily);
 
 		if (fields.has("perms")) {
-			setRolePermissions(tagFamily.toTagFamily(), ac, restTagFamily);
+			setRolePermissions(graphTagFamily, ac, restTagFamily);
 		}
 
 		return restTagFamily;
 
-	}
-
-	public void setRolePermissions(MeshVertex vertex, InternalActionContext ac, GenericRestResponse model) {
-		model.setRolePerms(permissions.get().getRolePermissions(vertex, ac, ac.getRolePermissionParameters().getRoleUuid()));
 	}
 
 	@Override
@@ -197,12 +196,12 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper implements TagFa
 
 	@Override
 	public String getETag(HibTagFamily tagfamily, InternalActionContext ac) {
-		return tagfamily.toTagFamily().getETag(ac);
+		return toTagFamily(tagfamily).getETag(ac);
 	}
 
 	@Override
 	public String getAPIPath(HibTagFamily tagFamily, InternalActionContext ac) {
-		return tagFamily.toTagFamily().getAPIPath(ac);
+		return toTagFamily(tagFamily).getAPIPath(ac);
 	}
 
 	@Override

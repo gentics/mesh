@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Test;
 
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -30,7 +31,7 @@ public class BinaryFieldFileHandleLeakTest extends AbstractMeshTest {
 		String contentType = "image/png";
 		String fieldName = "image";
 		String fileName = "somefile.png";
-		Node node = folder("news");
+		HibNode node = folder("news");
 
 		try (Tx tx = tx()) {
 			prepareSchema(node, "", fieldName);
@@ -56,7 +57,7 @@ public class BinaryFieldFileHandleLeakTest extends AbstractMeshTest {
 		String contentType = "image/png";
 		String fieldName = "image";
 		String fileName = "somefile.png";
-		Node node = folder("news");
+		HibNode node = folder("news");
 
 		try (Tx tx = tx()) {
 			prepareSchema(node, "", fieldName);
@@ -90,7 +91,7 @@ public class BinaryFieldFileHandleLeakTest extends AbstractMeshTest {
 		String contentType = "image/png";
 		String fieldName = "image";
 		String fileName = "somefile.png";
-		Node node = folder("news");
+		HibNode node = folder("news");
 
 		try (Tx tx = tx()) {
 			prepareSchema(node, "", fieldName);
@@ -117,7 +118,7 @@ public class BinaryFieldFileHandleLeakTest extends AbstractMeshTest {
 		String contentType = "image/png";
 		String fieldName = "image";
 		String fileName = "somefile.png";
-		Node node = folder("news");
+		HibNode node = folder("news");
 
 		try (Tx tx = tx()) {
 			prepareSchema(node, "", fieldName);
@@ -141,7 +142,7 @@ public class BinaryFieldFileHandleLeakTest extends AbstractMeshTest {
 		String contentType = "image/png";
 		String fieldName = "image";
 		String fileName = "somefile.png";
-		Node node = folder("news");
+		HibNode node = folder("news");
 
 		try (Tx tx = tx()) {
 			prepareSchema(node, "", fieldName);
@@ -168,7 +169,7 @@ public class BinaryFieldFileHandleLeakTest extends AbstractMeshTest {
 		String contentType = "text/plain";
 		String fieldName = "image";
 		String fileName = "somefile.txt";
-		Node node = folder("news");
+		HibNode node = folder("news");
 
 		try (Tx tx = tx()) {
 			prepareSchema(node, "", fieldName);

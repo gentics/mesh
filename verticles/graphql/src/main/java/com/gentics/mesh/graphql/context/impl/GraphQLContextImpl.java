@@ -7,7 +7,7 @@ import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.Tx;
@@ -52,8 +52,8 @@ public class GraphQLContextImpl extends InternalRoutingActionContextImpl impleme
 	@Override
 	public boolean hasReadPerm(NodeGraphFieldContainer container) {
 		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
-		Node node = contentDao.getNode(container);
-		Object nodeId = node.id();
+		HibNode node = contentDao.getNode(container);
+		Object nodeId = node.getId();
 		UserDaoWrapper userDao = Tx.get().data().userDao();
 
 		if (userDao.hasPermissionForId(getUser(), nodeId, InternalPermission.READ_PERM)) {

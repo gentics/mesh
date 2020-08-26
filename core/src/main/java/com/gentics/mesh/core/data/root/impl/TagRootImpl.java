@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toTagFamily;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
@@ -229,7 +230,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 		// Add the tag to the global tag root
 		mesh().boot().meshRoot().getTagRoot().addTag(tag);
 		// And to the tag family
-		tagFamily.toTagFamily().addTag(tag);
+		toTagFamily(tagFamily).addTag(tag);
 
 		// Set the tag family for the tag
 		tag.setTagFamily(tagFamily);

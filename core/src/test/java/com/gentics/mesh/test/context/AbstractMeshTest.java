@@ -23,7 +23,7 @@ import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
@@ -108,10 +108,10 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 		return this.httpClient;
 	}
 
-	public String getJson(Node node) throws Exception {
+	public String getJson(HibNode node) throws Exception {
 		InternalActionContext ac = mockActionContext("lang=en&version=draft");
 		ac.data().put(SharedKeys.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
-		return node.transformToRestSync(ac, 0).toJson();
+		return Tx.get().data().nodeDao().transformToRestSync(node, ac, 0).toJson();
 	}
 
 	protected void testPermission(InternalPermission perm, HibElement element) {

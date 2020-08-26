@@ -16,6 +16,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.DateGraphField;
 import com.gentics.mesh.core.db.Tx;
@@ -61,7 +62,7 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 	public void testUpdateNodeFieldWithField() {
 		disableAutoPurge();
 
-		Node node = folder("2015");
+		HibNode node = folder("2015");
 		for (int i = 0; i < 20; i++) {
 			Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis() + (i * 10000)));
 			NodeGraphFieldContainer container;
@@ -101,7 +102,7 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 	public void testUpdateSetNull() {
 		disableAutoPurge();
 
-		Node node = folder("2015");
+		HibNode node = folder("2015");
 		NodeResponse secondResponse;
 
 		Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
@@ -177,7 +178,7 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() {
-		Node node = folder("2015");
+		HibNode node = folder("2015");
 		Long nowEpoch;
 		try (Tx tx = tx()) {
 			ContentDaoWrapper contentDao = tx.data().contentDao();

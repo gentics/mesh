@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.dao.impl;
 import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toBranch;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toNode;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toProject;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toTag;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toTagFamily;
@@ -30,6 +31,7 @@ import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
@@ -57,7 +59,7 @@ import dagger.Lazy;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-public class TagDaoWrapperImpl extends AbstractDaoWrapper implements TagDaoWrapper {
+public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements TagDaoWrapper {
 
 	private static final Logger log = LoggerFactory.getLogger(TagDaoWrapperImpl.class);
 
@@ -232,8 +234,8 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper implements TagDaoWrapp
 		// For node which have been previously tagged we need to fire the untagged event.
 		Project graphProject = toProject(tag.getProject());
 		for (Branch branch : graphProject.getBranchRoot().findAll()) {
-			for (Node node : getNodes(tag, branch)) {
-				bac.add(node.onTagged(tag, branch, UNASSIGNED));
+			for (HibNode node : getNodes(tag, branch)) {
+				bac.add(toNode(node).onTagged(tag, branch, UNASSIGNED));
 			}
 		}
 		tag.deleteElement();
@@ -248,18 +250,18 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper implements TagDaoWrapp
 	}
 
 	@Override
-	public TraversalResult<? extends Node> findTaggedNodes(HibTag tag, InternalActionContext ac) {
+	public TraversalResult<? extends HibNode> findTaggedNodes(HibTag tag, InternalActionContext ac) {
 		return boot.get().tagRoot().findTaggedNodes(tag, ac);
 	}
 
 	@Override
-	public TraversalResult<? extends Node> getNodes(HibTag tag, HibBranch branch) {
+	public TraversalResult<? extends HibNode> getNodes(HibTag tag, HibBranch branch) {
 		return boot.get().tagRoot().getNodes(toTag(tag), branch);
 	}
 
 	@Override
-	public void removeNode(HibTag tag, Node node) {
-		toTag(tag).unlinkIn(node, HAS_TAG);
+	public void removeNode(HibTag tag, HibNode node) {
+		toTag(tag).unlinkIn(toNode(node), HAS_TAG);
 	}
 
 	@Override
@@ -321,32 +323,32 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper implements TagDaoWrapp
 	}
 
 	@Override
-	public void addTag(Node node, HibTag tag, HibBranch branch) {
-		node.addTag(tag, branch);
+	public void addTag(HibNode node, HibTag tag, HibBranch branch) {
+		toNode(node).addTag(tag, branch);
 	}
 
 	@Override
-	public void removeTag(Node node, HibTag tag, HibBranch branch) {
-		node.removeTag(tag, branch);
+	public void removeTag(HibNode node, HibTag tag, HibBranch branch) {
+		toNode(node).removeTag(tag, branch);
 	}
 
 	@Override
-	public void removeAllTags(Node node, HibBranch branch) {
-		node.removeAllTags(branch);
+	public void removeAllTags(HibNode node, HibBranch branch) {
+		toNode(node).removeAllTags(branch);
 	}
 
 	@Override
-	public TraversalResult<HibTag> getTags(Node node, HibBranch branch) {
-		return node.getTags(branch);
+	public TraversalResult<HibTag> getTags(HibNode node, HibBranch branch) {
+		return toNode(node).getTags(branch);
 	}
 
 	@Override
-	public TransformablePage<? extends HibTag> getTags(Node node, HibUser user, PagingParameters params, HibBranch branch) {
-		return node.getTags(user, params, branch);
+	public TransformablePage<? extends HibTag> getTags(HibNode node, HibUser user, PagingParameters params, HibBranch branch) {
+		return toNode(node).getTags(user, params, branch);
 	}
 
 	@Override
-	public boolean hasTag(Node node, HibTag tag, HibBranch branch) {
-		return node.hasTag(tag, branch);
+	public boolean hasTag(HibNode node, HibTag tag, HibBranch branch) {
+		return toNode(node).hasTag(tag, branch);
 	}
 }

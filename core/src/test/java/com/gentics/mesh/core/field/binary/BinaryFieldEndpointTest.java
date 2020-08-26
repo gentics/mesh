@@ -24,7 +24,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldEndpointTest;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
@@ -148,7 +148,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 
 		String filename = "filename.txt";
 		Buffer buffer = TestUtils.randomBuffer(1000);
-		Node node = folder("2015");
+		HibNode node = folder("2015");
 
 		// 1. Upload a binary field
 		String uuid = tx(() -> folder("2015").getUuid());

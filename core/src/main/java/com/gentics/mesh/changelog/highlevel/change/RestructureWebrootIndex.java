@@ -13,7 +13,7 @@ import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -75,7 +75,7 @@ public class RestructureWebrootIndex extends AbstractHighLevelChange {
 				edge.setUrlFieldInfo(contentDao.getUrlFieldValues(container));
 				String segment = contentDao.getSegmentFieldValue(container);
 				if (segment != null && !segment.trim().isEmpty()) {
-					Node node = contentDao.getNode(container);
+					HibNode node = contentDao.getNode(container);
 					if (node != null) {
 						node = nodeDao.getParentNode(node, branchUuid);
 					}

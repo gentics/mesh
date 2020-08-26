@@ -44,6 +44,7 @@ import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.group.HibGroup;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
@@ -81,7 +82,7 @@ import dagger.Lazy;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWrapper {
+public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements UserDaoWrapper {
 
 	private static final Logger log = LoggerFactory.getLogger(UserDaoWrapperImpl.class);
 
@@ -576,7 +577,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWra
 	}
 
 	@Override
-	public boolean canReadNode(HibUser user, InternalActionContext ac, Node node) {
+	public boolean canReadNode(HibUser user, InternalActionContext ac, HibNode node) {
 		if (user instanceof NodeMigrationUser) {
 			return true;
 		}
@@ -617,7 +618,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWra
 	@Override
 	public boolean hasReadPermission(HibUser user, NodeGraphFieldContainer container, String branchUuid, String requestedVersion) {
 		ContentDaoWrapper contentDao = boot.get().contentDao();
-		Node node = contentDao.getNode(container);
+		HibNode node = contentDao.getNode(container);
 		if (hasPermission(user, node, READ_PERM)) {
 			return true;
 		}
@@ -705,7 +706,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWra
 	@Override
 	public void failOnNoReadPermission(HibUser user, NodeGraphFieldContainer container, String branchUuid, String requestedVersion) {
 		ContentDaoWrapper contentDao = boot.get().contentDao();
-		Node node = contentDao.getNode(container);
+		HibNode node = contentDao.getNode(container);
 		if (!hasReadPermission(user, container, branchUuid, requestedVersion)) {
 			throw error(FORBIDDEN, "error_missing_perm", node.getUuid(),
 				"published".equals(requestedVersion)

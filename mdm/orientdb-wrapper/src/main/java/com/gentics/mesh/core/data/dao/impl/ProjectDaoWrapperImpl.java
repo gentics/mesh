@@ -56,7 +56,7 @@ import io.vertx.core.logging.LoggerFactory;
 
 // Use ProjectDao instead of ProjectRoot once ready
 @Singleton
-public class ProjectDaoWrapperImpl extends AbstractDaoWrapper implements ProjectDaoWrapper {
+public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implements ProjectDaoWrapper {
 
 	private static final Logger log = LoggerFactory.getLogger(ProjectDaoWrapperImpl.class);
 

@@ -6,7 +6,7 @@ import java.util.function.Predicate;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -103,18 +103,18 @@ public interface TagDaoWrapper extends TagDao, DaoWrapper<HibTag>, DaoTransforma
 	 * @param pagingInfo
 	 * @return
 	 */
-	TransformablePage<? extends Node> findTaggedNodes(HibTag tag, HibUser requestUser, HibBranch branch, List<String> languageTags,
+	TransformablePage<? extends HibNode> findTaggedNodes(HibTag tag, HibUser requestUser, HibBranch branch, List<String> languageTags,
 		ContainerType type,
 		PagingParameters pagingInfo);
 
-	TraversalResult<? extends Node> findTaggedNodes(HibTag tag, InternalActionContext ac);
+	TraversalResult<? extends HibNode> findTaggedNodes(HibTag tag, InternalActionContext ac);
 
 	/**
 	 * Unassign the the node from the tag.
 	 *
 	 * @param node
 	 */
-	void removeNode(HibTag tag, Node node);
+	void removeNode(HibTag tag, HibNode node);
 
 	/**
 	 * Return a traversal result of nodes that were tagged by this tag in the given branch
@@ -122,7 +122,7 @@ public interface TagDaoWrapper extends TagDao, DaoWrapper<HibTag>, DaoTransforma
 	 * @param branch
 	 * @return Result
 	 */
-	TraversalResult<? extends Node> getNodes(HibTag tag, HibBranch branch);
+	TraversalResult<? extends HibNode> getNodes(HibTag tag, HibBranch branch);
 
 	long computeCount(HibTagFamily tagFamily);
 
@@ -132,7 +132,7 @@ public interface TagDaoWrapper extends TagDao, DaoWrapper<HibTag>, DaoTransforma
 	 * @param tag
 	 * @param branch
 	 */
-	void addTag(Node node, HibTag tag, HibBranch branch);
+	void addTag(HibNode node, HibTag tag, HibBranch branch);
 
 	/**
 	 * Remove the given tag from the list of tags for this node in the given branch.
@@ -140,14 +140,14 @@ public interface TagDaoWrapper extends TagDao, DaoWrapper<HibTag>, DaoTransforma
 	 * @param tag
 	 * @param branch
 	 */
-	void removeTag(Node node, HibTag tag, HibBranch branch);
+	void removeTag(HibNode node, HibTag tag, HibBranch branch);
 
 	/**
 	 * Remove all tags for the given branch.
 	 *
 	 * @param branch
 	 */
-	void removeAllTags(Node node, HibBranch branch);
+	void removeAllTags(HibNode node, HibBranch branch);
 
 	/**
 	 * Return a list of all tags that were assigned to this node in the given branch.
@@ -155,7 +155,7 @@ public interface TagDaoWrapper extends TagDao, DaoWrapper<HibTag>, DaoTransforma
 	 * @param branch
 	 * @return
 	 */
-	TraversalResult<HibTag> getTags(Node node, HibBranch branch);
+	TraversalResult<HibTag> getTags(HibNode node, HibBranch branch);
 
 	/**
 	 * Return a page of all visible tags that are assigned to the node.
@@ -165,7 +165,7 @@ public interface TagDaoWrapper extends TagDao, DaoWrapper<HibTag>, DaoTransforma
 	 * @param branch
 	 * @return Page which contains the result
 	 */
-	TransformablePage<? extends HibTag> getTags(Node node, HibUser user, PagingParameters params, HibBranch branch);
+	TransformablePage<? extends HibTag> getTags(HibNode node, HibUser user, PagingParameters params, HibBranch branch);
 
 	/**
 	 * Tests if the node is tagged with the given tag.
@@ -174,5 +174,5 @@ public interface TagDaoWrapper extends TagDao, DaoWrapper<HibTag>, DaoTransforma
 	 * @param branch
 	 * @return
 	 */
-	boolean hasTag(Node node, HibTag tag, HibBranch branch);
+	boolean hasTag(HibNode node, HibTag tag, HibBranch branch);
 }

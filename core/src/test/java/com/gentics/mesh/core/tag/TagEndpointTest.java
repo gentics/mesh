@@ -43,7 +43,7 @@ import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
@@ -212,7 +212,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		String parentTagFamilyUuid = tx(() -> parentTagFamily.getUuid());
 
 		TagUpdateRequest tagUpdateRequest = new TagUpdateRequest();
-		List<? extends Node> nodes;
+		List<? extends HibNode> nodes;
 
 		try (Tx tx = tx()) {
 			TagDaoWrapper tagDao = tx.data().tagDao();
@@ -254,7 +254,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			// Assert that all nodes which previously referenced the tag were updated in the index
 			String projectUuid = project().getUuid();
 			String branchUuid = project().getLatestBranch().getUuid();
-			for (Node node : nodes) {
+			for (HibNode node : nodes) {
 				String schemaContainerVersionUuid = contentDao.getLatestDraftFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
 				for (ContainerType type : Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED)) {
 					assertThat(trackingSearchProvider()).hasStore(ContentDaoWrapper.composeIndexName(projectUuid, branchUuid,
@@ -365,7 +365,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			});
 		});
 
-		List<? extends Node> nodes = tx(tx -> {
+		List<? extends HibNode> nodes = tx(tx -> {
 			TagDaoWrapper tagDao = tx.data().tagDao();
 			return tagDao.getNodes(tag, project().getLatestBranch()).list();
 		});
@@ -378,7 +378,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			ContentDaoWrapper contentDao = tx.data().contentDao();
 			assertThat(trackingSearchProvider()).hasDelete(Tag.composeIndexName(projectUuid), Tag.composeDocumentId(tagUuid));
 			// Assert that all nodes which previously referenced the tag were updated in the index
-			for (Node node : nodes) {
+			for (HibNode node : nodes) {
 				String schemaContainerVersionUuid = contentDao.getLatestDraftFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
 				assertThat(trackingSearchProvider()).hasStore(ContentDaoWrapper.composeIndexName(projectUuid, branchUuid,
 					schemaContainerVersionUuid, ContainerType.DRAFT), ContentDaoWrapper.composeDocumentId(node.getUuid(), "en"));
@@ -412,7 +412,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		}
 
 		try (Tx tx = tx()) {
-			Tag tag = boot().tagRoot().findByUuid(uuid);
+			HibTag tag = tx.data().tagDao().findByUuidGlobal(uuid);
 			assertNotNull("The tag should not have been deleted", tag);
 		}
 	}

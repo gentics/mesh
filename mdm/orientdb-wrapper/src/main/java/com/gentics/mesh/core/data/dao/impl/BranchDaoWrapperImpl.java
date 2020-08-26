@@ -9,6 +9,8 @@ import java.util.function.Predicate;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.NotImplementedException;
+
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
@@ -30,7 +32,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 import dagger.Lazy;
 
 @Singleton
-public class BranchDaoWrapperImpl extends AbstractDaoWrapper implements BranchDaoWrapper {
+public class BranchDaoWrapperImpl extends AbstractDaoWrapper<HibBranch> implements BranchDaoWrapper {
 
 	@Inject
 	public BranchDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionProperties> permissions) {
@@ -130,6 +132,16 @@ public class BranchDaoWrapperImpl extends AbstractDaoWrapper implements BranchDa
 	public HibBranch getLatestBranch(HibProject project) {
 		Project graphProject = toProject(project);
 		return graphProject.getBranchRoot().getLatestBranch();
+	}
+
+	@Override
+	public HibBranch findByUuidGlobal(String uuid) {
+		throw new NotImplementedException("Not supported");
+	}
+
+	@Override
+	public long computeGlobalCount() {
+		throw new NotImplementedException("Not supported");
 	}
 
 }

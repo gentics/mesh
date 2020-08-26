@@ -13,7 +13,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.TagDAOActions;
 import com.gentics.mesh.core.action.TagFamilyDAOActions;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
@@ -70,7 +70,7 @@ public class TagCrudHandler extends AbstractHandler {
 				NodeParameters nodeParams = ac.getNodeParameters();
 				HibTagFamily tagFamily = tagFamilyActions.loadByUuid(context(tx, ac), tagFamilyUuid, READ_PERM, true);
 				HibTag tag = tagActions.loadByUuid(context(tx, ac, tagFamily), tagUuid, READ_PERM, true);
-				TransformablePage<? extends Node> page = tagDao.findTaggedNodes(tag, ac.getUser(), ac.getBranch(),
+				TransformablePage<? extends HibNode> page = tagDao.findTaggedNodes(tag, ac.getUser(), ac.getBranch(),
 					nodeParams.getLanguageList(options),
 					ContainerType.forVersion(ac.getVersioningParameters().getVersion()), pagingParams);
 				return page.transformToRestSync(ac, 0);

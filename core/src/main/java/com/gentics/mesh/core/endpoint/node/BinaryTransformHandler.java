@@ -14,14 +14,15 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
@@ -105,11 +106,12 @@ public class BinaryTransformHandler extends AbstractHandler {
 		String languageTag = transformation.getLanguage();
 
 		// Load needed elements
-		Node node = db.tx(tx -> {
+		HibNode node = db.tx(tx -> {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			HibProject project = ac.getProject();
-			Node n = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
+			HibNode n = nodeDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
 
-			Language language = tx.data().languageDao().findByLanguageTag(languageTag);
+			HibLanguage language = tx.data().languageDao().findByLanguageTag(languageTag);
 			if (language == null) {
 				throw error(NOT_FOUND, "error_language_not_found", transformation.getLanguage());
 			}
@@ -208,7 +210,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 
 	}
 
-	private NodeResponse updateNodeInGraph(InternalActionContext ac, UploadContext context, TransformationResult result, Node node,
+	private NodeResponse updateNodeInGraph(InternalActionContext ac, UploadContext context, TransformationResult result, HibNode node,
 		String languageTag, String fieldName, ImageManipulationParameters parameters) {
 		return utils.eventAction((tx, batch) -> {
 			ContentDaoWrapper contentDao = tx.data().contentDao();
@@ -266,11 +268,11 @@ public class BinaryTransformHandler extends AbstractHandler {
 			}
 
 			batch.add(newDraftVersion.onCreated(branchUuid, DRAFT));
-			return node.transformToRestSync(ac, 0);
+			return tx.data().nodeDao().transformToRestSync(node, ac, 0);
 		});
 	}
 
-	private NodeGraphFieldContainer loadTargetedContent(Node node, String languageTag, String fieldName) {
+	private NodeGraphFieldContainer loadTargetedContent(HibNode node, String languageTag, String fieldName) {
 		ContentDaoWrapper contentDao = boot.get().contentDao();
 		NodeGraphFieldContainer latestDraftVersion = contentDao.getLatestDraftFieldContainer(node, languageTag);
 		if (latestDraftVersion == null) {

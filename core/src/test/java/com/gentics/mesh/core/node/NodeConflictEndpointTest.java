@@ -7,6 +7,7 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -22,6 +23,7 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.i18n.I18NUtil;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
@@ -42,7 +44,7 @@ import com.gentics.mesh.util.Tuple;
 @MeshTestSetting(testSize = FULL, startServer = true)
 public class NodeConflictEndpointTest extends AbstractMeshTest {
 
-	private Node getTestNode() {
+	private HibNode getTestNode() {
 		return content("concorde");
 	}
 
@@ -60,7 +62,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 
 		try (Tx trx = tx()) {
 
-			Node node = getTestNode();
+			HibNode node = getTestNode();
 			NodeUpdateRequest request = prepareNameFieldUpdateRequest("1234", "1.0");
 			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en", "de");
@@ -88,7 +90,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 		try (Tx trx = tx()) {
 
 			// Invoke an initial update on the node - Update Version 1.0 teaser -> 1.1
-			Node node = getTestNode();
+			HibNode node = getTestNode();
 			NodeUpdateRequest request1 = prepareNameFieldUpdateRequest("1234", "1.0");
 			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en", "de");
@@ -155,7 +157,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 
 	private void initialRequest() {
 
-		Node node = getTestNode();
+		HibNode node = getTestNode();
 		String nodeUuid = tx(() -> node.getUuid());
 
 		NodeGraphFieldContainer oldContainer = tx(() -> boot().contentDao().findVersion(node, "en", project().getLatestBranch().getUuid(), "1.0"));
@@ -186,7 +188,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 
 	private NodeUpdateRequest modifingRequest() {
 		try (Tx trx = tx()) {
-			Node node = getTestNode();
+			HibNode node = getTestNode();
 			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en", "de");
 			NodeUpdateRequest request = prepareNameFieldUpdateRequest("1234", "1.1");
@@ -215,7 +217,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 	 */
 	private void repeatRequest(NodeUpdateRequest request) {
 		try (Tx trx = tx()) {
-			Node node = getTestNode();
+			HibNode node = getTestNode();
 			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en", "de");
 			// Add another field to the request in order to invoke an update. Otherwise no update would occure and no 1.3 would be created.
@@ -225,7 +227,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx trx = tx()) {
-			Node node = getTestNode();
+			HibNode node = getTestNode();
 			NodeGraphFieldContainer createdVersion = trx.data().contentDao().findVersion(node, Arrays.asList("en"), project().getLatestBranch().getUuid(),
 				"1.3");
 			assertNotNull("The graph field container for version 1.3 could not be found.", createdVersion);
@@ -254,7 +256,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 
 	private void deletingRequest() {
 		try (Tx trx = tx()) {
-			Node node = getTestNode();
+			HibNode node = getTestNode();
 			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en", "de");
 			NodeUpdateRequest request4 = prepareNameFieldUpdateRequest("1234", "1.2");
@@ -264,7 +266,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 			assertThat(restNode4).hasVersion("1.4");
 		}
 		try (Tx trx = tx()) {
-			Node node = getTestNode();
+			HibNode node = getTestNode();
 			NodeGraphFieldContainer createdVersion = trx.data().contentDao().findVersion(node, "en", project().getLatestBranch().getUuid(), "1.4");
 			assertNotNull("The graph field container for version 0.5 could not be found.", createdVersion);
 			assertNull("The micronode should not exist in this version since we explicitly removed it.", createdVersion.getMicronode("micronode"));
@@ -274,7 +276,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 	}
 
 	private void updateSchema() {
-		Node node = getTestNode();
+		HibNode node = getTestNode();
 		ListFieldSchema stringListFieldSchema = new ListFieldSchemaImpl();
 		stringListFieldSchema.setName("stringList");
 		stringListFieldSchema.setListType("string");
@@ -311,7 +313,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 		initialRequest();
 
 		// Modify 1.1 and update micronode
-		Node node = getTestNode();
+		HibNode node = getTestNode();
 		try (Tx tx = tx()) {
 			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en", "de");
@@ -366,7 +368,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 	public void testBogusVersionNumber() {
 		try (Tx trx = tx()) {
 
-			Node node = getTestNode();
+			HibNode node = getTestNode();
 			NodeUpdateRequest request = prepareNameFieldUpdateRequest("1234", "42.1");
 			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en", "de");

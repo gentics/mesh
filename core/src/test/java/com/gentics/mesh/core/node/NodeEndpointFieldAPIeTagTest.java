@@ -8,7 +8,7 @@ import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -23,7 +23,7 @@ public class NodeEndpointFieldAPIeTagTest extends AbstractMeshTest {
 		String contentType = "application/octet-stream";
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
-		Node node = folder("news");
+		HibNode node = folder("news");
 		String nodeUuid = node.getUuid();
 
 		try (Tx tx = tx()) {
@@ -45,7 +45,7 @@ public class NodeEndpointFieldAPIeTagTest extends AbstractMeshTest {
 		String contentType = "application/octet-stream";
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
-		Node node = folder("news");
+		HibNode node = folder("news");
 		String nodeUuid = node.getUuid();
 
 		try (Tx tx = tx()) {

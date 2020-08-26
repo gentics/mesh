@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.ListGraphField;
 import com.gentics.mesh.core.db.Tx;
@@ -26,7 +27,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 
 public abstract class AbstractFieldEndpointTest extends AbstractMeshTest implements FieldEndpointTestcases {
 
-	protected NodeResponse readNode(Node node, String... expandedFieldNames) {
+	protected NodeResponse readNode(HibNode node, String... expandedFieldNames) {
 		NodeParametersImpl parameters = new NodeParametersImpl();
 		parameters.setLanguages("en");
 		parameters.setExpandedFieldNames(expandedFieldNames);
@@ -35,7 +36,7 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 
 	protected void createNodeAndExpectFailure(String fieldKey, Field field, HttpResponseStatus status, String bodyMessageI18nKey,
 		String... i18nParams) {
-		Node node = folder("2015");
+		HibNode node = folder("2015");
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 		nodeCreateRequest.setParentNodeUuid(node.getUuid());
 		nodeCreateRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
@@ -73,7 +74,7 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 		nodeUpdateRequest.getFields().put(fieldKey, field);
 		try (Tx tx = tx()) {
 			ContentDaoWrapper contentDao = tx.data().contentDao();
-			Node node = folder("2015");
+			HibNode node = folder("2015");
 			nodeUpdateRequest.setVersion(contentDao.getLatestDraftFieldContainer(node, english()).getVersion().toString());
 			tx.success();
 		}
@@ -85,7 +86,7 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 	}
 
 	protected void updateNodeFailure(String fieldKey, Field field, HttpResponseStatus status, String bodyMessageI18nKey, String... i18nParams) {
-		Node node = folder("2015");
+		HibNode node = folder("2015");
 		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
 		nodeUpdateRequest.setLanguage("en");
 		nodeUpdateRequest.getFields().put(fieldKey, field);

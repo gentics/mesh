@@ -16,7 +16,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.list.impl.BooleanGraphFieldListImpl;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractListFieldEndpointTest;
@@ -116,7 +116,7 @@ public class BooleanListFieldEndpointTest extends AbstractListFieldEndpointTest 
 	public void testUpdateNodeFieldWithField() throws IOException {
 		disableAutoPurge();
 
-		Node node = folder("2015");
+		HibNode node = folder("2015");
 
 		List<List<Boolean>> valueCombinations = Arrays.asList(Arrays.asList(true, false, false), Arrays.asList(false, false, true),
 			Collections.emptyList(), Arrays.asList(true, false), Arrays.asList(false));
@@ -165,7 +165,7 @@ public class BooleanListFieldEndpointTest extends AbstractListFieldEndpointTest 
 		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
 			ContentDaoWrapper contentDao = tx.data().contentDao();
-			Node node = folder("2015");
+			HibNode node = folder("2015");
 			NodeGraphFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getBooleanList(FIELD_NAME)).isNull();

@@ -25,8 +25,8 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Micronode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
@@ -95,7 +95,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	public void testUpdateNodeFieldWithField() {
 		disableAutoPurge();
 
-		Node node = folder("2015");
+		HibNode node = folder("2015");
 
 		MicronodeResponse field = new MicronodeResponse();
 		field.setMicroschema(new MicroschemaReferenceImpl().setName("vcard"));
@@ -171,7 +171,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			assertThat(secondResponse.getVersion()).as("New version number").isNotEqualTo(oldNumber);
 
 			// Assert that the old version was not modified
-			Node node = folder("2015");
+			HibNode node = folder("2015");
 			NodeGraphFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getMicronode(FIELD_NAME)).isNull();
@@ -383,7 +383,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() throws IOException {
-		Node node = folder("2015");
+		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
 			ContentDaoWrapper contentDao = tx.data().contentDao();
 			HibMicroschemaVersion microschema = microschemaContainers().get("vcard").getLatestVersion();
@@ -411,7 +411,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	 */
 	@Test
 	public void testExpandAllCyclicMicronodeWithNodeReference() {
-		Node node = folder("2015");
+		HibNode node = folder("2015");
 		MicroschemaVersionModel nodeMicroschema = new MicroschemaModelImpl();
 
 		try (Tx tx = tx()) {
@@ -459,8 +459,8 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	public void testUpdateFieldTypes() throws IOException {
 		Long date = System.currentTimeMillis();
-		Node newsOverview = content("news overview");
-		Node newsFolder = folder("news");
+		HibNode newsOverview = content("news overview");
+		HibNode newsFolder = folder("news");
 		MicroschemaVersionModel fullMicroschema = new MicroschemaModelImpl();
 
 		try (Tx tx = tx()) {

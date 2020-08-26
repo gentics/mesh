@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
@@ -303,7 +304,7 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		return delegate.v();
 	}
 
-	public NodeGraphField createNode(String key, Node node) {
+	public NodeGraphField createNode(String key, HibNode node) {
 		return delegate.createNode(key, node);
 	}
 
@@ -527,7 +528,7 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		return delegate.getNode();
 	}
 
-	public Iterable<? extends Node> getReferencedNodes() {
+	public Iterable<? extends HibNode> getReferencedNodes() {
 		return delegate.getReferencedNodes();
 	}
 

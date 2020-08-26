@@ -163,7 +163,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @param node
 	 * @return Fluent API
 	 */
-	User setReferencedNode(HibNode node);
+	HibUser setReferencedNode(HibInNode node);
 
 	/**
 	 * Return a page of groups which the user was assigned to.

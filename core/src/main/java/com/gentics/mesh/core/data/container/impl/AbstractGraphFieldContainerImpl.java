@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.container.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toNode;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -22,8 +23,8 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.impl.GraphFieldTypes;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Micronode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
 import com.gentics.mesh.core.data.node.field.DateGraphField;
@@ -77,7 +78,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	 * 
 	 * @return
 	 */
-	abstract protected Node getNode();
+	abstract protected HibNode getNode();
 
 	@Override
 	public StringGraphField createString(String key) {
@@ -96,8 +97,8 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	}
 
 	@Override
-	public NodeGraphField createNode(String key, Node node) {
-		NodeGraphFieldImpl field = getGraph().addFramedEdge(this, node, HAS_FIELD, NodeGraphFieldImpl.class);
+	public NodeGraphField createNode(String key, HibNode node) {
+		NodeGraphFieldImpl field = getGraph().addFramedEdge(this, toNode(node), HAS_FIELD, NodeGraphFieldImpl.class);
 		field.setFieldKey(key);
 		return field;
 	}
@@ -392,7 +393,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	}
 
 	@Override
-	public Iterable<? extends Node> getReferencedNodes() {
+	public Iterable<? extends HibNode> getReferencedNodes() {
 		// Get all fields and group them by type
 		Map<String, List<FieldSchema>> affectedFields = getSchemaContainerVersion().getSchema().getFields().stream()
 			.filter(this::isNodeReferenceType)
@@ -401,7 +402,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 		Function<FieldTypes, List<FieldSchema>> getFields = type -> Optional.ofNullable(affectedFields.get(type.toString()))
 			.orElse(Collections.emptyList());
 
-		Stream<Stream<Node>> nodeStream = Stream.of(
+		Stream<Stream<HibNode>> nodeStream = Stream.of(
 			getFields.apply(FieldTypes.NODE).stream().flatMap(this::getNodeFromNodeField),
 			getFields.apply(FieldTypes.MICRONODE).stream().flatMap(this::getNodesFromMicronode),
 			getFields.apply(FieldTypes.LIST).stream().flatMap(this::getNodesFromList)
@@ -424,7 +425,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	 *            The node field to get the node from
 	 * @return Gets the node as a stream or an empty stream if the node field is not set
 	 */
-	private Stream<Node> getNodeFromNodeField(FieldSchema field) {
+	private Stream<HibNode> getNodeFromNodeField(FieldSchema field) {
 		return Optional.ofNullable(getNode(field.getName()))
 			.map(NodeGraphField::getNode)
 			.map(Stream::of)
@@ -434,7 +435,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	/**
 	 * Gets the nodes that are referenced by a micronode in the given field. This includes all node fields and node list fields in the micronode.
 	 */
-	private Stream<? extends Node> getNodesFromMicronode(FieldSchema field) {
+	private Stream<? extends HibNode> getNodesFromMicronode(FieldSchema field) {
 		return Optional.ofNullable(getMicronode(field.getName()))
 			.map(micronode -> StreamSupport.stream(micronode.getMicronode().getReferencedNodes().spliterator(), false))
 			.orElseGet(Stream::empty);
@@ -444,7 +445,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	 * Gets the nodes that are referenced by a list field. In case of a node list, all nodes in that list are returned. In case of a micronode list, all nodes
 	 * referenced by all node fields and node list fields in all microschemas are returned. Otherwise an empty stream is returned.
 	 */
-	private Stream<? extends Node> getNodesFromList(FieldSchema field) {
+	private Stream<? extends HibNode> getNodesFromList(FieldSchema field) {
 		ListFieldSchema list;
 		if (field instanceof ListFieldSchema) {
 			list = (ListFieldSchema) field;

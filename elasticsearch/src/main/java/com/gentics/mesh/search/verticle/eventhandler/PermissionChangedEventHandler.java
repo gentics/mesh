@@ -36,12 +36,9 @@ import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.entity.MeshEntities;
 
 import io.reactivex.Flowable;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 @Singleton
 public class PermissionChangedEventHandler implements EventHandler {
-	private static final Logger log = LoggerFactory.getLogger(PermissionChangedEventHandler.class);
 
 	private final MeshEntities meshEntities;
 	private final MeshHelper meshHelper;

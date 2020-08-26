@@ -2,13 +2,18 @@ package com.gentics.mesh.core.data.dao;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
+import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
+import com.gentics.mesh.core.rest.common.PermissionInfo;
+import com.gentics.mesh.madl.traversal.TraversalResult;
 
 import dagger.Lazy;
 
-public abstract class AbstractDaoWrapper {
+public abstract class AbstractDaoWrapper<T extends HibElement> implements DaoWrapper<T> {
 
 	protected final Lazy<BootstrapInitializer> boot;
 
@@ -28,12 +33,23 @@ public abstract class AbstractDaoWrapper {
 	 *            Graph string value
 	 * @return true if restValue is not null and the restValue is not equal to the graph value. Otherwise false.
 	 */
-	protected <T> boolean shouldUpdate(T restValue, T graphValue) {
+	protected <E> boolean shouldUpdate(E restValue, E graphValue) {
 		return restValue != null && !restValue.equals(graphValue);
 	}
 
-	protected void setRolePermissions(MeshVertex vertex, InternalActionContext ac, GenericRestResponse model) {
-		model.setRolePerms(permissions.get().getRolePermissions(vertex, ac, ac.getRolePermissionParameters().getRoleUuid()));
+	@Override
+	public PermissionInfo getRolePermissions(HibCoreElement element, InternalActionContext ac, String roleUuid) {
+		return permissions.get().getRolePermissions(element, ac, roleUuid);
+	}
+
+	@Override
+	public TraversalResult<? extends HibRole> getRolesWithPerm(T element, InternalPermission perm) {
+		return permissions.get().getRolesWithPerm(element, perm);
+	}
+
+	@Override
+	public void setRolePermissions(T element, InternalActionContext ac, GenericRestResponse model) {
+		model.setRolePerms(permissions.get().getRolePermissions(element, ac, ac.getRolePermissionParameters().getRoleUuid()));
 	}
 
 }

@@ -34,6 +34,7 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.db.Tx;
@@ -66,7 +67,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		String contentType = "application/octet-stream";
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
-		Node node = folder("news");
+		HibNode node = folder("news");
 		String uuid = tx(() -> node.getUuid());
 
 		try (Tx tx = tx()) {
@@ -88,7 +89,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		int binaryLen = 10000;
 		String fileName = "somefile.dat";
 		String whitelistRegex = "image/.*";
-		Node node = folder("news");
+		HibNode node = folder("news");
 
 		try (Tx tx = tx()) {
 			prepareSchema(node, whitelistRegex, "binary");
@@ -104,7 +105,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		String contentType = "application/octet-stream";
 
 		int binaryLen = 10000;
-		Node node = folder("news");
+		HibNode node = folder("news");
 
 		try (Tx tx = tx()) {
 			prepareSchema(node, "", "binary");
@@ -123,7 +124,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 
 		String contentType = "application/octet-stream";
 		int binaryLen = 10000;
-		Node node = folder("news");
+		HibNode node = folder("news");
 
 		try (Tx tx = tx()) {
 			prepareSchema(node, "", "binary");
@@ -169,7 +170,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		String fileName = "somefile.dat";
 
 		try (Tx tx = tx()) {
-			Node node = folder("news");
+			HibNode node = folder("news");
 
 			// Add a schema called nonBinary
 			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
@@ -189,7 +190,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		List<String> fields = Arrays.asList("blume", "blume2", "dreamtime");
 
 		try (Tx tx = tx()) {
-			Node node = folder("news");
+			HibNode node = folder("news");
 
 			// Add a schema called nonBinary
 			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
@@ -214,7 +215,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 				.updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), fieldName, new ByteArrayInputStream(buffer.getBytes()),
 					buffer.length(), fileName, contentType)
 				.toSingle();
-		}).lastOrError().toCompletable().blockingAwait();
+		}).lastOrError().ignoreElement().blockingAwait();
 
 		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid));
 		for (String field : fields) {
@@ -237,7 +238,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		String folderUuid = tx(() -> folder("news").getUuid());
 		// Prepare schema
 		try (Tx tx = tx()) {
-			Node node = folder("news");
+			HibNode node = folder("news");
 			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(FieldUtil.createBinaryFieldSchema("image"));
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
@@ -270,7 +271,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		String fileName = "somefile.dat";
 
 		try (Tx tx = tx()) {
-			Node node = folder("news");
+			HibNode node = folder("news");
 
 			// Add a schema called nonBinary
 			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
@@ -293,7 +294,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 	public void testUploadMultipleBrokenImages() {
 		String contentType = "image/jpeg";
 		int binaryLen = 10000;
-		Node node = folder("news");
+		HibNode node = folder("news");
 
 		// Add a schema called nonBinary
 		try (Tx tx = tx()) {
@@ -390,7 +391,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		String contentType = "application/octet-stream";
 		int binaryLen = 10000;
 		String fileName = "somefile.dat";
-		Node node = folder("news");
+		HibNode node = folder("news");
 
 		try (Tx tx = tx()) {
 			call(() -> uploadRandomData(node, "en", "nonBinary", binaryLen, contentType, fileName), BAD_REQUEST, "error_schema_definition_not_found",
@@ -409,7 +410,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		String mimeType = "image/png";
 		String fieldKey = "image";
 		String fileName = "somefile.png";
-		Node node = folder("news");
+		HibNode node = folder("news");
 
 		try (Tx tx = tx()) {
 			prepareSchema(node, "", fieldKey);
@@ -454,7 +455,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		options().getUploadOptions().setByteLimit(binaryLen - 1);
 		String contentType = "application/octet-stream";
 		String fileName = "somefile.dat";
-		Node node = folder("news");
+		HibNode node = folder("news");
 
 		try (Tx tx = tx()) {
 			prepareSchema(node, "", "binary");
@@ -473,7 +474,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		int binaryLen = 10000;
 		String contentType = "application/octet-stream";
 		String fileName = "somefile.dat";
-		Node node = folder("news");
+		HibNode node = folder("news");
 
 		try (Tx tx = tx()) {
 			prepareSchema(node, "", "binary");
@@ -491,7 +492,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		String contentType = "application/blub";
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
-		Node node = folder("news");
+		HibNode node = folder("news");
 		String uuid = tx(() -> node.getUuid());
 		try (Tx tx = tx()) {
 			prepareSchema(node, "", "binary");
@@ -545,7 +546,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		String contentType = "application/blub";
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
-		Node node = folder("news");
+		HibNode node = folder("news");
 		String uuid = tx(() -> node.getUuid());
 		try (Tx tx = tx()) {
 			prepareSchema(node, "", "binary");
@@ -583,7 +584,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 	public void testUploadBinaryWithEmptyProperties() throws IOException {
 		String binaryFieldName = "binary";
 		// The test nodes
-		Node node = folder("news");
+		HibNode node = folder("news");
 		// Setup the schemas
 		try (Tx tx = tx()) {
 			prepareSchema(node, "", binaryFieldName);
@@ -616,11 +617,11 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		String fileName = "somefile.dat";
 
 		// The test nodes
-		Node nodeA = folder("news");
+		HibNode nodeA = folder("news");
 		String uuidA = tx(() -> nodeA.getUuid());
 		String versionA = tx(() -> boot().contentDao().getGraphFieldContainer(nodeA, "en").getVersion()).toString();
 
-		Node nodeB = folder("products");
+		HibNode nodeB = folder("products");
 		String uuidB = tx(() -> nodeB.getUuid());
 		String versionB = tx(() -> boot().contentDao().getGraphFieldContainer(nodeA, "en").getVersion()).toString();
 
@@ -689,7 +690,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 
 		// 1. Prepare the folder schema
 		try (Tx tx = tx()) {
-			Node folder2014 = folder("2014");
+			HibNode folder2014 = folder("2014");
 			prepareSchema(folder2014, "", "binary");
 
 			// make binary field the segment field
@@ -701,7 +702,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 
 		// 2. Update node a
 		MeshCoreAssertion.assertThat(testContext).hasUploads(0, 0).hasTempFiles(0).hasTempUploads(0);
-		Node folder2014 = folder("2014");
+		HibNode folder2014 = folder("2014");
 		// upload file to folder 2014
 		call(() -> uploadRandomData(folder2014, "en", "binary", binaryLen, contentType, fileName));
 		MeshCoreAssertion.assertThat(testContext).hasUploads(1, 1).hasTempFiles(0).hasTempUploads(0);
@@ -709,7 +710,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		call(() -> client().findNodeByUuid(PROJECT_NAME, db().tx(() -> folder("2014").getUuid()), new NodeParametersImpl().setResolveLinks(
 			LinkType.FULL)));
 
-		Node folder2015 = folder("2015");
+		HibNode folder2015 = folder("2015");
 
 		// try to upload same file to folder 2015
 		MeshCoreAssertion.assertThat(testContext).hasUploads(1, 1).hasTempFiles(0).hasTempUploads(0);
@@ -723,7 +724,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		String contentType = "image/png";
 		String fieldName = "image";
 		String fileName = "somefile.png";
-		Node node = folder("news");
+		HibNode node = folder("news");
 
 		try (Tx tx = tx()) {
 			prepareSchema(node, "", fieldName);
@@ -760,7 +761,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		String contentType = "image/png";
 		String fieldName = "image";
 		String fileName = "somefile.png";
-		Node node = folder("news");
+		HibNode node = folder("news");
 
 		try (Tx tx = tx()) {
 			prepareSchema(node, "", fieldName);

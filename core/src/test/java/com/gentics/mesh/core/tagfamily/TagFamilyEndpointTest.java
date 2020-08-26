@@ -48,10 +48,10 @@ import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.Tx;
@@ -468,12 +468,12 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 
 			for (HibTag tag : tagDao.findAll(tagfamily)) {
 				storeCount++;
-				for (Node node : tagDao.getNodes(tag, branch)) {
+				for (HibNode node : tagDao.getNodes(tag, branch)) {
 					if (!taggedNodes.contains(node.getUuid())) {
 						taggedNodes.add(node.getUuid());
 						for (ContainerType containerType : Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED)) {
 							for (NodeGraphFieldContainer fieldContainer : boot().contentDao().getGraphFieldContainers(node, branch, containerType)) {
-								SchemaVersion schema = node.getSchemaContainer().getLatestVersion();
+								HibSchemaVersion schema = node.getSchemaContainer().getLatestVersion();
 								storeCount++;
 								assertThat(trackingSearchProvider()).hasStore(ContentDaoWrapper.composeIndexName(project.getUuid(), branch
 									.getUuid(), schema.getUuid(), containerType), ContentDaoWrapper.composeDocumentId(node.getUuid(),

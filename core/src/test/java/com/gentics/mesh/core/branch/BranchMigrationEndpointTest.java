@@ -21,7 +21,7 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
@@ -55,8 +55,8 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 	public void testStartBranchMigration() throws Throwable {
 		EventQueueBatch batch = createBatch();
 		HibBranch newBranch;
-		List<? extends Node> nodes;
-		List<? extends Node> published;
+		List<? extends HibNode> nodes;
+		List<? extends HibNode> published;
 		HibProject project = project();
 
 		try (Tx tx = tx()) {
@@ -113,7 +113,7 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 						.isNotNull().isEmpty();
 				}
 
-				Node initialParent = nodeDao.getParentNode(node, initialBranchUuid());
+				HibNode initialParent = nodeDao.getParentNode(node, initialBranchUuid());
 				if (initialParent == null) {
 					assertThat(nodeDao.getParentNode(node, newBranch.getUuid())).as("Parent in new branch").isNull();
 				} else {

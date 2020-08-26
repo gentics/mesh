@@ -5,14 +5,19 @@ import java.util.Objects;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.HibElement;
-import com.gentics.mesh.core.data.HibNode;
+import com.gentics.mesh.core.data.HibInNode;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.group.HibGroup;
+import com.gentics.mesh.core.data.job.HibJob;
+import com.gentics.mesh.core.data.job.Job;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
@@ -78,8 +83,26 @@ public final class HibClassConverter {
 		return checkAndCast(role, Role.class);
 	}
 
+	public static Binary toBinary(HibBinary binary) {
+		return checkAndCast(binary, Binary.class);
+	}
+
+	/**
+	 * @param node
+	 * @return
+	 * @deprecated Use {@link #toNode(HibNode)} instead.
+	 */
+	@Deprecated
+	public static Node toNode(HibInNode node) {
+		return checkAndCast(node, Node.class);
+	}
+
 	public static Node toNode(HibNode node) {
 		return checkAndCast(node, Node.class);
+	}
+
+	public static Job toJob(HibJob job) {
+		return checkAndCast(job, Job.class);
 	}
 
 	@SuppressWarnings("unchecked")

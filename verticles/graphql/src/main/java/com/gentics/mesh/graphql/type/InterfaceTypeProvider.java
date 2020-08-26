@@ -12,16 +12,19 @@ import java.util.function.Consumer;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.EditorTrackingVertex;
+import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.TransformableElement;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.NodeContent;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.user.HibCreatorTracking;
+import com.gentics.mesh.core.data.user.HibEditorTracking;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 
 import dagger.Lazy;
@@ -141,7 +144,7 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 
 		// .uuid
 		setField.accept(newFieldDefinition().name("uuid").description("UUID of the element").type(GraphQLString).dataFetcher(env -> {
-			MeshElement element = null;
+			HibElement element = null;
 			Object source = env.getSource();
 			if (source instanceof NodeContent) {
 				element = ((NodeContent) source).getNode();
@@ -165,10 +168,10 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 			.type(new GraphQLTypeReference(PERM_INFO_TYPE_NAME))
 			.dataFetcher(env -> {
 				GraphQLContext gc = env.getContext();
-				MeshCoreVertex<?, ?> vertex = getMeshCoreVertex(env.getSource());
+				HibCoreElement element = getMeshCoreElement(env.getSource());
 
 				UserDaoWrapper userDao = Tx.get().data().userDao();
-				return userDao.getPermissionInfo(gc.getUser(), vertex);
+				return userDao.getPermissionInfo(gc.getUser(), element);
 			})
 		);
 
@@ -181,11 +184,10 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 			)
 			.dataFetcher(env -> {
 				GraphQLContext gc = env.getContext();
-				MeshCoreVertex<?, ?> vertex = getMeshCoreVertex(env.getSource());
+				HibCoreElement element = getMeshCoreElement(env.getSource());
 
 				UserDaoWrapper userDao = Tx.get().data().userDao();
-				userDao.getPermissionInfo(gc.getUser(), vertex);
-				return vertex.getRolePermissions(gc, env.getArgument("role"));
+				return userDao.getRolePermissions(element, gc, env.getArgument("role"));
 			})
 		);
 
@@ -194,15 +196,15 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 				newFieldDefinition().name("created").description("ISO8601 formatted created date string").type(GraphQLString).dataFetcher(env -> {
 					// The source element might be a NGFC. These containers have no creator. The creator is stored for it's Node instead
 					Object source = env.getSource();
-					CreatorTrackingVertex vertex = null;
+					HibCreatorTracking element = null;
 					if (source instanceof NodeContent) {
-						vertex = ((NodeContent) source).getNode();
+						element = ((NodeContent) source).getNode();
 					} else if (source instanceof SchemaVersion) {
-						vertex = ((SchemaVersion) source).getSchemaContainer();
+						element = ((HibSchemaVersion) source).getSchemaContainer();
 					} else {
-						vertex = env.getSource();
+						element = env.getSource();
 					}
-					return vertex.getCreationDate();
+					return element.getCreationDate();
 				}));
 
 		// .creator
@@ -211,25 +213,25 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 					GraphQLContext gc = env.getContext();
 					// The source element might be a NGFC. These containers have no creator. The creator is stored for it's Node instead
 					Object source = env.getSource();
-					CreatorTrackingVertex vertex = null;
+					HibCreatorTracking element = null;
 					if (source instanceof NodeContent) {
-						vertex = ((NodeContent) source).getNode();
-					} else if (source instanceof SchemaVersion) {
-						vertex = ((SchemaVersion) source).getSchemaContainer();
+						element = ((NodeContent) source).getNode();
+					} else if (source instanceof HibSchemaVersion) {
+						element = ((HibSchemaVersion) source).getSchemaContainer();
 					} else {
-						vertex = env.getSource();
+						element = env.getSource();
 					}
-					return gc.requiresPerm(vertex.getCreator(), READ_PERM);
+					return gc.requiresPerm(element.getCreator(), READ_PERM);
 				}));
 		if (!isNode) {
 			// .edited
 			setField.accept(newFieldDefinition().name("edited").description("ISO8601 formatted edit timestamp").type(GraphQLString).dataFetcher(env -> {
 				Object source = env.getSource();
-				if (source instanceof SchemaVersion) {
+				if (source instanceof HibSchemaVersion) {
 					source = ((SchemaVersion) source).getSchemaContainer();
 				}
-				if (source instanceof EditorTrackingVertex) {
-					EditorTrackingVertex vertex = (EditorTrackingVertex) source;
+				if (source instanceof HibEditorTracking) {
+					HibEditorTracking vertex = (HibEditorTracking) source;
 					return vertex.getLastEditedDate();
 				}
 				return null;
@@ -252,13 +254,13 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 		}
 	}
 
-	private MeshCoreVertex<?, ?> getMeshCoreVertex(Object source) {
+	private HibCoreElement getMeshCoreElement(Object source) {
 		if (source instanceof NodeContent) {
 			return ((NodeContent) source).getNode();
 		} else if (source instanceof SchemaVersion) {
 			return ((SchemaVersion) source).getSchemaContainer();
 		} else {
-			return (MeshCoreVertex<?, ?>) source;
+			return (HibCoreElement) source;
 		}
 	}
 

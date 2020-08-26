@@ -53,7 +53,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 
 import dagger.Lazy;
 
-public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper implements MicroschemaDaoWrapper {
+public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema> implements MicroschemaDaoWrapper {
 
 	private final MicroschemaComparator comparator;
 
@@ -271,6 +271,16 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper implements Mic
 	@Override
 	public String getETag(HibMicroschema schema, InternalActionContext ac) {
 		return toMicroschema(schema).getETag(ac);
+	}
+
+	@Override
+	public HibMicroschema findByUuidGlobal(String uuid) {
+		return boot.get().microschemaContainerRoot().findByUuid(uuid);
+	}
+
+	@Override
+	public long computeGlobalCount() {
+		return boot.get().microschemaContainerRoot().computeCount();
 	}
 
 }

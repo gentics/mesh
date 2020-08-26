@@ -8,7 +8,7 @@ import static com.gentics.mesh.test.performance.StopWatch.loggingStopWatch;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
@@ -44,7 +44,7 @@ public class UserEndpointPerformanceTest extends AbstractMeshTest {
 	@Test
 	public void testPermissionInfoPerformance() {
 		HibUser user = tx(() -> user());
-		Node content = tx(() -> content());
+		HibNode content = tx(() -> content());
 		loggingStopWatch(logger, "user.getPermissionInfo", 70000, (step) -> {
 			try (Tx tx = tx()) {
 				UserDaoWrapper userDao = tx.data().userDao();

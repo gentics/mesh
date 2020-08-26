@@ -63,7 +63,7 @@ import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import dagger.Lazy;
 import io.vertx.core.Vertx;
 
-public class SchemaDaoWrapperImpl extends AbstractDaoWrapper implements SchemaDaoWrapper {
+public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implements SchemaDaoWrapper {
 
 	private final Lazy<Vertx> vertx;
 	private final Lazy<NodeIndexHandler> nodeIndexHandler;

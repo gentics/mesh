@@ -18,6 +18,7 @@ import java.util.List;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Tx;
@@ -61,7 +62,7 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testReadNodeWithNoChildren() {
 		try (Tx tx = tx()) {
-			Node node = folder("2015");
+			HibNode node = folder("2015");
 			String uuid = node.getUuid();
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
@@ -91,7 +92,7 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testReadNavigationWithNegativeDepth() {
 		try (Tx tx = tx()) {
-			Node node = folder("2015");
+			HibNode node = folder("2015");
 			call(() -> client().loadNavigation(PROJECT_NAME, node.getUuid(), new NavigationParametersImpl().setMaxDepth(-10),
 				new VersioningParametersImpl().draft()), BAD_REQUEST, "navigation_error_invalid_max_depth");
 		}
@@ -103,7 +104,7 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testReadNoContainerNode() {
 		try (Tx tx = tx()) {
-			Node node = content();
+			HibNode node = content();
 			assertFalse("The node must not be a container.", node.getSchemaContainer().getLatestVersion().getSchema().getContainer());
 			call(() -> client().loadNavigation(PROJECT_NAME, node.getUuid(), new NavigationParametersImpl().setMaxDepth(1),
 				new VersioningParametersImpl().draft()), BAD_REQUEST, "navigation_error_no_container");
@@ -155,7 +156,7 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testReadChildrenDepthTwoIncludeAll() {
 		try (Tx tx = tx()) {
-			Node node = folder("news");
+			HibNode node = folder("news");
 			String uuid = node.getUuid();
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
@@ -187,7 +188,7 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testReadChildrenDepthTwoIncludeAllDisabled() {
 		try (Tx tx = tx()) {
-			Node node = folder("news");
+			HibNode node = folder("news");
 			String uuid = node.getUuid();
 			assertNotNull(node);
 			assertNotNull(node.getUuid());

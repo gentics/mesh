@@ -6,7 +6,7 @@ import static com.gentics.mesh.test.TestSize.FULL;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
@@ -20,7 +20,7 @@ public class NodeImageResizeEndpointETagTest extends AbstractMeshTest {
 	public void testImageResize() throws Exception {
 
 		try (Tx tx = tx()) {
-			Node node = folder("news");
+			HibNode node = folder("news");
 
 			// 1. Upload image
 			uploadImage(node, "en", "image");

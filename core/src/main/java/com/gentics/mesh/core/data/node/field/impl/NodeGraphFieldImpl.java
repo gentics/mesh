@@ -28,6 +28,7 @@ import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.FieldGetter;
 import com.gentics.mesh.core.data.node.field.FieldTransformer;
@@ -91,7 +92,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 		}
 
 		// Handle Update / Create
-		Node node = nodeDao.findByUuid(ac.getProject(), nodeField.getUuid());
+		HibNode node = nodeDao.findByUuid(ac.getProject(), nodeField.getUuid());
 		if (node == null) {
 			// TODO We want to delete the field when the field has been explicitly set to null
 			if (log.isDebugEnabled()) {
@@ -252,8 +253,8 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof NodeGraphField) {
-			Node nodeA = getNode();
-			Node nodeB = ((NodeGraphField) obj).getNode();
+			HibNode nodeA = getNode();
+			HibNode nodeB = ((NodeGraphField) obj).getNode();
 			return CompareUtils.equals(nodeA, nodeB);
 		}
 		if (obj instanceof NodeFieldListItem) {
@@ -264,7 +265,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 		}
 		if (obj instanceof NodeField) {
 			NodeField nodeRestField = ((NodeField) obj);
-			Node nodeA = getNode();
+			HibNode nodeA = getNode();
 			String nodeUuid = nodeRestField.getUuid();
 			// The node graph field is a edge so getNode should never be null. Lets check it anyways.
 			if (nodeA != null) {

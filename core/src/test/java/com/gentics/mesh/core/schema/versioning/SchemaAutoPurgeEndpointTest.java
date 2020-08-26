@@ -8,7 +8,7 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
@@ -101,7 +101,7 @@ public class SchemaAutoPurgeEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testAutoPurgeWithUpload() {
 		enableAutoPurgeOnSchema();
-		Node node = content();
+		HibNode node = content();
 		String nodeUuid = tx(() -> node.getUuid());
 		tx(() -> prepareSchema(node, "", "binary"));
 		assertVersions(nodeUuid, "en", "PD(2.0)=>I(0.1)");
@@ -114,7 +114,7 @@ public class SchemaAutoPurgeEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAutoPurgeWithBinaryTransform() {
-		Node node = content();
+		HibNode node = content();
 		String nodeUuid = tx(() -> node.getUuid());
 		assertVersions(nodeUuid, "en", "PD(1.0)=>I(0.1)");
 		enableAutoPurgeOnSchema();

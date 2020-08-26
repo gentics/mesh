@@ -54,7 +54,7 @@ import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.group.HibGroup;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
@@ -731,7 +731,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String nodeUuid;
 		try (Tx tx = tx()) {
 			UserDaoWrapper userDao = tx.data().userDao();
-			Node node = folder("news");
+			HibNode node = folder("news");
 			nodeUuid = node.getUuid();
 			assertTrue(userDao.hasPermission(user(), node, READ_PERM));
 			tx.success();
@@ -758,7 +758,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testReadUserListWithExpandedNodeReference() {
 		UserResponse userCreateResponse = tx(() -> {
-			Node node = folder("news");
+			HibNode node = folder("news");
 
 			NodeReference reference = new NodeReference();
 			reference.setUuid(node.getUuid());
@@ -774,7 +774,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		});
 
 		try (Tx tx = tx()) {
-			Node node = folder("news");
+			HibNode node = folder("news");
 			UserListResponse userResponse = call(() -> client().findUsers(new PagingParametersImpl().setPerPage(100L), new NodeParametersImpl()
 				.setExpandedFieldNames("nodeReference").setLanguages("en")));
 			assertNotNull(userResponse);
@@ -792,7 +792,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String folderUuid;
 		UserCreateRequest newUser;
 		try (Tx tx = tx()) {
-			Node node = folder("news");
+			HibNode node = folder("news");
 			folderUuid = node.getUuid();
 
 			NodeReference reference = new NodeReference();
@@ -820,7 +820,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testCreateUserWithBogusProjectNameInNodeReference() {
 		try (Tx tx = tx()) {
-			Node node = folder("news");
+			HibNode node = folder("news");
 
 			NodeReference reference = new NodeReference();
 			reference.setProjectName("bogus_name");

@@ -7,6 +7,7 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -22,11 +23,11 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -118,8 +119,8 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 		String schemaUuid;
 		SchemaUpdateRequest schema;
 		try (Tx tx = tx()) {
-			Node concorde = content("concorde");
-			SchemaVersion schemaVersion = concorde.getSchemaContainer().getLatestVersion();
+			HibNode concorde = content("concorde");
+			HibSchemaVersion schemaVersion = concorde.getSchemaContainer().getLatestVersion();
 			schema = JsonUtil.readValue(schemaVersion.getJson(), SchemaUpdateRequest.class);
 			schema.addField(FieldUtil.createStringFieldSchema("extraField"));
 			schemaUuid = concorde.getSchemaContainer().getUuid();
@@ -161,14 +162,14 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 			addMicronodeField();
 			HibUser user = user();
 			String english = english();
-			Node concorde = content("concorde");
+			HibNode concorde = content("concorde");
 
 			HibProject project = concorde.getProject();
-			Node parentNode = nodeDao.getParentNode(concorde, branchUuid);
-			SchemaVersion schemaVersion = concorde.getSchemaContainer().getLatestVersion();
+			HibNode parentNode = nodeDao.getParentNode(concorde, branchUuid);
+			HibSchemaVersion schemaVersion = concorde.getSchemaContainer().getLatestVersion();
 
 			for (int i = 0; i < numAdditionalNodes; i++) {
-				Node node = nodeDao.create(parentNode, user, schemaVersion, project);
+				HibNode node = nodeDao.create(parentNode, user, schemaVersion, project);
 				NodeGraphFieldContainer fieldContainer = boot().contentDao().createGraphFieldContainer(node, english, node.getProject().getLatestBranch(), user);
 				fieldContainer.createString("name").setString("Name_" + i);
 				MicronodeGraphField vcardField = fieldContainer.createMicronode("vcard", microschemaContainers().get("vcard").getLatestVersion());
@@ -200,7 +201,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 		try (Tx tx = tx()) {
 			TagDaoWrapper tagDao = tx.data().tagDao();
 
-			Node node = content("concorde");
+			HibNode node = content("concorde");
 			long previousTagCount = tagDao.getTags(node, project().getLatestBranch()).count();
 			// Create tags:
 			int tagCount = 20;

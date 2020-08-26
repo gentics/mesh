@@ -17,7 +17,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.list.impl.DateGraphFieldListImpl;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractListFieldEndpointTest;
@@ -125,7 +125,7 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	public void testUpdateNodeFieldWithField() throws IOException {
 		disableAutoPurge();
 
-		Node node = folder("2015");
+		HibNode node = folder("2015");
 
 		List<List<String>> valueCombinations = Arrays.asList(Arrays.asList(toISO8601(1000L), toISO8601(2000L), toISO8601(3000L)),
 			Arrays.asList(toISO8601(3000L), toISO8601(2000L), toISO8601(1000L)), Collections.emptyList(),
@@ -162,7 +162,7 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 		disableAutoPurge();
 
 		NodeResponse secondResponse;
-		Node node = folder("2015");
+		HibNode node = folder("2015");
 
 		DateFieldListImpl list = new DateFieldListImpl();
 		String dateA = toISO8601(42000L);

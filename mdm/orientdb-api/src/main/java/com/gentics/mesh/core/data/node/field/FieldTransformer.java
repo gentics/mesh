@@ -5,7 +5,7 @@ import java.util.function.Supplier;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 
@@ -29,6 +29,6 @@ public interface FieldTransformer<T extends Field> {
 	 * @return
 	 */
 	T transform(GraphFieldContainer container, InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, List<String> languageTags,
-			int level, Supplier<Node> parentNode);
+			int level, Supplier<HibNode> parentNode);
 
 }

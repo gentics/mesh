@@ -9,6 +9,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.Transactional;
 
@@ -39,7 +40,7 @@ public class BinariesImpl implements Binaries {
 	}
 
 	@Override
-	public Transactional<Stream<Binary>> findAll() {
+	public Transactional<Stream<HibBinary>> findAll() {
 		return database.transactional(tx -> toStream(database.getVerticesForType(BinaryImpl.class)));
 	}
 }

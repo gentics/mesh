@@ -5,7 +5,7 @@ import java.util.stream.Stream;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.binary.Binary;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
 import com.gentics.mesh.core.data.node.field.DateGraphField;
@@ -85,7 +85,7 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	 *            Node to be referenced.
 	 * @return
 	 */
-	NodeGraphField createNode(String key, Node node);
+	NodeGraphField createNode(String key, HibNode node);
 
 	/**
 	 * Return the date graph field.
@@ -343,7 +343,7 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	 * 
 	 * @return schema container version
 	 */
-	HibFieldSchemaVersionElement getSchemaContainerVersion();
+	HibFieldSchemaVersionElement<?> getSchemaContainerVersion();
 
 	/**
 	 * Set the schema container version used by this container
@@ -351,7 +351,7 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	 * @param version
 	 *            schema container version
 	 */
-	void setSchemaContainerVersion(HibFieldSchemaVersionElement version);
+	void setSchemaContainerVersion(HibFieldSchemaVersionElement<?> version);
 
 	/**
 	 * Get all nodes that are in any way referenced by this node. This includes the following cases:
@@ -362,7 +362,7 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	 *     <li>Micronode list fields with node fields or node list fields</li>
 	 * </ul>
 	 */
-	Iterable<? extends Node> getReferencedNodes();
+	Iterable<? extends HibNode> getReferencedNodes();
 
 	/**
 	 * Gets the NodeGraphFieldContainers connected to this FieldContainer.

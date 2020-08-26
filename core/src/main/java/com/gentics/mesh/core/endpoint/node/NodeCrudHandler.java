@@ -27,6 +27,7 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -53,7 +54,7 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * Main CRUD handler for the Node Endpoint.
  */
-public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
+public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> {
 
 	private final BootstrapInitializer boot;
 
@@ -101,7 +102,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				Node node = crudActions().loadByUuid(context(tx, ac), uuid, DELETE_PERM, true);
+				HibNode node = crudActions().loadByUuid(context(tx, ac), uuid, DELETE_PERM, true);
 				Language language = boot.meshRoot().getLanguageRoot().findByLanguageTag(languageTag);
 				if (language == null) {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
@@ -163,7 +164,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		utils.syncTx(ac, tx -> {
 			NodeDaoWrapper nodeDao = tx.data().nodeDao();
-			Node node = crudActions().loadByUuid(context(tx, ac), uuid, READ_PERM, true);
+			HibNode node = crudActions().loadByUuid(context(tx, ac), uuid, READ_PERM, true);
 			return nodeDao.transformToNavigation(node, ac);
 		}, model -> ac.send(model, OK));
 	}
@@ -252,6 +253,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				TagDaoWrapper tagDao = tx.data().tagDao();
+				NodeDaoWrapper nodeDao = tx.data().nodeDao();
+
 				HibProject project = ac.getProject();
 				HibBranch branch = ac.getBranch();
 				Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
@@ -269,7 +272,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 					});
 				}
 
-				return node.transformToRestSync(ac, 0);
+				return nodeDao.transformToRestSync(node, ac, 0);
 			}, model -> ac.send(model, OK));
 		}
 
