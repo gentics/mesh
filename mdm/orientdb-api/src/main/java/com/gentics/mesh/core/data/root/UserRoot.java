@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.root;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 
 import java.util.function.Predicate;
 

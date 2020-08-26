@@ -252,7 +252,7 @@ public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> 
 	}
 
 	@Override
-	public <N> Iterable<? extends N> frameExplicit(final Class<N> kind) {
+	public <N> Iterable<N> frameExplicit(final Class<N> kind) {
 		return this.simpleDelegate().frameExplicit(kind);
 	}
 

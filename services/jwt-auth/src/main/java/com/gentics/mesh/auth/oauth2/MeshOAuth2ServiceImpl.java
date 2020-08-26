@@ -24,11 +24,11 @@ import com.gentics.mesh.auth.MeshOAuthService;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.group.HibGroup;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
@@ -243,7 +243,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 						UserRoot userRoot = boot.userRoot();
 						HibUser admin = userDao.findByUsername("admin");
 						HibUser createdUser = userDao.create(username, admin);
-						userDao.inheritRolePermissions(admin, userRoot, createdUser.toUser());
+						userDao.inheritRolePermissions(admin, userRoot, createdUser);
 
 						MeshAuthUser user = userDao.findMeshAuthUserByUsername(username);
 						String uuid = user.getUuid();
@@ -361,7 +361,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 					if (mappedUser != null) {
 						InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 						ac.setBody(mappedUser);
-						ac.setUser(admin.toUser().toAuthUser());
+						ac.setUser(admin.toAuthUser());
 						if (!delegator.canWrite() && userDao.updateDry(user, ac)) {
 							throw new CannotWriteException();
 						}
@@ -376,7 +376,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 					if (mappedRoles != null) {
 						for (RoleResponse mappedRole : mappedRoles) {
 							String roleName = mappedRole.getName();
-							Role role = roleDao.findByName(roleName);
+							HibRole role = roleDao.findByName(roleName);
 							// Role not found - Lets create it
 							if (role == null) {
 								requiresWrite();
@@ -394,7 +394,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 						// Now create the groups and assign the user to the listed groups
 						for (GroupResponse mappedGroup : mappedGroups) {
 							String groupName = mappedGroup.getName();
-							Group group = groupDao.findByName(groupName);
+							HibGroup group = groupDao.findByName(groupName);
 
 							// Group not found - Lets create it
 							boolean created = false;
@@ -419,7 +419,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 							for (RoleReference assignedRole : mappedGroup.getRoles()) {
 								String roleName = assignedRole.getName();
 								String roleUuid = assignedRole.getUuid();
-								Role role = null;
+								HibRole role = null;
 								// Try name
 								if (roleName != null) {
 									role = roleDao.findByName(roleName);
@@ -441,7 +441,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 							// 5. Check if the plugin wants to remove any of the roles from the mapped group.
 							RoleFilter roleFilter = result.getRoleFilter();
 							if (roleFilter != null) {
-								for (Role role : groupDao.getRoles(group)) {
+								for (HibRole role : groupDao.getRoles(group)) {
 									if (roleFilter.filter(group.getName(), role.getName())) {
 										requiresWrite();
 										log.info("Unassigning role {" + role.getName() + "} from group {" + group.getName() + "}");
@@ -457,7 +457,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 					if (mappedRoles != null) {
 						for (RoleResponse mappedRole : mappedRoles) {
 							String roleName = mappedRole.getName();
-							Role role = roleDao.findByName(roleName);
+							HibRole role = roleDao.findByName(roleName);
 
 							if (role == null) {
 								log.warn("Could not find referenced role {" + role + "}");
@@ -467,7 +467,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 							for (GroupReference assignedGroup : mappedRole.getGroups()) {
 								String groupName = assignedGroup.getName();
 								String groupUuid = assignedGroup.getUuid();
-								Group group = null;
+								HibGroup group = null;
 								// Try name
 								if (groupName != null) {
 									group = groupDao.findByName(groupName);
@@ -490,7 +490,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 					// 7. Check if the plugin wants to remove the user user from any of its current groups.
 					GroupFilter groupFilter = result.getGroupFilter();
 					if (groupFilter != null) {
-						for (Group group : user.getGroups()) {
+						for (HibGroup group : userDao.getGroups(user)) {
 							if (groupFilter.filter(group.getName())) {
 								requiresWrite();
 								log.info("Unassigning group {" + group.getName() + "} from user {" + user.getUsername() + "}");

@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.webroot;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.parameter.LinkType.MEDIUM;
 import static com.gentics.mesh.parameter.LinkType.SHORT;
@@ -26,9 +26,12 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
@@ -59,10 +62,11 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		String nodeUuid = tx(() -> node.getUuid());
 
 		try (Tx tx = tx()) {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 			// 1. Transform the node into a binary content
-			Schema container = schemaContainer("binary_content");
+			HibSchema container = schemaContainer("binary_content");
 			node.setSchemaContainer(container);
-			node.getLatestDraftFieldContainer(english()).setSchemaContainerVersion(container.getLatestVersion());
+			contentDao.getLatestDraftFieldContainer(node, english()).setSchemaContainerVersion(container.getLatestVersion());
 			prepareSchema(node, "image/*", "binary");
 			tx.success();
 		}
@@ -101,7 +105,8 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		Node content = content("news_2015");
 
 		try (Tx tx = tx()) {
-			content.getLatestDraftFieldContainer(english()).getHtml("content")
+			ContentDaoWrapper contentDao = tx.data().contentDao();
+			contentDao.getLatestDraftFieldContainer(content, english()).getHtml("content")
 				.setHtml("<a href=\"{{mesh.link('" + content.getUuid() + "', 'en')}}\">somelink</a>");
 			tx.success();
 		}
@@ -136,29 +141,31 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 	public void testReadContentWithNodeRefByPath() throws Exception {
 
 		try (Tx tx = tx()) {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			Node parentNode = folder("2015");
 			// Update content schema and add node field
-			Schema folderSchema = schemaContainer("folder");
+			HibSchema folderSchema = schemaContainer("folder");
 			SchemaVersionModel schema = folderSchema.getLatestVersion().getSchema();
 			schema.getFields().add(FieldUtil.createNodeFieldSchema("nodeRef"));
 			folderSchema.getLatestVersion().setSchema(schema);
 			mesh().serverSchemaStorage().addSchema(schema);
 
 			// Create content which is only german
-			Schema contentSchema = schemaContainer("content");
-			Node node = parentNode.create(user(), contentSchema.getLatestVersion(), project());
+			HibSchema contentSchema = schemaContainer("content");
+			Node node = nodeDao.create(parentNode, user(), contentSchema.getLatestVersion(), project());
 
 			// Grant permissions to the node otherwise it will not be able to be loaded
-			roleDao.grantPermissions(role(), node, GraphPermission.values());
-			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(german(), project().getLatestBranch(), user());
+			roleDao.grantPermissions(role(), node, InternalPermission.values());
+			NodeGraphFieldContainer englishContainer = boot().contentDao().createGraphFieldContainer(node, german(), project().getLatestBranch(), user());
 			englishContainer.createString("teaser").setString("german teaser");
 			englishContainer.createString("title").setString("german title");
 			englishContainer.createString("displayName").setString("german displayName");
 			englishContainer.createString("slug").setString("test.de.html");
 
 			// Add node reference to node 2015
-			parentNode.getLatestDraftFieldContainer(english()).createNode("nodeRef", node);
+			contentDao.getLatestDraftFieldContainer(parentNode, english()).createNode("nodeRef", node);
 			tx.success();
 		}
 
@@ -423,9 +430,10 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 		// 2. Publish nodes
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			BulkActionContext bac = createBulkContext();
-			folder("news").publish(mockActionContext(), bac);
-			folder("2015").publish(mockActionContext(), bac);
+			nodeDao.publish(folder("news"), mockActionContext(), bac);
+			nodeDao.publish(folder("2015"), mockActionContext(), bac);
 			tx.success();
 		}
 
@@ -467,10 +475,11 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		String draftPath = "/News_draft/2015_draft";
 
 		// 1. Publish nodes
-		tx(() -> {
+		tx(tx -> {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			BulkActionContext bac = createBulkContext();
-			folder("news").publish(mockActionContext(), bac);
-			folder("2015").publish(mockActionContext(), bac);
+			nodeDao.publish(folder("news"), mockActionContext(), bac);
+			nodeDao.publish(folder("2015"), mockActionContext(), bac);
 		});
 
 		// 2. Change names
@@ -486,7 +495,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		});
 
 		// 4. Assert published path in draft
-		tx(() -> {
+		tx(tx -> {
 			call(() -> client().webroot(PROJECT_NAME, publishedPath, new VersioningParametersImpl().draft()), NOT_FOUND, "node_not_found_for_path",
 				publishedPath);
 		});

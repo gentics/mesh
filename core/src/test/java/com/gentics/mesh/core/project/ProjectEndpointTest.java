@@ -1,10 +1,10 @@
 package com.gentics.mesh.core.project;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.DELETE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
@@ -47,14 +47,15 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
@@ -335,7 +336,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			for (int i = 0; i < nProjects; i++) {
-				Project extraProject = createProject("extra_project_" + i, "folder");
+				HibProject extraProject = createProject("extra_project_" + i, "folder");
 				extraProject.setBaseNode(project().getBaseNode());
 				roleDao.grantPermissions(role(), extraProject, READ_PERM);
 			}
@@ -432,7 +433,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	public void testReadByUUID() throws Exception {
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
-			Project project = project();
+			HibProject project = project();
 			String uuid = project.getUuid();
 			assertNotNull("The UUID of the project must not be null.", project.getUuid());
 			roleDao.grantPermissions(role(), project, READ_PERM, UPDATE_PERM);
@@ -455,7 +456,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Test
 	public void testReadByUuidWithRolePerms() {
 		try (Tx tx = tx()) {
-			Project project = project();
+			HibProject project = project();
 			String uuid = project.getUuid();
 
 			ProjectResponse response = call(() -> client().findProjectByUuid(uuid, new RolePermissionParametersImpl().setRoleUuid(role().getUuid())));
@@ -529,7 +530,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		String uuid = projectUuid();
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
-			Project project = project();
+			HibProject project = project();
 			roleDao.grantPermissions(role(), project, UPDATE_PERM);
 			tx.success();
 		}
@@ -553,13 +554,13 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		call(() -> client().findNodes(newName));
 
 		try (Tx tx = tx()) {
-			Project project = project();
+			HibProject project = project();
 			assertThat(restProject).matches(project);
 			// All nodes + project + tags and tag families need to be reindex
 			// since the project name is part of the search document.
 			int expectedCount = 1;
 			for (Node node : project().findNodes()) {
-				expectedCount += node.getGraphFieldContainerCount();
+				expectedCount += tx.data().contentDao().getGraphFieldContainerCount(node);
 			}
 			expectedCount += meshRoot().getTagRoot().computeCount();
 			expectedCount += project.getTagFamilyRoot().computeCount();
@@ -588,7 +589,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		String uuid = projectUuid();
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
-			Project project = project();
+			HibProject project = project();
 			roleDao.grantPermissions(role(), project, READ_PERM);
 			roleDao.revokePermissions(role(), project, UPDATE_PERM);
 			tx.success();
@@ -618,7 +619,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		Set<String> droppedIndices = new HashSet<>();
 		// Set<Tuple<String, String>> documentDeletes = new HashSet<>();
 		try (Tx tx = tx()) {
-			Project project = project();
+			HibProject project = project();
 			// for (Node node : project.getNodeRoot().findAll()) {
 			// for (NodeGraphFieldContainer ngfc : node.getGraphFieldContainersIt(initialBranchUuid(), PUBLISHED)) {
 			// String idx = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(),
@@ -638,7 +639,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			droppedIndices.add(Tag.composeIndexName(projectUuid()));
 
 			// 1. Determine a list all project indices which must be dropped
-			droppedIndices.add(NodeGraphFieldContainer.composeIndexPattern(uuid));
+			droppedIndices.add(ContentDaoWrapper.composeIndexPattern(uuid));
 			// for (Branch branch : project.getBranchRoot().findAll()) {
 			// for (SchemaContainerVersion version : branch.findActiveSchemaVersions()) {
 			// String schemaContainerVersionUuid = version.getUuid();

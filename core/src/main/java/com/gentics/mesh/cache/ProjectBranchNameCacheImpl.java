@@ -8,12 +8,10 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.cache.impl.EventAwareCacheFactory;
-import com.gentics.mesh.core.data.Branch;
-
-import io.vertx.core.Vertx;
+import com.gentics.mesh.core.data.branch.HibBranch;
 
 @Singleton
-public class ProjectBranchNameCacheImpl extends AbstractMeshCache<String, Branch> implements ProjectBranchNameCache {
+public class ProjectBranchNameCacheImpl extends AbstractMeshCache<String, HibBranch> implements ProjectBranchNameCache {
 
 	private static final long CACHE_SIZE = 500;
 
@@ -22,8 +20,8 @@ public class ProjectBranchNameCacheImpl extends AbstractMeshCache<String, Branch
 		super(createCache(factory), registry, CACHE_SIZE);
 	}
 
-	private static EventAwareCache<String, Branch> createCache(EventAwareCacheFactory factory) {
-		return factory.<String, Branch>builder()
+	private static EventAwareCache<String, HibBranch> createCache(EventAwareCacheFactory factory) {
+		return factory.<String, HibBranch>builder()
 			.events(BRANCH_UPDATED, BRANCH_CREATED, BRANCH_DELETED)
 			.action((event, cache) -> {
 				cache.invalidate();

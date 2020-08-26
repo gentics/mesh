@@ -1,9 +1,32 @@
 package com.gentics.mesh.graphql.type.field;
 
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.graphql.type.NodeTypeProvider.NODE_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.field.MicronodeFieldTypeProvider.MICRONODE_TYPE_NAME;
+import static graphql.Scalars.GraphQLBigDecimal;
+import static graphql.Scalars.GraphQLBoolean;
+import static graphql.Scalars.GraphQLFloat;
+import static graphql.Scalars.GraphQLInt;
+import static graphql.Scalars.GraphQLLong;
+import static graphql.Scalars.GraphQLString;
+import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
+import static graphql.schema.GraphQLObjectType.newObject;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
@@ -22,6 +45,8 @@ import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
@@ -33,6 +58,7 @@ import com.gentics.mesh.graphql.filter.NodeFilter;
 import com.gentics.mesh.graphql.type.AbstractTypeProvider;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.util.DateUtils;
+
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
@@ -40,28 +66,6 @@ import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeReference;
 import io.netty.handler.codec.http.HttpResponseStatus;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.graphql.type.NodeTypeProvider.NODE_TYPE_NAME;
-import static com.gentics.mesh.graphql.type.field.MicronodeFieldTypeProvider.MICRONODE_TYPE_NAME;
-import static graphql.Scalars.GraphQLBigDecimal;
-import static graphql.Scalars.GraphQLBoolean;
-import static graphql.Scalars.GraphQLFloat;
-import static graphql.Scalars.GraphQLInt;
-import static graphql.Scalars.GraphQLLong;
-import static graphql.Scalars.GraphQLString;
-import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
-import static graphql.schema.GraphQLObjectType.newObject;
 
 @Singleton
 public class FieldDefinitionProvider extends AbstractTypeProvider {
@@ -265,6 +269,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		}
 
 		return fieldType.dataFetcher(env -> {
+			ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 			GraphFieldContainer container = env.getSource();
 			GraphQLContext gc = env.getContext();
 
@@ -329,7 +334,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 						throw error(HttpResponseStatus.INTERNAL_SERVER_ERROR, "container can only be NodeGraphFieldContainer or Micronode");
 					}
 					// TODO we need to add more assertions and check what happens if the itemContainer is null
-					NodeGraphFieldContainer itemContainer = node.findVersion(gc, languageTags, nodeType);
+					NodeGraphFieldContainer itemContainer = contentDao.findVersion(node, gc, languageTags, nodeType);
 					return new NodeContent(node, itemContainer, languageTags, nodeType);
 				});
 				if (filterArgument != null) {
@@ -379,7 +384,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	 * @param project
 	 * @return Created field definition
 	 */
-	public GraphQLFieldDefinition createMicronodeDef(FieldSchema schema, Project project) {
+	public GraphQLFieldDefinition createMicronodeDef(FieldSchema schema, HibProject project) {
 		return newFieldDefinition().name(schema.getName()).description(schema.getLabel()).type(new GraphQLTypeReference(MICRONODE_TYPE_NAME))
 			.dataFetcher(env -> {
 				GraphFieldContainer container = env.getSource();
@@ -404,6 +409,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 			.argument(createNodeVersionArg())
 			.description(schema.getLabel())
 			.type(new GraphQLTypeReference(NODE_TYPE_NAME)).dataFetcher(env -> {
+				ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 				GraphQLContext gc = env.getContext();
 				GraphFieldContainer source = env.getSource();
 				ContainerType type = getNodeVersion(env);
@@ -417,7 +423,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 						List<String> languageTags = getLanguageArgument(env, source);
 						// Check permissions for the linked node
 						gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
-						NodeGraphFieldContainer container = node.findVersion(gc, languageTags, type);
+						NodeGraphFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
 						container = gc.requiresReadPermSoft(container, env);
 						return new NodeContent(node, container, languageTags, type);
 					}

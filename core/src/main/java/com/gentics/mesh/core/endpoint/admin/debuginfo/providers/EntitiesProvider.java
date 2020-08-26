@@ -50,7 +50,7 @@ public class EntitiesProvider implements DebugInfoProvider {
 		return db.singleTx(tx -> tx.data().projectDao().findAll().stream()
 			.map(project -> DebugInfoBufferEntry.fromString(
 				String.format("entities/branches/%s.json", project.getName()),
-				rootToString(ac, project.getBranchRoot())
+				rootToString(ac, project.toProject().getBranchRoot())
 			)).collect(Collectors.toList()))
 			.flatMapPublisher(Flowable::fromIterable);
 	}

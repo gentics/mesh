@@ -9,9 +9,9 @@ import java.util.Set;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.EditorTrackingVertex;
 import com.gentics.mesh.core.data.HibElement;
-import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 
 import io.vertx.core.json.JsonObject;
@@ -79,10 +79,10 @@ public abstract class AbstractTransformer<T> implements Transformer<T> {
 	 * @param document
 	 * @param tags
 	 */
-	public void addTags(JsonObject document, Iterable<? extends Tag> tags) {
+	public void addTags(JsonObject document, Iterable<? extends HibTag> tags) {
 		List<String> tagUuids = new ArrayList<>();
 		List<String> tagNames = new ArrayList<>();
-		for (Tag tag : tags) {
+		for (HibTag tag : tags) {
 			tagUuids.add(tag.getUuid());
 			tagNames.add(tag.getName());
 		}
@@ -117,7 +117,7 @@ public abstract class AbstractTransformer<T> implements Transformer<T> {
 	 * @param element
 	 */
 	protected void addPermissionInfo(JsonObject document, HibElement element) {
-		Set<String> roleUuids = element.getRoleUuidsForPerm(GraphPermission.READ_PERM);
+		Set<String> roleUuids = element.getRoleUuidsForPerm(InternalPermission.READ_PERM);
 		List<String> roleUuidsList = new ArrayList<>(roleUuids);
 		document.put("_roleUuids", roleUuidsList);
 	}
@@ -135,7 +135,7 @@ public abstract class AbstractTransformer<T> implements Transformer<T> {
 	 * @param document
 	 * @param project
 	 */
-	protected void addProject(JsonObject document, Project project) {
+	protected void addProject(JsonObject document, HibProject project) {
 		if (project != null) {
 			Map<String, String> projectFields = new HashMap<>();
 			projectFields.put("name", project.getName());

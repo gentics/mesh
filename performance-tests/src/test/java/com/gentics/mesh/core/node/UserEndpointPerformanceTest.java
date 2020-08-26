@@ -9,7 +9,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
@@ -36,7 +36,7 @@ public class UserEndpointPerformanceTest extends AbstractMeshTest {
 		loggingStopWatch(logger, "user.hasPermission", 100000, (step) -> {
 			try (Tx tx = tx()) {
 				UserDaoWrapper userDao = tx.data().userDao();
-				userDao.hasPermission(user(), content(), GraphPermission.READ_PERM);
+				userDao.hasPermission(user(), content(), InternalPermission.READ_PERM);
 			}
 		});
 	}

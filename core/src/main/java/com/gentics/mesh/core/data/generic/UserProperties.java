@@ -10,7 +10,6 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.user.HibUser;
 
 @Singleton

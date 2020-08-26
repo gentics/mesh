@@ -172,7 +172,7 @@ public interface EdgeTraversal<C, S, M> extends Traversal<EdgeFrame, C, S, M> {
 	 *            The kind of framed elements to return.
 	 * @return An iterator of framed elements.
 	 */
-	<T> Iterable<T> frameExplicit(Class<T> kind);
+	<T> Iterable<T> frameExplicit(Class<? extends T> kind);
 
 	/**
 	 * Return a list of all the objects in the pipeline.

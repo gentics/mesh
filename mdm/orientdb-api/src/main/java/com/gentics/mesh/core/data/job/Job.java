@@ -1,10 +1,10 @@
 package com.gentics.mesh.core.data.job;
 
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.job.JobType;
@@ -16,7 +16,7 @@ import io.reactivex.Completable;
 /**
  * A job can be added to the {@link JobRoot} vertex. Jobs are used to persist information about long running tasks.
  */
-public interface Job extends MeshCoreVertex<JobResponse, Job>, CreatorTrackingVertex {
+public interface Job extends MeshCoreVertex<JobResponse, Job>, CreatorTrackingVertex, HibJob {
 
 	String TYPE_PROPERTY_KEY = "type";
 
@@ -60,70 +60,70 @@ public interface Job extends MeshCoreVertex<JobResponse, Job>, CreatorTrackingVe
 	 * 
 	 * @return
 	 */
-	Branch getBranch();
+	HibBranch getBranch();
 
 	/**
 	 * Set the branch reference for the job.
 	 * 
 	 * @param branch
 	 */
-	void setBranch(Branch branch);
+	void setBranch(HibBranch branch);
 
 	/**
 	 * Return the schema version reference.
 	 * 
 	 * @return
 	 */
-	SchemaVersion getFromSchemaVersion();
+	HibSchemaVersion getFromSchemaVersion();
 
 	/**
 	 * Set the schema version reference.
 	 * 
 	 * @param version
 	 */
-	void setFromSchemaVersion(SchemaVersion version);
+	void setFromSchemaVersion(HibSchemaVersion version);
 
 	/**
 	 * Return the schema version reference.
 	 * 
 	 * @return
 	 */
-	SchemaVersion getToSchemaVersion();
+	HibSchemaVersion getToSchemaVersion();
 
 	/**
 	 * Set the schema version reference.
 	 * 
 	 * @param version
 	 */
-	void setToSchemaVersion(SchemaVersion version);
+	void setToSchemaVersion(HibSchemaVersion version);
 
 	/**
 	 * Return the microschema version reference.
 	 * 
 	 * @return
 	 */
-	MicroschemaVersion getFromMicroschemaVersion();
+	HibMicroschemaVersion getFromMicroschemaVersion();
 
 	/**
 	 * Set the microschema version reference.
 	 * 
 	 * @param fromVersion
 	 */
-	void setFromMicroschemaVersion(MicroschemaVersion fromVersion);
+	void setFromMicroschemaVersion(HibMicroschemaVersion fromVersion);
 
 	/**
 	 * Return the microschema version reference.
 	 * 
 	 * @return
 	 */
-	MicroschemaVersion getToMicroschemaVersion();
+	HibMicroschemaVersion getToMicroschemaVersion();
 
 	/**
 	 * Set the microschema version reference.
 	 * 
 	 * @param toVersion
 	 */
-	void setToMicroschemaVersion(MicroschemaVersion toVersion);
+	void setToMicroschemaVersion(HibMicroschemaVersion toVersion);
 
 	/**
 	 * Process the job.

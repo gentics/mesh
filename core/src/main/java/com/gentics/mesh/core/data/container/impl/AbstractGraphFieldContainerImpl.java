@@ -57,7 +57,7 @@ import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -77,7 +77,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	 * 
 	 * @return
 	 */
-	abstract protected Node getParentNode();
+	abstract protected Node getNode();
 
 	@Override
 	public StringGraphField createString(String key) {
@@ -168,7 +168,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	}
 
 	@Override
-	public MicronodeGraphField createMicronode(String key, MicroschemaVersion microschema) {
+	public MicronodeGraphField createMicronode(String key, HibMicroschemaVersion microschema) {
 		// 1. Copy existing micronode
 		MicronodeGraphField existing = getMicronode(key);
 		Micronode existingMicronode = null;
@@ -319,7 +319,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	public Field getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, List<String> languageTags, int level) {
 		GraphFieldTypes type = GraphFieldTypes.valueByFieldSchema(fieldSchema);
 		if (type != null) {
-			return type.getRestFieldFromGraph(this, ac, fieldKey, fieldSchema, languageTags, level, () -> getParentNode());
+			return type.getRestFieldFromGraph(this, ac, fieldKey, fieldSchema, languageTags, level, () -> getNode());
 		} else {
 			throw error(BAD_REQUEST, "type unknown");
 		}

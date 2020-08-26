@@ -3,8 +3,6 @@ package com.gentics.mesh.parameter.image;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.gentics.mesh.parameter.ImageManipulationParameters;
-
 /**
  * Enum which represents the implemented resize modes.
  */

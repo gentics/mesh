@@ -211,7 +211,7 @@ public interface VertexTraversal<C, S, M> extends Traversal<VertexFrame, C, S, M
 	 *            The kind of framed elements to return.
 	 * @return An iterator of framed elements.
 	 */
-	<N> Iterable<? extends N> frameExplicit(Class<N> kind);
+	<N> Iterable<N> frameExplicit(Class<N> kind);
 
 	/**
 	 * Emit the incoming vertex, but have other vertex provide an outgoing edge to incoming vertex.

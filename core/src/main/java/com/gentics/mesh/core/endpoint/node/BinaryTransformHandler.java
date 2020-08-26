@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.endpoint.node;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -14,14 +14,16 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.image.spi.ImageInfo;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
@@ -104,7 +106,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 
 		// Load needed elements
 		Node node = db.tx(tx -> {
-			Project project = ac.getProject();
+			HibProject project = ac.getProject();
 			Node n = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 
 			Language language = tx.data().languageDao().findByLanguageTag(languageTag);
@@ -209,15 +211,14 @@ public class BinaryTransformHandler extends AbstractHandler {
 	private NodeResponse updateNodeInGraph(InternalActionContext ac, UploadContext context, TransformationResult result, Node node,
 		String languageTag, String fieldName, ImageManipulationParameters parameters) {
 		return utils.eventAction((tx, batch) -> {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 
 			NodeGraphFieldContainer latestDraftVersion = loadTargetedContent(node, languageTag, fieldName);
 
-			Branch branch = ac.getBranch();
+			HibBranch branch = ac.getBranch();
 
 			// Create a new node version field container to store the upload
-			NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(languageTag, branch, ac.getUser(),
-				latestDraftVersion,
-				true);
+			NodeGraphFieldContainer newDraftVersion = contentDao.createGraphFieldContainer(node, languageTag, branch, ac.getUser(), latestDraftVersion, true);
 
 			// TODO Add conflict checking
 
@@ -253,13 +254,15 @@ public class BinaryTransformHandler extends AbstractHandler {
 			}
 			// If the binary field is the segment field, we need to update the webroot info in the node
 			if (field.getFieldKey().equals(newDraftVersion.getSchemaContainerVersion().getSchema().getSegmentField())) {
-				newDraftVersion.updateWebrootPathInfo(branch.getUuid(), "node_conflicting_segmentfield_upload");
+				contentDao.updateWebrootPathInfo(newDraftVersion, branch.getUuid(), "node_conflicting_segmentfield_upload");
 			}
-			String branchUuid = node.getProject().getBranchRoot().getLatestBranch().getUuid();
+			BranchDaoWrapper branchDao = tx.data().branchDao();
+			// TODO maybe use a fixed method in project?
+			String branchUuid = branchDao.getLatestBranch(node.getProject()).getUuid();
 
 			// Purge the old draft
 			if (ac.isPurgeAllowed() && newDraftVersion.isAutoPurgeEnabled() && latestDraftVersion.isPurgeable()) {
-				latestDraftVersion.purge();
+				contentDao.purge(latestDraftVersion);
 			}
 
 			batch.add(newDraftVersion.onCreated(branchUuid, DRAFT));
@@ -268,7 +271,8 @@ public class BinaryTransformHandler extends AbstractHandler {
 	}
 
 	private NodeGraphFieldContainer loadTargetedContent(Node node, String languageTag, String fieldName) {
-		NodeGraphFieldContainer latestDraftVersion = node.getLatestDraftFieldContainer(languageTag);
+		ContentDaoWrapper contentDao = boot.get().contentDao();
+		NodeGraphFieldContainer latestDraftVersion = contentDao.getLatestDraftFieldContainer(node, languageTag);
 		if (latestDraftVersion == null) {
 			throw error(NOT_FOUND, "error_language_not_found", languageTag);
 		}

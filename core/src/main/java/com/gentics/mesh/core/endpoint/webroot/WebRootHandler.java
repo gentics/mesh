@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.endpoint.webroot;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.util.URIUtils.decodeSegment;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
@@ -18,13 +18,14 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.service.WebRootServiceImpl;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
@@ -122,7 +123,7 @@ public class WebRootHandler {
 				}
 
 				String version = ac.getVersioningParameters().getVersion();
-				Node node = container.getParentNode();
+				Node node = tx.data().contentDao().getNode(container);
 				addCacheControl(rc, node, version);
 				userDao.failOnNoReadPermission(requestUser, container, branchUuid, version);
 
@@ -195,7 +196,7 @@ public class WebRootHandler {
 	private boolean isPublic(Node node, String version) {
 		RoleDaoWrapper roleDao = Tx.get().data().roleDao();
 
-		Role anonymousRole = boot.anonymousRole();
+		HibRole anonymousRole = boot.anonymousRole();
 		AuthenticationOptions authOptions = options.getAuthenticationOptions();
 		if (anonymousRole != null && authOptions != null && authOptions.isEnableAnonymousAccess()) {
 			if (roleDao.hasPermission(anonymousRole, READ_PERM, node)) {
@@ -216,7 +217,8 @@ public class WebRootHandler {
 
 		String uuid = null;
 		try (WriteLock lock = writeLock.lock(ac)) {
-			uuid = db.tx(() -> {
+			uuid = db.tx(tx -> {
+				ContentDaoWrapper contentDao = tx.data().contentDao();
 
 				// Load all nodes for the given path
 				ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
@@ -244,7 +246,7 @@ public class WebRootHandler {
 						request.setLanguage(lang);
 					}
 					ac.setBody(request);
-					return container.getParentNode().getUuid();
+					return contentDao.getNode(container).getUuid();
 				} else {
 					int diff = nodePath.getInitialStack().size() - nodePath.getSegments().size();
 					if (diff > 1) {
@@ -262,7 +264,7 @@ public class WebRootHandler {
 							parentNode = ac.getProject().getBaseNode();
 						} else {
 							PathSegment parentSegment = segments.get(segments.size() - 1);
-							parentNode = parentSegment.getContainer().getParentNode();
+							parentNode = contentDao.getNode(parentSegment.getContainer());
 						}
 						String parentUuid = parentNode.getUuid();
 						log.debug("Using deduced parent node uuid: " + parentUuid);

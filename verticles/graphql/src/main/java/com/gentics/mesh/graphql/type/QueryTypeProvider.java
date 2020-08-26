@@ -1,7 +1,7 @@
 package com.gentics.mesh.graphql.type;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.graphql.type.BranchTypeProvider.BRANCH_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.GroupTypeProvider.GROUP_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.GroupTypeProvider.GROUP_TYPE_NAME;
@@ -46,16 +46,19 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.action.DAOActionsCollection;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.PermissionException;
 import com.gentics.mesh.core.rest.error.UuidNotFoundException;
@@ -200,6 +203,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 * @return A page containing all found nodes matching the given UUIDs
 	 */
 	private Page<NodeContent> fetchNodesByUuid(DataFetchingEnvironment env) {
+		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 		List<String> uuids = env.getArgument("uuids");
 
 		if (uuids == null || uuids.isEmpty()) {
@@ -235,7 +239,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			})
 			.filter(Objects::nonNull)
 			.map(node -> {
-				NodeGraphFieldContainer container = node.findVersion(gc, languageTags, type);
+				NodeGraphFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
 				return new NodeContent(node, container, languageTags, type);
 			})
 			.filter(content -> content.getContainer() != null)
@@ -251,10 +255,12 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 * @return
 	 */
 	public Object nodeFetcher(DataFetchingEnvironment env) {
+		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 		String uuid = env.getArgument("uuid");
 		if (uuid != null) {
+			NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
 			GraphQLContext gc = env.getContext();
-			Node node = gc.getProject().getNodeRoot().findByUuid(uuid);
+			Node node = nodeDao.findByUuid(gc.getProject(), uuid);
 			if (node == null) {
 				// TODO Throw graphql aware not found exception
 				return null;
@@ -263,7 +269,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			ContainerType type = getNodeVersion(env);
 
 			node = gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
-			NodeGraphFieldContainer container = node.findVersion(gc, languageTags, type);
+			NodeGraphFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
 			if (container != null) {
 				container = gc.requiresReadPermSoft(container, env);
 			}
@@ -281,7 +287,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			}
 
 			NodeGraphFieldContainer container = pathResult.getLast().getContainer();
-			Node nodeOfContainer = container.getParentNode();
+			Node nodeOfContainer = contentDao.getNode(container);
 
 			nodeOfContainer = gc.requiresPerm(nodeOfContainer, READ_PERM, READ_PUBLISHED_PERM);
 			container = gc.requiresReadPermSoft(container, env);
@@ -315,7 +321,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 */
 	public Object projectFetcher(DataFetchingEnvironment env) {
 		GraphQLContext gc = env.getContext();
-		Project project = gc.getProject();
+		HibProject project = gc.getProject();
 		return gc.requiresPerm(project, READ_PERM);
 	}
 
@@ -327,7 +333,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 */
 	public Object branchFetcher(DataFetchingEnvironment env) {
 		GraphQLContext gc = env.getContext();
-		Branch branch = gc.getBranch();
+		HibBranch branch = gc.getBranch();
 		return gc.requiresPerm(branch, READ_PERM);
 	}
 
@@ -338,14 +344,15 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 * @return
 	 */
 	public Object rootNodeFetcher(DataFetchingEnvironment env) {
+		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 		GraphQLContext gc = env.getContext();
-		Project project = gc.getProject();
+		HibProject project = gc.getProject();
 		if (project != null) {
 			Node node = project.getBaseNode();
 			gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 			List<String> languageTags = getLanguageArgument(env);
 			ContainerType type = getNodeVersion(env);
-			NodeGraphFieldContainer container = node.findVersion(gc, languageTags, type);
+			NodeGraphFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
 			container = gc.requiresReadPermSoft(container, env);
 			return new NodeContent(node, container, languageTags, type);
 		}
@@ -563,7 +570,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 * @return
 	 */
 	public GraphQLSchema getRootSchema(GraphQLContext context) {
-		Project project = context.getProject();
+		HibProject project = context.getProject();
 		graphql.schema.GraphQLSchema.Builder builder = GraphQLSchema.newSchema();
 
 		Set<GraphQLType> additionalTypes = new HashSet<>();

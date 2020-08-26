@@ -31,7 +31,10 @@ import org.apache.tika.sax.BodyContentHandler;
 import org.imgscalr.Scalr;
 import org.imgscalr.Scalr.Mode;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.image.spi.AbstractImageManipulator;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -43,6 +46,7 @@ import com.gentics.mesh.parameter.image.ImageRect;
 import com.gentics.mesh.parameter.image.ResizeMode;
 import com.gentics.mesh.util.NumberUtils;
 import com.twelvemonkeys.image.ResampleOp;
+
 import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -60,15 +64,19 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
 	private WorkerExecutor workerPool;
 
-	public ImgscalrImageManipulator(Vertx vertx, MeshOptions options) {
-		this(vertx, options.getImageOptions());
+	private final BootstrapInitializer boot;
+
+	public ImgscalrImageManipulator(Vertx vertx, MeshOptions options, BootstrapInitializer boot) {
+		this(vertx, options.getImageOptions(), boot);
+		
 	}
 
-	ImgscalrImageManipulator(Vertx vertx, ImageManipulatorOptions options) {
+	ImgscalrImageManipulator(Vertx vertx, ImageManipulatorOptions options, BootstrapInitializer boot) {
 		super(vertx, options);
 		focalPointModifier = new FocalPointModifier(options);
 		// 10 seconds
 		workerPool = vertx.createSharedWorkerExecutor("resizeWorker", 5, Duration.ofSeconds(10).toNanos());
+		this.boot = boot;
 	}
 
 	/**
@@ -296,7 +304,8 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 		parameters.validate();
 		parameters.validateLimits(options);
 
-		Supplier<InputStream> stream = binary.openBlockingStream();
+		BinaryDaoWrapper binaryDao = boot.binaryDao();
+		Supplier<InputStream> stream = binaryDao.openBlockingStream(binary);
 
 		return getCacheFilePath(binary.getSHA512Sum(), parameters)
 			.flatMap(cacheFileInfo -> {

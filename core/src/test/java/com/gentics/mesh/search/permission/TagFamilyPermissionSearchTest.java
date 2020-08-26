@@ -7,12 +7,11 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.RoleRoot;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
@@ -29,11 +28,13 @@ public class TagFamilyPermissionSearchTest extends AbstractMeshTest {
 		String tagfamilyname = "testtagfamily42a";
 		TagFamilyResponse response = createTagFamily(PROJECT_NAME, tagfamilyname);
 		try (Tx tx = tx()) {
+			UserDaoWrapper userDao = tx.data().userDao();
 			RoleDaoWrapper roleDao = tx.data().roleDao();
+
 			TagFamily tagFamily = project().getTagFamilyRoot().findByUuid(response.getUuid());
 			System.out.println("TagFamily Uuid:" + response.getUuid());
-			for (Role role : user().getRoles()) {
-				roleDao.revokePermissions(role, tagFamily, GraphPermission.READ_PERM);
+			for (HibRole role : userDao.getRoles(user())) {
+				roleDao.revokePermissions(role, tagFamily, InternalPermission.READ_PERM);
 			}
 			tx.success();
 		}
@@ -47,11 +48,13 @@ public class TagFamilyPermissionSearchTest extends AbstractMeshTest {
 
 		// Now add the perm
 		try (Tx tx = tx()) {
+			UserDaoWrapper userDao = tx.data().userDao();
 			RoleDaoWrapper roleDao = tx.data().roleDao();
+
 			TagFamily tagFamily = project().getTagFamilyRoot().findByUuid(response.getUuid());
 			System.out.println("TagFamily Uuid:" + response.getUuid());
-			for (Role role : user().getRoles()) {
-				roleDao.grantPermissions(role, tagFamily, GraphPermission.READ_PERM);
+			for (HibRole role : userDao.getRoles(user())) {
+				roleDao.grantPermissions(role, tagFamily, InternalPermission.READ_PERM);
 			}
 			tx.success();
 		}

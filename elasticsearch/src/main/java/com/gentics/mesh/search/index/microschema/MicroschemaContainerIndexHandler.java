@@ -11,6 +11,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
@@ -29,7 +30,7 @@ import io.reactivex.Flowable;
  * Handler for the elastic search microschema index.
  */
 @Singleton
-public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Microschema> {
+public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<HibMicroschema> {
 
 	@Inject
 	MicroschemaTransformer transformer;
@@ -92,12 +93,12 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 	}
 
 	@Override
-	public Function<String, Microschema> elementLoader() {
+	public Function<String, HibMicroschema> elementLoader() {
 		return (uuid) -> boot.meshRoot().getMicroschemaContainerRoot().findByUuid(uuid);
 	}
 
 	@Override
-	public Stream<? extends Microschema> loadAllElements(Tx tx) {
+	public Stream<? extends HibMicroschema> loadAllElements(Tx tx) {
 		return tx.data().microschemaDao().findAll().stream();
 	}
 

@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.generic;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.rest.MeshEvent.ROLE_PERMISSIONS_CHANGED;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
@@ -14,12 +14,13 @@ import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.EditorTrackingVertex;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.NamedElement;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.ProjectElement;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
@@ -57,7 +58,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	}
 
 	@Override
-	public TraversalResult<? extends Role> getRolesWithPerm(GraphPermission perm) {
+	public TraversalResult<? extends HibRole> getRolesWithPerm(InternalPermission perm) {
 		return mesh().permissionProperties().getRolesWithPerm(this, perm);
 	}
 
@@ -181,9 +182,9 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 		if (!isEmpty(roleUuid)) {
 			Role role = mesh().boot().meshRoot().getRoleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 			if (role != null) {
-				Set<GraphPermission> permSet = roleDao.getPermissions(role, this);
+				Set<InternalPermission> permSet = roleDao.getPermissions(role, this);
 				Set<String> humanNames = new HashSet<>();
-				for (GraphPermission permission : permSet) {
+				for (InternalPermission permission : permSet) {
 					humanNames.add(permission.getRestPerm().getName());
 				}
 				String[] names = humanNames.toArray(new String[humanNames.size()]);
@@ -223,7 +224,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 			model.setName(name);
 		}
 		if (this instanceof ProjectElement) {
-			Project project = ((ProjectElement) this).getProject();
+			HibProject project = ((ProjectElement) this).getProject();
 			if (project != null) {
 				if (model instanceof PermissionChangedProjectElementEventModel) {
 					((PermissionChangedProjectElementEventModel) model).setProject(project.transformToReference());

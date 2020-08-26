@@ -1,6 +1,6 @@
 package com.gentics.mesh.graphql.type;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.graphql.type.NodeTypeProvider.NODE_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.TagFamilyTypeProvider.TAG_FAMILY_TYPE_NAME;
 import static graphql.Scalars.GraphQLString;
@@ -14,9 +14,11 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.node.NodeContent;
+import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -52,15 +54,15 @@ public class TagTypeProvider extends AbstractTypeProvider {
 
 		// .name
 		tagType.field(newFieldDefinition().name("name").description("Name of the tag").type(GraphQLString).dataFetcher((env) -> {
-			Tag tag = env.getSource();
+			HibTag tag = env.getSource();
 			return tag.getName();
 		}));
 
 		// .tagFamily
 		tagType.field(newFieldDefinition().name("tagFamily").description("Tag family to which the tag belongs").dataFetcher((env) -> {
 			GraphQLContext gc = env.getContext();
-			Tag tag = env.getSource();
-			TagFamily tagFamily = tag.getTagFamily();
+			HibTag tag = env.getSource();
+			HibTagFamily tagFamily = tag.getTagFamily();
 			return gc.requiresPerm(tagFamily, READ_PERM);
 		}).type(new GraphQLTypeReference(TAG_FAMILY_TYPE_NAME)));
 
@@ -71,6 +73,7 @@ public class TagTypeProvider extends AbstractTypeProvider {
 				.argument(createLanguageTagArg(true))
 				.argument(createNodeVersionArg())
 				.dataFetcher((env) -> {
+					ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 					GraphQLContext gc = env.getContext();
 					Tag tag = env.getSource();
 					TagDaoWrapper tagDao = Tx.get().data().tagDao();
@@ -80,7 +83,7 @@ public class TagTypeProvider extends AbstractTypeProvider {
 
 					Stream<NodeContent> contents = tagDao.findTaggedNodes(tag, gc).stream()
 						// Now lets try to load the containers for those found nodes - apply the language fallback
-						.map(node -> new NodeContent(node, node.findVersion(gc, languageTags, type), languageTags, type))
+						.map(node -> new NodeContent(node, contentDao.findVersion(node, gc, languageTags, type), languageTags, type))
 						// Filter nodes without a container
 						.filter(content -> content.getContainer() != null)
 						.filter(gc::hasReadPerm);

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.field.micronode;
 
+import static com.gentics.mesh.core.data.util.HibClassConverter.toMicroschemaVersion;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER_ES6;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,14 +23,16 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.root.MicroschemaRoot;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.Microschema;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
-import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
+import com.gentics.mesh.core.data.schema.handler.MicroschemaComparatorImpl;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
@@ -47,6 +50,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.ext.web.RoutingContext;
+
 @MeshTestSetting(elasticsearch = CONTAINER_ES6, testSize = FULL, startServer = true)
 public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjectTestcases {
 
@@ -54,7 +58,7 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 	@Override
 	public void testTransformToReference() throws Exception {
 		try (Tx tx = tx()) {
-			Microschema vcard = microschemaContainer("vcard");
+			HibMicroschema vcard = microschemaContainer("vcard");
 			MicroschemaReference reference = vcard.transformToReference();
 			assertNotNull(reference);
 			assertEquals("vcard", reference.getName());
@@ -73,12 +77,13 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
+			MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			int expectedMicroschemaContainers = microschemaContainers().size();
 
 			for (long i = 1; i <= expectedMicroschemaContainers + 1; i++) {
-				Page<? extends Microschema> page = boot().microschemaContainerRoot().findAll(ac, new PagingParametersImpl(1, i));
+				Page<? extends Microschema> page = microschemaDao.findAll(ac, new PagingParametersImpl(1, i));
 
 				assertEquals(microschemaContainers().size(), page.getTotalElements());
 				assertEquals(Math.min(expectedMicroschemaContainers, i), page.getSize());
@@ -100,7 +105,7 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 			String invalidName = "thereIsNoMicroschemaWithThisName";
 
 			for (String name : microschemaContainers().keySet()) {
-				Microschema container = boot().microschemaContainerRoot().findByName(name);
+				HibMicroschema container = boot().microschemaContainerRoot().findByName(name);
 				assertNotNull("Could not find microschema container for name " + name, container);
 				MicroschemaModel microschemaModel = container.getLatestVersion().getSchema();
 				assertNotNull("Container for microschema " + name + " did not contain a microschema", microschemaModel);
@@ -118,7 +123,7 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 			String invalidUUID = UUIDUtil.randomUUID();
 
 			MicroschemaRoot root = boot().microschemaContainerRoot();
-			for (Microschema container : microschemaContainers().values()) {
+			for (HibMicroschema container : microschemaContainers().values()) {
 				String uuid = container.getUuid();
 				assertNotNull("Could not find microschema with uuid " + uuid, root.findByUuid(uuid));
 			}
@@ -135,20 +140,12 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 	}
 
 	@Test
-	public void testRoot() {
-		try (Tx tx = tx()) {
-			Microschema vcard = microschemaContainer("vcard");
-			assertNotNull(vcard.getRoot());
-		}
-	}
-
-	@Test
 	@Override
 	public void testCreate() throws IOException {
 		try (Tx tx = tx()) {
 			MicroschemaVersionModel schema = new MicroschemaModelImpl();
 			schema.setName("test");
-			Microschema container = createMicroschema(schema);
+			HibMicroschema container = createMicroschema(schema);
 			assertNotNull("The container was not created.", container);
 			assertNotNull("The container schema was not set", container.getLatestVersion().getSchema());
 			assertEquals("The creator was not set.", user().getUuid(), container.getCreator().getUuid());
@@ -173,13 +170,14 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 	@Override
 	public void testDelete() throws MeshJsonException {
 		try (Tx tx = tx()) {
+			MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
 			MicroschemaVersionModel schema = new MicroschemaModelImpl();
 			schema.setName("test");
-			Microschema container = createMicroschema(schema);
-			assertNotNull(mesh().boot().meshRoot().getMicroschemaContainerRoot().findByName("test"));
+			HibMicroschema container = createMicroschema(schema);
+			assertNotNull(microschemaDao.findByName("test"));
 			BulkActionContext bac = createBulkContext();
-			container.delete(bac);
-			assertNull(mesh().boot().meshRoot().getMicroschemaContainerRoot().findByName("test"));
+			microschemaDao.delete(container, bac);
+			assertNull(microschemaDao.findByName("test"));
 		}
 	}
 
@@ -196,8 +194,8 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 		try (Tx tx = tx()) {
 			MicroschemaVersionModel schema = new MicroschemaModelImpl();
 			schema.setName("someNewMicroschema");
-			Microschema container = createMicroschema(schema);
-			testPermission(GraphPermission.READ_PERM, container);
+			HibMicroschema container = createMicroschema(schema);
+			testPermission(InternalPermission.READ_PERM, container);
 		}
 	}
 
@@ -207,8 +205,8 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 		try (Tx tx = tx()) {
 			MicroschemaVersionModel schema = new MicroschemaModelImpl();
 			schema.setName("someNewMicroschema");
-			Microschema container = createMicroschema(schema);
-			testPermission(GraphPermission.DELETE_PERM, container);
+			HibMicroschema container = createMicroschema(schema);
+			testPermission(InternalPermission.DELETE_PERM, container);
 		}
 
 	}
@@ -219,8 +217,8 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 		try (Tx tx = tx()) {
 			MicroschemaVersionModel schema = new MicroschemaModelImpl();
 			schema.setName("someNewMicroschema");
-			Microschema container = createMicroschema(schema);
-			testPermission(GraphPermission.UPDATE_PERM, container);
+			HibMicroschema container = createMicroschema(schema);
+			testPermission(InternalPermission.UPDATE_PERM, container);
 		}
 	}
 
@@ -230,8 +228,8 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 		try (Tx tx = tx()) {
 			MicroschemaVersionModel schema = new MicroschemaModelImpl();
 			schema.setName("someNewMicroschema");
-			Microschema container = createMicroschema(schema);
-			testPermission(GraphPermission.CREATE_PERM, container);
+			HibMicroschema container = createMicroschema(schema);
+			testPermission(InternalPermission.CREATE_PERM, container);
 		}
 	}
 
@@ -241,7 +239,7 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 		try (Tx tx = tx()) {
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			Microschema vcard = microschemaContainer("vcard");
+			HibMicroschema vcard = microschemaContainer("vcard");
 			MicroschemaResponse schema = vcard.transformToRestSync(ac, 0, "en");
 			assertEquals(vcard.getUuid(), schema.getUuid());
 		}
@@ -263,12 +261,12 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 			UserDaoWrapper userDao = tx.data().userDao();
 			MicroschemaVersionModel schema = new MicroschemaModelImpl();
 			schema.setName("someNewMicroschema");
-			Microschema container = createMicroschema(schema);
+			HibMicroschema container = createMicroschema(schema);
 
-			assertFalse(roleDao.hasPermission(role(), GraphPermission.CREATE_PERM, container));
+			assertFalse(roleDao.hasPermission(role(), InternalPermission.CREATE_PERM, container));
 			userDao.inheritRolePermissions(getRequestUser(), meshRoot().getMicroschemaContainerRoot(), container);
 			assertTrue("The addCRUDPermissionOnRole method should add the needed permissions on the new microschema container.",
-				roleDao.hasPermission(role(), GraphPermission.CREATE_PERM, container));
+				roleDao.hasPermission(role(), InternalPermission.CREATE_PERM, container));
 		}
 	}
 
@@ -280,7 +278,8 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 	@Test
 	public void testGetContainerUsingMicroschemaVersion() throws IOException {
 		try (Tx tx = tx()) {
-			MicroschemaVersion vcard = microschemaContainer("vcard").getLatestVersion();
+			MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
+			HibMicroschemaVersion vcard = microschemaContainer("vcard").getLatestVersion();
 
 			MicroschemaModel microschemaModel = vcard.getSchema();
 			MicroschemaModel updatedMicroschemaModel = new MicroschemaModelImpl();
@@ -289,27 +288,27 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 			updatedMicroschemaModel.addField(FieldUtil.createStringFieldSchema("newfield"));
 
 			SchemaChangesListModel model = new SchemaChangesListModel();
-			model.getChanges().addAll(new MicroschemaComparator().diff(microschemaModel, updatedMicroschemaModel));
+			model.getChanges().addAll(new MicroschemaComparatorImpl().diff(microschemaModel, updatedMicroschemaModel));
 
 			InternalActionContext ac = mockActionContext();
 			EventQueueBatch batch = createBatch();
-			vcard.applyChanges(ac, model, batch);
-			MicroschemaVersion newVCard = microschemaContainer("vcard").getLatestVersion();
+			microschemaDao.applyChanges(vcard, ac, model, batch);
+			HibMicroschemaVersion newVCard = microschemaContainer("vcard").getLatestVersion();
 
-			NodeGraphFieldContainer containerWithBoth = folder("2015").getGraphFieldContainer("en");
+			NodeGraphFieldContainer containerWithBoth = boot().contentDao().getGraphFieldContainer(folder("2015"), "en");
 			containerWithBoth.createMicronode("single", vcard);
-			containerWithBoth.createMicronodeFieldList("list").createMicronode().setSchemaContainerVersion(vcard);
+			containerWithBoth.createMicronodeFieldList("list").createMicronode().setSchemaContainerVersion(toMicroschemaVersion(vcard));
 
-			NodeGraphFieldContainer containerWithField = folder("news").getGraphFieldContainer("en");
+			NodeGraphFieldContainer containerWithField = boot().contentDao().getGraphFieldContainer(folder("news"), "en");
 			containerWithField.createMicronode("single", vcard);
 
-			NodeGraphFieldContainer containerWithList = folder("products").getGraphFieldContainer("en");
-			containerWithList.createMicronodeFieldList("list").createMicronode().setSchemaContainerVersion(vcard);
+			NodeGraphFieldContainer containerWithList = boot().contentDao().getGraphFieldContainer(folder("products"), "en");
+			containerWithList.createMicronodeFieldList("list").createMicronode().setSchemaContainerVersion(toMicroschemaVersion(vcard));
 
-			NodeGraphFieldContainer containerWithOtherVersion = folder("deals").getGraphFieldContainer("en");
+			NodeGraphFieldContainer containerWithOtherVersion = boot().contentDao().getGraphFieldContainer(folder("deals"), "en");
 			containerWithOtherVersion.createMicronode("single", newVCard);
 
-			List<? extends NodeGraphFieldContainer> containers = vcard.getDraftFieldContainers(project().getLatestBranch().getUuid()).list();
+			List<? extends NodeGraphFieldContainer> containers = microschemaDao.findDraftFieldContainers(vcard, project().getLatestBranch().getUuid()).list();
 			assertThat(new ArrayList<NodeGraphFieldContainer>(containers)).containsOnly(containerWithBoth, containerWithField, containerWithList)
 				.hasSize(3);
 		}

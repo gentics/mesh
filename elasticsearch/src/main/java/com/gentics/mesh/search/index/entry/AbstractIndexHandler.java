@@ -26,7 +26,6 @@ import com.gentics.mesh.core.rest.search.EntityMetrics;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.MappingProvider;
@@ -219,7 +218,9 @@ public abstract class AbstractIndexHandler<T extends HibElement> implements Inde
 				meters.getDeleteMeter().addPending((needRemovalInES.size()));
 
 				Function<Action, Function<String, CreateDocumentRequest>> toCreateRequest = action -> uuid -> {
-					JsonObject doc = db.tx(() -> getTransformer().toDocument(getElement(uuid)));
+					JsonObject doc = db.tx(tx -> {
+						return getTransformer().toDocument(getElement(uuid));
+					});
 					return helper.createDocumentRequest(indexName, uuid, doc, complianceMode, action);
 				};
 

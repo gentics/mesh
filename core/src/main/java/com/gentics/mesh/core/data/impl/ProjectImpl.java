@@ -26,16 +26,16 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.root.MicroschemaRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
@@ -47,8 +47,8 @@ import com.gentics.mesh.core.data.root.impl.NodeRootImpl;
 import com.gentics.mesh.core.data.root.impl.ProjectMicroschemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.ProjectSchemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
-import com.gentics.mesh.core.data.schema.Microschema;
-import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
@@ -201,8 +201,8 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
-	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
-		Set<GraphPermission> permissionsToRevoke) {
+	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<InternalPermission> permissionsToGrant,
+		Set<InternalPermission> permissionsToRevoke) {
 		if (recursive) {
 			getTagFamilyRoot().applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
 			getBranchRoot().applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
@@ -212,12 +212,12 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
-	public Branch getInitialBranch() {
+	public HibBranch getInitialBranch() {
 		return getBranchRoot().getInitialBranch();
 	}
 
 	@Override
-	public Branch getLatestBranch() {
+	public HibBranch getLatestBranch() {
 		return getBranchRoot().getLatestBranch();
 	}
 
@@ -265,7 +265,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
-	public ProjectSchemaEventModel onSchemaAssignEvent(Schema schema, Assignment assigned) {
+	public ProjectSchemaEventModel onSchemaAssignEvent(HibSchema schema, Assignment assigned) {
 		ProjectSchemaEventModel model = new ProjectSchemaEventModel();
 		switch (assigned) {
 		case ASSIGNED:
@@ -281,7 +281,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
-	public ProjectMicroschemaEventModel onMicroschemaAssignEvent(Microschema microschema, Assignment assigned) {
+	public ProjectMicroschemaEventModel onMicroschemaAssignEvent(HibMicroschema microschema, Assignment assigned) {
 		ProjectMicroschemaEventModel model = new ProjectMicroschemaEventModel();
 		switch (assigned) {
 		case ASSIGNED:
@@ -309,19 +309,19 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
-	public Branch findBranch(String branchNameOrUuid) {
+	public HibBranch findBranch(String branchNameOrUuid) {
 		return findBranchOpt(branchNameOrUuid)
 			.orElseThrow(() -> error(BAD_REQUEST, "branch_error_not_found", branchNameOrUuid));
 	}
 
 	@Override
-	public Branch findBranchOrLatest(String branchNameOrUuid) {
+	public HibBranch findBranchOrLatest(String branchNameOrUuid) {
 		return findBranchOpt(branchNameOrUuid).orElseGet(this::getLatestBranch);
 	}
 
-	private Optional<Branch> findBranchOpt(String branchNameOrUuid) {
+	private Optional<HibBranch> findBranchOpt(String branchNameOrUuid) {
 		return Optional.ofNullable(mesh().branchCache().get(id() + "-" + branchNameOrUuid, key -> {
-			Branch branch = null;
+			HibBranch branch = null;
 
 			if (!isEmpty(branchNameOrUuid)) {
 				branch = getBranchRoot().findByUuid(branchNameOrUuid);

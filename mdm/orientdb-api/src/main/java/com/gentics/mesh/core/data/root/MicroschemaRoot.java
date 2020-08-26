@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.root;
 
+import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -17,7 +18,7 @@ public interface MicroschemaRoot extends RootVertex<Microschema> {
 	 * @param container
 	 * @param batch
 	 */
-	void addMicroschema(HibUser user, Microschema container, EventQueueBatch batch);
+	void addMicroschema(HibUser user, HibMicroschema container, EventQueueBatch batch);
 
 	/**
 	 * Remove the microschema container from the aggregation node.
@@ -25,7 +26,7 @@ public interface MicroschemaRoot extends RootVertex<Microschema> {
 	 * @param container
 	 * @param batch
 	 */
-	void removeMicroschema(Microschema container, EventQueueBatch batch);
+	void removeMicroschema(HibMicroschema container, EventQueueBatch batch);
 
 	/**
 	 * Check whether the given microschema is assigned to this root node.
@@ -33,7 +34,7 @@ public interface MicroschemaRoot extends RootVertex<Microschema> {
 	 * @param microschema
 	 * @return
 	 */
-	boolean contains(Microschema microschema);
+	boolean contains(HibMicroschema microschema);
 
 
 	Microschema create();

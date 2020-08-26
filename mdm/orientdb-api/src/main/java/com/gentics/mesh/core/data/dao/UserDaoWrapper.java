@@ -1,10 +1,5 @@
 package com.gentics.mesh.core.data.dao;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -15,10 +10,12 @@ import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
@@ -41,12 +38,12 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<HibUser>, DaoTransfo
 	 * @param element
 	 * @param permission
 	 * @return
-	 * @deprecated Use {@link #hasPermission(HibUser, HibElement, GraphPermission)} instead.
+	 * @deprecated Use {@link #hasPermission(HibUser, HibElement, InternalPermission)} instead.
 	 */
 	@Deprecated
-	boolean hasPermission(HibUser user, MeshVertex element, GraphPermission permission);
+	boolean hasPermission(HibUser user, MeshVertex element, InternalPermission permission);
 
-	boolean hasPermission(HibUser user, HibElement element, GraphPermission permission);
+	boolean hasPermission(HibUser user, HibElement element, InternalPermission permission);
 
 	/**
 	 * Check whether the user has the given permission on the element with the given id.
@@ -56,7 +53,7 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<HibUser>, DaoTransfo
 	 * @param permission
 	 * @return
 	 */
-	boolean hasPermissionForId(HibUser user, Object elementId, GraphPermission permission);
+	boolean hasPermissionForId(HibUser user, Object elementId, InternalPermission permission);
 
 	/**
 	 * Check the read permission on the given container and return false if the needed permission to read the container is not set. This method will not return
@@ -77,19 +74,11 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<HibUser>, DaoTransfo
 	 * @param branchUuid
 	 * @param requestedVersion
 	 */
-	default void failOnNoReadPermission(HibUser user, NodeGraphFieldContainer container, String branchUuid, String requestedVersion) {
-		Node node = container.getParentNode();
-		if (!hasReadPermission(user, container, branchUuid, requestedVersion)) {
-			throw error(FORBIDDEN, "error_missing_perm", node.getUuid(),
-				"published".equals(requestedVersion)
-					? READ_PUBLISHED_PERM.getRestPerm().getName()
-					: READ_PERM.getRestPerm().getName());
-		}
-	}
+	void failOnNoReadPermission(HibUser user, NodeGraphFieldContainer container, String branchUuid, String requestedVersion);
 
 	/**
 	 * Check whether the user is allowed to read the given node. Internally this check the currently configured version scope and check for
-	 * {@link GraphPermission#READ_PERM} or {@link GraphPermission#READ_PUBLISHED_PERM}.
+	 * {@link InternalPermission#READ_PERM} or {@link InternalPermission#READ_PUBLISHED_PERM}.
 	 *
 	 * @param user
 	 * @param ac
@@ -98,13 +87,13 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<HibUser>, DaoTransfo
 	 */
 	boolean canReadNode(HibUser user, InternalActionContext ac, Node node);
 
-	HibUser loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound);
+	HibUser loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound);
 
 	TransformablePage<? extends HibUser> findAll(InternalActionContext ac, PagingParameters pagingInfo);
 
 	Page<? extends HibUser> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibUser> extraFilter);
 
-	HibUser loadObjectByUuid(InternalActionContext ac, String userUuid, GraphPermission perm);
+	HibUser loadObjectByUuid(InternalActionContext ac, String userUuid, InternalPermission perm);
 
 	/**
 	 * Return the permission info object for the given vertex.
@@ -121,7 +110,7 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<HibUser>, DaoTransfo
 	 * @param element
 	 * @return
 	 */
-	Set<GraphPermission> getPermissions(HibUser user, HibElement element);
+	Set<InternalPermission> getPermissions(HibUser user, HibElement element);
 
 	/**
 	 * Update the vertex using the action context information.
@@ -191,11 +180,11 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<HibUser>, DaoTransfo
 	 *            Node to which the CRUD permissions will be assigned.
 	 * @return Fluent API
 	 */
-	HibUser addCRUDPermissionOnRole(HibUser user, HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode);
+	HibUser addCRUDPermissionOnRole(HibUser user, HasPermissions sourceNode, InternalPermission permission, MeshVertex targetNode);
 
 	/**
 	 * This method adds additional permissions to the target node. The roles are selected like in method
-	 * {@link #addCRUDPermissionOnRole(User, HasPermissions, GraphPermission, MeshVertex)} .
+	 * {@link #addCRUDPermissionOnRole(User, HasPermissions, InternalPermission, MeshVertex)} .
 	 *
 	 * @param user
 	 * @param sourceNode
@@ -208,8 +197,8 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<HibUser>, DaoTransfo
 	 *            permissions to grant
 	 * @return Fluent API
 	 */
-	HibUser addPermissionsOnRole(HibUser user, HasPermissions sourceNode, GraphPermission permission, MeshVertex targetNode,
-		GraphPermission... toGrant);
+	HibUser addPermissionsOnRole(HibUser user, HasPermissions sourceNode, InternalPermission permission, MeshVertex targetNode,
+		InternalPermission... toGrant);
 
 	/**
 	 * Inherit permissions edges from the source node and assign those permissions to the target node.
@@ -270,6 +259,7 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<HibUser>, DaoTransfo
 	/**
 	 * Check whether the given token code is valid. This method will also clear the token code if the token has expired.
 	 *
+	 * @parm user
 	 * @param token
 	 *            Token Code
 	 * @param maxTokenAgeMins
@@ -293,4 +283,18 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<HibUser>, DaoTransfo
 		return isTokenMatch && !isExpired;
 	}
 
+	/**
+	 * Add the user to the given group.
+	 *
+	 * @param user
+	 * @param group
+	 * @return Fluent API
+	 */
+	HibUser addGroup(HibUser user, HibGroup group);
+
+	Iterable<? extends HibRole> getRoles(HibUser user);
+
+	TraversalResult<? extends HibGroup> getGroups(HibUser user);
+
+	String getETag(HibUser user, InternalActionContext ac);
 }

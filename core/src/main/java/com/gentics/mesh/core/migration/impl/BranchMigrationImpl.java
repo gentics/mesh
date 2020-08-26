@@ -14,11 +14,14 @@ import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.BranchMigrationContext;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.core.migration.AbstractMigrationHandler;
@@ -48,8 +51,8 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 	public Completable migrateBranch(BranchMigrationContext context) {
 		context.validate();
 		return Completable.defer(() -> {
-			Branch oldBranch = context.getOldBranch();
-			Branch newBranch = context.getNewBranch();
+			HibBranch oldBranch = context.getOldBranch();
+			HibBranch newBranch = context.getNewBranch();
 			BranchMigrationCause cause = context.getCause();
 			MigrationStatusHandler status = context.getStatus();
 
@@ -61,7 +64,7 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 			});
 
 			List<? extends Node> nodes = db.tx(() -> {
-				Project project = oldBranch.getProject();
+				HibProject project = oldBranch.getProject();
 				return project.findNodes().list();
 			});
 
@@ -97,25 +100,28 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 	 * @param node
 	 * @param batch
 	 * @param oldBranch
-	 * @param newBranc
+	 * @param newBranch
 	 * @param errorsDetected
 	 */
-	private void migrateNode(Node node, EventQueueBatch batch, Branch oldBranch, Branch newBranch, List<Exception> errorsDetected) {
+	private void migrateNode(Node node, EventQueueBatch batch, HibBranch oldBranch, HibBranch newBranch, List<Exception> errorsDetected) {
 		try {
 			db.tx((tx) -> {
+				NodeDaoWrapper nodeDao = tx.data().nodeDao();
+				TagDaoWrapper tagDao = tx.data().tagDao();
+				ContentDaoWrapper contentDao = tx.data().contentDao();
 
 				// Check whether the node already has an initial container and thus was already migrated
-				if (node.getGraphFieldContainers(newBranch, INITIAL).hasNext()) {
+				if (contentDao.getGraphFieldContainers(node, newBranch, INITIAL).hasNext()) {
 					return;
 				}
 
-				Node parent = node.getParentNode(oldBranch.getUuid());
+				Node parent = nodeDao.getParentNode(node, oldBranch.getUuid());
 				if (parent != null) {
-					node.setParentNode(newBranch.getUuid(), parent);
+					nodeDao.setParentNode(node, newBranch.getUuid(), parent);
 				}
 
-				TraversalResult<? extends NodeGraphFieldContainer> drafts = node.getGraphFieldContainers(oldBranch, DRAFT);
-				TraversalResult<? extends NodeGraphFieldContainer> published = node.getGraphFieldContainers(oldBranch, PUBLISHED);
+				TraversalResult<? extends NodeGraphFieldContainer> drafts = contentDao.getGraphFieldContainers(node, oldBranch, DRAFT);
+				TraversalResult<? extends NodeGraphFieldContainer> published = contentDao.getGraphFieldContainers(node, oldBranch, PUBLISHED);
 
 				// 1. Migrate draft containers first
 				drafts.forEach(container -> {
@@ -129,7 +135,7 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 					draftEdge.setLanguageTag(container.getLanguageTag());
 					draftEdge.setType(DRAFT);
 					draftEdge.setBranchUuid(newBranch.getUuid());
-					String value = container.getSegmentFieldValue();
+					String value = contentDao.getSegmentFieldValue(container);
 					if (value != null) {
 						draftEdge.setSegmentInfo(parent, value);
 					} else {
@@ -149,7 +155,7 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 					publishEdge.setLanguageTag(container.getLanguageTag());
 					publishEdge.setType(PUBLISHED);
 					publishEdge.setBranchUuid(newBranch.getUuid());
-					String value = container.getSegmentFieldValue();
+					String value = contentDao.getSegmentFieldValue(container);
 					if (value != null) {
 						publishEdge.setSegmentInfo(parent, value);
 					} else {
@@ -160,7 +166,7 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 				});
 
 				// Migrate tags
-				node.getTags(oldBranch).forEach(tag -> node.addTag(tag, newBranch));
+				tagDao.getTags(node, oldBranch).forEach(tag -> tagDao.addTag(node, tag, newBranch));
 			});
 		} catch (Exception e1) {
 			log.error("Error while handling node {" + node.getUuid() + "} during schema migration.", e1);
@@ -171,7 +177,7 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 	/**
 	 * Create a new initial edge between node and container for the given branch.
 	 */
-	private void setInitial(Node node, NodeGraphFieldContainer container, Branch branch) {
+	private void setInitial(Node node, NodeGraphFieldContainer container, HibBranch branch) {
 		GraphFieldContainerEdgeImpl initialEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container,
 			GraphFieldContainerEdgeImpl.class);
 		initialEdge.setLanguageTag(container.getLanguageTag());

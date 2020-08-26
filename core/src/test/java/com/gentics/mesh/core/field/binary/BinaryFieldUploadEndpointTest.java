@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.field.binary;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
@@ -32,6 +32,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
@@ -132,7 +133,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		for (int i = 0; i < 20; i++) {
 			String newFileName = "somefile" + i + ".dat";
 			String oldFilename = null;
-			NodeGraphFieldContainer container = tx(() -> node.getGraphFieldContainer("en"));
+			NodeGraphFieldContainer container = tx(() -> boot().contentDao().getGraphFieldContainer(node, "en"));
 			try (Tx tx = tx()) {
 				BinaryGraphField oldValue = container.getBinary("binary");
 				if (oldValue != null) {
@@ -143,9 +144,10 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, newFileName));
 
 			try (Tx tx = tx()) {
-				NodeGraphFieldContainer newContainer = container.getNextVersions().iterator().next();
+				ContentDaoWrapper contentDao = tx.data().contentDao();
+				NodeGraphFieldContainer newContainer = contentDao.getNextVersions(container).iterator().next();
 				assertNotNull("No new version was created.", newContainer);
-				assertEquals(newContainer.getUuid(), node.getLatestDraftFieldContainer(english()).getUuid());
+				assertEquals(newContainer.getUuid(), contentDao.getLatestDraftFieldContainer(node, english()).getUuid());
 
 				NodeResponse response = readNode(PROJECT_NAME, node.getUuid());
 				assertEquals("Check version number", newContainer.getVersion().toString(), response.getVersion());
@@ -198,7 +200,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		}
 
 		String uuid = tx(() -> folder("news").getUuid());
-		VersionNumber version = tx(() -> folder("news").getGraphFieldContainer("en").getVersion());
+		VersionNumber version = tx(() -> boot().contentDao().getGraphFieldContainer(folder("news"), "en").getVersion());
 
 		Map<String, Buffer> data = new HashMap<>();
 		for (String field : fields) {
@@ -521,7 +523,8 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		assertEquals(fileName, downloadResponse.getFilename());
 
 		try (Tx tx = tx()) {
-			BinaryGraphField binaryGraphField = node.getLatestDraftFieldContainer(english()).getBinary("binary");
+			ContentDaoWrapper contentDao = tx.data().contentDao();
+			BinaryGraphField binaryGraphField = contentDao.getLatestDraftFieldContainer(node, english()).getBinary("binary");
 			String binaryUuid = binaryGraphField.getBinary().getUuid();
 			String path = localBinaryStorage().getFilePath(binaryUuid);
 			File binaryFile = new File(path);
@@ -555,7 +558,8 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		File binaryFile;
 		String hash;
 		try (Tx tx = tx()) {
-			BinaryGraphField binaryGraphField = node.getLatestDraftFieldContainer(english()).getBinary("binary");
+			ContentDaoWrapper contentDao = tx.data().contentDao();
+			BinaryGraphField binaryGraphField = contentDao.getLatestDraftFieldContainer(node, english()).getBinary("binary");
 			String binaryUuid = binaryGraphField.getBinary().getUuid();
 			binaryFile = new File(localBinaryStorage().getFilePath(binaryUuid));
 			assertTrue("The binary file could not be found.", binaryFile.exists());
@@ -614,11 +618,11 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		// The test nodes
 		Node nodeA = folder("news");
 		String uuidA = tx(() -> nodeA.getUuid());
-		String versionA = tx(() -> nodeA.getGraphFieldContainer("en").getVersion()).toString();
+		String versionA = tx(() -> boot().contentDao().getGraphFieldContainer(nodeA, "en").getVersion()).toString();
 
 		Node nodeB = folder("products");
 		String uuidB = tx(() -> nodeB.getUuid());
-		String versionB = tx(() -> nodeA.getGraphFieldContainer("en").getVersion()).toString();
+		String versionB = tx(() -> boot().contentDao().getGraphFieldContainer(nodeA, "en").getVersion()).toString();
 
 		// Setup the schemas
 		try (Tx tx = tx()) {
@@ -638,7 +642,8 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		File binaryFileA;
 		String hashA;
 		try (Tx tx = tx()) {
-			BinaryGraphField binaryGraphField = nodeA.getLatestDraftFieldContainer(english()).getBinary("binary");
+			ContentDaoWrapper contentDao = tx.data().contentDao();
+			BinaryGraphField binaryGraphField = contentDao.getLatestDraftFieldContainer(nodeA, english()).getBinary("binary");
 			String binaryUuid = binaryGraphField.getBinary().getUuid();
 			binaryFileA = new File(localBinaryStorage().getFilePath(binaryUuid));
 			assertTrue("The binary file could not be found.", binaryFileA.exists());
@@ -648,7 +653,8 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		File binaryFileB;
 		String hashB;
 		try (Tx tx = tx()) {
-			BinaryGraphField binaryGraphField = nodeB.getLatestDraftFieldContainer(english()).getBinary("binary");
+			ContentDaoWrapper contentDao = tx.data().contentDao();
+			BinaryGraphField binaryGraphField = contentDao.getLatestDraftFieldContainer(nodeB, english()).getBinary("binary");
 			String binaryUuid = binaryGraphField.getBinary().getUuid();
 			binaryFileB = new File(localBinaryStorage().getFilePath(binaryUuid));
 			assertTrue("The binary file could not be found.", binaryFileB.exists());

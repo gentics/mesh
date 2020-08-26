@@ -17,10 +17,11 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
+import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.MeshProjectElementEventModel;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -57,10 +58,10 @@ public class TagEventHandler implements EventHandler {
 			String projectUuid = model.getProject().getUuid();
 
 			if (event == TAG_CREATED || event == TAG_UPDATED) {
-				return helper.getDb().tx(() -> {
+				return helper.getDb().tx(tx -> {
 					// We also need to update the tag family
-					Optional<Tag> tag = entities.tag.getElement(model);
-					Optional<TagFamily> tagFamily = tag.map(Tag::getTagFamily);
+					Optional<HibTag> tag = entities.tag.getElement(model);
+					Optional<HibTagFamily> tagFamily = tag.map(HibTag::getTagFamily);
 
 					return concat(
 						toStream(tag).map(t -> entities.createRequest(t, projectUuid)),
@@ -84,7 +85,7 @@ public class TagEventHandler implements EventHandler {
 		});
 	}
 
-	private Stream<CreateDocumentRequest> taggedNodes(MeshProjectElementEventModel model, Tag tag) {
+	private Stream<CreateDocumentRequest> taggedNodes(MeshProjectElementEventModel model, HibTag tag) {
 		TagDaoWrapper tagDao = helper.getBoot().tagDao();
 		return findElementByUuidStream(helper.getBoot().projectRoot(), model.getProject().getUuid())
 			.flatMap(project -> project.getBranchRoot().findAll().stream()

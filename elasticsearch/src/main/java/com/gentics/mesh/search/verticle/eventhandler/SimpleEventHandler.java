@@ -20,8 +20,9 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 /**
- * An event handler that uses the events from {@link MeshEntity#allEvents()} and creates/updates/deletes documents
- * according to {@link MeshEntity#transform(Object)}
+ * An event handler that uses the events from {@link MeshEntity#allEvents()} and creates/updates/deletes documents according to
+ * {@link MeshEntity#transform(Object)}
+ * 
  * @param <T>
  */
 @ParametersAreNonnullByDefault
@@ -52,15 +53,14 @@ public class SimpleEventHandler<T extends HibElement> implements EventHandler {
 			MeshElementEventModel model = requireType(MeshElementEventModel.class, eventModel.message);
 
 			if (event == entity.getCreateEvent() || event == entity.getUpdateEvent()) {
-				return toFlowable(helper.getDb().tx(() -> entity.getDocument(model))
-					.map(document -> helper.createDocumentRequest(
+				return toFlowable(helper.getDb().tx(tx -> {
+					return entity.getDocument(model);
+				}).map(document -> helper.createDocumentRequest(
 						indexName, model.getUuid(),
-						document, complianceMode
-					)));
+						document, complianceMode)));
 			} else if (event == entity.getDeleteEvent()) {
 				return Flowable.just(helper.deleteDocumentRequest(
-					indexName, model.getUuid(), complianceMode
-				));
+					indexName, model.getUuid(), complianceMode));
 			} else {
 				throw new RuntimeException("Unexpected event " + event.address);
 			}

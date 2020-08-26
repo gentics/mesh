@@ -23,11 +23,12 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.NodeDAOActions;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -73,7 +74,7 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 	 * @throws InterruptedException
 	 */
 	public Page<? extends NodeContent> handleContainerSearch(InternalActionContext ac, String query, PagingParameters pagingInfo, ContainerType type,
-		GraphPermission... permissions) throws MeshConfigurationException, InterruptedException, ExecutionException, TimeoutException {
+		InternalPermission... permissions) throws MeshConfigurationException, InterruptedException, ExecutionException, TimeoutException {
 		ElasticsearchClient<JsonObject> client = searchProvider.getClient();
 		if (client == null) {
 			throw error(HttpResponseStatus.SERVICE_UNAVAILABLE, "search_error_elasticsearch_not_available");
@@ -117,6 +118,7 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 
 			// The scrolling iterator will wrap the current response and query ES for more data if needed.
 			Page<? extends NodeContent> page = db.tx(tx -> {
+				ContentDaoWrapper contentDao = tx.data().contentDao();
 				long totalCount = extractTotalCount(hitsInfo);
 				List<NodeContent> elementList = new ArrayList<>();
 				JsonArray hits = hitsInfo.getJsonArray("hits");
@@ -144,7 +146,7 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 					}
 
 					// Locate the matching container and add it to the list of found containers
-					NodeGraphFieldContainer container = element.getGraphFieldContainer(languageTag, ac.getBranch(), type);
+					NodeGraphFieldContainer container = contentDao.getGraphFieldContainer(element, languageTag, ac.getBranch(), type);
 					if (container != null) {
 						elementList.add(new NodeContent(element, container, Arrays.asList(languageTag), type));
 					} else {

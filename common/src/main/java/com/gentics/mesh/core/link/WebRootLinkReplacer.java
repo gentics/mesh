@@ -16,9 +16,10 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.handler.VersionHandler;
@@ -246,6 +247,8 @@ public class WebRootLinkReplacer {
 	public String resolve(InternalActionContext ac, String branchNameOrUuid, ContainerType edgeType, Node node, LinkType type,
 		boolean forceAbsolute,
 		String... languageTags) {
+		NodeDaoWrapper nodeDao = boot.nodeDao();
+
 		String defaultLanguage = options.getDefaultLanguage();
 		if (languageTags == null || languageTags.length == 0) {
 			languageTags = new String[] { defaultLanguage };
@@ -260,9 +263,9 @@ public class WebRootLinkReplacer {
 			languageTags = languageTagList.toArray(new String[languageTagList.size()]);
 		}
 
-		Project theirProject = node.getProject();
+		HibProject theirProject = node.getProject();
 
-		Branch branch = theirProject.findBranchOrLatest(branchNameOrUuid);
+		HibBranch branch = theirProject.findBranchOrLatest(branchNameOrUuid);
 
 		// edge type defaults to DRAFT
 		if (edgeType == null) {
@@ -272,7 +275,7 @@ public class WebRootLinkReplacer {
 			log.debug("Resolving link to " + node.getUuid() + " in language " + Arrays.toString(languageTags) + " with type " + type.name());
 		}
 
-		String path = node.getPath(ac, branch.getUuid(), edgeType, languageTags);
+		String path = nodeDao.getPath(node, ac, branch.getUuid(), edgeType, languageTags);
 		if (path == null) {
 			path = "/error/404";
 		}
@@ -303,7 +306,7 @@ public class WebRootLinkReplacer {
 	 *            branch
 	 * @return scheme and authority or empty string if the branch of the node does not supply the needed information
 	 */
-	private String generateSchemeAuthorityForNode(Node node, Branch branch) {
+	private String generateSchemeAuthorityForNode(Node node, HibBranch branch) {
 		String hostname = branch.getHostname();
 		if (StringUtils.isEmpty(hostname)) {
 			// Fallback to urls without authority/scheme
@@ -328,7 +331,7 @@ public class WebRootLinkReplacer {
 	 *            The branch to generate the query parameter for.
 	 * @return Example: "?branch=test1"
 	 */
-	private String branchQueryParameter(Branch branch) {
+	private String branchQueryParameter(HibBranch branch) {
 		if (branch.isLatest()) {
 			return "";
 		}

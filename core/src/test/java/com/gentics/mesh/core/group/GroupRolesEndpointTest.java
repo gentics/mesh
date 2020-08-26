@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.group;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.MeshEvent.GROUP_ROLE_ASSIGNED;
 import static com.gentics.mesh.core.rest.MeshEvent.GROUP_ROLE_UNASSIGNED;
 import static com.gentics.mesh.test.ClientHelper.call;
@@ -20,10 +20,10 @@ import java.util.Set;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.group.HibGroup;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.group.GroupRoleAssignModel;
 import com.gentics.mesh.core.rest.group.GroupReference;
@@ -44,7 +44,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			GroupDaoWrapper groupDao = tx.data().groupDao();
 
-			Role extraRole = roleDao.create("extraRole", user());
+			HibRole extraRole = roleDao.create("extraRole", user());
 			groupDao.addRole(group(), extraRole);
 
 			roleUuid = extraRole.getUuid();
@@ -76,7 +76,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			GroupDaoWrapper groupDao = tx.data().groupDao();
 
-			Role extraRole = roleDao.create(roleName, user());
+			HibRole extraRole = roleDao.create(roleName, user());
 			roleDao.grantPermissions(role(), extraRole, READ_PERM);
 			assertEquals(1, groupDao.getRoles(group()).count());
 			return extraRole.getUuid();
@@ -127,7 +127,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testAddNoPermissionRoleToGroup() throws Exception {
 		String roleUuid;
-		Role extraRole;
+		HibRole extraRole;
 		try (Tx tx = tx()) {
 			GroupDaoWrapper groupDao = tx.data().groupDao();
 			RoleDaoWrapper roleDao = tx.data().roleDao();
@@ -174,7 +174,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			GroupDaoWrapper groupDao = tx.data().groupDao();
 
-			Role extraRole = roleDao.create(roleName, user());
+			HibRole extraRole = roleDao.create(roleName, user());
 			groupDao.addRole(group(), extraRole);
 			roleDao.grantPermissions(role(), extraRole, READ_PERM);
 			assertEquals(2, groupDao.getRoles(group()).count());
@@ -218,7 +218,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddRoleToGroupWithPerm() throws Exception {
-		Role extraRole;
+		HibRole extraRole;
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 
@@ -240,11 +240,11 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddRoleToGroupWithoutPermOnGroup() throws Exception {
-		Role extraRole;
+		HibRole extraRole;
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 
-			Group group = group();
+			HibGroup group = group();
 			extraRole = roleDao.create("extraRole", user());
 			roleDao.revokePermissions(role(), group, UPDATE_PERM);
 			tx.success();
@@ -270,12 +270,12 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testRemoveRoleFromGroupWithPerm() throws Exception {
-		Role extraRole;
+		HibRole extraRole;
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			GroupDaoWrapper groupDao = tx.data().groupDao();
 
-			Group group = group();
+			HibGroup group = group();
 			extraRole = roleDao.create("extraRole", user());
 			groupDao.addRole(group, extraRole);
 
@@ -302,12 +302,12 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testRemoveRoleFromGroupWithoutPerm() throws Exception {
 		String extraRoleUuid;
-		Role extraRole;
+		HibRole extraRole;
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			GroupDaoWrapper groupDao = tx.data().groupDao();
 
-			Group group = group();
+			HibGroup group = group();
 			extraRole = roleDao.create("extraRole", user());
 			extraRoleUuid = extraRole.getUuid();
 			groupDao.addRole(group, extraRole);

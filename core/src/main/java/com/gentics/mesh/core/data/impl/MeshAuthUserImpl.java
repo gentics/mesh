@@ -98,4 +98,9 @@ public class MeshAuthUserImpl extends UserImpl implements MeshAuthUser {
 		throw new NotImplementedException();
 	}
 
+	@Override
+	public MeshAuthUser toAuthUser() {
+		return this;
+	}
+
 }

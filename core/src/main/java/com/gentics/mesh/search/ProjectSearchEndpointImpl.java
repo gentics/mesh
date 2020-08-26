@@ -11,8 +11,11 @@ import javax.inject.Inject;
 import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.MeshCoreVertex;
+import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -76,12 +79,14 @@ public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implement
 			return db.index().findByUuid(NodeImpl.class, uuid);
 		}, NodeListResponse.class, nodeSearchHandler, nodeExamples.getNodeListResponse(), true);
 
-		registerSearchHandler("tags", (uuid) -> {
-			return boot.meshRoot().getTagRoot().findByUuid(uuid);
+		registerSearchHandler("tags", uuid -> {
+			HibTag tag = Tx.get().data().tagDao().findByUuidGlobal(uuid);
+			return tag;
 		}, TagListResponse.class, tagSearchHandler, tagExamples.createTagListResponse(), false);
 
-		registerSearchHandler("tagFamilies", (uuid) -> {
-			return boot.meshRoot().getTagFamilyRoot().findByUuid(uuid);
+		registerSearchHandler("tagFamilies", uuid -> {
+			TagFamilyDaoWrapper tagFamilyDao = Tx.get().data().tagFamilyDao();
+			return tagFamilyDao.findByUuid(uuid);
 		}, TagFamilyListResponse.class, tagFamilySearchHandler, tagFamilyExamples.getTagFamilyListResponse(), false);
 	}
 
@@ -101,7 +106,7 @@ public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implement
 	 * @param filterByLanguage
 	 *            Whether to append the language filter
 	 */
-	private <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void registerSearchHandler(String typeName,
+	private <T extends HibCoreElement, TR extends RestModel, RL extends ListResponse<TR>> void registerSearchHandler(String typeName,
 		Function<String, T> elementLoader, Class<RL> classOfRL, SearchHandler<T, TR> searchHandler, RL exampleResponse, boolean filterByLanguage) {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/" + typeName);

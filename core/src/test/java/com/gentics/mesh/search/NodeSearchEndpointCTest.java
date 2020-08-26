@@ -17,6 +17,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -52,9 +53,10 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testSearchNumberRange2() throws Exception {
 		int numberValue = 1200;
-		tx(() -> {
+		tx(tx -> {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 			addNumberSpeedFieldToOneNode(numberValue);
-			content().getLatestDraftFieldContainer(english()).createNumber("speed").setNumber(92.1535f);
+			contentDao.getLatestDraftFieldContainer(content(), english()).createNumber("speed").setNumber(92.1535f);
 		});
 		recreateIndices();
 

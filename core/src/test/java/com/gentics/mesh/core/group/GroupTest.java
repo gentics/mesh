@@ -13,11 +13,11 @@ import org.junit.Test;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -51,7 +51,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 			UserDaoWrapper userDao = tx.data().userDao();
 			GroupDaoWrapper groupDao = tx.data().groupDao();
 
-			Group group = groupDao.create("test group", user());
+			HibGroup group = groupDao.create("test group", user());
 			HibUser user = userDao.create("testuser", user());
 			groupDao.addUser(group, user);
 			groupDao.addUser(group, user);
@@ -72,7 +72,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 			GroupDaoWrapper groupDao = tx.data().groupDao();
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			Page<? extends Group> page = groupDao.findAll(ac, new PagingParametersImpl(1, 19L));
+			Page<? extends HibGroup> page = groupDao.findAll(ac, new PagingParametersImpl(1, 19L));
 
 			assertEquals(groupCount, page.getTotalElements());
 			assertEquals(groupCount, page.getSize());
@@ -117,7 +117,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Override
 	public void testFindByUUID() {
 		try (Tx tx = tx()) {
-			Group group = tx.data().groupDao().findByUuid(group().getUuid());
+			HibGroup group = tx.data().groupDao().findByUuid(group().getUuid());
 			assertNotNull(group);
 		}
 	}
@@ -129,7 +129,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			GroupDaoWrapper groupDao = tx.data().groupDao();
-			GroupResponse response = group().transformToRestSync(ac, 0);
+			GroupResponse response = groupDao.transformToRestSync(group(), ac, 0);
 
 			assertNotNull(response);
 			assertEquals(group().getUuid(), response.getUuid());
@@ -142,10 +142,10 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	public void testCreateDelete() throws Exception {
 		try (Tx tx = tx()) {
 			GroupDaoWrapper groupDao = tx.data().groupDao();
-			Group group = groupDao.create("newGroup", user());
+			HibGroup group = groupDao.create("newGroup", user());
 			assertNotNull(group);
 			String uuid = group.getUuid();
-			group.delete(createBulkContext());
+			groupDao.delete(group, createBulkContext());
 			group = meshRoot().getGroupRoot().findByUuid(uuid);
 			assertNull(group);
 		}
@@ -160,11 +160,11 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 			GroupDaoWrapper groupDao = tx.data().groupDao();
 			HibUser user = user();
 			InternalActionContext ac = mockActionContext();
-			Group group = groupDao.create("newGroup", user);
-			assertFalse(userDao.hasPermission(user, group, GraphPermission.CREATE_PERM));
+			HibGroup group = groupDao.create("newGroup", user);
+			assertFalse(userDao.hasPermission(user, group, InternalPermission.CREATE_PERM));
 			userDao.inheritRolePermissions(user, root.getGroupRoot(), group);
 			ac.data().clear();
-			assertTrue(userDao.hasPermission(user, group, GraphPermission.CREATE_PERM));
+			assertTrue(userDao.hasPermission(user, group, InternalPermission.CREATE_PERM));
 		}
 	}
 
@@ -173,7 +173,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	public void testRead() {
 		try (Tx tx = tx()) {
 			GroupDaoWrapper groupDao = tx.data().groupDao();
-			Group group = group();
+			HibGroup group = group();
 			assertEquals("joe1_group", group.getName());
 			assertNotNull(groupDao.getUsers(group));
 			assertEquals(1, groupDao.getUsers(group).count());
@@ -186,7 +186,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	public void testCreate() {
 		try (Tx tx = tx()) {
 			GroupDaoWrapper groupDao = tx.data().groupDao();
-			Group group = groupDao.create("newGroup", user());
+			HibGroup group = groupDao.create("newGroup", user());
 			assertNotNull(group);
 			assertEquals("newGroup", group.getName());
 		}
@@ -197,7 +197,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	public void testDelete() throws Exception {
 		try (Tx tx = tx()) {
 			GroupDaoWrapper groupDao = tx.data().groupDao();
-			Group group = groupDao.create("newGroup", user());
+			HibGroup group = groupDao.create("newGroup", user());
 
 			assertNotNull(group);
 			assertEquals("newGroup", group.getName());
@@ -207,7 +207,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 
 			// TODO add users to group?
 			BulkActionContext bac = createBulkContext();
-			group.delete(bac);
+			groupDao.delete(group, bac);
 			assertElement(meshRoot().getGroupRoot(), uuid, false);
 			assertElement(meshRoot().getUserRoot(), userUuid, true);
 			assertEquals(1, bac.batch().getEntries().size());
@@ -228,7 +228,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Override
 	public void testReadPermission() {
 		try (Tx tx = tx()) {
-			testPermission(GraphPermission.READ_PERM, group());
+			testPermission(InternalPermission.READ_PERM, group());
 		}
 	}
 
@@ -236,7 +236,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Override
 	public void testDeletePermission() {
 		try (Tx tx = tx()) {
-			testPermission(GraphPermission.DELETE_PERM, group());
+			testPermission(InternalPermission.DELETE_PERM, group());
 		}
 	}
 
@@ -244,7 +244,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Override
 	public void testUpdatePermission() {
 		try (Tx tx = tx()) {
-			testPermission(GraphPermission.UPDATE_PERM, group());
+			testPermission(InternalPermission.UPDATE_PERM, group());
 		}
 	}
 
@@ -252,7 +252,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Override
 	public void testCreatePermission() {
 		try (Tx tx = tx()) {
-			testPermission(GraphPermission.CREATE_PERM, group());
+			testPermission(InternalPermission.CREATE_PERM, group());
 		}
 	}
 

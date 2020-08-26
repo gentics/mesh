@@ -13,6 +13,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
@@ -30,7 +31,7 @@ import io.reactivex.Flowable;
  * Handler for the project specific search index.
  */
 @Singleton
-public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
+public class ProjectIndexHandler extends AbstractIndexHandler<HibProject> {
 
 	@Inject
 	ProjectTransformer transformer;
@@ -93,12 +94,12 @@ public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
 	}
 
 	@Override
-	public Function<String, Project> elementLoader() {
+	public Function<String, HibProject> elementLoader() {
 		return (uuid) -> boot.meshRoot().getProjectRoot().findByUuid(uuid);
 	}
 
 	@Override
-	public Stream<? extends Project> loadAllElements(Tx tx) {
+	public Stream<? extends HibProject> loadAllElements(Tx tx) {
 		return tx.data().projectDao().findAll().stream();
 	}
 

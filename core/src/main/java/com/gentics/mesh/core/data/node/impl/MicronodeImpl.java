@@ -25,6 +25,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.AbstractGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -32,8 +33,9 @@ import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
-import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -109,7 +111,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	}
 
 	@Override
-	public void setSchemaContainerVersion(GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> version) {
+	public void setSchemaContainerVersion(HibFieldSchemaVersionElement version) {
 		property(MICROSCHEMA_VERSION_KEY_PROPERTY, version.getUuid());
 	}
 
@@ -149,13 +151,14 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	}
 
 	@Override
-	public Node getParentNode() {
+	public Node getNode() {
+		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 		NodeGraphFieldContainer container = getContainer();
 		while (container.getPreviousVersion() != null) {
 			container = container.getPreviousVersion();
 		}
 
-		return container.getParentNode();
+		return contentDao.getNode(container);
 	}
 
 	/**

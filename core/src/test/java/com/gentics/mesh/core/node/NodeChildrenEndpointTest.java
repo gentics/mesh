@@ -1,13 +1,12 @@
 package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.util.TestUtils.size;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -20,7 +19,8 @@ import java.util.stream.Collectors;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.db.Tx;
@@ -142,17 +142,18 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testReadNodeChildren() throws Exception {
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			Node node = folder("news");
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
 
-			long size = size(node.getChildren());
+			long size = size(nodeDao.getChildren(node));
 			long expectedItemsInPage =  size > 25 ? 25 : size;
 
 			NodeListResponse nodeList = call(() -> client().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParametersImpl(),
 					new VersioningParametersImpl().draft()));
 
-			assertEquals(size(node.getChildren()), nodeList.getMetainfo().getTotalCount());
+			assertEquals(size(nodeDao.getChildren(node)), nodeList.getMetainfo().getTotalCount());
 			assertEquals(expectedItemsInPage, nodeList.getData().size());
 		}
 	}
@@ -170,12 +171,13 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			NodeListResponse nodeList = call(() -> client().findNodeChildren(PROJECT_NAME, node.getUuid(),
 					new PagingParametersImpl().setPerPage(20000L), new VersioningParametersImpl().draft()));
 
 			assertEquals(0, nodeList.getData().stream().filter(p -> nodeWithNoPerm.getUuid().equals(p.getUuid())).count());
 			assertEquals(2, nodeList.getData().size());
-			assertEquals(size(node.getChildren()) - 1, nodeList.getMetainfo().getTotalCount());
+			assertEquals(size(nodeDao.getChildren(node)) - 1, nodeList.getMetainfo().getTotalCount());
 		}
 	}
 
@@ -202,15 +204,16 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 		Node node = folder("news");
 		long childrenSize;
 		long expectedItemsInPage;
-		Branch newBranch;
+		HibBranch newBranch;
 		Node firstFolder;
 
 		try (Tx tx = tx()) {
-			firstFolder = node.getChildren()
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			firstFolder = nodeDao.getChildren(node)
 				.stream()
 				.filter(child -> child.getSchemaContainer().getName().equals("folder"))
 				.findAny().get();
-			childrenSize = size(node.getChildren());
+			childrenSize = size(nodeDao.getChildren(node));
 			expectedItemsInPage = childrenSize > 25 ? 25 : childrenSize;
 			newBranch = createBranch("newbranch");
 			tx.success();
@@ -218,10 +221,11 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 		// "migrate" the News node to the new branch, so that we can get children of it in both branches
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setLanguage("en");
 			create.getFields().put("name", FieldUtil.createStringField("News"));
-			create.setParentNodeUuid(node.getParentNode(initialBranch().getUuid()).getUuid());
+			create.setParentNodeUuid(nodeDao.getParentNode(node, initialBranch().getUuid()).getUuid());
 			call(() -> client().createNode(node.getUuid(), PROJECT_NAME, create));
 
 			tx.success();

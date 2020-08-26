@@ -8,15 +8,17 @@ import java.util.Objects;
 
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.TypeInfo;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.root.MicroschemaRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.SchemaRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
-import com.gentics.mesh.core.data.schema.Microschema;
-import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.HibUserTracking;
@@ -34,7 +36,7 @@ import com.gentics.mesh.madl.traversal.TraversalResult;
  * (called basenode). Additionally languages and schemas can be assigned to projects to make them available for node creation. Various root vertices (eg.:
  * {@link NodeRoot}, {@link TagRoot}, {@link TagFamilyRoot} ) are linked to the project to store references to basic building blocks.
  */
-public interface Project extends MeshCoreVertex<ProjectResponse, Project>, ReferenceableElement<ProjectReference>, UserTrackingVertex, HibUserTracking {
+public interface Project extends MeshCoreVertex<ProjectResponse, Project>, ReferenceableElement<ProjectReference>, UserTrackingVertex, HibUserTracking, HibProject {
 
 	TypeInfo TYPE_INFO = new TypeInfo(ElementType.PROJECT, PROJECT_CREATED, PROJECT_UPDATED, PROJECT_DELETED);
 
@@ -143,14 +145,14 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	 *
 	 * @return
 	 */
-	Branch getInitialBranch();
+	HibBranch getInitialBranch();
 
 	/**
 	 * Get the latest branch of the project.
 	 *
 	 * @return
 	 */
-	Branch getLatestBranch();
+	HibBranch getLatestBranch();
 
 	/**
 	 * Return the branch root aggregation vertex of the project. Internally this method will create the branch root when it has not yet been created.
@@ -166,7 +168,7 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	 * @param assigned
 	 * @return
 	 */
-	ProjectSchemaEventModel onSchemaAssignEvent(Schema schema, Assignment assigned);
+	ProjectSchemaEventModel onSchemaAssignEvent(HibSchema schema, Assignment assigned);
 
 	/**
 	 * Create a project microschema assignment event.
@@ -175,7 +177,7 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	 * @param assigned
 	 * @return
 	 */
-	ProjectMicroschemaEventModel onMicroschemaAssignEvent(Microschema microschema, Assignment assigned);
+	ProjectMicroschemaEventModel onMicroschemaAssignEvent(HibMicroschema microschema, Assignment assigned);
 
 	/**
 	 * Find the branch via name or uuid that belongs to the project.
@@ -183,7 +185,7 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	 * @param branchNameOrUuid
 	 * @return
 	 */
-	Branch findBranch(String branchNameOrUuid);
+	HibBranch findBranch(String branchNameOrUuid);
 
 	/**
 	 * Find the branch via name or uuid that belongs to the project.
@@ -192,7 +194,7 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	 * @param branchNameOrUuid
 	 * @return
 	 */
-	Branch findBranchOrLatest(String branchNameOrUuid);
+	HibBranch findBranchOrLatest(String branchNameOrUuid);
 
 	/**
 	 * Find all nodes that belong to the project.

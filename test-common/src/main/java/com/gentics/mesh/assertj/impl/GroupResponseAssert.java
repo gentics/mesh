@@ -5,7 +5,7 @@ import static org.junit.Assert.assertNotNull;
 
 import org.assertj.core.api.AbstractAssert;
 
-import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
@@ -16,7 +16,7 @@ public class GroupResponseAssert extends AbstractAssert<GroupResponseAssert, Gro
 		super(actual, GroupResponseAssert.class);
 	}
 
-	public GroupResponseAssert matches(Group group) {
+	public GroupResponseAssert matches(HibGroup group) {
 		assertEquals("The uuid of the rest model does not match the given group node", group.getUuid(), actual.getUuid());
 		assertEquals("The name of the rest model group does not match the given group node", group.getName(), actual.getName());
 		// for (User user : group.getUsers()) {

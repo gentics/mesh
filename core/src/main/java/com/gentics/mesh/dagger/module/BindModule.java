@@ -22,6 +22,7 @@ import com.gentics.mesh.context.impl.BulkActionContextImpl;
 import com.gentics.mesh.core.action.BranchDAOActions;
 import com.gentics.mesh.core.action.DAOActionsCollection;
 import com.gentics.mesh.core.action.GroupDAOActions;
+import com.gentics.mesh.core.action.JobDAOActions;
 import com.gentics.mesh.core.action.MicroschemaDAOActions;
 import com.gentics.mesh.core.action.NodeDAOActions;
 import com.gentics.mesh.core.action.ProjectDAOActions;
@@ -33,6 +34,7 @@ import com.gentics.mesh.core.action.UserDAOActions;
 import com.gentics.mesh.core.actions.impl.BranchDAOActionsImpl;
 import com.gentics.mesh.core.actions.impl.DAOActionsCollectionImpl;
 import com.gentics.mesh.core.actions.impl.GroupDAOActionsImpl;
+import com.gentics.mesh.core.actions.impl.JobDAOActionsImpl;
 import com.gentics.mesh.core.actions.impl.MicroschemaDAOActionsImpl;
 import com.gentics.mesh.core.actions.impl.NodeDAOActionsImpl;
 import com.gentics.mesh.core.actions.impl.ProjectDAOActionsImpl;
@@ -49,10 +51,12 @@ import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.impl.BinariesImpl;
 import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.JobDaoWrapper;
 import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
@@ -61,16 +65,22 @@ import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.dao.impl.BinaryDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.BranchDaoWrapperImpl;
+import com.gentics.mesh.core.data.dao.impl.ContentDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.GroupDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.JobDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.LanguageDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.MicroschemaDaoWrapperImpl;
+import com.gentics.mesh.core.data.dao.impl.NodeDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.ProjectDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.RoleDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.SchemaDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.TagDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.TagFamilyDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.UserDaoWrapperImpl;
+import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
+import com.gentics.mesh.core.data.schema.handler.MicroschemaComparatorImpl;
+import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
+import com.gentics.mesh.core.data.schema.handler.SchemaComparatorImpl;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.data.service.WebRootServiceImpl;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
@@ -187,6 +197,12 @@ public abstract class BindModule {
 	abstract ProjectDaoWrapper bindProjectDao(ProjectDaoWrapperImpl e);
 
 	@Binds
+	abstract NodeDaoWrapper bindNodeDao(NodeDaoWrapperImpl e);
+
+	@Binds
+	abstract ContentDaoWrapper bindContentDao(ContentDaoWrapperImpl e);
+
+	@Binds
 	abstract JobDaoWrapper bindJobDao(JobDaoWrapperImpl e);
 
 	@Binds
@@ -250,9 +266,18 @@ public abstract class BindModule {
 	abstract NodeDAOActions nodeDAOActions(NodeDAOActionsImpl e);
 
 	@Binds
-	abstract MicroschemaDAOActions micrDAOoschemaActions(MicroschemaDAOActionsImpl e);
+	abstract MicroschemaDAOActions microschemaDAOActions(MicroschemaDAOActionsImpl e);
 
 	@Binds
-	abstract SchemaDAOActions scheDAOmaActions(SchemaDAOActionsImpl e);
+	abstract SchemaDAOActions schemaDAOActions(SchemaDAOActionsImpl e);
+
+	@Binds
+	abstract JobDAOActions jobDAOActions(JobDAOActionsImpl e);
+
+	@Binds
+	abstract MicroschemaComparator microschemaComparator(MicroschemaComparatorImpl e);
+
+	@Binds
+	abstract SchemaComparator schemaComparator(SchemaComparatorImpl e);
 
 }

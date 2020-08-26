@@ -13,7 +13,7 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.db.Tx;
@@ -200,25 +200,25 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 	@Test
 	@Override
 	public void testReadPermission() {
-		testPermission(GraphPermission.READ_PERM, englishLang());
+		testPermission(InternalPermission.READ_PERM, englishLang());
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() {
-		testPermission(GraphPermission.DELETE_PERM, englishLang());
+		testPermission(InternalPermission.DELETE_PERM, englishLang());
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		testPermission(GraphPermission.UPDATE_PERM, englishLang());
+		testPermission(InternalPermission.UPDATE_PERM, englishLang());
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() {
-		testPermission(GraphPermission.CREATE_PERM, englishLang());
+		testPermission(InternalPermission.CREATE_PERM, englishLang());
 	}
 
 }

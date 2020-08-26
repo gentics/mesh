@@ -19,7 +19,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
@@ -28,6 +27,9 @@ import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -158,9 +160,9 @@ public class TxTest extends AbstractMeshTest {
 			CyclicBarrier barrierA = new CyclicBarrier(nThreads);
 			CyclicBarrier barrierB = new CyclicBarrier(nThreads);
 			Node node = content();
-			TagFamily tagFamily = tagFamily("colors");
+			HibTagFamily tagFamily = tagFamily("colors");
 			List<Thread> threads = new ArrayList<>();
-			Project project = project();
+			HibProject project = project();
 			HibUser user = user();
 
 			for (int i = 0; i < nThreads; i++) {
@@ -188,9 +190,9 @@ public class TxTest extends AbstractMeshTest {
 								HibUser reloadedUser = tx.getGraph().getFramedVertexExplicit(UserImpl.class, user.getId());
 								Project reloadedProject = tx.getGraph().getFramedVertexExplicit(ProjectImpl.class, project.getId());
 
-								Tag tag = tagDao.create(reloadedTagFamily, "bogus_" + threadNo + "_" + currentRun, project(), reloadedUser);
+								HibTag tag = tagDao.create(reloadedTagFamily, "bogus_" + threadNo + "_" + currentRun, project(), reloadedUser);
 								// Reload the node
-								reloadedNode.addTag(tag, reloadedProject.getLatestBranch());
+								tagDao.addTag(reloadedNode, tag, reloadedProject.getLatestBranch());
 								tx.success();
 								if (retry == 0) {
 									try {
@@ -222,11 +224,13 @@ public class TxTest extends AbstractMeshTest {
 			}
 			// Thread.sleep(1000);
 			try (Tx tx = tx()) {
+				TagDaoWrapper tagDao = tx.data().tagDao();
+
 				int expect = nThreads * (r + 1);
 				Node reloadedNode = tx.getGraph().getFramedVertexExplicit(NodeImpl.class, node.getId());
 				// node.reload();
 				assertEquals("Expected {" + expect + "} tags since this is run {" + r + "}.", expect,
-						reloadedNode.getTags(project().getLatestBranch()).count());
+						tagDao.getTags(reloadedNode, project().getLatestBranch()).count());
 			}
 		}
 	}

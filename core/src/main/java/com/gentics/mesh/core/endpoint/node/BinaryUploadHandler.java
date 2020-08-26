@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.endpoint.node;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -20,16 +20,17 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.binary.BinaryDataProcessor;
 import com.gentics.mesh.core.binary.BinaryProcessorRegistryImpl;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -256,8 +257,9 @@ public class BinaryUploadHandler extends AbstractHandler {
 		String binaryUuid = context.getBinaryUuid();
 
 		return db.singleTxWriteLock(tx -> {
-			Project project = ac.getProject();
-			Branch branch = ac.getBranch();
+			ContentDaoWrapper contentDao = tx.data().contentDao();
+			HibProject project = ac.getProject();
+			HibBranch branch = ac.getBranch();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, nodeUuid, UPDATE_PERM);
 
 			utils.eventAction(batch -> {
@@ -273,7 +275,7 @@ public class BinaryUploadHandler extends AbstractHandler {
 				}
 
 				// Load the current latest draft
-				NodeGraphFieldContainer latestDraftVersion = node.getGraphFieldContainer(languageTag, branch, ContainerType.DRAFT);
+				NodeGraphFieldContainer latestDraftVersion = contentDao.getGraphFieldContainer(node, languageTag, branch, ContainerType.DRAFT);
 
 				if (latestDraftVersion == null) {
 					// latestDraftVersion = node.createGraphFieldContainer(language, branch, ac.getUser());
@@ -286,12 +288,12 @@ public class BinaryUploadHandler extends AbstractHandler {
 				}
 
 				// Load the base version field container in order to create the diff
-				NodeGraphFieldContainer baseVersionContainer = node.findVersion(languageTag, branch.getUuid(), nodeVersion);
+				NodeGraphFieldContainer baseVersionContainer = contentDao.findVersion(node, languageTag, branch.getUuid(), nodeVersion);
 				if (baseVersionContainer == null) {
 					throw error(BAD_REQUEST, "node_error_draft_not_found", nodeVersion, languageTag);
 				}
 
-				List<FieldContainerChange> baseVersionDiff = baseVersionContainer.compareTo(latestDraftVersion);
+				List<FieldContainerChange> baseVersionDiff = contentDao.compareTo(baseVersionContainer, latestDraftVersion);
 				List<FieldContainerChange> requestVersionDiff = Arrays.asList(new FieldContainerChange(fieldName, FieldChangeTypes.UPDATED));
 
 				// Compare both sets of change sets
@@ -323,9 +325,9 @@ public class BinaryUploadHandler extends AbstractHandler {
 				}
 
 				// Create a new node version field container to store the upload
-				NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(languageTag, branch, ac.getUser(),
-					latestDraftVersion,
-					true);
+				NodeGraphFieldContainer newDraftVersion = contentDao.createGraphFieldContainer(node, languageTag, branch, ac.getUser(),
+	latestDraftVersion,
+	true);
 
 				// Get the potential existing field
 				BinaryGraphField oldField = newDraftVersion.getBinary(fieldName);
@@ -358,11 +360,11 @@ public class BinaryUploadHandler extends AbstractHandler {
 				}
 				// If the binary field is the segment field, we need to update the webroot info in the node
 				if (field.getFieldKey().equals(newDraftVersion.getSchemaContainerVersion().getSchema().getSegmentField())) {
-					newDraftVersion.updateWebrootPathInfo(branch.getUuid(), "node_conflicting_segmentfield_upload");
+					contentDao.updateWebrootPathInfo(newDraftVersion, branch.getUuid(), "node_conflicting_segmentfield_upload");
 				}
 
 				if (ac.isPurgeAllowed() && newDraftVersion.isAutoPurgeEnabled() && latestDraftVersion.isPurgeable()) {
-					latestDraftVersion.purge();
+					contentDao.purge(latestDraftVersion);
 				}
 
 				batch.add(newDraftVersion.onUpdated(branch.getUuid(), DRAFT));

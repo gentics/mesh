@@ -1,16 +1,16 @@
 package com.gentics.mesh.graphql.filter;
 
-import com.gentics.graphqlfilter.filter.FilterField;
-import com.gentics.graphqlfilter.filter.StartMainFilter;
-import com.gentics.mesh.core.data.Group;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import com.gentics.graphqlfilter.filter.FilterField;
+import com.gentics.graphqlfilter.filter.StartMainFilter;
+import com.gentics.mesh.core.data.group.HibGroup;
 
 /**
  * Filters groups in GraphQl. This filter should be used whenever a list of groups is returned.
  */
-public class GroupFilter extends StartMainFilter<Group> {
+public class GroupFilter extends StartMainFilter<HibGroup> {
 
 	private static final String NAME = "GroupFilter";
 
@@ -27,11 +27,11 @@ public class GroupFilter extends StartMainFilter<Group> {
 	}
 
 	@Override
-	protected List<FilterField<Group, ?>> getFilters() {
-		List<FilterField<Group, ?>> filters = new ArrayList<>();
-		filters.add(CommonFields.nameFilter());
-		filters.add(CommonFields.uuidFilter());
-		filters.addAll(CommonFields.userTrackingFilter());
+	protected List<FilterField<HibGroup, ?>> getFilters() {
+		List<FilterField<HibGroup, ?>> filters = new ArrayList<>();
+		filters.add(CommonFields.hibNameFilter());
+		filters.add(CommonFields.hibUuidFilter());
+		filters.addAll(CommonFields.hibUserTrackingFilter());
 		return filters;
 	}
 }

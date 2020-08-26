@@ -11,6 +11,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
@@ -30,7 +31,7 @@ import io.reactivex.Flowable;
  * Handler for schema container index.
  */
 @Singleton
-public class SchemaContainerIndexHandler extends AbstractIndexHandler<Schema> {
+public class SchemaContainerIndexHandler extends AbstractIndexHandler<HibSchema> {
 
 	@Inject
 	SchemaTransformer transformer;
@@ -97,12 +98,12 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<Schema> {
 	}
 
 	@Override
-	public Function<String, Schema> elementLoader() {
+	public Function<String, HibSchema> elementLoader() {
 		return (uuid) -> boot.meshRoot().getSchemaContainerRoot().findByUuid(uuid);
 	}
 
 	@Override
-	public Stream<? extends Schema> loadAllElements(Tx tx) {
+	public Stream<? extends HibSchema> loadAllElements(Tx tx) {
 		return tx.data().schemaDao().findAll().stream();
 	}
 }

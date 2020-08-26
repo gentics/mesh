@@ -90,4 +90,9 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 		return mesh().userProperties().getEditor(this);
 	}
 
+	@Override
+	public void removeElement() {
+		getElement().remove();
+	}
+
 }

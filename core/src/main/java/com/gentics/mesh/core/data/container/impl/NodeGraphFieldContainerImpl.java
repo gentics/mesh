@@ -44,10 +44,11 @@ import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -65,11 +66,13 @@ import com.gentics.mesh.core.data.node.field.list.impl.MicronodeGraphFieldListIm
 import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.NameConflictException;
@@ -109,7 +112,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	public static final String VERSION_PROPERTY_KEY = "version";
 
 	// Cached instance of the parent node.
-	private Node parentNodeRef;
+	private NodeImpl parentNodeRef;
 
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createType(vertexType(NodeGraphFieldContainerImpl.class, MeshVertexImpl.class)
@@ -120,7 +123,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public void setSchemaContainerVersion(GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> version) {
+	public void setSchemaContainerVersion(HibFieldSchemaVersionElement version) {
 		property(SCHEMA_CONTAINER_VERSION_KEY_PROPERTY, version.getUuid());
 	}
 
@@ -199,9 +202,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		bac.inc();
 	}
 
-	@Override
 	@SuppressWarnings("unchecked")
-	public void deleteFromBranch(Branch branch, BulkActionContext bac) {
+	public void deleteFromBranch(HibBranch branch, BulkActionContext bac) {
 		String branchUuid = branch.getUuid();
 
 		bac.batch().add(onDeleted(branchUuid, DRAFT));
@@ -287,7 +289,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 					String paths = conflictingValues.stream().map(n -> n.toString()).collect(Collectors.joining(","));
 
 					throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictingContainer.getLanguageTag(),
-						"node_conflicting_urlfield_update", paths, conflictingContainer.getParentNode().getUuid(),
+						"node_conflicting_urlfield_update", paths, conflictingContainer.getNode().getUuid(),
 						conflictingContainer.getLanguageTag());
 				}
 			}
@@ -330,7 +332,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	protected void updateWebrootPathInfo(InternalActionContext ac, GraphFieldContainerEdge edge, String branchUuid, String conflictI18n,
 		ContainerType type) {
 		final int MAX_NUMBER = 255;
-		Node node = getParentNode();
+		NodeImpl node = getNode();
 		String segmentFieldName = getSchemaContainerVersion().getSchema().getSegmentField();
 		String languageTag = getLanguageTag();
 
@@ -372,13 +374,16 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	private boolean updateWebrootPathInfo(Node node, GraphFieldContainerEdge edge, String languageTag, String branchUuid, String segmentFieldName,
 		String conflictI18n,
 		ContainerType type) {
+		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+
 		// Determine the webroot path of the container parent node
-		String segment = node.getPathSegment(branchUuid, type, getLanguageTag());
+		String segment = contentDao.getPathSegment(node, branchUuid, type, getLanguageTag());
 
 		// The webroot uniqueness will be checked by validating that the string [segmentValue-branchUuid-parentNodeUuid] is only listed once within the given
 		// specific index for (drafts or published nodes)
 		if (segment != null) {
-			Node parentNode = node.getParentNode(branchUuid);
+			Node parentNode = nodeDao.getParentNode(node, branchUuid);
 			String segmentInfo = GraphFieldContainerEdgeImpl.composeSegmentInfo(parentNode, segment);
 			Object webRootIndexKey = GraphFieldContainerEdgeImpl.composeWebrootIndexKey(db(), segmentInfo, branchUuid, type);
 			// check for uniqueness of webroot path
@@ -402,8 +407,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		}
 	}
 
-	@Override
-	public Node getParentNode(String branchUuid) {
+	private Node getParentNode(String branchUuid) {
 		return inE(HAS_FIELD_CONTAINER).has(
 			GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid).outV().nextOrDefaultExplicit(NodeImpl.class, null);
 	}
@@ -413,25 +417,25 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	 * 
 	 * @return parent node
 	 */
-	public Node getParentNode() {
+	public NodeImpl getNode() {
 		// Return pre-loaded instance
 		if (parentNodeRef != null) {
 			return parentNodeRef;
 		}
 
-		Node parentNode = in(HAS_FIELD_CONTAINER, NodeImpl.class).nextOrNull();
+		NodeImpl parentNode = in(HAS_FIELD_CONTAINER, NodeImpl.class).nextOrNull();
 		if (parentNode == null) {
 			// the field container is not directly linked to its Node, get the
 			// initial field container
-			NodeGraphFieldContainer initial = null;
-			NodeGraphFieldContainer previous = getPreviousVersion();
+			NodeGraphFieldContainerImpl initial = null;
+			NodeGraphFieldContainerImpl previous = getPreviousVersion();
 			while (previous != null) {
 				initial = previous;
 				previous = previous.getPreviousVersion();
 			}
 
 			if (initial != null) {
-				return initial.getParentNode();
+				return initial.getNode();
 			}
 			throw error(INTERNAL_SERVER_ERROR, "error_field_container_without_node");
 		}
@@ -456,8 +460,9 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public TraversalResult<? extends NodeGraphFieldContainer> getNextVersions() {
-		return out(HAS_VERSION, NodeGraphFieldContainerImpl.class);
+	public TraversalResult<NodeGraphFieldContainer> getNextVersions() {
+		// TODO out function should not return wildcard generics.
+		return (TraversalResult<NodeGraphFieldContainer>)(TraversalResult<?>)out(HAS_VERSION, NodeGraphFieldContainerImpl.class);
 	}
 
 	@Override
@@ -471,7 +476,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public NodeGraphFieldContainer getPreviousVersion() {
+	public NodeGraphFieldContainerImpl getPreviousVersion() {
 		return in(HAS_VERSION, NodeGraphFieldContainerImpl.class).nextOrNull();
 	}
 
@@ -496,14 +501,13 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public Iterator<? extends GraphFieldContainerEdge> getContainerEdge(ContainerType type, String branchUuid) {
+	public Iterator<GraphFieldContainerEdge> getContainerEdge(ContainerType type, String branchUuid) {
 		EdgeTraversal<?, ?, ?> traversal = inE(HAS_FIELD_CONTAINER)
 			.has(BRANCH_UUID_KEY, branchUuid)
 			.has(EDGE_TYPE_KEY, type.getCode());
-		return traversal.frameExplicit(GraphFieldContainerEdgeImpl.class).iterator();
+		return traversal.<GraphFieldContainerEdge>frameExplicit(GraphFieldContainerEdgeImpl.class).iterator();
 	}
 
-	@Override
 	public Set<Tuple<String, ContainerType>> getBranchTypes() {
 		Set<Tuple<String, ContainerType>> typeSet = new HashSet<>();
 		inE(HAS_FIELD_CONTAINER).frameExplicit(GraphFieldContainerEdgeImpl.class).forEach(edge -> typeSet.add(Tuple.tuple(edge.getBranchUuid(), edge
@@ -633,7 +637,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public List<? extends MicronodeGraphField> getMicronodeFields(MicroschemaVersion version) {
+	public List<MicronodeGraphField> getMicronodeFields(MicroschemaVersion version) {
 		String microschemaVersionUuid = version.getUuid();
 		return new TraversalResult<>(outE(HAS_FIELD)
 			.has(MicronodeGraphFieldImpl.class)
@@ -644,7 +648,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public TraversalResult<? extends MicronodeGraphFieldList> getMicronodeListFields(MicroschemaVersion version) {
+	public TraversalResult<MicronodeGraphFieldList> getMicronodeListFields(MicroschemaVersion version) {
 		String microschemaVersionUuid = version.getUuid();
 		TraversalResult<? extends MicronodeGraphFieldList> lists = new TraversalResult<>(out(HAS_LIST)
 			.has(MicronodeGraphFieldListImpl.class)
@@ -783,7 +787,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		if (version != null) {
 			model.setSchema(version.transformToReference());
 		}
-		Project project = node.getProject();
+		HibProject project = node.getProject();
 		model.setProject(project.transformToReference());
 		return model;
 	}

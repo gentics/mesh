@@ -15,8 +15,10 @@ import org.junit.Test;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -271,19 +273,20 @@ public class LinkRendererTest extends AbstractMeshTest {
 	@Test
 	public void testNodeReplace() throws IOException, InterruptedException, ExecutionException {
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			String german = german();
 			String english = english();
 			Node parentNode = folder("2015");
 
-			SchemaVersion schemaVersion = schemaContainer("content").getLatestVersion();
+			HibSchemaVersion schemaVersion = schemaContainer("content").getLatestVersion();
 			// Create some dummy content
-			Node content = parentNode.create(user(), schemaVersion, project());
-			NodeGraphFieldContainer germanContainer = content.createGraphFieldContainer(german, content.getProject().getLatestBranch(), user());
+			Node content = nodeDao.create(parentNode, user(), schemaVersion, project());
+			NodeGraphFieldContainer germanContainer = boot().contentDao().createGraphFieldContainer(content, german, content.getProject().getLatestBranch(), user());
 			germanContainer.createString("displayName").setString("german name");
 			germanContainer.createString("name").setString("german.html");
 
-			Node content2 = parentNode.create(user(), schemaContainer("content").getLatestVersion(), project());
-			NodeGraphFieldContainer englishContainer = content2.createGraphFieldContainer(english, content2.getProject().getLatestBranch(), user());
+			Node content2 = nodeDao.create(parentNode, user(), schemaContainer("content").getLatestVersion(), project());
+			NodeGraphFieldContainer englishContainer = boot().contentDao().createGraphFieldContainer(content2, english, content2.getProject().getLatestBranch(), user());
 			englishContainer.createString("displayName").setString("content 2 english");
 			englishContainer.createString("name").setString("english.html");
 
@@ -295,6 +298,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 	@Test
 	public void testBinaryFieldLinkResolving() {
 		try (Tx tx = tx()) {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 			Node node = content("news overview");
 			String uuid = node.getUuid();
 
@@ -305,7 +309,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 			schema.setSegmentField("binary");
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
 			Binary binary = mesh().binaries().create("bogus", 1L).runInExistingTx(tx);
-			node.getLatestDraftFieldContainer(english()).createBinary("binary", binary).setFileName(fileName);
+			contentDao.getLatestDraftFieldContainer(node, english()).createBinary("binary", binary).setFileName(fileName);
 
 			// Render the link
 			final String meshLink = "{{mesh.link(\"" + uuid + "\", \"en\")}}";

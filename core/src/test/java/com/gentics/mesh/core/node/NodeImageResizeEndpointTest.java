@@ -24,6 +24,7 @@ import javax.imageio.ImageIO;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.db.Tx;
@@ -60,7 +61,8 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 
 		// 3. Validate resize
 		try (Tx tx = tx()) {
-			validateResizeImage(download, node.getLatestDraftFieldContainer(english()).getBinary("image"), params, 100, 102);
+			ContentDaoWrapper contentDao = tx.data().contentDao();
+			validateResizeImage(download, contentDao.getLatestDraftFieldContainer(node, english()).getBinary("image"), params, 100, 102);
 		}
 	}
 
@@ -93,8 +95,9 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 		MeshBinaryResponse download = call(() -> client().downloadBinaryField(PROJECT_NAME, nodeUuid, "en", "image", params));
 
 		try (Tx tx = tx()) {
-			assertNotNull(node.getLatestDraftFieldContainer(english()));
-			validateResizeImage(download, node.getLatestDraftFieldContainer(english()).getBinary("image"), params, 2048, 102);
+			ContentDaoWrapper contentDao = tx.data().contentDao();
+			assertNotNull(contentDao.getLatestDraftFieldContainer(node, english()));
+			validateResizeImage(download, contentDao.getLatestDraftFieldContainer(node, english()).getBinary("image"), params, 2048, 102);
 		}
 	}
 

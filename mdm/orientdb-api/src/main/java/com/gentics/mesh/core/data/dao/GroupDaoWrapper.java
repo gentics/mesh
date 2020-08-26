@@ -4,11 +4,11 @@ import java.util.function.Predicate;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.event.group.GroupRoleAssignModel;
@@ -20,19 +20,19 @@ import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 
 // TODO move the contents of this to GroupDao once migration is done
-public interface GroupDaoWrapper extends GroupDao, DaoWrapper<Group>, DaoTransformable<Group, GroupResponse> {
+public interface GroupDaoWrapper extends GroupDao, DaoWrapper<HibGroup>, DaoTransformable<HibGroup, GroupResponse> {
 
-	Group loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm);
+	HibGroup loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm);
 
-	TraversalResult<? extends Group> findAll();
+	TraversalResult<? extends HibGroup> findAll();
 
-	TransformablePage<? extends Group> findAll(InternalActionContext ac, PagingParameters pagingInfo);
+	TransformablePage<? extends HibGroup> findAll(InternalActionContext ac, PagingParameters pagingInfo);
 
-	Page<? extends Group> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Group> extraFilter);
+	Page<? extends HibGroup> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibGroup> extraFilter);
 
-	Group findByName(String name);
+	HibGroup findByName(String name);
 
-	Group findByUuid(String uuid);
+	HibGroup findByUuid(String uuid);
 
 	/**
 	 * Create a new group and assign it to the group root.
@@ -43,7 +43,7 @@ public interface GroupDaoWrapper extends GroupDao, DaoWrapper<Group>, DaoTransfo
 	 *            User that is used to set the creator and editor references.
 	 * @return Created group
 	 */
-	default Group create(String name, HibUser user) {
+	default HibGroup create(String name, HibUser user) {
 		return create(name, user, null);
 	}
 
@@ -58,7 +58,7 @@ public interface GroupDaoWrapper extends GroupDao, DaoWrapper<Group>, DaoTransfo
 	 *            optional uuid
 	 * @return Created group
 	 */
-	Group create(String name, HibUser user, String uuid);
+	HibGroup create(String name, HibUser user, String uuid);
 
 	/**
 	 * Create the assignment event for the given user.
@@ -69,7 +69,7 @@ public interface GroupDaoWrapper extends GroupDao, DaoWrapper<Group>, DaoTransfo
 	 *            Direction of the assignment
 	 * @return
 	 */
-	GroupUserAssignModel createUserAssignmentEvent(Group group, HibUser user, Assignment assignment);
+	GroupUserAssignModel createUserAssignmentEvent(HibGroup group, HibUser user, Assignment assignment);
 
 	/**
 	 * Create the assignment event for the given role.
@@ -79,23 +79,23 @@ public interface GroupDaoWrapper extends GroupDao, DaoWrapper<Group>, DaoTransfo
 	 * @param assignment
 	 * @return
 	 */
-	GroupRoleAssignModel createRoleAssignmentEvent(Group group, Role role, Assignment assignment);
+	GroupRoleAssignModel createRoleAssignmentEvent(HibGroup group, HibRole role, Assignment assignment);
 
 	/**
 	 * Add the group to the aggregation vertex.
 	 * 
 	 * @param group
-	 *            Group to be added
+	 *            HibGroup to be added
 	 */
-	void addGroup(Group group);
+	void addGroup(HibGroup group);
 
 	/**
 	 * Remove the group from the aggregation vertex.
 	 * 
 	 * @param group
-	 *            Group to be removed
+	 *            HibGroup to be removed
 	 */
-	void removeGroup(Group group);
+	void removeGroup(HibGroup group);
 
 	/**
 	 * Assign the given user to this group.
@@ -103,7 +103,7 @@ public interface GroupDaoWrapper extends GroupDao, DaoWrapper<Group>, DaoTransfo
 	 * @param group
 	 * @param user
 	 */
-	void addUser(Group group, HibUser user);
+	void addUser(HibGroup group, HibUser user);
 
 	/**
 	 * Unassign the user from the group.
@@ -111,7 +111,7 @@ public interface GroupDaoWrapper extends GroupDao, DaoWrapper<Group>, DaoTransfo
 	 * @param group
 	 * @param user
 	 */
-	void removeUser(Group group, HibUser user);
+	void removeUser(HibGroup group, HibUser user);
 
 	/**
 	 * Assign the given role to this group.
@@ -119,7 +119,7 @@ public interface GroupDaoWrapper extends GroupDao, DaoWrapper<Group>, DaoTransfo
 	 * @param group
 	 * @param role
 	 */
-	void addRole(Group group, Role role);
+	void addRole(HibGroup group, HibRole role);
 
 	/**
 	 * Unassign the role from this group.
@@ -127,7 +127,7 @@ public interface GroupDaoWrapper extends GroupDao, DaoWrapper<Group>, DaoTransfo
 	 * @param group
 	 * @param role
 	 */
-	void removeRole(Group group, Role role);
+	void removeRole(HibGroup group, HibRole role);
 
 	/**
 	 * Return a traversal of users that are assigned to the group.
@@ -135,7 +135,7 @@ public interface GroupDaoWrapper extends GroupDao, DaoWrapper<Group>, DaoTransfo
 	 * @param group
 	 * @return Traversal of users
 	 */
-	TraversalResult<? extends HibUser> getUsers(Group group);
+	TraversalResult<? extends HibUser> getUsers(HibGroup group);
 
 	/**
 	 * Return a traversal of roles that are assigned to the group.
@@ -143,7 +143,7 @@ public interface GroupDaoWrapper extends GroupDao, DaoWrapper<Group>, DaoTransfo
 	 * @param group
 	 * @return Traversal of roles
 	 */
-	TraversalResult<? extends Role> getRoles(Group group);
+	TraversalResult<? extends HibRole> getRoles(HibGroup group);
 
 	/**
 	 * Check whether the user has been assigned to the group.
@@ -152,7 +152,7 @@ public interface GroupDaoWrapper extends GroupDao, DaoWrapper<Group>, DaoTransfo
 	 * @param user
 	 * @return
 	 */
-	boolean hasUser(Group group, HibUser user);
+	boolean hasUser(HibGroup group, HibUser user);
 
 	/**
 	 * Check whether the role has been assigned to the group.
@@ -161,7 +161,7 @@ public interface GroupDaoWrapper extends GroupDao, DaoWrapper<Group>, DaoTransfo
 	 * @param role
 	 * @return
 	 */
-	boolean hasRole(Group group, Role role);
+	boolean hasRole(HibGroup group, HibRole role);
 
 	/**
 	 * Return a page with all visible roles that the given user can see.
@@ -173,7 +173,7 @@ public interface GroupDaoWrapper extends GroupDao, DaoWrapper<Group>, DaoTransfo
 	 *            Paging information
 	 * @return Page which contains the retrieved items
 	 */
-	TransformablePage<? extends Role> getRoles(Group group, HibUser user, PagingParameters pagingInfo);
+	TransformablePage<? extends HibRole> getRoles(HibGroup group, HibUser user, PagingParameters pagingInfo);
 
 	/**
 	 * Return a page with all users that the given user can see.
@@ -183,18 +183,20 @@ public interface GroupDaoWrapper extends GroupDao, DaoWrapper<Group>, DaoTransfo
 	 * @param pagingInfo
 	 * @return Page with found users, an empty page is returned when no users could be found
 	 */
-	TransformablePage<? extends HibUser> getVisibleUsers(Group group, MeshAuthUser requestUser, PagingParameters pagingInfo);
+	TransformablePage<? extends HibUser> getVisibleUsers(HibGroup group, MeshAuthUser requestUser, PagingParameters pagingInfo);
 
 	long computeCount();
 
-	void delete(Group group, BulkActionContext bac);
+	void delete(HibGroup group, BulkActionContext bac);
 
-	boolean update(Group group, InternalActionContext ac, EventQueueBatch batch);
+	boolean update(HibGroup group, InternalActionContext ac, EventQueueBatch batch);
 
-	String getETag(Group element, InternalActionContext ac);
+	HibGroup loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound);
 
-	Group loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound);
+	HibGroup create(InternalActionContext ac, EventQueueBatch batch, String uuid);
 
-	Group create(InternalActionContext ac, EventQueueBatch batch, String uuid);
+	String getETag(HibGroup element, InternalActionContext ac);
+
+	String getAPIPath(HibGroup group, InternalActionContext ac);
 
 }

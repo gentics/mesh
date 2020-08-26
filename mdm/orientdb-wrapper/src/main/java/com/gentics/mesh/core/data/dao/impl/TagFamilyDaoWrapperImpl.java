@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.data.dao.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toTag;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toTagFamily;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -16,16 +18,16 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
-import com.gentics.mesh.core.data.impl.TagFamilyWrapper;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
+import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
@@ -60,27 +62,32 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper implements TagFa
 	}
 
 	@Override
-	public TagFamilyWrapper findByName(Project project, String name) {
+	public HibTagFamily findByName(HibProject project, String name) {
 		TagFamilyRoot root = project.getTagFamilyRoot();
 		TagFamily tagFamily = root.findByName(name);
-		return TagFamilyWrapper.wrap(tagFamily);
+		return tagFamily;
 	}
 
 	@Override
-	public TagFamilyWrapper findByUuid(Project project, String uuid) {
+	public HibTagFamily findByUuid(HibProject project, String uuid) {
 		TagFamilyRoot root = project.getTagFamilyRoot();
 		TagFamily tagFamily = root.findByUuid(uuid);
-		return TagFamilyWrapper.wrap(tagFamily);
+		return tagFamily;
 	}
 
 	@Override
-	public TagFamily findByUuidGlobal(String uuid) {
+	public HibTagFamily findByUuidGlobal(String uuid) {
 		TagFamilyRoot globalTagFamilyRoot = boot.get().tagFamilyRoot();
 		return globalTagFamilyRoot.findByUuid(uuid);
 	}
 
 	@Override
-	public TagFamilyResponse transformToRestSync(TagFamily tagFamily, InternalActionContext ac, int level, String... languageTags) {
+	public HibTagFamily findByUuid(String uuid) {
+		return findByUuidGlobal(uuid);
+	}
+
+	@Override
+	public TagFamilyResponse transformToRestSync(HibTagFamily tagFamily, InternalActionContext ac, int level, String... languageTags) {
 		GenericParameters generic = ac.getGenericParameters();
 		FieldsSet fields = generic.getFields();
 
@@ -98,10 +105,10 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper implements TagFa
 			restTagFamily.setName(tagFamily.getName());
 		}
 
-		tagFamily.fillCommonRestFields(ac, fields, restTagFamily);
+		tagFamily.toTagFamily().fillCommonRestFields(ac, fields, restTagFamily);
 
 		if (fields.has("perms")) {
-			setRolePermissions(tagFamily, ac, restTagFamily);
+			setRolePermissions(tagFamily.toTagFamily(), ac, restTagFamily);
 		}
 
 		return restTagFamily;
@@ -113,9 +120,9 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper implements TagFa
 	}
 
 	@Override
-	public boolean update(TagFamily tagFamily, InternalActionContext ac, EventQueueBatch batch) {
+	public boolean update(HibTagFamily tagFamily, InternalActionContext ac, EventQueueBatch batch) {
 		TagFamilyUpdateRequest requestModel = ac.fromJson(TagFamilyUpdateRequest.class);
-		Project project = ac.getProject();
+		HibProject project = ac.getProject();
 		String newName = requestModel.getName();
 
 		if (isEmpty(newName)) {
@@ -135,7 +142,7 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper implements TagFa
 	}
 
 	@Override
-	public TagFamily create(Project project, InternalActionContext ac, EventQueueBatch batch, String uuid) {
+	public TagFamily create(HibProject project, InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		MeshAuthUser requestUser = ac.getUser();
 		UserDaoWrapper userDao = boot.get().userDao();
 		TagFamilyCreateRequest requestModel = ac.fromJson(TagFamilyCreateRequest.class);
@@ -164,12 +171,12 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper implements TagFa
 	}
 
 	@Override
-	public TraversalResult<? extends TagFamily> findAll(Project project) {
+	public TraversalResult<? extends TagFamily> findAll(HibProject project) {
 		return project.getTagFamilyRoot().findAll();
 	}
 
 	@Override
-	public void delete(TagFamily tagFamily, BulkActionContext bac) {
+	public void delete(HibTagFamily tagFamily, BulkActionContext bac) {
 		TagDaoWrapper tagDao = Tx.get().data().tagDao();
 
 		if (log.isDebugEnabled()) {
@@ -177,14 +184,36 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper implements TagFa
 		}
 
 		// Delete all the tags of the tag root
-		for (Tag tag : tagDao.findAll(tagFamily)) {
+		for (HibTag tag : tagDao.findAll(tagFamily)) {
 			tagDao.delete(tag, bac);
 		}
 
 		bac.add(tagFamily.onDeleted());
 
 		// Now delete the tag root element
-		tagFamily.getElement().remove();
+		tagFamily.deleteElement();
 		bac.process();
+	}
+
+	@Override
+	public String getETag(HibTagFamily tagfamily, InternalActionContext ac) {
+		return tagfamily.toTagFamily().getETag(ac);
+	}
+
+	@Override
+	public String getAPIPath(HibTagFamily tagFamily, InternalActionContext ac) {
+		return tagFamily.toTagFamily().getAPIPath(ac);
+	}
+
+	@Override
+	public void removeTag(HibTagFamily tagFamily, HibTag tag) {
+		TagFamily graphTagFamily = toTagFamily(tagFamily);
+		graphTagFamily.removeTag(toTag(tag));
+	}
+
+	@Override
+	public void addTag(HibTagFamily tagFamily, HibTag tag) {
+		TagFamily graphTagFamily = toTagFamily(tagFamily);
+		graphTagFamily.addTag(toTag(tag));
 	}
 }

@@ -9,7 +9,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.rest.node.field.image.Point;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -148,8 +148,8 @@ public class BinaryWrapper implements Binary {
 		delegate.property(key, value);
 	}
 
-	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
-		Set<GraphPermission> permissionsToRevoke) {
+	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<InternalPermission> permissionsToGrant,
+		Set<InternalPermission> permissionsToRevoke) {
 		delegate.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
 	}
 
@@ -285,7 +285,7 @@ public class BinaryWrapper implements Binary {
 		return delegate.getGraphAttribute(key);
 	}
 
-	public TraversalResult<? extends BinaryGraphField> findFields() {
+	public TraversalResult<BinaryGraphField> findFields() {
 		return delegate.findFields();
 	}
 
@@ -337,11 +337,11 @@ public class BinaryWrapper implements Binary {
 		return delegate.reframeExplicit(kind);
 	}
 
-	public Set<String> getRoleUuidsForPerm(GraphPermission permission) {
+	public Set<String> getRoleUuidsForPerm(InternalPermission permission) {
 		return delegate.getRoleUuidsForPerm(permission);
 	}
 
-	public void setRoleUuidForPerm(GraphPermission permission, Set<String> allowedRoles) {
+	public void setRoleUuidForPerm(InternalPermission permission, Set<String> allowedRoles) {
 		delegate.setRoleUuidForPerm(permission, allowedRoles);
 	}
 

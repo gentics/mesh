@@ -10,7 +10,6 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -26,11 +25,12 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.impl.NodeGraphFieldListImpl;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractListFieldEndpointTest;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
@@ -120,7 +120,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 		List<List<Node>> valueCombinations = Arrays.asList(Arrays.asList(targetNode), Arrays.asList(targetNode2, targetNode), Collections.emptyList(),
 			Arrays.asList(targetNode, targetNode2), Arrays.asList(targetNode2));
 
-		NodeGraphFieldContainer container = tx(() -> node.getGraphFieldContainer("en"));
+		NodeGraphFieldContainer container = tx(() -> boot().contentDao().getGraphFieldContainer(node, "en"));
 		for (int i = 0; i < 20; i++) {
 			List<Node> oldValue;
 			List<Node> newValue;
@@ -137,7 +137,8 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 			assertThat(field.getItems()).as("Updated field").usingElementComparatorOnFields("uuid").containsExactlyElementsOf(list.getItems());
 
 			try (Tx tx = tx()) {
-				NodeGraphFieldContainer newContainerVersion = container.getNextVersions().iterator().next();
+				ContentDaoWrapper contentDao = tx.data().contentDao();
+				NodeGraphFieldContainer newContainerVersion = contentDao.getNextVersions(container).iterator().next();
 				assertEquals("Check version number", newContainerVersion.getVersion().toString(), response.getVersion());
 				assertEquals("Check old value", oldValue, getListValues(container, NodeGraphFieldListImpl.class, FIELD_NAME));
 				container = newContainerVersion;
@@ -183,8 +184,9 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 
 		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 			Node node = folder("2015");
-			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
+			NodeGraphFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getNodeList(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getNodeList(FIELD_NAME)).isNotNull();
@@ -289,7 +291,8 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	public void testReadNodeWithExistingField() {
 		Node node = folder("2015");
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
+			ContentDaoWrapper contentDao = tx.data().contentDao();
+			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			NodeGraphFieldList nodeList = container.createNodeList(FIELD_NAME);
 			nodeList.createNode("1", folder("news"));
 			tx.success();
@@ -309,11 +312,12 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 		Node referencedNode = folder("news");
 
 		try (Tx tx = tx()) {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 			RoleDaoWrapper roleDao = tx.data().roleDao();
-			roleDao.revokePermissions(role(), referencedNode, GraphPermission.READ_PERM);
+			roleDao.revokePermissions(role(), referencedNode, InternalPermission.READ_PERM);
 
 			// Create node list
-			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
+			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			NodeGraphFieldList nodeList = container.createNodeList(FIELD_NAME);
 			nodeList.createNode("1", referencedNode);
 			tx.success();
@@ -345,7 +349,8 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 
 		// Create node list
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
+			ContentDaoWrapper contentDao = tx.data().contentDao();
+			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			NodeGraphFieldList nodeList = container.createNodeList(FIELD_NAME);
 			nodeList.createNode("1", newsNode);
 			tx.success();

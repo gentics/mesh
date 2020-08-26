@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.node;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
@@ -278,7 +278,7 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
 		Node node = prepareSchema();
-		VersionNumber version = tx(() -> node.getGraphFieldContainer("en").getVersion());
+		VersionNumber version = tx(() -> boot().contentDao().getGraphFieldContainer(node, "en").getVersion());
 		String uuid = tx(() -> node.getUuid());
 
 		// 1. Upload some binary data

@@ -8,7 +8,6 @@ import com.gentics.graphqlfilter.filter.FilterField;
 import com.gentics.graphqlfilter.filter.MappedFilter;
 import com.gentics.graphqlfilter.filter.StartMainFilter;
 import com.gentics.graphqlfilter.filter.StringFilter;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.user.HibUser;
 
 import graphql.schema.GraphQLInputType;

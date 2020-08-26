@@ -1,11 +1,19 @@
 package com.gentics.mesh.core.data.root;
 
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
+
+import java.util.function.Predicate;
+
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.impl.DynamicNonTransformablePageImpl;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.parameter.PagingParameters;
 
 /**
  * Project Root Node domain model interface.
@@ -82,6 +90,12 @@ public interface ProjectRoot extends RootVertex<Project>, TransformableElementRo
 	 * @param project
 	 */
 	void removeProject(Project project);
+
+	default	Page<? extends HibProject> findAllWrapped(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibProject> extraFilter) {
+		return new DynamicNonTransformablePageImpl<Project>(ac.getUser(), this, pagingInfo, READ_PERM, project ->  { 
+			return extraFilter.test(project);
+		}, true);
+	}
 
 	/**
 	 * Add given the project to the aggregation vertex.

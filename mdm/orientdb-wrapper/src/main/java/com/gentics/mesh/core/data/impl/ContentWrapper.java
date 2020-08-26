@@ -9,12 +9,12 @@ import java.util.stream.Stream;
 import com.gentics.madl.traversal.RawTraversalResult;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.HibContent;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
@@ -34,8 +34,9 @@ import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
+import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -54,7 +55,6 @@ import com.gentics.mesh.madl.frame.VertexFrame;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.path.Path;
-import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.VersionNumber;
 import com.google.gson.JsonObject;
 import com.syncleus.ferma.ClassInitializer;
@@ -194,8 +194,8 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		delegate.property(key, value);
 	}
 
-	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
-		Set<GraphPermission> permissionsToRevoke) {
+	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<InternalPermission> permissionsToGrant,
+		Set<InternalPermission> permissionsToRevoke) {
 		delegate.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
 	}
 
@@ -379,7 +379,7 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		delegate.linkIn(vertex, labels);
 	}
 
-	public MicronodeGraphField createMicronode(String key, MicroschemaVersion microschemaVersion) {
+	public MicronodeGraphField createMicronode(String key, HibMicroschemaVersion microschemaVersion) {
 		return delegate.createMicronode(key, microschemaVersion);
 	}
 
@@ -511,11 +511,11 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		delegate.deleteFieldEdge(key);
 	}
 
-	public void deleteFromBranch(Branch branch, BulkActionContext bac) {
+	public void deleteFromBranch(HibBranch branch, BulkActionContext bac) {
 		delegate.deleteFromBranch(branch, bac);
 	}
 
-	public void setSchemaContainerVersion(GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> version) {
+	public void setSchemaContainerVersion(HibFieldSchemaVersionElement version) {
 		delegate.setSchemaContainerVersion(version);
 	}
 
@@ -523,16 +523,12 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		return delegate.getDisplayFieldValue();
 	}
 
-	public Node getParentNode() {
-		return delegate.getParentNode();
+	public Node getNode() {
+		return delegate.getNode();
 	}
 
 	public Iterable<? extends Node> getReferencedNodes() {
 		return delegate.getReferencedNodes();
-	}
-
-	public Node getParentNode(String uuid) {
-		return delegate.getParentNode(uuid);
 	}
 
 	public void updateWebrootPathInfo(InternalActionContext ac, String branchUuid, String conflictI18n) {
@@ -559,7 +555,7 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		return delegate.hasNextVersion();
 	}
 
-	public Iterable<? extends NodeGraphFieldContainer> getNextVersions() {
+	public Iterable<NodeGraphFieldContainer> getNextVersions() {
 		return delegate.getNextVersions();
 	}
 
@@ -611,10 +607,6 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		return delegate.isType(type, branchUuid);
 	}
 
-	public Set<Tuple<String, ContainerType>> getBranchTypes() {
-		return delegate.getBranchTypes();
-	}
-
 	public Set<String> getBranches(ContainerType type) {
 		return delegate.getBranches(type);
 	}
@@ -631,11 +623,11 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		return delegate.getSchemaContainerVersion();
 	}
 
-	public List<? extends MicronodeGraphField> getMicronodeFields(MicroschemaVersion version) {
+	public List<MicronodeGraphField> getMicronodeFields(MicroschemaVersion version) {
 		return delegate.getMicronodeFields(version);
 	}
 
-	public TraversalResult<? extends MicronodeGraphFieldList> getMicronodeListFields(MicroschemaVersion version) {
+	public TraversalResult<MicronodeGraphFieldList> getMicronodeListFields(MicroschemaVersion version) {
 		return delegate.getMicronodeListFields(version);
 	}
 
@@ -663,7 +655,7 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		return delegate.getPath(ac);
 	}
 
-	public Iterator<? extends GraphFieldContainerEdge> getContainerEdge(ContainerType type, String branchUuid) {
+	public Iterator<GraphFieldContainerEdge> getContainerEdge(ContainerType type, String branchUuid) {
 		return delegate.getContainerEdge(type, branchUuid);
 	}
 
@@ -711,11 +703,11 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		return delegate.versions();
 	}
 
-	public Set<String> getRoleUuidsForPerm(GraphPermission permission) {
+	public Set<String> getRoleUuidsForPerm(InternalPermission permission) {
 		return delegate.getRoleUuidsForPerm(permission);
 	}
 
-	public void setRoleUuidForPerm(GraphPermission permission, Set<String> allowedRoles) {
+	public void setRoleUuidForPerm(InternalPermission permission, Set<String> allowedRoles) {
 		delegate.setRoleUuidForPerm(permission, allowedRoles);
 	}
 

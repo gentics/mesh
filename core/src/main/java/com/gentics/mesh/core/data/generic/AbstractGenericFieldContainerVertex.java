@@ -5,12 +5,12 @@ import static com.tinkerpop.blueprints.Direction.IN;
 
 import java.util.Iterator;
 
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.data.BasicFieldContainer;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.MeshCoreVertex;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.AbstractResponse;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -22,7 +22,7 @@ import com.tinkerpop.blueprints.Vertex;
 public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResponse, R extends MeshCoreVertex<T, R>> extends
 		AbstractMeshCoreVertex<T, R> {
 
-	protected <U extends BasicFieldContainer> U getGraphFieldContainer(String languageTag, Branch branch, ContainerType type, Class<U> classOfU) {
+	protected <U extends BasicFieldContainer> U getGraphFieldContainer(String languageTag, HibBranch branch, ContainerType type, Class<U> classOfU) {
 		return getGraphFieldContainer(languageTag, branch != null ? branch.getUuid() : null, type, classOfU);
 	}
 

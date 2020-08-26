@@ -22,16 +22,16 @@ public class TraversalResult<T> implements Iterable<T> {
 	public TraversalResult() {
 	}
 
-	public TraversalResult(Iterable<T> it) {
-		this.it = it;
+	public TraversalResult(Iterable<? extends T> it) {
+		this.it = (Iterable<T>)it;
 	}
 
-	public TraversalResult(Iterator<T> it) {
-		this.it = () -> it;
+	public TraversalResult(Iterator<? extends T> it) {
+		this.it = () -> (Iterator<T>)it;
 	}
 
-	public TraversalResult(Stream<T> stream) {
-		this.it = stream::iterator;
+	public TraversalResult(Stream<? extends T> stream) {
+		this.it = ((Stream<T>)stream)::iterator;
 	}
 
 	public long count() {
@@ -46,14 +46,14 @@ public class TraversalResult<T> implements Iterable<T> {
 		return it.iterator();
 	}
 
-	public Stream<? extends T> stream() {
+	public Stream<T> stream() {
 		Stream<T> stream = StreamSupport.stream(
 			Spliterators.spliteratorUnknownSize(it.iterator(), Spliterator.ORDERED),
 			false);
 		return stream;
 	}
 
-	public List<? extends T> list() {
+	public List<T> list() {
 		return stream().collect(Collectors.toList());
 	}
 

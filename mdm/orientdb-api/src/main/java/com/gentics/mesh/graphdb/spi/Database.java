@@ -17,7 +17,6 @@ import com.gentics.mesh.core.db.TxFactory;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.cluster.ClusterManager;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.madl.frame.VertexFrame;
@@ -386,7 +385,7 @@ public interface Database extends TxFactory {
 	/**
 	 * Return the element version.
 	 * 
-	 * @param vertex
+	 * @param element
 	 * @return
 	 */
 	String getElementVersion(Element element);
@@ -400,7 +399,7 @@ public interface Database extends TxFactory {
 	 */
 	void reload(Element element);
 
-	default <T> Transactional<T> transactional(Function<Tx, T> txFunction) {
+	default <T> Transactional<T> transactional(Function<? super Tx, ? extends T> txFunction) {
 		return new Transactional<T>() {
 			@Override
 			public T runInExistingTx(Tx tx) {
@@ -424,12 +423,12 @@ public interface Database extends TxFactory {
 			// }
 
 			@Override
-			public <R> Transactional<R> mapInTx(BiFunction<Tx, T, R> mapper) {
+			public <R> Transactional<R> mapInTx(BiFunction<? super Tx, ? super T, ? extends R> mapper) {
 				return transactional(tx -> mapper.apply(tx, txFunction.apply(tx)));
 			}
 
 			@Override
-			public <R> Transactional<R> flatMap(Function<T, Transactional<R>> mapper) {
+			public <R> Transactional<R> flatMap(Function<? super T, Transactional<? extends R>> mapper) {
 				return transactional(tx -> {
 					T val = txFunction.apply(tx);
 					return mapper.apply(val).runInExistingTx(tx);

@@ -21,9 +21,11 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
@@ -35,7 +37,7 @@ import com.gentics.mesh.core.data.node.field.list.ListGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.field.NodeField;
@@ -60,6 +62,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 	};
 
 	public static FieldUpdater NODE_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
+		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
 		NodeGraphField graphNodeField = container.getNode(fieldKey);
 		NodeField nodeField = fieldMap.getNodeField(fieldKey);
 		boolean isNodeFieldSetToNull = fieldMap.hasField(fieldKey) && (nodeField == null);
@@ -88,7 +91,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 		}
 
 		// Handle Update / Create
-		Node node = ac.getProject().getNodeRoot().findByUuid(nodeField.getUuid());
+		Node node = nodeDao.findByUuid(ac.getProject(), nodeField.getUuid());
 		if (node == null) {
 			// TODO We want to delete the field when the field has been explicitly set to null
 			if (log.isDebugEnabled()) {
@@ -181,9 +184,10 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 			nodeField.setUuid(node.getUuid());
 			LinkType type = ac.getNodeParameters().getResolveLinks();
 			if (type != LinkType.OFF) {
+				ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 
 				WebRootLinkReplacer linkReplacer = mesh().webRootLinkReplacer();
-				Branch branch = ac.getBranch();
+				HibBranch branch = ac.getBranch();
 				ContainerType containerType = forVersion(ac.getVersioningParameters().getVersion());
 
 				// Set the webroot path for the currently active language
@@ -192,7 +196,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 
 				// Set the languagePaths for all field containers
 				Map<String, String> languagePaths = new HashMap<>();
-				for (GraphFieldContainer currentFieldContainer : node.getGraphFieldContainers(branch, containerType)) {
+				for (GraphFieldContainer currentFieldContainer : contentDao.getGraphFieldContainers(node, branch, containerType)) {
 					String currLanguage = currentFieldContainer.getLanguageTag();
 					String languagePath = linkReplacer.resolve(ac, branch.getUuid(), containerType, node, type, currLanguage);
 					languagePaths.put(currLanguage, languagePath);

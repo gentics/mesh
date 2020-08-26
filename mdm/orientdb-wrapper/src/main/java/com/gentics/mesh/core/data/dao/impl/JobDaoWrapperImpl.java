@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.dao.impl;
 
+import static com.gentics.mesh.core.data.util.HibClassConverter.toRole;
+
 import java.time.ZonedDateTime;
 import java.util.Set;
 import java.util.Stack;
@@ -14,19 +16,21 @@ import com.gentics.madl.traversal.RawTraversalResult;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.HibElement;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.JobDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
+import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -74,11 +78,11 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper implements JobDaoWrapp
 		boot.get().jobRoot().setUniqueLinkOutTo(vertex, labels);
 	}
 
-	public TraversalResult<? extends Role> getRolesWithPerm(GraphPermission perm) {
+	public TraversalResult<? extends HibRole> getRolesWithPerm(InternalPermission perm) {
 		return boot.get().jobRoot().getRolesWithPerm(perm);
 	}
 
-	public Job enqueueSchemaMigration(HibUser creator, Branch branch, SchemaVersion fromVersion, SchemaVersion toVersion) {
+	public HibJob enqueueSchemaMigration(HibUser creator, HibBranch branch, HibSchemaVersion fromVersion, HibSchemaVersion toVersion) {
 		return boot.get().jobRoot().enqueueSchemaMigration(creator, branch, fromVersion, toVersion);
 	}
 
@@ -94,7 +98,7 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper implements JobDaoWrapp
 		return boot.get().jobRoot().getElementVersion();
 	}
 
-	public Job enqueueBranchMigration(HibUser creator, Branch branch, SchemaVersion fromVersion, SchemaVersion toVersion) {
+	public HibJob enqueueBranchMigration(HibUser creator, HibBranch branch, HibSchemaVersion fromVersion, HibSchemaVersion toVersion) {
 		return boot.get().jobRoot().enqueueBranchMigration(creator, branch, fromVersion, toVersion);
 	}
 
@@ -146,8 +150,8 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper implements JobDaoWrapp
 		boot.get().jobRoot().remove();
 	}
 
-	public Job enqueueMicroschemaMigration(HibUser creator, Branch branch, MicroschemaVersion fromVersion,
-		MicroschemaVersion toVersion) {
+	public HibJob enqueueMicroschemaMigration(HibUser creator, HibBranch branch, HibMicroschemaVersion fromVersion,
+		HibMicroschemaVersion toVersion) {
 		return boot.get().jobRoot().enqueueMicroschemaMigration(creator, branch, fromVersion, toVersion);
 	}
 
@@ -167,9 +171,10 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper implements JobDaoWrapp
 		boot.get().jobRoot().property(key, value);
 	}
 
-	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
-		Set<GraphPermission> permissionsToRevoke) {
-		boot.get().jobRoot().applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
+	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<InternalPermission> permissionsToGrant,
+		Set<InternalPermission> permissionsToRevoke) {
+		Role graphRole = toRole(role);
+		boot.get().jobRoot().applyPermissions(batch, graphRole, recursive, permissionsToGrant, permissionsToRevoke);
 	}
 
 	public <T extends EdgeFrame> TraversalResult<? extends T> outE(String label, Class<T> clazz) {
@@ -184,7 +189,7 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper implements JobDaoWrapp
 		return boot.get().jobRoot().in(label, clazz);
 	}
 
-	public Job enqueueBranchMigration(HibUser creator, Branch branch) {
+	public HibJob enqueueBranchMigration(HibUser creator, HibBranch branch) {
 		return boot.get().jobRoot().enqueueBranchMigration(creator, branch);
 	}
 
@@ -212,7 +217,7 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper implements JobDaoWrapp
 		return boot.get().jobRoot().db();
 	}
 
-	public Job enqueueVersionPurge(HibUser user, Project project, ZonedDateTime before) {
+	public HibJob enqueueVersionPurge(HibUser user, HibProject project, ZonedDateTime before) {
 		return boot.get().jobRoot().enqueueVersionPurge(user, project, before);
 	}
 
@@ -228,7 +233,7 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper implements JobDaoWrapp
 		return boot.get().jobRoot().options();
 	}
 
-	public Job enqueueVersionPurge(HibUser user, Project project) {
+	public HibJob enqueueVersionPurge(HibUser user, HibProject project) {
 		return boot.get().jobRoot().enqueueVersionPurge(user, project);
 	}
 
@@ -264,7 +269,7 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper implements JobDaoWrapp
 		return boot.get().jobRoot().getTypeResolution();
 	}
 
-	public Stream<? extends Job> findAllStream(InternalActionContext ac, GraphPermission permission) {
+	public Stream<? extends Job> findAllStream(InternalActionContext ac, InternalPermission permission) {
 		return boot.get().jobRoot().findAllStream(ac, permission);
 	}
 
@@ -360,7 +365,7 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper implements JobDaoWrapp
 		return boot.get().jobRoot().toJson();
 	}
 
-	public Job findByName(InternalActionContext ac, String name, GraphPermission perm) {
+	public Job findByName(InternalActionContext ac, String name, InternalPermission perm) {
 		return boot.get().jobRoot().findByName(ac, name, perm);
 	}
 
@@ -376,11 +381,11 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper implements JobDaoWrapp
 		return boot.get().jobRoot().findByUuid(uuid);
 	}
 
-	public Job loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
+	public Job loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm) {
 		return boot.get().jobRoot().loadObjectByUuid(ac, uuid, perm);
 	}
 
-	public Job loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+	public Job loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
 		return boot.get().jobRoot().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
 	}
 
@@ -421,12 +426,12 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper implements JobDaoWrapp
 	}
 
 	@Override
-	public Set<String> getRoleUuidsForPerm(GraphPermission permission) {
+	public Set<String> getRoleUuidsForPerm(InternalPermission permission) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public void setRoleUuidForPerm(GraphPermission permission, java.util.Set<String> allowedRoles) {
+	public void setRoleUuidForPerm(InternalPermission permission, java.util.Set<String> allowedRoles) {
 	}
 
 }

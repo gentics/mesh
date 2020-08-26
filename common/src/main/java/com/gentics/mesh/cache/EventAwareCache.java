@@ -4,8 +4,6 @@ import java.util.function.Function;
 
 import javax.annotation.Nonnull;
 
-import com.gentics.mesh.cache.impl.EventAwareCacheImpl;
-
 /**
  * An event aware cache is a cache which will be invalidated when an event gets received.
  * 

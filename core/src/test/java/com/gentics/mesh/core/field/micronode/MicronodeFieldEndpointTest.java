@@ -11,6 +11,7 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import static com.gentics.mesh.util.DateUtils.toISO8601;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -22,12 +23,13 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
-import com.gentics.mesh.core.data.schema.Microschema;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldEndpointTest;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
@@ -106,7 +108,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			Micronode oldValue = null;
 			NodeGraphFieldContainer container = null;
 			try (Tx tx = tx()) {
-				container = node.getGraphFieldContainer("en");
+				container = boot().contentDao().getGraphFieldContainer(node, "en");
 				oldValue = getMicronodeValue(container, FIELD_NAME);
 				field = new MicronodeResponse();
 				field.setMicroschema(new MicroschemaReferenceImpl().setName("vcard"));
@@ -116,10 +118,11 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			NodeResponse response = updateNode(FIELD_NAME, field);
 
 			try (Tx tx = tx()) {
+				ContentDaoWrapper contentDao = tx.data().contentDao();
 				MicronodeResponse fieldResponse = response.getFields().getMicronodeField(FIELD_NAME);
 				assertThat(fieldResponse).hasStringField("firstName", "Max").hasStringField("lastName", newLastName);
 
-				container.getNextVersions().iterator().next();
+				contentDao.getNextVersions(container).iterator().next();
 				assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion());
 				if (oldValue == null) {
 					assertThat(getMicronodeValue(container, FIELD_NAME)).as("old value").isNull();
@@ -163,12 +166,13 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		// Assert that a null field value request will delete the micronode
 		NodeResponse secondResponse = updateNode(FIELD_NAME, null);
 		try (Tx tx = tx()) {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 			assertThat(secondResponse.getFields().getMicronodeField(FIELD_NAME)).isNull();
 			assertThat(secondResponse.getVersion()).as("New version number").isNotEqualTo(oldNumber);
 
 			// Assert that the old version was not modified
 			Node node = folder("2015");
-			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
+			NodeGraphFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getMicronode(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getMicronode(FIELD_NAME)).as("The old version micronode field could not be found.").isNotNull();
@@ -381,8 +385,9 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	public void testReadNodeWithExistingField() throws IOException {
 		Node node = folder("2015");
 		try (Tx tx = tx()) {
-			MicroschemaVersion microschema = microschemaContainers().get("vcard").getLatestVersion();
-			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
+			ContentDaoWrapper contentDao = tx.data().contentDao();
+			HibMicroschemaVersion microschema = microschemaContainers().get("vcard").getLatestVersion();
+			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			MicronodeGraphField micronodeField = container.createMicronode(FIELD_NAME, microschema);
 			micronodeField.getMicronode().createString("firstName").setString("Max");
 			tx.success();
@@ -418,7 +423,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 				nodeMicroschema.addField(new NodeFieldSchemaImpl().setName("nodefield_" + i));
 			}
 			// TODO Maybe add project()
-			Microschema microschemaContainer = microschemaDao.create(nodeMicroschema, getRequestUser(), createBatch());
+			HibMicroschema microschemaContainer = microschemaDao.create(nodeMicroschema, getRequestUser(), createBatch());
 			microschemaContainers().put("noderef", microschemaContainer);
 			// TODO use dao instead
 			project().getMicroschemaContainerRoot().addMicroschema(user(), microschemaContainer, createBatch());
@@ -482,7 +487,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 			// 2. Add the microschema to the list of microschemas of the project
 			// TODO maybe add project()
-			Microschema microschemaContainer = microschemaDao.create(fullMicroschema, getRequestUser(), createBatch());
+			HibMicroschema microschemaContainer = microschemaDao.create(fullMicroschema, getRequestUser(), createBatch());
 			microschemaContainers().put("full", microschemaContainer);
 			// TODO use DAO to add microschema
 			project().getMicroschemaContainerRoot().addMicroschema(user(), microschemaContainer, createBatch());

@@ -2,9 +2,9 @@ package com.gentics.mesh.core.data.node.impl;
 
 import static com.gentics.mesh.core.data.BranchParentEntry.branchParentEntry;
 import static com.gentics.mesh.core.data.GraphFieldContainerEdge.WEBROOT_INDEX_NAME;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.BRANCH_PARENTS_KEY_PROPERTY;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
@@ -58,19 +58,18 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.BranchParentEntry;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagEdge;
-import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.generic.AbstractGenericFieldContainerVertex;
@@ -87,10 +86,14 @@ import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformableStreamPageImpl;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
+import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
@@ -153,8 +156,6 @@ import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Vertex;
 
-import io.reactivex.Observable;
-import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -228,7 +229,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return null;
 	}
 
-	@Override
 	public void postfixPathSegment(String branchUuid, ContainerType type, String languageTag) {
 
 		// Check whether this node is the base node.
@@ -245,6 +245,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public String getPath(ActionContext ac, String branchUuid, ContainerType type, String... languageTag) {
+		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+
 		// We want to avoid rending the path again for nodes which we have already handled.
 		// Thus utilise the action context data map to retrieve already handled paths.
 		String cacheKey = getUuid() + branchUuid + type.getCode() + Arrays.toString(languageTag);
@@ -261,8 +263,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			// project languages to the list of languages for the fallback.
 			Node current = this;
 			while (current != null) {
-				current = current.getParentNode(branchUuid);
-				if (current == null || current.getParentNode(branchUuid) == null) {
+				current = nodeDao.getParentNode(current, branchUuid);
+				if (current == null || nodeDao.getParentNode(current, branchUuid) == null) {
 					break;
 				}
 				// For the path segments of the container, we allow ANY language (of the project)
@@ -283,7 +285,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			// Append the prefix first
 			BranchDaoWrapper branchDao = Tx.get().data().branchDao();
-			Branch branch = branchDao.findByUuid(getProject(), branchUuid);
+			HibBranch branch = branchDao.findByUuid(getProject(), branchUuid);
 			if (branch != null) {
 				String prefix = PathPrefixUtil.sanitize(branch.getPathPrefix());
 				if (!prefix.isEmpty()) {
@@ -307,8 +309,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	}
 
-	@Override
-	public void assertPublishConsistency(InternalActionContext ac, Branch branch) {
+	private void assertPublishConsistency(InternalActionContext ac, HibBranch branch) {
 
 		String branchUuid = branch.getUuid();
 		// Check whether the node got a published version and thus is published
@@ -317,7 +318,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// A published node must have also a published parent node.
 		if (isPublished) {
-			Node parentNode = getParentNode(branchUuid);
+			NodeImpl parentNode = getParentNode(branchUuid);
 
 			// Only assert consistency of parent nodes which are not project
 			// base nodes.
@@ -336,7 +337,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (!isPublished) {
 
 			for (Node node : getChildren(branchUuid)) {
-				if (node.hasPublishedContent(branchUuid)) {
+				NodeImpl impl = (NodeImpl) node;
+				if (impl.hasPublishedContent(branchUuid)) {
 					log.error("Found published field container for node {" + node.getUuid() + "} in branch {" + branchUuid + "}. Node is child of {"
 						+ getUuid() + "}");
 					throw error(BAD_REQUEST, "node_error_children_containers_still_published", node.getUuid());
@@ -346,29 +348,28 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public TraversalResult<? extends Tag> getTags(Branch branch) {
+	public TraversalResult<HibTag> getTags(HibBranch branch) {
 		return new TraversalResult<>(TagEdgeImpl.getTagTraversal(this, branch).frameExplicit(TagImpl.class));
 	}
 
 	@Override
-	public boolean hasTag(Tag tag, Branch branch) {
+	public boolean hasTag(HibTag tag, HibBranch branch) {
 		return TagEdgeImpl.hasTag(this, tag, branch);
 	}
 
-	@Override
-	public boolean hasPublishedContent(String branchUuid) {
+	private boolean hasPublishedContent(String branchUuid) {
 		return GraphFieldContainerEdgeImpl.matchesBranchAndType(getId(), branchUuid, PUBLISHED);
 	}
 
 	@Override
-	public TraversalResult<? extends NodeGraphFieldContainer> getGraphFieldContainers(String branchUuid, ContainerType type) {
-		TraversalResult<? extends GraphFieldContainerEdgeImpl> it = GraphFieldContainerEdgeImpl.findEdges(this.getId(), branchUuid, type);
+	public TraversalResult<NodeGraphFieldContainer> getGraphFieldContainers(String branchUuid, ContainerType type) {
+		TraversalResult<GraphFieldContainerEdgeImpl> it = GraphFieldContainerEdgeImpl.findEdges(this.getId(), branchUuid, type);
 		Iterator<NodeGraphFieldContainer> it2 = it.stream().map(e -> e.getNodeContainer()).iterator();
 		return new TraversalResult<>(it2);
 	}
 
 	@Override
-	public TraversalResult<? extends NodeGraphFieldContainer> getGraphFieldContainers(ContainerType type) {
+	public TraversalResult<NodeGraphFieldContainer> getGraphFieldContainers(ContainerType type) {
 		return new TraversalResult<>(
 			outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).inV()
 				.frameExplicit(NodeGraphFieldContainerImpl.class));
@@ -387,7 +388,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public NodeGraphFieldContainer getGraphFieldContainer(String languageTag, Branch branch, ContainerType type) {
+	public NodeGraphFieldContainer getGraphFieldContainer(String languageTag, HibBranch branch, ContainerType type) {
 		return getGraphFieldContainer(languageTag, branch, type, NodeGraphFieldContainerImpl.class);
 	}
 
@@ -402,12 +403,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public NodeGraphFieldContainer createGraphFieldContainer(String languageTag, Branch branch, HibUser editor) {
+	public NodeGraphFieldContainer createGraphFieldContainer(String languageTag, HibBranch branch, HibUser editor) {
 		return createGraphFieldContainer(languageTag, branch, editor, null, true);
 	}
 
 	@Override
-	public NodeGraphFieldContainer createGraphFieldContainer(String languageTag, Branch branch, HibUser editor, NodeGraphFieldContainer original,
+	public NodeGraphFieldContainer createGraphFieldContainer(String languageTag, HibBranch branch, HibUser editor, NodeGraphFieldContainer original,
 		boolean handleDraftEdge) {
 		NodeGraphFieldContainerImpl previous = null;
 		EdgeFrame draftEdge = null;
@@ -496,24 +497,24 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void addTag(Tag tag, Branch branch) {
+	public void addTag(HibTag tag, HibBranch branch) {
 		removeTag(tag, branch);
-		TagEdge edge = addFramedEdge(HAS_TAG, tag, TagEdgeImpl.class);
+		TagEdge edge = addFramedEdge(HAS_TAG, tag.toTag(), TagEdgeImpl.class);
 		edge.setBranchUuid(branch.getUuid());
 	}
 
 	@Override
-	public void removeTag(Tag tag, Branch branch) {
-		outE(HAS_TAG).has(TagEdgeImpl.BRANCH_UUID_KEY, branch.getUuid()).mark().inV().retain(tag).back().removeAll();
+	public void removeTag(HibTag tag, HibBranch branch) {
+		outE(HAS_TAG).has(TagEdgeImpl.BRANCH_UUID_KEY, branch.getUuid()).mark().inV().retain(tag.toTag()).back().removeAll();
 	}
 
 	@Override
-	public void removeAllTags(Branch branch) {
+	public void removeAllTags(HibBranch branch) {
 		outE(HAS_TAG).has(TagEdgeImpl.BRANCH_UUID_KEY, branch.getUuid()).removeAll();
 	}
 
 	@Override
-	public void setSchemaContainer(Schema schema) {
+	public void setSchemaContainer(HibSchema schema) {
 		property(SCHEMA_CONTAINER_KEY_PROPERTY, schema.getUuid());
 	}
 
@@ -527,7 +528,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public TraversalResult<? extends Node> getChildren() {
+	public TraversalResult<Node> getChildren() {
 		return new TraversalResult<>(graph.frameExplicit(db().getVertices(
 			NodeImpl.class,
 			new String[]{PARENTS_KEY_PROPERTY},
@@ -536,7 +537,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public TraversalResult<? extends Node> getChildren(String branchUuid) {
+	public TraversalResult<Node> getChildren(String branchUuid) {
 		return new TraversalResult<>(graph.frameExplicit(getUnframedChildren(branchUuid), NodeImpl.class));
 	}
 
@@ -560,7 +561,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Node getParentNode(String branchUuid) {
+	public NodeImpl getParentNode(String branchUuid) {
 		Set<String> parents = property(BRANCH_PARENTS_KEY_PROPERTY);
 		if (parents == null) {
 			return null;
@@ -583,17 +584,17 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Project getProject() {
+	public HibProject getProject() {
 		return db().index().findByUuid(ProjectImpl.class, property(PROJECT_KEY_PROPERTY));
 	}
 
 	@Override
-	public void setProject(Project project) {
+	public void setProject(HibProject project) {
 		property(PROJECT_KEY_PROPERTY, project.getUuid());
 	}
 
 	@Override
-	public Node create(HibUser creator, SchemaVersion schemaVersion, Project project) {
+	public Node create(HibUser creator, HibSchemaVersion schemaVersion, HibProject project) {
 		return create(creator, schemaVersion, project, project.getLatestBranch());
 	}
 
@@ -601,15 +602,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * Create a new node and make sure to delegate the creation request to the main node root aggregation node.
 	 */
 	@Override
-	public Node create(HibUser creator, SchemaVersion schemaVersion, Project project, Branch branch, String uuid) {
+	public Node create(HibUser creator, HibSchemaVersion schemaVersion, HibProject project, HibBranch branch, String uuid) {
 		if (!isBaseNode() && !isVisibleInBranch(branch.getUuid())) {
 			log.error(String.format("Error while creating node in branch {%s}: requested parent node {%s} exists, but is not visible in branch.",
 				branch.getName(), getUuid()));
 			throw error(NOT_FOUND, "object_not_found_for_uuid", getUuid());
 		}
 
-		// We need to use the (meshRoot)--(nodeRoot) node instead of the
-		// (project)--(nodeRoot) node.
 		Node node = project.getNodeRoot().create(creator, schemaVersion, project, uuid);
 		node.setParentNode(branch.getUuid(), this);
 		node.setSchemaContainer(schemaVersion.getSchemaContainer());
@@ -652,7 +651,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (container == null) {
 			throw error(BAD_REQUEST, "The schema container for node {" + getUuid() + "} could not be found.");
 		}
-		Branch branch = ac.getBranch(getProject());
+		HibBranch branch = ac.getBranch(getProject());
 		if (fields.has("languages")) {
 			restNode.setAvailableLanguages(getLanguageInfo(ac));
 		}
@@ -705,7 +704,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 *            Model to be updated
 	 * @return
 	 */
-	private void setParentNodeInfo(InternalActionContext ac, Branch branch, NodeResponse restNode) {
+	private void setParentNodeInfo(InternalActionContext ac, HibBranch branch, NodeResponse restNode) {
 		Node parentNode = getParentNode(branch.getUuid());
 		if (parentNode != null) {
 			restNode.setParentNode(parentNode.transformToReference(ac));
@@ -730,7 +729,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * @param languageTags
 	 * @return
 	 */
-	private void setFields(InternalActionContext ac, Branch branch, NodeResponse restNode, int level, FieldsSet fieldsSet, String... languageTags) {
+	private void setFields(InternalActionContext ac, HibBranch branch, NodeResponse restNode, int level, FieldsSet fieldsSet, String... languageTags) {
 		VersioningParameters versioiningParameters = ac.getVersioningParameters();
 		NodeParameters nodeParameters = ac.getNodeParameters();
 
@@ -858,7 +857,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * @param restNode
 	 *            Rest model which will be updated
 	 */
-	private void setChildrenInfo(InternalActionContext ac, Branch branch, NodeResponse restNode) {
+	private void setChildrenInfo(InternalActionContext ac, HibBranch branch, NodeResponse restNode) {
 		Map<String, NodeChildrenInfo> childrenInfo = new HashMap<>();
 		UserDaoWrapper userDao = Tx.get().data().userDao();
 
@@ -890,9 +889,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 *            Branch which will be used to identify the branch specific tags
 	 * @return
 	 */
-	private void setTagsToRest(InternalActionContext ac, NodeResponse restNode, Branch branch) {
+	private void setTagsToRest(InternalActionContext ac, NodeResponse restNode, HibBranch branch) {
 		List<TagReference> list = getTags(branch).stream()
-			.map(Tag::transformToReference)
+			.map(HibTag::transformToReference)
 			.collect(Collectors.toList());
 		restNode.setTags(list);
 	}
@@ -907,7 +906,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 *            Branch which will be used to identify the nodes relations and thus the correct path can be determined
 	 * @return
 	 */
-	private void setPathsToRest(InternalActionContext ac, NodeResponse restNode, Branch branch) {
+	private void setPathsToRest(InternalActionContext ac, NodeResponse restNode, HibBranch branch) {
 		VersioningParameters versioiningParameters = ac.getVersioningParameters();
 		if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
 			String branchUuid = ac.getBranch(getProject()).getUuid();
@@ -925,8 +924,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 	}
 
-	@Override
-	public Map<String, String> getLanguagePaths(InternalActionContext ac, LinkType linkType, Branch branch) {
+	private Map<String, String> getLanguagePaths(InternalActionContext ac, LinkType linkType, HibBranch branch) {
 		VersioningParameters versioiningParameters = ac.getVersioningParameters();
 		String branchUuid = ac.getBranch(getProject()).getUuid();
 		ContainerType type = forVersion(versioiningParameters.getVersion());
@@ -960,41 +958,41 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	private Stream<Node> getBreadcrumbNodeStream(InternalActionContext ac) {
+		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+
 		String branchUuid = ac.getBranch(getProject()).getUuid();
 		Node current = this;
 
 		Deque<Node> breadcrumb = new ArrayDeque<>();
 		while (current != null) {
 			breadcrumb.addFirst(current);
-			current = current.getParentNode(branchUuid);
+			current = nodeDao.getParentNode(current, branchUuid);
 		}
 
 		return breadcrumb.stream();
 	}
 
 	@Override
-	public Single<NavigationResponse> transformToNavigation(InternalActionContext ac) {
+	public NavigationResponse transformToNavigation(InternalActionContext ac) {
 		NavigationParametersImpl parameters = new NavigationParametersImpl(ac);
 		if (parameters.getMaxDepth() < 0) {
 			throw error(BAD_REQUEST, "navigation_error_invalid_max_depth");
 		}
-		return db().asyncTx(() -> {
-			// TODO assure that the schema version is correct
-			if (!getSchemaContainer().getLatestVersion().getSchema().getContainer()) {
-				throw error(BAD_REQUEST, "navigation_error_no_container");
-			}
-			String etagKey = buildNavigationEtagKey(ac, this, parameters.getMaxDepth(), 0, ac.getBranch(getProject()).getUuid(), forVersion(ac
-				.getVersioningParameters().getVersion()));
-			String etag = ETag.hash(etagKey);
-			ac.setEtag(etag, true);
-			if (ac.matches(etag, true)) {
-				return Single.error(new NotModifiedException());
-			} else {
-				NavigationResponse response = new NavigationResponse();
-				return buildNavigationResponse(ac, this, parameters.getMaxDepth(), 0, response, response, ac.getBranch(getProject()).getUuid(),
-					forVersion(ac.getVersioningParameters().getVersion()));
-			}
-		});
+		// TODO assure that the schema version is correct
+		if (!getSchemaContainer().getLatestVersion().getSchema().getContainer()) {
+			throw error(BAD_REQUEST, "navigation_error_no_container");
+		}
+		String etagKey = buildNavigationEtagKey(ac, this, parameters.getMaxDepth(), 0, ac.getBranch(getProject()).getUuid(), forVersion(ac
+			.getVersioningParameters().getVersion()));
+		String etag = ETag.hash(etagKey);
+		ac.setEtag(etag, true);
+		if (ac.matches(etag, true)) {
+			throw new NotModifiedException();
+		} else {
+			NavigationResponse response = new NavigationResponse();
+			return buildNavigationResponse(ac, this, parameters.getMaxDepth(), 0, response, response, ac.getBranch(getProject()).getUuid(),
+				forVersion(ac.getVersioningParameters().getVersion()));
+		}
 	}
 
 	@Override
@@ -1026,12 +1024,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * @param type
 	 * @return
 	 */
-	private String buildNavigationEtagKey(InternalActionContext ac, Node node, int maxDepth, int level, String branchUuid, ContainerType type) {
+	private String buildNavigationEtagKey(InternalActionContext ac, NodeImpl node, int maxDepth, int level, String branchUuid, ContainerType type) {
 		NavigationParametersImpl parameters = new NavigationParametersImpl(ac);
 		StringBuilder builder = new StringBuilder();
 		builder.append(node.getETag(ac));
 
-		List<? extends Node> nodes = node.getChildren(ac.getUser(), branchUuid, null, type).collect(Collectors.toList());
+		List<Node> nodes = node.getChildren(ac.getUser(), branchUuid, null, type).collect(Collectors.toList());
 
 		// Abort recursion when we reach the max level or when no more children
 		// can be found.
@@ -1040,9 +1038,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 		for (Node child : nodes) {
 			if (child.getSchemaContainer().getLatestVersion().getSchema().getContainer()) {
-				builder.append(buildNavigationEtagKey(ac, child, maxDepth, level + 1, branchUuid, type));
+				builder.append(buildNavigationEtagKey(ac, (NodeImpl)child, maxDepth, level + 1, branchUuid, type));
 			} else if (parameters.isIncludeAll()) {
-				builder.append(buildNavigationEtagKey(ac, child, maxDepth, level, branchUuid, type));
+				builder.append(buildNavigationEtagKey(ac, (NodeImpl)child, maxDepth, level, branchUuid, type));
 			}
 		}
 		return builder.toString();
@@ -1069,23 +1067,20 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 *            container type to be used for transformation
 	 * @return
 	 */
-	private Single<NavigationResponse> buildNavigationResponse(InternalActionContext ac, Node node, int maxDepth, int level,
+	private NavigationResponse buildNavigationResponse(InternalActionContext ac, NodeImpl node, int maxDepth, int level,
 		NavigationResponse navigation, NavigationElement currentElement, String branchUuid, ContainerType type) {
 		List<? extends Node> nodes = node.getChildren(ac.getUser(), branchUuid, null, type).collect(Collectors.toList());
-		List<Single<NavigationResponse>> obsResponses = new ArrayList<>();
+		List<NavigationResponse> responses = new ArrayList<>();
 
-		obsResponses.add(node.transformToRest(ac, 0).map(response -> {
-			// Set current element data
-			currentElement.setUuid(response.getUuid());
-			currentElement.setNode(response);
-			return navigation;
-		}));
+		NodeResponse response = node.transformToRestSync(ac, 0);
+		currentElement.setUuid(response.getUuid());
+		currentElement.setNode(response);
+		responses.add(navigation);
 
 		// Abort recursion when we reach the max level or when no more children
 		// can be found.
 		if (level == maxDepth || nodes.isEmpty()) {
-			List<Observable<NavigationResponse>> obsList = obsResponses.stream().map(ele -> ele.toObservable()).collect(Collectors.toList());
-			return Observable.merge(obsList).lastOrError();
+			return responses.get(responses.size() - 1);
 		}
 		NavigationParameters parameters = new NavigationParametersImpl(ac);
 		// Add children
@@ -1099,7 +1094,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					currentElement.setChildren(new ArrayList<>());
 				}
 				currentElement.getChildren().add(childElement);
-				obsResponses.add(buildNavigationResponse(ac, child, maxDepth, level + 1, navigation, childElement, branchUuid, type));
+				responses.add(buildNavigationResponse(ac, (NodeImpl)child, maxDepth, level + 1, navigation, childElement, branchUuid, type));
 			} else if (parameters.isIncludeAll()) {
 				// We found at least one child so lets create the array
 				if (currentElement.getChildren() == null) {
@@ -1107,16 +1102,15 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				}
 				NavigationElement childElement = new NavigationElement();
 				currentElement.getChildren().add(childElement);
-				obsResponses.add(buildNavigationResponse(ac, child, maxDepth, level, navigation, childElement, branchUuid, type));
+				responses.add(buildNavigationResponse(ac, (NodeImpl)child, maxDepth, level, navigation, childElement, branchUuid, type));
 			}
 		}
-		List<Observable<NavigationResponse>> obsList = obsResponses.stream().map(ele -> ele.toObservable()).collect(Collectors.toList());
-		return Observable.merge(obsList).lastOrError();
+		return responses.get(responses.size() - 1);
 	}
 
 	@Override
 	public NodeReference transformToReference(InternalActionContext ac) {
-		Branch branch = ac.getBranch(getProject());
+		HibBranch branch = ac.getBranch(getProject());
 
 		NodeReference nodeReference = new NodeReference();
 		nodeReference.setUuid(getUuid());
@@ -1141,7 +1135,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return ref;
 	}
 
-	@Override
 	public NodeFieldListItem toListItem(InternalActionContext ac, String[] languageTags) {
 		// Create the rest field and populate the fields
 		NodeFieldListItemImpl listItem = new NodeFieldListItemImpl(getUuid());
@@ -1164,7 +1157,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	private Map<String, PublishStatusModel> getLanguageInfo(InternalActionContext ac) {
 		Map<String, PublishStatusModel> languages = new HashMap<>();
-		Branch branch = ac.getBranch(getProject());
+		HibBranch branch = ac.getBranch(getProject());
 
 		getGraphFieldContainers(branch, PUBLISHED).stream().forEach(c -> {
 
@@ -1189,24 +1182,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void publish(InternalActionContext ac, Branch branch, BulkActionContext bac) {
-		PublishParameters parameters = ac.getPublishParameters();
-
-		bac.batch().add(onUpdated());
-
-		// Handle recursion
-		if (parameters.isRecursive()) {
-			for (Node child : getChildren(branch.getUuid())) {
-				child.publish(ac, branch, bac);
-			}
-		}
-		assertPublishConsistency(ac, branch);
-	}
-
-	@Override
 	public void publish(InternalActionContext ac, BulkActionContext bac) {
 
-		Branch branch = ac.getBranch(getProject());
+		HibBranch branch = ac.getBranch(getProject());
 		String branchUuid = branch.getUuid();
 
 		List<? extends NodeGraphFieldContainer> unpublishedContainers = getGraphFieldContainers(branch, ContainerType.DRAFT).stream().filter(c -> !c
@@ -1232,13 +1210,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		bac.process();
 	}
 
-	@Override
-	public void takeOffline(InternalActionContext ac, BulkActionContext bac, Branch branch, PublishParameters parameters) {
-
-		// Handle recursion first to start at the leafs
+	private void takeOffline(InternalActionContext ac, BulkActionContext bac, HibBranch branch, PublishParameters parameters) {
+		// Handle recursion first to start at the leaves
 		if (parameters.isRecursive()) {
 			for (Node node : getChildren(branch.getUuid())) {
-				node.takeOffline(ac, bac, branch, parameters);
+				NodeImpl impl = (NodeImpl) node;
+				impl.takeOffline(ac, bac, branch, parameters);
 			}
 		}
 
@@ -1263,14 +1240,14 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public void takeOffline(InternalActionContext ac, BulkActionContext bac) {
-		Branch branch = ac.getBranch(getProject());
+		HibBranch branch = ac.getBranch(getProject());
 		PublishParameters parameters = ac.getPublishParameters();
 		takeOffline(ac, bac, branch, parameters);
 	}
 
 	@Override
 	public PublishStatusModel transformToPublishStatus(InternalActionContext ac, String languageTag) {
-		Branch branch = ac.getBranch(getProject());
+		HibBranch branch = ac.getBranch(getProject());
 
 		NodeGraphFieldContainer container = getGraphFieldContainer(languageTag, branch.getUuid(), PUBLISHED);
 		if (container != null) {
@@ -1295,7 +1272,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public void publish(InternalActionContext ac, BulkActionContext bac, String languageTag) {
-		Branch branch = ac.getBranch(getProject());
+		HibBranch branch = ac.getBranch(getProject());
 		String branchUuid = branch.getUuid();
 
 		// get the draft version of the given language
@@ -1318,7 +1295,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void takeOffline(InternalActionContext ac, BulkActionContext bac, Branch branch, String languageTag) {
+	public void takeOffline(InternalActionContext ac, BulkActionContext bac, HibBranch branch, String languageTag) {
 		String branchUuid = branch.getUuid();
 
 		// Locate the published container
@@ -1370,7 +1347,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public NodeGraphFieldContainer publish(InternalActionContext ac, String languageTag, Branch branch, HibUser user) {
+	public NodeGraphFieldContainer publish(InternalActionContext ac, String languageTag, HibBranch branch, HibUser user) {
 		String branchUuid = branch.getUuid();
 
 		// create published version
@@ -1419,15 +1396,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public List<String> getAvailableLanguageNames(Branch branch, ContainerType type) {
-		List<String> languageTags = new ArrayList<>();
-		for (GraphFieldContainer container : getGraphFieldContainers(branch, type)) {
-			languageTags.add(container.getLanguageTag());
-		}
-		return languageTags;
-	}
-
-	@Override
 	public void delete(BulkActionContext bac, boolean ignoreChecks, boolean recursive) {
 		if (!ignoreChecks) {
 			// Prevent deletion of basenode
@@ -1463,7 +1431,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Stream<? extends NodeGraphField> getInboundReferences() {
+	public Stream<NodeGraphField> getInboundReferences() {
 		return toStream(inE(HAS_FIELD, HAS_ITEM)
 			.has(NodeGraphFieldImpl.class)
 			.frameExplicit(NodeGraphFieldImpl.class));
@@ -1484,7 +1452,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					ContainerType type = edge.getType();
 					// Only handle published or draft contents
 					if (type.equals(DRAFT) || type.equals(PUBLISHED)) {
-						Node node = nodeContainer.getParentNode();
+						Node node = nodeContainer.getNode();
 						String uuid = node.getUuid();
 						String languageTag = nodeContainer.getLanguageTag();
 						String branchUuid = edge.getBranchUuid();
@@ -1504,7 +1472,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void deleteFromBranch(InternalActionContext ac, Branch branch, BulkActionContext bac, boolean ignoreChecks) {
+	public void deleteFromBranch(InternalActionContext ac, HibBranch branch, BulkActionContext bac, boolean ignoreChecks) {
 
 		DeleteParameters parameters = ac.getDeleteParameters();
 
@@ -1559,9 +1527,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 	}
 
-	@Override
-	public Stream<? extends Node> getChildren(MeshAuthUser requestUser, String branchUuid, List<String> languageTags, ContainerType type) {
-		GraphPermission perm = type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM;
+	private Stream<Node> getChildren(MeshAuthUser requestUser, String branchUuid, List<String> languageTags, ContainerType type) {
+		InternalPermission perm = type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM;
 		UserDaoWrapper userRoot = Tx.get().data().userDao();
 
 		Predicate<Node> languageFilter = languageTags == null || languageTags.isEmpty()
@@ -1573,20 +1540,20 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public TransformablePage<? extends Node> getChildren(InternalActionContext ac, List<String> languageTags, String branchUuid, ContainerType type,
+	public TransformablePage<Node> getChildren(InternalActionContext ac, List<String> languageTags, String branchUuid, ContainerType type,
 		PagingParameters pagingInfo) {
 		return new DynamicTransformableStreamPageImpl<>(getChildren(ac.getUser(), branchUuid, languageTags, type), pagingInfo);
 	}
 
 	@Override
-	public TransformablePage<? extends Tag> getTags(HibUser user, PagingParameters params, Branch branch) {
+	public TransformablePage<? extends HibTag> getTags(HibUser user, PagingParameters params, HibBranch branch) {
 		VertexTraversal<?, ?, ?> traversal = TagEdgeImpl.getTagTraversal(this, branch);
-		return new DynamicTransformablePageImpl<Tag>(user, traversal, params, READ_PERM, TagImpl.class);
+		return new DynamicTransformablePageImpl<>(user, traversal, params, READ_PERM, TagImpl.class);
 	}
 
 	@Override
-	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
-		Set<GraphPermission> permissionsToRevoke) {
+	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<InternalPermission> permissionsToGrant,
+		Set<InternalPermission> permissionsToRevoke) {
 		if (recursive) {
 			// We don't need to filter by branch. Branch nodes can't have dedicated perms
 			for (Node child : getChildren()) {
@@ -1667,7 +1634,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (language == null) {
 			throw error(BAD_REQUEST, "error_language_not_found", requestModel.getLanguage());
 		}
-		Branch branch = ac.getBranch(getProject());
+		HibBranch branch = ac.getBranch(getProject());
 		NodeGraphFieldContainer latestDraftVersion = getGraphFieldContainer(languageTag, branch, DRAFT);
 
 		// Check whether this is the first time that an update for the given language and branch occurs. In this case a new container must be created.
@@ -1779,9 +1746,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public TransformablePage<? extends Tag> updateTags(InternalActionContext ac, EventQueueBatch batch) {
-		List<Tag> tags = getTagsToSet(ac, batch);
-		Branch branch = ac.getBranch();
+	public TransformablePage<? extends HibTag> updateTags(InternalActionContext ac, EventQueueBatch batch) {
+		List<HibTag> tags = getTagsToSet(ac, batch);
+		HibBranch branch = ac.getBranch();
 		applyTags(branch, tags, batch);
 		HibUser user = ac.getUser();
 		return getTags(user, ac.getPagingParameters(), branch);
@@ -1789,15 +1756,15 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public void updateTags(InternalActionContext ac, EventQueueBatch batch, List<TagReference> list) {
-		List<Tag> tags = getTagsToSet(list, ac, batch);
-		Branch branch = ac.getBranch();
+		List<HibTag> tags = getTagsToSet(list, ac, batch);
+		HibBranch branch = ac.getBranch();
 		applyTags(branch, tags, batch);
 	}
 
-	private void applyTags(Branch branch, List<? extends Tag> tags, EventQueueBatch batch) {
-		List<? extends Tag> currentTags = getTags(branch).list();
+	private void applyTags(HibBranch branch, List<? extends HibTag> tags, EventQueueBatch batch) {
+		List<HibTag> currentTags = getTags(branch).list();
 
-		List<Tag> toBeAdded = tags.stream()
+		List<HibTag> toBeAdded = tags.stream()
 			.filter(StreamUtil.not(new HashSet<>(currentTags)::contains))
 			.collect(Collectors.toList());
 		toBeAdded.forEach(tag -> {
@@ -1805,7 +1772,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			batch.add(onTagged(tag, branch, ASSIGNED));
 		});
 
-		List<Tag> toBeRemoved = currentTags.stream()
+		List<HibTag> toBeRemoved = currentTags.stream()
 			.filter(StreamUtil.not(new HashSet<>(tags)::contains))
 			.collect(Collectors.toList());
 		toBeRemoved.forEach(tag -> {
@@ -1816,6 +1783,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public void moveTo(InternalActionContext ac, Node targetNode, EventQueueBatch batch) {
+		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+
 		// TODO should we add a guard that terminates this loop when it runs to
 		// long?
 
@@ -1823,14 +1792,14 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// node.
 		// We must detect and prevent such actions because those would
 		// invalidate the tree structure
-		Branch branch = ac.getBranch(getProject());
+		HibBranch branch = ac.getBranch(getProject());
 		String branchUuid = branch.getUuid();
-		Node parent = targetNode.getParentNode(branchUuid);
+		Node parent = nodeDao.getParentNode(targetNode, branchUuid);
 		while (parent != null) {
 			if (parent.getUuid().equals(getUuid())) {
 				throw error(BAD_REQUEST, "node_move_error_not_allowed_to_move_node_into_one_of_its_children");
 			}
-			parent = parent.getParentNode(branchUuid);
+			parent = nodeDao.getParentNode(parent, branchUuid);
 		}
 
 		if (!targetNode.getSchemaContainer().getLatestVersion().getSchema().getContainer()) {
@@ -1857,7 +1826,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void deleteLanguageContainer(InternalActionContext ac, Branch branch, String languageTag, BulkActionContext bac,
+	public void deleteLanguageContainer(InternalActionContext ac, HibBranch branch, String languageTag, BulkActionContext bac,
 		boolean failForLastContainer) {
 
 		// 1. Check whether the container has also a published variant. We need to take it offline in those cases
@@ -1895,7 +1864,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				// since the GFC "toDelete" was only used by this branch, it can not have more than one "next" GFC
 				// (multiple "next" would have to belong to different branches, and for every branch, there would have to be
 				// an INITIAL, which would have to be either this GFC or a previous)
-				dangling = toDelete.getNextVersions().iterator().next();
+				dangling = mesh().boot().contentDao().getNextVersions(toDelete).iterator().next();
 				toDelete.delete(bac, false);
 			}
 		}
@@ -1919,8 +1888,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	}
 
-	@Override
-	public PathSegment getSegment(String branchUuid, ContainerType type, String segment) {
+	private PathSegment getSegment(String branchUuid, ContainerType type, String segment) {
 
 		// Check the different language versions
 		for (NodeGraphFieldContainer container : getGraphFieldContainers(branchUuid, type)) {
@@ -1971,7 +1939,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			.iterator();
 		if (edges.hasNext()) {
 			GraphFieldContainerEdge edge = edges.next();
-			Node childNode = edge.getNode();
+			NodeImpl childNode = (NodeImpl)edge.getNode();
 			PathSegment pathSegment = childNode.getSegment(branchUuid, type, segment);
 			if (pathSegment != null) {
 				path.addSegment(pathSegment);
@@ -1997,10 +1965,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public String getSubETag(InternalActionContext ac) {
 		UserDaoWrapper userDao = Tx.get().data().userDao();
+		TagDaoWrapper tagDao = Tx.get().data().tagDao();
+		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+
 		StringBuilder keyBuilder = new StringBuilder();
 
 		// Parameters
-		Branch branch = ac.getBranch(getProject());
+		HibBranch branch = ac.getBranch(getProject());
 		VersioningParameters versioiningParameters = ac.getVersioningParameters();
 		ContainerType type = forVersion(versioiningParameters.getVersion());
 
@@ -2056,10 +2027,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		keyBuilder.append(expandedFields);
 
 		// branch specific tags
-		for (Tag tag : getTags(branch)) {
+		for (HibTag tag : getTags(branch)) {
 			// Tags can't be moved across branches thus we don't need to add the
 			// tag family etag
-			keyBuilder.append(tag.getETag(ac));
+			keyBuilder.append(tagDao.getETag(tag, ac));
 		}
 
 		// branch specific children
@@ -2092,7 +2063,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 						getProject().getName(), container.getLanguageTag());
 					keyBuilder.append(url);
 				}
-				current = current.getParentNode(branch.getUuid());
+				current = nodeDao.getParentNode(current, branch.getUuid());
 
 			}
 		}
@@ -2189,7 +2160,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public NodeTaggedEventModel onTagged(Tag tag, Branch branch, Assignment assignment) {
+	public NodeTaggedEventModel onTagged(HibTag tag, HibBranch branch, Assignment assignment) {
 		NodeTaggedEventModel model = new NodeTaggedEventModel();
 		model.setTag(tag.transformToReference());
 

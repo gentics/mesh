@@ -2,12 +2,12 @@ package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.FieldUtil.createStringField;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.DELETE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.PUBLISH_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
@@ -27,6 +27,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
@@ -47,14 +48,16 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.Permission;
@@ -402,11 +405,12 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			() -> client().createNode(PROJECT_NAME, request, new VersioningParametersImpl().setBranch(INITIAL_BRANCH_NAME)));
 
 		try (Tx tx = tx()) {
-			Node newNode = project().getNodeRoot().findByUuid(nodeResponse.getUuid());
+			ContentDaoWrapper contentDao = tx.data().contentDao();
+			Node newNode = boot().nodeDao().findByUuid(project(), nodeResponse.getUuid());
 			for (ContainerType type : Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT)) {
-				assertThat(newNode.getGraphFieldContainer("en", initialBranchUuid, type)).as(type + " Field container for initial branch")
+				assertThat(contentDao.getGraphFieldContainer(newNode, "en", initialBranchUuid, type)).as(type + " Field container for initial branch")
 					.isNotNull().hasVersion("0.1");
-				assertThat(newNode.getGraphFieldContainer("en", newBranchUuid, type)).as(type + " Field Container for new branch").isNull();
+				assertThat(contentDao.getGraphFieldContainer(newNode, "en", newBranchUuid, type)).as(type + " Field Container for new branch").isNull();
 			}
 		}
 	}
@@ -415,7 +419,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testCreateForBranchByUuid() {
 		String nodeUuid = tx(() -> folder("news").getUuid());
 		String initialBranchUuid = tx(() -> initialBranch().getUuid());
-		Branch newBranch = tx(() -> createBranch("newbranch"));
+		HibBranch newBranch = tx(() -> createBranch("newbranch"));
 
 		NodeCreateRequest request = new NodeCreateRequest();
 		request.setSchemaName("content");
@@ -430,11 +434,12 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			initialBranchUuid)));
 
 		try (Tx tx = tx()) {
-			Node newNode = project().getNodeRoot().findByUuid(nodeResponse.getUuid());
+			ContentDaoWrapper contentDao = tx.data().contentDao();
+			Node newNode = boot().nodeDao().findByUuid(project(), nodeResponse.getUuid());
 			for (ContainerType type : Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT)) {
-				assertThat(newNode.getGraphFieldContainer("en", initialBranchUuid, type)).as(type + " Field container for initial branch")
+				assertThat(contentDao.getGraphFieldContainer(newNode, "en", initialBranchUuid, type)).as(type + " Field container for initial branch")
 					.isNotNull().hasVersion("0.1");
-				assertThat(newNode.getGraphFieldContainer("en", newBranch.getUuid(), type)).as(type + " Field Container for new branch").isNull();
+				assertThat(contentDao.getGraphFieldContainer(newNode, "en", newBranch.getUuid(), type)).as(type + " Field Container for new branch").isNull();
 			}
 		}
 
@@ -442,9 +447,10 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testCreateForLatestBranch() {
-		Branch newBranch = createBranch("newbranch", true);
+		HibBranch newBranch = createBranch("newbranch", true);
 
 		try (Tx tx = tx()) {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 			Node parentNode = folder("news");
 			String uuid = parentNode.getUuid();
 			NodeCreateRequest request = new NodeCreateRequest();
@@ -458,12 +464,12 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			NodeResponse nodeResponse = call(() -> client().createNode(PROJECT_NAME, request));
 
-			Node newNode = project().getNodeRoot().findByUuid(nodeResponse.getUuid());
+			Node newNode = boot().nodeDao().findByUuid(project(), nodeResponse.getUuid());
 
 			for (ContainerType type : Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT)) {
-				assertThat(newNode.getGraphFieldContainer("en", initialBranchUuid(), type)).as(type + " Field container for initial branch")
+				assertThat(contentDao.getGraphFieldContainer(newNode, "en", initialBranchUuid(), type)).as(type + " Field container for initial branch")
 					.isNull();
-				assertThat(newNode.getGraphFieldContainer("en", newBranch.getUuid(), type)).as(type + " Field Container for new branch").isNotNull()
+				assertThat(contentDao.getGraphFieldContainer(newNode, "en", newBranch.getUuid(), type)).as(type + " Field Container for new branch").isNotNull()
 					.hasVersion("0.1");
 			}
 		}
@@ -522,7 +528,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertThat(trackingSearchProvider()).recordedStoreEvents(1);
 			assertThat(restNode).matches(request);
 
-			Node node = project().getNodeRoot().findByUuid(restNode.getUuid());
+			Node node = boot().nodeDao().findByUuid(project(), restNode.getUuid());
 			assertNotNull(node);
 			assertThat(node).matches(request);
 
@@ -533,7 +539,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			// Delete the node
 			call(() -> client().deleteNode(PROJECT_NAME, restNode2.getUuid()));
 
-			Node deletedNode = project().getNodeRoot().findByUuid(restNode2.getUuid());
+			Node deletedNode = boot().nodeDao().findByUuid(project(), restNode2.getUuid());
 			assertNull("The node should have been deleted.", deletedNode);
 		}
 	}
@@ -629,12 +635,13 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testReadMultipleAndAssertOrder() {
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			Node parentNode = folder("2015");
 			int nNodes = 20;
 			for (int i = 0; i < nNodes; i++) {
-				Node node = parentNode.create(user(), schemaContainer("content").getLatestVersion(), project());
-				node.createGraphFieldContainer(english(), initialBranch(), user());
+				Node node = nodeDao.create(parentNode, user(), schemaContainer("content").getLatestVersion(), project());
+				boot().contentDao().createGraphFieldContainer(node, english(), initialBranch(), user());
 				assertNotNull(node);
 				roleDao.grantPermissions(role(), node, READ_PERM);
 			}
@@ -682,9 +689,10 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Override
 	public void testReadMultiple() throws Exception {
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			Node parentNode = folder("2015");
 			// Don't grant permissions to the no perm node. We want to make sure that this one will not be listed.
-			Node noPermNode = parentNode.create(user(), schemaContainer("content").getLatestVersion(), project());
+			Node noPermNode = nodeDao.create(parentNode, user(), schemaContainer("content").getLatestVersion(), project());
 			String noPermNodeUUID = noPermNode.getUuid();
 
 			// Create 20 drafts
@@ -770,9 +778,11 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testReadNodesForBranch() {
-		Branch newBranch = tx(() -> createBranch("newbranch"));
+		HibBranch newBranch = tx(() -> createBranch("newbranch"));
 
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+
 			NodeListResponse restResponse = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 1000L),
 				new VersioningParametersImpl().draft()));
 			assertThat(restResponse.getData()).as("Node List for latest branch").isEmpty();
@@ -784,7 +794,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			// update a single node in the new branch
 			Node node = folder("news");
 			NodeCreateRequest create = new NodeCreateRequest();
-			create.setParentNodeUuid(node.getParentNode(project().getInitialBranch().getUuid()).getUuid());
+			create.setParentNodeUuid(nodeDao.getParentNode(node, project().getInitialBranch().getUuid()).getUuid());
 			create.setLanguage("en");
 			create.getFields().put("name", FieldUtil.createStringField("News new branch"));
 			call(() -> client().createNode(node.getUuid(), PROJECT_NAME, create));
@@ -1078,11 +1088,11 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Override
 	@Ignore("Multithreaded update is currently only possible for multiple nodes not a single node")
 	public void testUpdateMultithreaded() throws InterruptedException {
-
+		ContentDaoWrapper contentDao = boot().contentDao();
 		final String newName = "english renamed name";
 		String uuid = tx(() -> folder("2015").getUuid());
-		assertEquals("2015", tx(() -> folder("2015").getLatestDraftFieldContainer(english()).getString("slug").getString()));
-		VersionNumber version = tx(() -> folder("2015").getLatestDraftFieldContainer(english()).getVersion());
+		assertEquals("2015", tx(() -> contentDao.getLatestDraftFieldContainer(folder("2015"), english()).getString("slug").getString()));
+		VersionNumber version = tx(() -> contentDao.getLatestDraftFieldContainer(folder("2015"), english()).getVersion());
 
 		NodeUpdateRequest request = new NodeUpdateRequest();
 		request.setLanguage("en");
@@ -1150,10 +1160,12 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String folderUuid = tx(() -> folder("2015").getUuid());
 		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, folderUuid, new VersioningParametersImpl().draft()));
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+
 			String branchUuid = project().getLatestBranch().getUuid();
 			assertThat(folder("2015")).matches(response);
 			assertNotNull(response.getParentNode());
-			assertEquals(folder("2015").getParentNode(branchUuid).getUuid(), response.getParentNode().getUuid());
+			assertEquals(nodeDao.getParentNode(folder("2015"), branchUuid).getUuid(), response.getParentNode().getUuid());
 			assertEquals("News", response.getParentNode().getDisplayName());
 			assertEquals("en", response.getLanguage());
 		}
@@ -1164,8 +1176,9 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String folderUuid = tx(() -> folder("2015").getUuid());
 		// Remove the editor and creator references to simulate that the user has been deleted.
 		try (Tx tx = tx()) {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 			folder("2015").setCreated(null);
-			folder("2015").getLatestDraftFieldContainer(english()).setEditor(null);
+			contentDao.getLatestDraftFieldContainer(folder("2015"), english()).setEditor(null);
 			tx.success();
 		}
 
@@ -1173,10 +1186,12 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, folderUuid, new VersioningParametersImpl().draft()));
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+
 			String branchUuid = project().getLatestBranch().getUuid();
 			assertThat(folder("2015")).matches(response);
 			assertNotNull(response.getParentNode());
-			assertEquals(folder("2015").getParentNode(branchUuid).getUuid(), response.getParentNode().getUuid());
+			assertEquals(nodeDao.getParentNode(folder("2015"), branchUuid).getUuid(), response.getParentNode().getUuid());
 			assertEquals("News", response.getParentNode().getDisplayName());
 			assertEquals("en", response.getLanguage());
 		}
@@ -1299,7 +1314,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testReadNodeForBranch() {
 		Node node = folder("2015");
-		Branch newBranch = createBranch("newbranch", true);
+		HibBranch newBranch = createBranch("newbranch", true);
 
 		try (Tx tx = tx()) {
 			String uuid = node.getUuid();
@@ -1323,7 +1338,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		Node node = folder("2015");
 		String uuid = tx(() -> node.getUuid());
-		Branch newBranch = createBranch("newbranch", true);
+		HibBranch newBranch = createBranch("newbranch", true);
 
 		try (Tx tx = tx()) {
 			NodeUpdateRequest updateRequest = new NodeUpdateRequest();
@@ -1541,14 +1556,14 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testReadNodeByUUIDNoLanguage() throws Exception {
 		Node node;
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			// Create node with nl language
 			Node parentNode = folder("products");
 			Language languageNl = meshRoot().getLanguageRoot().findByLanguageTag("nl");
-			SchemaVersion version = schemaContainer("content").getLatestVersion();
-			node = parentNode.create(user(), version, project());
-			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(languageNl.getLanguageTag(),
-				node.getProject().getLatestBranch(), user());
+			HibSchemaVersion version = schemaContainer("content").getLatestVersion();
+			node = nodeDao.create(parentNode, user(), version, project());
+			NodeGraphFieldContainer englishContainer = boot().contentDao().createGraphFieldContainer(node, languageNl.getLanguageTag(), node.getProject().getLatestBranch(), user());
 			englishContainer.createString("teaser").setString("name");
 			englishContainer.createString("title").setString("title");
 			englishContainer.createString("displayName").setString("displayName");
@@ -1653,9 +1668,10 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String uuid = tx(() -> content("concorde").getUuid());
 		final Node node = tx(() -> content("concorde"));
 		NodeGraphFieldContainer origContainer = tx(tx -> {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 			GroupDaoWrapper groupRoot = tx.data().groupDao();
 			Node prod = content("concorde");
-			NodeGraphFieldContainer container = prod.getLatestDraftFieldContainer(english());
+			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(prod, english());
 			assertEquals("Concorde_english_name", container.getString("teaser").getString());
 			assertEquals("Concorde english title", container.getString("title").getString());
 			UserInfo userInfo = data().createUserInfo("dummy", "Dummy Firstname", "Dummy Lastname");
@@ -1694,11 +1710,14 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		String projectUuid = tx(() -> project().getUuid());
 		String branchUuid = tx(() -> project().getLatestBranch().getUuid());
-		String schemaContainerVersionUuid = tx(() -> node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid());
+		String schemaContainerVersionUuid = tx(tx -> {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
+			return contentDao.getLatestDraftFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
+		});
 
 		waitForSearchIdleEvent();
-		assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid,
-			ContainerType.DRAFT), NodeGraphFieldContainer.composeDocumentId(uuid, "en"));
+		assertThat(trackingSearchProvider()).hasStore(ContentDaoWrapper.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid,
+			ContainerType.DRAFT), ContentDaoWrapper.composeDocumentId(uuid, "en"));
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 
 		// 4. Assert that new version 1.1 was created. (1.0 was the published 0.1 draft)
@@ -1707,10 +1726,11 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// 5. Assert graph changes
 		try (Tx tx = tx()) {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 
 			// First check whether the objects we check are the correct ones
 			assertEquals("The original container should be 1.0 (the latest published version)", "1.0", origContainer.getVersion().toString());
-			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
+			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			assertEquals("The loaded container did not match the latest version.", "1.1", container.getVersion().toString());
 
 			// Assert applied changes
@@ -1725,9 +1745,9 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertThat(origContainer.getPreviousVersion()).isFirst();
 
 			// Verify that exactly the selected language was updated
-			String indexName = NodeGraphFieldContainer.composeIndexName(project().getUuid(), project().getLatestBranch().getUuid(), origContainer
+			String indexName = ContentDaoWrapper.composeIndexName(project().getUuid(), project().getLatestBranch().getUuid(), origContainer
 				.getSchemaContainerVersion().getUuid(), ContainerType.DRAFT);
-			String documentId = NodeGraphFieldContainer.composeDocumentId(uuid, "en");
+			String documentId = ContentDaoWrapper.composeDocumentId(uuid, "en");
 			assertThat(trackingSearchProvider()).hasStore(indexName, documentId);
 			assertThat(trackingSearchProvider()).recordedStoreEvents(1);
 		}
@@ -1747,7 +1767,10 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		String projectUuid = tx(() -> project().getUuid());
 		String branchUuid = tx(() -> project().getLatestBranch().getUuid());
-		String schemaContainerVersionUuid = tx(() -> node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid());
+		String schemaContainerVersionUuid = tx(tx -> {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
+			return contentDao.getLatestDraftFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
+		});
 		String schemaUuid = tx(() -> schemaContainer("folder").getUuid());
 
 		searchProvider().clear().blockingAwait();
@@ -1772,8 +1795,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertEquals("de", restNode.getLanguage());
 		waitForSearchIdleEvent();
 		// Only the new language container is stored in the index. The existing one does not need to be updated since it does not reference other languages
-		assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid,
-			ContainerType.DRAFT), NodeGraphFieldContainer.composeDocumentId(uuid, "de"));
+		assertThat(trackingSearchProvider()).hasStore(ContentDaoWrapper.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid,
+			ContainerType.DRAFT), ContentDaoWrapper.composeDocumentId(uuid, "de"));
 
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 	}
@@ -1880,6 +1903,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testUpdateNodeWithExtraField2() throws GenericRestException, Exception {
 		try (Tx tx = tx()) {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 
@@ -1898,7 +1922,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			parameters.setLanguages("de", "en");
 			call(() -> client().updateNode(PROJECT_NAME, uuid, request, parameters), BAD_REQUEST, "node_unhandled_fields", "folder", "[someField]");
 
-			NodeGraphFieldContainer englishContainer = folder("2015").getLatestDraftFieldContainer(english());
+			NodeGraphFieldContainer englishContainer = contentDao.getLatestDraftFieldContainer(folder("2015"), english());
 			assertNotEquals("The name should not have been changed.", newName, englishContainer.getString("name").getString());
 		}
 	}
@@ -1909,7 +1933,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		Node node = content("concorde");
 		String uuid = tx(() -> node.getUuid());
 		String schemaUuid = tx(() -> schemaContainer("content").getUuid());
-		assertTrue("The node is expected to be published", tx(() -> node.getGraphFieldContainer("en").isPublished()));
+		assertTrue("The node is expected to be published", tx(() -> boot().contentDao().getGraphFieldContainer(node, "en").isPublished()));
 
 		expect(NODE_DELETED).match(1, NodeMeshEventModel.class, event -> {
 			assertThat(event)
@@ -1986,12 +2010,12 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testCreateInBranchWithoutParent() throws Exception {
-		Branch newBranch = createBranch("newbranch", true);
+		HibBranch newBranch = createBranch("newbranch", true);
 
 		try (Tx tx = tx()) {
 			// create a new branch
-			Project project = project();
-			Branch initialBranch = project.getInitialBranch();
+			HibProject project = project();
+			HibBranch initialBranch = project.getInitialBranch();
 
 			// create node in one branch
 			Node node = content("concorde");
@@ -2028,9 +2052,9 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testCreateInBranchSameUUIDWithoutParent() throws Exception {
 		try (Tx tx = tx()) {
 			// create a new branch
-			Project project = project();
-			Branch initialBranch = project.getInitialBranch();
-			Branch newBranch = createBranch("newbranch");
+			HibProject project = project();
+			HibBranch initialBranch = project.getInitialBranch();
+			HibBranch newBranch = createBranch("newbranch");
 			BranchMigrationContextImpl context = new BranchMigrationContextImpl();
 			context.setNewBranch(newBranch);
 			context.setOldBranch(initialBranch);
@@ -2082,7 +2106,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		call(() -> client().deleteNode(PROJECT_NAME, uuid), FORBIDDEN, "error_missing_perm", uuid, DELETE_PERM.getRestPerm().getName());
 		try (Tx tx = tx()) {
-			assertNotNull(project().getNodeRoot().findByUuid(uuid));
+			assertNotNull(boot().nodeDao().findByUuid(project(), uuid));
 		}
 	}
 

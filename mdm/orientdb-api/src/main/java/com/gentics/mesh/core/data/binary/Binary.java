@@ -146,6 +146,6 @@ public interface Binary extends MeshVertex {
 	 * 
 	 * @return
 	 */
-	TraversalResult<? extends BinaryGraphField> findFields();
+	TraversalResult<BinaryGraphField> findFields();
 
 }

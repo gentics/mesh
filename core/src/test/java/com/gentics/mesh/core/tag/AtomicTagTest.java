@@ -7,13 +7,14 @@ import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
+import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -32,18 +33,18 @@ public class AtomicTagTest extends AbstractMeshTest {
 			LanguageRoot languageRoot = boot().languageRoot();
 			assertNotNull(languageRoot);
 
-			Project project = project();
+			HibProject project = project();
 			TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();
 			TagFamily tagFamily = tagFamilyRoot.create("basic", user);
 
-			Tag tag = tagDao.create(tagFamily, "dummyName", project, user);
+			HibTag tag = tagDao.create(tagFamily, "dummyName", project, user);
 			String uuid = tag.getUuid();
 			assertNotNull(tag);
 			assertEquals("dummyName", tag.getName());
 			tag.setName("renamed tag");
 			assertEquals("renamed tag", tag.getName());
 
-			Tag reloadedTag = boot().tagRoot().findByUuid(uuid);
+			HibTag reloadedTag = boot().tagRoot().findByUuid(uuid);
 			assertNotNull(reloadedTag);
 			assertEquals("renamed tag", reloadedTag.getName());
 		}

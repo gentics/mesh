@@ -15,14 +15,15 @@ import org.mockito.Mockito;
 
 import com.gentics.mesh.context.impl.BulkActionContextImpl;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.schema.Microschema;
-import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
@@ -131,7 +132,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 		// Assert deletion
 		tx(() -> {
-			boot().groupDao().findByName("group_3").getElement().remove();
+			boot().groupDao().findByName("group_3").removeElement();
 		});
 		syncIndex();
 		assertMetrics("group", 0, 0, 1);
@@ -157,7 +158,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 		// Assert deletion
 		tx(() -> {
-			boot().roleDao().findByName("role_3").getElement().remove();
+			boot().roleDao().findByName("role_3").removeElement();
 		});
 		syncIndex();
 		assertMetrics("role", 0, 0, 1);
@@ -179,16 +180,16 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		assertMetrics("tag", 400, 3, 0);
 
 		// Assert update
-		tx(() -> {
+		tx(tx -> {
 			tag("red").setName("updated");
 		});
 		syncIndex();
 		assertMetrics("tag", 0, 1, 0);
 
 		// Assert deletion
-		tx(() -> {
-			TagFamily tagFamily = tagFamily("colors");
-			boot().tagDao().findByName(tagFamily, "tag_3").getElement().remove();
+		tx(tx -> {
+			HibTagFamily tagFamily = tagFamily("colors");
+			boot().tagDao().findByName(tagFamily, "tag_3").deleteElement();
 		});
 		syncIndex();
 		assertMetrics("tag", 0, 0, 1);
@@ -216,8 +217,8 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		assertMetrics("tagfamily", 0, 1, 0);
 
 		// Assert deletion
-		tx(() -> {
-			boot().tagFamilyDao().findByName(project(), "tagfamily_3").getElement().remove();
+		tx(tx -> {
+			boot().tagFamilyDao().findByName(project(), "tagfamily_3").deleteElement();
 		});
 		syncIndex();
 		assertMetrics("tagfamily", 0, 0, 1);
@@ -245,10 +246,10 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 		// Now manually delete the project
 		tx(tx -> {
-			Project project = tx.data().projectDao().findByName("project_2");
+			HibProject project = tx.data().projectDao().findByName("project_2");
 			BulkActionContextImpl context = Mockito.mock(BulkActionContextImpl.class);
 			Mockito.when(context.batch()).thenReturn(Mockito.mock(EventQueueBatch.class));
-			project.delete(context);
+			tx.data().projectDao().delete(project, context);
 		});
 		boot().globalCacheClear();
 		// Assert that the deletion was detected
@@ -261,7 +262,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		// Assert insert
 		tx(() -> {
 			Node node = folder("2015");
-			node.createGraphFieldContainer(german(), initialBranch(), user());
+			boot().contentDao().createGraphFieldContainer(node, german(), initialBranch(), user());
 		});
 		syncIndex();
 		assertMetrics("node", 1, 2, 0);
@@ -269,16 +270,18 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		assertMetrics("node", 0, 0, 0);
 
 		// Assert update
-		tx(() -> {
-			NodeGraphFieldContainer draft = content().getGraphFieldContainer(english(), latestBranch(), ContainerType.DRAFT);
+		tx(tx -> {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
+			NodeGraphFieldContainer draft = contentDao.getGraphFieldContainer(content(), english(), latestBranch(), ContainerType.DRAFT);
 			draft.getString("slug").setString("updated");
 		});
 		syncIndex();
 		assertMetrics("node", 0, 2, 0);
 
 		// Assert deletion
-		tx(() -> {
-			NodeGraphFieldContainer draft = folder("2015").getGraphFieldContainer(german(), latestBranch(), ContainerType.DRAFT);
+		tx(tx -> {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
+			NodeGraphFieldContainer draft = contentDao.getGraphFieldContainer(folder("2015"), german(), latestBranch(), ContainerType.DRAFT);
 			draft.remove();
 		});
 		syncIndex();
@@ -311,9 +314,9 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		// Assert deletion
 		tx(tx -> {
 			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
-			Schema schema = schemaDao.findByName("schema_3");
-			schema.getLatestVersion().remove();
-			schema.remove();
+			HibSchema schema = schemaDao.findByName("schema_3");
+			schema.getLatestVersion().deleteElement();
+			schema.deleteElement();
 		});
 		syncIndex();
 		assertMetrics("schema", 0, 0, 1);
@@ -342,9 +345,9 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		// Assert deletion
 		tx(tx -> {
 			MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
-			Microschema microschema = microschemaDao.findByName("microschema_101");
-			microschema.getLatestVersion().remove();
-			microschema.remove();
+			HibMicroschema microschema = microschemaDao.findByName("microschema_101");
+			microschema.getLatestVersion().deleteElement();
+			microschema.deleteElement();
 		});
 		syncIndex();
 		assertMetrics("microschema", 0, 0, 1);

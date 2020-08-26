@@ -11,6 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.HtmlGraphField;
 import com.gentics.mesh.core.db.Tx;
@@ -58,7 +59,7 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 		Node node = folder("2015");
 		for (int i = 0; i < 20; i++) {
 			try (Tx tx = tx()) {
-				NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
+				NodeGraphFieldContainer container = boot().contentDao().getGraphFieldContainer(node, "en");
 				String oldValue = getHtmlValue(container, FIELD_NAME);
 
 				String newValue = "some<b>html <i>" + i + "</i>";
@@ -100,8 +101,9 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 
 		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 			Node node = folder("2015");
-			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
+			NodeGraphFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getHtml(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getHtml(FIELD_NAME)).isNotNull();
@@ -146,7 +148,8 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 	public void testReadNodeWithExistingField() {
 		Node node = folder("2015");
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
+			ContentDaoWrapper contentDao = tx.data().contentDao();
+			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			container.createHTML(FIELD_NAME).setHtml("some<b>html");
 			tx.success();
 		}

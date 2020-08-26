@@ -17,8 +17,8 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Micronode;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.rest.common.FieldTypes;
@@ -125,7 +125,7 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 		.since(1, () -> {
 			Consumer<GraphQLFieldDefinition.Builder> addDeprecation = builder ->
 				builder.deprecate("Usage of fields in micronodes has changed in /api/v2. See https://github.com/gentics/mesh/issues/317");
-			Project project = context.getProject();
+			HibProject project = context.getProject();
 
 			List<GraphQLObjectType> schemaTypes = new ArrayList<>();
 			for (Microschema container : project.getMicroschemaContainerRoot().findAll()) {
@@ -172,7 +172,7 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 			}
 			return schemaTypes;
 		}).since(2, () -> {
-			Project project = context.getProject();
+			HibProject project = context.getProject();
 			return project.getMicroschemaContainerRoot().findAll().stream().map(container -> {
 				MicroschemaVersion version = container.getLatestVersion();
 				MicroschemaModel microschemaModel = version.getSchema();

@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.endpoint.user;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.rest.Messages.message;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
@@ -15,10 +15,11 @@ import javax.inject.Singleton;
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.action.UserDAOActions;
 import com.gentics.mesh.core.actions.impl.UserDAOActionsImpl;
 import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -48,15 +49,10 @@ public class UserCrudHandler extends AbstractCrudHandler<HibUser, UserResponse> 
 	private MeshJWTAuthProvider authProvider;
 
 	@Inject
-	public UserCrudHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, MeshJWTAuthProvider authProvider, WriteLock writeLock) {
-		super(db, utils, writeLock);
+	public UserCrudHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, MeshJWTAuthProvider authProvider, WriteLock writeLock, UserDAOActions userActions) {
+		super(db, utils, writeLock, userActions);
 		this.boot = boot;
 		this.authProvider = authProvider;
-	}
-
-	@Override
-	public UserDAOActionsImpl crudActions() {
-		return new UserDAOActionsImpl();
 	}
 
 	/**
@@ -90,7 +86,7 @@ public class UserCrudHandler extends AbstractCrudHandler<HibUser, UserResponse> 
 				UserPermissionResponse response = new UserPermissionResponse();
 
 				// 1. Add granted permissions
-				for (GraphPermission perm : userDao.getPermissions(user, targetElement)) {
+				for (InternalPermission perm : userDao.getPermissions(user, targetElement)) {
 					response.set(perm.getRestPerm(), true);
 				}
 

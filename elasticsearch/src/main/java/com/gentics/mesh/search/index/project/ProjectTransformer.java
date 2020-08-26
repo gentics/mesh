@@ -5,7 +5,7 @@ import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.search.index.AbstractTransformer;
 import com.gentics.mesh.util.ETag;
 
@@ -15,19 +15,19 @@ import io.vertx.core.json.JsonObject;
  * Transformer for project search index documents.
  */
 @Singleton
-public class ProjectTransformer extends AbstractTransformer<Project> {
+public class ProjectTransformer extends AbstractTransformer<HibProject> {
 
 	@Inject
 	public ProjectTransformer() {
 	}
 
-	public String generateVersion(Project project) {
+	public String generateVersion(HibProject project) {
 		// No need to add users since the creator/editor edge affects the project version
-		return ETag.hash(project.getElementVersion());
+		return ETag.hash(project.toProject().getElementVersion());
 	}
 
 	@Override
-	public JsonObject toDocument(Project project) {
+	public JsonObject toDocument(HibProject project) {
 		JsonObject document = new JsonObject();
 		document.put(NAME_KEY, project.getName());
 		addBasicReferences(document, project);

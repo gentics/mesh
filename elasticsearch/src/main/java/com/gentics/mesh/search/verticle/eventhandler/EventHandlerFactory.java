@@ -1,8 +1,6 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
 import com.gentics.mesh.core.data.HibElement;
-import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.search.verticle.entity.MeshEntities;

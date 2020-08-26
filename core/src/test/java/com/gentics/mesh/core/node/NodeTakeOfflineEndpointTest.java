@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_PUBLISHED;
@@ -14,7 +14,6 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 
 import java.util.Arrays;
@@ -22,9 +21,9 @@ import java.util.Arrays;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.db.Tx;
@@ -123,7 +122,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 		// assert that the containers have both webrootpath properties set
 		try (Tx tx1 = tx()) {
 			for (String language : Arrays.asList("en", "de")) {
-				NodeGraphFieldContainer container = folder("products").getGraphFieldContainer(language);
+				NodeGraphFieldContainer container = boot().contentDao().getGraphFieldContainer(folder("products"), language);
 				GraphFieldContainerEdge draftEdge = container.getContainerEdge(DRAFT, initialBranchUuid()).next();
 				assertThat(draftEdge.getSegmentInfo()).isNotNull();
 				GraphFieldContainerEdge publishEdge = container.getContainerEdge(PUBLISHED, initialBranchUuid()).next();
@@ -137,7 +136,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 		// assert that the containers have only the draft webrootpath properties set
 		try (Tx tx2 = tx()) {
 			for (String language : Arrays.asList("en", "de")) {
-				NodeGraphFieldContainer container = folder("products").getGraphFieldContainer(language);
+				NodeGraphFieldContainer container = boot().contentDao().getGraphFieldContainer(folder("products"), language);
 				GraphFieldContainerEdge draftEdge = container.getContainerEdge(DRAFT, initialBranchUuid()).next();
 				assertThat(draftEdge.getSegmentInfo()).isNotNull();
 				assertFalse(container.getContainerEdge(PUBLISHED, initialBranchUuid()).hasNext());
@@ -289,9 +288,9 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testTakeOfflineForBranch() {
 		Node news = folder("news");
-		Branch initialBranch = db().tx(() -> latestBranch());
+		HibBranch initialBranch = db().tx(() -> latestBranch());
 
-		Branch newBranch = createBranch("newbranch", true);
+		HibBranch newBranch = createBranch("newbranch", true);
 
 		try (Tx tx = tx()) {
 			// publish in initial and new branch

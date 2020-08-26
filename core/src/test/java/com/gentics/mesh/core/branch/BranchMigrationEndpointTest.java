@@ -19,9 +19,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -53,10 +54,10 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testStartBranchMigration() throws Throwable {
 		EventQueueBatch batch = createBatch();
-		Branch newBranch;
+		HibBranch newBranch;
 		List<? extends Node> nodes;
 		List<? extends Node> published;
-		Project project = project();
+		HibProject project = project();
 
 		try (Tx tx = tx()) {
 			assertThat(project.getInitialBranch().isMigrated()).as("Initial branch migration status").isEqualTo(true);
@@ -67,7 +68,9 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 
 		published = Arrays.asList(folder("news"), folder("2015"), folder("2014"), folder("march"));
 		try (Tx tx = tx()) {
-			nodes = project.getNodeRoot().findAll().stream().filter(node -> node.getParentNode(project.getLatestBranch().getUuid()) != null)
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+
+			nodes = project.getNodeRoot().findAll().stream().filter(node -> nodeDao.getParentNode(node, project.getLatestBranch().getUuid()) != null)
 				.collect(Collectors.toList());
 			assertThat(nodes).as("Nodes list").isNotEmpty();
 		}
@@ -78,13 +81,13 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 		});
 
 		try (Tx tx = tx()) {
-			newBranch = project.getBranchRoot().create("newbranch", user(), batch);
+			newBranch = tx.data().branchDao().create(project, "newbranch", user(), batch);
 			assertThat(newBranch.isMigrated()).as("Branch migration status").isEqualTo(false);
 			tx.success();
 		}
 		nodes.forEach(node -> {
 			Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT, ContainerType.PUBLISHED).forEach(type -> {
-				assertThat(tx(() -> node.getGraphFieldContainers(newBranch, type).list())).as(type + " Field Containers before Migration").isNotNull()
+				assertThat(tx(() -> boot().contentDao().getGraphFieldContainers(node, newBranch, type).list())).as(type + " Field Containers before Migration").isNotNull()
 					.isEmpty();
 			});
 		});
@@ -92,27 +95,29 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 		triggerAndWaitForJob(requestBranchMigration(newBranch));
 
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+
 			assertThat(newBranch.isMigrated()).as("Branch migration status").isEqualTo(true);
 
 			nodes.forEach(node -> {
 				Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT).forEach(type -> {
-					assertThat(node.getGraphFieldContainers(newBranch, type)).as(type + " Field Containers after Migration").isNotNull()
+					assertThat(boot().contentDao().getGraphFieldContainers(node, newBranch, type)).as(type + " Field Containers after Migration").isNotNull()
 						.isNotEmpty();
 				});
 
 				if (published.contains(node)) {
-					assertThat(node.getGraphFieldContainers(newBranch, ContainerType.PUBLISHED)).as("Published field containers after migration")
+					assertThat(boot().contentDao().getGraphFieldContainers(node, newBranch, ContainerType.PUBLISHED)).as("Published field containers after migration")
 						.isNotNull().isNotEmpty();
 				} else {
-					assertThat(node.getGraphFieldContainers(newBranch, ContainerType.PUBLISHED)).as("Published field containers after migration")
+					assertThat(boot().contentDao().getGraphFieldContainers(node, newBranch, ContainerType.PUBLISHED)).as("Published field containers after migration")
 						.isNotNull().isEmpty();
 				}
 
-				Node initialParent = node.getParentNode(initialBranchUuid());
+				Node initialParent = nodeDao.getParentNode(node, initialBranchUuid());
 				if (initialParent == null) {
-					assertThat(node.getParentNode(newBranch.getUuid())).as("Parent in new branch").isNull();
+					assertThat(nodeDao.getParentNode(node, newBranch.getUuid())).as("Parent in new branch").isNull();
 				} else {
-					assertThat(node.getParentNode(newBranch.getUuid())).as("Parent in new branch").isNotNull()
+					assertThat(nodeDao.getParentNode(node, newBranch.getUuid())).as("Parent in new branch").isNotNull()
 						.isEqualToComparingOnlyGivenFields(initialParent, "uuid");
 				}
 
@@ -132,7 +137,9 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testStartAgain() throws Throwable {
 		EventQueueBatch batch = createBatch();
-		Branch newBranch = tx(() -> project().getBranchRoot().create("newbranch", user(), batch));
+		HibBranch newBranch = tx(tx -> {
+			return tx.data().branchDao().create(project(), "newbranch", user(), batch);
+		});
 		String jobUuidA = requestBranchMigration(newBranch);
 		triggerAndWaitForJob(jobUuidA, COMPLETED);
 
@@ -146,10 +153,14 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testStartOrder() throws Throwable {
-		Project project = project();
+		HibProject project = project();
 		EventQueueBatch batch = createBatch();
-		Branch newBranch = tx(() -> project.getBranchRoot().create("newbranch", user(), batch));
-		Branch newestBranch = tx(() -> project.getBranchRoot().create("newestbranch", user(), batch));
+		HibBranch newBranch = tx(tx -> {
+			return tx.data().branchDao().create(project, "newbranch", user(), batch);
+		});
+		HibBranch newestBranch = tx(tx -> {
+			return tx.data().branchDao().create(project, "newestbranch", user(), batch);
+		});
 
 		try (Tx tx = tx()) {
 			triggerAndWaitForJob(requestBranchMigration(newestBranch), FAILED);
@@ -199,7 +210,7 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 		String baseNodeUuid = tx(() -> project().getBaseNode().getUuid());
 		createNode(baseNodeUuid);
 
-		Branch newBranch;
+		HibBranch newBranch;
 		try (Tx tx = tx()) {
 			int numThreads = 1;
 			int numFolders = 1000;
@@ -219,7 +230,7 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 				future.get();
 			}
 
-			newBranch = project().getBranchRoot().create("newbranch", user(), batch);
+			newBranch = tx.data().branchDao().create(project(), "newbranch", user(), batch);
 			tx.success();
 		}
 
@@ -241,7 +252,7 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 	 * @param branch
 	 * @return future
 	 */
-	protected String requestBranchMigration(Branch branch) {
+	protected String requestBranchMigration(HibBranch branch) {
 		return tx(() -> boot().jobRoot().enqueueBranchMigration(user(), branch).getUuid());
 	}
 }

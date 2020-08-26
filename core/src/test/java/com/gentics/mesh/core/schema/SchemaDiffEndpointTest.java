@@ -10,6 +10,7 @@ import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperatio
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATESCHEMA;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -20,8 +21,8 @@ import java.util.LinkedHashMap;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.schema.Schema;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
@@ -150,7 +151,7 @@ public class SchemaDiffEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testDiffDisplayField() throws GenericRestException, Exception {
 		try (Tx tx = tx()) {
-			Schema container = schemaContainer("content");
+			HibSchema container = schemaContainer("content");
 			SchemaModel request = getSchema();
 			request.setDisplayField("slug");
 
@@ -165,7 +166,7 @@ public class SchemaDiffEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testNoDiff() {
 		try (Tx tx = tx()) {
-			Schema container = schemaContainer("content");
+			HibSchema container = schemaContainer("content");
 			SchemaModel request = getSchema();
 			SchemaChangesListModel changes = call(() -> client().diffSchema(container.getUuid(), request));
 			assertNotNull(changes);
@@ -179,7 +180,7 @@ public class SchemaDiffEndpointTest extends AbstractMeshTest {
 
 		// Add allowed property to slug
 		try (Tx tx = tx()) {
-			SchemaVersion version = schemaContainer("content").getLatestVersion();
+			HibSchemaVersion version = schemaContainer("content").getLatestVersion();
 			SchemaVersionModel schema = version.getSchema();
 			schema.getField("slug", StringFieldSchema.class).setAllowedValues("A", "B", "C");
 			version.setJson(schema.toJson());
@@ -202,7 +203,7 @@ public class SchemaDiffEndpointTest extends AbstractMeshTest {
 
 		// Add allowed property to slug
 		try (Tx tx = tx()) {
-			SchemaVersion version = schemaContainer("content").getLatestVersion();
+			HibSchemaVersion version = schemaContainer("content").getLatestVersion();
 			SchemaVersionModel schema = version.getSchema();
 			schema.getField("slug", StringFieldSchema.class).setAllowedValues("A", "B", "C");
 			version.setJson(schema.toJson());
@@ -224,7 +225,7 @@ public class SchemaDiffEndpointTest extends AbstractMeshTest {
 
 		// Add allowed property to slug
 		try (Tx tx = tx()) {
-			SchemaVersion version = schemaContainer("content").getLatestVersion();
+			HibSchemaVersion version = schemaContainer("content").getLatestVersion();
 			SchemaVersionModel schema = version.getSchema();
 			schema.getField("slug", StringFieldSchema.class).setAllowedValues("A", "B", "C");
 			version.setJson(schema.toJson());
@@ -276,7 +277,7 @@ public class SchemaDiffEndpointTest extends AbstractMeshTest {
 		// Add elasticsearch setting to content field
 		try (Tx tx = tx()) {
 			JsonObject setting = new JsonObject().put("test", "123");
-			SchemaVersion version = schemaContainer("content").getLatestVersion();
+			HibSchemaVersion version = schemaContainer("content").getLatestVersion();
 			SchemaVersionModel schema = version.getSchema();
 			schema.getField("slug").setElasticsearch(setting);
 			version.setJson(schema.toJson());
@@ -299,7 +300,7 @@ public class SchemaDiffEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testAddField() {
 		try (Tx tx = tx()) {
-			Schema schema = schemaContainer("content");
+			HibSchema schema = schemaContainer("content");
 			SchemaModel request = getSchema();
 			BinaryFieldSchema binaryField = FieldUtil.createBinaryFieldSchema("binary");
 			binaryField.setAllowedMimeTypes("one", "two");
@@ -317,7 +318,7 @@ public class SchemaDiffEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testAddNodeField() {
 		try (Tx tx = tx()) {
-			Schema schema = schemaContainer("content");
+			HibSchema schema = schemaContainer("content");
 			SchemaModel request = getSchema();
 			NodeFieldSchema nodeField = FieldUtil.createNodeFieldSchema("node");
 			nodeField.setAllowedSchemas("content");
@@ -335,7 +336,7 @@ public class SchemaDiffEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testDefaultMigration() {
 		try (Tx tx = tx()) {
-			Schema schema = schemaContainer("content");
+			HibSchema schema = schemaContainer("content");
 			SchemaModel request = getSchema();
 			request.removeField("content");
 

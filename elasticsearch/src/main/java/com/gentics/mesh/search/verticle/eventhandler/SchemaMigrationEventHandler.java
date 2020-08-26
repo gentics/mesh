@@ -13,16 +13,15 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
-import com.gentics.mesh.core.data.schema.Schema;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.DropIndexRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.branch.BranchSchemaAssignEventModel;
 import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
@@ -76,7 +75,7 @@ public class SchemaMigrationEventHandler implements EventHandler {
 	}
 
 	private Flowable<DropIndexRequest> migrationEnd(String projectUuid, String branchUuid, String schemaVersionUuid) {
-		return Flowable.just(new DropIndexRequest(NodeGraphFieldContainer.composeIndexPattern(
+		return Flowable.just(new DropIndexRequest(ContentDaoWrapper.composeIndexPattern(
 			projectUuid,
 			branchUuid,
 			schemaVersionUuid
@@ -85,21 +84,21 @@ public class SchemaMigrationEventHandler implements EventHandler {
 
 	public Flowable<SearchRequest> migrationStart(BranchSchemaAssignEventModel model) {
 		Map<String, IndexInfo> map = helper.getDb().transactional(tx -> {
-			Project project = Tx.get().data().projectDao().findByUuid(model.getProject().getUuid());
-			Branch branch = project.getBranchRoot().findByUuid(model.getBranch().getUuid());
-			SchemaVersion schema = getNewSchemaVersion(model).runInExistingTx(tx);
+			HibProject project = tx.data().projectDao().findByUuid(model.getProject().getUuid());
+			HibBranch branch = tx.data().branchDao().findByUuid(project, model.getBranch().getUuid());
+			HibSchemaVersion schema = getNewSchemaVersion(model).runInExistingTx(tx);
 			return nodeIndexHandler.getIndices(project, branch, schema).runInExistingTx(tx);
 		}).runInNewTx();
 
 		return toRequests(map);
 	}
 
-	private Transactional<SchemaVersion> getNewSchemaVersion(BranchSchemaAssignEventModel model) {
+	private Transactional<HibSchemaVersion> getNewSchemaVersion(BranchSchemaAssignEventModel model) {
 		return helper.getDb().transactional(tx -> {
 			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 			SchemaReference schema = model.getSchema();
-			Schema container = schemaDao.findByUuid(schema.getUuid());
-			return container.findVersionByUuid(schema.getVersionUuid());
+			HibSchema container = schemaDao.findByUuid(schema.getUuid());
+			return schemaDao.findVersionByUuid(container, schema.getVersionUuid());
 		});
 	}
 

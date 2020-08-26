@@ -12,10 +12,13 @@ import javax.inject.Provider;
 import com.gentics.mesh.context.NodeMigrationActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.RemoveFieldChange;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.impl.FieldTypeChangeImpl;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.endpoint.migration.MigrationHandler;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
@@ -94,7 +97,7 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 	 */
 	protected void migrate(NodeMigrationActionContext ac, GraphFieldContainer newContainer, FieldContainer newContent,
 		   	GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion,
-		GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> newVersion, Set<String> touchedFields) throws Exception {
+		   	HibFieldSchemaVersionElement newVersion, Set<String> touchedFields) throws Exception {
 
 		// Remove all touched fields (if necessary, they will be readded later)
 		newContainer.getFields().stream().filter(f -> touchedFields.contains(f.getFieldKey())).forEach(f -> f.removeField(newContainer));
@@ -168,17 +171,18 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 	 *            Optional published container
 	 */
 	protected void postMigrationPurge(NodeGraphFieldContainer container, NodeGraphFieldContainer oldPublished) {
+		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 
 		// The purge operation was suppressed before. We need to invoke it now
 		// Purge the old publish container if it did not match the draft container. In this case we need to purge the published container dedicatedly.
-		if (oldPublished != null && !oldPublished.equals(container) && oldPublished.isAutoPurgeEnabled() && oldPublished.isPurgeable()) {
+		if (oldPublished != null && !oldPublished.equals(container) && oldPublished.isAutoPurgeEnabled() && contentDao.isPurgeable(oldPublished)) {
 			log.debug("Removing old published container {" + oldPublished.getUuid() + "}");
-			oldPublished.purge();
+			contentDao.purge(oldPublished);
 		}
 		// Now we can purge the draft container (which may also be the published container)
-		if (container.isAutoPurgeEnabled() && container.isPurgeable()) {
+		if (container.isAutoPurgeEnabled() && contentDao.isPurgeable(container)) {
 			log.debug("Removing source container {" + container.getUuid() + "}");
-			container.purge();
+			contentDao.purge(container);
 		}
 	}
 }

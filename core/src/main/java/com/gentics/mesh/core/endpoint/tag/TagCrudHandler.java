@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.endpoint.tag;
 
 import static com.gentics.mesh.core.action.DAOActionContext.context;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
@@ -12,11 +12,11 @@ import javax.inject.Inject;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.TagDAOActions;
 import com.gentics.mesh.core.action.TagFamilyDAOActions;
-import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -68,8 +68,8 @@ public class TagCrudHandler extends AbstractHandler {
 				TagDaoWrapper tagDao = tx.data().tagDao();
 				PagingParameters pagingParams = ac.getPagingParameters();
 				NodeParameters nodeParams = ac.getNodeParameters();
-				TagFamily tagFamily = tagFamilyActions.loadByUuid(context(tx, ac), tagFamilyUuid, READ_PERM, true);
-				Tag tag = tagActions.loadByUuid(context(tx, ac, tagFamily), tagUuid, READ_PERM, true);
+				HibTagFamily tagFamily = tagFamilyActions.loadByUuid(context(tx, ac), tagFamilyUuid, READ_PERM, true);
+				HibTag tag = tagActions.loadByUuid(context(tx, ac, tagFamily), tagUuid, READ_PERM, true);
 				TransformablePage<? extends Node> page = tagDao.findTaggedNodes(tag, ac.getUser(), ac.getBranch(),
 					nodeParams.getLanguageList(options),
 					ContainerType.forVersion(ac.getVersioningParameters().getVersion()), pagingParams);
@@ -107,11 +107,12 @@ public class TagCrudHandler extends AbstractHandler {
 
 		try (WriteLock lock = globalLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
+				TagDaoWrapper tagDao = tx.data().tagDao();
 				ResultInfo info = utils.eventAction(batch -> {
 					// TODO use DAOActionContext and load tagFamily by uuid first. Without a parent this is inconsistent.
-					Tag tag = tagActions.create(tx, ac, batch, null);
-					TagResponse model = tag.transformToRestSync(ac, 0);
-					String path = tag.getAPIPath(ac);
+					HibTag tag = tagActions.create(tx, ac, batch, null);
+					TagResponse model = tagDao.transformToRestSync(tag, ac, 0);
+					String path = tagDao.getAPIPath(tag, ac);
 					ResultInfo resultInfo = new ResultInfo(model);
 					resultInfo.setProperty("path", path);
 					return resultInfo;

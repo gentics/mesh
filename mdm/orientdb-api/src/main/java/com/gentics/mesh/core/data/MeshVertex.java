@@ -4,7 +4,8 @@ import java.util.Set;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.impl.DummyBulkActionContext;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.madl.frame.VertexFrame;
@@ -49,11 +50,11 @@ public interface MeshVertex extends MeshElement, VertexFrame, HibElement {
 	 * @param permissionsToGrant
 	 * @param permissionsToRevoke
 	 */
-	void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
-		Set<GraphPermission> permissionsToRevoke);
+	void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<InternalPermission> permissionsToGrant,
+		Set<InternalPermission> permissionsToRevoke);
 
 	/**
-	 * Tests if the {@link GraphPermission}s READ_PUBLISHED_PERM and READ_PUBLISHED can be set for this element.
+	 * Tests if the {@link InternalPermission}s READ_PUBLISHED_PERM and READ_PUBLISHED can be set for this element.
 	 * @return
 	 */
 	default boolean hasPublishPermissions() {

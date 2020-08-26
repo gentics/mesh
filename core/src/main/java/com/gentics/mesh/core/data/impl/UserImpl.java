@@ -1,14 +1,14 @@
 package com.gentics.mesh.core.data.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_REFERENCE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toNode;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 
 import java.util.Optional;
-import java.util.Set;
 import java.util.Spliterator;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -20,9 +20,9 @@ import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.HibNode;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -30,7 +30,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
@@ -247,7 +247,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public void updateShortcutEdges() {
-		GroupDaoWrapper groupRoot = Tx.get().data().groupDao();
+		GroupRoot groupRoot = mesh().boot().groupRoot();
 		outE(ASSIGNED_TO_ROLE).removeAll();
 		for (Group group : getGroups()) {
 			for (Role role : groupRoot.getRoles(group)) {
@@ -262,8 +262,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public User setReferencedNode(Node node) {
-		setUniqueLinkOutTo(node, HAS_NODE_REFERENCE);
+	public User setReferencedNode(HibNode node) {
+		setUniqueLinkOutTo(toNode(node), HAS_NODE_REFERENCE);
 		return this;
 	}
 

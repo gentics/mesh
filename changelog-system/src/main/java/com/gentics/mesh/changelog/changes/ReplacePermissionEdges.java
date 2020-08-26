@@ -1,11 +1,11 @@
 package com.gentics.mesh.changelog.changes;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.DELETE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.PUBLISH_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
 
 import java.util.Collections;
 import java.util.Map;
@@ -13,13 +13,13 @@ import java.util.Optional;
 import java.util.Set;
 
 import com.gentics.mesh.changelog.AbstractChange;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.google.common.collect.ImmutableMap;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 
 public class ReplacePermissionEdges extends AbstractChange {
-	private final Map<String, GraphPermission> permLabels = ImmutableMap.<String, GraphPermission>builder()
+	private final Map<String, InternalPermission> permLabels = ImmutableMap.<String, InternalPermission>builder()
 		.put("HAS_CREATE_PERMISSION", CREATE_PERM)
 		.put("HAS_READ_PERMISSION", READ_PERM)
 		.put("HAS_UPDATE_PERMISSION", UPDATE_PERM)

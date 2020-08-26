@@ -4,9 +4,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.util.StreamUtil.unique;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;

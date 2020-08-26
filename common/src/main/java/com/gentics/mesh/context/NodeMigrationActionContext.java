@@ -1,7 +1,7 @@
 package com.gentics.mesh.context;
 
-import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.rest.event.node.SchemaMigrationCause;
@@ -13,14 +13,14 @@ public interface NodeMigrationActionContext extends InternalActionContext {
 	 * 
 	 * @return current project
 	 */
-	Project getProject();
+	HibProject getProject();
 
 	/**
 	 * Return referenced branch.
 	 * 
 	 * @return branch
 	 */
-	Branch getBranch();
+	HibBranch getBranch();
 
 	/**
 	 * Return the from schema version.

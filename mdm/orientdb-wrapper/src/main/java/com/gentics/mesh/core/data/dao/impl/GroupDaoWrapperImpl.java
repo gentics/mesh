@@ -1,9 +1,12 @@
 package com.gentics.mesh.core.data.dao.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGroup;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toRole;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toUser;
 import static com.gentics.mesh.core.rest.MeshEvent.GROUP_ROLE_ASSIGNED;
 import static com.gentics.mesh.core.rest.MeshEvent.GROUP_ROLE_UNASSIGNED;
 import static com.gentics.mesh.core.rest.MeshEvent.GROUP_USER_ASSIGNED;
@@ -34,10 +37,11 @@ import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
-import com.gentics.mesh.core.data.impl.GroupWrapper;
+import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
@@ -68,7 +72,7 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper implements GroupDaoW
 	}
 
 	@Override
-	public boolean update(Group group, InternalActionContext ac, EventQueueBatch batch) {
+	public boolean update(HibGroup group, InternalActionContext ac, EventQueueBatch batch) {
 		GroupUpdateRequest requestModel = ac.fromJson(GroupUpdateRequest.class);
 
 		if (isEmpty(requestModel.getName())) {
@@ -76,7 +80,7 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper implements GroupDaoW
 		}
 
 		if (shouldUpdate(requestModel.getName(), group.getName())) {
-			Group groupWithSameName = findByName(requestModel.getName());
+			HibGroup groupWithSameName = findByName(requestModel.getName());
 			if (groupWithSameName != null && !groupWithSameName.getUuid().equals(group.getUuid())) {
 				throw conflict(groupWithSameName.getUuid(), requestModel.getName(), "group_conflicting_name", requestModel.getName());
 			}
@@ -90,12 +94,7 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper implements GroupDaoW
 	}
 
 	@Override
-	public String getETag(Group element, InternalActionContext ac) {
-		return boot.get().groupRoot().getETag(element, ac);
-	}
-
-	@Override
-	public Group create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
+	public HibGroup create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		MeshAuthUser requestUser = ac.getUser();
 		UserDaoWrapper userDao = Tx.get().data().userDao();
 		GroupCreateRequest requestModel = ac.fromJson(GroupCreateRequest.class);
@@ -109,32 +108,38 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper implements GroupDaoW
 		}
 
 		// Check whether a group with the same name already exists
-		Group groupWithSameName = findByName(requestModel.getName());
+		HibGroup groupWithSameName = findByName(requestModel.getName());
 		// TODO why would we want to check for uuid's here? Makes no sense: && !groupWithSameName.getUuid().equals(getUuid())
 		if (groupWithSameName != null) {
 			throw conflict(groupWithSameName.getUuid(), requestModel.getName(), "group_conflicting_name", requestModel.getName());
 		}
 
 		// Finally create the group and set the permissions
-		Group group = create(requestModel.getName(), requestUser, uuid);
+		HibGroup group = create(requestModel.getName(), requestUser, uuid);
 		userDao.inheritRolePermissions(requestUser, groupRoot, group);
 		batch.add(group.onCreated());
 		return group;
 	}
 
 	@Override
-	public void addUser(Group group, HibUser user) {
-		group.setUniqueLinkInTo(user.toUser(), HAS_USER);
+	public void addUser(HibGroup group, HibUser user) {
+		Group graphGroup = toGroup(group);
+		User graphUser = toUser(user);
+
+		graphGroup.setUniqueLinkInTo(graphUser, HAS_USER);
 
 		// Add shortcut edge from user to roles of this group
 		for (Role role : getRoles(group)) {
-			user.toUser().setUniqueLinkOutTo(role, ASSIGNED_TO_ROLE);
+			graphUser.setUniqueLinkOutTo(role, ASSIGNED_TO_ROLE);
 		}
 	}
 
 	@Override
-	public void removeUser(Group group, HibUser user) {
-		group.unlinkIn(user.toUser(), HAS_USER);
+	public void removeUser(HibGroup group, HibUser user) {
+		Group graphGroup = toGroup(group);
+		User graphUser = toUser(user);
+
+		graphGroup.unlinkIn(graphUser, HAS_USER);
 
 		// The user does no longer belong to the group so lets update the shortcut edges
 		user.updateShortcutEdges();
@@ -142,31 +147,37 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper implements GroupDaoW
 	}
 
 	@Override
-	public TraversalResult<? extends HibUser> getUsers(Group group) {
+	public TraversalResult<? extends HibUser> getUsers(HibGroup group) {
+		Group graphGroup = toGroup(group);
 		GroupRoot groupRoot = boot.get().groupRoot();
-		return groupRoot.getUsers(group);
+		return groupRoot.getUsers(graphGroup);
 	}
 
 	@Override
-	public TraversalResult<? extends Role> getRoles(Group group) {
+	public TraversalResult<? extends Role> getRoles(HibGroup group) {
+		Group graphGroup = toGroup(group);
 		GroupRoot groupRoot = boot.get().groupRoot();
-		return groupRoot.getRoles(group);
+		return groupRoot.getRoles(graphGroup);
 	}
 
 	@Override
-	public void addRole(Group group, Role role) {
-		group.setUniqueLinkInTo(role, HAS_ROLE);
+	public void addRole(HibGroup group, HibRole role) {
+		Group graphGroup = toGroup(group);
+		Role graphRole = toRole(role);
+		graphGroup.setUniqueLinkInTo(graphRole, HAS_ROLE);
 
 		// Add shortcut edges from role to users of this group
 		for (HibUser user : getUsers(group)) {
-			((User) user).setUniqueLinkOutTo(role, ASSIGNED_TO_ROLE);
+			toUser(user).setUniqueLinkOutTo(graphRole, ASSIGNED_TO_ROLE);
 		}
 
 	}
 
 	@Override
-	public void removeRole(Group group, Role role) {
-		group.unlinkIn(role, HAS_ROLE);
+	public void removeRole(HibGroup group, HibRole role) {
+		Role graphRole = toRole(role);
+		Group graphGroup = toGroup(group);
+		graphGroup.unlinkIn(graphRole, HAS_ROLE);
 
 		// Update the shortcut edges since the role does no longer belong to the group
 		for (HibUser user : getUsers(group)) {
@@ -176,29 +187,34 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper implements GroupDaoW
 	}
 
 	@Override
-	public boolean hasRole(Group group, Role role) {
-		return group.in(HAS_ROLE).retain(role).hasNext();
+	public boolean hasRole(HibGroup group, HibRole role) {
+		Role graphRole = toRole(role);
+		Group graphGroup = toGroup(group);
+		return graphGroup.in(HAS_ROLE).retain(graphRole).hasNext();
 	}
 
 	@Override
-	public boolean hasUser(Group group, HibUser user) {
-		return group.in(HAS_USER).retain((User) user).hasNext();
+	public boolean hasUser(HibGroup group, HibUser user) {
+		Group graphGroup = toGroup(group);
+		return graphGroup.in(HAS_USER).retain((User) user).hasNext();
 	}
 
 	@Override
-	public TransformablePage<? extends HibUser> getVisibleUsers(Group group, MeshAuthUser user, PagingParameters pagingInfo) {
+	public TransformablePage<? extends HibUser> getVisibleUsers(HibGroup group, MeshAuthUser user, PagingParameters pagingInfo) {
 		GroupRoot groupRoot = boot.get().groupRoot();
-		return groupRoot.getVisibleUsers(group, user, pagingInfo);
+		Group graphGroup = toGroup(group);
+		return groupRoot.getVisibleUsers(graphGroup, user, pagingInfo);
 	}
 
 	@Override
-	public TransformablePage<? extends Role> getRoles(Group group, HibUser user, PagingParameters pagingInfo) {
+	public TransformablePage<? extends Role> getRoles(HibGroup group, HibUser user, PagingParameters pagingInfo) {
 		GroupRoot groupRoot = boot.get().groupRoot();
-		return groupRoot.getRoles(group, user, pagingInfo);
+		Group graphGroup = toGroup(group);
+		return groupRoot.getRoles(graphGroup, user, pagingInfo);
 	}
 
 	@Override
-	public GroupRoleAssignModel createRoleAssignmentEvent(Group group, Role role, Assignment assignment) {
+	public GroupRoleAssignModel createRoleAssignmentEvent(HibGroup group, HibRole role, Assignment assignment) {
 		GroupRoleAssignModel model = new GroupRoleAssignModel();
 		model.setGroup(group.transformToReference());
 		model.setRole(role.transformToReference());
@@ -214,7 +230,7 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper implements GroupDaoW
 	}
 
 	@Override
-	public GroupUserAssignModel createUserAssignmentEvent(Group group, HibUser user, Assignment assignment) {
+	public GroupUserAssignModel createUserAssignmentEvent(HibGroup group, HibUser user, Assignment assignment) {
 		GroupUserAssignModel model = new GroupUserAssignModel();
 		model.setGroup(group.transformToReference());
 		model.setUser(user.transformToReference());
@@ -230,7 +246,8 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper implements GroupDaoW
 	}
 
 	@Override
-	public GroupResponse transformToRestSync(Group group, InternalActionContext ac, int level, String... languageTags) {
+	public GroupResponse transformToRestSync(HibGroup group, InternalActionContext ac, int level, String... languageTags) {
+		Group graphGroup = toGroup(group);
 		GenericParameters generic = ac.getGenericParameters();
 		FieldsSet fields = generic.getFields();
 
@@ -241,9 +258,9 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper implements GroupDaoW
 		if (fields.has("roles")) {
 			setRoles(group, ac, restGroup);
 		}
-		group.fillCommonRestFields(ac, fields, restGroup);
+		graphGroup.fillCommonRestFields(ac, fields, restGroup);
 
-		setRolePermissions(group, ac, restGroup);
+		setRolePermissions(graphGroup, ac, restGroup);
 		return restGroup;
 	}
 
@@ -253,7 +270,7 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper implements GroupDaoW
 	 * @param ac
 	 * @param restGroup
 	 */
-	private void setRoles(Group group, InternalActionContext ac, GroupResponse restGroup) {
+	private void setRoles(HibGroup group, InternalActionContext ac, GroupResponse restGroup) {
 		for (Role role : getRoles(group)) {
 			String name = role.getName();
 			if (name != null) {
@@ -263,24 +280,27 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper implements GroupDaoW
 	}
 
 	@Override
-	public void addGroup(Group group) {
+	public void addGroup(HibGroup group) {
+		Group graphGroup = toGroup(group);
 		GroupRoot groupRoot = boot.get().groupRoot();
-		groupRoot.addItem(group);
+		groupRoot.addItem(graphGroup);
 	}
 
 	@Override
-	public void removeGroup(Group group) {
+	public void removeGroup(HibGroup group) {
+		Group graphGroup = toGroup(group);
 		GroupRoot groupRoot = boot.get().groupRoot();
-		groupRoot.removeItem(group);
+		groupRoot.removeItem(graphGroup);
 	}
 
 	@Override
-	public void delete(Group group, BulkActionContext bac) {
+	public void delete(HibGroup group, BulkActionContext bac) {
+		Group graphGroup = toGroup(group);
 		// TODO don't allow deletion of the admin group
 		bac.batch().add(group.onDeleted());
 
 		Set<? extends HibUser> affectedUsers = getUsers(group).stream().collect(Collectors.toSet());
-		group.getElement().remove();
+		graphGroup.getElement().remove();
 		for (HibUser user : affectedUsers) {
 			user.updateShortcutEdges();
 			bac.add(user.onUpdated());
@@ -291,7 +311,7 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper implements GroupDaoW
 	}
 
 	@Override
-	public Group create(String name, HibUser creator, String uuid) {
+	public HibGroup create(String name, HibUser creator, String uuid) {
 		GroupRoot groupRoot = boot.get().groupRoot();
 		Group group = groupRoot.create();
 		if (uuid != null) {
@@ -305,24 +325,24 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper implements GroupDaoW
 	}
 
 	@Override
-	public Group findByName(String name) {
+	public HibGroup findByName(String name) {
 		GroupRoot groupRoot = boot.get().groupRoot();
-		return GroupWrapper.wrap(groupRoot.findByName(name));
+		return groupRoot.findByName(name);
 	}
 
 	@Override
-	public Group findByUuid(String uuid) {
+	public HibGroup findByUuid(String uuid) {
 		GroupRoot groupRoot = boot.get().groupRoot();
-		return GroupWrapper.wrap(groupRoot.findByUuid(uuid));
+		return groupRoot.findByUuid(uuid);
 	}
 
 	@Override
-	public Group findByUuidGlobal(String uuid) {
+	public HibGroup findByUuidGlobal(String uuid) {
 		return findByUuid(uuid);
 	}
 
 	@Override
-	public TraversalResult<? extends Group> findAll() {
+	public TraversalResult<? extends HibGroup> findAll() {
 		GroupRoot groupRoot = boot.get().groupRoot();
 		return groupRoot.findAll();
 	}
@@ -339,27 +359,42 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper implements GroupDaoW
 	}
 
 	@Override
-	public TransformablePage<? extends Group> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
+	public TransformablePage<? extends HibGroup> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 		GroupRoot groupRoot = boot.get().groupRoot();
 		return groupRoot.findAll(ac, pagingInfo);
 	}
-	
+
 	@Override
-	public Page<? extends Group> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Group> extraFilter) {
+	public Page<? extends HibGroup> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibGroup> extraFilter) {
 		GroupRoot groupRoot = boot.get().groupRoot();
-		return groupRoot.findAll(ac, pagingInfo, extraFilter);
+		return groupRoot.findAll(ac, pagingInfo, group -> {
+			return extraFilter.test(group);
+		});
 	}
 
 	@Override
-	public Group loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
+	public HibGroup loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm) {
 		GroupRoot groupRoot = boot.get().groupRoot();
-		return GroupWrapper.wrap(groupRoot.loadObjectByUuid(ac, uuid, perm));
+		return groupRoot.loadObjectByUuid(ac, uuid, perm);
 	}
 
 	@Override
-	public Group loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+	public HibGroup loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
 		GroupRoot groupRoot = boot.get().groupRoot();
-		return GroupWrapper.wrap(groupRoot.loadObjectByUuid(ac, uuid, perm, errorIfNotFound));
+		return groupRoot.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+	}
+
+	@Override
+	public String getAPIPath(HibGroup group, InternalActionContext ac) {
+		Group graphGroup = toGroup(group);
+		return graphGroup.getAPIPath(ac);
+	}
+
+	@Override
+	public String getETag(HibGroup group, InternalActionContext ac) {
+		Group graphGroup = toGroup(group);
+		return graphGroup.getETag(ac);
+		//return boot.get().groupRoot().getETag(graphGroup, ac);
 	}
 
 }

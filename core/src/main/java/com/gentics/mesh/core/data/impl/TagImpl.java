@@ -8,13 +8,13 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -69,21 +69,21 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 	}
 
 	@Override
-	public void setTagFamily(TagFamily tagFamily) {
-		setUniqueLinkOutTo(tagFamily, HAS_TAGFAMILY_ROOT);
+	public void setTagFamily(HibTagFamily tagFamily) {
+		setUniqueLinkOutTo(tagFamily.toTagFamily(), HAS_TAGFAMILY_ROOT);
 	}
 
 	@Override
-	public TagFamily getTagFamily() {
+	public HibTagFamily getTagFamily() {
 		return out(HAS_TAGFAMILY_ROOT, TagFamilyImpl.class).nextOrNull();
 	}
 
-	public void setProject(Project project) {
-		setUniqueLinkOutTo(project, ASSIGNED_TO_PROJECT);
+	public void setProject(HibProject project) {
+		setUniqueLinkOutTo(project.toProject(), ASSIGNED_TO_PROJECT);
 	}
 
 	@Override
-	public Project getProject() {
+	public HibProject getProject() {
 		return out(ASSIGNED_TO_PROJECT, ProjectImpl.class).nextOrNull();
 	}
 
@@ -127,12 +127,12 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 		fillEventInfo(event);
 
 		// .project
-		Project project = getProject();
+		HibProject project = getProject();
 		ProjectReference reference = project.transformToReference();
 		event.setProject(reference);
 
 		// .tagFamily
-		TagFamily tagFamily = getTagFamily();
+		HibTagFamily tagFamily = getTagFamily();
 		TagFamilyReference tagFamilyReference = tagFamily.transformToReference();
 		event.setTagFamily(tagFamilyReference);
 		return event;
@@ -144,6 +144,11 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 		fillPermissionChanged(model, role);
 		model.setTagFamily(getTagFamily().transformToReference());
 		return model;
+	}
+
+	@Override
+	public void deleteElement() {
+		getElement().remove();
 	}
 
 }

@@ -1,6 +1,5 @@
 package com.gentics.mesh.test.util;
 
-import static org.junit.Assume.assumeNoException;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 

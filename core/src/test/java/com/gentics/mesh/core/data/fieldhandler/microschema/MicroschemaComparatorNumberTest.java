@@ -5,7 +5,7 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.fieldhandler.AbstractComparatorNumberTest;
 import com.gentics.mesh.core.data.schema.handler.AbstractFieldSchemaContainerComparator;
-import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
+import com.gentics.mesh.core.data.schema.handler.MicroschemaComparatorImpl;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
@@ -14,7 +14,7 @@ public class MicroschemaComparatorNumberTest extends AbstractComparatorNumberTes
 
 	@Override
 	public AbstractFieldSchemaContainerComparator<MicroschemaModel> getComparator() {
-		return new MicroschemaComparator();
+		return new MicroschemaComparatorImpl();
 	}
 
 	@Override

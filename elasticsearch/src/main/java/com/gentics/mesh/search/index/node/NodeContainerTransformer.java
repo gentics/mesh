@@ -1,7 +1,7 @@
 package com.gentics.mesh.search.index.node;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
@@ -21,11 +21,10 @@ import org.jsoup.Jsoup;
 
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
@@ -43,8 +42,13 @@ import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
@@ -123,13 +127,13 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	private void addPermissionInfo(JsonObject document, Node node, ContainerType type) {
 		List<String> roleUuids = new ArrayList<>();
 
-		for (Role role : node.getRolesWithPerm(READ_PERM)) {
+		for (HibRole role : node.getRolesWithPerm(READ_PERM)) {
 			roleUuids.add(role.getUuid());
 		}
 
 		// Also add the roles which would grant read on published nodes if the container is published.
 		if (type == PUBLISHED) {
-			for (Role role : node.getRolesWithPerm(READ_PUBLISHED_PERM)) {
+			for (HibRole role : node.getRolesWithPerm(READ_PUBLISHED_PERM)) {
 				roleUuids.add(role.getUuid());
 			}
 		}
@@ -398,7 +402,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	/**
 	 * Transform the given microschema container and add it to the source map.
 	 * 
-	 * @param map
+	 * @param document
 	 * @param microschemaVersion
 	 */
 	private void addMicroschema(JsonObject document, MicroschemaVersion microschemaVersion) {
@@ -415,11 +419,11 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	 * @param document
 	 * @param tags
 	 */
-	private void addTagFamilies(JsonObject document, Iterable<? extends Tag> tags) {
+	private void addTagFamilies(JsonObject document, Iterable<? extends HibTag> tags) {
 		JsonObject familiesObject = new JsonObject();
 
-		for (Tag tag : tags) {
-			TagFamily family = tag.getTagFamily();
+		for (HibTag tag : tags) {
+			HibTagFamily family = tag.getTagFamily();
 			JsonObject familyObject = familiesObject.getJsonObject(family.getName());
 			if (familyObject == null) {
 				familyObject = new JsonObject();
@@ -458,8 +462,9 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	}
 
 	public String generateVersion(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
-		Node node = container.getParentNode();
-		Project project = node.getProject();
+		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+		Node node = contentDao.getNode(container);
+		HibProject project = node.getProject();
 
 		StringBuilder builder = new StringBuilder();
 		builder.append(container.getElementVersion());
@@ -493,7 +498,11 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	 * @return
 	 */
 	public JsonObject toDocument(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
-		Node node = container.getParentNode();
+		TagDaoWrapper tagDao = Tx.get().data().tagDao();
+		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+
+		Node node = contentDao.getNode(container);
 		JsonObject document = new JsonObject();
 		document.put("uuid", node.getUuid());
 		addUser(document, "editor", container.getEditor());
@@ -502,14 +511,14 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 		document.put("created", toISO8601(node.getCreationTimestamp()));
 
 		addProject(document, node.getProject());
-		TraversalResult<? extends Tag> tags = node.getTags(node.getProject().getLatestBranch());
+		TraversalResult<HibTag> tags = tagDao.getTags(node, node.getProject().getLatestBranch());
 		addTags(document, tags);
-		addTagFamilies(document, node.getTags(node.getProject().getLatestBranch()));
+		addTagFamilies(document, tagDao.getTags(node, node.getProject().getLatestBranch()));
 		addPermissionInfo(document, node, type);
 
 		// The basenode has no parent.
-		if (node.getParentNode(branchUuid) != null) {
-			addParentNodeInfo(document, node.getParentNode(branchUuid));
+		if (nodeDao.getParentNode(node, branchUuid) != null) {
+			addParentNodeInfo(document, nodeDao.getParentNode(node, branchUuid));
 		}
 
 		String language = container.getLanguageTag();
@@ -526,7 +535,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 		// Add display field value
 		JsonObject displayField = new JsonObject();
 		displayField.put("key", container.getSchemaContainerVersion().getSchema().getDisplayField());
-		displayField.put("value", container.getDisplayFieldValue());
+		displayField.put("value", contentDao.getDisplayFieldValue(container));
 		document.put("displayField", displayField);
 		document.put("branchUuid", branchUuid);
 		document.put(VERSION_KEY, generateVersion(container, branchUuid, type));

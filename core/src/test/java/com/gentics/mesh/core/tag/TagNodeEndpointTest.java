@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.tag;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
@@ -13,12 +13,13 @@ import org.junit.Test;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -47,6 +48,7 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testReadPublishedNodesForTag() {
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 
 			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParametersImpl().setRecursive(true)));
 			NodeListResponse nodeList = call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
@@ -56,8 +58,8 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 			// publish the node and its parent
 			InternalActionContext ac = mockActionContext();
 			BulkActionContext bac = createBulkContext();
-			content("concorde").getParentNode(project().getLatestBranch().getUuid()).publish(ac, bac);
-			content("concorde").publish(ac, bac);
+			nodeDao.publish(nodeDao.getParentNode(content("concorde"), project().getLatestBranch().getUuid()), ac, bac);
+			nodeDao.publish(content("concorde"), ac, bac);
 
 			nodeList = call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid()));
 			NodeResponse concorde = new NodeResponse();
@@ -72,10 +74,10 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 		concorde.setUuid(db().tx(() -> content("concorde").getUuid()));
 
 		// Create new branch
-		Branch newBranch = tx(() -> createBranch("newbranch"));
+		HibBranch newBranch = tx(() -> createBranch("newbranch"));
 
 		try (Tx tx = tx()) {
-			Branch initialBranch = initialBranch();
+			HibBranch initialBranch = initialBranch();
 			// Get for latest branch (must be empty)
 			assertThat(call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
 				new VersioningParametersImpl().draft())).getData()).as("Nodes tagged in latest branch").isNotNull().isEmpty();
@@ -97,16 +99,16 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			TagDaoWrapper tagDao = tx.data().tagDao();
 			RoleDaoWrapper roleDao = tx.data().roleDao();
-			TagFamily root = tagFamily("basic");
-			Tag tag1 = tagDao.create(root, "test1", project(), user());
-			Tag tag2 = tagDao.create(root, "test2", project(), user());
-			Tag tag3 = tagDao.create(root, "test3", project(), user());
+			HibTagFamily root = tagFamily("basic");
+			HibTag tag1 = tagDao.create(root, "test1", project(), user());
+			HibTag tag2 = tagDao.create(root, "test2", project(), user());
+			HibTag tag3 = tagDao.create(root, "test3", project(), user());
 
 			Node node = content();
 
-			node.addTag(tag1, latestBranch());
-			node.addTag(tag3, latestBranch());
-			node.addTag(tag2, latestBranch());
+			tagDao.addTag(node, tag1, latestBranch());
+			tagDao.addTag(node, tag3, latestBranch());
+			tagDao.addTag(node, tag2, latestBranch());
 
 			roleDao.grantPermissions(role(), tag1, READ_PERM);
 			roleDao.grantPermissions(role(), tag2, READ_PERM);

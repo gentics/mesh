@@ -13,6 +13,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collector;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -21,12 +22,12 @@ public final class StreamUtil {
 
 	}
 
-	public static <T> Stream<T> toStream(Iterable<T> iterable) {
-		return StreamSupport.stream(iterable.spliterator(), false);
+	public static <T> Stream<T> toStream(Iterable<? extends T> iterable) {
+		return (Stream<T>)StreamSupport.stream(iterable.spliterator(), false);
 	}
 
-	public static <T> Stream<T> toStream(Iterator<T> iterator) {
-		return toStream(() -> iterator);
+	public static <T> Stream<T> toStream(Iterator<? extends T> iterator) {
+		return toStream(() -> (Iterator<T>)iterator);
 	}
 
 	/**
@@ -129,5 +130,18 @@ public final class StreamUtil {
 				return true;
 			}
 		};
+	}
+
+	/**
+	 * Creates a stream that provides the elements of an array in reverse order.
+	 *
+	 * @param arr
+	 * @param <T>
+	 * @return
+	 */
+	public static <T> Stream<T> reverseOf(T[] arr) {
+		return IntStream.iterate(arr.length - 1, i -> i - 1)
+			.limit(arr.length)
+			.mapToObj(i -> arr[i]);
 	}
 }

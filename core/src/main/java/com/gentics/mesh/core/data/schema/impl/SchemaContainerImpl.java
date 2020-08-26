@@ -10,7 +10,6 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
-import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
@@ -68,5 +67,11 @@ public class SchemaContainerImpl extends
 	public HibUser getEditor() {
 		return mesh().userProperties().getEditor(this);
 	}
+
+	@Override
+	public void deleteElement() {
+		remove();
+	}
+
 
 }

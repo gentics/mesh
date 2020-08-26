@@ -27,8 +27,13 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.search.MoveDocumentEntry;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
@@ -104,7 +109,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 
 	@Override
 	protected String composeDocumentIdFromEntry(UpdateDocumentEntry entry) {
-		return NodeGraphFieldContainer.composeDocumentId(entry.getElementUuid(), entry.getContext().getLanguageTag());
+		return ContentDaoWrapper.composeDocumentId(entry.getElementUuid(), entry.getContext().getLanguageTag());
 	}
 
 	@Override
@@ -114,7 +119,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 		String branchUuid = context.getBranchUuid();
 		String schemaContainerVersionUuid = context.getSchemaContainerVersionUuid();
 		ContainerType type = context.getContainerType();
-		return NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid, type);
+		return ContentDaoWrapper.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid, type);
 	}
 
 	@Override
@@ -142,7 +147,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 		});
 	}
 
-	public Transactional<Map<String, IndexInfo>> getIndices(Project project, Branch branch) {
+	public Transactional<Map<String, IndexInfo>> getIndices(HibProject project, HibBranch branch) {
 		return db.transactional(tx -> {
 			Map<String, IndexInfo> indexInfo = new HashMap<>();
 			// Each branch specific index has also document type specific mappings
@@ -153,14 +158,14 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 		});
 	}
 
-	public Transactional<Map<String, IndexInfo>> getIndices(Project project, Branch branch, SchemaVersion containerVersion) {
+	public Transactional<Map<String, IndexInfo>> getIndices(HibProject project, HibBranch branch, HibSchemaVersion containerVersion) {
 		return db.transactional(tx -> {
 			Map<String, IndexInfo> indexInfos = new HashMap<>();
 			SchemaVersionModel schema = containerVersion.getSchema();
 
 			// Add all language specific indices (might be none)
 			schema.findOverriddenSearchLanguages().forEach(language -> Stream.of(DRAFT, PUBLISHED).forEach(version -> {
-				String indexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(), containerVersion
+				String indexName = ContentDaoWrapper.composeIndexName(project.getUuid(), branch.getUuid(), containerVersion
 					.getUuid(), version, language);
 				log.debug("Adding index to map of known indices {" + indexName + "}");
 				// Load the index mapping information for the index
@@ -169,7 +174,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 
 			// And all default indices
 			Stream.of(DRAFT, PUBLISHED).forEach(version -> {
-				String indexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch.getUuid(), containerVersion
+				String indexName = ContentDaoWrapper.composeIndexName(project.getUuid(), branch.getUuid(), containerVersion
 					.getUuid(), version);
 				log.debug("Adding index to map of known indices {" + indexName + "}");
 				// Load the index mapping information for the index
@@ -179,7 +184,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 		});
 	}
 
-	public IndexInfo createIndexInfo(Branch branch, SchemaModel schema, String language, String indexName, String sourceInfo) {
+	public IndexInfo createIndexInfo(HibBranch branch, SchemaModel schema, String language, String indexName, String sourceInfo) {
 		JsonObject mapping = getMappingProvider().getMapping(schema, branch, language);
 		JsonObject settings = language == null
 			? getDefaultSetting(schema.getElasticsearch())
@@ -200,7 +205,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 						}
 						Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED).forEach(type -> {
 							activeIndices
-								.add(NodeGraphFieldContainer.composeIndexName(currentProject.getUuid(), branch.getUuid(), version.getUuid(),
+								.add(ContentDaoWrapper.composeIndexName(currentProject.getUuid(), branch.getUuid(), version.getUuid(),
 									type));
 						});
 					}
@@ -243,7 +248,8 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 	 * @return indexName -> documentName -> NodeGraphFieldContainer
 	 */
 	private Map<String, Map<String, NodeGraphFieldContainer>> loadVersionsFromGraph(Branch branch, SchemaVersion version, ContainerType type) {
-		Map<String, Map<String, NodeGraphFieldContainer>> tx = db.tx(() -> {
+		return db.tx(tx -> {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 			String branchUuid = branch.getUuid();
 			List<String> indexLanguages = version.getSchema().findOverriddenSearchLanguages().collect(Collectors.toList());
 
@@ -252,7 +258,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 				.map(NodeGraphFieldContainer.class::cast)
 				.collect(Collectors.groupingBy(content -> {
 						String languageTag = content.getLanguageTag();
-						return NodeGraphFieldContainer.composeIndexName(
+						return ContentDaoWrapper.composeIndexName(
 							branch.getProject().getUuid(),
 							branchUuid,
 							version.getUuid(),
@@ -262,10 +268,9 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 								: null
 						);
 					},
-					Collectors.toMap(c -> c.getParentNode().getUuid() + "-" + c.getLanguageTag(), Function.identity())
+					Collectors.toMap(c -> contentDao.getNode(c).getUuid() + "-" + c.getLanguageTag(), Function.identity())
 				));
 		});
-		return tx;
 	}
 
 	/**
@@ -334,14 +339,14 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 	private List<String> getIndexNames(Project project, Branch branch, SchemaVersion version, ContainerType type) {
 		return db.tx(() -> {
 			Stream<String> languageIndices = version.getSchema().findOverriddenSearchLanguages()
-				.map(lang -> NodeGraphFieldContainer.composeIndexName(
+				.map(lang -> ContentDaoWrapper.composeIndexName(
 					project.getUuid(),
 					branch.getUuid(),
 					version.getUuid(),
 					type,
 					lang
 				));
-			Stream<String> defaultIndex = Stream.of(NodeGraphFieldContainer.composeIndexName(
+			Stream<String> defaultIndex = Stream.of(ContentDaoWrapper.composeIndexName(
 				project.getUuid(),
 				branch.getUuid(),
 				version.getUuid(),
@@ -354,16 +359,16 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 
 	public Set<String> getIndicesForSearch(InternalActionContext ac, ContainerType type) {
 		return db.tx(() -> {
-			Project project = ac.getProject();
+			HibProject project = ac.getProject();
 			if (project != null) {
-				Branch branch = ac.getBranch();
-				return Collections.singleton(NodeGraphFieldContainer.composeIndexPattern(
+				HibBranch branch = ac.getBranch();
+				return Collections.singleton(ContentDaoWrapper.composeIndexPattern(
 					project.getUuid(),
 					branch.getUuid(),
 					type
 				));
 			} else {
-				return Collections.singleton(NodeGraphFieldContainer.composeIndexPattern(type));
+				return Collections.singleton(ContentDaoWrapper.composeIndexPattern(type));
 			}
 		});
 	}
@@ -403,7 +408,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 	 */
 	private void store(Set<Single<String>> obs, Node node, GenericEntryContext context) {
 		if (context.getBranchUuid() == null) {
-			for (Branch branch : node.getProject().getBranchRoot().findAll()) {
+			for (HibBranch branch : Tx.get().data().branchDao().findAll(node.getProject())) {
 				store(obs, node, branch.getUuid(), context);
 			}
 		} else {
@@ -447,8 +452,9 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 	 * @param context
 	 */
 	private void store(Set<Single<String>> obs, Node node, String branchUuid, ContainerType type, GenericEntryContext context) {
+		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 		if (context.getLanguageTag() != null) {
-			NodeGraphFieldContainer container = node.getGraphFieldContainer(context.getLanguageTag(), branchUuid, type);
+			NodeGraphFieldContainer container = contentDao.getGraphFieldContainer(node, context.getLanguageTag(), branchUuid, type);
 			if (container == null) {
 				log.warn("Node {" + node.getUuid() + "} has no language container for languageTag {" + context.getLanguageTag()
 					+ "}. I can't store the search index document. This may be normal in cases if mesh is handling an outdated search queue batch entry.");
@@ -456,7 +462,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 				obs.add(storeContainer(container, branchUuid, type));
 			}
 		} else {
-			for (NodeGraphFieldContainer container : node.getGraphFieldContainers(branchUuid, type)) {
+			for (NodeGraphFieldContainer container : contentDao.getGraphFieldContainers(node, branchUuid, type)) {
 				obs.add(storeContainer(container, branchUuid, type));
 			}
 		}
@@ -473,7 +479,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 	private Observable<IndexBulkEntry> storeForBulk(Node node, GenericEntryContext context) {
 		if (context.getBranchUuid() == null) {
 			Set<Observable<IndexBulkEntry>> obs = new HashSet<>();
-			for (Branch branch : node.getProject().getBranchRoot().findAll()) {
+			for (HibBranch branch : Tx.get().data().branchDao().findAll(node.getProject())) {
 				obs.add(storeForBulk(node, branch.getUuid(), context));
 			}
 			return Observable.merge(obs);
@@ -520,8 +526,10 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 	 * @return
 	 */
 	private Observable<IndexBulkEntry> storeForBulk(Node node, String branchUuid, ContainerType type, GenericEntryContext context) {
+		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+
 		if (context.getLanguageTag() != null) {
-			NodeGraphFieldContainer container = node.getGraphFieldContainer(context.getLanguageTag(), branchUuid, type);
+			NodeGraphFieldContainer container = contentDao.getGraphFieldContainer(node, context.getLanguageTag(), branchUuid, type);
 			if (container == null) {
 				log.warn("Node {" + node.getUuid() + "} has no language container for languageTag {" + context.getLanguageTag()
 					+ "}. I can't store the search index document. This may be normal in cases if mesh is handling an outdated search queue batch entry.");
@@ -530,7 +538,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 			}
 		} else {
 			Set<Observable<IndexBulkEntry>> obs = new HashSet<>();
-			for (NodeGraphFieldContainer container : node.getGraphFieldContainers(branchUuid, type)) {
+			for (NodeGraphFieldContainer container : contentDao.getGraphFieldContainers(node, branchUuid, type)) {
 				obs.add(storeContainerForBulk(container, branchUuid, type).toObservable());
 			}
 			return Observable.merge(obs);
@@ -553,18 +561,19 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 			branchUuid, type));
 	}
 
-	public Observable<? extends BulkEntry> moveForBulk(MoveDocumentEntry entry) {
+	public Observable<BulkEntry> moveForBulk(MoveDocumentEntry entry) {
+		ContentDaoWrapper contentDao = boot.contentDao();
 		MoveEntryContext context = entry.getContext();
 		ContainerType type = context.getContainerType();
 		String releaseUuid = context.getBranchUuid();
 
 		NodeGraphFieldContainer newContainer = context.getNewContainer();
-		String newProjectUuid = newContainer.getParentNode().getProject().getUuid();
-		String newIndexName = NodeGraphFieldContainer.composeIndexName(newProjectUuid, releaseUuid,
+		String newProjectUuid = contentDao.getNode(newContainer).getProject().getUuid();
+		String newIndexName = ContentDaoWrapper.composeIndexName(newProjectUuid, releaseUuid,
 			newContainer.getSchemaContainerVersion().getUuid(),
 			type);
 		String newLanguageTag = newContainer.getLanguageTag();
-		String newDocumentId = NodeGraphFieldContainer.composeDocumentId(newContainer.getParentNode().getUuid(), newLanguageTag);
+		String newDocumentId = ContentDaoWrapper.composeDocumentId(contentDao.getNode(newContainer).getUuid(), newLanguageTag);
 		JsonObject doc = transformer.toDocument(newContainer, releaseUuid, type);
 		return Observable.just(new IndexBulkEntry(newIndexName, newDocumentId, doc, complianceMode));
 
@@ -579,8 +588,9 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 	 * @return
 	 */
 	private Completable deleteContainer(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
-		String projectUuid = container.getParentNode().getProject().getUuid();
-		return searchProvider.deleteDocument(container.getIndexName(projectUuid, branchUuid, type), container.getDocumentId());
+		ContentDaoWrapper contentDao = boot.contentDao();
+		String projectUuid = contentDao.getNode(container).getProject().getUuid();
+		return searchProvider.deleteDocument(contentDao.getIndexName(container, projectUuid, branchUuid, type), contentDao.getDocumentId(container));
 	}
 
 	/**
@@ -592,14 +602,15 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 	 * @return Single with affected index name
 	 */
 	public Single<String> storeContainer(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
+		ContentDaoWrapper contentDao = boot.contentDao();
 		JsonObject doc = transformer.toDocument(container, branchUuid, type);
-		String projectUuid = container.getParentNode().getProject().getUuid();
-		String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid, container.getSchemaContainerVersion().getUuid(), type);
+		String projectUuid = contentDao.getNode(container).getProject().getUuid();
+		String indexName = ContentDaoWrapper.composeIndexName(projectUuid, branchUuid, container.getSchemaContainerVersion().getUuid(), type);
 		if (log.isDebugEnabled()) {
-			log.debug("Storing node {" + container.getParentNode().getUuid() + "} into index {" + indexName + "}");
+			log.debug("Storing node {" + contentDao.getNode(container).getUuid() + "} into index {" + indexName + "}");
 		}
 		String languageTag = container.getLanguageTag();
-		String documentId = NodeGraphFieldContainer.composeDocumentId(container.getParentNode().getUuid(), languageTag);
+		String documentId = ContentDaoWrapper.composeDocumentId(contentDao.getNode(container).getUuid(), languageTag);
 		return searchProvider.storeDocument(indexName, documentId, doc).andThen(Single.just(indexName));
 	}
 
@@ -612,25 +623,26 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 	 * @return Single with the bulk entry
 	 */
 	public Single<IndexBulkEntry> storeContainerForBulk(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
+		ContentDaoWrapper contentDao = boot.contentDao();
 		JsonObject doc = transformer.toDocument(container, branchUuid, type);
-		String projectUuid = container.getParentNode().getProject().getUuid();
-		String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid, container.getSchemaContainerVersion().getUuid(), type);
+		String projectUuid = contentDao.getNode(container).getProject().getUuid();
+		String indexName = ContentDaoWrapper.composeIndexName(projectUuid, branchUuid, container.getSchemaContainerVersion().getUuid(), type);
 		if (log.isDebugEnabled()) {
-			log.debug("Storing node {" + container.getParentNode().getUuid() + "} into index {" + indexName + "}");
+			log.debug("Storing node {" + contentDao.getNode(container).getUuid() + "} into index {" + indexName + "}");
 		}
 		String languageTag = container.getLanguageTag();
-		String documentId = NodeGraphFieldContainer.composeDocumentId(container.getParentNode().getUuid(), languageTag);
+		String documentId = ContentDaoWrapper.composeDocumentId(contentDao.getNode(container).getUuid(), languageTag);
 
 		return Single.just(new IndexBulkEntry(indexName, documentId, doc, complianceMode));
 	}
 
 	@Override
-	public GraphPermission getReadPermission(InternalActionContext ac) {
+	public InternalPermission getReadPermission(InternalActionContext ac) {
 		switch (ContainerType.forVersion(ac.getVersioningParameters().getVersion())) {
 		case PUBLISHED:
-			return GraphPermission.READ_PUBLISHED_PERM;
+			return InternalPermission.READ_PUBLISHED_PERM;
 		default:
-			return GraphPermission.READ_PERM;
+			return InternalPermission.READ_PERM;
 		}
 	}
 
@@ -645,17 +657,19 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<Node> implements 
 			// Not found
 			throw error(INTERNAL_SERVER_ERROR, "error_element_not_found", uuid);
 		} else {
-			Project project = node.getProject();
+			BranchDaoWrapper branchDao = Tx.get().data().branchDao();
+			ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 
+			HibProject project = node.getProject();
 			List<UpdateBulkEntry> entries = new ArrayList<>();
 
 			// Determine which documents need to be updated. The node could have multiple documents in various indices.
-			for (Branch branch : project.getBranchRoot().findAll()) {
+			for (HibBranch branch : branchDao.findAll(project)) {
 				for (ContainerType type : Arrays.asList(DRAFT, PUBLISHED)) {
 					JsonObject json = getTransformer().toPermissionPartial(node, type);
-					for (NodeGraphFieldContainer container : node.getGraphFieldContainers(branch, type)) {
-						String indexName = container.getIndexName(project.getUuid(), branch.getUuid(), type);
-						String documentId = container.getDocumentId();
+					for (NodeGraphFieldContainer container : contentDao.getGraphFieldContainers(node, branch, type)) {
+						String indexName = boot.contentDao().getIndexName(container, project.getUuid(), branch.getUuid(), type);
+						String documentId = boot.contentDao().getDocumentId(container);
 						entries.add(new UpdateBulkEntry(indexName, documentId, json, complianceMode));
 					}
 				}

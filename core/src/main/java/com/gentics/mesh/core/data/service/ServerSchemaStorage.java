@@ -9,20 +9,18 @@ import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
-import com.gentics.mesh.core.data.schema.Microschema;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
-import com.gentics.mesh.core.data.schema.Schema;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.SchemaStorage;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 
-import dagger.Lazy;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -35,8 +33,6 @@ public class ServerSchemaStorage implements SchemaStorage {
 
 	private static final Logger log = LoggerFactory.getLogger(ServerSchemaStorage.class);
 
-	private Lazy<BootstrapInitializer> boot;
-
 	/**
 	 * Map holding the schemas per name and version
 	 */
@@ -45,8 +41,7 @@ public class ServerSchemaStorage implements SchemaStorage {
 	private Map<String, Map<String, MicroschemaVersionModel>> microschemas = Collections.synchronizedMap(new HashMap<>());
 
 	@Inject
-	public ServerSchemaStorage(Lazy<BootstrapInitializer> boot) {
-		this.boot = boot;
+	public ServerSchemaStorage() {
 	}
 
 	public void init() {
@@ -54,16 +49,16 @@ public class ServerSchemaStorage implements SchemaStorage {
 		SchemaDaoWrapper schemaDao = Tx.get().data().schemaDao();
 		MicroschemaDaoWrapper microschemaDao = Tx.get().data().microschemaDao();
 
-		for (Schema container : schemaDao.findAll()) {
-			for (SchemaVersion version : container.findAll()) {
+		for (HibSchema container : schemaDao.findAll()) {
+			for (HibSchemaVersion version : schemaDao.findAllVersions(container)) {
 				SchemaVersionModel restSchema = version.getSchema();
 				schemas.computeIfAbsent(restSchema.getName(), k -> new HashMap<>()).put(restSchema.getVersion(), restSchema);
 			}
 		}
 
 		// load all microschemas and add to storage
-		for (Microschema container : microschemaDao.findAll()) {
-			for (MicroschemaVersion version : container.findAll()) {
+		for (HibMicroschema container : microschemaDao.findAll()) {
+			for (HibMicroschemaVersion version : microschemaDao.findAllVersions(container)) {
 				MicroschemaVersionModel restMicroschema = version.getSchema();
 				microschemas.computeIfAbsent(restMicroschema.getName(), k -> new HashMap<>()).put(restMicroschema.getVersion(), restMicroschema);
 			}

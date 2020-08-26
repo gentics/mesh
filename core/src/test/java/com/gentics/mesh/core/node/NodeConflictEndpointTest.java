@@ -20,6 +20,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.i18n.I18NUtil;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
@@ -130,12 +131,13 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 	public void testDeduplicationDuringUpdate() {
 		disableAutoPurge();
 
-		try (Tx trx = tx()) {
+		try (Tx tx = tx()) {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 			updateSchema();
-			NodeGraphFieldContainer origContainer = getTestNode().getLatestDraftFieldContainer(english());
+			NodeGraphFieldContainer origContainer = contentDao.getLatestDraftFieldContainer(getTestNode(), english());
 			assertEquals("Concorde_english_name", origContainer.getString("teaser").getString());
 			assertEquals("Concorde english title", origContainer.getString("title").getString());
-			trx.success();
+			tx.success();
 		}
 
 		// First request - Update 1.0 and add basic fields and complex fields -> 1.1
@@ -156,7 +158,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 		Node node = getTestNode();
 		String nodeUuid = tx(() -> node.getUuid());
 
-		NodeGraphFieldContainer oldContainer = tx(() -> node.findVersion("en", project().getLatestBranch().getUuid(), "1.0"));
+		NodeGraphFieldContainer oldContainer = tx(() -> boot().contentDao().findVersion(node, "en", project().getLatestBranch().getUuid(), "1.0"));
 		NodeUpdateRequest request = prepareNameFieldUpdateRequest("1234", "1.0");
 		// Add micronode / string list
 		request.getFields().put("stringList", FieldUtil.createStringListField("a", "b", "c"));
@@ -169,8 +171,9 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 		assertThat(restNode).hasVersion("1.1");
 
 		try (Tx tx = tx()) {
-			assertNotNull("The old version should have a new version 1.1", oldContainer.getNextVersions().iterator().next());
-			NodeGraphFieldContainer newContainer = node.findVersion("en", project().getLatestBranch().getUuid(), "1.1");
+			ContentDaoWrapper contentDao = tx.data().contentDao();
+			assertNotNull("The old version should have a new version 1.1", contentDao.getNextVersions(oldContainer).iterator().next());
+			NodeGraphFieldContainer newContainer = contentDao.findVersion(node, "en", project().getLatestBranch().getUuid(), "1.1");
 			assertEquals("The name field value of the old container version should not have been changed.", "Concorde_english_name", oldContainer
 				.getString("teaser").getString());
 			assertEquals("The name field value of the new container version should contain the expected value.", "1234", newContainer.getString(
@@ -196,7 +199,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 			NodeResponse restNode = call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), request, parameters));
 			assertThat(restNode).hasVersion("1.2");
 
-			NodeGraphFieldContainer createdVersion = node.findVersion(Arrays.asList("en"), project().getLatestBranch().getUuid(),
+			NodeGraphFieldContainer createdVersion = trx.data().contentDao().findVersion(node, Arrays.asList("en"), project().getLatestBranch().getUuid(),
 				"1.2");
 			assertNotNull("The graph field container for version 1.2 could not be found.", createdVersion);
 			return request;
@@ -223,7 +226,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 
 		try (Tx trx = tx()) {
 			Node node = getTestNode();
-			NodeGraphFieldContainer createdVersion = node.findVersion(Arrays.asList("en"), project().getLatestBranch().getUuid(),
+			NodeGraphFieldContainer createdVersion = trx.data().contentDao().findVersion(node, Arrays.asList("en"), project().getLatestBranch().getUuid(),
 				"1.3");
 			assertNotNull("The graph field container for version 1.3 could not be found.", createdVersion);
 			NodeGraphFieldContainer previousVersion = createdVersion.getPreviousVersion();
@@ -262,7 +265,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 		}
 		try (Tx trx = tx()) {
 			Node node = getTestNode();
-			NodeGraphFieldContainer createdVersion = node.findVersion("en", project().getLatestBranch().getUuid(), "1.4");
+			NodeGraphFieldContainer createdVersion = trx.data().contentDao().findVersion(node, "en", project().getLatestBranch().getUuid(), "1.4");
 			assertNotNull("The graph field container for version 0.5 could not be found.", createdVersion);
 			assertNull("The micronode should not exist in this version since we explicitly removed it.", createdVersion.getMicronode("micronode"));
 			assertNull("The string list should not exist in this version since we explicitly removed it via a null update request.", createdVersion
@@ -295,12 +298,13 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 	public void testConflictInMicronode() {
 		disableAutoPurge();
 
-		try (Tx trx = tx()) {
+		try (Tx tx = tx()) {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 			updateSchema();
-			NodeGraphFieldContainer origContainer = getTestNode().getLatestDraftFieldContainer(english());
+			NodeGraphFieldContainer origContainer = contentDao.getLatestDraftFieldContainer(getTestNode(), english());
 			assertEquals("Concorde_english_name", origContainer.getString("teaser").getString());
 			assertEquals("Concorde english title", origContainer.getString("title").getString());
-			trx.success();
+			tx.success();
 		}
 
 		// First request - Update 1.0 and add basic fields and complex fields
@@ -321,7 +325,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 			NodeResponse restNode = call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), request, parameters));
 			assertThat(restNode).hasVersion("1.2");
 
-			NodeGraphFieldContainer createdVersion = node.findVersion(Arrays.asList("en"), project().getLatestBranch().getUuid(),
+			NodeGraphFieldContainer createdVersion = tx.data().contentDao().findVersion(node, Arrays.asList("en"), project().getLatestBranch().getUuid(),
 				"1.2");
 			assertNotNull("The graph field container for version 0.3 could not be found.", createdVersion);
 		}

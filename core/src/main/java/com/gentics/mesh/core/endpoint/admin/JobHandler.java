@@ -16,6 +16,7 @@ import org.apache.commons.lang3.NotImplementedException;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.action.JobDAOActions;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.page.TransformablePage;
@@ -41,14 +42,9 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 	private BootstrapInitializer boot;
 
 	@Inject
-	public JobHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, WriteLockImpl writeLock) {
-		super(db, utils, writeLock);
+	public JobHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, WriteLockImpl writeLock, JobDAOActions jobActions) {
+		super(db, utils, writeLock, jobActions);
 		this.boot = boot;
-	}
-
-	@Override
-	public JobCrudActions crudActions() {
-		return new JobCrudActions();
 	}
 
 	@Override

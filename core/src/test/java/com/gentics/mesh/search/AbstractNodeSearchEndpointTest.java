@@ -13,6 +13,7 @@ import java.util.Set;
 
 import org.codehaus.jettison.json.JSONException;
 
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
@@ -79,18 +80,20 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 	}
 
 	protected void addNumberSpeedFieldToOneNode(Number number) {
+		ContentDaoWrapper contentDao = boot().contentDao();
 		Node node = content("concorde");
 		SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		schema.addField(new NumberFieldSchemaImpl().setName("speed"));
 		node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
-		node.getLatestDraftFieldContainer(english()).createNumber("speed").setNumber(number);
+		contentDao.getLatestDraftFieldContainer(node, english()).createNumber("speed").setNumber(number);
 	}
 
 	/**
 	 * Add a micronode field to the tested content
 	 */
 	protected void addMicronodeField() {
+		ContentDaoWrapper contentDao = boot().contentDao();
 		Node node = content("concorde");
 
 		SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
@@ -99,7 +102,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 		vcardFieldSchema.setAllowedMicroSchemas(new String[] { "vcard" });
 		schema.addField(vcardFieldSchema);
 
-		MicronodeGraphField vcardField = node.getLatestDraftFieldContainer(english()).createMicronode("vcard",
+		MicronodeGraphField vcardField = contentDao.getLatestDraftFieldContainer(node, english()).createMicronode("vcard",
 			microschemaContainers().get("vcard").getLatestVersion());
 		vcardField.getMicronode().createString("firstName").setString("Mickey");
 		vcardField.getMicronode().createString("lastName").setString("Mouse");
@@ -109,6 +112,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 	 * Add a micronode list field to the tested content
 	 */
 	protected void addMicronodeListField() {
+		ContentDaoWrapper contentDao = boot().contentDao();
 		Node node = content("concorde");
 
 		// Update the schema
@@ -119,7 +123,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 		vcardListFieldSchema.setAllowedSchemas(new String[] { "vcard" });
 		schema.addField(vcardListFieldSchema);
 
-		MicronodeGraphFieldList vcardListField = node.getLatestDraftFieldContainer(english()).createMicronodeFieldList("vcardlist");
+		MicronodeGraphFieldList vcardListField = contentDao.getLatestDraftFieldContainer(node, english()).createMicronodeFieldList("vcardlist");
 		for (Tuple<String, String> testdata : Arrays.asList(Tuple.tuple("Mickey", "Mouse"), Tuple.tuple("Donald", "Duck"))) {
 			Micronode micronode = vcardListField.createMicronode();
 			micronode.setSchemaContainerVersion(microschemaContainers().get("vcard").getLatestVersion());
@@ -128,13 +132,14 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 		}
 
 		// create an empty vcard list field
-		node.getLatestDraftFieldContainer(german()).createMicronodeFieldList("vcardlist");
+		contentDao.getLatestDraftFieldContainer(node, german()).createMicronodeFieldList("vcardlist");
 	}
 
 	/**
 	 * Add a node list field to the tested content
 	 */
 	protected void addNodeListField() {
+		ContentDaoWrapper contentDao = boot().contentDao();
 		Node node = content("concorde");
 
 		// Update the schema
@@ -146,11 +151,11 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 		schema.addField(nodeListFieldSchema);
 
 		// create a non-empty list for the english version
-		NodeGraphFieldList nodeListField = node.getLatestDraftFieldContainer(english()).createNodeList("nodelist");
+		NodeGraphFieldList nodeListField = contentDao.getLatestDraftFieldContainer(node, english()).createNodeList("nodelist");
 		nodeListField.addItem(nodeListField.createNode("testNode", node));
 
 		// create an empty list for the german version
-		node.getLatestDraftFieldContainer(german()).createNodeList("nodelist");
+		contentDao.getLatestDraftFieldContainer(node, german()).createNodeList("nodelist");
 	}
 
 	/**

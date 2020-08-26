@@ -6,12 +6,13 @@ import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.DummyBulkActionContext;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
@@ -25,131 +26,12 @@ import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.path.Path;
-import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.VersionNumber;
 
 /**
  * A node field container is an aggregation node that holds localized fields (e.g.: StringField, NodeField...)
  */
 public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrackingVertex {
-
-	/**
-	 * Type Value: {@value #TYPE}
-	 */
-	String TYPE = "nodeContainer";
-
-	/**
-	 * Construct the index name using the provided information.
-	 * 
-	 * <p>
-	 * <ul>
-	 * <li>Document Index: [:indexPrefixnode-:projectUuid-:branchUuid-:schemaVersionUuid-:versionType]</li>
-	 * <li>Example: node-934ef7f2210e4d0e8ef7f2210e0d0ec5-fd26b3cf20fb4f6ca6b3cf20fbdf6cd6-draft</li>
-	 * </ul>
-	 * <p>
-	 * 
-	 * @param projectUuid
-	 * @param branchUuid
-	 * @param schemaContainerVersionUuid
-	 * @param type
-	 * @return
-	 */
-	static String composeIndexName(String projectUuid, String branchUuid, String schemaContainerVersionUuid, ContainerType type) {
-		return composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid, type, null);
-	}
-
-	/**
-	 * Construct the index name using the provided information.
-	 * 
-	 * <p>
-	 * <ul>
-	 * <li>Document Index: ":indexPrefixnode-:projectUuid-:branchUuid-:schemaVersionUuid-:versionType[-:language]"</li>
-	 * <li>Example: node-934ef7f2210e4d0e8ef7f2210e0d0ec5-fd26b3cf20fb4f6ca6b3cf20fbdf6cd6-draft</li>
-	 * <li>Example with language: node-934ef7f2210e4d0e8ef7f2210e0d0ec5-fd26b3cf20fb4f6ca6b3cf20fbdf6cd6-draft-en</li>
-	 * </ul>
-	 * <p>
-	 * 
-	 * @param projectUuid
-	 * @param branchUuid
-	 * @param schemaContainerVersionUuid
-	 * @param type
-	 * @param language
-	 * @return
-	 */
-	static String composeIndexName(String projectUuid, String branchUuid, String schemaContainerVersionUuid, ContainerType type, String language) {
-		Objects.requireNonNull(projectUuid, "The project uuid was not set");
-		Objects.requireNonNull(branchUuid, "The branch uuid was not set");
-		Objects.requireNonNull(schemaContainerVersionUuid, "The schema container version uuid was not set");
-		Objects.requireNonNull(type, "The container type was not set");
-		// TODO check that only "draft" and "published" are used for version
-		StringBuilder indexName = new StringBuilder();
-		indexName.append("node");
-		indexName.append("-");
-		indexName.append(projectUuid);
-		indexName.append("-");
-		indexName.append(branchUuid);
-		indexName.append("-");
-		indexName.append(schemaContainerVersionUuid);
-		indexName.append("-");
-		indexName.append(type.toString().toLowerCase());
-		if (language != null) {
-			indexName.append("-");
-			indexName.append(language.toLowerCase());
-		}
-		return indexName.toString();
-	}
-
-	/**
-	 * Construct an index name pattern catching all node indices of a specific project, branch and schema.
-	 *
-	 * @param projectUuid
-	 * @param branchUuid
-	 * @param schemaContainerVersionUuid
-	 * @return
-	 */
-	static String composeIndexPattern(String projectUuid, String branchUuid, String schemaContainerVersionUuid) {
-		Objects.requireNonNull(projectUuid, "The project uuid was not set");
-		Objects.requireNonNull(branchUuid, "The branch uuid was not set");
-		Objects.requireNonNull(schemaContainerVersionUuid, "The schema container version uuid was not set");
-		return String.format("node-%s-%s-%s-*", projectUuid, branchUuid, schemaContainerVersionUuid);
-	}
-
-	/**
-	 * Construct an index name pattern catching all node indices of a specific project, branch and version.
-	 *
-	 * @param projectUuid
-	 * @param branchUuid
-	 * @param type
-	 * @return
-	 */
-	static String composeIndexPattern(String projectUuid, String branchUuid, ContainerType type) {
-		Objects.requireNonNull(projectUuid, "The project uuid was not set");
-		Objects.requireNonNull(branchUuid, "The branch uuid was not set");
-		Objects.requireNonNull(type, "The container type was not set");
-		return String.format("node-%s-%s-*-%s*", projectUuid, branchUuid, type.toString().toLowerCase());
-	}
-
-	/**
-	 * Construct an index name pattern catching all node indices of a specific project.
-	 *
-	 * @param projectUuid
-	 * @return
-	 */
-	static String composeIndexPattern(String projectUuid) {
-		Objects.requireNonNull(projectUuid, "The project uuid was not set");
-		return String.format("node-%s-*", projectUuid);
-	}
-
-	/**
-	 * Construct an index name pattern catching all node indices of a specific version.
-	 *
-	 * @param type
-	 * @return
-	 */
-	static String composeIndexPattern(ContainerType type) {
-		Objects.requireNonNull(type, "The container type was not set");
-		return String.format("node-*-*-*-%s*", type.toString().toLowerCase());
-	}
 
 	/**
 	 * Return the index name for the given parameters.
@@ -160,32 +42,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * @return
 	 */
 	default String getIndexName(String projectUuid, String branchUuid, ContainerType type) {
-		return composeIndexName(projectUuid, branchUuid, getSchemaContainerVersion().getUuid(), type);
-	}
-
-	/**
-	 * Construct the document id using the given information.
-	 *
-	 * <p>
-	 * Format:
-	 * <ul>
-	 * <li>Document Id: [:uuid-:languageTag]</li>
-	 * <li>Example: 234ef7f2510e4d0e8ef9f2210e0d0ec2-en</li>
-	 * </ul>
-	 * <p>
-	 * 
-	 * @param nodeUuid
-	 * @param languageTag
-	 * @return
-	 */
-	static String composeDocumentId(String nodeUuid, String languageTag) {
-		Objects.requireNonNull(nodeUuid, "The nodeUuid was not set");
-		Objects.requireNonNull(languageTag, "The language was was not set");
-		StringBuilder id = new StringBuilder();
-		id.append(nodeUuid);
-		id.append("-");
-		id.append(languageTag);
-		return id.toString();
+		return ContentDaoWrapper.composeIndexName(projectUuid, branchUuid, getSchemaContainerVersion().getUuid(), type);
 	}
 
 	/**
@@ -194,7 +51,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * @return
 	 */
 	default String getDocumentId() {
-		return composeDocumentId(getParentNode().getUuid(), getLanguageTag());
+		return ContentDaoWrapper.composeDocumentId(getNode().getUuid(), getLanguageTag());
 	}
 
 	/**
@@ -220,7 +77,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * @param branch
 	 * @param bac
 	 */
-	void deleteFromBranch(Branch branch, BulkActionContext bac);
+	void deleteFromBranch(HibBranch branch, BulkActionContext bac);
 
 	/**
 	 * Return the display field value for this container.
@@ -230,20 +87,11 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	String getDisplayFieldValue();
 
 	/**
-	 * Get the parent node to which this container belongs.
+	 * Get the node to which this container belongs.
 	 *
 	 * @return
 	 */
-	Node getParentNode();
-
-	/**
-	 * Return the parent node the container for a specific branch. Although a container always has the same container it may not be available in the specified
-	 * branch.
-	 * 
-	 * @param uuid
-	 * @return Found node or null if no node could be found.
-	 */
-	Node getParentNode(String uuid);
+	Node getNode();
 
 	/**
 	 * Update the property webroot path info. This will also check for uniqueness conflicts of the webroot path and will throw a
@@ -285,7 +133,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	/**
 	 * Check whether the field container has a next version
 	 * 
-	 * @return true iff the field container has a next version
+	 * @return true if the field container has a next version
 	 */
 	boolean hasNextVersion();
 
@@ -294,7 +142,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * 
 	 * @return iterable for all next versions
 	 */
-	Iterable<? extends NodeGraphFieldContainer> getNextVersions();
+	Iterable<NodeGraphFieldContainer> getNextVersions();
 
 	/**
 	 * Set the next version.
@@ -306,7 +154,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	/**
 	 * Check whether the field container has a previous version
 	 * 
-	 * @return true iff the field container has a previous version
+	 * @return true if the field container has a previous version
 	 */
 	boolean hasPreviousVersion();
 
@@ -403,13 +251,6 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	boolean isType(ContainerType type, String branchUuid);
 
 	/**
-	 * Get tuples of type and branch Uuids specifying for which branch the container is a container of a type.
-	 *
-	 * @return set of tuples (may be empty, but never null)
-	 */
-	Set<Tuple<String, ContainerType>> getBranchTypes();
-
-	/**
 	 * Get the branch Uuids for which this container is the container of given type.
 	 * 
 	 * @param type
@@ -443,7 +284,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 *            microschema container version
 	 * @return list of micronode fields
 	 */
-	List<? extends MicronodeGraphField> getMicronodeFields(MicroschemaVersion version);
+	List<MicronodeGraphField> getMicronodeFields(MicroschemaVersion version);
 
 	/**
 	 * Get all micronode list fields that have at least one micronode using the given microschema container version.
@@ -452,7 +293,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 *            microschema container version
 	 * @return list of micronode list fields
 	 */
-	TraversalResult<? extends MicronodeGraphFieldList> getMicronodeListFields(MicroschemaVersion version);
+	TraversalResult<MicronodeGraphFieldList> getMicronodeListFields(MicroschemaVersion version);
 
 	/**
 	 * Return the ETag for the field container.
@@ -501,11 +342,11 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * @param branchUuid
 	 * @return
 	 */
-	Iterator<? extends GraphFieldContainerEdge> getContainerEdge(ContainerType type, String branchUuid);
+	Iterator<GraphFieldContainerEdge> getContainerEdge(ContainerType type, String branchUuid);
 
 	/**
 	 * Create the specific delete event.
-	 * 
+	 *
 	 * @param branchUuid
 	 * @param type
 	 * @return
@@ -514,7 +355,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 
 	/**
 	 * Create the specific create event.
-	 * 
+	 *
 	 * @param branchUuid
 	 * @param type
 	 * @return
@@ -523,7 +364,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 
 	/**
 	 * Create the specific update event.
-	 * 
+	 *
 	 * @param branchUuid
 	 * @param type
 	 * @return
@@ -532,7 +373,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 
 	/**
 	 * Create the taken offline event.
-	 * 
+	 *
 	 * @param branchUuid
 	 * @return
 	 */
@@ -540,7 +381,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 
 	/**
 	 * Create the publish event.
-	 * 
+	 *
 	 * @param branchUuid
 	 * @return
 	 */
@@ -548,7 +389,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 
 	/**
 	 * Transform the container into a version info object.
-	 * 
+	 *
 	 * @param ac
 	 * @return
 	 */
@@ -556,21 +397,21 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 
 	/**
 	 * A container is purgeable when it is not being utilized as draft, published or initial version in any branch.
-	 * 
+	 *
 	 * @return
 	 */
 	boolean isPurgeable();
 
 	/**
 	 * Check whether auto purge is enabled globally or for the schema of the container.
-	 * 
+	 *
 	 * @return
 	 */
 	boolean isAutoPurgeEnabled();
 
 	/**
 	 * Purge the container from the version history and ensure that the links between versions are consistent.
-	 * 
+	 *
 	 * @param bac
 	 *            Action context for the deletion process
 	 */
@@ -585,7 +426,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 
 	/**
 	 * Return all versions.
-	 * 
+	 *
 	 * @return
 	 */
 	TraversalResult<NodeGraphFieldContainer> versions();

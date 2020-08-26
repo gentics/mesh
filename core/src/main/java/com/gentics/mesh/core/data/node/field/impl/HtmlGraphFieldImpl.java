@@ -4,13 +4,13 @@ import java.util.Objects;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.field.AbstractBasicField;
 import com.gentics.mesh.core.data.node.field.FieldGetter;
 import com.gentics.mesh.core.data.node.field.FieldTransformer;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.HtmlGraphField;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.field.HtmlField;
@@ -31,7 +31,7 @@ public class HtmlGraphFieldImpl extends AbstractBasicField<HtmlField> implements
 			HtmlField field = graphHtmlField.transformToRest(ac);
 			// If needed resolve links within the html
 			if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
-				Project project = ac.getProject();
+				HibProject project = ac.getProject();
 				if (project == null) {
 					project = parentNode.get().getProject();
 				}

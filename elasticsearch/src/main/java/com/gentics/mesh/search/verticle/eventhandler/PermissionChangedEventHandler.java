@@ -13,22 +13,24 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.search.request.UpdateDocumentRequest;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModelImpl;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedProjectElementEventModel;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
-import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.search.index.node.NodeContainerTransformer;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.entity.MeshEntities;
@@ -78,20 +80,26 @@ public class PermissionChangedEventHandler implements EventHandler {
 
 	private Flowable<UpdateDocumentRequest> handleNodePermissionsChange(PermissionChangedProjectElementEventModel model) {
 		NodeContainerTransformer tf = (NodeContainerTransformer) meshEntities.nodeContent.getTransformer();
-		return meshHelper.getDb().tx(() -> ofNullable(Tx.get().data().projectDao().findByUuid(model.getProject().getUuid()))
-			.flatMap(project -> ofNullable(project.getNodeRoot().findByUuid(model.getUuid()))
-				.flatMap(node -> project.getBranchRoot().findAll().stream().map(MeshElement::getUuid)
-					.flatMap(branchUuid -> Util.latestVersionTypes()
-						.flatMap(type -> node.getGraphFieldContainers(branchUuid, type).stream()
-							.map(container -> meshHelper.updateDocumentRequest(
-								NodeGraphFieldContainer.composeIndexName(
-									model.getProject().getUuid(),
-									branchUuid,
-									container.getSchemaContainerVersion().getUuid(),
-									type),
-								NodeGraphFieldContainer.composeDocumentId(model.getUuid(), container.getLanguageTag()),
-								tf.toPermissionPartial(node, type), complianceMode))))))
-			.collect(toFlowable()));
+		return meshHelper.getDb().tx(tx -> {
+			ProjectDaoWrapper projectDao = tx.data().projectDao();
+			BranchDaoWrapper branchDao =  tx.data().branchDao();
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+
+			return ofNullable(projectDao.findByUuid(model.getProject().getUuid()))
+				.flatMap(project -> ofNullable(nodeDao.findByUuid(project, model.getUuid()))
+					.flatMap(node -> branchDao.findAll(project).stream().map(HibElement::getUuid)
+						.flatMap(branchUuid -> Util.latestVersionTypes()
+							.flatMap(type -> tx.data().contentDao().getGraphFieldContainers(node, branchUuid, type).stream()
+								.map(container -> meshHelper.updateDocumentRequest(
+									ContentDaoWrapper.composeIndexName(
+										model.getProject().getUuid(),
+										branchUuid,
+										container.getSchemaContainerVersion().getUuid(),
+										type),
+									ContentDaoWrapper.composeDocumentId(model.getUuid(), container.getLanguageTag()),
+									tf.toPermissionPartial(node, type), complianceMode))))))
+				.collect(toFlowable());
+		});
 	}
 
 	private Flowable<UpdateDocumentRequest> simplePermissionChange(PermissionChangedEventModelImpl model) {

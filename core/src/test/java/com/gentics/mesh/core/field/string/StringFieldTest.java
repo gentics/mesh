@@ -15,6 +15,7 @@ import org.junit.Test;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.StringGraphFieldImpl;
@@ -51,6 +52,7 @@ public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 		Node node = folder("2015");
 
 		try (Tx tx = tx()) {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 			// Add a new string field to the schema
 			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 			StringFieldSchemaImpl stringFieldSchema = new StringFieldSchemaImpl();
@@ -60,7 +62,7 @@ public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 			schema.addField(stringFieldSchema);
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
-			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
+			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			StringGraphField field = container.createString("stringField");
 			field.setString("someString");
 			tx.success();

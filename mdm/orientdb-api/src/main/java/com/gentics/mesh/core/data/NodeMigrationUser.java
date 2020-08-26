@@ -1,20 +1,14 @@
 package com.gentics.mesh.core.data;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 import com.gentics.mesh.core.TypeInfo;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.user.UserReference;
-import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.madl.traversal.TraversalResult;
-import com.gentics.mesh.parameter.PagingParameters;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -57,12 +51,7 @@ public class NodeMigrationUser implements MeshAuthUser {
 	}
 
 	@Override
-	public List<? extends Role> getRoles() {
-		return Collections.emptyList();
-	}
-
-	@Override
-	public Node getReferencedNode() {
+	public HibNode getReferencedNode() {
 		return null;
 	}
 
@@ -74,16 +63,6 @@ public class NodeMigrationUser implements MeshAuthUser {
 	@Override
 	public String getLastname() {
 		return null;
-	}
-
-	@Override
-	public Page<? extends Group> getGroups(HibUser user, PagingParameters params) {
-		return null;
-	}
-
-	@Override
-	public TraversalResult<? extends Group> getGroups() {
-		return new TraversalResult<>(() -> Collections.emptyIterator());
 	}
 
 	@Override
@@ -266,12 +245,7 @@ public class NodeMigrationUser implements MeshAuthUser {
 	}
 
 	@Override
-	public HibUser setReferencedNode(Node node) {
-		return this;
-	}
-
-	@Override
-	public HibUser addGroup(Group group) {
+	public HibUser setReferencedNode(HibNode node) {
 		return this;
 	}
 
@@ -331,12 +305,12 @@ public class NodeMigrationUser implements MeshAuthUser {
 	}
 
 	@Override
-	public Set<String> getRoleUuidsForPerm(GraphPermission permission) {
+	public Set<String> getRoleUuidsForPerm(InternalPermission permission) {
 		return Collections.emptySet();
 	}
 
 	@Override
-	public void setRoleUuidForPerm(GraphPermission permission, Set<String> allowedRoles) {
+	public void setRoleUuidForPerm(InternalPermission permission, Set<String> allowedRoles) {
 	}
 
 	@Override
@@ -345,9 +319,13 @@ public class NodeMigrationUser implements MeshAuthUser {
 	}
 
 	@Override
-	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
-		Set<GraphPermission> permissionsToRevoke) {
+	public String getElementVersion() {
+		return null;
+	}
 
+	@Override
+	public MeshAuthUser toAuthUser() {
+		return null;
 	}
 
 }

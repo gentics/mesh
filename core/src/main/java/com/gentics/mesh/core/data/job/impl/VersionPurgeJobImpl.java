@@ -13,6 +13,7 @@ import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.job.ProjectVersionPurgeEventModel;
@@ -37,8 +38,8 @@ public class VersionPurgeJobImpl extends JobImpl {
 		return out(HAS_PROJECT, ProjectImpl.class).nextOrNull();
 	}
 
-	public void setProject(Project project) {
-		setSingleLinkOutTo(project, HAS_PROJECT);
+	public void setProject(HibProject project) {
+		setSingleLinkOutTo(project.toProject(), HAS_PROJECT);
 	}
 
 	public Optional<ZonedDateTime> getMaxAge() {

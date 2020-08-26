@@ -6,12 +6,14 @@ import java.util.Collection;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
+import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.JobDaoWrapper;
 import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
@@ -19,6 +21,7 @@ import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.job.JobRoot;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
@@ -54,7 +57,7 @@ public interface BootstrapInitializer {
 	/**
 	 * Return the language root element.
 	 * 
-	 * @deprecated Use {@link #languageDao()} instead. 
+	 * @deprecated Use {@link #languageDao()} instead.
 	 * @return
 	 */
 	@Deprecated
@@ -110,7 +113,7 @@ public interface BootstrapInitializer {
 	/**
 	 * Return the global tag root element. Note that each project has their own tag root element.
 	 * 
-	 * @deprecated Use {@link #tagDao()} instead. 
+	 * @deprecated Use {@link #tagDao()} instead.
 	 * @return
 	 */
 	@Deprecated
@@ -151,6 +154,12 @@ public interface BootstrapInitializer {
 
 	SchemaDaoWrapper schemaDao();
 
+	NodeDaoWrapper nodeDao();
+
+	ContentDaoWrapper contentDao();
+
+	BinaryDaoWrapper binaryDao();
+
 	/**
 	 * Return the mesh root element. All other mesh graph elements are connected to this element. It represents the main root of the whole mesh graph.
 	 * 
@@ -163,7 +172,7 @@ public interface BootstrapInitializer {
 	 * 
 	 * @return
 	 */
-	Role anonymousRole();
+	HibRole anonymousRole();
 
 	/**
 	 * Initialise the search index mappings.
@@ -190,7 +199,7 @@ public interface BootstrapInitializer {
 
 	/**
 	 * Setup the optional data. Optional data will only be setup during the first setup. Mesh will not try to recreate those elements on each setup. The
-	 * {@link #initMandatoryData()} method on the other hand will setup elements which must exist and thus will enforce creation of those elements.
+	 * {@link #initMandatoryData(MeshOptions)} method on the other hand will setup elements which must exist and thus will enforce creation of those elements.
 	 * 
 	 * @param isEmptyInstallation
 	 */

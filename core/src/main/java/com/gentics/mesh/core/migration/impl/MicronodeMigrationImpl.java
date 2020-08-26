@@ -15,13 +15,16 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.MicronodeMigrationContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.core.migration.AbstractMigrationHandler;
@@ -56,7 +59,7 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 	public Completable migrateMicronodes(MicronodeMigrationContext context) {
 		context.validate();
 		return Completable.defer(() -> {
-			Branch branch = context.getBranch();
+			HibBranch branch = context.getBranch();
 			MicroschemaVersion fromVersion = context.getFromVersion();
 			MicroschemaVersion toVersion = context.getToVersion();
 			MigrationStatusHandler status = context.getStatus();
@@ -131,10 +134,12 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 	 * @param nextDraftVersion
 	 * @throws Exception
 	 */
-	private void migrateDraftContainer(NodeMigrationActionContextImpl ac, EventQueueBatch sqb, Branch branch, Node node,
+	private void migrateDraftContainer(NodeMigrationActionContextImpl ac, EventQueueBatch sqb, HibBranch branch, Node node,
 		NodeGraphFieldContainer container, MicroschemaVersion fromVersion, MicroschemaVersion toVersion,
 		Set<String> touchedFields, VersionNumber nextDraftVersion)
 		throws Exception {
+		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 
 		String branchUuid = branch.getUuid();
 		ac.getVersioningParameters().setVersion(container.getVersion().getFullVersion());
@@ -142,11 +147,11 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 		boolean publish = container.isPublished(branchUuid);
 
 		// Clone the field container. This will also update the draft edge
-		NodeGraphFieldContainer migrated = node.createGraphFieldContainer(container.getLanguageTag(), branch, container.getEditor(), container, true);
+		NodeGraphFieldContainer migrated = contentDao.createGraphFieldContainer(node, container.getLanguageTag(), branch, container.getEditor(), container, true);
 		if (publish) {
 			migrated.setVersion(container.getVersion().nextPublished());
 			// Ensure that the publish edge is also updated correctly
-			node.setPublished(ac, migrated, branchUuid);
+			nodeDao.setPublished(node, ac, migrated, branchUuid);
 		} else {
 			if (nextDraftVersion == null) {
 				nextDraftVersion = container.getVersion().nextDraft();
@@ -175,7 +180,7 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 	 * @param touchedFields
 	 * @param errorsDetected
 	 */
-	private void migrateMicronodeContainer(NodeMigrationActionContextImpl ac, EventQueueBatch batch, Branch branch,
+	private void migrateMicronodeContainer(NodeMigrationActionContextImpl ac, EventQueueBatch batch, HibBranch branch,
 										   MicroschemaVersion fromVersion,
 										   MicroschemaVersion toVersion, NodeGraphFieldContainer container, Set<String> touchedFields,
 										   List<Exception> errorsDetected) {
@@ -189,12 +194,13 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 		// Run the actual migration in a dedicated transaction
 		try {
 			db.tx((tx) -> {
+				ContentDaoWrapper contentDao = tx.data().contentDao();
 
-				Node node = container.getParentNode();
+				Node node = contentDao.getNode(container);
 				String languageTag = container.getLanguageTag();
 				ac.getNodeParameters().setLanguages(languageTag);
 				ac.getVersioningParameters().setVersion("draft");
-				NodeGraphFieldContainer oldPublished = node.getGraphFieldContainer(languageTag, branchUuid, PUBLISHED);
+				NodeGraphFieldContainer oldPublished = contentDao.getGraphFieldContainer(node, languageTag, branchUuid, PUBLISHED);
 
 				VersionNumber nextDraftVersion = null;
 				// 1. Check whether there is any other published container which we need to handle separately
@@ -232,16 +238,18 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 	 * @return Version of the new published container
 	 * @throws Exception
 	 */
-	private VersionNumber migratePublishedContainer(NodeMigrationActionContextImpl ac, EventQueueBatch sqb, Branch branch, Node node,
+	private VersionNumber migratePublishedContainer(NodeMigrationActionContextImpl ac, EventQueueBatch sqb, HibBranch branch, Node node,
 		NodeGraphFieldContainer container, MicroschemaVersion fromVersion, MicroschemaVersion toVersion,
 		Set<String> touchedFields) throws Exception {
+		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 
 		String branchUuid = branch.getUuid();
 		ac.getVersioningParameters().setVersion("published");
 
-		NodeGraphFieldContainer migrated = node.createGraphFieldContainer(container.getLanguageTag(), branch, container.getEditor(), container, true);
+		NodeGraphFieldContainer migrated = contentDao.createGraphFieldContainer(node, container.getLanguageTag(), branch, container.getEditor(), container, true);
 		migrated.setVersion(container.getVersion().nextPublished());
-		node.setPublished(ac, migrated, branchUuid);
+		nodeDao.setPublished(node, ac, migrated, branchUuid);
 
 		migrateMicronodeFields(ac, migrated, fromVersion, toVersion, touchedFields);
 		sqb.add(migrated.onUpdated(branchUuid, PUBLISHED));

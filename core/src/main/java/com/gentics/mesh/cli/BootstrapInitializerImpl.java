@@ -1,11 +1,11 @@
 package com.gentics.mesh.cli;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.DELETE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.PUBLISH_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.MeshEvent.STARTUP;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.slf4j.Logger.ROOT_LOGGER_NAME;
@@ -41,18 +41,18 @@ import com.gentics.mesh.cache.CacheRegistryImpl;
 import com.gentics.mesh.changelog.ChangelogSystem;
 import com.gentics.mesh.changelog.ReindexAction;
 import com.gentics.mesh.changelog.highlevel.HighLevelChangelogSystem;
-import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
+import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.DaoCollection;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.JobDaoWrapper;
 import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
@@ -60,8 +60,11 @@ import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.job.JobRoot;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
@@ -73,7 +76,7 @@ import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
-import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -196,7 +199,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	// TODO: Changing the role name or deleting the role would cause code that utilizes this field to break.
 	// This is however a rare case.
-	private Role anonymousRole;
+	private HibRole anonymousRole;
 
 	private MeshImpl mesh;
 
@@ -581,7 +584,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		// Load the verticles
 		List<String> initialProjects = db.tx(tx -> {
 			return tx.data().projectDao().findAll().stream()
-				.map(Project::getName)
+				.map(HibProject::getName)
 				.collect(Collectors.toList());
 		});
 
@@ -777,7 +780,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	 * @return
 	 */
 	@Override
-	public Role anonymousRole() {
+	public HibRole anonymousRole() {
 		if (anonymousRole == null) {
 			synchronized (BootstrapInitializer.class) {
 				// Load the role if it has not been yet loaded
@@ -892,6 +895,21 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		return daoCollection.projectDao();
 	}
 
+	@Override
+	public NodeDaoWrapper nodeDao() {
+		return daoCollection.nodeDao();
+	}
+
+	@Override
+	public ContentDaoWrapper contentDao() {
+		return daoCollection.contentDao();
+	}
+
+	@Override
+	public BinaryDaoWrapper binaryDao() {
+		return daoCollection.binaryDao();
+	}
+
 	/**
 	 * Clear all stored references to main graph vertices.
 	 */
@@ -961,7 +979,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			}
 
 			// Content
-			Schema contentSchemaContainer = schemaDao.findByName("content");
+			HibSchema contentSchemaContainer = schemaDao.findByName("content");
 			if (contentSchemaContainer == null) {
 				SchemaVersionModel schema = new SchemaModelImpl();
 				schema.setName("content");
@@ -997,7 +1015,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			}
 
 			// Folder
-			Schema folderSchemaContainer = schemaDao.findByName("folder");
+			HibSchema folderSchemaContainer = schemaDao.findByName("folder");
 			if (folderSchemaContainer == null) {
 				SchemaVersionModel schema = new SchemaModelImpl();
 				schema.setName("folder");
@@ -1021,7 +1039,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			}
 
 			// Binary content for images and other downloads
-			Schema binarySchemaContainer = schemaDao.findByName("binary_content");
+			HibSchema binarySchemaContainer = schemaDao.findByName("binary_content");
 			if (binarySchemaContainer == null) {
 
 				SchemaVersionModel schema = new SchemaModelImpl();
@@ -1045,14 +1063,14 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				log.debug("Created schema container {" + schema.getName() + "} uuid: {" + binarySchemaContainer.getUuid() + "}");
 			}
 
-			Group adminGroup = groupRoot.findByName("admin");
+			HibGroup adminGroup = groupRoot.findByName("admin");
 			if (adminGroup == null) {
 				adminGroup = groupDao.create("admin", adminUser);
 				groupDao.addUser(adminGroup, adminUser);
 				log.debug("Created admin group {" + adminGroup.getUuid() + "}");
 			}
 
-			Role adminRole = roleRoot.findByName("admin");
+			HibRole adminRole = roleRoot.findByName("admin");
 			if (adminRole == null) {
 				adminRole = roleDao.create("admin", adminUser);
 				groupDao.addRole(adminGroup, adminRole);
@@ -1093,7 +1111,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				}
 
 				GroupRoot groupRoot = meshRoot.getGroupRoot();
-				Group anonymousGroup = groupRoot.findByName("anonymous");
+				HibGroup anonymousGroup = groupRoot.findByName("anonymous");
 				if (anonymousGroup == null) {
 					anonymousGroup = groupDao.create("anonymous", anonymousUser);
 					groupDao.addUser(anonymousGroup, anonymousUser);

@@ -1,7 +1,7 @@
 package com.gentics.mesh.graphql.type;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.graphql.type.GroupTypeProvider.GROUP_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.RoleTypeProvider.ROLE_PAGE_TYPE_NAME;
 import static graphql.Scalars.GraphQLBoolean;
@@ -16,8 +16,10 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
@@ -116,6 +118,7 @@ public class UserTypeProvider extends AbstractTypeProvider {
 			.argument(createNodeVersionArg())
 			.type(new GraphQLTypeReference("Node"))
 			.dataFetcher((env) -> {
+				ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 				GraphQLContext gc = env.getContext();
 				User user = env.getSource();
 				Node node = user.getReferencedNode();
@@ -132,7 +135,7 @@ public class UserTypeProvider extends AbstractTypeProvider {
 				List<String> languageTags = getLanguageArgument(env);
 				ContainerType type = getNodeVersion(env);
 
-				NodeGraphFieldContainer container = node.findVersion(gc, languageTags, type);
+				NodeGraphFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
 				container = gc.requiresReadPermSoft(container, env);
 				return new NodeContent(node, container, languageTags, type);
 			}));

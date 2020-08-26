@@ -5,7 +5,6 @@ import static org.mockito.Mockito.when;
 
 import org.mockito.Mockito;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.dao.DaoCollection;
 import com.gentics.mesh.etc.config.MeshOptions;

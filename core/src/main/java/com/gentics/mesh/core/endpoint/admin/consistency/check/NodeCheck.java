@@ -10,10 +10,13 @@ import java.util.Set;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.consistency.AbstractConsistencyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
@@ -39,6 +42,7 @@ public class NodeCheck extends AbstractConsistencyCheck {
 
 	private void checkNode(Node node, ConsistencyCheckResult result) {
 		String uuid = node.getUuid();
+		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 
 /*
 		checkOut(node, ASSIGNED_TO_PROJECT, ProjectImpl.class, result, HIGH);
@@ -49,7 +53,7 @@ public class NodeCheck extends AbstractConsistencyCheck {
 		// checkOut(node, HAS_CREATOR, UserImpl.class, response, MEDIUM);
 
 		boolean isBaseNode = false;
-		Project project = node.getProject();
+		HibProject project = node.getProject();
 		if (project == null) {
 			result.addInconsistency("The node has no project", uuid, HIGH);
 		} else {
@@ -69,7 +73,7 @@ public class NodeCheck extends AbstractConsistencyCheck {
 			result.addInconsistency("The node has no creation date", uuid, MEDIUM);
 		}
 
-		Iterable<? extends NodeGraphFieldContainer> initialIterator = node.getGraphFieldContainers(ContainerType.INITIAL);
+		Iterable<NodeGraphFieldContainer> initialIterator = contentDao.getGraphFieldContainers(node, ContainerType.INITIAL);
 		if (!initialIterator.iterator().hasNext()) {
 			result.addInconsistency("The node has no initial field containers", uuid, HIGH);
 		}
@@ -87,7 +91,7 @@ public class NodeCheck extends AbstractConsistencyCheck {
 	 * Check that the node has not more than one GFC of the type for each branch
 	 * @param node node
 	 * @param type GFC type
-	 * @param response check response
+	 * @param result check response
 	 */
 	private void checkGraphFieldContainerUniqueness(Node node, ContainerType type, ConsistencyCheckResult result) {
 		String uuid = node.getUuid();
@@ -111,6 +115,8 @@ public class NodeCheck extends AbstractConsistencyCheck {
 	 * @param result check response
 	 */
 	private void checkParentNodes(Node node, ConsistencyCheckResult result) {
+		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+
 		Set<String> branchUuids = new HashSet<>();
 		for (GraphFieldContainerEdgeImpl edge : node.outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.INITIAL.getCode())
 				.frameExplicit(GraphFieldContainerEdgeImpl.class)) {
@@ -118,11 +124,11 @@ public class NodeCheck extends AbstractConsistencyCheck {
 		}
 
 		for (String branchUuid : branchUuids) {
-			Node branchParent = node.getParentNode(branchUuid);
+			Node branchParent = nodeDao.getParentNode(node, branchUuid);
 			// parent node has to exist and has to have at least one DRAFT graphfieldcontainer in the branch
 			if (branchParent == null) {
 				result.addInconsistency(String.format("The node does not have a parent node in branch %s", branchUuid), node.getUuid(), HIGH);
-			} else if (!branchParent.isBaseNode() && !branchParent.isVisibleInBranch(branchUuid)) {
+			} else if (!nodeDao.isBaseNode(branchParent) && !nodeDao.isVisibleInBranch(branchParent, branchUuid)) {
 				result.addInconsistency(String.format(
 						"The node references parent node %s in branch %s, but the parent node does not have any DRAFT graphfieldcontainer in the branch",
 						branchParent.getUuid(), branchUuid), node.getUuid(), HIGH);

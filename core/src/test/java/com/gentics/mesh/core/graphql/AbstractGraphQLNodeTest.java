@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
@@ -31,12 +31,12 @@ public abstract class AbstractGraphQLNodeTest extends AbstractMeshTest {
 		List<String> testNodeUuids = new ArrayList<>();
 
 		// Delete all other tags
-		tx(() -> {
-			for (Tag tag : tags().values()) {
+		tx(tx -> {
+			for (HibTag tag : tags().values()) {
 				if (tag.getName().equals("blue")) {
 					continue;
 				} else {
-					tag.delete();
+					tx.data().tagDao().delete(tag, createBulkContext());
 				}
 			}
 		});

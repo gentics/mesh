@@ -14,6 +14,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerMutator;
@@ -38,7 +39,7 @@ import com.gentics.mesh.json.JsonUtil;
  *            Schema container type
  */
 public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSchemaContainer, RM extends FieldSchemaContainerVersion, RE extends NameUuidReference<RE>, SCV extends GraphFieldSchemaContainerVersion<R, RM, RE, SCV, SC>, SC extends GraphFieldSchemaContainer<R, RE, SC, SCV>>
-		extends AbstractMeshCoreVertex<R, SCV> implements GraphFieldSchemaContainerVersion<R, RM, RE, SCV, SC> {
+		extends AbstractMeshCoreVertex<R, SCV> implements GraphFieldSchemaContainerVersion<R, RM, RE, SCV, SC>, HibFieldSchemaVersionElement<RM> {
 
 	@Override
 	public void setName(String name) {

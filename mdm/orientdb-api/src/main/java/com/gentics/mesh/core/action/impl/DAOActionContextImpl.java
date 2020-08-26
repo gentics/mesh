@@ -2,8 +2,8 @@ package com.gentics.mesh.core.action.impl;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.DAOActionContext;
-import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Tx;
 
 /**
@@ -12,8 +12,8 @@ import com.gentics.mesh.core.db.Tx;
 public class DAOActionContextImpl implements DAOActionContext {
 
 	private final Tx tx;
-	private final Project project;
-	private final Branch branch;
+	private final HibProject project;
+	private final HibBranch branch;
 	private final Object parent;
 
 	private InternalActionContext ac;
@@ -41,7 +41,7 @@ public class DAOActionContextImpl implements DAOActionContext {
 	}
 
 	@Override
-	public Project project() {
+	public HibProject project() {
 		return project;
 	}
 
@@ -51,7 +51,7 @@ public class DAOActionContextImpl implements DAOActionContext {
 	}
 
 	@Override
-	public Branch branch() {
+	public HibBranch branch() {
 		return branch;
 	}
 }

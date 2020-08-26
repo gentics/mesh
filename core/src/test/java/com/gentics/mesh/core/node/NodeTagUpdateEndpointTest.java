@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_TAGGED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNTAGGED;
 import static com.gentics.mesh.core.rest.MeshEvent.TAG_CREATED;
@@ -66,14 +66,18 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testUpdateByTagUuid() {
-		long previousCount = tx(() -> tagFamily("colors").findAll().count());
+		long previousCount = tx(tx -> {
+			return tx.data().tagDao().findAll(tagFamily("colors")).count();
+		});
 		String tagUuid = tx(() -> tag("red").getUuid());
 		String nodeUuid = tx(() -> content().getUuid());
 		TagListUpdateRequest request = new TagListUpdateRequest();
 		request.getTags().add(new TagReference().setUuid(tagUuid).setTagFamily("colors"));
 		TagListResponse response = call(() -> client().updateTagsForNode(PROJECT_NAME, nodeUuid, request));
 		assertEquals(1, response.getMetainfo().getTotalCount());
-		long afterCount = tx(() -> tagFamily("colors").findAll().count());
+		long afterCount = tx(tx -> {
+			return tx.data().tagDao().findAll(tagFamily("colors")).count();
+		});
 		assertEquals("The colors tag family should not have any additional tags.", previousCount, afterCount);
 
 		waitForSearchIdleEvent();
@@ -123,7 +127,10 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 		waitForSearchIdleEvent();
 
 		assertEquals("The node should have two tags.", 2, response.getMetainfo().getTotalCount());
-		long afterCount = tx(() -> tagFamily("colors").findAll().count());
+		long afterCount = tx(tx -> {
+			TagDaoWrapper tagDao = tx.data().tagDao();
+			return tagDao.findAll(tagFamily("colors")).count();
+		});
 		assertEquals("The colors tag family should now have one additional color tag.", previousCount + 1, afterCount);
 
 		try (Tx tx = tx()) {

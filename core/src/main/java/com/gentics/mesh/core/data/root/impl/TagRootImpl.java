@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.root.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
@@ -18,9 +18,8 @@ import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
@@ -30,7 +29,10 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.TagRoot;
+import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
@@ -76,13 +78,13 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	}
 
 	@Override
-	public void addTag(Tag tag) {
-		addItem(tag);
+	public void addTag(HibTag tag) {
+		addItem(tag.toTag());
 	}
 
 	@Override
-	public void removeTag(Tag tag) {
-		removeItem(tag);
+	public void removeTag(HibTag tag) {
+		removeItem(tag.toTag());
 	}
 
 	@Override
@@ -106,8 +108,8 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	}
 
 	@Override
-	public Tag create(String name, Project project, TagFamily tagFamily, HibUser creator) {
-		TagImpl tag = getGraph().addFramedVertex(TagImpl.class);
+	public HibTag create(String name, HibProject project, HibTagFamily tagFamily, HibUser creator) {
+		Tag tag = getGraph().addFramedVertex(TagImpl.class);
 		tag.setName(name);
 		tag.setCreated(creator);
 		tag.setProject(project);
@@ -152,12 +154,12 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	}
 
 	@Override
-	public TraversalResult<? extends Node> findTaggedNodes(Tag tag, InternalActionContext ac) {
+	public TraversalResult<? extends Node> findTaggedNodes(HibTag tag, InternalActionContext ac) {
 		MeshAuthUser user = ac.getUser();
-		Branch branch = ac.getBranch();
+		HibBranch branch = ac.getBranch();
 		String branchUuid = branch.getUuid();
 		UserDaoWrapper userRoot = Tx.get().data().userDao();
-		TraversalResult<? extends Node> nodes = new TraversalResult<>(tag.inE(HAS_TAG).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branch.getUuid()).outV().frameExplicit(NodeImpl.class));
+		TraversalResult<? extends Node> nodes = new TraversalResult<>(tag.toTag().inE(HAS_TAG).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branch.getUuid()).outV().frameExplicit(NodeImpl.class));
 		Stream<? extends Node> s = nodes.stream()
 			.filter(item -> {
 				// Check whether the node has at least a draft in the selected branch - Otherwise the node should be skipped
@@ -181,7 +183,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	}
 
 	@Override
-	public TraversalResult<? extends Node> getNodes(Tag tag, Branch branch) {
+	public TraversalResult<? extends Node> getNodes(Tag tag, HibBranch branch) {
 		Iterable<? extends NodeImpl> it = TagEdgeImpl.getNodeTraversal(tag, branch).frameExplicit(NodeImpl.class);
 		return new TraversalResult<>(it);
 	}
@@ -215,7 +217,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	}
 
 	@Override
-	public Tag create(TagFamily tagFamily, String name, Project project, HibUser creator, String uuid) {
+	public HibTag create(HibTagFamily tagFamily, String name, HibProject project, HibUser creator, String uuid) {
 		TagImpl tag = getGraph().addFramedVertex(TagImpl.class);
 		if (uuid != null) {
 			tag.setUuid(uuid);
@@ -227,7 +229,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 		// Add the tag to the global tag root
 		mesh().boot().meshRoot().getTagRoot().addTag(tag);
 		// And to the tag family
-		tagFamily.addTag(tag);
+		tagFamily.toTagFamily().addTag(tag);
 
 		// Set the tag family for the tag
 		tag.setTagFamily(tagFamily);
@@ -235,12 +237,4 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 
 	}
 
-	@Override
-	public Tag findByName(TagFamily tagFamily, String name) {
-		return tagFamily.out(getRootLabel())
-			.mark()
-			.has(TagImpl.TAG_VALUE_KEY, name)
-			.back()
-			.nextOrDefaultExplicit(TagImpl.class, null);
-	}
 }

@@ -22,7 +22,8 @@ import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -76,7 +77,7 @@ public class LanguageDaoWrapperImpl extends AbstractDaoWrapper implements Langua
 		return boot.get().languageRoot().create(languageName, languageTag, uuid);
 	}
 
-	public TraversalResult<? extends Role> getRolesWithPerm(GraphPermission perm) {
+	public TraversalResult<? extends HibRole> getRolesWithPerm(InternalPermission perm) {
 		return boot.get().languageRoot().getRolesWithPerm(perm);
 	}
 
@@ -164,8 +165,8 @@ public class LanguageDaoWrapperImpl extends AbstractDaoWrapper implements Langua
 		boot.get().languageRoot().property(key, value);
 	}
 
-	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
-		Set<GraphPermission> permissionsToRevoke) {
+	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<InternalPermission> permissionsToGrant,
+		Set<InternalPermission> permissionsToRevoke) {
 		boot.get().languageRoot().applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
 	}
 
@@ -241,7 +242,7 @@ public class LanguageDaoWrapperImpl extends AbstractDaoWrapper implements Langua
 		boot.get().languageRoot().setTypeResolution(type);
 	}
 
-	public Stream<? extends Language> findAllStream(InternalActionContext ac, GraphPermission permission) {
+	public Stream<? extends Language> findAllStream(InternalActionContext ac, InternalPermission permission) {
 		return boot.get().languageRoot().findAllStream(ac, permission);
 	}
 
@@ -337,7 +338,7 @@ public class LanguageDaoWrapperImpl extends AbstractDaoWrapper implements Langua
 		return boot.get().languageRoot().reframe(kind);
 	}
 
-	public Language findByName(InternalActionContext ac, String name, GraphPermission perm) {
+	public Language findByName(InternalActionContext ac, String name, InternalPermission perm) {
 		return boot.get().languageRoot().findByName(ac, name, perm);
 	}
 
@@ -349,11 +350,11 @@ public class LanguageDaoWrapperImpl extends AbstractDaoWrapper implements Langua
 		return boot.get().languageRoot().findByUuid(uuid);
 	}
 
-	public Language loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
+	public Language loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm) {
 		return boot.get().languageRoot().loadObjectByUuid(ac, uuid, perm);
 	}
 
-	public Language loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+	public Language loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
 		return boot.get().languageRoot().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
 	}
 
@@ -397,7 +398,7 @@ public class LanguageDaoWrapperImpl extends AbstractDaoWrapper implements Langua
 		return boot.get().languageRoot().getRolePermissions(vertex, ac, roleUuid);
 	}
 
-	public TraversalResult<? extends Role> getRolesWithPerm(MeshVertex vertex, GraphPermission perm) {
+	public TraversalResult<? extends HibRole> getRolesWithPerm(MeshVertex vertex, InternalPermission perm) {
 		return boot.get().languageRoot().getRolesWithPerm(vertex, perm);
 	}
 

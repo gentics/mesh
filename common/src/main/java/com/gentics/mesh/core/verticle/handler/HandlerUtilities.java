@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.verticle.handler;
 
 import static com.gentics.mesh.core.action.DAOActionContext.context;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.DELETE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.event.EventCauseAction.DELETE;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -26,7 +26,7 @@ import com.gentics.mesh.core.action.DAOActions;
 import com.gentics.mesh.core.action.LoadAllAction;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.page.TransformablePage;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.db.TxAction;
 import com.gentics.mesh.core.db.TxAction0;
@@ -165,7 +165,7 @@ public class HandlerUtilities {
 					if (parentLoader != null) {
 						parent = parentLoader.apply(tx);
 					}
-					element = actions.loadByUuid(context(tx, ac, parent), uuid, GraphPermission.UPDATE_PERM, false);
+					element = actions.loadByUuid(context(tx, ac, parent), uuid, InternalPermission.UPDATE_PERM, false);
 				}
 
 				// Check whether we need to update a found element or whether we need to create a new one.
@@ -194,7 +194,7 @@ public class HandlerUtilities {
 	}
 
 	public <T extends HibCoreElement, RM extends RestModel> void readElement(InternalActionContext ac, String uuid,
-		DAOActions<T, RM> actions, GraphPermission perm) {
+		DAOActions<T, RM> actions, InternalPermission perm) {
 		readElement(ac, null, uuid, actions, perm);
 	}
 
@@ -212,7 +212,7 @@ public class HandlerUtilities {
 	 *            Permission to check against when loading the element
 	 */
 	public <T extends HibCoreElement, RM extends RestModel> void readElement(InternalActionContext ac, Function<Tx, Object> parentLoader, String uuid,
-		DAOActions<T, RM> actions, GraphPermission perm) {
+		DAOActions<T, RM> actions, InternalPermission perm) {
 
 		syncTx(ac, tx -> {
 			Object parent = null;

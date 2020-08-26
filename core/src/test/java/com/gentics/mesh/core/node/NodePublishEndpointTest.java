@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.PUBLISH_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_PUBLISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNPUBLISHED;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
@@ -26,8 +26,9 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.db.Tx;
@@ -60,12 +61,13 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		String parentFolderUuid;
 		String subFolderUuid;
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			InternalActionContext ac = mockActionContext("recursive=true");
 			Node subFolder = folder("2015");
 			Node parentFolder = folder("news");
 			BulkActionContext bac = createBulkContext();
-			parentFolder.publish(ac, bac);
-			subFolder.takeOffline(ac, bac);
+			nodeDao.publish(parentFolder, ac, bac);
+			nodeDao.takeOffline(subFolder, ac, bac);
 			subFolderUuid = subFolder.getUuid();
 			parentFolderUuid = parentFolder.getUuid();
 			tx.success();
@@ -152,7 +154,10 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		String nodeUuid = tx(() -> node.getUuid());
 		String schemaUuid = tx(() -> schemaContainer("folder").getUuid());
 		String branchUuid = tx(() -> project().getLatestBranch().getUuid());
-		String schemaContainerVersionUuid = tx(() -> node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid());
+		String schemaContainerVersionUuid = tx(tx -> {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
+			return contentDao.getLatestDraftFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
+		});
 
 		call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParametersImpl().setRecursive(true)));
 		waitForSearchIdleEvent();
@@ -185,8 +190,8 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		assertThat(statusResponse).as("Publish status").isNotNull().isPublished("en").hasVersion("en", "2.0");
 
 		try (Tx tx = tx()) {
-			assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid(), branchUuid,
-				schemaContainerVersionUuid, PUBLISHED), NodeGraphFieldContainer.composeDocumentId(nodeUuid, "en"));
+			assertThat(trackingSearchProvider()).hasStore(ContentDaoWrapper.composeIndexName(projectUuid(), branchUuid,
+				schemaContainerVersionUuid, PUBLISHED), ContentDaoWrapper.composeDocumentId(nodeUuid, "en"));
 			// The draft of the node must still remain in the index
 			assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 		}
@@ -198,7 +203,10 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		String nodeUuid = tx(() -> node.getUuid());
 		String schemaUuid = tx(() -> schemaContainer("folder").getUuid());
 		String branchUuid = tx(() -> project().getLatestBranch().getUuid());
-		String schemaContainerVersionUuid = tx(() -> node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid());
+		String schemaContainerVersionUuid = tx(tx -> {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
+			return contentDao.getLatestDraftFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
+		});
 
 		// Add german language
 		NodeUpdateRequest request = new NodeUpdateRequest();
@@ -236,8 +244,8 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		assertThat(statusResponse).as("Publish status").isNotNull().isPublished("en").hasVersion("en", "2.0");
 
 		try (Tx tx = tx()) {
-			assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid(), branchUuid,
-				schemaContainerVersionUuid, PUBLISHED), NodeGraphFieldContainer.composeDocumentId(nodeUuid, "en"));
+			assertThat(trackingSearchProvider()).hasStore(ContentDaoWrapper.composeIndexName(projectUuid(), branchUuid,
+				schemaContainerVersionUuid, PUBLISHED), ContentDaoWrapper.composeDocumentId(nodeUuid, "en"));
 			// The draft of the node must still remain in the index
 			assertThat(trackingSearchProvider()).hasEvents(2, 0, 0, 0, 0);
 		}
@@ -272,7 +280,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testGetPublishStatusForBranch() {
 		Node node = folder("2015");
-		Branch newBranch = createBranch("newbranch", true);
+		HibBranch newBranch = createBranch("newbranch", true);
 
 		try (Tx tx = tx()) {
 			String nodeUuid = node.getUuid();
@@ -500,7 +508,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		Branch newBranch = createBranch("newbranch", true);
+		HibBranch newBranch = createBranch("newbranch", true);
 
 		try (Tx tx = tx()) {
 			String nodeUuid = node.getUuid();

@@ -2,11 +2,11 @@ package com.gentics.mesh.core.data.job;
 
 import java.time.ZonedDateTime;
 
-import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 
 import io.reactivex.Completable;
@@ -25,7 +25,7 @@ public interface JobRoot extends RootVertex<Job> {
 	 * @param toVersion
 	 * @return Created job
 	 */
-	Job enqueueSchemaMigration(HibUser creator, Branch branch, SchemaVersion fromVersion, SchemaVersion toVersion);
+	HibJob enqueueSchemaMigration(HibUser creator, HibBranch branch, HibSchemaVersion fromVersion, HibSchemaVersion toVersion);
 
 	/**
 	 * Enqueue a branch migration job.
@@ -36,7 +36,7 @@ public interface JobRoot extends RootVertex<Job> {
 	 * @param toVersion
 	 * @return
 	 */
-	Job enqueueBranchMigration(HibUser creator, Branch branch, SchemaVersion fromVersion, SchemaVersion toVersion);
+	HibJob enqueueBranchMigration(HibUser creator, HibBranch branch, HibSchemaVersion fromVersion, HibSchemaVersion toVersion);
 
 	/**
 	 * Enqueue a microschema migration.
@@ -47,7 +47,7 @@ public interface JobRoot extends RootVertex<Job> {
 	 * @param toVersion
 	 * @return
 	 */
-	Job enqueueMicroschemaMigration(HibUser creator, Branch branch, MicroschemaVersion fromVersion, MicroschemaVersion toVersion);
+	HibJob enqueueMicroschemaMigration(HibUser creator, HibBranch branch, HibMicroschemaVersion fromVersion, HibMicroschemaVersion toVersion);
 
 	/**
 	 * Enqueue a branch migration.
@@ -56,7 +56,7 @@ public interface JobRoot extends RootVertex<Job> {
 	 * @param branch
 	 * @return
 	 */
-	Job enqueueBranchMigration(HibUser creator, Branch branch);
+	HibJob enqueueBranchMigration(HibUser creator, HibBranch branch);
 
 	/**
 	 * Enqueue a project version purge job that is limited to the given date.
@@ -66,7 +66,7 @@ public interface JobRoot extends RootVertex<Job> {
 	 * @param before
 	 * @return
 	 */
-	Job enqueueVersionPurge(HibUser user, Project project, ZonedDateTime before);
+	HibJob enqueueVersionPurge(HibUser user, HibProject project, ZonedDateTime before);
 
 	/**
 	 * Enqueue a project version purge job.
@@ -74,7 +74,7 @@ public interface JobRoot extends RootVertex<Job> {
 	 * @param project
 	 * @return
 	 */
-	Job enqueueVersionPurge(HibUser user, Project project);
+	HibJob enqueueVersionPurge(HibUser user, HibProject project);
 
 	/**
 	 * Process all remaining jobs.

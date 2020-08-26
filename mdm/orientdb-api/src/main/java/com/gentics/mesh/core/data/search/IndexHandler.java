@@ -7,7 +7,7 @@ import java.util.stream.Stream;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibElement;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.search.bulk.DeleteBulkEntry;
 import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
 import com.gentics.mesh.core.data.search.bulk.UpdateBulkEntry;
@@ -124,8 +124,8 @@ public interface IndexHandler<T extends HibElement> {
 	 *            action context
 	 * @return read permission
 	 */
-	default GraphPermission getReadPermission(InternalActionContext ac) {
-		return GraphPermission.READ_PERM;
+	default InternalPermission getReadPermission(InternalActionContext ac) {
+		return InternalPermission.READ_PERM;
 	}
 
 	/**

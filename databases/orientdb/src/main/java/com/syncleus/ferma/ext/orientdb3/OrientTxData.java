@@ -11,11 +11,13 @@ import com.gentics.mesh.core.action.TagFamilyDAOActions;
 import com.gentics.mesh.core.action.UserDAOActions;
 import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.DaoCollection;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.JobDaoWrapper;
 import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
@@ -387,5 +389,15 @@ public class OrientTxData implements TxData {
 	@Override
 	public BranchDaoWrapper branchDao() {
 		return daos.branchDao();
+	}
+
+	@Override
+	public NodeDaoWrapper nodeDao() {
+		return daos.nodeDao();
+	}
+
+	@Override
+	public ContentDaoWrapper contentDao() {
+		return daos.contentDao();
 	}
 }

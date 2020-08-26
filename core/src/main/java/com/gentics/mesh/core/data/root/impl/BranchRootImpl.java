@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.root.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_INITIAL_BRANCH;
@@ -25,18 +25,19 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.BranchImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
@@ -64,11 +65,11 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 	}
 
 	@Override
-	public Branch create(String name, HibUser creator, String uuid, boolean setLatest, Branch baseBranch, EventQueueBatch batch) {
+	public Branch create(String name, HibUser creator, String uuid, boolean setLatest, HibBranch baseBranch, EventQueueBatch batch) {
 		return create(name, creator, uuid, setLatest, baseBranch, true, batch);
 	}
 
-	private Branch create(String name, HibUser creator, String uuid, boolean setLatest, Branch baseBranch, boolean assignSchemas,
+	private Branch create(String name, HibUser creator, String uuid, boolean setLatest, HibBranch baseBranch, boolean assignSchemas,
 		EventQueueBatch batch) {
 		Branch branch = getGraph().addFramedVertex(BranchImpl.class);
 		UserDaoWrapper userRoot = mesh().boot().userDao();
@@ -137,7 +138,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 
 		UserDaoWrapper userDao = Tx.get().data().userDao();
 
-		if (!userDao.hasPermission(requestUser, project, GraphPermission.UPDATE_PERM)) {
+		if (!userDao.hasPermission(requestUser, project, InternalPermission.UPDATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", projectUuid + "/" + projectName, UPDATE_PERM.getRestPerm().getName());
 		}
 
@@ -187,7 +188,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 	 *            The newly created branch
 	 * @param batch
 	 */
-	private void assignSchemas(HibUser creator, Branch baseBranch, Branch newBranch, boolean migrate, EventQueueBatch batch) {
+	private void assignSchemas(HibUser creator, HibBranch baseBranch, HibBranch newBranch, boolean migrate, EventQueueBatch batch) {
 		// Assign the same schema versions as the base branch, so that a migration can be started
 		if (baseBranch != null && migrate) {
 			for (SchemaVersion schemaVersion : baseBranch.findActiveSchemaVersions()) {
@@ -325,8 +326,8 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 	 * @param restNode
 	 *            Rest model which will be updated
 	 */
-	private void setTagsToRest(Branch branch, InternalActionContext ac, BranchResponse restNode) {
-		restNode.setTags(branch.getTags().stream().map(Tag::transformToReference).collect(Collectors.toList()));
+	private void setTagsToRest(HibBranch branch, InternalActionContext ac, BranchResponse restNode) {
+		restNode.setTags(branch.getTags().stream().map(HibTag::transformToReference).collect(Collectors.toList()));
 	}
 
 }

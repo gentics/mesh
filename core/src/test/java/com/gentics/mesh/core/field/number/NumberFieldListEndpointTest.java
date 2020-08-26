@@ -16,6 +16,7 @@ import java.util.stream.IntStream;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.impl.NumberGraphFieldListImpl;
 import com.gentics.mesh.core.db.Tx;
@@ -123,7 +124,7 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 		List<List<Number>> valueCombinations = Arrays.asList(Arrays.asList(1.1, 2, 3), Arrays.asList(3, 2, 1.1), Collections.emptyList(),
 			Arrays.asList(47.11, 8.15), Arrays.asList(3));
 
-		NodeGraphFieldContainer container = tx(() -> node.getGraphFieldContainer("en"));
+		NodeGraphFieldContainer container = tx(() -> boot().contentDao().getGraphFieldContainer(node, "en"));
 		for (int i = 0; i < 20; i++) {
 			final NodeGraphFieldContainer currentContainer = container;
 			List<Number> oldValue = tx(() -> getListValues(currentContainer, NumberGraphFieldListImpl.class, FIELD_NAME));
@@ -138,7 +139,8 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 			assertThat(field.getItems()).as("Updated field").containsExactlyElementsOf(list.getItems());
 
 			try (Tx tx = tx()) {
-				NodeGraphFieldContainer newContainerVersion = container.getNextVersions().iterator().next();
+				ContentDaoWrapper contentDao = tx.data().contentDao();
+				NodeGraphFieldContainer newContainerVersion = contentDao.getNextVersions(container).iterator().next();
 				assertEquals("Check version number", newContainerVersion.getVersion().toString(), response.getVersion());
 				assertEquals("Check old value", oldValue, getListValues(container, NumberGraphFieldListImpl.class, FIELD_NAME));
 				container = newContainerVersion;
@@ -165,7 +167,8 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 
 		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
+			ContentDaoWrapper contentDao = tx.data().contentDao();
+			NodeGraphFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getNumberList(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getNumberList(FIELD_NAME)).isNotNull();

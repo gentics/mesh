@@ -5,10 +5,11 @@ import static com.gentics.mesh.core.rest.error.Errors.missingPerm;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.error.PermissionException;
 import com.gentics.mesh.graphql.context.GraphQLContext;
@@ -28,9 +29,9 @@ public class GraphQLContextImpl extends InternalRoutingActionContextImpl impleme
 	}
 
 	@Override
-	public <T extends HibCoreElement> T requiresPerm(T element, GraphPermission... permission) {
+	public <T extends HibCoreElement> T requiresPerm(T element, InternalPermission... permission) {
 		UserDaoWrapper userDao = Tx.get().data().userDao();
-		for (GraphPermission perm : permission) {
+		for (InternalPermission perm : permission) {
 			if (userDao.hasPermission(getUser(), element, perm)) {
 				return element;
 			}
@@ -50,16 +51,17 @@ public class GraphQLContextImpl extends InternalRoutingActionContextImpl impleme
 
 	@Override
 	public boolean hasReadPerm(NodeGraphFieldContainer container) {
-		Node node = container.getParentNode();
+		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+		Node node = contentDao.getNode(container);
 		Object nodeId = node.id();
 		UserDaoWrapper userDao = Tx.get().data().userDao();
 
-		if (userDao.hasPermissionForId(getUser(), nodeId, GraphPermission.READ_PERM)) {
+		if (userDao.hasPermissionForId(getUser(), nodeId, InternalPermission.READ_PERM)) {
 			return true;
 		}
 
 		boolean isPublished = container.isPublished(getBranch().getUuid());
-		if (isPublished && userDao.hasPermissionForId(getUser(), nodeId, GraphPermission.READ_PUBLISHED_PERM)) {
+		if (isPublished && userDao.hasPermissionForId(getUser(), nodeId, InternalPermission.READ_PUBLISHED_PERM)) {
 			return true;
 		}
 		return false;
@@ -67,13 +69,14 @@ public class GraphQLContextImpl extends InternalRoutingActionContextImpl impleme
 
 	@Override
 	public NodeGraphFieldContainer requiresReadPermSoft(NodeGraphFieldContainer container, DataFetchingEnvironment env) {
+		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 		if (container == null) {
 			return null;
 		}
 		if (hasReadPerm(container)) {
 			return container;
 		} else {
-			PermissionException error = new PermissionException("node", container.getParentNode().getUuid());
+			PermissionException error = new PermissionException("node", contentDao.getNode(container).getUuid());
 			env.getExecutionContext()
 				.addError(new ExceptionWhileDataFetching(env.getFieldTypeInfo().getPath(), error, env.getField().getSourceLocation()));
 		}

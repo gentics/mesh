@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.endpoint.group;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
 import static com.gentics.mesh.event.Assignment.ASSIGNED;
 import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
@@ -9,15 +9,14 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.actions.impl.GroupDAOActionsImpl;
-import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.action.GroupDAOActions;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
@@ -27,28 +26,19 @@ import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 
-import dagger.Lazy;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 /**
  * Handler for group specific request methods.
  */
-public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> {
+public class GroupCrudHandler extends AbstractCrudHandler<HibGroup, GroupResponse> {
 
 	private static final Logger log = LoggerFactory.getLogger(GroupCrudHandler.class);
 
-	private Lazy<BootstrapInitializer> boot;
-
 	@Inject
-	public GroupCrudHandler(Database db, Lazy<BootstrapInitializer> boot, HandlerUtilities utils, WriteLock writeLock) {
-		super(db, utils, writeLock);
-		this.boot = boot;
-	}
-
-	@Override
-	public GroupDAOActionsImpl crudActions() {
-		return new GroupDAOActionsImpl();
+	public GroupCrudHandler(Database db, HandlerUtilities utils, WriteLock writeLock, GroupDAOActions groupActions) {
+		super(db, utils, writeLock, groupActions);
 	}
 
 	/**
@@ -60,10 +50,10 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 	 */
 	public void handleGroupRolesList(InternalActionContext ac, String groupUuid) {
 		utils.syncTx(ac, tx -> {
-			GroupDaoWrapper groupRoot = tx.data().groupDao();
-			Group group = tx.data().groupDao().loadObjectByUuid(ac, groupUuid, READ_PERM);
+			GroupDaoWrapper groupDao = tx.data().groupDao();
+			HibGroup group = groupDao.loadObjectByUuid(ac, groupUuid, READ_PERM);
 			PagingParametersImpl pagingInfo = new PagingParametersImpl(ac);
-			TransformablePage<? extends Role> rolePage = groupRoot.getRoles(group, ac.getUser(), pagingInfo);
+			TransformablePage<? extends HibRole> rolePage = groupDao.getRoles(group, ac.getUser(), pagingInfo);
 			return rolePage.transformToRestSync(ac, 0);
 		}, model -> ac.send(model, OK));
 	}
@@ -84,8 +74,8 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 				GroupDaoWrapper groupDao = tx.data().groupDao();
 				RoleDaoWrapper roleDao = tx.data().roleDao();
 
-				Group group = groupDao.loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
-				Role role = roleDao.loadObjectByUuid(ac, roleUuid, READ_PERM);
+				HibGroup group = groupDao.loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
+				HibRole role = roleDao.loadObjectByUuid(ac, roleUuid, READ_PERM);
 				// Handle idempotency
 				if (groupDao.hasRole(group, role)) {
 					if (log.isDebugEnabled()) {
@@ -99,7 +89,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 						batch.add(groupDao.createRoleAssignmentEvent(group, role, ASSIGNED));
 					});
 				}
-				return group.transformToRestSync(ac, 0);
+				return groupDao.transformToRestSync(group, ac, 0);
 			}, model -> ac.send(model, OK));
 		}
 
@@ -123,8 +113,8 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 				GroupDaoWrapper groupDao = tx.data().groupDao();
 				RoleDaoWrapper roleDao = tx.data().roleDao();
 
-				Group group = groupDao.loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
-				Role role = roleDao.loadObjectByUuid(ac, roleUuid, READ_PERM);
+				HibGroup group = groupDao.loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
+				HibRole role = roleDao.loadObjectByUuid(ac, roleUuid, READ_PERM);
 
 				// No need to update the group if it is not assigned
 				if (!groupDao.hasRole(group, role)) {
@@ -157,7 +147,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			GroupDaoWrapper groupDao = tx.data().groupDao();
 			MeshAuthUser requestUser = ac.getUser();
 			PagingParametersImpl pagingInfo = new PagingParametersImpl(ac);
-			Group group = groupDao.loadObjectByUuid(ac, groupUuid, READ_PERM);
+			HibGroup group = groupDao.loadObjectByUuid(ac, groupUuid, READ_PERM);
 			TransformablePage<? extends HibUser> userPage = groupDao.getVisibleUsers(group, requestUser, pagingInfo);
 			return userPage.transformToRestSync(ac, 0);
 		}, model -> ac.send(model, OK));
@@ -180,7 +170,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			utils.syncTx(ac, tx -> {
 				GroupDaoWrapper groupDao = tx.data().groupDao();
 				UserDaoWrapper userDao = tx.data().userDao();
-				Group group = groupDao.loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
+				HibGroup group = groupDao.loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 				HibUser user = userDao.loadObjectByUuid(ac, userUuid, READ_PERM);
 
 				// Only add the user if it is not yet assigned
@@ -213,7 +203,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 				GroupDaoWrapper groupDao = tx.data().groupDao();
 				UserDaoWrapper userDao = tx.data().userDao();
 
-				Group group = groupDao.loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
+				HibGroup group = groupDao.loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 				HibUser user = userDao.loadObjectByUuid(ac, userUuid, READ_PERM);
 
 				// No need to remove the user if it is not assigned

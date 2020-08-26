@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.endpoint.schema;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.rest.Messages.message;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -16,19 +16,20 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.action.SchemaDAOActions;
 import com.gentics.mesh.core.actions.impl.ProjectSchemaLoadAllActionImpl;
-import com.gentics.mesh.core.actions.impl.SchemaDAOActionsImpl;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.dao.impl.SchemaDaoWrapperImpl;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.SchemaRoot;
+import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.Microschema;
-import com.gentics.mesh.core.data.schema.Schema;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
-import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
+import com.gentics.mesh.core.data.schema.handler.SchemaComparatorImpl;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -48,9 +49,9 @@ import com.gentics.mesh.util.UUIDUtil;
 
 import dagger.Lazy;
 
-public class SchemaCrudHandler extends AbstractCrudHandler<Schema, SchemaResponse> {
+public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResponse> {
 
-	private SchemaComparator comparator;
+	private SchemaComparatorImpl comparator;
 
 	private Lazy<BootstrapInitializer> boot;
 
@@ -59,18 +60,13 @@ public class SchemaCrudHandler extends AbstractCrudHandler<Schema, SchemaRespons
 	private final ProjectSchemaLoadAllActionImpl projectSchemaDAOActions;
 
 	@Inject
-	public SchemaCrudHandler(Database db, SchemaComparator comparator, Lazy<BootstrapInitializer> boot,
-		HandlerUtilities utils, NodeIndexHandlerImpl nodeIndexHandler, WriteLock writeLock, ProjectSchemaLoadAllActionImpl projectSchemaDAOActions) {
-		super(db, utils, writeLock);
+	public SchemaCrudHandler(Database db, SchemaComparatorImpl comparator, Lazy<BootstrapInitializer> boot,
+		HandlerUtilities utils, NodeIndexHandlerImpl nodeIndexHandler, WriteLock writeLock, ProjectSchemaLoadAllActionImpl projectSchemaDAOActions, SchemaDAOActions schemaActions) {
+		super(db, utils, writeLock, schemaActions);
 		this.comparator = comparator;
 		this.boot = boot;
 		this.nodeIndexHandler = nodeIndexHandler;
 		this.projectSchemaDAOActions = projectSchemaDAOActions;
-	}
-
-	@Override
-	public SchemaDAOActionsImpl crudActions() {
-		return new SchemaDAOActionsImpl();
 	}
 
 	/**
@@ -91,7 +87,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<Schema, SchemaRespons
 				if (!UUIDUtil.isUUID(uuid)) {
 					return false;
 				}
-				Schema schemaContainer = tx.data().schemaDao().findByUuid(uuid);
+				HibSchema schemaContainer = tx.data().schemaDao().findByUuid(uuid);
 				return schemaContainer == null;
 			});
 
@@ -107,7 +103,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<Schema, SchemaRespons
 				SchemaDaoWrapper schemaDao = tx1.data().schemaDao();
 
 				// 1. Load the schema container with update permissions
-				Schema schemaContainer = schemaDao.loadObjectByUuid(ac, uuid, UPDATE_PERM);
+				HibSchema schemaContainer = schemaDao.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 				SchemaUpdateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaUpdateRequest.class);
 
 				if (ac.getSchemaUpdateParameters().isStrictValidation()) {
@@ -151,8 +147,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<Schema, SchemaRespons
 								}
 
 								// Locate the projects to which the schema was linked - We need to ensure that the microschema is also linked to those projects
-								for (SchemaRoot roots : schemaDao.getRoots(schemaContainer)) {
-									Project project = roots.getProject();
+								for (HibProject project : schemaDao.findLinkedProjects(schemaContainer)) {
 									if (project != null) {
 										project.getMicroschemaContainerRoot().addMicroschema(user, microschema, batch);
 									}
@@ -162,16 +157,16 @@ public class SchemaCrudHandler extends AbstractCrudHandler<Schema, SchemaRespons
 					}
 
 					// 3. Apply the found changes to the schema
-					SchemaVersion createdVersion = schemaContainer.getLatestVersion().applyChanges(ac, model, batch);
+					HibSchemaVersion createdVersion = schemaDao.applyChanges(schemaContainer.getLatestVersion(), ac, model, batch);
 
 					// Check whether the assigned branches of the schema should also directly be updated.
 					// This will trigger a node migration.
 					if (updateParams.getUpdateAssignedBranches()) {
-						Map<Branch, SchemaVersion> referencedBranches = schemaContainer.findReferencedBranches();
+						Map<HibBranch, HibSchemaVersion> referencedBranches = schemaDao.findReferencedBranches(schemaContainer);
 
 						// Assign the created version to the found branches
-						for (Map.Entry<Branch, SchemaVersion> branchEntry : referencedBranches.entrySet()) {
-							Branch branch = branchEntry.getKey();
+						for (Map.Entry<HibBranch, HibSchemaVersion> branchEntry : referencedBranches.entrySet()) {
+							HibBranch branch = branchEntry.getKey();
 
 							// Check whether a list of branch names was specified and skip branches which were not included in the list.
 							List<String> branchNames = updateParams.getBranchNames();
@@ -208,10 +203,11 @@ public class SchemaCrudHandler extends AbstractCrudHandler<Schema, SchemaRespons
 		validateParameter(uuid, "uuid");
 
 		utils.syncTx(ac, tx -> {
-			Schema schema = tx.data().schemaDao().loadObjectByUuid(ac, uuid, READ_PERM);
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			HibSchema schema = schemaDao.loadObjectByUuid(ac, uuid, READ_PERM);
 			SchemaModel requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaUpdateRequest.class);
 			requestModel.validate();
-			return schema.getLatestVersion().diff(ac, comparator, requestModel);
+			return schemaDao.diff(schema.getLatestVersion(), ac, requestModel);
 		}, model -> ac.send(model, OK));
 	}
 
@@ -237,25 +233,24 @@ public class SchemaCrudHandler extends AbstractCrudHandler<Schema, SchemaRespons
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				Project project = ac.getProject();
+				HibProject project = ac.getProject();
 				String projectUuid = project.getUuid();
 				UserDaoWrapper userDao = tx.data().userDao();
-				if (!userDao.hasPermission(ac.getUser(), project, GraphPermission.UPDATE_PERM)) {
+				if (!userDao.hasPermission(ac.getUser(), project, InternalPermission.UPDATE_PERM)) {
 					throw error(FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
 				}
 				SchemaDaoWrapper schemaDao = tx.data().schemaDao();
-				Schema schema = schemaDao.loadObjectByUuid(ac, schemaUuid, READ_PERM);
-				SchemaRoot root = project.getSchemaContainerRoot();
-				if (root.contains(schema)) {
+				HibSchema schema = schemaDao.loadObjectByUuid(ac, schemaUuid, READ_PERM);
+				if(schemaDao.isLinkedToProject(schema, project)) {
 					// Schema has already been assigned. No need to create indices
-					return schema.transformToRestSync(ac, 0);
+					return schemaDao.transformToRestSync(schema, ac, 0);
 				}
 
 				// Assign the schema to the project
 				utils.eventAction(batch -> {
-					root.addSchemaContainer(ac.getUser(), schema, batch);
+					schemaDao.addSchema(schema, project, ac.getUser(), batch);
 				});
-				return schema.transformToRestSync(ac, 0);
+				return schemaDao.transformToRestSync(schema, ac, 0);
 			}, model -> ac.send(model, OK));
 		}
 	}
@@ -274,22 +269,22 @@ public class SchemaCrudHandler extends AbstractCrudHandler<Schema, SchemaRespons
 			utils.syncTx(ac, tx -> {
 				SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 				UserDaoWrapper userDao = tx.data().userDao();
-				Project project = ac.getProject();
+				HibProject project = ac.getProject();
 				String projectUuid = project.getUuid();
 
-				if (!userDao.hasPermission(ac.getUser(), project, GraphPermission.UPDATE_PERM)) {
+				if (!userDao.hasPermission(ac.getUser(), project, InternalPermission.UPDATE_PERM)) {
 					throw error(FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
 				}
 
-				Schema schema = schemaDao.loadObjectByUuid(ac, schemaUuid, READ_PERM);
+				HibSchema schema = schemaDao.loadObjectByUuid(ac, schemaUuid, READ_PERM);
 
 				// No need to invoke the removal if the schema is not assigned
-				if (!project.getSchemaContainerRoot().contains(schema)) {
+				if (!schemaDao.isLinkedToProject(schema, project)) {
 					return;
 				}
 
 				utils.eventAction(batch -> {
-					project.getSchemaContainerRoot().removeSchemaContainer(schema, batch);
+					schemaDao.removeSchema(schema, project, batch);
 					batch.add(schema.onUpdated());
 				});
 
@@ -315,9 +310,9 @@ public class SchemaCrudHandler extends AbstractCrudHandler<Schema, SchemaRespons
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				SchemaDaoWrapper schemaDao = tx.data().schemaDao();
-				Schema schema = schemaDao.loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
+				HibSchema schema = schemaDao.loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
 				String version = utils.eventAction(batch -> {
-					SchemaVersion newVersion = schema.getLatestVersion().applyChanges(ac, batch);
+					HibSchemaVersion newVersion = schemaDao.applyChanges(schema.getLatestVersion(), ac, batch);
 					return newVersion.getVersion();
 				});
 				return message(ac, "schema_changes_applied", schema.getName(), version);

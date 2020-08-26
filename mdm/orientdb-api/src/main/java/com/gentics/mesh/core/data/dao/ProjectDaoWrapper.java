@@ -4,11 +4,11 @@ import java.util.function.Predicate;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -19,36 +19,38 @@ import com.gentics.mesh.parameter.PagingParameters;
  * Temporary in-between interface that helps test removal of project root deps.
  */
 // TODO move the contents of this to ProjectDao once migration is done
-public interface ProjectDaoWrapper extends ProjectDao, DaoWrapper<Project>, DaoTransformable<Project, ProjectResponse> {
+public interface ProjectDaoWrapper extends ProjectDao, DaoWrapper<HibProject>, DaoTransformable<HibProject, ProjectResponse> {
 
-	TraversalResult<? extends Project> findAll();
+	TraversalResult<? extends HibProject> findAll();
 
-	TransformablePage<? extends Project> findAll(InternalActionContext ac, PagingParameters pagingInfo);
+	TransformablePage<? extends HibProject> findAll(InternalActionContext ac, PagingParameters pagingInfo);
 
-	Page<? extends Project> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Project> extraFilter);
+	Page<? extends HibProject> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibProject> extraFilter);
 
-	Project findByName(String name);
+	HibProject findByName(String name);
 
-	Project findByName(InternalActionContext ac, String projectName, GraphPermission perm);
+	HibProject findByName(InternalActionContext ac, String projectName, InternalPermission perm);
 
-	Project findByUuid(String uuid);
+	HibProject findByUuid(String uuid);
 
-	void delete(Project project, BulkActionContext bc);
+	void delete(HibProject project, BulkActionContext bc);
 
-	boolean update(Project element, InternalActionContext ac, EventQueueBatch batch);
+	boolean update(HibProject element, InternalActionContext ac, EventQueueBatch batch);
 
-	Project loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm);
+	HibProject loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm);
 
-	Project loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound);
+	HibProject loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound);
 
-	Project create(InternalActionContext ac, EventQueueBatch batch, String uuid);
+	HibProject create(InternalActionContext ac, EventQueueBatch batch, String uuid);
 
-	default Project create(String projectName, String hostname, Boolean ssl, String pathPrefix, HibUser creator,
-		SchemaVersion schemaVersion, EventQueueBatch batch) {
+	default HibProject create(String projectName, String hostname, Boolean ssl, String pathPrefix, HibUser creator,
+		HibSchemaVersion schemaVersion, EventQueueBatch batch) {
 		return create(projectName, hostname, ssl, pathPrefix, creator, schemaVersion, null, batch);
 	}
 
-	Project create(String name, String hostname, Boolean ssl, String pathPrefix, HibUser creator, SchemaVersion schemaVersion,
+	HibProject create(String name, String hostname, Boolean ssl, String pathPrefix, HibUser creator, HibSchemaVersion schemaVersion,
 		String uuid, EventQueueBatch batch);
+
+	String getETag(HibProject project, InternalActionContext ac);
 
 }

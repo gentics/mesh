@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_FAMILY;
@@ -23,11 +23,12 @@ import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
+import com.gentics.mesh.core.data.util.HibClassConverter;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedProjectElementEventModel;
@@ -105,12 +106,12 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public Tag create(InternalActionContext ac, EventQueueBatch batch) {
-		return mesh().boot().tagDao().create(this, ac, batch);
+		return HibClassConverter.toTag(mesh().boot().tagDao().create(this, ac, batch));
 	}
 
 	@Override
 	public Tag create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		return mesh().boot().tagDao().create(this, ac, batch, uuid);
+		return HibClassConverter.toTag(mesh().boot().tagDao().create(this, ac, batch, uuid));
 	}
 
 	@Override
@@ -132,8 +133,8 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	}
 
 	@Override
-	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
-		Set<GraphPermission> permissionsToRevoke) {
+	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<InternalPermission> permissionsToGrant,
+		Set<InternalPermission> permissionsToRevoke) {
 		if (recursive) {
 			for (Tag tag : findAll()) {
 				tag.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
@@ -207,6 +208,14 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public Tag findByName(String name) {
-		return mesh().boot().tagDao().findByName(this, name);
+		return out(getRootLabel())
+			.mark()
+			.has(TagImpl.TAG_VALUE_KEY, name)
+			.back()
+			.nextOrDefaultExplicit(TagImpl.class, null);
+	}
+
+	public void deleteElement() {
+		getElement().remove();
 	}
 }

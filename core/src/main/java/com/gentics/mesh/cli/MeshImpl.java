@@ -21,7 +21,7 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.crypto.KeyStoreHelper;
-import com.gentics.mesh.dagger.DaggerMeshComponent;
+import com.gentics.mesh.dagger.DaggerOrientDBMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -46,6 +46,7 @@ public class MeshImpl implements Mesh {
 	private static AtomicLong instanceCounter = new AtomicLong(0);
 
 	private static final Logger log;
+	private final MeshComponent.Builder builder;
 
 	private MeshCustomLoader<Vertx> verticleLoader;
 
@@ -66,6 +67,11 @@ public class MeshImpl implements Mesh {
 	}
 
 	public MeshImpl(MeshOptions options) {
+		this(options, DaggerOrientDBMeshComponent.builder());
+	}
+
+	public MeshImpl(MeshOptions options, MeshComponent.Builder builder) {
+		this.builder = builder;
 		long current = instanceCounter.incrementAndGet();
 		if (current >= 2) {
 			if (options.getClusterOptions().isEnabled()) {
@@ -135,7 +141,7 @@ public class MeshImpl implements Mesh {
 		}
 		// Create dagger context and invoke bootstrap init in order to startup mesh
 		try {
-			meshInternal = DaggerMeshComponent.builder().configuration(options).mesh(this).build();
+			meshInternal = builder.configuration(options).mesh(this).build();
 			setMeshInternal(meshInternal);
 			meshInternal.boot().init(this, forceIndexSync, options, verticleLoader);
 			if (options.isUpdateCheckEnabled()) {

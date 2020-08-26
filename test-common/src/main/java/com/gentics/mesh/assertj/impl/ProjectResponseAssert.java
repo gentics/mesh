@@ -1,11 +1,11 @@
 package com.gentics.mesh.assertj.impl;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import com.gentics.mesh.assertj.AbstractMeshAssert;
-import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 
@@ -15,8 +15,8 @@ public class ProjectResponseAssert extends AbstractMeshAssert<ProjectResponseAss
 		super(actual, ProjectResponseAssert.class);
 	}
 
-	public ProjectResponseAssert matches(Project project) {
-		assertGenericNode(project, actual);
+	public ProjectResponseAssert matches(HibProject project) {
+		assertGenericNode(project.toProject(), actual);
 		assertNotNull(actual.getRootNode());
 		assertEquals(project.getName(), actual.getName());
 		assertNotNull(actual.getRootNode());

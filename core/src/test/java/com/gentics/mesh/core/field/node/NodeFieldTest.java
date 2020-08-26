@@ -15,6 +15,7 @@ import org.junit.Test;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
@@ -91,6 +92,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 		Node node = folder("2015");
 
 		try (Tx tx = tx()) {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 
 			// 1. Create the node field schema and add it to the schema of the node
@@ -99,7 +101,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
 			// 2. Add the node reference to the node fields
-			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
+			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			container.createNode(NODE_FIELD, newsNode);
 			tx.success();
 		}

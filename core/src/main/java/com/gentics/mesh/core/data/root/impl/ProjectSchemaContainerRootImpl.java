@@ -8,6 +8,7 @@ import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -34,7 +35,7 @@ public class ProjectSchemaContainerRootImpl extends SchemaContainerRootImpl {
 	}
 
 	@Override
-	public void removeSchemaContainer(Schema schema, EventQueueBatch batch) {
+	public void removeSchemaContainer(HibSchema schema, EventQueueBatch batch) {
 		Project project = getProject();
 		batch.add(project.onSchemaAssignEvent(schema, UNASSIGNED));
 		super.removeSchemaContainer(schema, batch);

@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.data.root.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.PROJECT_KEY_PROPERTY;
@@ -27,11 +27,13 @@ import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
@@ -40,8 +42,11 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformableStreamPageImpl;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.NodeRoot;
+import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -99,7 +104,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public Stream<? extends Node> findAllStream(InternalActionContext ac, GraphPermission perm) {
+	public Stream<? extends Node> findAllStream(InternalActionContext ac, InternalPermission perm) {
 		MeshAuthUser user = ac.getUser();
 		String branchUuid = ac.getBranch().getUuid();
 		UserDaoWrapper userDao = mesh().boot().userDao();
@@ -138,7 +143,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		MeshAuthUser user = ac.getUser();
 		FramedTransactionalGraph graph = Tx.get().getGraph();
 
-		Branch branch = ac.getBranch();
+		HibBranch branch = ac.getBranch();
 		String branchUuid = branch.getUuid();
 		UserDaoWrapper userDao = mesh().boot().userDao();
 
@@ -167,23 +172,23 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public Node loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
+	public Node loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
 		Node element = findByUuid(uuid);
 		if (!errorIfNotFound && element == null) {
 			return null;
 		}
 		UserDaoWrapper userDao = mesh().boot().userDao();
+		ContentDaoWrapper contentDao = mesh().boot().contentDao();
 		if (element == null) {
 			throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);
 		}
 
 		MeshAuthUser requestUser = ac.getUser();
 		if (perm == READ_PUBLISHED_PERM) {
-			Branch branch = ac.getBranch(element.getProject());
+			HibBranch branch = ac.getBranch(element.getProject());
 
 			List<String> requestedLanguageTags = ac.getNodeParameters().getLanguageList(options());
-			NodeGraphFieldContainer fieldContainer = element.findVersion(requestedLanguageTags, branch.getUuid(),
-				ac.getVersioningParameters().getVersion());
+			NodeGraphFieldContainer fieldContainer = contentDao.findVersion(element, requestedLanguageTags, branch.getUuid(), ac.getVersioningParameters().getVersion());
 
 			if (fieldContainer == null) {
 				throw error(NOT_FOUND, "node_error_published_not_found_for_uuid_branch_language", uuid,
@@ -207,7 +212,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public Node create(HibUser creator, SchemaVersion version, Project project, String uuid) {
+	public Node create(HibUser creator, HibSchemaVersion version, HibProject project, String uuid) {
 		// TODO check whether the mesh node is in fact a folder node.
 		NodeImpl node = getGraph().addFramedVertex(NodeImpl.class);
 		if (uuid != null) {
@@ -239,12 +244,13 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	 * @return
 	 */
 	// TODO use schema container version instead of container
-	private Node createNode(InternalActionContext ac, SchemaVersion schemaVersion, EventQueueBatch batch,
+	private Node createNode(InternalActionContext ac, HibSchemaVersion schemaVersion, EventQueueBatch batch,
 		String uuid) {
-		Project project = ac.getProject();
+		HibProject project = ac.getProject();
 		MeshAuthUser requestUser = ac.getUser();
 		BootstrapInitializer boot = mesh().boot();
 		UserDaoWrapper userRoot = boot.userDao();
+		NodeDaoWrapper nodeDao = boot.nodeDao();
 
 		NodeCreateRequest requestModel = ac.fromJson(NodeCreateRequest.class);
 		if (requestModel.getParentNode() == null || isEmpty(requestModel.getParentNode().getUuid())) {
@@ -257,10 +263,10 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		// Load the parent node in order to create the node
 		Node parentNode = project.getNodeRoot().loadObjectByUuid(ac, requestModel.getParentNode().getUuid(),
 			CREATE_PERM);
-		Branch branch = ac.getBranch();
+		HibBranch branch = ac.getBranch();
 		// BUG: Don't use the latest version. Use the version which is linked to the
 		// branch!
-		Node node = parentNode.create(requestUser, schemaVersion, project, branch, uuid);
+		Node node = nodeDao.create(parentNode, requestUser, schemaVersion, project, branch, uuid);
 
 		// Add initial permissions to the created node
 		userRoot.inheritRolePermissions(requestUser, parentNode, node);
@@ -298,9 +304,9 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		// Override any given version parameter. Creation is always scoped to drafts
 		ac.getVersioningParameters().setVersion("draft");
 
-		Project project = ac.getProject();
+		HibProject project = ac.getProject();
 		MeshAuthUser requestUser = ac.getUser();
-		Branch branch = ac.getBranch();
+		HibBranch branch = ac.getBranch();
 		UserDaoWrapper userDao = mesh().boot().userDao();
 
 		String body = ac.getBodyAsString();
@@ -316,9 +322,9 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 		if (!isEmpty(schemaInfo.getSchema().getUuid())) {
 			// 2. Use schema reference by uuid first
-			Schema schemaByUuid = project.getSchemaContainerRoot().loadObjectByUuid(ac,
+			HibSchema schemaByUuid = project.getSchemaContainerRoot().loadObjectByUuid(ac,
 				schemaInfo.getSchema().getUuid(), READ_PERM);
-			SchemaVersion schemaVersion = branch.findLatestSchemaVersion(schemaByUuid);
+			HibSchemaVersion schemaVersion = branch.findLatestSchemaVersion(schemaByUuid);
 			if (schemaVersion == null) {
 				throw error(BAD_REQUEST, "schema_error_schema_not_linked_to_branch", schemaByUuid.getName(), branch.getName(), project.getName());
 			}
@@ -333,7 +339,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 				String schemaName = schemaByName.getName();
 				String schemaUuid = schemaByName.getUuid();
 				if (userDao.hasPermission(requestUser, schemaByName, READ_PERM)) {
-					SchemaVersion schemaVersion = branch.findLatestSchemaVersion(schemaByName);
+					HibSchemaVersion schemaVersion = branch.findLatestSchemaVersion(schemaByName);
 					if (schemaVersion == null) {
 						throw error(BAD_REQUEST, "schema_error_schema_not_linked_to_branch", schemaByName.getName(), branch.getName(),
 							project.getName());
@@ -353,7 +359,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 	@Override
 	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive,
-		Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
+		Set<InternalPermission> permissionsToGrant, Set<InternalPermission> permissionsToRevoke) {
 		if (recursive) {
 			for (Node node : findAll()) {
 				// We don't need to recursively handle the permissions for each node again since

@@ -9,15 +9,17 @@ import static com.gentics.mesh.test.TestSize.PROJECT_AND_NODE;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.job.Job;
-import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
+import com.gentics.mesh.core.data.job.HibJob;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.job.JobListResponse;
@@ -85,7 +87,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 	public void testHandlingOfFailedJobs() {
 
 		String jobUuid = tx(() -> {
-			Job job = boot().jobRoot().enqueueBranchMigration(user(), initialBranch());
+			HibJob job = boot().jobRoot().enqueueBranchMigration(user(), initialBranch());
 			return job.getUuid();
 		});
 
@@ -128,19 +130,19 @@ public class JobEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testReadJob() {
 		String jobUuid = tx(() -> {
-			Job job = boot().jobRoot().enqueueBranchMigration(user(), initialBranch());
+			HibJob job = boot().jobRoot().enqueueBranchMigration(user(), initialBranch());
 			return job.getUuid();
 		});
 
 		tx(() -> {
-			Schema schema = schemaContainer("content");
-			Job job = boot().jobRoot().enqueueSchemaMigration(user(), initialBranch(), schema.getLatestVersion(), schema.getLatestVersion());
+			HibSchema schema = schemaContainer("content");
+			HibJob job = boot().jobRoot().enqueueSchemaMigration(user(), initialBranch(), schema.getLatestVersion(), schema.getLatestVersion());
 			return job.getUuid();
 		});
 
 		String job3Uuid = tx(() -> {
-			Schema schema = schemaContainer("folder");
-			Job job = boot().jobRoot().enqueueSchemaMigration(user(), initialBranch(), schema.getLatestVersion(), schema.getLatestVersion());
+			HibSchema schema = schemaContainer("folder");
+			HibJob job = boot().jobRoot().enqueueSchemaMigration(user(), initialBranch(), schema.getLatestVersion(), schema.getLatestVersion());
 			return job.getUuid();
 		});
 
@@ -148,7 +150,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 		JobResponse jobResponse = call(() -> client().findJobByUuid(job3Uuid));
 		try (Tx tx = tx()) {
-			Schema schema = schemaContainer("folder");
+			HibSchema schema = schemaContainer("folder");
 			assertEquals(initialBranchUuid(), jobResponse.getProperties().get("branchUuid"));
 			assertEquals(schema.getUuid(), jobResponse.getProperties().get("schemaUuid"));
 			assertEquals(schema.getLatestVersion().getVersion(), jobResponse.getProperties().get("fromVersion"));
@@ -164,7 +166,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 	public void testRetryJob() {
 
 		String jobUuid = tx(() -> {
-			Job job = boot().jobRoot().enqueueBranchMigration(user(), initialBranch());
+			HibJob job = boot().jobRoot().enqueueBranchMigration(user(), initialBranch());
 			return job.getUuid();
 		});
 
@@ -186,7 +188,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testProcessJob() {
-		Job job = tx(() -> boot().jobRoot().enqueueBranchMigration(user(), initialBranch()));
+		HibJob job = tx(() -> boot().jobRoot().enqueueBranchMigration(user(), initialBranch()));
 		String jobUuid = tx(() -> job.getUuid());
 
 		call(() -> client().processJob(jobUuid), FORBIDDEN, "error_admin_permission_required");
@@ -199,8 +201,9 @@ public class JobEndpointTest extends AbstractMeshTest {
 		assertNotNull(jobResonse.getErrorMessage());
 
 		// Change the job so that it will no longer fail
-		tx(() -> {
-			Branch branch = project().getBranchRoot().create("testBranch", user(), null, true, initialBranch(), createBatch());
+		tx(tx -> {
+			BranchDaoWrapper branchDao = tx.data().branchDao();
+			HibBranch branch = branchDao.create(project(), "testBranch", user(), null, true, initialBranch(), createBatch());
 			job.setBranch(branch);
 		});
 

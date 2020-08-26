@@ -23,7 +23,7 @@ import com.gentics.mesh.madl.traversal.TraversalResult;
  * versions.
  */
 public interface SchemaVersion
-		extends GraphFieldSchemaContainerVersion<SchemaResponse, SchemaVersionModel, SchemaReference, SchemaVersion, Schema> {
+		extends GraphFieldSchemaContainerVersion<SchemaResponse, SchemaVersionModel, SchemaReference, SchemaVersion, Schema>, HibSchemaVersion {
 
 	static final TypeInfo TYPE_INFO = new TypeInfo(SCHEMAVERSION, SCHEMA_CREATED, SCHEMA_UPDATED, SCHEMA_DELETED);
 

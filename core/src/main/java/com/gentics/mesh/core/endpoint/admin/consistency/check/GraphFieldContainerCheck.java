@@ -7,6 +7,7 @@ import static com.gentics.mesh.core.rest.admin.consistency.RepairAction.DELETE;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.db.Tx;
@@ -39,6 +40,7 @@ public class GraphFieldContainerCheck extends AbstractConsistencyCheck {
 	}
 
 	private void checkGraphFieldContainer(Database db, NodeGraphFieldContainer container, ConsistencyCheckResult result, boolean attemptRepair) {
+		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 		String uuid = container.getUuid();
 		if (container.getSchemaContainerVersion() == null) {
 			result.addInconsistency("The GraphFieldContainer has no assigned SchemaContainerVersion", uuid, HIGH);
@@ -83,7 +85,7 @@ public class GraphFieldContainerCheck extends AbstractConsistencyCheck {
 				if (notSameDraft && notLargerVersion) {
 					String nodeInfo = "unknown";
 					try {
-						Node node = container.getParentNode();
+						Node node = contentDao.getNode(container);
 						nodeInfo = node.getUuid();
 					} catch (Exception e) {
 						log.debug("Could not load node uuid", e);
@@ -100,10 +102,10 @@ public class GraphFieldContainerCheck extends AbstractConsistencyCheck {
 		}
 
 		// GFC must either have a next GFC, or must be the draft GFC for a Node
-		if (!container.hasNextVersion() && !container.isDraft()) {
+		if (!contentDao.hasNextVersion(container) && !container.isDraft()) {
 			String nodeInfo = "unknown";
 			try {
-				Node node = container.getParentNode();
+				Node node = contentDao.getNode(container);
 				nodeInfo = node.getUuid();
 			} catch (Exception e) {
 				log.debug("Could not load node uuid", e);
@@ -120,8 +122,8 @@ public class GraphFieldContainerCheck extends AbstractConsistencyCheck {
 			InconsistencyInfo info = new InconsistencyInfo().setDescription("GraphFieldContainer {" + version + "} has no language set")
 				.setElementUuid(uuid).setSeverity(MEDIUM);
 			if (attemptRepair) {
-				if (container.hasNextVersion()) {
-					NodeGraphFieldContainer next = container.getNextVersions().iterator().next();
+				if (contentDao.hasNextVersion(container)) {
+					NodeGraphFieldContainer next = contentDao.getNextVersions(container).iterator().next();
 					if (next != null) {
 						String tag = next.getLanguageTag();
 						if (tag != null) {

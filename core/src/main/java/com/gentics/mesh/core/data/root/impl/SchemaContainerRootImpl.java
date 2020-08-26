@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PAR
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_ITEM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.SCHEMA_CONTAINER_KEY_PROPERTY;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toSchema;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static com.gentics.mesh.madl.type.EdgeTypeDefinition.edgeType;
@@ -21,6 +22,7 @@ import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.root.SchemaRoot;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
@@ -63,12 +65,12 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<Schema> implemen
 	}
 
 	@Override
-	public void removeSchemaContainer(Schema schemaContainer, EventQueueBatch batch) {
-		removeItem(schemaContainer);
+	public void removeSchemaContainer(HibSchema schemaContainer, EventQueueBatch batch) {
+		removeItem(toSchema(schemaContainer));
 	}
 
 	@Override
-	public boolean contains(Schema schema) {
+	public boolean contains(HibSchema schema) {
 		if (findByUuid(schema.getUuid()) == null) {
 			return false;
 		} else {

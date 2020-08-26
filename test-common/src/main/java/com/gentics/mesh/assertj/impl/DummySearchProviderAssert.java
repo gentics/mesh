@@ -3,7 +3,6 @@ package com.gentics.mesh.assertj.impl;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -16,15 +15,17 @@ import java.util.stream.IntStream;
 
 import org.assertj.core.api.AbstractAssert;
 
-import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.search.request.Bulkable;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.DeleteDocumentRequest;
+import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.util.Tuple;
@@ -176,14 +177,14 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 	 * @param languages
 	 * @return Fluent API
 	 */
-	public DummySearchProviderAssert storedAllContainers(Node node, Project project, Branch branch, String... languages) {
+	public DummySearchProviderAssert storedAllContainers(Node node, HibProject project, HibBranch branch, String... languages) {
 		for (ContainerType type : Arrays.asList(DRAFT, PUBLISHED)) {
 			for (String lang : languages) {
 				String projectUuid = project.getUuid();
 				String branchUuid = branch.getUuid();
 				String schemaVersionUuid = node.getSchemaContainer().getLatestVersion().getUuid();
-				assertThat(actual).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid, schemaVersionUuid, type),
-						NodeGraphFieldContainer.composeDocumentId(node.getUuid(), lang));
+				assertThat(actual).hasStore(ContentDaoWrapper.composeIndexName(projectUuid, branchUuid, schemaVersionUuid, type),
+						ContentDaoWrapper.composeDocumentId(node.getUuid(), lang));
 			}
 		}
 		return this;
@@ -195,7 +196,7 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 	 * @param tag
 	 * @return Fluent API
 	 */
-	public DummySearchProviderAssert stored(Tag tag) {
+	public DummySearchProviderAssert stored(HibTag tag) {
 		assertThat(actual).hasStore(Tag.composeIndexName(tag.getProject().getUuid()), Tag.composeDocumentId(tag.getUuid()));
 		return this;
 	}
@@ -206,7 +207,7 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 	 * @param tagfamily
 	 * @return Fluent API
 	 */
-	public DummySearchProviderAssert stored(TagFamily tagfamily) {
+	public DummySearchProviderAssert stored(HibTagFamily tagfamily) {
 		assertThat(actual).hasStore(TagFamily.composeIndexName(tagfamily.getProject().getUuid()), TagFamily.composeDocumentId(tagfamily.getUuid()));
 		return this;
 	}

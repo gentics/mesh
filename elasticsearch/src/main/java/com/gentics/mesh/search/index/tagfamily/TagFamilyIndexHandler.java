@@ -16,11 +16,13 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -34,7 +36,7 @@ import io.reactivex.Flowable;
 import io.reactivex.Observable;
 
 @Singleton
-public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
+public class TagFamilyIndexHandler extends AbstractIndexHandler<HibTagFamily> {
 
 	@Inject
 	TagFamilyTransformer transformer;
@@ -79,13 +81,13 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 	}
 
 	@Override
-	public Completable store(TagFamily tagFamily, UpdateDocumentEntry entry) {
+	public Completable store(HibTagFamily tagFamily, UpdateDocumentEntry entry) {
 		entry.getContext().setProjectUuid(tagFamily.getProject().getUuid());
 		return super.store(tagFamily, entry);
 	}
 
 	@Override
-	public Observable<IndexBulkEntry> storeForBulk(TagFamily tagFamily, UpdateDocumentEntry entry) {
+	public Observable<IndexBulkEntry> storeForBulk(HibTagFamily tagFamily, UpdateDocumentEntry entry) {
 		entry.getContext().setProjectUuid(tagFamily.getProject().getUuid());
 		return super.storeForBulk(tagFamily, entry);
 	}
@@ -135,7 +137,7 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 	@Override
 	public Set<String> getIndicesForSearch(InternalActionContext ac) {
 		return db.tx(() -> {
-			Project project = ac.getProject();
+			HibProject project = ac.getProject();
 			if (project != null) {
 				return Collections.singleton(TagFamily.composeIndexName(project.getUuid()));
 			} else {
@@ -145,12 +147,12 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 	}
 
 	@Override
-	public Function<String, TagFamily> elementLoader() {
+	public Function<String, HibTagFamily> elementLoader() {
 		return (uuid) -> boot.meshRoot().getTagFamilyRoot().findByUuid(uuid);
 	}
 
 	@Override
-	public Stream<? extends TagFamily> loadAllElements(Tx tx) {
+	public Stream<? extends HibTagFamily> loadAllElements(Tx tx) {
 		return tx.data().tagFamilyDao().findAllGlobal().stream();
 	}
 

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.node.field.list.impl;
 
+import static com.gentics.mesh.core.data.util.HibClassConverter.toMicroschemaVersion;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -26,6 +27,7 @@ import com.gentics.mesh.core.data.node.field.list.AbstractReferencingGraphFieldL
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -148,17 +150,17 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 				}
 
 				MicroschemaDaoWrapper microschemaDao = Tx.get().data().microschemaDao();
-				MicroschemaVersion container = microschemaDao.fromReference(ac.getProject(), microschemaReference, ac.getBranch());
+				HibMicroschemaVersion container = microschemaDao.fromReference(ac.getProject(), microschemaReference, ac.getBranch());
 				return Observable.just(container);
 				// TODO add onError in order to return nice exceptions if the schema / version could not be found
 			}, (node, microschemaContainerVersion) -> {
 				// Load the micronode for the current field
 				Micronode micronode = existing.get(node.getUuid());
-
+				MicroschemaVersion graphMicroschemaContainerVersion = toMicroschemaVersion(microschemaContainerVersion);
 				// Create a new micronode if none could be found
 				if (micronode == null) {
 					micronode = getGraph().addFramedVertex(MicronodeImpl.class);
-					micronode.setSchemaContainerVersion(microschemaContainerVersion);
+					micronode.setSchemaContainerVersion(graphMicroschemaContainerVersion);
 				} else {
 					// Avoid microschema container changes for micronode updates
 					if (!equalsIgnoreCase(micronode.getSchemaContainerVersion().getUuid(), microschemaContainerVersion.getUuid())) {
@@ -166,7 +168,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 						String usedSchema = "name:" + usedContainerVersion.getName() + " uuid:" + usedContainerVersion.getSchemaContainer().getUuid()
 								+ " version:" + usedContainerVersion.getVersion();
 						String referencedSchema = "name:" + microschemaContainerVersion.getName() + " uuid:"
-								+ microschemaContainerVersion.getSchemaContainer().getUuid() + " version:" + microschemaContainerVersion.getVersion();
+								+ graphMicroschemaContainerVersion.getSchemaContainer().getUuid() + " version:" + microschemaContainerVersion.getVersion();
 						throw error(BAD_REQUEST, "node_error_micronode_list_update_schema_conflict", micronode.getUuid(), usedSchema,
 								referencedSchema);
 					}

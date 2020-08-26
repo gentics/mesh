@@ -39,7 +39,7 @@ public class BinariesImpl implements Binaries {
 	}
 
 	@Override
-	public Transactional<Stream<? extends Binary>> findAll() {
+	public Transactional<Stream<Binary>> findAll() {
 		return database.transactional(tx -> toStream(database.getVerticesForType(BinaryImpl.class)));
 	}
 }

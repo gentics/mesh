@@ -15,6 +15,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.binary.impl.TikaBinaryProcessor;
 import com.gentics.mesh.core.binary.impl.TikaResult;
 import com.gentics.mesh.core.data.binary.Binaries;
+import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.madl.traversal.TraversalResult;
@@ -61,12 +62,13 @@ public class ExtractPlainText extends AbstractHighLevelChange {
 		log.info("Applying change: " + getName());
 		FramedTransactionalGraph graph = Tx.getActive().getGraph();
 		AtomicLong total = new AtomicLong(0);
-		binaries.findAll().runInExistingTx(Tx.get()).forEach(binary -> {
+		BinaryDaoWrapper binaryDao = Tx.get().data().binaryDao();
+		binaryDao.findAll().runInExistingTx(Tx.get()).forEach(binary -> {
 			final String filename = storage.get().getFilePath(binary.getUuid());
 			File uploadFile = new File(filename);
 			if (uploadFile.exists()) {
 
-				TraversalResult<? extends BinaryGraphField> fields = binary.findFields();
+				TraversalResult<? extends BinaryGraphField> fields = binaryDao.findFields(binary);
 				Map<String, TikaResult> results = new HashMap<>();
 
 				fields.forEach(field -> {

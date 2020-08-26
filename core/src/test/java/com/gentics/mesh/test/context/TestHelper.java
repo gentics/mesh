@@ -27,15 +27,16 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.data.schema.Microschema;
-import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
@@ -98,15 +99,16 @@ import io.vertx.test.core.TestUtils;
 
 public interface TestHelper extends EventHelper, ClientHelper {
 
-	default Role role() {
+	default HibRole role() {
 		return data().role();
 	}
 
 	default MeshAuthUser getRequestUser() {
-		return data().getUserInfo().getUser().toUser().reframe(MeshAuthUserImpl.class);
+		User graphUser = (User)data().getUserInfo().getUser();
+		return graphUser.reframe(MeshAuthUserImpl.class);
 	}
 
-	default Role anonymousRole() {
+	default HibRole anonymousRole() {
 		return data().getAnonymousRole();
 	}
 
@@ -114,7 +116,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return data().getMeshRoot();
 	}
 
-	default Group group() {
+	default HibGroup group() {
 		return data().getUserInfo().getGroup();
 	}
 
@@ -200,31 +202,31 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return data().getContent(key);
 	}
 
-	default Map<String, TagFamily> tagFamilies() {
+	default Map<String, HibTagFamily> tagFamilies() {
 		return data().getTagFamilies();
 	}
 
-	default TagFamily tagFamily(String key) {
+	default HibTagFamily tagFamily(String key) {
 		return data().getTagFamily(key);
 	}
 
-	default Tag tag(String key) {
+	default HibTag tag(String key) {
 		return data().getTag(key);
 	}
 
-	default Schema schemaContainer(String key) {
+	default HibSchema schemaContainer(String key) {
 		return data().getSchemaContainer(key);
 	}
 
-	default Map<String, Schema> schemaContainers() {
+	default Map<String, HibSchema> schemaContainers() {
 		return data().getSchemaContainers();
 	}
 
-	default Map<String, Role> roles() {
+	default Map<String, HibRole> roles() {
 		return data().getRoles();
 	}
 
-	default Map<String, ? extends Tag> tags() {
+	default Map<String, ? extends HibTag> tags() {
 		return data().getTags();
 	}
 
@@ -236,15 +238,15 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return "de";
 	}
 
-	default Map<String, Group> groups() {
+	default Map<String, HibGroup> groups() {
 		return data().getGroups();
 	}
 
-	default Map<String, Microschema> microschemaContainers() {
+	default Map<String, HibMicroschema> microschemaContainers() {
 		return data().getMicroschemaContainers();
 	}
 
-	default Microschema microschemaContainer(String key) {
+	default HibMicroschema microschemaContainer(String key) {
 		return data().getMicroschemaContainers().get(key);
 	}
 
@@ -404,7 +406,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 
 	default int upload(Node node, Buffer buffer, String languageTag, String fieldname, String filename, String contentType) throws IOException {
 		String uuid = tx(() -> node.getUuid());
-		VersionNumber version = tx(() -> node.getGraphFieldContainer(languageTag).getVersion());
+		VersionNumber version = tx(() -> boot().contentDao().getGraphFieldContainer(node, languageTag).getVersion());
 		NodeResponse response = call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, version.toString(), fieldname,
 			new ByteArrayInputStream(buffer.getBytes()), buffer.length(),
 			filename, contentType));
@@ -581,7 +583,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	default public MeshRequest<NodeResponse> uploadRandomData(Node node, String languageTag, String fieldKey, int binaryLen, String contentType,
 		String fileName) {
 
-		VersionNumber version = tx(() -> node.getGraphFieldContainer("en").getVersion());
+		VersionNumber version = tx(() -> boot().contentDao().getGraphFieldContainer(node, "en").getVersion());
 		String uuid = tx(() -> node.getUuid());
 
 		Buffer buffer = TestUtils.randomBuffer(binaryLen);
@@ -661,9 +663,8 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return client;
 	}
 
-	default public Schema getSchemaContainer() {
-		Schema container = data().getSchemaContainer("content");
-		return container;
+	default public HibSchema getSchemaContainer() {
+		return data().getSchemaContainer("content");
 	}
 
 	default public BulkActionContext createBulkContext() {

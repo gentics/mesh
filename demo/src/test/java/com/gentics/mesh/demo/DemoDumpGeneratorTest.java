@@ -13,16 +13,18 @@ import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.dagger.MeshComponent;
@@ -63,35 +65,37 @@ public class DemoDumpGeneratorTest {
 			UserDaoWrapper userDao = tx.data().userDao();
 			GroupDaoWrapper groupDao = tx.data().groupDao();
 			ProjectDaoWrapper projectDao = tx.data().projectDao();
+			ContentDaoWrapper contentDao = tx.data().contentDao();
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 
-			Project project = projectDao.findByName("demo");
+			HibProject project = projectDao.findByName("demo");
 			assertTrue(project.getNodeRoot().computeCount() > 0);
 			HibUser user = userDao.findByUsername("webclient");
 			assertNotNull("The webclient user should have been created but could not be found.", user);
-			assertFalse("The webclient user should also have at least one group assigned to it.", !user.getGroups().iterator().hasNext());
-			Group group = user.getGroups().iterator().next();
-			Role role = groupDao.getRoles(group).iterator().next();
+			assertFalse("The webclient user should also have at least one group assigned to it.", !userDao.getGroups(user).iterator().hasNext());
+			HibGroup group = userDao.getGroups(user).iterator().next();
+			HibRole role = groupDao.getRoles(group).iterator().next();
 			assertNotNull("The webclient group should also have a role assigned to it", role);
 
-			assertTrue("The webclient role has not read permission on the user.", roleDao.hasPermission(role, GraphPermission.READ_PERM, user));
-			assertTrue("The webclient user has no permission on itself.", userDao.hasPermission(user, user, GraphPermission.READ_PERM));
-			assertTrue("The webclient user has no read permission on the user root node..", userDao.hasPermission(user, boot.meshRoot().getUserRoot(), GraphPermission.READ_PERM));
+			assertTrue("The webclient role has not read permission on the user.", roleDao.hasPermission(role, InternalPermission.READ_PERM, user));
+			assertTrue("The webclient user has no permission on itself.", userDao.hasPermission(user, user, InternalPermission.READ_PERM));
+			assertTrue("The webclient user has no read permission on the user root node..", userDao.hasPermission(user, boot.meshRoot().getUserRoot(), InternalPermission.READ_PERM));
 
 			assertTrue("We expected to find at least 5 nodes.", project.getNodeRoot().computeCount() > 5);
 
 			// Verify that the uuids have been updated
-			assertNotNull(project.getNodeRoot().findByUuid("df8beb3922c94ea28beb3922c94ea2f6"));
+			assertNotNull(nodeDao.findByUuid(project, "df8beb3922c94ea28beb3922c94ea2f6"));
 
 			// Verify that all documents are stored in the index
 			for (Node node : project.getNodeRoot().findAll()) {
-				NodeGraphFieldContainer container = node.getLatestDraftFieldContainer("en");
+				NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, "en");
 				String languageTag = "en";
 				String projectUuid = node.getProject().getUuid();
 				String branchUuid = node.getProject().getInitialBranch().getUuid();
 				String schemaContainerVersionUuid = container.getSchemaContainerVersion().getUuid();
 				ContainerType type = PUBLISHED;
-				String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid, type);
-				String documentId = NodeGraphFieldContainer.composeDocumentId(node.getUuid(), languageTag);
+				String indexName = ContentDaoWrapper.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid, type);
+				String documentId = ContentDaoWrapper.composeDocumentId(node.getUuid(), languageTag);
 				if (searchProvider.getDocument(indexName, documentId).blockingGet() == null) {
 					String msg = "The search document for node {" + node.getUuid() + "} container {" + languageTag
 						+ "} could not be found within index {" + indexName + "} - {" + documentId + "}";

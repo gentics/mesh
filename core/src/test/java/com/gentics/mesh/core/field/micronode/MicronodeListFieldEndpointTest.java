@@ -31,6 +31,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.impl.MicronodeGraphFieldListImpl;
@@ -119,7 +120,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 		disableAutoPurge();
 		Node node = folder("2015");
 
-		NodeGraphFieldContainer container = tx(() -> node.getGraphFieldContainer("en"));
+		NodeGraphFieldContainer container = tx(() -> boot().contentDao().getGraphFieldContainer(node, "en"));
 		for (int i = 0; i < 20; i++) {
 
 			final NodeGraphFieldContainer currentContainer = container;
@@ -171,7 +172,8 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 			boolean bothEmpty = oldValue != null && newValue.getItems().isEmpty() && oldValue.isEmpty();
 			if (!bothEmpty) {
 				try (Tx tx = tx()) {
-					NodeGraphFieldContainer newContainer = container.getNextVersions().iterator().next();
+					ContentDaoWrapper contentDao = tx.data().contentDao();
+					NodeGraphFieldContainer newContainer = contentDao.getNextVersions(container).iterator().next();
 					assertNotNull("No new container version was created. {" + i % 3 + "}", newContainer);
 					assertEquals("Check version number", newContainer.getVersion().toString(), response.getVersion());
 					assertEquals("Check old value for run {" + i % 3 + "}", oldValue,
@@ -221,8 +223,9 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 
 		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 			Node node = folder("2015");
-			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
+			NodeGraphFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getMicronodeList(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getMicronodeList(FIELD_NAME)).isNotNull();

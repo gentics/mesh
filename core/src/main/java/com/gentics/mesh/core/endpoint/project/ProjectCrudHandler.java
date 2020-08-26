@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.endpoint.project;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.DELETE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.rest.Messages.message;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -14,10 +14,11 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.action.ProjectDAOActions;
 import com.gentics.mesh.core.actions.impl.ProjectDAOActionsImpl;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
-import com.gentics.mesh.core.data.user.MeshAuthUser;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
@@ -29,19 +30,14 @@ import com.gentics.mesh.parameter.ProjectPurgeParameters;
 /**
  * Handler for project specific requests.
  */
-public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResponse> {
+public class ProjectCrudHandler extends AbstractCrudHandler<HibProject, ProjectResponse> {
 
 	private BootstrapInitializer boot;
 
 	@Inject
-	public ProjectCrudHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, WriteLock writeLock) {
-		super(db, utils, writeLock);
+	public ProjectCrudHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, WriteLock writeLock, ProjectDAOActions projectActions) {
+		super(db, utils, writeLock, projectActions);
 		this.boot = boot;
-	}
-
-	@Override
-	public ProjectDAOActionsImpl crudActions() {
-		return new ProjectDAOActionsImpl();
 	}
 
 	/**
@@ -53,7 +49,7 @@ public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResp
 	 */
 	public void handleReadByName(InternalActionContext ac, String projectName) {
 		utils.syncTx(ac, tx -> {
-			Project project = tx.data().projectDao().findByName(ac, projectName, READ_PERM);
+			HibProject project = tx.data().projectDao().findByName(ac, projectName, READ_PERM);
 			return crudActions().transformToRestSync(tx, project, ac, 0);
 		}, model -> ac.send(model, OK));
 	}
@@ -75,9 +71,9 @@ public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResp
 				if (!ac.getUser().isAdmin()) {
 					throw error(FORBIDDEN, "error_admin_permission_required");
 				}
-				MeshAuthUser user = ac.getUser();
+				HibUser user = ac.getUser();
 				ProjectDaoWrapper projectDao = tx.data().projectDao();
-				Project project = projectDao.loadObjectByUuid(ac, uuid, DELETE_PERM);
+				HibProject project = projectDao.loadObjectByUuid(ac, uuid, DELETE_PERM);
 				db.tx(() -> {
 					if (before.isPresent()) {
 						boot.jobRoot().enqueueVersionPurge(user, project, before.get());

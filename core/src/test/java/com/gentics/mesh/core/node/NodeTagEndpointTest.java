@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_TAGGED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNTAGGED;
 import static com.gentics.mesh.test.ClientHelper.call;
@@ -11,7 +11,6 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -23,9 +22,10 @@ import java.util.List;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchReference;
@@ -66,11 +66,12 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		Node node = folder("2015");
 		String nodeUuid = tx(() -> node.getUuid());
 		String schemaUuid = tx(() -> node.getSchemaContainer().getUuid());
-		Tag tag = tag("red");
+		HibTag tag = tag("red");
 		String tagUuid = tx(() -> tag.getUuid());
 
 		try (Tx tx = tx()) {
-			assertFalse(node.getTags(project().getLatestBranch()).list().contains(tag));
+			TagDaoWrapper tagDao = tx.data().tagDao();
+			assertFalse(tagDao.getTags(node, project().getLatestBranch()).list().contains(tag));
 			assertThat(trackingSearchProvider()).recordedStoreEvents(0);
 		}
 
@@ -107,8 +108,9 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		awaitEvents();
 
 		try (Tx tx = tx()) {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			assertThat(restNode).contains(tag);
-			assertTrue(node.getTags(project().getLatestBranch()).list().contains(tag));
+			assertTrue(tagDao.getTags(node, project().getLatestBranch()).list().contains(tag));
 		}
 
 		// TODO check for properties of the nested tag
@@ -118,10 +120,11 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testAddTagToNoPermNode() throws Exception {
 		Node node = folder("2015");
-		Tag tag = tag("red");
+		HibTag tag = tag("red");
 		try (Tx tx = tx()) {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			RoleDaoWrapper roleDao = tx.data().roleDao();
-			assertFalse(node.getTags(project().getLatestBranch()).list().contains(tag));
+			assertFalse(tagDao.getTags(node, project().getLatestBranch()).list().contains(tag));
 			roleDao.revokePermissions(role(), node, UPDATE_PERM);
 			tx.success();
 		}
@@ -132,18 +135,20 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			assertFalse(node.getTags(project().getLatestBranch()).list().contains(tag));
+			TagDaoWrapper tagDao = tx.data().tagDao();
+			assertFalse(tagDao.getTags(node, project().getLatestBranch()).list().contains(tag));
 		}
 	}
 
 	@Test
 	public void testAddNoPermTagToNode() throws Exception {
 		Node node = folder("2015");
-		Tag tag = tag("red");
+		HibTag tag = tag("red");
 
 		try (Tx tx = tx()) {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			RoleDaoWrapper roleDao = tx.data().roleDao();
-			assertFalse(node.getTags(project().getLatestBranch()).list().contains(tag));
+			assertFalse(tagDao.getTags(node, project().getLatestBranch()).list().contains(tag));
 			roleDao.revokePermissions(role(), tag, READ_PERM);
 			tx.success();
 		}
@@ -154,21 +159,23 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			assertFalse(node.getTags(project().getLatestBranch()).list().contains(tag));
+			TagDaoWrapper tagDao = tx.data().tagDao();
+			assertFalse(tagDao.getTags(node, project().getLatestBranch()).list().contains(tag));
 		}
 	}
 
 	@Test
 	public void testUntaggingViaDeleteOfTag() {
 		Node node = folder("2015");
-		Tag tag = tag("bike");
+		HibTag tag = tag("bike");
 		String schemaUuid = tx(() -> node.getSchemaContainer().getUuid());
 		String nodeUuid = tx(() -> node.getUuid());
 		String tagUuid = tx(() -> tag.getUuid());
 		String tagFamilyUuid = tx(() -> tag.getTagFamily().getUuid());
 
 		try (Tx tx = tx()) {
-			assertTrue(node.getTags(project().getLatestBranch()).list().contains(tag));
+			TagDaoWrapper tagDao = tx.data().tagDao();
+			assertTrue(tagDao.getTags(node, project().getLatestBranch()).list().contains(tag));
 		}
 
 		expect(NODE_UNTAGGED).match(1, NodeTaggedEventModel.class, event -> {
@@ -212,12 +219,13 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testRemoveTagFromNode() throws Exception {
 		Node node = folder("2015");
-		Tag tag = tag("bike");
+		HibTag tag = tag("bike");
 		String schemaUuid = tx(() -> node.getSchemaContainer().getUuid());
 		String nodeUuid = tx(() -> node.getUuid());
 		String tagUuid = tx(() -> tag.getUuid());
 		try (Tx tx = tx()) {
-			assertTrue(node.getTags(project().getLatestBranch()).list().contains(tag));
+			TagDaoWrapper tagDao = tx.data().tagDao();
+			assertTrue(tagDao.getTags(node, project().getLatestBranch()).list().contains(tag));
 		}
 
 		expect(NODE_UNTAGGED).match(1, NodeTaggedEventModel.class, event -> {
@@ -255,8 +263,9 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		NodeResponse restNode = call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid));
 
 		try (Tx tx = tx()) {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			assertThat(restNode).contains(tag);
-			assertFalse(node.getTags(project().getLatestBranch()).list().contains(tag));
+			assertFalse(tagDao.getTags(node, project().getLatestBranch()).list().contains(tag));
 		}
 		// TODO check for properties of the nested tag
 	}
@@ -275,19 +284,21 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testRemoveTagFromNoPermNode() throws Exception {
 		Node node = folder("2015");
-		Tag tag = tag("bike");
+		HibTag tag = tag("bike");
 
 		try (Tx tx = tx()) {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			RoleDaoWrapper roleDao = tx.data().roleDao();
-			assertTrue(node.getTags(project().getLatestBranch()).list().contains(tag));
+			assertTrue(tagDao.getTags(node, project().getLatestBranch()).list().contains(tag));
 			roleDao.revokePermissions(role(), node, UPDATE_PERM);
 			tx.success();
 		}
 
 		try (Tx tx = tx()) {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			call(() -> client().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeParametersImpl()), FORBIDDEN,
 				"error_missing_perm", node.getUuid(), UPDATE_PERM.getRestPerm().getName());
-			assertTrue("The tag should not be removed from the node", node.getTags(project().getLatestBranch()).list().contains(tag));
+			assertTrue("The tag should not be removed from the node", tagDao.getTags(node, project().getLatestBranch()).list().contains(tag));
 		}
 	}
 
@@ -310,7 +321,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		// 2. Tag a node in branch v1 with tag "red"
 		try (Tx tx = tx()) {
 			Node node = content();
-			Tag tag = tag("red");
+			HibTag tag = tag("red");
 			call(() -> client().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new VersioningParametersImpl().setBranch(branchOne)));
 		}
 
@@ -330,7 +341,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 				response.getTags().stream().filter(tag -> tag.getName().equals("red")).count());
 
 			// via /tagFamilies/:tagFamilyUuid/tags/:tagUuid/nodes
-			Tag tag = tag("red");
+			HibTag tag = tag("red");
 			NodeListResponse taggedNodes = call(() -> client().findNodesForTag(PROJECT_NAME, tag.getTagFamily().getUuid(), tag.getUuid(),
 				new VersioningParametersImpl().setBranch(branchOne)));
 			assertEquals("We expected to find the node in the list response but it was not included.", 1,
@@ -351,7 +362,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		// 4. Tag a node in branch v2 with tag "blue"
 		try (Tx tx = tx()) {
 			Node node = content();
-			Tag tag = tag("blue");
+			HibTag tag = tag("blue");
 			call(() -> client().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new VersioningParametersImpl().setBranch(branchTwo)));
 		}
 
@@ -375,13 +386,13 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 				response.getTags().stream().filter(tag -> tag.getName().equals("blue")).count());
 
 			// via /tagFamilies/:tagFamilyUuid/tags/:tagUuid/nodes
-			Tag tag1 = tag("red");
+			HibTag tag1 = tag("red");
 			NodeListResponse taggedNodes = call(() -> client().findNodesForTag(PROJECT_NAME, tag1.getTagFamily().getUuid(), tag1.getUuid(),
 				new VersioningParametersImpl().setBranch(branchTwo)));
 			assertEquals("We expected to find the node in the list response but it was not included.", 1,
 				taggedNodes.getData().stream().filter(item -> item.getUuid().equals(node.getUuid())).count());
 
-			Tag tag2 = tag("blue");
+			HibTag tag2 = tag("blue");
 			taggedNodes = call(() -> client().findNodesForTag(PROJECT_NAME, tag2.getTagFamily().getUuid(), tag2.getUuid(),
 				new VersioningParametersImpl().setBranch(branchTwo)));
 			assertEquals("We expected to find the node in the list response but it was not included.", 1,
@@ -392,7 +403,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		// 5. Remove the tag "red" in branch v1
 		try (Tx tx = tx()) {
 			Node node = content();
-			Tag tag = tag("red");
+			HibTag tag = tag("red");
 			call(() -> client().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(),
 				new VersioningParametersImpl().setBranch(branchOne)));
 		}
@@ -417,14 +428,14 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 				response.getTags().stream().filter(tag -> tag.getName().equals("blue")).count());
 
 			// via /tagFamilies/:tagFamilyUuid/tags/:tagUuid/nodes
-			Tag tag1 = tag("red");
+			HibTag tag1 = tag("red");
 			NodeListResponse taggedNodes = call(
 				() -> client().findNodesForTag(PROJECT_NAME, tag1.getTagFamily().getUuid(), tag1.getUuid(),
 					new VersioningParametersImpl().setBranch(branchTwo)));
 			assertEquals("We expected to find the node in the list response but it was not included.", 1,
 				taggedNodes.getData().stream().filter(item -> item.getUuid().equals(node.getUuid())).count());
 
-			Tag tag2 = tag("blue");
+			HibTag tag2 = tag("blue");
 			taggedNodes = call(() -> client().findNodesForTag(PROJECT_NAME, tag2.getTagFamily().getUuid(),
 				tag2.getUuid(), new VersioningParametersImpl().setBranch(branchTwo)));
 			assertEquals("We expected to find the node in the list response but it was not included.", 1,
@@ -446,7 +457,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 			assertEquals("We expected to find no tags for the node in branch one.", 0, response.getTags().size());
 
 			// via /tagFamilies/:tagFamilyUuid/tags/:tagUuid/nodes
-			Tag tag = tag("red");
+			HibTag tag = tag("red");
 			NodeListResponse taggedNodes = call(() -> client().findNodesForTag(PROJECT_NAME,
 				tag.getTagFamily().getUuid(), tag.getUuid(), new VersioningParametersImpl().setBranch(branchOne)));
 			assertEquals("We expected to find the node not be tagged by tag red.", 0,
@@ -459,11 +470,12 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testRemoveNoPermTagFromNode() throws Exception {
 		Node node = folder("2015");
-		Tag tag = tag("bike");
+		HibTag tag = tag("bike");
 
 		try (Tx tx = tx()) {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			RoleDaoWrapper roleDao = tx.data().roleDao();
-			assertTrue(node.getTags(project().getLatestBranch()).list().contains(tag));
+			assertTrue(tagDao.getTags(node, project().getLatestBranch()).list().contains(tag));
 			roleDao.revokePermissions(role(), tag, READ_PERM);
 			tx.success();
 		}
@@ -474,8 +486,9 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
+			TagDaoWrapper tagDao = tx.data().tagDao();
 			assertTrue("The tag should not have been removed from the node",
-				node.getTags(project().getLatestBranch()).list().contains(tag));
+				tagDao.getTags(node, project().getLatestBranch()).list().contains(tag));
 		}
 	}
 

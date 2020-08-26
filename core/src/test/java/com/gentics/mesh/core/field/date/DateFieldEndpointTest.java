@@ -15,6 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.DateGraphField;
 import com.gentics.mesh.core.db.Tx;
@@ -67,7 +68,7 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 			Long oldValue;
 
 			try (Tx tx = tx()) {
-				container = node.getGraphFieldContainer("en");
+				container = boot().contentDao().getGraphFieldContainer(node, "en");
 				oldValue = getDateValue(container, FIELD_NAME);
 			}
 
@@ -113,7 +114,8 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 
 		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
-			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
+			ContentDaoWrapper contentDao = tx.data().contentDao();
+			NodeGraphFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getDate(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getDate(FIELD_NAME)).isNotNull();
@@ -178,9 +180,10 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 		Node node = folder("2015");
 		Long nowEpoch;
 		try (Tx tx = tx()) {
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 			nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
 
-			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
+			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			container.createDate(FIELD_NAME).setDate(nowEpoch);
 			tx.success();
 		}

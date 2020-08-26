@@ -1,8 +1,8 @@
 package com.gentics.mesh.graphql.type;
 
 import static com.gentics.mesh.core.action.DAOActionContext.context;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static graphql.Scalars.GraphQLLong;
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLArgument.newArgument;
@@ -25,6 +25,7 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
@@ -553,6 +554,7 @@ public abstract class AbstractTypeProvider {
 	 * @return the filtered nodes
 	 */
 	protected DynamicStreamPageImpl<NodeContent> fetchFilteredNodes(DataFetchingEnvironment env) {
+		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 		GraphQLContext gc = env.getContext();
 		NodeRoot nodeRoot = gc.getProject().getNodeRoot();
 
@@ -561,7 +563,7 @@ public abstract class AbstractTypeProvider {
 
 		Stream<NodeContent> contents = nodeRoot.findAllStream(gc, READ_PUBLISHED_PERM)
 			// Now lets try to load the containers for those found nodes - apply the language fallback
-			.map(node -> new NodeContent(node, node.findVersion(gc, languageTags, type), languageTags, type))
+			.map(node -> new NodeContent(node, contentDao.findVersion(node, gc, languageTags, type), languageTags, type))
 			// Filter nodes without a container
 			.filter(content -> content.getContainer() != null)
 			.filter(gc::hasReadPerm);

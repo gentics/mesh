@@ -1,10 +1,10 @@
 package com.gentics.mesh.core.schema;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.DELETE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_DELETED;
 import static com.gentics.mesh.core.rest.common.Permission.CREATE;
@@ -30,6 +30,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.Permission;
@@ -73,7 +74,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 	public void testReadByUuidMultithreaded() throws Exception {
 		int nJobs = 10;
 		try (Tx tx = tx()) {
-			Microschema vcardContainer = microschemaContainers().get("vcard");
+			HibMicroschema vcardContainer = microschemaContainers().get("vcard");
 			assertNotNull(vcardContainer);
 			String uuid = vcardContainer.getUuid();
 
@@ -108,7 +109,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
 		int nJobs = 200;
 		try (Tx tx = tx()) {
-			Microschema vcardContainer = microschemaContainers().get("vcard");
+			HibMicroschema vcardContainer = microschemaContainers().get("vcard");
 			assertNotNull(vcardContainer);
 			String uuid = vcardContainer.getUuid();
 
@@ -194,7 +195,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 	@Override
 	public void testReadByUUID() throws Exception {
 		try (Tx tx = tx()) {
-			Microschema vcardContainer = microschemaContainer("vcard");
+			HibMicroschema vcardContainer = microschemaContainer("vcard");
 			assertNotNull(vcardContainer);
 			MicroschemaResponse microschemaResponse = call(() -> client().findMicroschemaByUuid(vcardContainer.getUuid()));
 			assertThat((MicroschemaModel) microschemaResponse).isEqualToComparingOnlyGivenFields(vcardContainer.getLatestVersion().getSchema(), "name",
@@ -246,7 +247,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 	@Override
 	public void testReadByUuidWithRolePerms() {
 		try (Tx tx = tx()) {
-			Microschema vcardContainer = microschemaContainers().get("vcard");
+			HibMicroschema vcardContainer = microschemaContainers().get("vcard");
 			assertNotNull(vcardContainer);
 			String uuid = vcardContainer.getUuid();
 
@@ -263,7 +264,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 		String uuid;
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
-			Microschema vcardContainer = microschemaContainers().get("vcard");
+			HibMicroschema vcardContainer = microschemaContainers().get("vcard");
 			uuid = vcardContainer.getUuid();
 			roleDao.grantPermissions(role(), vcardContainer, DELETE_PERM);
 			roleDao.grantPermissions(role(), vcardContainer, UPDATE_PERM);
@@ -294,7 +295,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 		String uuid;
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
-			Microschema microschema = microschemaContainers().get("vcard");
+			HibMicroschema microschema = microschemaContainers().get("vcard");
 			uuid = microschema.getUuid();
 			roleDao.revokePermissions(role(), microschema, UPDATE_PERM);
 			tx.success();
@@ -310,7 +311,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 	@Override
 	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
 		try (Tx tx = tx()) {
-			Microschema microschema = microschemaContainers().get("vcard");
+			HibMicroschema microschema = microschemaContainers().get("vcard");
 			String oldName = microschema.getName();
 			MicroschemaUpdateRequest request = new MicroschemaUpdateRequest();
 			request.setName("new-name");
@@ -472,7 +473,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 	@Test
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
-		Microschema microschema;
+		HibMicroschema microschema;
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			microschema = microschemaContainers().get("vcard");

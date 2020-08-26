@@ -1,11 +1,12 @@
 package com.gentics.mesh.assertj.impl;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import com.gentics.mesh.assertj.AbstractMeshAssert;
-import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.util.HibClassConverter;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 
@@ -15,8 +16,8 @@ public class RoleResponseAssert extends AbstractMeshAssert<RoleResponseAssert, R
 		super(actual, RoleResponseAssert.class);
 	}
 
-	public RoleResponseAssert matches(Role role) {
-		assertGenericNode(role, actual);
+	public RoleResponseAssert matches(HibRole role) {
+		assertGenericNode(HibClassConverter.toRole(role), actual);
 		assertEquals(role.getName(), actual.getName());
 		assertNotNull(actual.getGroups());
 		return this;

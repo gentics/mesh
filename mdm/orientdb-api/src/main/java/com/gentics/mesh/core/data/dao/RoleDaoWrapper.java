@@ -5,19 +5,20 @@ import java.util.function.Predicate;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 
-public interface RoleDaoWrapper extends RoleDao, DaoWrapper<Role>, DaoTransformable<Role, RoleResponse> {
+public interface RoleDaoWrapper extends RoleDao, DaoWrapper<HibRole>, DaoTransformable<HibRole, RoleResponse> {
 
 	/**
 	 * Create a new role with the given name.
@@ -28,7 +29,7 @@ public interface RoleDaoWrapper extends RoleDao, DaoWrapper<Role>, DaoTransforma
 	 *            User that is being used to set the reference fields
 	 * @return Created role
 	 */
-	default Role create(String name, HibUser creator) {
+	default HibRole create(String name, HibUser creator) {
 		return create(name, creator, null);
 	}
 
@@ -43,9 +44,9 @@ public interface RoleDaoWrapper extends RoleDao, DaoWrapper<Role>, DaoTransforma
 	 *            Optional uuid
 	 * @return Created role
 	 */
-	Role create(String name, HibUser creator, String uuid);
+	HibRole create(String name, HibUser creator, String uuid);
 
-	Role create(InternalActionContext ac, EventQueueBatch batch, String uuid);
+	HibRole create(InternalActionContext ac, EventQueueBatch batch, String uuid);
 
 	/**
 	 * Grant the given permissions on the vertex.
@@ -54,7 +55,7 @@ public interface RoleDaoWrapper extends RoleDao, DaoWrapper<Role>, DaoTransforma
 	 * @param vertex
 	 * @param permissions
 	 */
-	void grantPermissions(Role role, HibElement element, GraphPermission... permissions);
+	void grantPermissions(HibRole role, HibElement element, InternalPermission... permissions);
 
 	/**
 	 * Revoke the given permissions on the vertex.
@@ -63,7 +64,7 @@ public interface RoleDaoWrapper extends RoleDao, DaoWrapper<Role>, DaoTransforma
 	 * @param vertex
 	 * @param permissions
 	 */
-	void revokePermissions(Role role, HibElement element, GraphPermission... permissions);
+	void revokePermissions(HibRole role, HibElement element, InternalPermission... permissions);
 
 	/**
 	 * Return a set of permissions which the role is granting to the given element.
@@ -72,23 +73,25 @@ public interface RoleDaoWrapper extends RoleDao, DaoWrapper<Role>, DaoTransforma
 	 * @param element
 	 * @return Set of permissions of the element
 	 */
-	Set<GraphPermission> getPermissions(Role role, HibElement element);
+	Set<InternalPermission> getPermissions(HibRole role, HibElement element);
 
 	/**
 	 * Add the given role to this aggregation vertex.
 	 * 
 	 * @param role
-	 *            Role to be added
+	 *            HibRoleto be added
 	 */
-	void addRole(Role role);
+	void addRole(HibRole role);
 
 	/**
 	 * Remove the given role from this aggregation vertex.
 	 * 
 	 * @param role
-	 *            Role to be removed
+	 *            HibRoleto be removed
 	 */
-	void removeRole(Role role);
+	void removeRole(HibRole role);
+
+	TraversalResult<? extends HibGroup> getGroups(HibRole role);
 
 	/**
 	 * Return a page of groups to which this role was assigned.
@@ -98,7 +101,7 @@ public interface RoleDaoWrapper extends RoleDao, DaoWrapper<Role>, DaoTransforma
 	 * @param params
 	 * @return Loaded page
 	 */
-	Page<? extends Group> getGroups(Role role, HibUser user, PagingParameters params);
+	Page<? extends HibGroup> getGroups(HibRole role, HibUser user, PagingParameters params);
 
 	/**
 	 * Check whether the role grants the given permission on the given element.
@@ -108,24 +111,31 @@ public interface RoleDaoWrapper extends RoleDao, DaoWrapper<Role>, DaoTransforma
 	 * @param element
 	 * @return
 	 */
-	boolean hasPermission(Role role, GraphPermission permission, HibElement element);
+	boolean hasPermission(HibRole role, InternalPermission permission, HibElement element);
 
-	Role findByUuid(String uuid);
+	HibRole findByUuid(String uuid);
 
-	Role findByName(String roleName);
+	HibRole findByName(String roleName);
 
-	void delete(Role role, BulkActionContext bac);
+	void delete(HibRole role, BulkActionContext bac);
 
-	Role loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm);
+	HibRole loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm);
 
-	Role loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound);
+	HibRole loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound);
 
-	boolean update(Role role, InternalActionContext ac, EventQueueBatch batch);
+	boolean update(HibRole role, InternalActionContext ac, EventQueueBatch batch);
 
-	TraversalResult<? extends Role> findAll();
+	TraversalResult<? extends HibRole> findAll();
 
-	TransformablePage<? extends Role> findAll(InternalActionContext ac, PagingParameters pagingInfo);
+	TransformablePage<? extends HibRole> findAll(InternalActionContext ac, PagingParameters pagingInfo);
 
-	Page<? extends Role> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Role> extraFilter);
+	Page<? extends HibRole> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Role> extraFilter);
+
+	String getETag(HibRole role, InternalActionContext ac);
+
+	String getAPIPath(HibRole role, InternalActionContext ac);
+
+	void applyPermissions(HibElement element, EventQueueBatch batch, HibRole role, boolean recursive, Set<InternalPermission> permissionsToGrant,
+		Set<InternalPermission> permissionsToRevoke);
 
 }

@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.endpoint.role;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.rest.Messages.message;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -18,11 +18,11 @@ import org.apache.commons.lang3.BooleanUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.actions.impl.RoleDAOActionsImpl;
+import com.gentics.mesh.core.action.RoleDAOActions;
 import com.gentics.mesh.core.data.HibElement;
-import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionResponse;
@@ -34,21 +34,16 @@ import com.gentics.mesh.graphdb.spi.Database;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
+public class RoleCrudHandler extends AbstractCrudHandler<HibRole, RoleResponse> {
 
 	private static final Logger log = LoggerFactory.getLogger(RoleCrudHandler.class);
 
 	private BootstrapInitializer boot;
 
 	@Inject
-	public RoleCrudHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, WriteLock writeLock) {
-		super(db, utils, writeLock);
+	public RoleCrudHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, WriteLock writeLock, RoleDAOActions roleActions) {
+		super(db, utils, writeLock, roleActions);
 		this.boot = boot;
-	}
-
-	@Override
-	public RoleDAOActionsImpl crudActions() {
-		return new RoleDAOActionsImpl();
 	}
 
 	/**
@@ -74,7 +69,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 				log.debug("Handling permission request for element on path {" + pathToElement + "}");
 			}
 			// 1. Load the role that should be used - read perm implies that the user is able to read the attached permissions
-			Role role = roleDao.loadObjectByUuid(ac, roleUuid, READ_PERM);
+			HibRole role = roleDao.loadObjectByUuid(ac, roleUuid, READ_PERM);
 
 			// 2. Resolve the path to element that is targeted
 			HibElement targetElement = boot.meshRoot().resolvePathToElement(pathToElement);
@@ -84,7 +79,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 			RolePermissionResponse response = new RolePermissionResponse();
 
 			// 1. Add granted permissions
-			for (GraphPermission perm : roleDao.getPermissions(role, targetElement)) {
+			for (InternalPermission perm : roleDao.getPermissions(role, targetElement)) {
 				response.set(perm.getRestPerm(), true);
 			}
 			// 2. Add not granted permissions
@@ -120,7 +115,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 
 				RoleDaoWrapper roleDao = tx.data().roleDao();
 				// 1. Load the role that should be used
-				Role role = roleDao.loadObjectByUuid(ac, roleUuid, UPDATE_PERM);
+				HibRole role = roleDao.loadObjectByUuid(ac, roleUuid, UPDATE_PERM);
 
 				// 2. Resolve the path to element that is targeted
 				HibElement element = boot.meshRoot().resolvePathToElement(pathToElement);
@@ -131,10 +126,10 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 				RolePermissionRequest requestModel = ac.fromJson(RolePermissionRequest.class);
 				String name = utils.eventAction(batch -> {
 					// Prepare the sets for revoke and grant actions
-					Set<GraphPermission> permissionsToGrant = new HashSet<>();
-					Set<GraphPermission> permissionsToRevoke = new HashSet<>();
+					Set<InternalPermission> permissionsToGrant = new HashSet<>();
+					Set<InternalPermission> permissionsToRevoke = new HashSet<>();
 
-					for (GraphPermission permission : GraphPermission.values()) {
+					for (InternalPermission permission : InternalPermission.values()) {
 						Boolean permValue = requestModel.getPermissions().getNullable(permission.getRestPerm());
 						if (permValue != null) {
 							if (permValue) {
@@ -145,15 +140,15 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 						}
 					}
 					if (log.isDebugEnabled()) {
-						for (GraphPermission p : permissionsToGrant) {
+						for (InternalPermission p : permissionsToGrant) {
 							log.debug("Granting permission: " + p);
 						}
-						for (GraphPermission p : permissionsToRevoke) {
+						for (InternalPermission p : permissionsToRevoke) {
 							log.debug("Revoking permission: " + p);
 						}
 					}
 					// 3. Apply the permission actions
-					element.applyPermissions(batch, role, BooleanUtils.isTrue(requestModel.getRecursive()), permissionsToGrant, permissionsToRevoke);
+					roleDao.applyPermissions(element, batch, role, BooleanUtils.isTrue(requestModel.getRecursive()), permissionsToGrant, permissionsToRevoke);
 					return role.getName();
 				});
 				if (ac.getSecurityLogger().isInfoEnabled()) {
