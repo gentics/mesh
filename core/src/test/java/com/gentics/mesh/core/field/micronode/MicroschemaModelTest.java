@@ -77,12 +77,13 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
+			MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			int expectedMicroschemaContainers = microschemaContainers().size();
 
 			for (long i = 1; i <= expectedMicroschemaContainers + 1; i++) {
-				Page<? extends Microschema> page = boot().microschemaContainerRoot().findAll(ac, new PagingParametersImpl(1, i));
+				Page<? extends Microschema> page = microschemaDao.findAll(ac, new PagingParametersImpl(1, i));
 
 				assertEquals(microschemaContainers().size(), page.getTotalElements());
 				assertEquals(Math.min(expectedMicroschemaContainers, i), page.getSize());
@@ -291,7 +292,7 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 
 			InternalActionContext ac = mockActionContext();
 			EventQueueBatch batch = createBatch();
-			microschemaDao.applyChanges(vcard, ac, batch);
+			microschemaDao.applyChanges(vcard, ac, model, batch);
 			HibMicroschemaVersion newVCard = microschemaContainer("vcard").getLatestVersion();
 
 			NodeGraphFieldContainer containerWithBoth = boot().contentDao().getGraphFieldContainer(folder("2015"), "en");
