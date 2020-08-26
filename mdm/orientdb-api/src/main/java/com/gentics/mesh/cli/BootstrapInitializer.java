@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
+import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.JobDaoWrapper;
@@ -56,7 +57,7 @@ public interface BootstrapInitializer {
 	/**
 	 * Return the language root element.
 	 * 
-	 * @deprecated Use {@link #languageDao()} instead. 
+	 * @deprecated Use {@link #languageDao()} instead.
 	 * @return
 	 */
 	@Deprecated
@@ -112,7 +113,7 @@ public interface BootstrapInitializer {
 	/**
 	 * Return the global tag root element. Note that each project has their own tag root element.
 	 * 
-	 * @deprecated Use {@link #tagDao()} instead. 
+	 * @deprecated Use {@link #tagDao()} instead.
 	 * @return
 	 */
 	@Deprecated
@@ -156,6 +157,8 @@ public interface BootstrapInitializer {
 	NodeDaoWrapper nodeDao();
 
 	ContentDaoWrapper contentDao();
+
+	BinaryDaoWrapper binaryDao();
 
 	/**
 	 * Return the mesh root element. All other mesh graph elements are connected to this element. It represents the main root of the whole mesh graph.

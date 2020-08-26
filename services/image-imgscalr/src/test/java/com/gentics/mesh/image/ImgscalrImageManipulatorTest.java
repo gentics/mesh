@@ -6,6 +6,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -30,6 +32,8 @@ import org.codehaus.jettison.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.dao.impl.BinaryDaoWrapperImpl;
 import com.gentics.mesh.core.image.spi.ImageInfo;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
@@ -61,8 +65,10 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 
 		ImageManipulatorOptions options = new ImageManipulatorOptions();
 
+		BootstrapInitializer boot = mock(BootstrapInitializer.class);
+		when(boot.binaryDao()).thenReturn(new BinaryDaoWrapperImpl(null, null, null));
 		options.setImageCacheDirectory(cacheDir.getAbsolutePath());
-		manipulator = new ImgscalrImageManipulator(Vertx.vertx(), options);
+		manipulator = new ImgscalrImageManipulator(Vertx.vertx(), options, boot);
 	}
 
 	@Test

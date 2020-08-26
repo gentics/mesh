@@ -34,8 +34,8 @@ public class MeshModule {
 
 	@Provides
 	@Singleton
-	public static ImageManipulator imageProvider(io.vertx.reactivex.core.Vertx vertx, MeshOptions options) {
-		return new ImgscalrImageManipulator(vertx, options);
+	public static ImageManipulator imageProvider(io.vertx.reactivex.core.Vertx vertx, MeshOptions options, BootstrapInitializer boot) {
+		return new ImgscalrImageManipulator(vertx, options, boot);
 	}
 
 	@Provides

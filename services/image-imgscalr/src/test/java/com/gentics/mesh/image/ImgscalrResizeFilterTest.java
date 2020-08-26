@@ -1,6 +1,8 @@
 package com.gentics.mesh.image;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
@@ -11,6 +13,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.dao.impl.BinaryDaoWrapperImpl;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.etc.config.ResampleFilter;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
@@ -35,7 +39,9 @@ public class ImgscalrResizeFilterTest extends AbstractImageTest {
 		options.setResampleFilter(filter);
 
 		options.setImageCacheDirectory(cacheDir.getAbsolutePath());
-		manipulator = new ImgscalrImageManipulator(Vertx.vertx(), options);
+		BootstrapInitializer boot = mock(BootstrapInitializer.class);
+		when(boot.binaryDao()).thenReturn(new BinaryDaoWrapperImpl(null, null, null));
+		manipulator = new ImgscalrImageManipulator(Vertx.vertx(), options, boot);
 	}
 
 	@Parameterized.Parameters(name = "filter={0}")
