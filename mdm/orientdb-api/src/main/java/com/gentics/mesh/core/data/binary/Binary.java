@@ -14,7 +14,7 @@ import io.vertx.core.buffer.Buffer;
 /**
  * Vertex which contains the actual information about the binary content that is referenced by an {@link BinaryGraphField}.
  */
-public interface Binary extends MeshVertex {
+public interface Binary extends MeshVertex, HibBinary {
 
 	String SHA512SUM_KEY = "sha512sum";
 

@@ -297,7 +297,7 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 		Role graphRole = toRole(role);
 		return graphRole.getETag(ac);
 	}
-	
+
 	@Override
 	public void applyPermissions(HibElement element, EventQueueBatch batch, HibRole role, boolean recursive, Set<InternalPermission> permissionsToGrant,
 		Set<InternalPermission> permissionsToRevoke) {

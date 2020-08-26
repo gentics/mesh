@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.dao.impl;
 
+import static com.gentics.mesh.core.data.util.HibClassConverter.toBinary;
+
 import java.io.InputStream;
 import java.util.stream.Stream;
 
@@ -10,7 +12,7 @@ import org.apache.commons.lang3.NotImplementedException;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.binary.Binaries;
-import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
@@ -24,7 +26,7 @@ import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
 
 @Singleton
-public class BinaryDaoWrapperImpl extends AbstractDaoWrapper<Binary> implements BinaryDaoWrapper {
+public class BinaryDaoWrapperImpl extends AbstractDaoWrapper<HibBinary> implements BinaryDaoWrapper {
 
 	private final Binaries binaries;
 
@@ -35,42 +37,42 @@ public class BinaryDaoWrapperImpl extends AbstractDaoWrapper<Binary> implements 
 	}
 
 	@Override
-	public Transactional<Binary> findByHash(String hash) {
+	public Transactional<? extends HibBinary> findByHash(String hash) {
 		return binaries.findByHash(hash);
 	}
 
 	@Override
-	public Transactional<Binary> create(String uuid, String hash, Long size) {
+	public Transactional<? extends HibBinary> create(String uuid, String hash, Long size) {
 		return binaries.create(uuid, hash, size);
 	}
 
 	@Override
-	public Transactional<Stream<Binary>> findAll() {
+	public Transactional<Stream<HibBinary>> findAll() {
 		return binaries.findAll();
 	}
 
 	@Override
-	public Flowable<Buffer> getStream(Binary binary) {
-		return binary.getStream();
+	public Flowable<Buffer> getStream(HibBinary binary) {
+		return toBinary(binary).getStream();
 	}
 
 	@Override
-	public Supplier<InputStream> openBlockingStream(Binary binary) {
-		return binary.openBlockingStream();
+	public Supplier<InputStream> openBlockingStream(HibBinary binary) {
+		return toBinary(binary).openBlockingStream();
 	}
 
 	@Override
-	public String getBase64ContentSync(Binary binary) {
-		return binary.getBase64ContentSync();
+	public String getBase64ContentSync(HibBinary binary) {
+		return toBinary(binary).getBase64ContentSync();
 	}
 
 	@Override
-	public TraversalResult<BinaryGraphField> findFields(Binary binary) {
-		return binary.findFields();
+	public TraversalResult<BinaryGraphField> findFields(HibBinary binary) {
+		return toBinary(binary).findFields();
 	}
 
 	@Override
-	public Binary findByUuidGlobal(String uuid) {
+	public HibBinary findByUuidGlobal(String uuid) {
 		throw new NotImplementedException("Not supported");
 	}
 

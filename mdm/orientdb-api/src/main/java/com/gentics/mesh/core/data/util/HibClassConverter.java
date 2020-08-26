@@ -11,6 +11,8 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.job.HibJob;
@@ -79,6 +81,10 @@ public final class HibClassConverter {
 
 	public static Role toRole(HibRole role) {
 		return checkAndCast(role, Role.class);
+	}
+
+	public static Binary toBinary(HibBinary binary) {
+		return checkAndCast(binary, Binary.class);
 	}
 
 	/**
