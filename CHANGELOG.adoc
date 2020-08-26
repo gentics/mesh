@@ -23,6 +23,13 @@ include::content/docs/variables.adoc-include[]
 
 * The support for the *embedded* version of Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v1.7.1]]
+== 1.7.1 (TBD)
+
+icon:plus[] Internal: The internal code has been refactored and cleaned up.
+
+icon:plus[] Plugins: The default plugin timeout has been increased from 15 seconds to two minutes.
+
 [[v1.7.0]]
 == 1.7.0 (07.08.2020)
 
