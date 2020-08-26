@@ -8,7 +8,7 @@ vertxOptions:
   eventPoolSize: 16
 tempDirectory: "/opt/mesh/data/tmp"
 pluginDirectory: "plugins"
-pluginTimeout: 15
+pluginTimeout: 120
 nodeName: null
 startInReadOnly: false
 versionPurgeMaxBatchSize: 10
