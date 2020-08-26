@@ -445,7 +445,7 @@
 | pluginTimeout
 | false
 | int
-| Timeout in seconds which is used for the plugin startup,initialization,de-initialization and stop processes.
+| Timeout in seconds which is used for the plugin startup,initialization,de-initialization and stop processes. Default: 120 seconds.
 
 | nodeName
 | false
