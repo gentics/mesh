@@ -19,8 +19,8 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Micronode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
@@ -134,7 +134,7 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 	 * @param nextDraftVersion
 	 * @throws Exception
 	 */
-	private void migrateDraftContainer(NodeMigrationActionContextImpl ac, EventQueueBatch sqb, HibBranch branch, Node node,
+	private void migrateDraftContainer(NodeMigrationActionContextImpl ac, EventQueueBatch sqb, HibBranch branch, HibNode node,
 		NodeGraphFieldContainer container, MicroschemaVersion fromVersion, MicroschemaVersion toVersion,
 		Set<String> touchedFields, VersionNumber nextDraftVersion)
 		throws Exception {
@@ -196,7 +196,7 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 			db.tx((tx) -> {
 				ContentDaoWrapper contentDao = tx.data().contentDao();
 
-				Node node = contentDao.getNode(container);
+				HibNode node = contentDao.getNode(container);
 				String languageTag = container.getLanguageTag();
 				ac.getNodeParameters().setLanguages(languageTag);
 				ac.getVersioningParameters().setVersion("draft");
@@ -238,7 +238,7 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 	 * @return Version of the new published container
 	 * @throws Exception
 	 */
-	private VersionNumber migratePublishedContainer(NodeMigrationActionContextImpl ac, EventQueueBatch sqb, HibBranch branch, Node node,
+	private VersionNumber migratePublishedContainer(NodeMigrationActionContextImpl ac, EventQueueBatch sqb, HibBranch branch, HibNode node,
 		NodeGraphFieldContainer container, MicroschemaVersion fromVersion, MicroschemaVersion toVersion,
 		Set<String> touchedFields) throws Exception {
 		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();

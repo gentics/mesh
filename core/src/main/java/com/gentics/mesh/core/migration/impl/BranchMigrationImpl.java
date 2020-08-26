@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
@@ -103,7 +104,7 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 	 * @param newBranch
 	 * @param errorsDetected
 	 */
-	private void migrateNode(Node node, EventQueueBatch batch, HibBranch oldBranch, HibBranch newBranch, List<Exception> errorsDetected) {
+	private void migrateNode(HibNode node, EventQueueBatch batch, HibBranch oldBranch, HibBranch newBranch, List<Exception> errorsDetected) {
 		try {
 			db.tx((tx) -> {
 				NodeDaoWrapper nodeDao = tx.data().nodeDao();
@@ -115,7 +116,7 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 					return;
 				}
 
-				Node parent = nodeDao.getParentNode(node, oldBranch.getUuid());
+				HibNode parent = nodeDao.getParentNode(node, oldBranch.getUuid());
 				if (parent != null) {
 					nodeDao.setParentNode(node, newBranch.getUuid(), parent);
 				}
@@ -177,7 +178,7 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 	/**
 	 * Create a new initial edge between node and container for the given branch.
 	 */
-	private void setInitial(Node node, NodeGraphFieldContainer container, HibBranch branch) {
+	private void setInitial(HibNode node, NodeGraphFieldContainer container, HibBranch branch) {
 		GraphFieldContainerEdgeImpl initialEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container,
 			GraphFieldContainerEdgeImpl.class);
 		initialEdge.setLanguageTag(container.getLanguageTag());

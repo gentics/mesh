@@ -14,8 +14,8 @@ import java.util.Set;
 import org.codehaus.jettison.json.JSONException;
 
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Micronode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
@@ -81,7 +81,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 
 	protected void addNumberSpeedFieldToOneNode(Number number) {
 		ContentDaoWrapper contentDao = boot().contentDao();
-		Node node = content("concorde");
+		HibNode node = content("concorde");
 		SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		schema.addField(new NumberFieldSchemaImpl().setName("speed"));
 		node.getSchemaContainer().getLatestVersion().setSchema(schema);
@@ -94,7 +94,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 	 */
 	protected void addMicronodeField() {
 		ContentDaoWrapper contentDao = boot().contentDao();
-		Node node = content("concorde");
+		HibNode node = content("concorde");
 
 		SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		MicronodeFieldSchemaImpl vcardFieldSchema = new MicronodeFieldSchemaImpl();
@@ -113,7 +113,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 	 */
 	protected void addMicronodeListField() {
 		ContentDaoWrapper contentDao = boot().contentDao();
-		Node node = content("concorde");
+		HibNode node = content("concorde");
 
 		// Update the schema
 		SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
@@ -140,7 +140,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 	 */
 	protected void addNodeListField() {
 		ContentDaoWrapper contentDao = boot().contentDao();
-		Node node = content("concorde");
+		HibNode node = content("concorde");
 
 		// Update the schema
 		SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();

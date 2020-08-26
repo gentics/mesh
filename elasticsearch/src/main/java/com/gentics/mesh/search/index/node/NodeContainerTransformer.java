@@ -25,6 +25,7 @@ import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
@@ -124,7 +125,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	 * @param node
 	 * @param type
 	 */
-	private void addPermissionInfo(JsonObject document, Node node, ContainerType type) {
+	private void addPermissionInfo(JsonObject document, HibNode node, ContainerType type) {
 		List<String> roleUuids = new ArrayList<>();
 
 		for (HibRole role : node.getRolesWithPerm(READ_PERM)) {
@@ -463,7 +464,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 
 	public String generateVersion(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
 		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
-		Node node = contentDao.getNode(container);
+		HibNode node = contentDao.getNode(container);
 		HibProject project = node.getProject();
 
 		StringBuilder builder = new StringBuilder();
@@ -502,7 +503,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
 		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 
-		Node node = contentDao.getNode(container);
+		HibNode node = contentDao.getNode(container);
 		JsonObject document = new JsonObject();
 		document.put("uuid", node.getUuid());
 		addUser(document, "editor", container.getEditor());

@@ -19,7 +19,7 @@ import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchema;
@@ -261,7 +261,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 	public void testNodeSync() throws Exception {
 		// Assert insert
 		tx(() -> {
-			Node node = folder("2015");
+			HibNode node = folder("2015");
 			boot().contentDao().createGraphFieldContainer(node, german(), initialBranch(), user());
 		});
 		syncIndex();

@@ -14,6 +14,7 @@ import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -124,7 +125,7 @@ public class NodeCheck extends AbstractConsistencyCheck {
 		}
 
 		for (String branchUuid : branchUuids) {
-			Node branchParent = nodeDao.getParentNode(node, branchUuid);
+			HibNode branchParent = nodeDao.getParentNode(node, branchUuid);
 			// parent node has to exist and has to have at least one DRAFT graphfieldcontainer in the branch
 			if (branchParent == null) {
 				result.addInconsistency(String.format("The node does not have a parent node in branch %s", branchUuid), node.getUuid(), HIGH);

@@ -10,7 +10,7 @@ import com.gentics.graphqlfilter.filter.FilterField;
 import com.gentics.graphqlfilter.filter.MainFilter;
 import com.gentics.graphqlfilter.filter.MappedFilter;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.graphql.context.GraphQLContext;
@@ -22,7 +22,7 @@ import graphql.schema.GraphQLEnumValueDefinition;
 /**
  * Filter schemas.
  */
-public class SchemaFilter extends MainFilter<Schema> {
+public class SchemaFilter extends MainFilter<HibSchema> {
 
 	private static final String NAME = "SchemaFilter";
 
@@ -49,17 +49,17 @@ public class SchemaFilter extends MainFilter<Schema> {
 	}
 
 	@Override
-	protected List<FilterField<Schema, ?>> getFilters() {
-		List<FilterField<Schema, ?>> filters = new ArrayList<>();
+	protected List<FilterField<HibSchema, ?>> getFilters() {
+		List<FilterField<HibSchema, ?>> filters = new ArrayList<>();
 		filters.add(FilterField.create("is", "Filters by schema", schemaEnum(), uuid -> schema -> schema.getUuid().equals(uuid)));
 		filters.add(new MappedFilter<>("isContainer", "Filters by schema container flag", BooleanFilter.filter(), schema -> getLatestVersion(schema).getContainer()));
-		filters.add(CommonFields.nameFilter());
-		filters.add(CommonFields.uuidFilter());
-		filters.addAll(CommonFields.userTrackingFilter());
+		filters.add(CommonFields.hibNameFilter());
+		filters.add(CommonFields.hibUuidFilter());
+		filters.addAll(CommonFields.hibUserTrackingFilter());
 		return filters;
 	}
 
-	private SchemaVersionModel getLatestVersion(Schema schema) {
+	private SchemaVersionModel getLatestVersion(HibSchema schema) {
 		return JsonUtil.readValue(schema.getLatestVersion().getJson(), SchemaModelImpl.class);
 	}
 }

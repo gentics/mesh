@@ -7,6 +7,7 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.util.TestUtils.size;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -22,6 +23,7 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -83,7 +85,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testReadNodeByUUIDAndCheckChildren() throws Exception {
 		try (Tx tx = tx()) {
-			Node node = folder("news");
+			HibNode node = folder("news");
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
 			NodeResponse restNode = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().draft()));
@@ -101,7 +103,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadNodeByUUIDAndCheckChildrenPermissions() throws Exception {
-		Node node = folder("news");
+		HibNode node = folder("news");
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			assertNotNull(node);
@@ -128,7 +130,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testReadNodeByUUIDAndCheckChildren2() throws Exception {
 		try (Tx tx = tx()) {
-			Node node = content("concorde");
+			HibNode node = content("concorde");
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
 
@@ -143,7 +145,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 	public void testReadNodeChildren() throws Exception {
 		try (Tx tx = tx()) {
 			NodeDaoWrapper nodeDao = tx.data().nodeDao();
-			Node node = folder("news");
+			HibNode node = folder("news");
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
 
@@ -160,8 +162,8 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadNodeChildrenWithoutChildPermission() throws Exception {
-		Node node = folder("news");
-		Node nodeWithNoPerm = folder("2015");
+		HibNode node = folder("news");
+		HibNode nodeWithNoPerm = folder("2015");
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			assertNotNull(node);
@@ -183,7 +185,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadNodeChildrenWithNoPermission() throws Exception {
-		Node node = folder("news");
+		HibNode node = folder("news");
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			assertNotNull(node);
@@ -201,11 +203,11 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadBranchChildren() {
-		Node node = folder("news");
+		HibNode node = folder("news");
 		long childrenSize;
 		long expectedItemsInPage;
 		HibBranch newBranch;
-		Node firstFolder;
+		HibNode firstFolder;
 
 		try (Tx tx = tx()) {
 			NodeDaoWrapper nodeDao = tx.data().nodeDao();

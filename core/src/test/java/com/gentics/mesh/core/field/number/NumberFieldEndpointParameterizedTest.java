@@ -14,7 +14,7 @@ import org.junit.runners.Parameterized;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.NumberGraphField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -83,7 +83,7 @@ public class NumberFieldEndpointParameterizedTest extends AbstractNumberFieldEnd
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() throws IOException {
-		Node node = folder("2015");
+		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
 			ContentDaoWrapper contentDao = tx.data().contentDao();
 			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());

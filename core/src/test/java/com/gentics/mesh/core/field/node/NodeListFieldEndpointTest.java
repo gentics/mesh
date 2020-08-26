@@ -10,6 +10,7 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -27,6 +28,7 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.impl.NodeGraphFieldListImpl;
@@ -113,9 +115,9 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	public void testUpdateNodeFieldWithField() {
 		disableAutoPurge();
 
-		Node node = folder("2015");
-		Node targetNode = folder("news");
-		Node targetNode2 = folder("deals");
+		HibNode node = folder("2015");
+		HibNode targetNode = folder("news");
+		HibNode targetNode2 = folder("deals");
 
 		List<List<Node>> valueCombinations = Arrays.asList(Arrays.asList(targetNode), Arrays.asList(targetNode2, targetNode), Collections.emptyList(),
 			Arrays.asList(targetNode, targetNode2), Arrays.asList(targetNode2));
@@ -150,8 +152,8 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Override
 	public void testUpdateSameValue() {
 		try (Tx tx = tx()) {
-			Node targetNode = folder("news");
-			Node targetNode2 = folder("deals");
+			HibNode targetNode = folder("news");
+			HibNode targetNode2 = folder("deals");
 
 			NodeFieldListImpl list = new NodeFieldListImpl();
 			list.add(new NodeFieldListItemImpl(targetNode.getUuid()));
@@ -169,8 +171,8 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	public void testUpdateSetNull() {
 		disableAutoPurge();
 
-		Node targetNode = folder("news");
-		Node targetNode2 = folder("deals");
+		HibNode targetNode = folder("news");
+		HibNode targetNode2 = folder("deals");
 
 		NodeFieldListImpl list = new NodeFieldListImpl();
 		list.add(new NodeFieldListItemImpl(tx(() -> targetNode.getUuid())));
@@ -185,7 +187,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
 			ContentDaoWrapper contentDao = tx.data().contentDao();
-			Node node = folder("2015");
+			HibNode node = folder("2015");
 			NodeGraphFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getNodeList(FIELD_NAME)).isNull();
@@ -203,8 +205,8 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetEmpty() {
-		Node targetNode = folder("news");
-		Node targetNode2 = folder("deals");
+		HibNode targetNode = folder("news");
+		HibNode targetNode2 = folder("deals");
 
 		NodeFieldListImpl list = new NodeFieldListImpl();
 		list.add(new NodeFieldListItemImpl(tx(() -> targetNode.getUuid())));
@@ -289,7 +291,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() {
-		Node node = folder("2015");
+		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
 			ContentDaoWrapper contentDao = tx.data().contentDao();
 			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
@@ -308,8 +310,8 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 
 	@Test
 	public void testReadExpandedListWithNoPermOnItem() {
-		Node node = folder("2015");
-		Node referencedNode = folder("news");
+		HibNode node = folder("2015");
+		HibNode referencedNode = folder("news");
 
 		try (Tx tx = tx()) {
 			ContentDaoWrapper contentDao = tx.data().contentDao();
@@ -344,8 +346,8 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 
 	@Test
 	public void testReadExpandedNodeListWithExistingField() throws IOException {
-		Node newsNode = folder("news");
-		Node node = folder("2015");
+		HibNode newsNode = folder("news");
+		HibNode node = folder("2015");
 
 		// Create node list
 		try (Tx tx = tx()) {

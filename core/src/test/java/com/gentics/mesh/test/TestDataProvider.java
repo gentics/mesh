@@ -42,6 +42,7 @@ import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.group.HibGroup;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
@@ -112,8 +113,8 @@ public class TestDataProvider {
 	private Map<String, HibMicroschema> microschemaContainers = new HashMap<>();
 	private Map<String, HibTagFamily> tagFamilies = new HashMap<>();
 	private long contentCount = 0;
-	private Map<String, Node> folders = new HashMap<>();
-	private Map<String, Node> contents = new HashMap<>();
+	private Map<String, HibNode> folders = new HashMap<>();
+	private Map<String, HibNode> contents = new HashMap<>();
 	private Map<String, HibTag> tags = new HashMap<>();
 	private Map<String, HibUser> users = new HashMap<>();
 	private Map<String, HibRole> roles = new HashMap<>();
@@ -257,7 +258,7 @@ public class TestDataProvider {
 		addContent(folders.get("2014"), "News_2014", "News!", "Neuigkeiten!");
 		addContent(folders.get("march"), "New_in_March_2014", "This is new in march 2014.", "Das ist neu im März 2014");
 
-		Node content = addContent(folders.get("news"), "News Overview", "News Overview", "News Übersicht", CONTENT_UUID);
+		HibNode content = addContent(folders.get("news"), "News Overview", "News Overview", "News Übersicht", CONTENT_UUID);
 		contentUuid = content.getUuid();
 
 		addContent(folders.get("deals"), "Super Special Deal 2015", "Buy two get nine!", "Kauf zwei und nimm neun mit!");
@@ -266,14 +267,14 @@ public class TestDataProvider {
 		addContent(folders.get("2015"), "Special News_2014", "News!", "Neuigkeiten!");
 		addContent(folders.get("2015"), "News_2015", "News!", "Neuigkeiten!");
 
-		Node concorde = addContent(folders.get("products"), "Concorde",
+		HibNode concorde = addContent(folders.get("products"), "Concorde",
 			"Aérospatiale-BAC Concorde is a turbojet-powered supersonic passenger jet airliner that was in service from 1976 to 2003.",
 			"Die Aérospatiale-BAC Concorde 101/102, kurz Concorde (französisch und englisch für Eintracht, Einigkeit), ist ein Überschall-Passagierflugzeug, das von 1976 bis 2003 betrieben wurde.");
 		tagDao.addTag(concorde, tags.get("plane"), project.getLatestBranch());
 		tagDao.addTag(concorde, tags.get("twinjet"), project.getLatestBranch());
 		tagDao.addTag(concorde, tags.get("red"), project.getLatestBranch());
 
-		Node hondaNR = addContent(folders.get("products"), "Honda NR",
+		HibNode hondaNR = addContent(folders.get("products"), "Honda NR",
 			"The Honda NR (New Racing) was a V-four motorcycle engine series started by Honda in 1979 with the 500cc NR500 Grand Prix racer that used oval pistons.",
 			"Die NR750 ist ein Motorrad mit Ovalkolben-Motor des japanischen Motorradherstellers Honda, von dem in den Jahren 1991 und 1992 300 Exemplare gebaut wurden.");
 		tagDao.addTag(hondaNR, tags.get("vehicle"), project.getLatestBranch());
@@ -284,19 +285,20 @@ public class TestDataProvider {
 
 	private void addFolderStructure() {
 		TagDaoWrapper tagDao = Tx.get().data().tagDao();
+		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
 
-		Node baseNode = project.getBaseNode();
+		HibNode baseNode = project.getBaseNode();
 		// rootNode.addProject(project);
 
-		Node news = addFolder(baseNode, "News", "Neuigkeiten", NEWS_UUID);
-		Node news2015 = addFolder(news, "2015", null);
+		HibNode news = addFolder(baseNode, "News", "Neuigkeiten", NEWS_UUID);
+		HibNode news2015 = addFolder(news, "2015", null);
 		if (getSize() == FULL) {
 			tagDao.addTag(news2015, tags.get("car"), project.getLatestBranch());
 			tagDao.addTag(news2015, tags.get("bike"), project.getLatestBranch());
 			tagDao.addTag(news2015, tags.get("plane"), project.getLatestBranch());
 			tagDao.addTag(news2015, tags.get("jeep"), project.getLatestBranch());
 
-			Node news2014 = addFolder(news, "2014", null);
+			HibNode news2014 = addFolder(news, "2014", null);
 			addFolder(news2014, "March", "März");
 
 			addFolder(baseNode, "Products", "Produkte");
@@ -533,16 +535,16 @@ public class TestDataProvider {
 		project.getMicroschemaContainerRoot().addMicroschema(user(), microschema, createBatch());
 	}
 
-	public Node addFolder(Node rootNode, String englishName, String germanName) {
+	public HibNode addFolder(HibNode rootNode, String englishName, String germanName) {
 		return addFolder(rootNode, englishName, germanName, null);
 	}
 
-	public Node addFolder(Node rootNode, String englishName, String germanName, String uuid) {
+	public HibNode addFolder(HibNode rootNode, String englishName, String germanName, String uuid) {
 		NodeDaoWrapper nodeDao = boot.nodeDao();
 		InternalActionContext ac = new NodeMigrationActionContextImpl();
 		HibSchemaVersion schemaVersion = schemaContainers.get("folder").getLatestVersion();
 		HibBranch branch = project.getLatestBranch();
-		Node folderNode;
+		HibNode folderNode;
 		if (uuid == null) {
 			folderNode = nodeDao.create(rootNode, userInfo.getUser(), schemaVersion, project);
 		} else {
@@ -592,15 +594,15 @@ public class TestDataProvider {
 		return tag;
 	}
 
-	private Node addContent(Node parentNode, String name, String englishContent, String germanContent) {
+	private HibNode addContent(HibNode parentNode, String name, String englishContent, String germanContent) {
 		return addContent(parentNode, name, englishContent, germanContent, null);
 	}
 
-	private Node addContent(Node parentNode, String name, String englishContent, String germanContent, String uuid) {
+	private HibNode addContent(HibNode parentNode, String name, String englishContent, String germanContent, String uuid) {
 		NodeDaoWrapper nodeDao = boot.nodeDao();
 		InternalActionContext ac = new NodeMigrationActionContextImpl();
 		HibBranch branch = project.getLatestBranch();
-		Node node;
+		HibNode node;
 		if (uuid == null) {
 			node = nodeDao.create(parentNode, userInfo.getUser(), schemaContainers.get("content").getLatestVersion(), project);
 		} else {
@@ -665,7 +667,7 @@ public class TestDataProvider {
 		return userInfo;
 	}
 
-	public Node getFolder(String name) {
+	public HibNode getFolder(String name) {
 		return folders.get(name);
 	}
 
@@ -673,7 +675,7 @@ public class TestDataProvider {
 		return tagFamilies.get(key);
 	}
 
-	public Node getContent(String name) {
+	public HibNode getContent(String name) {
 		return contents.get(name);
 	}
 
@@ -689,11 +691,11 @@ public class TestDataProvider {
 		return tags;
 	}
 
-	public Map<String, Node> getContents() {
+	public Map<String, HibNode> getContents() {
 		return contents;
 	}
 
-	public Map<String, Node> getFolders() {
+	public Map<String, HibNode> getFolders() {
 		return folders;
 	}
 

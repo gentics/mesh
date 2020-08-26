@@ -16,6 +16,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.impl.HtmlGraphFieldListImpl;
 import com.gentics.mesh.core.db.Tx;
@@ -132,7 +133,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Override
 	public void testUpdateNodeFieldWithField() throws IOException {
 		disableAutoPurge();
-		Node node = folder("2015");
+		HibNode node = folder("2015");
 
 		List<List<String>> valueCombinations = Arrays.asList(Arrays.asList("A", "B", "C"), Arrays.asList("C", "B", "A"), Collections.emptyList(),
 			Arrays.asList("X", "Y"), Arrays.asList("C"));
@@ -177,7 +178,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Override
 	public void testUpdateSetNull() {
 		disableAutoPurge();
-		Node node = folder("2015");
+		HibNode node = folder("2015");
 
 		HtmlFieldListImpl list = new HtmlFieldListImpl();
 		list.add("A");

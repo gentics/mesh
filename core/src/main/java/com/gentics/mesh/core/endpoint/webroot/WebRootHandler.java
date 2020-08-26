@@ -21,6 +21,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
@@ -123,7 +124,7 @@ public class WebRootHandler {
 				}
 
 				String version = ac.getVersioningParameters().getVersion();
-				Node node = tx.data().contentDao().getNode(container);
+				HibNode node = tx.data().contentDao().getNode(container);
 				addCacheControl(rc, node, version);
 				userDao.failOnNoReadPermission(requestUser, container, branchUuid, version);
 
@@ -259,7 +260,7 @@ public class WebRootHandler {
 
 					// Deduce parent node
 					if (request.getParentNode() == null || request.getParentNode().getUuid() == null) {
-						Node parentNode = null;
+						HibNode parentNode = null;
 						if (segments.size() == 0) {
 							parentNode = ac.getProject().getBaseNode();
 						} else {

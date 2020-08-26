@@ -12,6 +12,7 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -28,6 +29,7 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -74,14 +76,14 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		Node node = folder("2015");
-		List<Node> targetNodes = Arrays.asList(folder("news"), folder("deals"));
+		HibNode node = folder("2015");
+		List<HibNode> targetNodes = Arrays.asList(folder("news"), folder("deals"));
 		for (int i = 0; i < 20; i++) {
 			try (Tx tx = tx()) {
 				NodeGraphFieldContainer container = boot().contentDao().getGraphFieldContainer(node, "en");
-				Node oldValue = getNodeValue(container, FIELD_NAME);
+				HibNode oldValue = getNodeValue(container, FIELD_NAME);
 
-				Node newValue = targetNodes.get(i % 2);
+				HibNode newValue = targetNodes.get(i % 2);
 
 				// Update the field to point to new target
 				NodeResponse response = updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(newValue.getUuid()));
@@ -98,7 +100,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Override
 	public void testUpdateSameValue() {
 		try (Tx tx = tx()) {
-			Node target = folder("news");
+			HibNode target = folder("news");
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(target.getUuid()));
 			String oldNumber = firstResponse.getVersion();
 
@@ -113,7 +115,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		disableAutoPurge();
 
 		String oldVersion;
-		Node target = folder("news");
+		HibNode target = folder("news");
 
 		try (Tx tx = tx()) {
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(target.getUuid()));
@@ -128,7 +130,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		try (Tx tx = tx()) {
 			ContentDaoWrapper contentDao = tx.data().contentDao();
 			// Assert that the old version was not modified
-			Node node = folder("2015");
+			HibNode node = folder("2015");
 			NodeGraphFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getNode(FIELD_NAME)).isNull();
@@ -158,7 +160,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testDeleteField() {
-		Node target = folder("deals");
+		HibNode target = folder("deals");
 		String targetUuid = tx(() -> target.getUuid());
 
 		NodeResponse response = updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(targetUuid));
@@ -216,11 +218,11 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Test
 	public void testUpdateNodeFieldWithNodeResponseJson() {
-		Node node = folder("news");
+		HibNode node = folder("news");
 		String nodeUuid = tx(() -> node.getUuid());
-		Node node2 = folder("deals");
+		HibNode node2 = folder("deals");
 		String node2Uuid = tx(() -> node2.getUuid());
-		Node updatedNode = folder("2015");
+		HibNode updatedNode = folder("2015");
 		String updatedNodeUuid = tx(() -> updatedNode.getUuid());
 
 		// Load the node so that we can use it to prepare the update request
@@ -279,8 +281,8 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() throws IOException {
-		Node newsNode = folder("news");
-		Node node = folder("2015");
+		HibNode newsNode = folder("news");
+		HibNode node = folder("2015");
 
 		try (Tx tx = tx()) {
 			ContentDaoWrapper contentDao = tx.data().contentDao();
@@ -299,8 +301,8 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Test
 	public void testReadNodeWithResolveLinks() {
-		Node newsNode = folder("news");
-		Node node = folder("2015");
+		HibNode newsNode = folder("news");
+		HibNode node = folder("2015");
 
 		try (Tx tx = tx()) {
 			ContentDaoWrapper contentDao = tx.data().contentDao();
@@ -342,8 +344,8 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Test
 	public void testReadNodeExpandAll() throws IOException {
-		Node referencedNode = folder("news");
-		Node node = folder("2015");
+		HibNode referencedNode = folder("news");
+		HibNode node = folder("2015");
 
 		try (Tx tx = tx()) {
 			ContentDaoWrapper contentDao = tx.data().contentDao();
@@ -373,10 +375,10 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			ContentDaoWrapper contentDao = tx.data().contentDao();
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			// Revoke the permission to the referenced node
-			Node referencedNode = folder("news");
+			HibNode referencedNode = folder("news");
 			roleDao.revokePermissions(role(), referencedNode, InternalPermission.READ_PERM);
 
-			Node node = folder("2015");
+			HibNode node = folder("2015");
 
 			// Create test field
 			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
@@ -394,8 +396,8 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Test
 	public void testReadExpandedNodeWithExistingField() throws IOException {
-		Node newsNode = folder("news");
-		Node node = folder("2015");
+		HibNode newsNode = folder("news");
+		HibNode node = folder("2015");
 
 		// Create test field
 		try (Tx tx = tx()) {
@@ -436,7 +438,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	public void testReadExpandedNodeWithLanguageFallback() {
 		try (Tx tx = tx()) {
-			Node folder = folder("2015");
+			HibNode folder = folder("2015");
 
 			// add a node in german and english
 			NodeCreateRequest createGermanNode = new NodeCreateRequest();

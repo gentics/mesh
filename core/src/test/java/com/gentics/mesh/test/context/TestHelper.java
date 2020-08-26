@@ -11,7 +11,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -30,7 +29,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
@@ -104,7 +103,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	}
 
 	default MeshAuthUser getRequestUser() {
-		User graphUser = (User)data().getUserInfo().getUser();
+		User graphUser = (User) data().getUserInfo().getUser();
 		return graphUser.reframe(MeshAuthUserImpl.class);
 	}
 
@@ -185,7 +184,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return getTestContext().getHttpsPort();
 	}
 
-	default Node folder(String key) {
+	default HibNode folder(String key) {
 		return data().getFolder(key);
 	}
 
@@ -198,7 +197,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return tx(() -> folder("news").getUuid());
 	}
 
-	default Node content(String key) {
+	default HibNode content(String key) {
 		return data().getContent(key);
 	}
 
@@ -271,7 +270,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	 * 
 	 * @return
 	 */
-	default Node content() {
+	default HibNode content() {
 		return data().getContent("news overview");
 	}
 
@@ -397,14 +396,14 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return response;
 	}
 
-	default int uploadImage(Node node, String languageTag, String fieldname, String filename, String contentType) throws IOException {
+	default int uploadImage(HibNode node, String languageTag, String fieldname, String filename, String contentType) throws IOException {
 		InputStream ins = getClass().getResourceAsStream("/pictures/blume.jpg");
 		byte[] bytes = IOUtils.toByteArray(ins);
 		Buffer buffer = Buffer.buffer(bytes);
 		return upload(node, buffer, languageTag, fieldname, filename, contentType);
 	}
 
-	default int upload(Node node, Buffer buffer, String languageTag, String fieldname, String filename, String contentType) throws IOException {
+	default int upload(HibNode node, Buffer buffer, String languageTag, String fieldname, String filename, String contentType) throws IOException {
 		String uuid = tx(() -> node.getUuid());
 		VersionNumber version = tx(() -> boot().contentDao().getGraphFieldContainer(node, languageTag).getVersion());
 		NodeResponse response = call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, version.toString(), fieldname,
@@ -571,7 +570,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	 * @param binaryFieldName
 	 * @throws IOException
 	 */
-	default public void prepareSchema(Node node, String mimeTypeWhitelist, String binaryFieldName) throws IOException {
+	default public void prepareSchema(HibNode node, String mimeTypeWhitelist, String binaryFieldName) throws IOException {
 		// Update the schema and enable binary support for folders
 		SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		schema.addField(new BinaryFieldSchemaImpl().setAllowedMimeTypes(mimeTypeWhitelist).setName(binaryFieldName).setLabel("Binary content"));
@@ -580,7 +579,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		// node.getSchemaContainer().setSchema(schema);
 	}
 
-	default public MeshRequest<NodeResponse> uploadRandomData(Node node, String languageTag, String fieldKey, int binaryLen, String contentType,
+	default public MeshRequest<NodeResponse> uploadRandomData(HibNode node, String languageTag, String fieldKey, int binaryLen, String contentType,
 		String fileName) {
 
 		VersionNumber version = tx(() -> boot().contentDao().getGraphFieldContainer(node, "en").getVersion());
@@ -592,7 +591,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 			new NodeParametersImpl().setResolveLinks(LinkType.FULL));
 	}
 
-	default public NodeResponse uploadImage(Node node, String languageTag, String fieldName) throws IOException {
+	default public NodeResponse uploadImage(HibNode node, String languageTag, String fieldName) throws IOException {
 		String contentType = "image/jpeg";
 		String fileName = "blume.jpg";
 		try (Tx tx = tx()) {
@@ -815,10 +814,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 
 	default int threadCount() {
 		ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
-		int i = 0;
-		for (ThreadInfo threadInfo : threadMXBean.dumpAllThreads(true, true)) {
-			i++;
-		}
-		return i;
+		return threadMXBean.dumpAllThreads(true, true).length;
 	}
+
 }

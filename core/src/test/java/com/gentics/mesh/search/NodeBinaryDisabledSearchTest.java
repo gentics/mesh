@@ -23,6 +23,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -53,7 +54,7 @@ public class NodeBinaryDisabledSearchTest extends AbstractNodeSearchEndpointTest
 	@Category({FailingTests.class})
 	public void testBinarySearchMapping() throws Exception {
 		grantAdmin();
-		Node nodeA = content("concorde");
+		HibNode nodeA = content("concorde");
 		String nodeUuid = tx(() -> nodeA.getUuid());
 		String contentSchemaUuid = tx(() -> schemaContainer("content").getUuid());
 
@@ -117,7 +118,7 @@ public class NodeBinaryDisabledSearchTest extends AbstractNodeSearchEndpointTest
 
 	@Test
 	public void testDocumentSearch() throws Exception {
-		Node nodeA = content("concorde");
+		HibNode nodeA = content("concorde");
 		String nodeUuid = tx(() -> nodeA.getUuid());
 		String contentSchemaUuid = tx(() -> schemaContainer("content").getUuid());
 
@@ -160,7 +161,7 @@ public class NodeBinaryDisabledSearchTest extends AbstractNodeSearchEndpointTest
 	@Test
 	public void testImageSearch() throws IOException {
 		grantAdmin();
-		Node nodeA = content("concorde");
+		HibNode nodeA = content("concorde");
 		String nodeUuid = tx(() -> nodeA.getUuid());
 		String contentSchemaUuid = tx(() -> schemaContainer("content").getUuid());
 

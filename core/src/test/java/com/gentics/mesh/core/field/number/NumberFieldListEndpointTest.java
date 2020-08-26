@@ -17,6 +17,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.impl.NumberGraphFieldListImpl;
 import com.gentics.mesh.core.db.Tx;
@@ -119,7 +120,7 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	public void testUpdateNodeFieldWithField() throws IOException {
 		disableAutoPurge();
 
-		Node node = folder("2015");
+		HibNode node = folder("2015");
 
 		List<List<Number>> valueCombinations = Arrays.asList(Arrays.asList(1.1, 2, 3), Arrays.asList(3, 2, 1.1), Collections.emptyList(),
 			Arrays.asList(47.11, 8.15), Arrays.asList(3));
@@ -153,7 +154,7 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	public void testUpdateSetNull() {
 		disableAutoPurge();
 
-		Node node = folder("2015");
+		HibNode node = folder("2015");
 
 		NumberFieldListImpl list = new NumberFieldListImpl();
 		list.add(42);

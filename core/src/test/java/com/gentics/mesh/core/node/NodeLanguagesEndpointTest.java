@@ -15,6 +15,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -29,7 +30,7 @@ public class NodeLanguagesEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testDeleteLanguage() {
-		Node node = content();
+		HibNode node = content();
 		int nLanguagesBefore;
 		try (Tx tx = tx()) {
 			NodeDaoWrapper nodeDao = tx.data().nodeDao();

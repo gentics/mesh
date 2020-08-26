@@ -21,6 +21,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
@@ -163,7 +164,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 		HibBranch branch = ac.getBranch();
 		SchemaVersion toVersion = ac.getToVersion();
 		try {
-			Node node = contentDao.getNode(container);
+			HibNode node = contentDao.getNode(container);
 			String languageTag = container.getLanguageTag();
 			ac.getNodeParameters().setLanguages(languageTag);
 			ac.getVersioningParameters().setVersion("draft");

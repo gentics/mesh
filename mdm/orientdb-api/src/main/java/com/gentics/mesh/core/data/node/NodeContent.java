@@ -12,7 +12,7 @@ import com.gentics.mesh.core.rest.common.ContainerType;
  */
 public class NodeContent {
 
-	private Node node;
+	private HibNode node;
 	private NodeGraphFieldContainer container;
 	private List<String> languageFallback;
 	private ContainerType type;
@@ -25,14 +25,14 @@ public class NodeContent {
 	 * @param languageFallback
 	 *            Language fallback list which was used to load the content
 	 */
-	public NodeContent(Node node, NodeGraphFieldContainer container, List<String> languageFallback, ContainerType type) {
+	public NodeContent(HibNode node, NodeGraphFieldContainer container, List<String> languageFallback, ContainerType type) {
 		this.node = node;
 		this.container = container;
 		this.languageFallback = languageFallback;
 		this.type = type;
 	}
 
-	public Node getNode() {
+	public HibNode getNode() {
 		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 		if (node == null && container != null) {
 			node = contentDao.getNode(container);

@@ -9,7 +9,7 @@ import java.util.Arrays;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
@@ -31,7 +31,7 @@ public class LinkRendererEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testLinkReplacerTypeOff() {
 		try (Tx tx = tx()) {
-			Node newsNode = content("news overview");
+			HibNode newsNode = content("news overview");
 			testSimpleLink(newsNode, LinkType.OFF, "{{mesh.link('" + newsNode.getUuid() + "')}}");
 		}
 	}
@@ -42,7 +42,7 @@ public class LinkRendererEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testLinkReplacerTypeShort() {
 		try (Tx tx = tx()) {
-			Node newsNode = content("news overview");
+			HibNode newsNode = content("news overview");
 			testSimpleLink(newsNode, LinkType.SHORT, "/News/News%20Overview.en.html");
 		}
 	}
@@ -53,7 +53,7 @@ public class LinkRendererEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testLinkReplacerTypeMedium() {
 		try (Tx tx = tx()) {
-			Node newsNode = content("news overview");
+			HibNode newsNode = content("news overview");
 			testSimpleLink(newsNode, LinkType.MEDIUM, "/dummy/News/News%20Overview.en.html");
 		}
 	}
@@ -64,7 +64,7 @@ public class LinkRendererEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testLinkReplacerTypeFull() {
 		try (Tx tx = tx()) {
-			Node newsNode = content("news overview");
+			HibNode newsNode = content("news overview");
 			testSimpleLink(newsNode, LinkType.FULL, CURRENT_API_BASE_PATH + "/dummy/webroot/News/News%20Overview.en.html");
 		}
 	}
@@ -75,7 +75,7 @@ public class LinkRendererEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testLinkInJson() {
 		try (Tx tx = tx()) {
-			Node newsNode = content("news overview");
+			HibNode newsNode = content("news overview");
 
 			JsonObject jsonObject = new JsonObject().put("quotes", "prefix {{mesh.link('" + newsNode.getUuid() + "')}} postfix")
 					.put("doublequotes", "prefix {{mesh.link(\"" + newsNode.getUuid() + "\")}} postfix")
@@ -120,7 +120,7 @@ public class LinkRendererEndpointTest extends AbstractMeshTest {
 	 * @param expectedResult
 	 *            expected result
 	 */
-	private void testSimpleLink(Node node, LinkType linkType, String expectedResult) {
+	private void testSimpleLink(HibNode node, LinkType linkType, String expectedResult) {
 		try (Tx tx = tx()) {
 			testRenderContent("{{mesh.link('" + node.getUuid() + "')}}", linkType, expectedResult);
 		}

@@ -11,7 +11,7 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.HibNode;
+import com.gentics.mesh.core.data.HibInNode;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
@@ -47,7 +47,7 @@ public class UserTransformer extends AbstractTransformer<HibUser> {
 			builder.append(group.getElementVersion());
 			builder.append("|");
 		}
-		HibNode referencedNode = user.getReferencedNode();
+		HibInNode referencedNode = user.getReferencedNode();
 		if (referencedNode != null) {
 			builder.append(referencedNode.getElementVersion());
 			builder.append("|");
@@ -76,7 +76,7 @@ public class UserTransformer extends AbstractTransformer<HibUser> {
 		addGroups(document, Tx.get().data().userDao().getGroups(user));
 		addPermissionInfo(document, user);
 		// TODO add disabled / enabled flag
-		HibNode referencedNode = user.getReferencedNode();
+		HibInNode referencedNode = user.getReferencedNode();
 		if (referencedNode != null) {
 			document.put(NODEREFERECE_KEY, referencedNode.getUuid());
 		}

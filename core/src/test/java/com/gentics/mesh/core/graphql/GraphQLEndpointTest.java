@@ -31,8 +31,8 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.assertj.impl.JsonObjectAssert;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Micronode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
@@ -221,15 +221,15 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			Node node = folder("2015");
-			Node folder = folder("news");
+			HibNode node = folder("2015");
+			HibNode folder = folder("news");
 			boot().contentDao().updateWebrootPathInfo(boot().contentDao().getGraphFieldContainer(folder, "de"), initialBranchUuid(), null);
 			boot().contentDao().updateWebrootPathInfo(boot().contentDao().getGraphFieldContainer(folder, "de"), initialBranchUuid(), null);
 
-			Node node2 = content();
+			HibNode node2 = content();
 			boot().contentDao().updateWebrootPathInfo(boot().contentDao().getGraphFieldContainer(node2, "en"), initialBranchUuid(), null);
 			boot().contentDao().updateWebrootPathInfo(boot().contentDao().getGraphFieldContainer(node2, "de"), initialBranchUuid(), null);
-			Node node3 = folder("2014");
+			HibNode node3 = folder("2014");
 
 			// Update the folder schema to contain all fields
 			HibSchema schemaContainer = schemaContainer("folder");

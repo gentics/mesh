@@ -15,7 +15,6 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
-import com.gentics.mesh.core.data.HibNode;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.ProjectElement;
@@ -634,7 +633,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param ac
 	 * @return Deque with breadcrumb nodes
 	 */
-	TraversalResult<Node> getBreadcrumbNodes(InternalActionContext ac);
+	TraversalResult<HibNode> getBreadcrumbNodes(InternalActionContext ac);
 
 	/**
 	 * Create the node specific delete event.

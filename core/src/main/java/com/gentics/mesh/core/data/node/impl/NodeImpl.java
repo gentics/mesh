@@ -78,6 +78,7 @@ import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.TagEdgeImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
@@ -261,7 +262,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			// For the path segments of the container, we add all (additional)
 			// project languages to the list of languages for the fallback.
-			Node current = this;
+			HibNode current = this;
 			while (current != null) {
 				current = nodeDao.getParentNode(current, branchUuid);
 				if (current == null || nodeDao.getParentNode(current, branchUuid) == null) {
@@ -953,17 +954,17 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public TraversalResult<Node> getBreadcrumbNodes(InternalActionContext ac) {
+	public TraversalResult<HibNode> getBreadcrumbNodes(InternalActionContext ac) {
 		return new TraversalResult<>(() -> getBreadcrumbNodeStream(ac).iterator());
 	}
 
-	private Stream<Node> getBreadcrumbNodeStream(InternalActionContext ac) {
+	private Stream<HibNode> getBreadcrumbNodeStream(InternalActionContext ac) {
 		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
 
 		String branchUuid = ac.getBranch(getProject()).getUuid();
-		Node current = this;
+		HibNode current = this;
 
-		Deque<Node> breadcrumb = new ArrayDeque<>();
+		Deque<HibNode> breadcrumb = new ArrayDeque<>();
 		while (current != null) {
 			breadcrumb.addFirst(current);
 			current = nodeDao.getParentNode(current, branchUuid);
@@ -1794,7 +1795,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// invalidate the tree structure
 		HibBranch branch = ac.getBranch(getProject());
 		String branchUuid = branch.getUuid();
-		Node parent = nodeDao.getParentNode(targetNode, branchUuid);
+		HibNode parent = nodeDao.getParentNode(targetNode, branchUuid);
 		while (parent != null) {
 			if (parent.getUuid().equals(getUuid())) {
 				throw error(BAD_REQUEST, "node_move_error_not_allowed_to_move_node_into_one_of_its_children");
@@ -2051,7 +2052,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// breadcrumb
 		keyBuilder.append("-");
-		Node current = getParentNode(branch.getUuid());
+		HibNode current = getParentNode(branch.getUuid());
 		if (current != null) {
 			while (current != null) {
 

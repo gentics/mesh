@@ -50,6 +50,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
@@ -260,7 +261,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		if (uuid != null) {
 			NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
 			GraphQLContext gc = env.getContext();
-			Node node = nodeDao.findByUuid(gc.getProject(), uuid);
+			HibNode node = nodeDao.findByUuid(gc.getProject(), uuid);
 			if (node == null) {
 				// TODO Throw graphql aware not found exception
 				return null;
@@ -287,7 +288,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			}
 
 			NodeGraphFieldContainer container = pathResult.getLast().getContainer();
-			Node nodeOfContainer = contentDao.getNode(container);
+			HibNode nodeOfContainer = contentDao.getNode(container);
 
 			nodeOfContainer = gc.requiresPerm(nodeOfContainer, READ_PERM, READ_PUBLISHED_PERM);
 			container = gc.requiresReadPermSoft(container, env);

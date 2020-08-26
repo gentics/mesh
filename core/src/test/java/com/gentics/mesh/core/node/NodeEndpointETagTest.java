@@ -13,6 +13,7 @@ import static org.junit.Assert.assertNull;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -142,7 +143,7 @@ public class NodeEndpointETagTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadOne() {
-		Node node = content();
+		HibNode node = content();
 
 		try (Tx tx = tx()) {
 			// Inject the reference node field

@@ -91,6 +91,8 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper implements TagFa
 		GenericParameters generic = ac.getGenericParameters();
 		FieldsSet fields = generic.getFields();
 
+		TagFamily graphTagFamily = toTagFamily(tagFamily);
+
 		TagFamilyResponse restTagFamily = new TagFamilyResponse();
 		if (fields.has("uuid")) {
 			restTagFamily.setUuid(tagFamily.getUuid());
@@ -105,10 +107,10 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper implements TagFa
 			restTagFamily.setName(tagFamily.getName());
 		}
 
-		tagFamily.toTagFamily().fillCommonRestFields(ac, fields, restTagFamily);
+		graphTagFamily.fillCommonRestFields(ac, fields, restTagFamily);
 
 		if (fields.has("perms")) {
-			setRolePermissions(tagFamily.toTagFamily(), ac, restTagFamily);
+			setRolePermissions(graphTagFamily, ac, restTagFamily);
 		}
 
 		return restTagFamily;
@@ -197,12 +199,12 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper implements TagFa
 
 	@Override
 	public String getETag(HibTagFamily tagfamily, InternalActionContext ac) {
-		return tagfamily.toTagFamily().getETag(ac);
+		return toTagFamily(tagfamily).getETag(ac);
 	}
 
 	@Override
 	public String getAPIPath(HibTagFamily tagFamily, InternalActionContext ac) {
-		return tagFamily.toTagFamily().getAPIPath(ac);
+		return toTagFamily(tagFamily).getAPIPath(ac);
 	}
 
 	@Override

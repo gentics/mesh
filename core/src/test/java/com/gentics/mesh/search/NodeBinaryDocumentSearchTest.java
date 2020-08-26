@@ -19,7 +19,7 @@ import org.junit.runners.Parameterized;
 
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -46,8 +46,8 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 
 	@Test
 	public void testBinarySearchMapping() throws Exception {
-		Node nodeA = content("concorde");
-		Node nodeB = content();
+		HibNode nodeA = content("concorde");
+		HibNode nodeB = content();
 
 		try (Tx tx = tx()) {
 			ContentDaoWrapper contentDao = tx.data().contentDao();
@@ -115,8 +115,8 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 
 	@Test
 	public void testSearchBinaryField() throws Exception {
-		Node nodeA = content("concorde");
-		Node nodeB = content();
+		HibNode nodeA = content("concorde");
+		HibNode nodeB = content();
 
 		try (Tx tx = tx()) {
 			ContentDaoWrapper contentDao = tx.data().contentDao();

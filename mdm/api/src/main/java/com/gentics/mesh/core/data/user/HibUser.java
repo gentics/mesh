@@ -2,7 +2,7 @@ package com.gentics.mesh.core.data.user;
 
 
 import com.gentics.mesh.core.data.HibCoreElement;
-import com.gentics.mesh.core.data.HibNode;
+import com.gentics.mesh.core.data.HibInNode;
 import com.gentics.mesh.core.rest.user.UserReference;
 
 public interface HibUser extends HibCoreElement, HibUserTracking {
@@ -220,7 +220,7 @@ public interface HibUser extends HibCoreElement, HibUserTracking {
 	 *
 	 * @return Referenced node or null when no node was assigned to the user.
 	 */
-	HibNode getReferencedNode();
+	HibInNode getReferencedNode();
 
 	/**
 	 * Set the referenced node.
@@ -228,7 +228,7 @@ public interface HibUser extends HibCoreElement, HibUserTracking {
 	 * @param node
 	 * @return Fluent API
 	 */
-	HibUser setReferencedNode(HibNode node);
+	HibUser setReferencedNode(HibInNode node);
 
 
 	/**

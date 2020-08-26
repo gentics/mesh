@@ -30,7 +30,7 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -63,8 +63,8 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			InternalActionContext ac = mockActionContext("recursive=true");
-			Node subFolder = folder("2015");
-			Node parentFolder = folder("news");
+			HibNode subFolder = folder("2015");
+			HibNode parentFolder = folder("news");
 			BulkActionContext bac = createBulkContext();
 			nodeDao.publish(parentFolder, ac, bac);
 			nodeDao.takeOffline(subFolder, ac, bac);
@@ -101,7 +101,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testGetPublishStatusForEmptyLanguage() {
 		try (Tx tx = tx()) {
-			Node node = folder("products");
+			HibNode node = folder("products");
 			call(() -> client().getNodeLanguagePublishStatus(PROJECT_NAME, node.getUuid(), "fr"), NOT_FOUND, "error_language_not_found", "fr");
 		}
 	}
@@ -150,7 +150,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testPublishNode() {
-		Node node = folder("2015");
+		HibNode node = folder("2015");
 		String nodeUuid = tx(() -> node.getUuid());
 		String schemaUuid = tx(() -> schemaContainer("folder").getUuid());
 		String branchUuid = tx(() -> project().getLatestBranch().getUuid());
@@ -199,7 +199,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testPublishNodeMultiLanguages() {
-		Node node = folder("2015");
+		HibNode node = folder("2015");
 		String nodeUuid = tx(() -> node.getUuid());
 		String schemaUuid = tx(() -> schemaContainer("folder").getUuid());
 		String branchUuid = tx(() -> project().getLatestBranch().getUuid());
@@ -254,7 +254,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testGetPublishStatus() {
 		try (Tx tx = tx()) {
-			Node node = folder("2015");
+			HibNode node = folder("2015");
 			String nodeUuid = node.getUuid();
 
 			// 1. Check initial status
@@ -279,7 +279,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testGetPublishStatusForBranch() {
-		Node node = folder("2015");
+		HibNode node = folder("2015");
 		HibBranch newBranch = createBranch("newbranch", true);
 
 		try (Tx tx = tx()) {
@@ -307,7 +307,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testGetPublishStatusNoPermission() {
-		Node node = folder("news");
+		HibNode node = folder("news");
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.revokePermissions(role(), node, READ_PERM);
@@ -330,7 +330,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testGetPublishStatusForLanguage() {
 		try (Tx tx = tx()) {
-			Node node = folder("products");
+			HibNode node = folder("products");
 
 			// 1. Take everything offline
 			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParametersImpl().setRecursive(true)));
@@ -362,7 +362,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testPublishNodeForBranch() {
-		Node node = folder("2015");
+		HibNode node = folder("2015");
 
 		createBranch("newbranch", true);
 
@@ -382,7 +382,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testPublishNodeNoPermission() {
-		Node node = folder("2015");
+		HibNode node = folder("2015");
 
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
@@ -492,7 +492,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testPublishEmptyLanguage() {
 		try (Tx tx = tx()) {
-			Node node = folder("2015");
+			HibNode node = folder("2015");
 			String nodeUuid = node.getUuid();
 			call(() -> client().publishNodeLanguage(PROJECT_NAME, nodeUuid, "de"), NOT_FOUND, "error_language_not_found", "de");
 		}
@@ -500,7 +500,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testPublishLanguageForBranch() {
-		Node node = folder("2015");
+		HibNode node = folder("2015");
 
 		try (Tx tx = tx()) {
 			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new VersioningParametersImpl().setBranch(
@@ -538,7 +538,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testPublishLanguageNoPermission() {
-		Node node = folder("2015");
+		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			roleDao.revokePermissions(role(), node, PUBLISH_PERM);

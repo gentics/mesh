@@ -34,7 +34,7 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.Tx;
@@ -200,7 +200,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			assertNotNull("The container should now have a new version", currentVersion.getNextVersion());
 
 			// Assert that migration worked
-			Node node = content();
+			HibNode node = content();
 			assertTrue("The version of the original schema and the schema that is now linked to the node should be different.",
 				!Objects.equals(currentVersion.getVersion(),
 					boot().contentDao().getGraphFieldContainer(node, "en").getSchemaContainerVersion().getVersion()));
@@ -212,7 +212,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testRemoveAddFieldTypeWithSameKey() throws Exception {
 		SchemaUpdateRequest request;
-		Node content = content();
+		HibNode content = content();
 		HibSchema schemaContainer = schemaContainer("content");
 
 		try (Tx tx = tx()) {
@@ -304,7 +304,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testRemoveSegmentField() throws Exception {
-		Node node = content();
+		HibNode node = content();
 		HibSchema container = schemaContainer("content");
 		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
 
@@ -332,7 +332,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testRemoveField() throws Exception {
 		// 1. Verify test data
-		Node node = content();
+		HibNode node = content();
 		HibSchema schemaContainer = schemaContainer("content");
 		String schemaUuid = tx(() -> schemaContainer.getUuid());
 		HibSchemaVersion currentVersion = tx(() -> schemaContainer.getLatestVersion());
@@ -391,7 +391,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			assertNotEquals("The container should now have a new version", currentVersion.getUuid(), schemaContainer.getLatestVersion().getUuid());
 
 			// Assert that migration worked
-			Node node = content();
+			HibNode node = content();
 			assertNotNull("The schema of the node should contain the new field schema",
 				boot().contentDao().getGraphFieldContainer(node, "en").getSchemaContainerVersion().getSchema().getField("newField"));
 			assertTrue("The version of the original schema and the schema that is now linked to the node should be different.",
@@ -439,7 +439,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 				assertNotEquals("The container should now have a new version", currentVersion.getUuid(), container.getLatestVersion().getUuid());
 
 				// Assert that migration worked
-				Node node = content();
+				HibNode node = content();
 				assertNotNull("The schema of the node should contain the new field schema",
 					boot().contentDao().getGraphFieldContainer(node, "en").getSchemaContainerVersion().getSchema().getField("newField_" + i));
 				assertTrue("The version of the original schema and the schema that is now linked to the node should be different.",
@@ -555,7 +555,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		SchemaUpdateRequest schema;
 		String nodeUuid;
 		try (Tx tx = tx()) {
-			Node content = content();
+			HibNode content = content();
 			nodeUuid = content.getUuid();
 			// 1. Prepare the update request in which we remove the content field
 			HibSchema container = schemaContainer("content");
@@ -586,7 +586,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 	public void testMigrationForBranch() throws Exception {
 		HibSchema schemaContainer = schemaContainer("content");
 		String schemaUuid = tx(() -> schemaContainer.getUuid());
-		Node content = content();
+		HibNode content = content();
 		SchemaUpdateRequest request;
 
 		HibBranch newBranch = createBranch("newbranch", true);
@@ -625,7 +625,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 	@Category({ FailingTests.class })
 	public void testUpdateFieldName() throws Exception {
 		// 1. Verify test data
-		Node node = content();
+		HibNode node = content();
 		HibSchema schemaContainer = schemaContainer("content");
 		String schemaUuid = tx(() -> schemaContainer.getUuid());
 		String contentFieldValue;

@@ -8,7 +8,7 @@ import org.junit.Test;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
@@ -27,7 +27,7 @@ public class AuthUserTest extends AbstractMeshTest {
 
 			InternalActionContext ac = mockActionContext();
 			MeshAuthUser requestUser = ac.getUser();
-			Node targetNode = folder("2015");
+			HibNode targetNode = folder("2015");
 			assertTrue(userDao.hasPermission(requestUser, targetNode, InternalPermission.READ_PERM));
 			roleDao.revokePermissions(role(), targetNode, InternalPermission.READ_PERM);
 			assertFalse(userDao.hasPermission(requestUser, targetNode, InternalPermission.READ_PERM));

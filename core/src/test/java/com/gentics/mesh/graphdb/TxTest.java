@@ -25,6 +25,7 @@ import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -159,7 +160,7 @@ public class TxTest extends AbstractMeshTest {
 			// TraversalHelper.printDebugVertices();
 			CyclicBarrier barrierA = new CyclicBarrier(nThreads);
 			CyclicBarrier barrierB = new CyclicBarrier(nThreads);
-			Node node = content();
+			HibNode node = content();
 			HibTagFamily tagFamily = tagFamily("colors");
 			List<Thread> threads = new ArrayList<>();
 			HibProject project = project();

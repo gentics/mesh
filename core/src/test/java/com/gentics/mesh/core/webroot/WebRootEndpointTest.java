@@ -29,10 +29,10 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.job.JobStatus;
@@ -58,7 +58,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadBinaryNode() throws IOException {
-		Node node = content("news_2015");
+		HibNode node = content("news_2015");
 		String nodeUuid = tx(() -> node.getUuid());
 
 		try (Tx tx = tx()) {
@@ -90,7 +90,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadFolderByPath() throws Exception {
-		Node node = folder("2015");
+		HibNode node = folder("2015");
 		String nodeUuid = tx(() -> node.getUuid());
 		String path = "/News/2015";
 
@@ -102,7 +102,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadFolderByPathAndResolveLinks() {
-		Node content = content("news_2015");
+		HibNode content = content("news_2015");
 
 		try (Tx tx = tx()) {
 			ContentDaoWrapper contentDao = tx.data().contentDao();
@@ -132,7 +132,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			new NodeParametersImpl().setLanguages("en", "de")));
 
 		try (Tx tx = tx()) {
-			Node node = content("news_2015");
+			HibNode node = content("news_2015");
 			assertThat(restNode.getNodeResponse()).is(node).hasLanguage("en");
 		}
 	}
@@ -144,7 +144,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			ContentDaoWrapper contentDao = tx.data().contentDao();
 			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			RoleDaoWrapper roleDao = tx.data().roleDao();
-			Node parentNode = folder("2015");
+			HibNode parentNode = folder("2015");
 			// Update content schema and add node field
 			HibSchema folderSchema = schemaContainer("folder");
 			SchemaVersionModel schema = folderSchema.getLatestVersion().getSchema();
@@ -154,7 +154,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 			// Create content which is only german
 			HibSchema contentSchema = schemaContainer("content");
-			Node node = nodeDao.create(parentNode, user(), contentSchema.getLatestVersion(), project());
+			HibNode node = nodeDao.create(parentNode, user(), contentSchema.getLatestVersion(), project());
 
 			// Grant permissions to the node otherwise it will not be able to be loaded
 			roleDao.grantPermissions(role(), node, InternalPermission.values());
@@ -311,7 +311,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		String uuid;
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
-			Node newsFolder = folder("2015");
+			HibNode newsFolder = folder("2015");
 			uuid = newsFolder.getUuid();
 			roleDao.revokePermissions(role(), newsFolder, READ_PERM);
 			roleDao.revokePermissions(role(), newsFolder, READ_PUBLISHED_PERM);
