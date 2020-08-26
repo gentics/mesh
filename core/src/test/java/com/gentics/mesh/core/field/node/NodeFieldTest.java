@@ -69,13 +69,13 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Override
 	public void testFieldUpdate() throws Exception {
 		try (Tx tx = tx()) {
-			Node node = tx.getGraph().addFramedVertex(NodeImpl.class);
+			HibNode node = tx.getGraph().addFramedVertex(NodeImpl.class);
 
 			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NodeGraphField field = container.createNode("testNodeField", node);
 			assertNotNull(field);
 			assertEquals("testNodeField", field.getFieldKey());
-			Node loadedNode = field.getNode();
+			HibNode loadedNode = field.getNode();
 			assertNotNull(loadedNode);
 			assertEquals(node.getUuid(), loadedNode.getUuid());
 

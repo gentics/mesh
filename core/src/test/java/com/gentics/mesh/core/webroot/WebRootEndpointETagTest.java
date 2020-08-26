@@ -13,8 +13,8 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
@@ -109,8 +109,9 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 			() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(), new NodeParametersImpl().setLanguages("en", "de")));
 
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			HibNode node = content("news_2015");
-			String etag = node.getETag(mockActionContext());
+			String etag = nodeDao.getETag(node, mockActionContext());
 			assertEquals(etag, responseTag);
 
 			// Check whether 304 is returned for correct etag

@@ -577,7 +577,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper implements UserDaoWra
 	}
 
 	@Override
-	public boolean canReadNode(HibUser user, InternalActionContext ac, Node node) {
+	public boolean canReadNode(HibUser user, InternalActionContext ac, HibNode node) {
 		if (user instanceof NodeMigrationUser) {
 			return true;
 		}

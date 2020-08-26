@@ -394,7 +394,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	}
 
 	@Override
-	public Iterable<? extends Node> getReferencedNodes() {
+	public Iterable<? extends HibNode> getReferencedNodes() {
 		// Get all fields and group them by type
 		Map<String, List<FieldSchema>> affectedFields = getSchemaContainerVersion().getSchema().getFields().stream()
 			.filter(this::isNodeReferenceType)
@@ -403,7 +403,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 		Function<FieldTypes, List<FieldSchema>> getFields = type -> Optional.ofNullable(affectedFields.get(type.toString()))
 			.orElse(Collections.emptyList());
 
-		Stream<Stream<Node>> nodeStream = Stream.of(
+		Stream<Stream<HibNode>> nodeStream = Stream.of(
 			getFields.apply(FieldTypes.NODE).stream().flatMap(this::getNodeFromNodeField),
 			getFields.apply(FieldTypes.MICRONODE).stream().flatMap(this::getNodesFromMicronode),
 			getFields.apply(FieldTypes.LIST).stream().flatMap(this::getNodesFromList)
@@ -426,7 +426,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	 *            The node field to get the node from
 	 * @return Gets the node as a stream or an empty stream if the node field is not set
 	 */
-	private Stream<Node> getNodeFromNodeField(FieldSchema field) {
+	private Stream<HibNode> getNodeFromNodeField(FieldSchema field) {
 		return Optional.ofNullable(getNode(field.getName()))
 			.map(NodeGraphField::getNode)
 			.map(Stream::of)
@@ -436,7 +436,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	/**
 	 * Gets the nodes that are referenced by a micronode in the given field. This includes all node fields and node list fields in the micronode.
 	 */
-	private Stream<? extends Node> getNodesFromMicronode(FieldSchema field) {
+	private Stream<? extends HibNode> getNodesFromMicronode(FieldSchema field) {
 		return Optional.ofNullable(getMicronode(field.getName()))
 			.map(micronode -> StreamSupport.stream(micronode.getMicronode().getReferencedNodes().spliterator(), false))
 			.orElseGet(Stream::empty);
@@ -446,7 +446,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	 * Gets the nodes that are referenced by a list field. In case of a node list, all nodes in that list are returned. In case of a micronode list, all nodes
 	 * referenced by all node fields and node list fields in all microschemas are returned. Otherwise an empty stream is returned.
 	 */
-	private Stream<? extends Node> getNodesFromList(FieldSchema field) {
+	private Stream<? extends HibNode> getNodesFromList(FieldSchema field) {
 		ListFieldSchema list;
 		if (field instanceof ListFieldSchema) {
 			list = (ListFieldSchema) field;

@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.migration.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toNode;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.INITIAL;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
@@ -132,7 +133,7 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 						setInitial(node, container, newBranch);
 					}
 
-					GraphFieldContainerEdgeImpl draftEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
+					GraphFieldContainerEdgeImpl draftEdge = toNode(node).addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
 					draftEdge.setLanguageTag(container.getLanguageTag());
 					draftEdge.setType(DRAFT);
 					draftEdge.setBranchUuid(newBranch.getUuid());
@@ -152,7 +153,7 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 					// The initial edge should always point to the oldest container of either draft or published.
 					setInitial(node, container, newBranch);
 
-					GraphFieldContainerEdgeImpl publishEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
+					GraphFieldContainerEdgeImpl publishEdge = toNode(node).addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
 					publishEdge.setLanguageTag(container.getLanguageTag());
 					publishEdge.setType(PUBLISHED);
 					publishEdge.setBranchUuid(newBranch.getUuid());
@@ -179,7 +180,7 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 	 * Create a new initial edge between node and container for the given branch.
 	 */
 	private void setInitial(HibNode node, NodeGraphFieldContainer container, HibBranch branch) {
-		GraphFieldContainerEdgeImpl initialEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container,
+		GraphFieldContainerEdgeImpl initialEdge = toNode(node).addFramedEdge(HAS_FIELD_CONTAINER, container,
 			GraphFieldContainerEdgeImpl.class);
 		initialEdge.setLanguageTag(container.getLanguageTag());
 		initialEdge.setBranchUuid(branch.getUuid());

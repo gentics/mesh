@@ -664,7 +664,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	@Override
 	public String getETag(InternalActionContext ac) {
 		Stream<String> referencedUuids = StreamSupport.stream(getReferencedNodes().spliterator(), false)
-			.map(Node::getUuid);
+			.map(HibNode::getUuid);
 
 		int hashcode = Stream.concat(Stream.of(getUuid()), referencedUuids)
 			.collect(Collectors.toSet())

@@ -253,8 +253,8 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof NodeGraphField) {
-			Node nodeA = getNode();
-			Node nodeB = ((NodeGraphField) obj).getNode();
+			HibNode nodeA = getNode();
+			HibNode nodeB = ((NodeGraphField) obj).getNode();
 			return CompareUtils.equals(nodeA, nodeB);
 		}
 		if (obj instanceof NodeFieldListItem) {
@@ -265,7 +265,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 		}
 		if (obj instanceof NodeField) {
 			NodeField nodeRestField = ((NodeField) obj);
-			Node nodeA = getNode();
+			HibNode nodeA = getNode();
 			String nodeUuid = nodeRestField.getUuid();
 			// The node graph field is a edge so getNode should never be null. Lets check it anyways.
 			if (nodeA != null) {

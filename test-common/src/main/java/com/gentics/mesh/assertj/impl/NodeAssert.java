@@ -18,9 +18,7 @@ import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -30,7 +28,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
  * Assert for Node
  */
 public class NodeAssert extends AbstractAssert<NodeAssert, HibNode> {
-	public NodeAssert(Node actual) {
+	public NodeAssert(HibNode actual) {
 		super(actual, NodeAssert.class);
 	}
 
@@ -41,7 +39,7 @@ public class NodeAssert extends AbstractAssert<NodeAssert, HibNode> {
 	 *            schema container
 	 * @return fluent API
 	 */
-	public NodeAssert isOf(Schema schemaContainer) {
+	public NodeAssert isOf(HibSchema schemaContainer) {
 		assertThat(actual.getSchemaContainer()).as(descriptionText() + " Schema").isEqualTo(schemaContainer);
 		return this;
 	}

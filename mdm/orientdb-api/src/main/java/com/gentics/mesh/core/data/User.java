@@ -8,7 +8,6 @@ import java.util.Objects;
 
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.TypeInfo;
-import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -164,7 +163,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @param node
 	 * @return Fluent API
 	 */
-	User setReferencedNode(HibNode node);
+	HibUser setReferencedNode(HibInNode node);
 
 	/**
 	 * Return a page of groups which the user was assigned to.

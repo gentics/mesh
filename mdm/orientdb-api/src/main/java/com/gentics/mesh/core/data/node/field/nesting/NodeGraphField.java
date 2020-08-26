@@ -6,7 +6,7 @@ import java.util.stream.Stream;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.rest.node.field.NodeField;
 
 import io.vertx.core.logging.Logger;
@@ -24,7 +24,7 @@ public interface NodeGraphField extends ListableReferencingGraphField, Microsche
 	 *
 	 * @return Node for this field when set, otherwise null.
 	 */
-	Node getNode();
+	HibNode getNode();
 
 	/**
 	 * Transform the graph field into a rest field.

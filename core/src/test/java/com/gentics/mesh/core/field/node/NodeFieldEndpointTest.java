@@ -30,7 +30,6 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.Tx;
@@ -486,7 +485,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	 *            field name
 	 * @return node value (may be null)
 	 */
-	protected Node getNodeValue(NodeGraphFieldContainer container, String fieldName) {
+	protected HibNode getNodeValue(NodeGraphFieldContainer container, String fieldName) {
 		NodeGraphField field = container.getNode(fieldName);
 		return field != null ? field.getNode() : null;
 	}

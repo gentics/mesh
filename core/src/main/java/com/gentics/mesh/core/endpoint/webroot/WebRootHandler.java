@@ -19,10 +19,10 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
@@ -104,6 +104,7 @@ public class WebRootHandler {
 			utils.syncTx(ac, tx -> {
 				MeshAuthUser requestUser = ac.getUser();
 				UserDaoWrapper userDao = tx.data().userDao();
+				NodeDaoWrapper nodeDao = tx.data().nodeDao();
 
 				String branchUuid = ac.getBranch().getUuid();
 				// Load all nodes for the given path
@@ -149,7 +150,7 @@ public class WebRootHandler {
 					binaryFieldResponseHandler.handle(rc, binaryField);
 					return null;
 				} else {
-					String etag = node.getETag(ac);
+					String etag = nodeDao.getETag(node, ac);
 					ac.setEtag(etag, true);
 					if (ac.matches(etag, true)) {
 						throw new NotModifiedException();
@@ -159,7 +160,7 @@ public class WebRootHandler {
 					languageTags.add(lastSegment.getLanguageTag());
 					languageTags.addAll(ac.getNodeParameters().getLanguageList(options));
 					ac.setWebrootResponseType("node");
-					return node.transformToRestSync(ac, 0, languageTags.toArray(new String[0]));
+					return nodeDao.transformToRestSync(node, ac, 0, languageTags.toArray(new String[0]));
 				}
 			}, model -> {
 				if (model != null) {
@@ -178,7 +179,7 @@ public class WebRootHandler {
 	 * @param node
 	 * @param version
 	 */
-	private void addCacheControl(RoutingContext rc, Node node, String version) {
+	private void addCacheControl(RoutingContext rc, HibNode node, String version) {
 		if (isPublic(node, version)) {
 			rc.response().putHeader(CACHE_CONTROL, "public");
 		} else {
@@ -194,7 +195,8 @@ public class WebRootHandler {
 	 * @param version
 	 * @return
 	 */
-	private boolean isPublic(Node node, String version) {
+	
+	private boolean isPublic(HibNode node, String version) {
 		RoleDaoWrapper roleDao = Tx.get().data().roleDao();
 
 		HibRole anonymousRole = boot.anonymousRole();

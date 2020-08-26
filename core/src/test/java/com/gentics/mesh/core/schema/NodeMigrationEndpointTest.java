@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.schema;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toNode;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
@@ -489,7 +490,8 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		String schemaUuid = tx(() -> node.getSchemaContainer().getUuid());
 
 		int nFieldContainers = tx(tx -> {
-			return Long.valueOf(node.getSchemaContainer().getLatestVersion().getFieldContainers(initialBranchUuid())
+			HibSchemaVersion schemaVersion = node.getSchemaContainer().getLatestVersion();
+			return Long.valueOf(schemaVersion.getFieldContainers(initialBranchUuid())
 				.filter(c -> c.isPublished() || c.isPublished())
 				.count()).intValue();
 		});
@@ -833,7 +835,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			ContentDaoWrapper contentDao = tx.data().contentDao();
 			System.out.println();
 			HibNode node = boot().nodeDao().findByUuid(project(), uuid);
-			for (GraphFieldContainerEdgeImpl e : node.outE("HAS_FIELD_CONTAINER").frameExplicit(GraphFieldContainerEdgeImpl.class)) {
+			for (GraphFieldContainerEdgeImpl e : toNode(node).outE("HAS_FIELD_CONTAINER").frameExplicit(GraphFieldContainerEdgeImpl.class)) {
 				NodeGraphFieldContainer container = e.getNodeContainer();
 				System.out.println("Type: " + e.getType() + " " + container.getUuid() + " version: " + container.getVersion());
 

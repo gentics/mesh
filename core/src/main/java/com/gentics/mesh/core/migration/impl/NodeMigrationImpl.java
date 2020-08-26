@@ -22,8 +22,8 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
@@ -216,8 +216,8 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 	 *            Suggested new draft version
 	 * @throws Exception
 	 */
-	private void migrateDraftContainer(NodeMigrationActionContext ac, EventQueueBatch sqb, HibBranch branch, Node node,
-		NodeGraphFieldContainer container, GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion, SchemaVersion toVersion,
+	private void migrateDraftContainer(NodeMigrationActionContext ac, EventQueueBatch sqb, HibBranch branch, HibNode node,
+		NodeGraphFieldContainer container, GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion, HibSchemaVersion toVersion,
 		Set<String> touchedFields,
 		SchemaVersionModel newSchema, VersionNumber nextDraftVersion)
 		throws Exception {
@@ -234,10 +234,11 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 
 		ac.getVersioningParameters().setVersion(container.getVersion().getFullVersion());
 		ac.getGenericParameters().setFields("fields");
-		NodeResponse restModel = node.transformToRestSync(ac, 0, languageTag);
+		NodeResponse restModel = nodeDao.transformToRestSync(node, ac, 0, languageTag);
 
 		// Actual migration - Create the new version
-		NodeGraphFieldContainer migrated = contentDao.createGraphFieldContainer(node, container.getLanguageTag(), branch, container.getEditor(), container, true);
+		NodeGraphFieldContainer migrated = contentDao.createGraphFieldContainer(node, container.getLanguageTag(), branch, container.getEditor(),
+			container, true);
 
 		// Ensure that the migrated version is also published since the old version was
 		if (publish) {
@@ -278,7 +279,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 	 * @return Version of the new published container
 	 * @throws Exception
 	 */
-	private VersionNumber migratePublishedContainer(NodeMigrationActionContext ac, EventQueueBatch sqb, HibBranch branch, Node node,
+	private VersionNumber migratePublishedContainer(NodeMigrationActionContext ac, EventQueueBatch sqb, HibBranch branch, HibNode node,
 		NodeGraphFieldContainer container, GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion, SchemaVersion toVersion,
 		Set<String> touchedFields, SchemaVersionModel newSchema) throws Exception {
 		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
@@ -289,9 +290,11 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 
 		ac.getVersioningParameters().setVersion("published");
 		ac.getGenericParameters().setFields("fields");
-		NodeResponse restModel = node.transformToRestSync(ac, 0, languageTag);
 
-		NodeGraphFieldContainer migrated = contentDao.createGraphFieldContainer(node, container.getLanguageTag(), branch, container.getEditor(), container, true);
+		NodeResponse restModel = nodeDao.transformToRestSync(node, ac, 0, languageTag);
+
+		NodeGraphFieldContainer migrated = contentDao.createGraphFieldContainer(node, container.getLanguageTag(), branch, container.getEditor(),
+			container, true);
 
 		migrated.setVersion(container.getVersion().nextPublished());
 		nodeDao.setPublished(node, ac, migrated, branchUuid);

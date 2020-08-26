@@ -14,6 +14,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.PARENTS_KEY_PROPERTY;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.PROJECT_KEY_PROPERTY;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.SCHEMA_CONTAINER_KEY_PROPERTY;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toNode;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_MOVED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_REFERENCE_UPDATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_TAGGED;
@@ -269,7 +270,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					break;
 				}
 				// For the path segments of the container, we allow ANY language (of the project)
-				segment = current.getPathSegment(branchUuid, type, true, languageTag);
+				segment = toNode(current).getPathSegment(branchUuid, type, true, languageTag);
 
 				// Abort early if one of the path segments could not be resolved. We
 				// need to return a 404 in those cases.
@@ -2055,8 +2056,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		HibNode current = getParentNode(branch.getUuid());
 		if (current != null) {
 			while (current != null) {
-
-				String key = current.getUuid() + current.getDisplayName(ac);
+				String key = current.getUuid() + toNode(current).getDisplayName(ac);
 				keyBuilder.append(key);
 				if (LinkType.OFF != ac.getNodeParameters().getResolveLinks()) {
 					WebRootLinkReplacer linkReplacer = mesh().webRootLinkReplacer();

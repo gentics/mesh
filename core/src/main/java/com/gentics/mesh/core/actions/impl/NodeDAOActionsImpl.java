@@ -53,7 +53,9 @@ public class NodeDAOActionsImpl implements NodeDAOActions {
 
 	@Override
 	public Page<? extends HibNode> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, Predicate<HibNode> extraFilter) {
-		return ctx.project().getNodeRoot().findAll(ctx.ac(), pagingInfo, extraFilter);
+		return ctx.project().getNodeRoot().findAll(ctx.ac(), pagingInfo, node -> {
+			return extraFilter.test(node);
+		});
 	}
 
 	@Override

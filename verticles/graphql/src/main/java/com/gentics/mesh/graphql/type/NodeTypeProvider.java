@@ -292,7 +292,8 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 						pathStack.add(nodePath);
 						Path path = new Path();
 						try {
-							node.resolvePath(branchUuid, type, path, pathStack);
+							NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+							nodeDao.resolvePath(node, branchUuid, type, path, pathStack);
 						} catch (GenericRestException e) {
 							// Check whether the path could not be resolved
 							if (e.getStatus() == NOT_FOUND) {
@@ -652,7 +653,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	 * @param pagingInfo
 	 * @return
 	 */
-	public Page<? extends Node> handleSearch(GraphQLContext gc, String query, PagingParameters pagingInfo) {
+	public Page<? extends HibNode> handleSearch(GraphQLContext gc, String query, PagingParameters pagingInfo) {
 		try {
 			return nodeSearchHandler.query(gc, query, pagingInfo, READ_PERM, READ_PUBLISHED_PERM);
 		} catch (Exception e) {

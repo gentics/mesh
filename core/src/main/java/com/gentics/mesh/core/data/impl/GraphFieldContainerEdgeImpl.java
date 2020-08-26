@@ -96,7 +96,7 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 		return db.index().createComposedIndexKey(branchUuid, type.getCode(), segmentInfo);
 	}
 
-	public static String composeSegmentInfo(Node parentNode, String segment) {
+	public static String composeSegmentInfo(HibNode parentNode, String segment) {
 		return parentNode == null ? "" : parentNode.getUuid() + segment;
 	}
 

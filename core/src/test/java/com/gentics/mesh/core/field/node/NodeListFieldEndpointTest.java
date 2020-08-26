@@ -119,18 +119,18 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 		HibNode targetNode = folder("news");
 		HibNode targetNode2 = folder("deals");
 
-		List<List<Node>> valueCombinations = Arrays.asList(Arrays.asList(targetNode), Arrays.asList(targetNode2, targetNode), Collections.emptyList(),
+		List<List<HibNode>> valueCombinations = Arrays.asList(Arrays.asList(targetNode), Arrays.asList(targetNode2, targetNode), Collections.emptyList(),
 			Arrays.asList(targetNode, targetNode2), Arrays.asList(targetNode2));
 
 		NodeGraphFieldContainer container = tx(() -> boot().contentDao().getGraphFieldContainer(node, "en"));
 		for (int i = 0; i < 20; i++) {
-			List<Node> oldValue;
-			List<Node> newValue;
+			List<HibNode> oldValue;
+			List<HibNode> newValue;
 			NodeFieldListImpl list = new NodeFieldListImpl();
 			try (Tx tx = tx()) {
 				oldValue = getListValues(container, NodeGraphFieldListImpl.class, FIELD_NAME);
 				newValue = valueCombinations.get(i % valueCombinations.size());
-				for (Node value : newValue) {
+				for (HibNode value : newValue) {
 					list.add(new NodeFieldListItemImpl(value.getUuid()));
 				}
 			}

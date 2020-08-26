@@ -24,7 +24,7 @@ import com.gentics.mesh.core.action.NodeDAOActions;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
@@ -49,7 +49,7 @@ import io.vertx.core.logging.LoggerFactory;
  * Collection of handlers which are used to deal with search requests.
  */
 @Singleton
-public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse> {
+public class NodeSearchHandler extends AbstractSearchHandler<HibNode, NodeResponse> {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeSearchHandler.class);
 
@@ -131,7 +131,7 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 					String languageTag = pos > 0 ? id.substring(pos + 1) : null;
 					String uuid = pos > 0 ? id.substring(0, pos) : id;
 
-					Node element = getIndexHandler().elementLoader().apply(uuid);
+					HibNode element = getIndexHandler().elementLoader().apply(uuid);
 					if (element == null) {
 						log.warn("Object could not be found for uuid {" + uuid + "}");
 						totalCount--;

@@ -5,6 +5,7 @@ import java.util.Objects;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.HibInNode;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
@@ -76,6 +77,10 @@ public final class HibClassConverter {
 
 	public static Role toRole(HibRole role) {
 		return checkAndCast(role, Role.class);
+	}
+
+	public static Node toNode(HibInNode node) {
+		return checkAndCast(node, Node.class);
 	}
 
 	public static Node toNode(HibNode node) {

@@ -27,8 +27,8 @@ import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Micronode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
@@ -323,7 +323,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				ContainerType nodeType = getNodeVersion(env);
 
 				Stream<NodeContent> nodes = nodeList.getList().stream().map(item -> {
-					Node node = item.getNode();
+					HibNode node = item.getNode();
 					List<String> languageTags;
 					if (container instanceof NodeGraphFieldContainer) {
 						languageTags = Arrays.asList(container.getLanguageTag());
@@ -417,7 +417,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				// TODO decide whether we want to reference the default content by default
 				NodeGraphField nodeField = source.getNode(schema.getName());
 				if (nodeField != null) {
-					Node node = nodeField.getNode();
+					HibNode node = nodeField.getNode();
 					if (node != null) {
 						//Note that we would need to check for micronodes which are not language specific!
 						List<String> languageTags = getLanguageArgument(env, source);

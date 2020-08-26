@@ -118,8 +118,8 @@ public class NodeDaoWrapperImpl implements NodeDaoWrapper {
 	}
 
 	@Override
-	public void moveTo(HibNode sourceNode, InternalActionContext ac, Node targetNode, EventQueueBatch batch) {
-		toNode(sourceNode).moveTo(ac, targetNode, batch);
+	public void moveTo(HibNode sourceNode, InternalActionContext ac, HibNode targetNode, EventQueueBatch batch) {
+		toNode(sourceNode).moveTo(ac, toNode(targetNode), batch);
 	}
 
 	@Override

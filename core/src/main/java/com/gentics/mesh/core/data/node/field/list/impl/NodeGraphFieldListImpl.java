@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.node.field.list.impl;
 
+import static com.gentics.mesh.core.data.util.HibClassConverter.toNode;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
@@ -14,8 +15,10 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.FieldGetter;
 import com.gentics.mesh.core.data.node.field.FieldTransformer;
@@ -36,7 +39,7 @@ import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.util.CompareUtils;
 
-public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<NodeGraphField, NodeFieldList, Node> implements NodeGraphFieldList {
+public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<NodeGraphField, NodeFieldList, HibNode> implements NodeGraphFieldList {
 
 	public static FieldTransformer<NodeFieldList> NODE_LIST_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level,
 			parentNode) -> {
@@ -118,8 +121,8 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 	}
 
 	@Override
-	public NodeGraphField createNode(String key, Node node) {
-		return addItem(key, node);
+	public NodeGraphField createNode(String key, HibNode node) {
+		return addItem(key, toNode(node));
 	}
 
 	@Override
@@ -142,26 +145,27 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 		String[] lTagsArray = languageTags.toArray(new String[languageTags.size()]);
 
 		UserDaoWrapper userDao = mesh().boot().userDao();
+		NodeDaoWrapper nodeDao = mesh().boot().nodeDao();
 
 		if (expandField && level < Node.MAX_TRANSFORMATION_LEVEL) {
 			NodeFieldList restModel = new NodeFieldListImpl();
 			for (com.gentics.mesh.core.data.node.field.nesting.NodeGraphField item : getList()) {
-				Node node = item.getNode();
+				HibNode node = item.getNode();
 				if (!userDao.canReadNode(ac.getUser(), ac, node)) {
 					continue;
 				}
-				restModel.getItems().add(node.transformToRestSync(ac, level, lTagsArray));
+				restModel.getItems().add(nodeDao.transformToRestSync(node, ac, level, lTagsArray));
 			}
 
 			return restModel;
 		} else {
 			NodeFieldList restModel = new NodeFieldListImpl();
 			for (com.gentics.mesh.core.data.node.field.nesting.NodeGraphField item : getList()) {
-				NodeImpl node = (NodeImpl) item.getNode();
+				HibNode node = item.getNode();
 				if (!userDao.canReadNode(ac.getUser(), ac, node)) {
 					continue;
 				}
-				restModel.add(node.toListItem(ac, lTagsArray));
+				restModel.add(((NodeImpl)node).toListItem(ac, lTagsArray));
 			}
 			return restModel;
 
@@ -170,7 +174,7 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 	}
 
 	@Override
-	public List<Node> getValues() {
+	public List<HibNode> getValues() {
 		return getList().stream().map(NodeGraphField::getNode).collect(Collectors.toList());
 	}
 

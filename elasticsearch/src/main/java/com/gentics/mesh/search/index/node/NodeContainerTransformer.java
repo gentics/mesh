@@ -2,6 +2,7 @@ package com.gentics.mesh.search.index.node;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toNode;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
@@ -27,7 +28,6 @@ import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Micronode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
 import com.gentics.mesh.core.data.node.field.DateGraphField;
@@ -107,7 +107,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	 * @param document
 	 * @param parentNode
 	 */
-	private void addParentNodeInfo(JsonObject document, Node parentNode) {
+	private void addParentNodeInfo(JsonObject document, HibNode parentNode) {
 		JsonObject info = new JsonObject();
 		info.put(UUID_KEY, parentNode.getUuid());
 		// TODO check whether nesting of nested elements would also work
@@ -128,13 +128,13 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	private void addPermissionInfo(JsonObject document, HibNode node, ContainerType type) {
 		List<String> roleUuids = new ArrayList<>();
 
-		for (HibRole role : node.getRolesWithPerm(READ_PERM)) {
+		for (HibRole role : toNode(node).getRolesWithPerm(READ_PERM)) {
 			roleUuids.add(role.getUuid());
 		}
 
 		// Also add the roles which would grant read on published nodes if the container is published.
 		if (type == PUBLISHED) {
-			for (HibRole role : node.getRolesWithPerm(READ_PUBLISHED_PERM)) {
+			for (HibRole role : toNode(node).getRolesWithPerm(READ_PUBLISHED_PERM)) {
 				roleUuids.add(role.getUuid());
 			}
 		}
@@ -456,7 +456,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	 * @param type
 	 * @return
 	 */
-	public JsonObject toPermissionPartial(Node node, ContainerType type) {
+	public JsonObject toPermissionPartial(HibNode node, ContainerType type) {
 		JsonObject document = new JsonObject();
 		addPermissionInfo(document, node, type);
 		return document;

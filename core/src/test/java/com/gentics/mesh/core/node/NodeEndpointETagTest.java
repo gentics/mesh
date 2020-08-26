@@ -13,8 +13,8 @@ import static org.junit.Assert.assertNull;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -155,8 +155,9 @@ public class NodeEndpointETagTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			String actualEtag = callETag(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid()));
-			String etag = node.getETag(mockActionContext());
+			String etag = nodeDao.getETag(node, mockActionContext());
 			assertEquals(etag, actualEtag);
 
 			// Check whether 304 is returned for correct etag

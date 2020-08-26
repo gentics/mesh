@@ -327,7 +327,7 @@ public interface ContentDaoWrapper extends ContentDao {
 	 * @param type
 	 * @return
 	 */
-	default NodeGraphFieldContainer findVersion(Node node, InternalActionContext ac, List<String> languageTags, ContainerType type) {
+	default NodeGraphFieldContainer findVersion(HibNode node, InternalActionContext ac, List<String> languageTags, ContainerType type) {
 		return findVersion(node, ac, languageTags, type.getHumanCode());
 	}
 
