@@ -17,10 +17,17 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.4.13]]
+== 1.4.13 (26.08.2020)
+
+icon:plus[] Plugins: The default plugin timeout has been increased from 15 seconds to two minutes.
+
+icon:plus[] Monitoring: The readiness probe will now also check for plugin status. Failed plugin deployments will let the readiness probe fail.
+
 [[v1.4.12]]
 == 1.4.12 (17.07.2020)
 
-icon:check[] Clustering: The link:{{< relref "clustering.asciidoc" >}}#_cluster_coordination[cluster coordinator] will now detect changes caused by the OAuth token mapping and will redirect the request if necessary. Thus this change allows the use of the `CUD` mode when using request coordination in combination with authentication plugins.
+icon:check[] Clustering: The link:{{< relref "clustering.asciidoc" >}#_cluster_coordination[cluster coordinator] will now detect changes caused by the OAuth token mapping and will redirect the request if necessary. Thus this change allows the use of the `CUD` mode when using request coordination in combination with authentication plugins.
 
 icon:plus[] Clustering: When using the cluster coordinator, forwarded requests will now contain the link:{{< relref "image-manipulation.asciidoc" >}}#_headers[`X-Mesh-Forwarded-From` header].
 
@@ -47,4 +54,3 @@ icon:check[] Clustering: The write lock was removed from the `DELETE /api/v2/adm
 == 1.3.4 (11.05.2020)
 
 CAUTION: Microschema migrations since version 1.2.0 are very likely to cause a loss of data in nodes that contain micronodes of the migrated schema. This bug has been fixed in this version. At the first start with this version or higher, Gentics Mesh will try to restore affected nodes in projects with a single branch. However, because some data cannot be restored, we advise to restore a backup of a moment before the microschema migration, if possible. We apologize for the inconvenience.
-
