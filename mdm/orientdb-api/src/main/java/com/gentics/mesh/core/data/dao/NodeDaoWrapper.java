@@ -10,6 +10,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
@@ -28,8 +29,11 @@ import com.gentics.mesh.path.Path;
 
 public interface NodeDaoWrapper extends NodeDao, DaoWrapper<HibNode>, DaoTransformable<HibNode, NodeResponse> {
 
+	HibNode loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, InternalPermission perm);
+
 	/**
 	 * Finds a node in a project by its uuid.
+	 * 
 	 * @param project
 	 * @param uuid
 	 * @return The found node. Null if the node could not be found in the project.
@@ -124,7 +128,8 @@ public interface NodeDaoWrapper extends NodeDao, DaoWrapper<HibNode>, DaoTransfo
 	 * @param pagingParameter
 	 * @return
 	 */
-	TransformablePage<? extends HibNode> getChildren(HibNode node, InternalActionContext ac, List<String> languageTags, String branchUuid, ContainerType type,
+	TransformablePage<? extends HibNode> getChildren(HibNode node, InternalActionContext ac, List<String> languageTags, String branchUuid,
+		ContainerType type,
 		PagingParameters pagingParameter);
 
 	/**
@@ -252,7 +257,8 @@ public interface NodeDaoWrapper extends NodeDao, DaoWrapper<HibNode>, DaoTransfo
 	Path resolvePath(HibNode baseNode, String branchUuid, ContainerType type, Path nodePath, Stack<String> pathStack);
 
 	/**
-	 * Delete the node. Please use {@link ContentDaoWrapper#deleteFromBranch(InternalActionContext, HibBranch, BulkActionContext, boolean)} if you want to delete the node just from a specific branch.
+	 * Delete the node. Please use {@link ContentDaoWrapper#deleteFromBranch(InternalActionContext, HibBranch, BulkActionContext, boolean)} if you want to
+	 * delete the node just from a specific branch.
 	 *
 	 * @param bac
 	 * @param ignoreChecks
@@ -297,4 +303,5 @@ public interface NodeDaoWrapper extends NodeDao, DaoWrapper<HibNode>, DaoTransfo
 	String getETag(HibNode node, InternalActionContext ac);
 
 	String getAPIPath(HibNode node, InternalActionContext ac);
+
 }

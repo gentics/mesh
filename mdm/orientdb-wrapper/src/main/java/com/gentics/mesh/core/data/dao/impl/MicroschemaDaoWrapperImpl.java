@@ -273,4 +273,14 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 		return toMicroschema(schema).getETag(ac);
 	}
 
+	@Override
+	public HibMicroschema findByUuidGlobal(String uuid) {
+		return boot.get().microschemaContainerRoot().findByUuid(uuid);
+	}
+
+	@Override
+	public long computeGlobalCount() {
+		return boot.get().microschemaContainerRoot().computeCount();
+	}
+
 }

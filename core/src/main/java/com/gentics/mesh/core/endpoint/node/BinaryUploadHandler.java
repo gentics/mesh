@@ -20,7 +20,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.binary.BinaryDataProcessor;
 import com.gentics.mesh.core.binary.BinaryProcessorRegistryImpl;
-import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.Binary;
@@ -269,7 +269,7 @@ public class BinaryUploadHandler extends AbstractHandler {
 				if (binary == null) {
 					binary = binaries.create(binaryUuid, hash, upload.size()).runInExistingTx(tx);
 				}
-				Language language = tx.data().languageDao().findByLanguageTag(languageTag);
+				HibLanguage language = tx.data().languageDao().findByLanguageTag(languageTag);
 				if (language == null) {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
 				}

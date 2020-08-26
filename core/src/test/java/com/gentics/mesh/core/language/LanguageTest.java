@@ -10,6 +10,7 @@ import static org.junit.Assert.fail;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
@@ -32,7 +33,7 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 	public void testTransformToReference() throws Exception {
 	}
 
-	public Language englishLang() {
+	public HibLanguage englishLang() {
 		try (Tx tx = tx()) {
 			return tx.data().languageDao().findByLanguageTag("en");
 		}
@@ -44,13 +45,13 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 		try (Tx tx = tx()) {
 			LanguageDaoWrapper languageDao = tx.data().languageDao();
 
-			long nLanguagesBefore = languageDao.computeCount();
+			long nLanguagesBefore = languageDao.computeGlobalCount();
 
 			final String languageName = "klingon";
 			final String languageTag = "tlh";
 			assertNotNull(languageDao.create(languageName, languageTag));
 
-			long nLanguagesAfter = languageDao.computeCount();
+			long nLanguagesAfter = languageDao.computeGlobalCount();
 			assertEquals(nLanguagesBefore + 1, nLanguagesAfter);
 		}
 	}
@@ -158,7 +159,7 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 	@Override
 	public void testRead() {
 		try (Tx tx = tx()) {
-			Language language = englishLang();
+			HibLanguage language = englishLang();
 			assertNotNull(language.getName());
 			assertEquals("English", language.getName());
 			assertNotNull(language.getNativeName());
@@ -172,16 +173,16 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 	@Override
 	public void testCreate() {
 		try (Tx tx = tx()) {
-			LanguageRoot languageRoot = meshRoot().getLanguageRoot();
+			LanguageDaoWrapper languageDao = tx.data().languageDao();
 			final String languageTag = "tlh";
 			final String languageName = "klingon";
-			Language lang = languageRoot.create(languageName, languageTag);
+			HibLanguage lang = languageDao.create(languageName, languageTag);
 
-			lang = languageRoot.findByName(languageName);
+			lang = languageDao.findByName(languageName);
 			assertNotNull(lang);
 			assertEquals(languageName, lang.getName());
 
-			assertNotNull(languageRoot.findByLanguageTag(languageTag));
+			assertNotNull(languageDao.findByLanguageTag(languageTag));
 		}
 	}
 

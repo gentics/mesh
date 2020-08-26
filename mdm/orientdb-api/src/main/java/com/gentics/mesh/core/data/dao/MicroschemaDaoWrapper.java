@@ -24,7 +24,7 @@ import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 
-public interface MicroschemaDaoWrapper extends MicroschemaDao {
+public interface MicroschemaDaoWrapper extends MicroschemaDao, DaoWrapper<HibMicroschema> {
 
 	HibMicroschema loadObjectByUuid(InternalActionContext ac, String schemaUuid, InternalPermission perm);
 

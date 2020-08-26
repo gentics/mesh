@@ -28,7 +28,7 @@ import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
@@ -273,7 +273,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		userRoot.inheritRolePermissions(requestUser, parentNode, node);
 
 		// Create the language specific graph field container for the node
-		Language language = Tx.get().data().languageDao().findByLanguageTag(requestModel.getLanguage());
+		HibLanguage language = Tx.get().data().languageDao().findByLanguageTag(requestModel.getLanguage());
 		if (language == null) {
 			throw error(BAD_REQUEST, "language_not_found", requestModel.getLanguage());
 		}

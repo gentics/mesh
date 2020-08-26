@@ -6,6 +6,8 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.NotImplementedException;
+
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.Binary;
@@ -22,7 +24,7 @@ import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
 
 @Singleton
-public class BinaryDaoWrapperImpl extends AbstractDaoWrapper implements BinaryDaoWrapper {
+public class BinaryDaoWrapperImpl extends AbstractDaoWrapper<Binary> implements BinaryDaoWrapper {
 
 	private final Binaries binaries;
 
@@ -65,5 +67,15 @@ public class BinaryDaoWrapperImpl extends AbstractDaoWrapper implements BinaryDa
 	@Override
 	public TraversalResult<BinaryGraphField> findFields(Binary binary) {
 		return binary.findFields();
+	}
+
+	@Override
+	public Binary findByUuidGlobal(String uuid) {
+		throw new NotImplementedException("Not supported");
+	}
+
+	@Override
+	public long computeGlobalCount() {
+		throw new NotImplementedException("Not supported");
 	}
 }

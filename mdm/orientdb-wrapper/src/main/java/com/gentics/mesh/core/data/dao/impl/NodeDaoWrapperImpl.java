@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.dao.impl;
 
 import static com.gentics.mesh.core.data.util.HibClassConverter.toNode;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toProject;
 
 import java.util.List;
 import java.util.Stack;
@@ -14,10 +15,13 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -36,12 +40,16 @@ import com.gentics.mesh.path.Path;
 import dagger.Lazy;
 
 @Singleton
-public class NodeDaoWrapperImpl implements NodeDaoWrapper {
-	private final Lazy<BootstrapInitializer> boot;
+public class NodeDaoWrapperImpl extends AbstractDaoWrapper<HibNode> implements NodeDaoWrapper {
 
 	@Inject
-	public NodeDaoWrapperImpl(Lazy<BootstrapInitializer> boot) {
-		this.boot = boot;
+	public NodeDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionProperties> permissions) {
+		super(boot, permissions);
+	}
+
+	@Override
+	public HibNode loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, InternalPermission perm) {
+		return toProject(project).getNodeRoot().loadObjectByUuid(ac, uuid, perm);
 	}
 
 	@Override
@@ -212,4 +220,5 @@ public class NodeDaoWrapperImpl implements NodeDaoWrapper {
 	public String getETag(HibNode node, InternalActionContext ac) {
 		return toNode(node).getETag(ac);
 	}
+
 }

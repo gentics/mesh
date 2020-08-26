@@ -187,8 +187,7 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 				HibCoreElement element = getMeshCoreElement(env.getSource());
 
 				UserDaoWrapper userDao = Tx.get().data().userDao();
-				userDao.getPermissionInfo(gc.getUser(), element);
-				return element.getRolePermissions(gc, env.getArgument("role"));
+				return userDao.getRolePermissions(element, gc, env.getArgument("role"));
 			})
 		);
 

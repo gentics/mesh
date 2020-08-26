@@ -1,13 +1,13 @@
 package com.gentics.mesh.core.data.dao;
 
-import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.HibLanguage;
 
-public interface LanguageDaoWrapper extends LanguageDao {
+public interface LanguageDaoWrapper extends LanguageDao, DaoGlobal<HibLanguage> {
 
-	Language findByLanguageTag(String tag);
+	HibLanguage findByLanguageTag(String tag);
 
-	long computeCount();
+	HibLanguage create(String languageName, String languageTag);
 
-	Language create(String languageName, String languageTag);
+	HibLanguage findByName(String name);
 
 }

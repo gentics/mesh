@@ -9,6 +9,8 @@ import java.util.function.Predicate;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.NotImplementedException;
+
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -141,6 +143,16 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper<HibJob> implements Job
 	@Override
 	public void clear() {
 		boot.get().jobRoot().clear();
+	}
+
+	@Override
+	public long computeGlobalCount() {
+		return boot.get().jobRoot().computeCount();
+	}
+
+	@Override
+	public HibJob findByUuidGlobal(String uuid) {
+		return boot.get().jobRoot().findByUuid(uuid);
 	}
 
 }

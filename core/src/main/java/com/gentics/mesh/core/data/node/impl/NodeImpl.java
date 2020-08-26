@@ -62,7 +62,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.BranchParentEntry;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
-import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.TagEdge;
@@ -1632,7 +1632,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		NodeParameters nodeParameters = ac.getNodeParameters();
 		nodeParameters.setLanguages(languageTag);
 
-		Language language = Tx.get().data().languageDao().findByLanguageTag(languageTag);
+		HibLanguage language = Tx.get().data().languageDao().findByLanguageTag(languageTag);
 		if (language == null) {
 			throw error(BAD_REQUEST, "error_language_not_found", requestModel.getLanguage());
 		}

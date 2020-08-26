@@ -21,7 +21,7 @@ import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.elasticsearch.client.okhttp.RequestBuilder;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.NodeDAOActions;
-import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -138,7 +138,7 @@ public class NodeSearchHandler extends AbstractSearchHandler<HibNode, NodeRespon
 						continue;
 					}
 
-					Language language = tx.data().languageDao().findByLanguageTag(languageTag);
+					HibLanguage language = tx.data().languageDao().findByLanguageTag(languageTag);
 					if (language == null) {
 						log.warn("Could not find language {" + languageTag + "}");
 						totalCount--;
