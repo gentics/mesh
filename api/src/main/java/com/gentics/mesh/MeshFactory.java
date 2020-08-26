@@ -22,5 +22,4 @@ public interface MeshFactory {
 	 * @return Mesh instance
 	 */
 	Mesh create(MeshOptions options);
-
 }

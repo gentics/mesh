@@ -42,7 +42,7 @@ import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.crypto.KeyStoreHelper;
-import com.gentics.mesh.dagger.DaggerMeshComponent;
+import com.gentics.mesh.dagger.DaggerOrientDBMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
@@ -672,7 +672,7 @@ public class MeshTestContext extends TestWatcher {
 		log.info("Initializing dagger context");
 		try {
 			mesh = Mesh.create(options);
-			meshDagger = DaggerMeshComponent.builder()
+			meshDagger = DaggerOrientDBMeshComponent.builder()
 				.configuration(options)
 				.searchProviderType(settings.elasticsearch().toSearchProviderType())
 				.mesh(mesh)
