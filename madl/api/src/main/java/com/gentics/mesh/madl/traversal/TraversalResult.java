@@ -19,6 +19,8 @@ public class TraversalResult<T> implements Iterable<T> {
 
 	private Iterable<T> it;
 
+	private final static TraversalResult<?> EMPTY = new TraversalResult<>(Stream.empty());
+
 	public TraversalResult() {
 	}
 
@@ -81,5 +83,9 @@ public class TraversalResult<T> implements Iterable<T> {
 		} else {
 			return null;
 		}
+	}
+
+	public static <T> TraversalResult<T> empty() {
+		return (TraversalResult<T>)EMPTY;
 	}
 }

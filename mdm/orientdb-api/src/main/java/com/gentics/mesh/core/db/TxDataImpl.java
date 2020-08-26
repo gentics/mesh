@@ -1,4 +1,4 @@
-package com.syncleus.ferma.ext.orientdb3;
+package com.gentics.mesh.core.db;
 
 import com.gentics.mesh.core.action.BranchDAOActions;
 import com.gentics.mesh.core.action.GroupDAOActions;
@@ -24,7 +24,6 @@ import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
-import com.gentics.mesh.core.db.TxData;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.CacheConfig;
 import com.gentics.mesh.etc.config.ClusterOptions;
@@ -39,13 +38,13 @@ import com.gentics.mesh.etc.config.MonitoringConfig;
 import com.gentics.mesh.etc.config.VertxOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 
-public class OrientTxData implements TxData {
+public class TxDataImpl implements TxData {
 
 	private final DaoCollection daos;
 
 	private final MeshOptions options;
 
-	public OrientTxData(MeshOptions options, DaoCollection daoCollection) {
+	public TxDataImpl(MeshOptions options, DaoCollection daoCollection) {
 		this.options = options;
 		this.daos = daoCollection;
 	}

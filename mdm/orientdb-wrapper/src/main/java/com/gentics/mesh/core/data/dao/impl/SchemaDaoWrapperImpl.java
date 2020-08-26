@@ -98,9 +98,10 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 	}
 
 	@Override
-	public TraversalResult<? extends Schema> findAll() {
+	public TraversalResult<HibSchema> findAll() {
 		SchemaRoot schemaRoot = boot.get().schemaContainerRoot();
-		return schemaRoot.findAll();
+		// TODO findAll should not return wildcard generics
+		return (TraversalResult<HibSchema>)(TraversalResult<?>)schemaRoot.findAll();
 	}
 
 	@Override
@@ -282,9 +283,9 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 	}
 
 	@Override
-	public Iterable<? extends SchemaVersion> findAllVersions(HibSchema schema) {
+	public Iterable<SchemaVersion> findAllVersions(HibSchema schema) {
 		Schema graphSchema = toSchema(schema);
-		return boot.get().schemaContainerRoot().findAllVersions(graphSchema);
+		return (Iterable<SchemaVersion>)(Iterable<?>)boot.get().schemaContainerRoot().findAllVersions(graphSchema);
 	}
 
 	@Override

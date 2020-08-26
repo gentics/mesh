@@ -43,7 +43,6 @@ import com.gentics.mesh.changelog.ReindexAction;
 import com.gentics.mesh.changelog.highlevel.HighLevelChangelogSystem;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
 import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
@@ -251,13 +250,18 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	private boolean initLocalData(MeshOptions configuration, boolean isJoiningCluster) throws Exception {
 		boolean isEmptyInstallation = isEmptyInstallation();
 		if (isEmptyInstallation) {
-			// Update graph indices and vertex types (This may take some time)
-			DatabaseHelper.init(db);
+			if (db.requiresTypeInit()) {
+				// Update graph indices and vertex types (This may take some time)
+				DatabaseHelper.init(db);
+			}
 			// Setup mandatory data (e.g.: mesh root, project root, user root etc., admin user/role/group)
 			initMandatoryData(configuration);
 			initOptionalLanguages(configuration);
 			initOptionalData(isEmptyInstallation);
-			initPermissions();
+			// TODO Initialize types
+			if (db.requiresTypeInit()) {
+				initPermissions();
+			}
 			handleMeshVersion();
 
 			// Mark all changelog entries as applied for new installations
@@ -711,7 +715,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Override
 	public boolean isEmptyInstallation() {
-		return db.tx(tx -> !tx.getGraph().v().hasNext());
+		return db.isEmptyDatabase();
 	}
 
 	@Override
@@ -929,20 +933,22 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			UserDaoWrapper userDao = tx.data().userDao();
 			GroupDaoWrapper groupDao = tx.data().groupDao();
 			RoleDaoWrapper roleDao = tx.data().roleDao();
-
-			MeshRoot meshRoot = meshRoot();
-
-			// Create the initial root vertices
-			meshRoot.getTagRoot();
-			meshRoot.getTagFamilyRoot();
-			meshRoot.getProjectRoot();
-			meshRoot.getLanguageRoot();
-			meshRoot.getJobRoot();
-			meshRoot.getChangelogRoot();
-
-			GroupRoot groupRoot = meshRoot.getGroupRoot();
-			RoleRoot roleRoot = meshRoot.getRoleRoot();
 			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+
+			if (db.requiresTypeInit()) {
+				MeshRoot meshRoot = meshRoot();
+
+				// Create the initial root vertices
+				meshRoot.getTagRoot();
+				meshRoot.getTagFamilyRoot();
+				meshRoot.getProjectRoot();
+				meshRoot.getLanguageRoot();
+				meshRoot.getJobRoot();
+				meshRoot.getChangelogRoot();
+
+				meshRoot.getGroupRoot();
+				meshRoot.getRoleRoot();
+			}
 
 			// Verify that an admin user exists
 			HibUser adminUser = userDao.findByUsername(ADMIN_USERNAME);
@@ -1063,22 +1069,24 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				log.debug("Created schema container {" + schema.getName() + "} uuid: {" + binarySchemaContainer.getUuid() + "}");
 			}
 
-			HibGroup adminGroup = groupRoot.findByName("admin");
+			HibGroup adminGroup = groupDao.findByName("admin");
 			if (adminGroup == null) {
 				adminGroup = groupDao.create("admin", adminUser);
 				groupDao.addUser(adminGroup, adminUser);
 				log.debug("Created admin group {" + adminGroup.getUuid() + "}");
 			}
 
-			HibRole adminRole = roleRoot.findByName("admin");
+			HibRole adminRole = roleDao.findByName("admin");
 			if (adminRole == null) {
 				adminRole = roleDao.create("admin", adminUser);
 				groupDao.addRole(adminGroup, adminRole);
 				log.debug("Created admin role {" + adminRole.getUuid() + "}");
 			}
 
-			LanguageRoot languageRoot = meshRoot.getLanguageRoot();
-			initLanguages(languageRoot);
+			if (db.requiresTypeInit()) {
+				LanguageRoot languageRoot = meshRoot.getLanguageRoot();
+				initLanguages(languageRoot);
+			}
 
 			schemaStorage.init();
 			tx.success();
@@ -1096,7 +1104,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				GroupDaoWrapper groupDao = tx.data().groupDao();
 				RoleDaoWrapper roleDao = tx.data().roleDao();
 
-				meshRoot = meshRoot();
+				if (db.requiresTypeInit()) {
+					meshRoot = meshRoot();
+				}
 
 				// Verify that an anonymous user exists
 				HibUser anonymousUser = userDao.findByUsername("anonymous");
@@ -1110,16 +1120,14 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 					log.debug("Created anonymous user {" + anonymousUser.getUuid() + "}");
 				}
 
-				GroupRoot groupRoot = meshRoot.getGroupRoot();
-				HibGroup anonymousGroup = groupRoot.findByName("anonymous");
+				HibGroup anonymousGroup = groupDao.findByName("anonymous");
 				if (anonymousGroup == null) {
 					anonymousGroup = groupDao.create("anonymous", anonymousUser);
 					groupDao.addUser(anonymousGroup, anonymousUser);
 					log.debug("Created anonymous group {" + anonymousGroup.getUuid() + "}");
 				}
 
-				RoleRoot roleRoot = meshRoot.getRoleRoot();
-				anonymousRole = roleRoot.findByName("anonymous");
+				anonymousRole = roleDao.findByName("anonymous");
 				if (anonymousRole == null) {
 					anonymousRole = roleDao.create("anonymous", anonymousUser);
 					groupDao.addRole(anonymousGroup, anonymousRole);
@@ -1135,7 +1143,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	public void initPermissions() {
 		db.tx(tx -> {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
-			Role adminRole = meshRoot().getRoleRoot().findByName("admin");
+			HibRole adminRole = roleDao.findByName("admin");
 			for (Vertex vertex : tx.getGraph().getVertices()) {
 				WrappedVertex wrappedVertex = (WrappedVertex) vertex;
 				MeshVertex meshVertex = tx.getGraph().frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);

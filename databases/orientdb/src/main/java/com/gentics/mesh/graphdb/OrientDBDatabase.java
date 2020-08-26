@@ -659,4 +659,13 @@ public class OrientDBDatabase extends AbstractDatabase {
 		return writeLock;
 	}
 
+	@Override
+	public boolean isEmptyDatabase() {
+		return tx(tx -> !tx.getGraph().v().hasNext());
+	}
+
+	@Override
+	public boolean requiresTypeInit() {
+		return true;
+	}
 }

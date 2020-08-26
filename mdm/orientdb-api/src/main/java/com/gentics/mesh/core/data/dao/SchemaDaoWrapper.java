@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data.dao;
 
 import java.util.Iterator;
 import java.util.Map;
-import java.util.stream.Stream;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -37,7 +36,7 @@ public interface SchemaDaoWrapper extends SchemaDao, DaoWrapper<HibSchema> {
 
 	HibSchema loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound);
 
-	TraversalResult<? extends HibSchema> findAll();
+	TraversalResult<HibSchema> findAll();
 
 	TransformablePage<? extends HibSchema> findAll(InternalActionContext ac, PagingParameters pagingInfo);
 
@@ -127,7 +126,7 @@ public interface SchemaDaoWrapper extends SchemaDao, DaoWrapper<HibSchema> {
 	 *
 	 * @return
 	 */
-	Iterable<? extends SchemaVersion> findAllVersions(HibSchema schema);
+	Iterable<SchemaVersion> findAllVersions(HibSchema schema);
 
 	/**
 	 * Assign the schema to the project.
