@@ -13,6 +13,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.EditorTrackingVertex;
+import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.TransformableElement;
@@ -167,10 +168,10 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 			.type(new GraphQLTypeReference(PERM_INFO_TYPE_NAME))
 			.dataFetcher(env -> {
 				GraphQLContext gc = env.getContext();
-				MeshCoreVertex<?, ?> vertex = getMeshCoreVertex(env.getSource());
+				HibCoreElement element = getMeshCoreElement(env.getSource());
 
 				UserDaoWrapper userDao = Tx.get().data().userDao();
-				return userDao.getPermissionInfo(gc.getUser(), vertex);
+				return userDao.getPermissionInfo(gc.getUser(), element);
 			})
 		);
 
@@ -183,11 +184,11 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 			)
 			.dataFetcher(env -> {
 				GraphQLContext gc = env.getContext();
-				MeshCoreVertex<?, ?> vertex = getMeshCoreVertex(env.getSource());
+				HibCoreElement element = getMeshCoreElement(env.getSource());
 
 				UserDaoWrapper userDao = Tx.get().data().userDao();
-				userDao.getPermissionInfo(gc.getUser(), vertex);
-				return vertex.getRolePermissions(gc, env.getArgument("role"));
+				userDao.getPermissionInfo(gc.getUser(), element);
+				return element.getRolePermissions(gc, env.getArgument("role"));
 			})
 		);
 
@@ -254,13 +255,13 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 		}
 	}
 
-	private MeshCoreVertex<?, ?> getMeshCoreVertex(Object source) {
+	private HibCoreElement getMeshCoreElement(Object source) {
 		if (source instanceof NodeContent) {
 			return ((NodeContent) source).getNode();
 		} else if (source instanceof SchemaVersion) {
 			return ((SchemaVersion) source).getSchemaContainer();
 		} else {
-			return (MeshCoreVertex<?, ?>) source;
+			return (HibCoreElement) source;
 		}
 	}
 

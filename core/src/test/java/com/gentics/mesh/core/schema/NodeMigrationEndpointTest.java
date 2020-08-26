@@ -2,6 +2,7 @@ package com.gentics.mesh.core.schema;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toNode;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toSchemaVersion;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
@@ -491,7 +492,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 		int nFieldContainers = tx(tx -> {
 			HibSchemaVersion schemaVersion = node.getSchemaContainer().getLatestVersion();
-			return Long.valueOf(schemaVersion.getFieldContainers(initialBranchUuid())
+			return Long.valueOf(toSchemaVersion(schemaVersion).getFieldContainers(initialBranchUuid())
 				.filter(c -> c.isPublished() || c.isPublished())
 				.count()).intValue();
 		});

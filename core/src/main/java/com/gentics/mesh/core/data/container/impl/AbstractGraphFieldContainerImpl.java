@@ -25,7 +25,6 @@ import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.impl.GraphFieldTypes;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Micronode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
 import com.gentics.mesh.core.data.node.field.DateGraphField;
@@ -79,7 +78,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	 * 
 	 * @return
 	 */
-	abstract protected Node getNode();
+	abstract protected HibNode getNode();
 
 	@Override
 	public StringGraphField createString(String key) {

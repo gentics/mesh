@@ -17,6 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
@@ -42,8 +43,8 @@ import com.gentics.mesh.parameter.value.FieldsSet;
 import dagger.Lazy;
 import io.vertx.core.logging.Logger;
 
-// TODO there is no tag family root since the tag itself is the root. 
-public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper implements TagFamilyDaoWrapper {
+public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper<HibTagFamily> implements TagFamilyDaoWrapper {
+
 	private static final Logger log = getLogger(TagFamilyDaoWrapperImpl.class);
 
 	@Inject
@@ -115,10 +116,6 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper implements TagFa
 
 		return restTagFamily;
 
-	}
-
-	public void setRolePermissions(MeshVertex vertex, InternalActionContext ac, GenericRestResponse model) {
-		model.setRolePerms(permissions.get().getRolePermissions(vertex, ac, ac.getRolePermissionParameters().getRoleUuid()));
 	}
 
 	@Override

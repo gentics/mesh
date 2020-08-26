@@ -27,4 +27,6 @@ public interface HibNode extends HibCoreElement, HibCreatorTracking, HibInNode {
 
 	void setSchemaContainer(HibSchema container);
 
+	void removeElement();
+
 }

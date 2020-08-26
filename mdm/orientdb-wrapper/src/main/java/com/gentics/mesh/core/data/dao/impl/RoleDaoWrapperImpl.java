@@ -50,7 +50,7 @@ import com.gentics.mesh.parameter.value.FieldsSet;
 import dagger.Lazy;
 
 @Singleton
-public class RoleDaoWrapperImpl extends AbstractDaoWrapper implements RoleDaoWrapper {
+public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements RoleDaoWrapper {
 
 	private final Lazy<PermissionCache> permissionCache;
 

@@ -13,6 +13,8 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.group.HibGroup;
+import com.gentics.mesh.core.data.job.HibJob;
+import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -79,12 +81,22 @@ public final class HibClassConverter {
 		return checkAndCast(role, Role.class);
 	}
 
+	/**
+	 * @param node
+	 * @return
+	 * @deprecated Use {@link #toNode(HibNode)} instead.
+	 */
+	@Deprecated
 	public static Node toNode(HibInNode node) {
 		return checkAndCast(node, Node.class);
 	}
 
 	public static Node toNode(HibNode node) {
 		return checkAndCast(node, Node.class);
+	}
+
+	public static Job toJob(HibJob job) {
+		return checkAndCast(job, Job.class);
 	}
 
 	@SuppressWarnings("unchecked")

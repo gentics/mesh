@@ -53,7 +53,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 
 import dagger.Lazy;
 
-public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper implements MicroschemaDaoWrapper {
+public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema> implements MicroschemaDaoWrapper {
 
 	private final MicroschemaComparator comparator;
 

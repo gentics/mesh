@@ -53,7 +53,7 @@ public class GraphQLContextImpl extends InternalRoutingActionContextImpl impleme
 	public boolean hasReadPerm(NodeGraphFieldContainer container) {
 		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 		HibNode node = contentDao.getNode(container);
-		Object nodeId = node.id();
+		Object nodeId = node.getId();
 		UserDaoWrapper userDao = Tx.get().data().userDao();
 
 		if (userDao.hasPermissionForId(getUser(), nodeId, InternalPermission.READ_PERM)) {

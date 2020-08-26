@@ -59,7 +59,7 @@ import dagger.Lazy;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-public class TagDaoWrapperImpl extends AbstractDaoWrapper implements TagDaoWrapper {
+public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements TagDaoWrapper {
 
 	private static final Logger log = LoggerFactory.getLogger(TagDaoWrapperImpl.class);
 

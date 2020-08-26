@@ -533,9 +533,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public TraversalResult<Node> getChildren() {
 		return new TraversalResult<>(graph.frameExplicit(db().getVertices(
 			NodeImpl.class,
-			new String[]{PARENTS_KEY_PROPERTY},
-			new Object[]{getUuid()}
-		), NodeImpl.class));
+			new String[] { PARENTS_KEY_PROPERTY },
+			new Object[] { getUuid() }), NodeImpl.class));
 	}
 
 	@Override
@@ -546,9 +545,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	private Iterator<Vertex> getUnframedChildren(String branchUuid) {
 		return db().getVertices(
 			NodeImpl.class,
-			new String[]{BRANCH_PARENTS_KEY_PROPERTY},
-			new Object[]{branchParentEntry(branchUuid, getUuid()).encode()}
-		);
+			new String[] { BRANCH_PARENTS_KEY_PROPERTY },
+			new Object[] { branchParentEntry(branchUuid, getUuid()).encode() });
 	}
 
 	@Override
@@ -731,7 +729,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * @param languageTags
 	 * @return
 	 */
-	private void setFields(InternalActionContext ac, HibBranch branch, NodeResponse restNode, int level, FieldsSet fieldsSet, String... languageTags) {
+	private void setFields(InternalActionContext ac, HibBranch branch, NodeResponse restNode, int level, FieldsSet fieldsSet,
+		String... languageTags) {
 		VersioningParameters versioiningParameters = ac.getVersioningParameters();
 		NodeParameters nodeParameters = ac.getNodeParameters();
 
@@ -1040,9 +1039,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 		for (Node child : nodes) {
 			if (child.getSchemaContainer().getLatestVersion().getSchema().getContainer()) {
-				builder.append(buildNavigationEtagKey(ac, (NodeImpl)child, maxDepth, level + 1, branchUuid, type));
+				builder.append(buildNavigationEtagKey(ac, (NodeImpl) child, maxDepth, level + 1, branchUuid, type));
 			} else if (parameters.isIncludeAll()) {
-				builder.append(buildNavigationEtagKey(ac, (NodeImpl)child, maxDepth, level, branchUuid, type));
+				builder.append(buildNavigationEtagKey(ac, (NodeImpl) child, maxDepth, level, branchUuid, type));
 			}
 		}
 		return builder.toString();
@@ -1096,7 +1095,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					currentElement.setChildren(new ArrayList<>());
 				}
 				currentElement.getChildren().add(childElement);
-				responses.add(buildNavigationResponse(ac, (NodeImpl)child, maxDepth, level + 1, navigation, childElement, branchUuid, type));
+				responses.add(buildNavigationResponse(ac, (NodeImpl) child, maxDepth, level + 1, navigation, childElement, branchUuid, type));
 			} else if (parameters.isIncludeAll()) {
 				// We found at least one child so lets create the array
 				if (currentElement.getChildren() == null) {
@@ -1104,7 +1103,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				}
 				NavigationElement childElement = new NavigationElement();
 				currentElement.getChildren().add(childElement);
-				responses.add(buildNavigationResponse(ac, (NodeImpl)child, maxDepth, level, navigation, childElement, branchUuid, type));
+				responses.add(buildNavigationResponse(ac, (NodeImpl) child, maxDepth, level, navigation, childElement, branchUuid, type));
 			}
 		}
 		return responses.get(responses.size() - 1);
@@ -1508,8 +1507,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			Map<Boolean, Set<String>> partitions = branchParents.stream()
 				.collect(Collectors.partitioningBy(
 					parent -> BranchParentEntry.fromString(parent).getBranchUuid().equals(branchUuid),
-					Collectors.toSet()
-				));
+					Collectors.toSet()));
 
 			Set<String> removedParents = partitions.get(true);
 			if (!removedParents.isEmpty()) {
@@ -1519,7 +1517,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 				String removedParent = BranchParentEntry.fromString(removedParents.iterator().next()).getParentUuid();
 				// If the removed parent is not parent of any other branch, remove it from the common parent set.
-				boolean parentStillExists = newParents.stream().anyMatch(parent -> BranchParentEntry.fromString(parent).getParentUuid().equals(removedParent));
+				boolean parentStillExists = newParents.stream()
+					.anyMatch(parent -> BranchParentEntry.fromString(parent).getParentUuid().equals(removedParent));
 				if (!parentStillExists) {
 					Set<String> parents = property(PARENTS_KEY_PROPERTY);
 					parents.remove(removedParent);
@@ -1570,8 +1569,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		NodeParameters nodeParameters = ac.getNodeParameters();
 		VersioningParameters versioningParameters = ac.getVersioningParameters();
 
-		NodeGraphFieldContainer container = findVersion(nodeParameters.getLanguageList(options()), ac.getBranch(getProject()).getUuid(), versioningParameters
-			.getVersion());
+		NodeGraphFieldContainer container = findVersion(nodeParameters.getLanguageList(options()), ac.getBranch(getProject()).getUuid(),
+			versioningParameters
+				.getVersion());
 		if (container == null) {
 			if (log.isDebugEnabled()) {
 				log.debug("Could not find any matching i18n field container for node {" + getUuid() + "}.");
@@ -1941,7 +1941,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			.iterator();
 		if (edges.hasNext()) {
 			GraphFieldContainerEdge edge = edges.next();
-			NodeImpl childNode = (NodeImpl)edge.getNode();
+			NodeImpl childNode = (NodeImpl) edge.getNode();
 			PathSegment pathSegment = childNode.getSegment(branchUuid, type, segment);
 			if (pathSegment != null) {
 				path.addSegment(pathSegment);
@@ -1978,8 +1978,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		ContainerType type = forVersion(versioiningParameters.getVersion());
 
 		Node parentNode = getParentNode(branch.getUuid());
-		NodeGraphFieldContainer container = findVersion(ac.getNodeParameters().getLanguageList(options()), branch.getUuid(), ac.getVersioningParameters()
-			.getVersion());
+		NodeGraphFieldContainer container = findVersion(ac.getNodeParameters().getLanguageList(options()), branch.getUuid(),
+			ac.getVersioningParameters()
+				.getVersion());
 
 		/**
 		 * branch uuid
@@ -2197,5 +2198,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		PermissionChangedProjectElementEventModel model = new PermissionChangedProjectElementEventModel();
 		fillPermissionChanged(model, role);
 		return model;
+	}
+
+	@Override
+	public void removeElement() {
+		remove();
 	}
 }

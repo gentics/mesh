@@ -14,6 +14,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
@@ -46,7 +47,7 @@ import dagger.Lazy;
 import io.vertx.core.Vertx;
 
 @Singleton
-public class LanguageDaoWrapperImpl extends AbstractDaoWrapper implements LanguageDaoWrapper {
+public class LanguageDaoWrapperImpl extends AbstractDaoWrapper<HibLanguage> implements LanguageDaoWrapper {
 
 	@Inject
 	public LanguageDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionProperties> permissions) {

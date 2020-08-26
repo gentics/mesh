@@ -57,7 +57,7 @@ public class ConsistencyCheckTest extends AbstractMeshTest {
 		assertEquals(ConsistencyRating.CONSISTENT, response.getResult());
 
 		tx(() -> {
-			content().remove();
+			content().removeElement();
 		});
 		response = call(() -> client().checkConsistency());
 		assertEquals(INCONSISTENT, response.getResult());
