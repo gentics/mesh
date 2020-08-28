@@ -41,6 +41,7 @@ import com.gentics.mesh.cache.CacheRegistryImpl;
 import com.gentics.mesh.changelog.ChangelogSystem;
 import com.gentics.mesh.changelog.ReindexAction;
 import com.gentics.mesh.changelog.highlevel.HighLevelChangelogSystem;
+import com.gentics.mesh.core.data.HibMeshVersion;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
@@ -656,14 +657,15 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				+ "} of Gentics Mesh. Be aware that this version could potentially alter your instance in unexpected ways.");
 		}
 		db.tx(tx -> {
-			String graphVersion = meshRoot().getMeshVersion();
+			HibMeshVersion meshVersion = tx.data().meshVersion();
+			String graphVersion = meshVersion.getMeshVersion();
 
 			// Check whether the information was already saved once. Otherwise set it.
 			if (graphVersion == null) {
 				if (log.isDebugEnabled()) {
 					log.debug("Mesh version was not yet stored. Saving current version {" + currentVersion + "}");
 				}
-				meshRoot().setMeshVersion(currentVersion);
+				meshVersion.setMeshVersion(currentVersion);
 				graphVersion = currentVersion;
 			}
 
@@ -695,7 +697,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			if (isVersionDowngrade) {
 				// We need to check the database revision. If the stored database revision matches up the needed rev of this jar we can allow the downgrade.
 				String jarRev = db.getDatabaseRevision();
-				String dbRev = meshRoot().getDatabaseRevision();
+				String dbRev = meshVersion.getDatabaseRevision();
 				if (dbRev != null && jarRev.equals(dbRev)) {
 					log.info("Downgrade allowed since the database revision of {" + dbRev + "} matches the needed revision.");
 				} else {

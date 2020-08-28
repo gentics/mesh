@@ -9,6 +9,7 @@ import com.gentics.mesh.core.action.SchemaDAOActions;
 import com.gentics.mesh.core.action.TagDAOActions;
 import com.gentics.mesh.core.action.TagFamilyDAOActions;
 import com.gentics.mesh.core.action.UserDAOActions;
+import com.gentics.mesh.core.data.HibMeshVersion;
 import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
@@ -24,6 +25,7 @@ import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.db.TxData;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.CacheConfig;
@@ -42,12 +44,13 @@ import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 public class TxDataImpl implements TxData {
 
 	private final DaoCollection daos;
-
+	private final MeshRoot meshRoot;
 	private final MeshOptions options;
 
-	public TxDataImpl(MeshOptions options, DaoCollection daoCollection) {
+	public TxDataImpl(MeshOptions options, DaoCollection daoCollection, MeshRoot meshRoot) {
 		this.options = options;
 		this.daos = daoCollection;
+		this.meshRoot = meshRoot;
 	}
 
 	@Override
@@ -399,5 +402,10 @@ public class TxDataImpl implements TxData {
 	@Override
 	public ContentDaoWrapper contentDao() {
 		return daos.contentDao();
+	}
+
+	@Override
+	public HibMeshVersion meshVersion() {
+		return meshRoot;
 	}
 }
