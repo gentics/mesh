@@ -1,5 +1,6 @@
 package com.syncleus.ferma.ext.orientdb3;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.action.BranchDAOActions;
 import com.gentics.mesh.core.action.GroupDAOActions;
 import com.gentics.mesh.core.action.MicroschemaDAOActions;
@@ -25,7 +26,6 @@ import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
-import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.db.TxData;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.CacheConfig;
@@ -44,13 +44,13 @@ import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 public class TxDataImpl implements TxData {
 
 	private final DaoCollection daos;
-	private final MeshRoot meshRoot;
+	private final BootstrapInitializer boot;
 	private final MeshOptions options;
 
-	public TxDataImpl(MeshOptions options, DaoCollection daoCollection, MeshRoot meshRoot) {
+	public TxDataImpl(MeshOptions options, DaoCollection daoCollection, BootstrapInitializer boot) {
 		this.options = options;
 		this.daos = daoCollection;
-		this.meshRoot = meshRoot;
+		this.boot = boot;
 	}
 
 	@Override
@@ -406,6 +406,6 @@ public class TxDataImpl implements TxData {
 
 	@Override
 	public HibMeshVersion meshVersion() {
-		return meshRoot;
+		return boot.meshRoot();
 	}
 }
