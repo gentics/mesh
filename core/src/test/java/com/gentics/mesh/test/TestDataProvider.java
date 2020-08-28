@@ -25,12 +25,9 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
-import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
@@ -239,13 +236,13 @@ public class TestDataProvider {
 	 * @param tx
 	 */
 	private void addBootstrappedData(Tx tx) {
-		for (Group group : root.getGroupRoot().findAll()) {
+		for (HibGroup group : tx.data().groupDao().findAll()) {
 			groups.put(group.getName(), group);
 		}
-		for (User user : root.getUserRoot().findAll()) {
+		for (HibUser user : tx.data().userDao().findAll()) {
 			users.put(user.getUsername(), user);
 		}
-		for (Role role : root.getRoleRoot().findAll()) {
+		for (HibRole role : tx.data().roleDao().findAll()) {
 			roles.put(role.getName(), role);
 		}
 	}
