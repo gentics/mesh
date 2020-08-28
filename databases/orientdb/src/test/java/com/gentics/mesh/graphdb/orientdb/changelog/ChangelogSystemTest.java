@@ -26,6 +26,7 @@ import org.mockito.Mockito;
 
 import com.gentics.mesh.changelog.Change;
 import com.gentics.mesh.changelog.ChangelogSystem;
+import com.gentics.mesh.changelog.ChangelogSystemImpl;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.graphdb.cluster.OrientDBClusterManager;
@@ -107,7 +108,7 @@ public class ChangelogSystemTest {
 
 		Database db = getDatabase(options);
 		db.setupConnectionPool();
-		ChangelogSystem cls = new ChangelogSystem(db, options);
+		ChangelogSystem cls = new ChangelogSystemImpl(db, options);
 		List<Change> testChanges = Arrays.asList(new ChangeDummy2(), new ChangeDummy());
 		assertTrue("All changes should have been applied", cls.applyChanges(null, testChanges));
 		assertTrue("All changes should have been applied", cls.applyChanges(null, testChanges));

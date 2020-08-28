@@ -15,6 +15,10 @@ import com.gentics.mesh.cache.ProjectNameCache;
 import com.gentics.mesh.cache.ProjectNameCacheImpl;
 import com.gentics.mesh.cache.WebrootPathCache;
 import com.gentics.mesh.cache.WebrootPathCacheImpl;
+import com.gentics.mesh.changelog.ChangelogSystem;
+import com.gentics.mesh.changelog.ChangelogSystemImpl;
+import com.gentics.mesh.changelog.highlevel.HighLevelChangelogSystem;
+import com.gentics.mesh.changelog.highlevel.HighLevelChangelogSystemImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.context.BulkActionContext;
@@ -181,6 +185,12 @@ public abstract class BindModule {
 
 	@Binds
 	abstract DelegatingPluginRegistry bindPluginRegistry(DelegatingPluginRegistryImpl e);
+
+	@Binds
+	abstract ChangelogSystem bindChangelogSystem(ChangelogSystemImpl e);
+
+	@Binds
+	abstract HighLevelChangelogSystem bindHighLevelChangelogSystem(HighLevelChangelogSystemImpl e);
 
 	// Daos
 

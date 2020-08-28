@@ -195,6 +195,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	@Inject
 	public DaoCollection daoCollection;
 
+	@Inject
+	public ChangelogSystem changelogSystem;
+
 	private MeshRoot meshRoot;
 
 	// TODO: Changing the role name or deleting the role would cause code that utilizes this field to break.
@@ -723,8 +726,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	@Override
 	public void invokeChangelog() {
 		log.info("Invoking database changelog check...");
-		ChangelogSystem cls = new ChangelogSystem(db, options);
-		if (!cls.applyChanges(SYNC_INDEX_ACTION)) {
+		if (!changelogSystem.applyChanges(SYNC_INDEX_ACTION)) {
 			throw new RuntimeException("The changelog could not be applied successfully. See log above.");
 		}
 
@@ -735,14 +737,13 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		highlevelChangelogSystem.apply(meshRoot);
 
 		log.info("Changelog completed.");
-		cls.setCurrentVersionAndRev();
+		changelogSystem.setCurrentVersionAndRev();
 	}
 
 	@Override
 	public void markChangelogApplied() {
 		log.info("This is the initial setup.. marking all found changelog entries as applied");
-		ChangelogSystem cls = new ChangelogSystem(db, options);
-		cls.markAllAsApplied();
+		changelogSystem.markAllAsApplied();
 		highlevelChangelogSystem.markAllAsApplied(meshRoot);
 		log.info("All changes marked");
 	}
