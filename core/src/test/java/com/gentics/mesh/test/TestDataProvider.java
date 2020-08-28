@@ -43,7 +43,6 @@ import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.GroupRoot;
@@ -150,7 +149,6 @@ public class TestDataProvider {
 				setAdminPassword();
 			}
 			boot.initOptionalData(true);
-			tx.getGraph().commit();
 			schemaContainers.clear();
 			microschemaContainers.clear();
 			tagFamilies.clear();
@@ -161,7 +159,9 @@ public class TestDataProvider {
 			roles.clear();
 			groups.clear();
 
-			root = boot.meshRoot();
+			if (db.requiresTypeInit()) {
+				root = boot.meshRoot();
+			}
 
 			addBootstrappedData(tx);
 			addSchemaContainers();
