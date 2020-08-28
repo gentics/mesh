@@ -1,5 +1,6 @@
 package com.gentics.mesh.madl.traversal;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Spliterator;
@@ -19,7 +20,7 @@ public class TraversalResult<T> implements Iterable<T> {
 
 	private Iterable<T> it;
 
-	private final static TraversalResult<?> EMPTY = new TraversalResult<>(Stream.empty());
+	private final static TraversalResult<?> EMPTY = new TraversalResult<>(Collections::emptyIterator);
 
 	public TraversalResult() {
 	}
