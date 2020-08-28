@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_UPDATED;
 import static com.gentics.mesh.search.verticle.entity.MeshEntities.findElementByUuidStream;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
-import static com.gentics.mesh.util.StreamUtil.toStream;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -60,16 +59,16 @@ public class TagFamilyEventHandler implements EventHandler {
 					// We also need to update all tags of this family
 					Optional<HibTagFamily> tagFamily = entities.tagFamily.getElement(model);
 
-					Stream<SearchRequest> tagFamilyUpdate = toStream(tagFamily)
+					Stream<SearchRequest> tagFamilyUpdate = tagFamily.stream()
 						.map(tf -> entities.createRequest(tf, projectUuid));
 
-					Stream<SearchRequest> tagUpdates = toStream(tagFamily)
+					Stream<SearchRequest> tagUpdates = tagFamily.stream()
 						.flatMap(tf -> {
 							return tagDao.findAll(tf).stream();
 						})
 						.map(t -> entities.createRequest(t, projectUuid));
 
-					Stream<SearchRequest> nodeUpdates = toStream(tagFamily).flatMap(tf -> {
+					Stream<SearchRequest> nodeUpdates = tagFamily.stream().flatMap(tf -> {
 						return createNodeUpdates(model, tf);
 					});
 

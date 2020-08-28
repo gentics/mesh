@@ -1,7 +1,5 @@
 package com.gentics.mesh.dagger.module;
 
-import static com.gentics.mesh.util.StreamUtil.toStream;
-
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
@@ -16,7 +14,6 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MonitoringConfig;
-import com.gentics.mesh.util.StreamUtil;
 
 import dagger.Module;
 import dagger.Provides;
@@ -43,7 +40,7 @@ public class MicrometerModule {
 		List<Tag> tags = Stream.of(
 			createTag("nodeName", options.getNodeName()),
 			createTag("clusterName", options.getClusterOptions().getClusterName())
-		).flatMap(StreamUtil::toStream).collect(Collectors.toList());
+		).flatMap(Optional::stream).collect(Collectors.toList());
 
 		registry.config().commonTags(tags)
 			.meterFilter(MeterFilter.replaceTagValues(Label.HTTP_PATH.toString(), MicrometerModule::replacePath));
@@ -66,7 +63,7 @@ public class MicrometerModule {
 
 	private static String replacePath(String actualPath) {
 		return regexMatcher.stream()
-			.flatMap(regex -> toStream(regex.getAlias(actualPath)))
+			.flatMap(regex -> regex.getAlias(actualPath).stream())
 			.findAny()
 			.orElse("other");
 	}

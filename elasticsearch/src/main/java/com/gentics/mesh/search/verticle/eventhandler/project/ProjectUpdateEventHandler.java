@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.toFlowable;
-import static com.gentics.mesh.util.StreamUtil.toStream;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -67,7 +66,7 @@ public class ProjectUpdateEventHandler implements EventHandler {
 	 * @return
 	 */
 	private Flowable<SearchRequest> updateNodes(MeshElementEventModelImpl model) {
-		return Flowable.defer(() -> helper.getDb().transactional(tx -> toStream(entities.project.getElement(model))
+		return Flowable.defer(() -> helper.getDb().transactional(tx -> entities.project.getElement(model).stream()
 			.flatMap(project -> {
 				BranchDaoWrapper branchDao = tx.data().branchDao();
 				List<Branch> branches = (List<Branch>) branchDao.findAll(project).list();
@@ -99,7 +98,7 @@ public class ProjectUpdateEventHandler implements EventHandler {
 	 * @return
 	 */
 	private Flowable<SearchRequest> updateTags(MeshElementEventModelImpl model) {
-		return Flowable.defer(() -> helper.getDb().transactional(tx -> toStream(entities.project.getElement(model))
+		return Flowable.defer(() -> helper.getDb().transactional(tx -> entities.project.getElement(model).stream()
 			.flatMap(project -> project.getTagFamilyRoot().findAll().stream()
 				.flatMap(family -> Stream.concat(
 					Stream.of(createTagFamilyRequest(project, family)),

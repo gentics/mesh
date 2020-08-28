@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.rest.MeshEvent.GROUP_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.GROUP_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.GROUP_UPDATED;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
-import static com.gentics.mesh.util.StreamUtil.toStream;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -57,8 +56,8 @@ public class GroupEventHandler implements EventHandler {
 					GroupDaoWrapper groupDao = tx.data().groupDao();
 
 					return Stream.concat(
-						toStream(groupOptional).map(entities::createRequest),
-						toStream(groupOptional).flatMap(group -> groupDao.getUsers(group).stream()).map(entities::createRequest)
+						groupOptional.stream().map(entities::createRequest),
+						groupOptional.stream().flatMap(group -> groupDao.getUsers(group).stream()).map(entities::createRequest)
 					).collect(Util.toFlowable());
 				});
 			} else if (event == GROUP_DELETED) {

@@ -2,7 +2,6 @@ package com.gentics.mesh.search.verticle.entity;
 
 import static com.gentics.mesh.search.verticle.eventhandler.Util.latestVersionTypes;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.warningOptional;
-import static com.gentics.mesh.util.StreamUtil.toStream;
 
 import java.util.Map;
 import java.util.Optional;
@@ -240,7 +239,7 @@ public class MeshEntities {
 	 * @return
 	 */
 	public static <T extends MeshCoreVertex<? extends RestModel, T>> Stream<T> findElementByUuidStream(RootVertex<T> rootVertex, String uuid) {
-		return toStream(findElementByUuid(rootVertex, uuid));
+		return findElementByUuid(rootVertex, uuid).stream();
 	}
 
 	private <T extends MeshCoreVertex<? extends RestModel, T>> EventVertexMapper<T> byUuid(Function<String, T> elementLoader) {
