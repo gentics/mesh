@@ -56,11 +56,11 @@ import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
 import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.madl.field.FieldType;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -96,7 +96,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
-	public TraversalResult<? extends Language> getLanguages() {
+	public Result<? extends Language> getLanguages() {
 		return out(HAS_LANGUAGE, LanguageImpl.class);
 	}
 
@@ -297,7 +297,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
-	public TraversalResult<? extends Node> findNodes() {
+	public Result<? extends Node> findNodes() {
 		return db().getVerticesTraversal(NodeImpl.class, new String[] { PROJECT_KEY_PROPERTY }, new Object[] { getUuid() });
 	}
 

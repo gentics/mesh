@@ -15,10 +15,10 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.madl.field.FieldType;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 
 /**
  * @see Role
@@ -48,7 +48,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	}
 
 	@Override
-	public TraversalResult<? extends Group> getGroups() {
+	public Result<? extends Group> getGroups() {
 		return out(HAS_ROLE, GroupImpl.class);
 	}
 

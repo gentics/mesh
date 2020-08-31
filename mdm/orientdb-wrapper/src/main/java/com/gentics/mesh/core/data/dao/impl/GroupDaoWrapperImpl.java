@@ -51,9 +51,9 @@ import com.gentics.mesh.core.rest.event.group.GroupUserAssignModel;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
@@ -147,14 +147,14 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 	}
 
 	@Override
-	public TraversalResult<? extends HibUser> getUsers(HibGroup group) {
+	public Result<? extends HibUser> getUsers(HibGroup group) {
 		Group graphGroup = toGroup(group);
 		GroupRoot groupRoot = boot.get().groupRoot();
 		return groupRoot.getUsers(graphGroup);
 	}
 
 	@Override
-	public TraversalResult<? extends Role> getRoles(HibGroup group) {
+	public Result<? extends Role> getRoles(HibGroup group) {
 		Group graphGroup = toGroup(group);
 		GroupRoot groupRoot = boot.get().groupRoot();
 		return groupRoot.getRoles(graphGroup);
@@ -342,7 +342,7 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 	}
 
 	@Override
-	public TraversalResult<? extends HibGroup> findAll() {
+	public Result<? extends HibGroup> findAll() {
 		GroupRoot groupRoot = boot.get().groupRoot();
 		return groupRoot.findAll();
 	}

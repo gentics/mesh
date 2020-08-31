@@ -29,6 +29,7 @@ import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -52,7 +53,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * 
 	 * @return
 	 */
-	default TraversalResult<? extends T> findAll() {
+	default Result<? extends T> findAll() {
 		return out(getRootLabel(), getPersistanceClass());
 	}
 
@@ -84,7 +85,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * 
 	 * @return
 	 */
-	default TraversalResult<? extends T> findAllDynamic() {
+	default Result<? extends T> findAllDynamic() {
 		return new TraversalResult<>(out(getRootLabel()).frame(getPersistanceClass()));
 	}
 
@@ -377,7 +378,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @param perm
 	 * @return
 	 */
-	default TraversalResult<? extends HibRole> getRolesWithPerm(HibElement vertex, InternalPermission perm) {
+	default Result<? extends HibRole> getRolesWithPerm(HibElement vertex, InternalPermission perm) {
 		// TODO implement
 		throw new RuntimeException("Not implemented");
 	}

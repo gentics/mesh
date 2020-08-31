@@ -25,8 +25,8 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 
 import dagger.Lazy;
@@ -58,7 +58,7 @@ public class BranchDaoWrapperImpl extends AbstractDaoWrapper<HibBranch> implemen
 	}
 
 	@Override
-	public TraversalResult<? extends HibBranch> findAll(HibProject project) {
+	public Result<? extends HibBranch> findAll(HibProject project) {
 		Objects.requireNonNull(project);
 		Project graphProject = toProject(project);
 		return graphProject.getBranchRoot().findAll();

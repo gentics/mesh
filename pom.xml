@@ -89,7 +89,6 @@
 	<modules>
 		<module>bom</module>
 		<module>ferma</module>
-		<module>madl</module>
 		<module>rest-model</module>
 		<module>api</module>
 		<module>plugin-api</module>
@@ -97,6 +96,7 @@
 		<module>plugin-dep</module>
 		<module>plugin-parent</module>
 		<module>common-api</module>
+		<module>madl</module>
 		<module>mdm</module>
 		<module>common</module>
 		<module>test-common</module>

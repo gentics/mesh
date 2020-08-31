@@ -45,6 +45,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.madl.field.FieldType;
 import com.gentics.mesh.madl.index.VertexIndexDefinition;
 import com.gentics.mesh.madl.traversal.TraversalResult;
@@ -138,7 +139,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	}
 	
 	@Override
-	public TraversalResult<? extends NodeGraphFieldContainer> getContainers() {
+	public Result<? extends NodeGraphFieldContainer> getContainers() {
 		// First try to get the container in case for normal fields
 		Iterable<? extends NodeGraphFieldContainerImpl> containers = in(HAS_FIELD).frameExplicit(NodeGraphFieldContainerImpl.class);
 

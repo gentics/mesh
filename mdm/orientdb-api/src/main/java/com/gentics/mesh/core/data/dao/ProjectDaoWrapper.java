@@ -11,8 +11,8 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 
 /**
@@ -21,7 +21,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 // TODO move the contents of this to ProjectDao once migration is done
 public interface ProjectDaoWrapper extends ProjectDao, DaoWrapper<HibProject>, DaoTransformable<HibProject, ProjectResponse> {
 
-	TraversalResult<? extends HibProject> findAll();
+	Result<? extends HibProject> findAll();
 
 	TransformablePage<? extends HibProject> findAll(InternalActionContext ac, PagingParameters pagingInfo);
 

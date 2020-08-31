@@ -33,6 +33,7 @@ import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterServerConfig;
 import com.gentics.mesh.core.rest.admin.cluster.ServerRole;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
@@ -294,7 +295,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public <T extends VertexFrame> TraversalResult<T> getVerticesTraversal(Class<T> classOfVertex, String[] fieldNames, Object[] fieldValues) {
+	public <T extends VertexFrame> Result<T> getVerticesTraversal(Class<T> classOfVertex, String[] fieldNames, Object[] fieldValues) {
 		Stream<Vertex> stream = toStream(getVertices(classOfVertex, fieldNames, fieldValues));
 		FramedGraph graph = Tx.get().getGraph();
 

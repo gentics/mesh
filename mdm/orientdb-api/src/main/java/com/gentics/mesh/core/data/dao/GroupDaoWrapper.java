@@ -14,9 +14,9 @@ import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.event.group.GroupRoleAssignModel;
 import com.gentics.mesh.core.rest.event.group.GroupUserAssignModel;
 import com.gentics.mesh.core.rest.group.GroupResponse;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 
 // TODO move the contents of this to GroupDao once migration is done
@@ -24,7 +24,7 @@ public interface GroupDaoWrapper extends GroupDao, DaoWrapper<HibGroup>, DaoTran
 
 	HibGroup loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm);
 
-	TraversalResult<? extends HibGroup> findAll();
+	Result<? extends HibGroup> findAll();
 
 	TransformablePage<? extends HibGroup> findAll(InternalActionContext ac, PagingParameters pagingInfo);
 
@@ -135,7 +135,7 @@ public interface GroupDaoWrapper extends GroupDao, DaoWrapper<HibGroup>, DaoTran
 	 * @param group
 	 * @return Traversal of users
 	 */
-	TraversalResult<? extends HibUser> getUsers(HibGroup group);
+	Result<? extends HibUser> getUsers(HibGroup group);
 
 	/**
 	 * Return a traversal of roles that are assigned to the group.
@@ -143,7 +143,7 @@ public interface GroupDaoWrapper extends GroupDao, DaoWrapper<HibGroup>, DaoTran
 	 * @param group
 	 * @return Traversal of roles
 	 */
-	TraversalResult<? extends HibRole> getRoles(HibGroup group);
+	Result<? extends HibRole> getRoles(HibGroup group);
 
 	/**
 	 * Check whether the user has been assigned to the group.

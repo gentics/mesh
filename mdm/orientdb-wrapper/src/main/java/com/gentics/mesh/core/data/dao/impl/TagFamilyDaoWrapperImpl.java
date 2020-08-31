@@ -17,8 +17,6 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibElement;
-import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
@@ -31,12 +29,11 @@ import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 
@@ -53,7 +50,7 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper<HibTagFamily> im
 	}
 
 	@Override
-	public TraversalResult<? extends TagFamily> findAllGlobal() {
+	public Result<? extends TagFamily> findAllGlobal() {
 		return boot.get().tagFamilyRoot().findAll();
 	}
 
@@ -170,7 +167,7 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper<HibTagFamily> im
 	}
 
 	@Override
-	public TraversalResult<? extends TagFamily> findAll(HibProject project) {
+	public Result<? extends TagFamily> findAll(HibProject project) {
 		return project.getTagFamilyRoot().findAll();
 	}
 

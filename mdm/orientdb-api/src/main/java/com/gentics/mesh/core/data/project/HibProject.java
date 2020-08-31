@@ -10,7 +10,7 @@ import com.gentics.mesh.core.data.root.SchemaRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.user.HibUserTracking;
 import com.gentics.mesh.core.rest.project.ProjectReference;
-import com.gentics.mesh.madl.traversal.TraversalResult;
+import com.gentics.mesh.core.result.Result;
 
 public interface HibProject extends HibCoreElement, HibUserTracking {
 
@@ -24,7 +24,7 @@ public interface HibProject extends HibCoreElement, HibUserTracking {
 
 	HibBranch findBranchOrLatest(String branchNameOrUuid);
 
-	TraversalResult<? extends Node> findNodes();
+	Result<? extends Node> findNodes();
 
 	HibBranch getLatestBranch();
 

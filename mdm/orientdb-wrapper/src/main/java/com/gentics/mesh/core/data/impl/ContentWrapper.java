@@ -47,6 +47,7 @@ import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -54,7 +55,6 @@ import com.gentics.mesh.madl.frame.EdgeFrame;
 import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.madl.frame.VertexFrame;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.util.VersionNumber;
 import com.google.gson.JsonObject;
@@ -179,7 +179,7 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		delegate.delete();
 	}
 
-	public <T extends ElementFrame> TraversalResult<? extends T> out(String label, Class<T> clazz) {
+	public <T extends ElementFrame> Result<? extends T> out(String label, Class<T> clazz) {
 		return delegate.out(label, clazz);
 	}
 
@@ -200,7 +200,7 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		delegate.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
 	}
 
-	public <T extends EdgeFrame> TraversalResult<? extends T> outE(String label, Class<T> clazz) {
+	public <T extends EdgeFrame> Result<? extends T> outE(String label, Class<T> clazz) {
 		return delegate.outE(label, clazz);
 	}
 
@@ -208,7 +208,7 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		return delegate.getProperty(name);
 	}
 
-	public <T extends ElementFrame> TraversalResult<? extends T> in(String label, Class<T> clazz) {
+	public <T extends ElementFrame> Result<? extends T> in(String label, Class<T> clazz) {
 		return delegate.in(label, clazz);
 	}
 
@@ -224,7 +224,7 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		delegate.removeProperty(key);
 	}
 
-	public <T extends EdgeFrame> TraversalResult<? extends T> inE(String label, Class<T> clazz) {
+	public <T extends EdgeFrame> Result<? extends T> inE(String label, Class<T> clazz) {
 		return delegate.inE(label, clazz);
 	}
 
@@ -628,7 +628,7 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		return delegate.getMicronodeFields(version);
 	}
 
-	public TraversalResult<MicronodeGraphFieldList> getMicronodeListFields(MicroschemaVersion version) {
+	public Result<MicronodeGraphFieldList> getMicronodeListFields(MicroschemaVersion version) {
 		return delegate.getMicronodeListFields(version);
 	}
 
@@ -700,7 +700,7 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		delegate.purge();
 	}
 
-	public TraversalResult<NodeGraphFieldContainer> versions() {
+	public Result<NodeGraphFieldContainer> versions() {
 		return delegate.versions();
 	}
 

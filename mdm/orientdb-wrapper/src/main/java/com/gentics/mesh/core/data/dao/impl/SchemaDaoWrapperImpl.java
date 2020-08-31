@@ -54,6 +54,7 @@ import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.madl.traversal.TraversalResult;
@@ -98,10 +99,10 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 	}
 
 	@Override
-	public TraversalResult<HibSchema> findAll() {
+	public Result<HibSchema> findAll() {
 		SchemaRoot schemaRoot = boot.get().schemaContainerRoot();
 		// TODO findAll should not return wildcard generics
-		return (TraversalResult<HibSchema>)(TraversalResult<?>)schemaRoot.findAll();
+		return (Result<HibSchema>)(Result<?>)schemaRoot.findAll();
 	}
 
 	@Override
@@ -278,7 +279,7 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 	}
 
 	@Override
-	public TraversalResult<? extends SchemaRoot> getRoots(HibSchema schema) {
+	public Result<? extends SchemaRoot> getRoots(HibSchema schema) {
 		return boot.get().schemaContainerRoot().getRoots(toSchema(schema));
 	}
 
@@ -289,7 +290,7 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 	}
 
 	@Override
-	public TraversalResult<? extends Node> getNodes(HibSchema schema) {
+	public Result<? extends Node> getNodes(HibSchema schema) {
 		Schema graphSchema = toSchema(schema);
 		return boot.get().schemaContainerRoot().getNodes(graphSchema);
 	}
@@ -391,7 +392,7 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 	}
 
 	@Override
-	public TraversalResult<HibProject> findLinkedProjects(HibSchema schema) {
+	public Result<HibProject> findLinkedProjects(HibSchema schema) {
 		return new TraversalResult<>(getRoots(schema).stream().map(root -> root.getProject()));
 	}
 

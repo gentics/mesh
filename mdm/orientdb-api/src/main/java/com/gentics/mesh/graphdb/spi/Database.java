@@ -16,11 +16,11 @@ import com.gentics.mesh.core.db.TxAction1;
 import com.gentics.mesh.core.db.TxFactory;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.graphdb.cluster.ClusterManager;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.madl.frame.VertexFrame;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.syncleus.ferma.EdgeFrame;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.TransactionalGraph;
@@ -311,7 +311,7 @@ public interface Database extends TxFactory {
 	 * @param fieldValues
 	 * @return
 	 */
-	<T extends VertexFrame> TraversalResult<T> getVerticesTraversal(Class<T> classOfVertex, String[] fieldNames, Object[] fieldValues);
+	<T extends VertexFrame> Result<T> getVerticesTraversal(Class<T> classOfVertex, String[] fieldNames, Object[] fieldValues);
 
 	/**
 	 * Utilize the index and locate the matching vertices.
@@ -322,7 +322,7 @@ public interface Database extends TxFactory {
 	 * @param fieldValue
 	 * @return
 	 */
-	default <T extends VertexFrame> TraversalResult<T> getVerticesTraversal(Class<T> classOfVertex, String fieldName, Object fieldValue) {
+	default <T extends VertexFrame> Result<T> getVerticesTraversal(Class<T> classOfVertex, String fieldName, Object fieldValue) {
 		return getVerticesTraversal(classOfVertex, new String[] { fieldName }, new Object[] { fieldValue });
 	}
 

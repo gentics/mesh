@@ -4,7 +4,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
-import com.gentics.mesh.madl.traversal.TraversalResult;
+import com.gentics.mesh.core.result.Result;
 
 public interface HasPermissions {
 
@@ -23,5 +23,5 @@ public interface HasPermissions {
 	 * @param perm
 	 * @return
 	 */
-	TraversalResult<? extends HibRole> getRolesWithPerm(InternalPermission perm);
+	Result<? extends HibRole> getRolesWithPerm(InternalPermission perm);
 }

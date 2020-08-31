@@ -9,8 +9,6 @@ import java.util.function.Predicate;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.apache.commons.lang3.NotImplementedException;
-
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -27,8 +25,8 @@ import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.job.JobResponse;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 
 import dagger.Lazy;
@@ -42,7 +40,7 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper<HibJob> implements Job
 	}
 
 	@Override
-	public TraversalResult<? extends HibJob> findAll() {
+	public Result<? extends HibJob> findAll() {
 		return boot.get().jobRoot().findAll();
 	}
 

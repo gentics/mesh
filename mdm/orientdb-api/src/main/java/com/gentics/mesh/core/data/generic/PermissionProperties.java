@@ -17,6 +17,7 @@ import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 
 @Singleton
@@ -29,7 +30,7 @@ public class PermissionProperties {
 		this.boot = boot;
 	}
 
-	public TraversalResult<? extends HibRole> getRolesWithPerm(HibElement element, InternalPermission perm) {
+	public Result<? extends HibRole> getRolesWithPerm(HibElement element, InternalPermission perm) {
 		Set<String> roleUuids = element.getRoleUuidsForPerm(perm);
 		Stream<String> stream = roleUuids == null
 			? Stream.empty()

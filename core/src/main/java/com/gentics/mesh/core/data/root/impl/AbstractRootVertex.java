@@ -21,8 +21,8 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.util.ETag;
@@ -48,7 +48,7 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	}
 
 	@Override
-	public TraversalResult<? extends HibRole> getRolesWithPerm(InternalPermission perm) {
+	public Result<? extends HibRole> getRolesWithPerm(InternalPermission perm) {
 		return mesh().permissionProperties().getRolesWithPerm(this, perm);
 	}
 
@@ -69,7 +69,7 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	}
 
 	@Override
-	public TraversalResult<? extends HibRole> getRolesWithPerm(HibElement vertex, InternalPermission perm) {
+	public Result<? extends HibRole> getRolesWithPerm(HibElement vertex, InternalPermission perm) {
 		return mesh().permissionProperties().getRolesWithPerm(vertex, perm);
 	}
 

@@ -6,8 +6,8 @@ import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 
 /**
  * A schema container root is an aggregation vertex which is used to aggregate schema container vertices.
@@ -59,14 +59,14 @@ public interface SchemaRoot extends RootVertex<Schema> {
 	 *
 	 * @return
 	 */
-	TraversalResult<? extends SchemaRoot> getRoots(Schema schema);
+	Result<? extends SchemaRoot> getRoots(Schema schema);
 
 	/**
 	 * Returns an iterable of nodes which are referencing the schema container.
 	 *
 	 * @return
 	 */
-	TraversalResult<? extends Node> getNodes(Schema schema);
+	Result<? extends Node> getNodes(Schema schema);
 
 	/**
 	 * Return an iterable with all found schema versions.

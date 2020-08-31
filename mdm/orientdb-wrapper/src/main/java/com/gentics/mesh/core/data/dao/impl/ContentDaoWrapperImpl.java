@@ -28,7 +28,7 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.version.VersionInfo;
-import com.gentics.mesh.madl.traversal.TraversalResult;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.util.VersionNumber;
 
@@ -69,17 +69,17 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	}
 
 	@Override
-	public TraversalResult<NodeGraphFieldContainer> getDraftGraphFieldContainers(HibNode node) {
+	public Result<NodeGraphFieldContainer> getDraftGraphFieldContainers(HibNode node) {
 		return toNode(node).getDraftGraphFieldContainers();
 	}
 
 	@Override
-	public TraversalResult<NodeGraphFieldContainer> getGraphFieldContainers(HibNode node, String branchUuid, ContainerType type) {
+	public Result<NodeGraphFieldContainer> getGraphFieldContainers(HibNode node, String branchUuid, ContainerType type) {
 		return toNode(node).getGraphFieldContainers(branchUuid, type);
 	}
 
 	@Override
-	public TraversalResult<NodeGraphFieldContainer> getGraphFieldContainers(HibNode node, ContainerType type) {
+	public Result<NodeGraphFieldContainer> getGraphFieldContainers(HibNode node, ContainerType type) {
 		return toNode(node).getGraphFieldContainers(type);
 	}
 
@@ -224,7 +224,7 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	}
 
 	@Override
-	public TraversalResult<MicronodeGraphFieldList> getMicronodeListFields(NodeGraphFieldContainer content, MicroschemaVersion version) {
+	public Result<MicronodeGraphFieldList> getMicronodeListFields(NodeGraphFieldContainer content, MicroschemaVersion version) {
 		return content.getMicronodeListFields(version);
 	}
 
@@ -309,7 +309,7 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	}
 
 	@Override
-	public TraversalResult<NodeGraphFieldContainer> versions(NodeGraphFieldContainer content) {
+	public Result<NodeGraphFieldContainer> versions(NodeGraphFieldContainer content) {
 		return content.versions();
 	}
 

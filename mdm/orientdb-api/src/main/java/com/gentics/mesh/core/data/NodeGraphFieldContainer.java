@@ -24,7 +24,7 @@ import com.gentics.mesh.core.rest.error.Errors;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.version.VersionInfo;
-import com.gentics.mesh.madl.traversal.TraversalResult;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.util.VersionNumber;
 
@@ -293,7 +293,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 *            microschema container version
 	 * @return list of micronode list fields
 	 */
-	TraversalResult<MicronodeGraphFieldList> getMicronodeListFields(MicroschemaVersion version);
+	Result<MicronodeGraphFieldList> getMicronodeListFields(MicroschemaVersion version);
 
 	/**
 	 * Return the ETag for the field container.
@@ -429,5 +429,5 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 *
 	 * @return
 	 */
-	TraversalResult<NodeGraphFieldContainer> versions();
+	Result<NodeGraphFieldContainer> versions();
 }

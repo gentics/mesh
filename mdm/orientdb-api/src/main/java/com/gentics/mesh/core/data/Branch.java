@@ -29,9 +29,9 @@ import com.gentics.mesh.core.rest.event.branch.BranchSchemaAssignEventModel;
 import com.gentics.mesh.core.rest.event.branch.BranchTaggedEventModel;
 import com.gentics.mesh.core.rest.event.project.ProjectBranchEventModel;
 import com.gentics.mesh.core.rest.job.JobStatus;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 
 /**
@@ -234,7 +234,7 @@ public interface Branch
 	 * 
 	 * @return
 	 */
-	TraversalResult<? extends SchemaVersion> findAllSchemaVersions();
+	Result<? extends SchemaVersion> findAllSchemaVersions();
 
 	/**
 	 * Assign the given microschema version to the branch and queue a job which executes the migration.
@@ -278,14 +278,14 @@ public interface Branch
 	 * 
 	 * @return Iterable
 	 */
-	TraversalResult<? extends MicroschemaVersion> findAllMicroschemaVersions();
+	Result<? extends MicroschemaVersion> findAllMicroschemaVersions();
 
 	/**
 	 * Get an iterable of all latest microschema container versions.
 	 * 
 	 * @return Iterable
 	 */
-	TraversalResult<? extends BranchMicroschemaEdge> findAllLatestMicroschemaVersionEdges();
+	Result<? extends BranchMicroschemaEdge> findAllLatestMicroschemaVersionEdges();
 
 	/**
 	 * Get an iterable over all active schema container versions. An active version is one which still contains {@link NodeGraphFieldContainer}'s or one which
@@ -293,7 +293,7 @@ public interface Branch
 	 * 
 	 * @return Iterable
 	 */
-	TraversalResult<? extends SchemaVersion> findActiveSchemaVersions();
+	Result<? extends SchemaVersion> findActiveSchemaVersions();
 
 	/**
 	 * Get an iterable over all active microschema container versions. An active version is one which still contains {@link NodeGraphFieldContainer}'s or one
@@ -323,14 +323,14 @@ public interface Branch
 	 * 
 	 * @return
 	 */
-	TraversalResult<? extends BranchSchemaEdge> findAllSchemaVersionEdges();
+	Result<? extends BranchSchemaEdge> findAllSchemaVersionEdges();
 
 	/**
 	 * Return all microschema versions which are linked to the branch.
 	 * 
 	 * @return
 	 */
-	TraversalResult<? extends BranchMicroschemaEdge> findAllMicroschemaVersionEdges();
+	Result<? extends BranchMicroschemaEdge> findAllMicroschemaVersionEdges();
 
 	/**
 	 * Find the branch schema edge for the given version.
@@ -388,7 +388,7 @@ public interface Branch
 	 *
 	 * @return
 	 */
-	TraversalResult<? extends HibTag> getTags();
+	Result<? extends HibTag> getTags();
 
 	/**
 	 * Return a page of all visible tags that are assigned to the branch.

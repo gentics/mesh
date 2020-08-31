@@ -14,8 +14,8 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.role.RoleResponse;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 
 public interface RoleDaoWrapper extends RoleDao, DaoWrapper<HibRole>, DaoTransformable<HibRole, RoleResponse> {
@@ -91,7 +91,7 @@ public interface RoleDaoWrapper extends RoleDao, DaoWrapper<HibRole>, DaoTransfo
 	 */
 	void removeRole(HibRole role);
 
-	TraversalResult<? extends HibGroup> getGroups(HibRole role);
+	Result<? extends HibGroup> getGroups(HibRole role);
 
 	/**
 	 * Return a page of groups to which this role was assigned.
@@ -125,7 +125,7 @@ public interface RoleDaoWrapper extends RoleDao, DaoWrapper<HibRole>, DaoTransfo
 
 	boolean update(HibRole role, InternalActionContext ac, EventQueueBatch batch);
 
-	TraversalResult<? extends HibRole> findAll();
+	Result<? extends HibRole> findAll();
 
 	TransformablePage<? extends HibRole> findAll(InternalActionContext ac, PagingParameters pagingInfo);
 

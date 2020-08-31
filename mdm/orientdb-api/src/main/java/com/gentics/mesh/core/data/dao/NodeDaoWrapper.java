@@ -21,9 +21,9 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.handler.ActionContext;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.path.Path;
 
@@ -83,7 +83,7 @@ public interface NodeDaoWrapper extends NodeDao, DaoWrapper<HibNode>, DaoTransfo
 	 *
 	 * @return
 	 */
-	TraversalResult<? extends HibNode> getChildren(HibNode node);
+	Result<? extends HibNode> getChildren(HibNode node);
 
 	/**
 	 * Return the children for this node in the given branch.
@@ -91,7 +91,7 @@ public interface NodeDaoWrapper extends NodeDao, DaoWrapper<HibNode>, DaoTransfo
 	 * @param branchUuid
 	 * @return
 	 */
-	TraversalResult<? extends HibNode> getChildren(HibNode node, String branchUuid);
+	Result<? extends HibNode> getChildren(HibNode node, String branchUuid);
 
 	/**
 	 * Return the children for this node. Only fetches nodes from the provided branch and also checks permissions.
@@ -272,7 +272,7 @@ public interface NodeDaoWrapper extends NodeDao, DaoWrapper<HibNode>, DaoTransfo
 	 * @param ac
 	 * @return Deque with breadcrumb nodes
 	 */
-	TraversalResult<? extends HibNode> getBreadcrumbNodes(HibNode node, InternalActionContext ac);
+	Result<? extends HibNode> getBreadcrumbNodes(HibNode node, InternalActionContext ac);
 
 	/**
 	 * Check whether the node is the base node of its project

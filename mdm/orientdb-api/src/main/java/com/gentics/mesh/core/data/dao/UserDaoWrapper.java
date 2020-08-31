@@ -20,8 +20,8 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 
 // TODO move the contents of this to UserDao once migration is done
@@ -29,7 +29,7 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<HibUser>, DaoTransfo
 
 	String getSubETag(HibUser user, InternalActionContext ac);
 
-	TraversalResult<? extends HibUser> findAll();
+	Result<? extends HibUser> findAll();
 
 	/**
 	 * Check whether the user has the given permission on the given element.
@@ -294,7 +294,7 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<HibUser>, DaoTransfo
 
 	Iterable<? extends HibRole> getRoles(HibUser user);
 
-	TraversalResult<? extends HibGroup> getGroups(HibUser user);
+	Result<? extends HibGroup> getGroups(HibUser user);
 
 	String getETag(HibUser user, InternalActionContext ac);
 }

@@ -41,8 +41,8 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
@@ -189,7 +189,7 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 	}
 
 	@Override
-	public TraversalResult<? extends HibGroup> getGroups(HibRole role) {
+	public Result<? extends HibGroup> getGroups(HibRole role) {
 		Role graphRole = toRole(role);
 		return graphRole.getGroups();
 	}
@@ -237,7 +237,7 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 	}
 
 	@Override
-	public TraversalResult<? extends HibRole> findAll() {
+	public Result<? extends HibRole> findAll() {
 		RoleRoot roleRoot = boot.get().roleRoot();
 		return roleRoot.findAll();
 	}

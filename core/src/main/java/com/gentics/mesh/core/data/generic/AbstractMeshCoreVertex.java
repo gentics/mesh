@@ -30,7 +30,7 @@ import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModelImpl;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedProjectElementEventModel;
-import com.gentics.mesh.madl.traversal.TraversalResult;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.util.ETag;
@@ -58,7 +58,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	}
 
 	@Override
-	public TraversalResult<? extends HibRole> getRolesWithPerm(InternalPermission perm) {
+	public Result<? extends HibRole> getRolesWithPerm(InternalPermission perm) {
 		return mesh().permissionProperties().getRolesWithPerm(this, perm);
 	}
 

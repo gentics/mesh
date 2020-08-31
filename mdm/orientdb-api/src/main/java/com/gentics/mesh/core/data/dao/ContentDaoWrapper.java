@@ -31,7 +31,7 @@ import com.gentics.mesh.core.rest.error.Errors;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.version.VersionInfo;
-import com.gentics.mesh.madl.traversal.TraversalResult;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.util.VersionNumber;
 
@@ -246,7 +246,7 @@ public interface ContentDaoWrapper extends ContentDao {
 	 *
 	 * @return
 	 */
-	TraversalResult<NodeGraphFieldContainer> getDraftGraphFieldContainers(HibNode node);
+	Result<NodeGraphFieldContainer> getDraftGraphFieldContainers(HibNode node);
 
 	/**
 	 * Return a traversal of graph field containers of given type for the node in the given branch.
@@ -255,7 +255,7 @@ public interface ContentDaoWrapper extends ContentDao {
 	 * @param type
 	 * @return
 	 */
-	default TraversalResult<NodeGraphFieldContainer> getGraphFieldContainers(HibNode node, HibBranch branch, ContainerType type) {
+	default Result<NodeGraphFieldContainer> getGraphFieldContainers(HibNode node, HibBranch branch, ContainerType type) {
 		return getGraphFieldContainers(node, branch.getUuid(), type);
 	}
 
@@ -266,7 +266,7 @@ public interface ContentDaoWrapper extends ContentDao {
 	 * @param type
 	 * @return
 	 */
-	TraversalResult<NodeGraphFieldContainer> getGraphFieldContainers(HibNode node, String branchUuid, ContainerType type);
+	Result<NodeGraphFieldContainer> getGraphFieldContainers(HibNode node, String branchUuid, ContainerType type);
 
 	/**
 	 * Return containers of the given type
@@ -274,7 +274,7 @@ public interface ContentDaoWrapper extends ContentDao {
 	 * @param type
 	 * @return
 	 */
-	TraversalResult<NodeGraphFieldContainer> getGraphFieldContainers(HibNode node, ContainerType type);
+	Result<NodeGraphFieldContainer> getGraphFieldContainers(HibNode node, ContainerType type);
 
 	/**
 	 * Return the number of field containers of the node of type DRAFT or PUBLISHED in any branch.
@@ -675,7 +675,7 @@ public interface ContentDaoWrapper extends ContentDao {
 	 *            microschema container version
 	 * @return list of micronode list fields
 	 */
-	TraversalResult<MicronodeGraphFieldList> getMicronodeListFields(NodeGraphFieldContainer content, MicroschemaVersion version);
+	Result<MicronodeGraphFieldList> getMicronodeListFields(NodeGraphFieldContainer content, MicroschemaVersion version);
 
 	/**
 	 * Return the ETag for the field container.
@@ -811,7 +811,7 @@ public interface ContentDaoWrapper extends ContentDao {
 	 *
 	 * @return
 	 */
-	TraversalResult<NodeGraphFieldContainer> versions(NodeGraphFieldContainer content);
+	Result<NodeGraphFieldContainer> versions(NodeGraphFieldContainer content);
 
 	/**
 	 * Return the language tag of the field container.

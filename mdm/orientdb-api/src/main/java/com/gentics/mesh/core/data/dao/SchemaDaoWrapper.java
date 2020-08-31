@@ -21,9 +21,9 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 
 public interface SchemaDaoWrapper extends SchemaDao, DaoWrapper<HibSchema> {
@@ -36,7 +36,7 @@ public interface SchemaDaoWrapper extends SchemaDao, DaoWrapper<HibSchema> {
 
 	HibSchema loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound);
 
-	TraversalResult<HibSchema> findAll();
+	Result<HibSchema> findAll();
 
 	TransformablePage<? extends HibSchema> findAll(InternalActionContext ac, PagingParameters pagingInfo);
 
@@ -112,14 +112,14 @@ public interface SchemaDaoWrapper extends SchemaDao, DaoWrapper<HibSchema> {
 	 *
 	 * @return
 	 */
-	TraversalResult<? extends Node> getNodes(HibSchema schema);
+	Result<? extends Node> getNodes(HibSchema schema);
 
 	/**
 	 * Return a list of all schema container roots to which the schema container was added.
 	 *
 	 * @return
 	 */
-	TraversalResult<? extends SchemaRoot> getRoots(HibSchema schema);
+	Result<? extends SchemaRoot> getRoots(HibSchema schema);
 
 	/**
 	 * Return an iterable with all found schema versions.
@@ -167,7 +167,7 @@ public interface SchemaDaoWrapper extends SchemaDao, DaoWrapper<HibSchema> {
 
 	Iterator<? extends NodeGraphFieldContainer> findDraftFieldContainers(HibSchemaVersion version, String branchUuid);
 
-	TraversalResult<HibProject> findLinkedProjects(HibSchema schema);
+	Result<HibProject> findLinkedProjects(HibSchema schema);
 
 	String getETag(HibSchema schema, InternalActionContext ac);
 

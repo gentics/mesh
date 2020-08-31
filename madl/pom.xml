@@ -27,6 +27,13 @@
 		</dependencies>
 	</dependencyManagement>
 
+	<dependencies>
+		<dependency>
+			<artifactId>mesh-common-api</artifactId>
+			<groupId>com.gentics.mesh</groupId>
+		</dependency>
+	</dependencies>
+
 	<modules>
 		<module>api</module>
 		<module>core</module>

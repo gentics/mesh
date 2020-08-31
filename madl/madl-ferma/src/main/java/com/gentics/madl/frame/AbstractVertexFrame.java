@@ -6,6 +6,7 @@ import java.util.function.Function;
 import com.gentics.madl.traversal.RawTraversalResult;
 import com.gentics.madl.tx.BaseTransaction;
 import com.gentics.madl.tx.Tx;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.madl.frame.EdgeFrame;
 import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.madl.frame.VertexFrame;
@@ -135,7 +136,7 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 	}
 
 	@Override
-	public <T extends ElementFrame> TraversalResult<? extends T> out(String label, Class<T> clazz) {
+	public <T extends ElementFrame> Result<? extends T> out(String label, Class<T> clazz) {
 		TraversalResult<? extends T> result = new TraversalResult<>(out(label).frameExplicit(clazz));
 		return result;
 	}

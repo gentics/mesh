@@ -6,7 +6,7 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
-import com.gentics.mesh.madl.traversal.TraversalResult;
+import com.gentics.mesh.core.result.Result;
 
 public interface HibMicroschema extends HibFieldSchemaElement {
 
@@ -28,6 +28,6 @@ public interface HibMicroschema extends HibFieldSchemaElement {
 
 	void deleteElement();
 
-	TraversalResult<? extends HibRole> getRolesWithPerm(InternalPermission perm);
+	Result<? extends HibRole> getRolesWithPerm(InternalPermission perm);
 
 }

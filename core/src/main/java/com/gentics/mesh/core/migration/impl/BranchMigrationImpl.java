@@ -29,9 +29,9 @@ import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.core.migration.AbstractMigrationHandler;
 import com.gentics.mesh.core.migration.BranchMigration;
 import com.gentics.mesh.core.rest.event.node.BranchMigrationCause;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.metric.MetricsService;
 
 import io.reactivex.Completable;
@@ -122,8 +122,8 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 					nodeDao.setParentNode(node, newBranch.getUuid(), parent);
 				}
 
-				TraversalResult<? extends NodeGraphFieldContainer> drafts = contentDao.getGraphFieldContainers(node, oldBranch, DRAFT);
-				TraversalResult<? extends NodeGraphFieldContainer> published = contentDao.getGraphFieldContainers(node, oldBranch, PUBLISHED);
+				Result<? extends NodeGraphFieldContainer> drafts = contentDao.getGraphFieldContainers(node, oldBranch, DRAFT);
+				Result<? extends NodeGraphFieldContainer> published = contentDao.getGraphFieldContainers(node, oldBranch, PUBLISHED);
 
 				// 1. Migrate draft containers first
 				drafts.forEach(container -> {

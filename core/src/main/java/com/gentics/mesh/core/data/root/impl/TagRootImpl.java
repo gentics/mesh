@@ -39,6 +39,7 @@ import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.tag.TagResponse;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -155,7 +156,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	}
 
 	@Override
-	public TraversalResult<? extends Node> findTaggedNodes(HibTag tag, InternalActionContext ac) {
+	public Result<? extends Node> findTaggedNodes(HibTag tag, InternalActionContext ac) {
 		MeshAuthUser user = ac.getUser();
 		HibBranch branch = ac.getBranch();
 		String branchUuid = branch.getUuid();
@@ -184,7 +185,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	}
 
 	@Override
-	public TraversalResult<? extends Node> getNodes(Tag tag, HibBranch branch) {
+	public Result<? extends Node> getNodes(Tag tag, HibBranch branch) {
 		Iterable<? extends NodeImpl> it = TagEdgeImpl.getNodeTraversal(tag, branch).frameExplicit(NodeImpl.class);
 		return new TraversalResult<>(it);
 	}

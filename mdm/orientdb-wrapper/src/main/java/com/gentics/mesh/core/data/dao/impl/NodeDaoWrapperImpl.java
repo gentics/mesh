@@ -31,9 +31,9 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.handler.ActionContext;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.path.Path;
 
@@ -85,12 +85,12 @@ public class NodeDaoWrapperImpl extends AbstractDaoWrapper<HibNode> implements N
 	}
 
 	@Override
-	public TraversalResult<? extends HibNode> getChildren(HibNode node) {
+	public Result<? extends HibNode> getChildren(HibNode node) {
 		return toNode(node).getChildren();
 	}
 
 	@Override
-	public TraversalResult<? extends HibNode> getChildren(HibNode node, String branchUuid) {
+	public Result<? extends HibNode> getChildren(HibNode node, String branchUuid) {
 		return toNode(node).getChildren(branchUuid);
 	}
 
@@ -186,7 +186,7 @@ public class NodeDaoWrapperImpl extends AbstractDaoWrapper<HibNode> implements N
 	}
 
 	@Override
-	public TraversalResult<? extends HibNode> getBreadcrumbNodes(HibNode node, InternalActionContext ac) {
+	public Result<? extends HibNode> getBreadcrumbNodes(HibNode node, InternalActionContext ac) {
 		return toNode(node).getBreadcrumbNodes(ac);
 	}
 

@@ -66,9 +66,9 @@ import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -461,7 +461,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	}
 
 	@Override
-	public TraversalResult<? extends User> findAll() {
+	public Result<? extends User> findAll() {
 		UserRoot userRoot = boot.get().userRoot();
 		return userRoot.findAll();
 	}
@@ -692,7 +692,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	}
 
 	@Override
-	public TraversalResult<? extends HibGroup> getGroups(HibUser user) {
+	public Result<? extends HibGroup> getGroups(HibUser user) {
 		User graphUser = toUser(user);
 		return graphUser.getGroups();
 	}

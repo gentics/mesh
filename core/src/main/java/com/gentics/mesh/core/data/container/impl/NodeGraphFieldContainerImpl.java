@@ -85,6 +85,7 @@ import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
@@ -461,9 +462,9 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public TraversalResult<NodeGraphFieldContainer> getNextVersions() {
+	public Result<NodeGraphFieldContainer> getNextVersions() {
 		// TODO out function should not return wildcard generics.
-		return (TraversalResult<NodeGraphFieldContainer>)(TraversalResult<?>)out(HAS_VERSION, NodeGraphFieldContainerImpl.class);
+		return (Result<NodeGraphFieldContainer>) (Result<?>) out(HAS_VERSION, NodeGraphFieldContainerImpl.class);
 	}
 
 	@Override
@@ -643,13 +644,13 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		return new TraversalResult<>(outE(HAS_FIELD)
 			.has(MicronodeGraphFieldImpl.class)
 			.frameExplicit(MicronodeGraphFieldImpl.class))
-			.stream()
-			.filter(edge -> edge.getMicronode().property(MICROSCHEMA_VERSION_KEY_PROPERTY).equals(microschemaVersionUuid))
-			.collect(Collectors.toList());
+				.stream()
+				.filter(edge -> edge.getMicronode().property(MICROSCHEMA_VERSION_KEY_PROPERTY).equals(microschemaVersionUuid))
+				.collect(Collectors.toList());
 	}
 
 	@Override
-	public TraversalResult<MicronodeGraphFieldList> getMicronodeListFields(MicroschemaVersion version) {
+	public Result<MicronodeGraphFieldList> getMicronodeListFields(MicroschemaVersion version) {
 		String microschemaVersionUuid = version.getUuid();
 		TraversalResult<? extends MicronodeGraphFieldList> lists = new TraversalResult<>(out(HAS_LIST)
 			.has(MicronodeGraphFieldListImpl.class)
@@ -657,8 +658,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		return new TraversalResult<>(lists
 			.stream()
 			.filter(list -> list.getValues().stream()
-			.anyMatch(micronode -> micronode.property(MICROSCHEMA_VERSION_KEY_PROPERTY).equals(microschemaVersionUuid)))
-		);
+				.anyMatch(micronode -> micronode.property(MICROSCHEMA_VERSION_KEY_PROPERTY).equals(microschemaVersionUuid))));
 	}
 
 	@Override
@@ -832,7 +832,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public TraversalResult<NodeGraphFieldContainer> versions() {
+	public Result<NodeGraphFieldContainer> versions() {
 		return new TraversalResult<>(StreamUtil.untilNull(() -> this, NodeGraphFieldContainer::getPreviousVersion));
 	}
 

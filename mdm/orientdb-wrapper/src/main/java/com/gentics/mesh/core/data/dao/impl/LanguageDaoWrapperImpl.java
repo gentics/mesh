@@ -17,8 +17,8 @@ import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 
 import dagger.Lazy;
@@ -47,7 +47,7 @@ public class LanguageDaoWrapperImpl extends AbstractDaoWrapper<HibLanguage> impl
 		return boot.get().languageRoot().findByLanguageTag(languageTag);
 	}
 
-	public TraversalResult<? extends Language> findAll() {
+	public Result<? extends Language> findAll() {
 		return boot.get().languageRoot().findAll();
 	}
 

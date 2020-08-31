@@ -6,7 +6,7 @@ import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.group.GroupResponse;
-import com.gentics.mesh.madl.traversal.TraversalResult;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.parameter.PagingParameters;
 
 /**
@@ -16,9 +16,9 @@ public interface GroupRoot extends RootVertex<Group>, TransformableElementRoot<G
 
 	public static final String TYPE = "groups";
 
-	TraversalResult<? extends HibUser> getUsers(Group group);
+	Result<? extends HibUser> getUsers(Group group);
 
-	TraversalResult<? extends Role> getRoles(Group group);
+	Result<? extends Role> getRoles(Group group);
 
 	TransformablePage<? extends HibUser> getVisibleUsers(Group group, MeshAuthUser user, PagingParameters pagingInfo);
 

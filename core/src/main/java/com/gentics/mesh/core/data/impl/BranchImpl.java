@@ -78,6 +78,7 @@ import com.gentics.mesh.core.rest.event.project.ProjectBranchEventModel;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -313,12 +314,12 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
-	public TraversalResult<? extends SchemaVersion> findAllSchemaVersions() {
+	public Result<? extends SchemaVersion> findAllSchemaVersions() {
 		return out(HAS_SCHEMA_VERSION, SchemaContainerVersionImpl.class);
 	}
 
 	@Override
-	public TraversalResult<? extends SchemaVersion> findActiveSchemaVersions() {
+	public Result<? extends SchemaVersion> findActiveSchemaVersions() {
 		return new TraversalResult<>(
 			outE(HAS_SCHEMA_VERSION).has(BranchVersionEdge.ACTIVE_PROPERTY_KEY, true).inV().frameExplicit(SchemaContainerVersionImpl.class));
 	}
@@ -330,17 +331,17 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
-	public TraversalResult<? extends BranchSchemaEdge> findAllSchemaVersionEdges() {
+	public Result<? extends BranchSchemaEdge> findAllSchemaVersionEdges() {
 		return outE(HAS_SCHEMA_VERSION, BranchSchemaEdgeImpl.class);
 	}
 
 	@Override
-	public TraversalResult<? extends BranchMicroschemaEdge> findAllMicroschemaVersionEdges() {
+	public Result<? extends BranchMicroschemaEdge> findAllMicroschemaVersionEdges() {
 		return outE(HAS_MICROSCHEMA_VERSION, BranchMicroschemaEdgeImpl.class);
 	}
 
 	@Override
-	public TraversalResult<? extends BranchMicroschemaEdge> findAllLatestMicroschemaVersionEdges() {
+	public Result<? extends BranchMicroschemaEdge> findAllLatestMicroschemaVersionEdges() {
 		// Locate one version (latest) of all versions per schema
 		Iterable<BranchMicroschemaEdgeImpl> it2 = Observable
 			.fromIterable(outE(HAS_MICROSCHEMA_VERSION).frameExplicit(BranchMicroschemaEdgeImpl.class)).groupBy(it -> it
@@ -473,7 +474,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
-	public TraversalResult<? extends MicroschemaVersion> findAllMicroschemaVersions() {
+	public Result<? extends MicroschemaVersion> findAllMicroschemaVersions() {
 		return out(HAS_MICROSCHEMA_VERSION, MicroschemaContainerVersionImpl.class);
 	}
 
@@ -623,7 +624,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
-	public TraversalResult<? extends Tag> getTags() {
+	public Result<? extends Tag> getTags() {
 		return new TraversalResult<>(outE(HAS_BRANCH_TAG).inV().frameExplicit(TagImpl.class));
 	}
 

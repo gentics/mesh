@@ -3,8 +3,8 @@ package com.gentics.mesh.madl.frame;
 import java.util.function.Function;
 
 import com.gentics.madl.traversal.RawTraversalResult;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -34,13 +34,13 @@ public interface VertexFrame extends ElementFrame, com.syncleus.ferma.VertexFram
 	@Override
 	VertexTraversal<?, ?, ?> out(String... labels);
 
-	<T extends ElementFrame> TraversalResult<? extends T> out(String label, Class<T> clazz);
+	<T extends ElementFrame> Result<? extends T> out(String label, Class<T> clazz);
 
-	<T extends EdgeFrame> TraversalResult<? extends T> outE(String label, Class<T> clazz);
+	<T extends EdgeFrame> Result<? extends T> outE(String label, Class<T> clazz);
 
-	<T extends ElementFrame> TraversalResult<? extends T> in(String label, Class<T> clazz);
+	<T extends ElementFrame> Result<? extends T> in(String label, Class<T> clazz);
 
-	<T extends EdgeFrame> TraversalResult<? extends T> inE(String label, Class<T> clazz);
+	<T extends EdgeFrame> Result<? extends T> inE(String label, Class<T> clazz);
 
 	<T extends RawTraversalResult<?>> T traverse(final Function<GraphTraversal<Vertex, Vertex>, GraphTraversal<?, ?>> traverser);
 

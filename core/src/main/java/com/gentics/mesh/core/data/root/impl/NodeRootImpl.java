@@ -56,9 +56,9 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceInfo;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedTransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
@@ -95,7 +95,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public TraversalResult<? extends Node> findAll() {
+	public Result<? extends Node> findAll() {
 		Project project = getProject();
 		return project.findNodes();
 	}

@@ -14,7 +14,7 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.madl.traversal.TraversalResult;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.DateUtils;
 
@@ -179,7 +179,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 *
 	 * @return
 	 */
-	TraversalResult<? extends Group> getGroups();
+	Result<? extends Group> getGroups();
 
 	/**
 	 * Add the user to the given group.

@@ -36,6 +36,7 @@ import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.madl.traversal.TraversalResult;
@@ -212,7 +213,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public TraversalResult<? extends Group> getGroups() {
+	public Result<? extends Group> getGroups() {
 		return out(HAS_USER, GroupImpl.class);
 	}
 
@@ -229,12 +230,12 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public TraversalResult<? extends Role> getRoles() {
+	public Result<? extends Role> getRoles() {
 		return new TraversalResult<>(out(HAS_USER).in(HAS_ROLE).frameExplicit(RoleImpl.class));
 	}
 
 	@Override
-	public TraversalResult<? extends Role> getRolesViaShortcut() {
+	public Result<? extends Role> getRolesViaShortcut() {
 		// TODO Use shortcut index.
 		return out(ASSIGNED_TO_ROLE, RoleImpl.class);
 	}

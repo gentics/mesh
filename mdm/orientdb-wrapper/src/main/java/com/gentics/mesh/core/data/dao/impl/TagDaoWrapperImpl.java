@@ -49,8 +49,8 @@ import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
@@ -83,13 +83,13 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements Tag
 	// New Methods
 
 	@Override
-	public TraversalResult<? extends HibTag> findAll(HibTagFamily tagFamily) {
+	public Result<? extends HibTag> findAll(HibTagFamily tagFamily) {
 		TagFamily graphTagFamily = toTagFamily(tagFamily);
 		return graphTagFamily.findAll();
 	}
 
 	@Override
-	public TraversalResult<? extends Tag> findAllGlobal() {
+	public Result<? extends Tag> findAllGlobal() {
 		TagRoot tagRoot = boot.get().tagRoot();
 		return tagRoot.findAll();
 	}
@@ -250,12 +250,12 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements Tag
 	}
 
 	@Override
-	public TraversalResult<? extends HibNode> findTaggedNodes(HibTag tag, InternalActionContext ac) {
+	public Result<? extends HibNode> findTaggedNodes(HibTag tag, InternalActionContext ac) {
 		return boot.get().tagRoot().findTaggedNodes(tag, ac);
 	}
 
 	@Override
-	public TraversalResult<? extends HibNode> getNodes(HibTag tag, HibBranch branch) {
+	public Result<? extends HibNode> getNodes(HibTag tag, HibBranch branch) {
 		return boot.get().tagRoot().getNodes(toTag(tag), branch);
 	}
 
@@ -338,7 +338,7 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements Tag
 	}
 
 	@Override
-	public TraversalResult<HibTag> getTags(HibNode node, HibBranch branch) {
+	public Result<HibTag> getTags(HibNode node, HibBranch branch) {
 		return toNode(node).getTags(branch);
 	}
 

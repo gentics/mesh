@@ -38,10 +38,10 @@ import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.handler.ActionContext;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.path.Path;
 import com.syncleus.ferma.EdgeFrame;
@@ -98,7 +98,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param branch
 	 * @return
 	 */
-	TraversalResult<HibTag> getTags(HibBranch branch);
+	Result<HibTag> getTags(HibBranch branch);
 
 	/**
 	 * Return a page of all visible tags that are assigned to the node.
@@ -191,7 +191,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *
 	 * @return
 	 */
-	default TraversalResult<NodeGraphFieldContainer> getDraftGraphFieldContainers() {
+	default Result<NodeGraphFieldContainer> getDraftGraphFieldContainers() {
 		// FIX ME: We should not rely on specific branches.
 		return getGraphFieldContainers(getProject().getLatestBranch(), DRAFT);
 	}
@@ -203,7 +203,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param type
 	 * @return
 	 */
-	default TraversalResult<NodeGraphFieldContainer> getGraphFieldContainers(HibBranch branch, ContainerType type) {
+	default Result<NodeGraphFieldContainer> getGraphFieldContainers(HibBranch branch, ContainerType type) {
 		return getGraphFieldContainers(branch.getUuid(), type);
 	}
 
@@ -214,7 +214,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param type
 	 * @return
 	 */
-	TraversalResult<NodeGraphFieldContainer> getGraphFieldContainers(String branchUuid, ContainerType type);
+	Result<NodeGraphFieldContainer> getGraphFieldContainers(String branchUuid, ContainerType type);
 
 	/**
 	 * Return containers of the given type
@@ -222,7 +222,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param type
 	 * @return
 	 */
-	TraversalResult<NodeGraphFieldContainer> getGraphFieldContainers(ContainerType type);
+	Result<NodeGraphFieldContainer> getGraphFieldContainers(ContainerType type);
 
 	/**
 	 * Return the number of field containers of the node of type DRAFT or PUBLISHED in any branch.
@@ -250,7 +250,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *
 	 * @return
 	 */
-	TraversalResult<Node> getChildren();
+	Result<Node> getChildren();
 
 	/**
 	 * Return the children for this node in the given branch.
@@ -258,7 +258,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param branchUuid
 	 * @return
 	 */
-	TraversalResult<Node> getChildren(String branchUuid);
+	Result<Node> getChildren(String branchUuid);
 
 	/**
 	 * Return the children for this node. Only fetches nodes from the provided branch and also checks permissions.
@@ -633,7 +633,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param ac
 	 * @return Deque with breadcrumb nodes
 	 */
-	TraversalResult<HibNode> getBreadcrumbNodes(InternalActionContext ac);
+	Result<HibNode> getBreadcrumbNodes(InternalActionContext ac);
 
 	/**
 	 * Create the node specific delete event.

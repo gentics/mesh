@@ -17,9 +17,9 @@ import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.graphdb.spi.Supplier;
 import com.gentics.mesh.graphdb.spi.Transactional;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 
 import dagger.Lazy;
 import io.reactivex.Flowable;
@@ -67,7 +67,7 @@ public class BinaryDaoWrapperImpl extends AbstractDaoWrapper<HibBinary> implemen
 	}
 
 	@Override
-	public TraversalResult<BinaryGraphField> findFields(HibBinary binary) {
+	public Result<BinaryGraphField> findFields(HibBinary binary) {
 		return toBinary(binary).findFields();
 	}
 

@@ -11,8 +11,8 @@ import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.VersionUtil;
 
@@ -195,7 +195,7 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 	 *
 	 * @return Found branches of this version
 	 */
-	TraversalResult<? extends Branch> getBranches();
+	Result<? extends Branch> getBranches();
 
 	/**
 	 * Load the stored schema JSON data.

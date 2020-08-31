@@ -43,8 +43,8 @@ import com.gentics.mesh.core.rest.error.NameConflictException;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
@@ -95,7 +95,7 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implem
 	}
 
 	@Override
-	public TraversalResult<? extends HibProject> findAll() {
+	public Result<? extends HibProject> findAll() {
 		return boot.get().projectRoot().findAll();
 	}
 

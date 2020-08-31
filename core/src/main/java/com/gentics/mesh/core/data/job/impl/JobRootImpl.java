@@ -38,8 +38,8 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.job.JobType;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Edge;
@@ -92,7 +92,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	}
 
 	@Override
-	public TraversalResult<? extends Job> findAll() {
+	public Result<? extends Job> findAll() {
 		// We need to enforce the usage of dynamic loading since the root->item yields different types of vertices.
 		return super.findAllDynamic();
 	}

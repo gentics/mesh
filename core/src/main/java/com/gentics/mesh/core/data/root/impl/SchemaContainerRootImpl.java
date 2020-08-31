@@ -28,6 +28,7 @@ import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.tinkerpop.blueprints.Vertex;
@@ -116,12 +117,12 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<Schema> implemen
 	}
 
 	@Override
-	public TraversalResult<? extends SchemaRoot> getRoots(Schema schema) {
+	public Result<? extends SchemaRoot> getRoots(Schema schema) {
 		return schema.in(HAS_SCHEMA_CONTAINER_ITEM, SchemaContainerRootImpl.class);
 	}
 
 	@Override
-	public TraversalResult<? extends Node> getNodes(Schema schema) {
+	public Result<? extends Node> getNodes(Schema schema) {
 		Iterator<Vertex> vertices = mesh().database().getVertices(
 			NodeImpl.class,
 			new String[]{SCHEMA_CONTAINER_KEY_PROPERTY},

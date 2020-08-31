@@ -43,6 +43,7 @@ import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.etc.config.ContentConfig;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.madl.traversal.TraversalResult;
@@ -89,7 +90,7 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public TraversalResult<? extends Node> getNodes(String branchUuid, HibUser user, ContainerType type) {
+	public Result<? extends Node> getNodes(String branchUuid, HibUser user, ContainerType type) {
 		UserDaoWrapper userDao = Tx.get().data().userDao();
 		SchemaDaoWrapper schemaDao = Tx.get().data().schemaDao();
 		return new TraversalResult<>(schemaDao.getNodes(getSchemaContainer()).stream()
@@ -163,7 +164,7 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public TraversalResult<? extends Branch> getBranches() {
+	public Result<? extends Branch> getBranches() {
 		return in(HAS_SCHEMA_VERSION, BranchImpl.class);
 	}
 
@@ -173,7 +174,7 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public TraversalResult<HibJob> referencedJobsViaFrom() {
+	public Result<HibJob> referencedJobsViaFrom() {
 		return new TraversalResult<>(in(HAS_FROM_VERSION).frame(Job.class));
 	}
 

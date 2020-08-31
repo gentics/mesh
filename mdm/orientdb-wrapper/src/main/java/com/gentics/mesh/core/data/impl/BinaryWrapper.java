@@ -11,6 +11,7 @@ import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.rest.node.field.image.Point;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -19,7 +20,6 @@ import com.gentics.mesh.madl.frame.EdgeFrame;
 import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.madl.frame.VertexFrame;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.google.gson.JsonObject;
 import com.syncleus.ferma.ClassInitializer;
 import com.syncleus.ferma.FramedGraph;
@@ -136,7 +136,7 @@ public class BinaryWrapper implements Binary {
 		return delegate.getBase64ContentSync();
 	}
 
-	public <T extends ElementFrame> TraversalResult<? extends T> out(String label, Class<T> clazz) {
+	public <T extends ElementFrame> Result<? extends T> out(String label, Class<T> clazz) {
 		return delegate.out(label, clazz);
 	}
 
@@ -153,7 +153,7 @@ public class BinaryWrapper implements Binary {
 		delegate.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
 	}
 
-	public <T extends EdgeFrame> TraversalResult<? extends T> outE(String label, Class<T> clazz) {
+	public <T extends EdgeFrame> Result<? extends T> outE(String label, Class<T> clazz) {
 		return delegate.outE(label, clazz);
 	}
 
@@ -165,7 +165,7 @@ public class BinaryWrapper implements Binary {
 		return delegate.getProperty(name);
 	}
 
-	public <T extends ElementFrame> TraversalResult<? extends T> in(String label, Class<T> clazz) {
+	public <T extends ElementFrame> Result<? extends T> in(String label, Class<T> clazz) {
 		return delegate.in(label, clazz);
 	}
 
@@ -181,7 +181,7 @@ public class BinaryWrapper implements Binary {
 		delegate.removeProperty(key);
 	}
 
-	public <T extends EdgeFrame> TraversalResult<? extends T> inE(String label, Class<T> clazz) {
+	public <T extends EdgeFrame> Result<? extends T> inE(String label, Class<T> clazz) {
 		return delegate.inE(label, clazz);
 	}
 
@@ -285,7 +285,7 @@ public class BinaryWrapper implements Binary {
 		return delegate.getGraphAttribute(key);
 	}
 
-	public TraversalResult<BinaryGraphField> findFields() {
+	public Result<BinaryGraphField> findFields() {
 		return delegate.findFields();
 	}
 

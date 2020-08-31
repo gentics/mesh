@@ -9,7 +9,7 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
-import com.gentics.mesh.madl.traversal.TraversalResult;
+import com.gentics.mesh.core.result.Result;
 
 import dagger.Lazy;
 
@@ -43,7 +43,7 @@ public abstract class AbstractDaoWrapper<T extends HibElement> implements DaoWra
 	}
 
 	@Override
-	public TraversalResult<? extends HibRole> getRolesWithPerm(T element, InternalPermission perm) {
+	public Result<? extends HibRole> getRolesWithPerm(T element, InternalPermission perm) {
 		return permissions.get().getRolesWithPerm(element, perm);
 	}
 

@@ -11,7 +11,7 @@ import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
-import com.gentics.mesh.madl.traversal.TraversalResult;
+import com.gentics.mesh.core.result.Result;
 
 /**
  * Graph domain model interface for a role.
@@ -46,10 +46,10 @@ public interface Role extends MeshCoreVertex<RoleResponse, Role>, ReferenceableE
 	}
 
 	/**
-	 * Return a traversal result of groups to which this role was assigned.
+	 * Return a result of groups to which this role was assigned.
 	 * 
 	 * @return Result
 	 */
-	TraversalResult<? extends Group> getGroups();
+	Result<? extends Group> getGroups();
 
 }

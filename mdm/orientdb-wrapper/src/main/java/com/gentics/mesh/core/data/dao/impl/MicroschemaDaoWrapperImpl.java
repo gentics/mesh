@@ -46,9 +46,9 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 
 import dagger.Lazy;
@@ -171,7 +171,7 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 	}
 
 	@Override
-	public TraversalResult<? extends Microschema> findAll() {
+	public Result<? extends Microschema> findAll() {
 		MicroschemaRoot microschemaRoot = boot.get().microschemaContainerRoot();
 		return microschemaRoot.findAll();
 	}
@@ -254,7 +254,7 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 	}
 
 	@Override
-	public TraversalResult<? extends NodeGraphFieldContainer> findDraftFieldContainers(HibMicroschemaVersion version, String branchUuid) {
+	public Result<? extends NodeGraphFieldContainer> findDraftFieldContainers(HibMicroschemaVersion version, String branchUuid) {
 		return toMicroschemaVersion(version).getDraftFieldContainers(branchUuid);
 	}
 

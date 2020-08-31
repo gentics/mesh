@@ -10,14 +10,14 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 
 // TODO move the contents of this to BranchDao once migration is done
 public interface BranchDaoWrapper extends BranchDao, DaoTransformable<HibBranch, BranchResponse>, DaoWrapper<HibBranch> {
 
-	TraversalResult<? extends HibBranch> findAll(HibProject project);
+	Result<? extends HibBranch> findAll(HibProject project);
 
 	TransformablePage<? extends HibBranch> findAll(HibProject project, InternalActionContext ac, PagingParameters pagingInfo);
 

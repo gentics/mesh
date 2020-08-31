@@ -23,7 +23,7 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.madl.traversal.TraversalResult;
+import com.gentics.mesh.core.result.Result;
 
 /**
  * Assert for Node
@@ -131,7 +131,7 @@ public class NodeAssert extends AbstractAssert<NodeAssert, HibNode> {
 	 */
 	public NodeAssert hasNotChildren(HibBranch branch, HibNode... nodes) {
 		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
-		TraversalResult<? extends HibNode> children = nodeDao.getChildren(actual, branch.getUuid());
+		Result<? extends HibNode> children = nodeDao.getChildren(actual, branch.getUuid());
 		List<HibNode> childrenNodes = (List<HibNode>) children.list();
 		assertThat(childrenNodes)
 			.as(descriptionText() + " children")
