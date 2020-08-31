@@ -632,6 +632,50 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	}
 
 	@Test
+	public void testUpdateNodeReferenceTwice() throws Exception {
+		String nodeUuid = tx(() -> folder("news").getUuid());
+		String nodeUuid2 = tx(() -> folder("2015").getUuid());
+		String userUuid = userUuid();
+		HibUser user = user();
+		UserUpdateRequest updateRequest = new UserUpdateRequest();
+		String username = tx(() -> user.getUsername());
+		try (Tx tx = tx()) {
+			updateRequest.setEmailAddress("t.stark@stark-industries.com");
+			updateRequest.setFirstname("Tony Awesome");
+			updateRequest.setLastname("Epic Stark");
+			updateRequest.setUsername("dummy_user_changed");
+		}
+
+		NodeReference userNodeReference = new NodeReference();
+		userNodeReference.setProjectName(PROJECT_NAME);
+		userNodeReference.setUuid(nodeUuid2);
+		updateRequest.setNodeReference(userNodeReference);
+
+		call(() -> client().updateUser(userUuid, updateRequest));
+
+		userNodeReference.setUuid(nodeUuid);
+
+		UserResponse restUser = call(() -> client().updateUser(userUuid, updateRequest));
+
+		try (Tx tx = tx()) {
+			UserDaoWrapper userDao = tx.data().userDao();
+			assertNotNull(user().getReferencedNode());
+			assertNotNull(restUser.getNodeReference());
+			assertEquals(PROJECT_NAME, ((NodeReference) restUser.getNodeReference()).getProjectName());
+			assertEquals(nodeUuid, restUser.getNodeReference().getUuid());
+			assertThat(restUser).matches(updateRequest);
+			assertNull("The user node should have been updated and thus no user should be found.", userDao.findByUsername(username));
+			HibUser reloadedUser = userDao.findByUsername("dummy_user_changed");
+			assertNotNull(reloadedUser);
+			assertEquals("Epic Stark", reloadedUser.getLastname());
+			assertEquals("Tony Awesome", reloadedUser.getFirstname());
+			assertEquals("t.stark@stark-industries.com", reloadedUser.getEmailAddress());
+			assertEquals("dummy_user_changed", reloadedUser.getUsername());
+			assertEquals(nodeUuid, reloadedUser.getReferencedNode().getUuid());
+		}
+	}
+
+	@Test
 	public void testUpdateUserAndSetNodeReferenceWithoutProjectName() throws Exception {
 		String nodeUuid = tx(() -> folder("news").getUuid());
 		String userUuid = userUuid();
