@@ -15,6 +15,7 @@ import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.HibUserTracking;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.event.branch.BranchMicroschemaAssignModel;
 import com.gentics.mesh.core.rest.event.branch.BranchSchemaAssignEventModel;
@@ -26,7 +27,7 @@ import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
-public interface HibBranch extends HibCoreElement {
+public interface HibBranch extends HibCoreElement, HibUserTracking {
 
 	String getName();
 
@@ -66,7 +67,7 @@ public interface HibBranch extends HibCoreElement {
 	 *            true if all nodes have been migrated
 	 * @return Fluent API
 	 */
-	Branch setMigrated(boolean migrated);
+	HibBranch setMigrated(boolean migrated);
 
 	/**
 	 * Return the configured hostname of the branch.
@@ -96,7 +97,7 @@ public interface HibBranch extends HibCoreElement {
 	 * @param ssl
 	 * @return Fluent API
 	 */
-	Branch setSsl(boolean ssl);
+	HibBranch setSsl(boolean ssl);
 
 	/**
 	 * Return the webroot path prefix.
