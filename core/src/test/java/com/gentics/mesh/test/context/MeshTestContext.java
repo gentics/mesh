@@ -700,17 +700,15 @@ public class MeshTestContext extends TestWatcher {
 	private MeshComponent.Builder getMeshDaggerBuilder() {
 //		String builderFactoryName = System.getenv("MESH_BUILDER_FACTORY");
 		String builderFactoryName = System.getProperty("mesh.mdm.provider.factory");
-		if ("TODO".equals(builderFactoryName)) {
+		if (builderFactoryName == null || builderFactoryName.equals("TODO")) {
 			return DaggerOrientDBMeshComponent.builder();
-		} else if (builderFactoryName != null) {
+		} else {
 			try {
 				MeshBuilderFactory builderFactory = (MeshBuilderFactory) Class.forName(builderFactoryName).getDeclaredConstructor().newInstance();
 				return builderFactory.getBuilder();
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
-		} else {
-			return DaggerOrientDBMeshComponent.builder();
 		}
 	}
 

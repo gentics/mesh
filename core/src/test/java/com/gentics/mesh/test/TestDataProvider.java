@@ -42,7 +42,6 @@ import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchema;
@@ -352,7 +351,6 @@ public class TestDataProvider {
 		users.put(username, user);
 
 		String groupName = username + "_group";
-		GroupRoot groupRoot = root.getGroupRoot();
 		HibGroup group = groupDao.create(groupName, user);
 		groupDao.addUser(group, user);
 		group.setCreator(user);
