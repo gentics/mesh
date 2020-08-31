@@ -698,8 +698,11 @@ public class MeshTestContext extends TestWatcher {
 
 	@NotNull
 	private MeshComponent.Builder getMeshDaggerBuilder() {
-		String builderFactoryName = System.getenv("MESH_BUILDER_FACTORY");
-		if (builderFactoryName != null) {
+//		String builderFactoryName = System.getenv("MESH_BUILDER_FACTORY");
+		String builderFactoryName = System.getProperty("mesh.mdm.provider.factory");
+		if ("TODO".equals(builderFactoryName)) {
+			return DaggerOrientDBMeshComponent.builder();
+		} else if (builderFactoryName != null) {
 			try {
 				MeshBuilderFactory builderFactory = (MeshBuilderFactory) Class.forName(builderFactoryName).getDeclaredConstructor().newInstance();
 				return builderFactory.getBuilder();
