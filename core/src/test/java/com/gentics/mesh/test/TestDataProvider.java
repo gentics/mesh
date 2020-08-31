@@ -42,7 +42,6 @@ import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchema;
@@ -352,7 +351,6 @@ public class TestDataProvider {
 		users.put(username, user);
 
 		String groupName = username + "_group";
-		GroupRoot groupRoot = root.getGroupRoot();
 		HibGroup group = groupDao.create(groupName, user);
 		groupDao.addUser(group, user);
 		group.setCreator(user);
@@ -375,10 +373,10 @@ public class TestDataProvider {
 		RoleDaoWrapper roleDao = Tx.get().data().roleDao();
 		GroupDaoWrapper groupDao = Tx.get().data().groupDao();
 		SchemaDaoWrapper schemaDao = Tx.get().data().schemaDao();
+		ProjectDaoWrapper projectDao = Tx.get().data().projectDao();
 
 		// User, Groups, Roles
 		userInfo = createUserInfo("joe1", "Joe", "Doe");
-		ProjectDaoWrapper projectDao = boot.projectDao();
 		EventQueueBatch batch = Mockito.mock(EventQueueBatch.class);
 		project = projectDao.create(PROJECT_NAME, null, null, null, userInfo.getUser(), getSchemaContainer("folder").getLatestVersion(), batch);
 		HibUser jobUser = userInfo.getUser();
