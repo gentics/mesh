@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.endpoint.admin.debuginfo.providers;
 
+import static com.gentics.mesh.core.data.util.HibClassConverter.toProject;
+
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -50,7 +52,7 @@ public class EntitiesProvider implements DebugInfoProvider {
 		return db.singleTx(tx -> tx.data().projectDao().findAll().stream()
 			.map(project -> DebugInfoBufferEntry.fromString(
 				String.format("entities/branches/%s.json", project.getName()),
-				rootToString(ac, project.toProject().getBranchRoot())
+				rootToString(ac, toProject(project).getBranchRoot())
 			)).collect(Collectors.toList()))
 			.flatMapPublisher(Flowable::fromIterable);
 	}

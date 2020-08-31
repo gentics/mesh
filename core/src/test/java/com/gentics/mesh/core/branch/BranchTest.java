@@ -3,6 +3,7 @@ package com.gentics.mesh.core.branch;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toBranch;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toProject;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toSchema;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,8 +18,8 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.branch.HibBranchSchemaVersion;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
@@ -29,10 +30,7 @@ import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.schema.Microschema;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparatorImpl;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparatorImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
@@ -110,7 +108,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	public void testRootNode() throws Exception {
 		try (Tx tx = tx()) {
 			HibProject project = project();
-			BranchRoot branchRoot = project.toProject().getBranchRoot();
+			BranchRoot branchRoot = toProject(project).getBranchRoot();
 			assertThat(branchRoot).as("Branch Root of Project").isNotNull();
 			HibBranch initialBranch = project.getInitialBranch();
 			assertThat(initialBranch).as("Initial Branch of Project").isNotNull().isActive().isNamed(project.getName()).hasUuid().hasNext(null)
@@ -261,8 +259,8 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 		try (Tx tx = tx()) {
 			HibProject project = project();
 			HibBranch branch = latestBranch();
-			List<SchemaVersion> versions = project.getSchemaContainerRoot().findAll().stream().filter(v -> !v.getName().equals("content"))
-				.map(Schema::getLatestVersion).collect(Collectors.toList());
+			List<HibSchemaVersion> versions = project.getSchemaContainerRoot().findAll().stream().filter(v -> !v.getName().equals("content"))
+				.map(HibSchema::getLatestVersion).collect(Collectors.toList());
 
 			SchemaContainerVersionImpl newVersion = tx.getGraph().addFramedVertexExplicit(SchemaContainerVersionImpl.class);
 			newVersion.setVersion("4.0");
@@ -271,8 +269,8 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			newVersion.setSchemaContainer(toSchema(schemaContainer("content")));
 			toBranch(branch).linkOut(newVersion, HAS_SCHEMA_VERSION);
 
-			List<SchemaVersion> found = new ArrayList<>();
-			for (BranchSchemaEdge versionedge : branch.findAllLatestSchemaVersionEdges()) {
+			List<HibSchemaVersion> found = new ArrayList<>();
+			for (HibBranchSchemaVersion versionedge : branch.findAllLatestSchemaVersionEdges()) {
 				found.add(versionedge.getSchemaContainerVersion());
 			}
 			assertThat(found).as("List of schema versions").usingElementComparatorOnFields("uuid", "name", "version")
@@ -347,10 +345,10 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 
 			HibProject project = project();
 			HibBranch branch = latestBranch();
-			List<SchemaVersion> versions = project.getSchemaContainerRoot().findAll().stream().map(Schema::getLatestVersion)
+			List<HibSchemaVersion> versions = project.getSchemaContainerRoot().findAll().stream().map(HibSchema::getLatestVersion)
 				.collect(Collectors.toList());
 
-			List<SchemaVersion> activeVersions = TestUtils.toList(branch.findActiveSchemaVersions());
+			List<HibSchemaVersion> activeVersions = TestUtils.toList(branch.findActiveSchemaVersions());
 			assertThat(activeVersions).as("List of schema versions").usingElementComparatorOnFields("uuid", "name", "version").containsAll(versions);
 		}
 	}
@@ -386,11 +384,11 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	public void testReadMicroschemaVersions() throws Exception {
 		try (Tx tx = tx()) {
 			HibProject project = project();
-			List<MicroschemaVersion> versions = project.getMicroschemaContainerRoot().findAll().stream()
-				.map(Microschema::getLatestVersion).collect(Collectors.toList());
+			List<HibMicroschemaVersion> versions = project.getMicroschemaContainerRoot().findAll().stream()
+				.map(HibMicroschema::getLatestVersion).collect(Collectors.toList());
 
-			List<MicroschemaVersion> found = new ArrayList<>();
-			for (MicroschemaVersion version : project.getInitialBranch().findAllMicroschemaVersions()) {
+			List<HibMicroschemaVersion> found = new ArrayList<>();
+			for (HibMicroschemaVersion version : project.getInitialBranch().findAllMicroschemaVersions()) {
 				found.add(version);
 			}
 			assertThat(found).as("List of microschema versions").usingElementComparatorOnFields("uuid", "name", "version").containsAll(versions);

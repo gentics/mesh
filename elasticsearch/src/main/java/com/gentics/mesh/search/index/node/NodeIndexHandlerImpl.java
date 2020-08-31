@@ -152,7 +152,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 		return db.transactional(tx -> {
 			Map<String, IndexInfo> indexInfo = new HashMap<>();
 			// Each branch specific index has also document type specific mappings
-			for (SchemaVersion containerVersion : branch.findActiveSchemaVersions()) {
+			for (HibSchemaVersion containerVersion : branch.findActiveSchemaVersions()) {
 				indexInfo.putAll(getIndices(project, branch, containerVersion).runInExistingTx(tx));
 			}
 			return indexInfo;

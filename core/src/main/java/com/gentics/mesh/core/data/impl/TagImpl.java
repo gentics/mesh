@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAGFAMILY_ROOT;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toProject;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toTagFamily;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
 
@@ -80,7 +81,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 	}
 
 	public void setProject(HibProject project) {
-		setUniqueLinkOutTo(project.toProject(), ASSIGNED_TO_PROJECT);
+		setUniqueLinkOutTo(toProject(project), ASSIGNED_TO_PROJECT);
 	}
 
 	@Override

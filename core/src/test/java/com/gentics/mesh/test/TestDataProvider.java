@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toProject;
 import static com.gentics.mesh.test.TestSize.EMPTY;
 import static com.gentics.mesh.test.TestSize.FULL;
 
@@ -185,11 +186,11 @@ public class TestDataProvider {
 			addPermissions(microschemaContainers.values());
 			addPermissions(project);
 			addPermissions(project.getBaseNode());
-			addPermissions(project.getMicroschemaContainerRoot());
-			addPermissions(project.getSchemaContainerRoot());
-			addPermissions(project.toProject().getBranchRoot());
+			addPermissions(toProject(project).getMicroschemaContainerRoot());
+			addPermissions(toProject(project).getSchemaContainerRoot());
+			addPermissions(toProject(project).getBranchRoot());
 			addPermissions(project.getInitialBranch());
-			addPermissions(project.getTagFamilyRoot());
+			addPermissions(toProject(project).getTagFamilyRoot());
 			addPermissions(boot.projectRoot());
 			addPermissions(boot.userRoot());
 			addPermissions(boot.groupRoot());

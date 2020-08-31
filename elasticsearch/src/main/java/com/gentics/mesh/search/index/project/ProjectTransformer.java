@@ -1,5 +1,6 @@
 package com.gentics.mesh.search.index.project;
 
+import static com.gentics.mesh.core.data.util.HibClassConverter.toProject;
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 
 import javax.inject.Inject;
@@ -23,7 +24,7 @@ public class ProjectTransformer extends AbstractTransformer<HibProject> {
 
 	public String generateVersion(HibProject project) {
 		// No need to add users since the creator/editor edge affects the project version
-		return ETag.hash(project.toProject().getElementVersion());
+		return ETag.hash(toProject(project).getElementVersion());
 	}
 
 	@Override

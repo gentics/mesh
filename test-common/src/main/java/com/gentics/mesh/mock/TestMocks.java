@@ -86,7 +86,6 @@ public final class TestMocks {
 
 	public static Project mockProject(User user) {
 		Project project = mock(Project.class);
-		when(project.toProject()).thenReturn(project);
 		when(project.getUuid()).thenReturn(PROJECT_DEMO2_UUID);
 		when(project.getName()).thenReturn("dummyProject");
 		when(project.getCreator()).thenReturn(user);

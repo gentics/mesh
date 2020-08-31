@@ -230,12 +230,12 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implem
 		String branchUuid = initialBranch.getUuid();
 
 		// Add project permissions
-		userDao.addCRUDPermissionOnRole(creator, projectRoot, CREATE_PERM, project.toProject());
+		userDao.addCRUDPermissionOnRole(creator, projectRoot, CREATE_PERM, toProject(project));
 		userDao.inheritRolePermissions(creator, project, project.getBaseNode());
-		userDao.inheritRolePermissions(creator, project, project.getTagFamilyRoot());
-		userDao.inheritRolePermissions(creator, project, project.getSchemaContainerRoot());
-		userDao.inheritRolePermissions(creator, project, project.getMicroschemaContainerRoot());
-		userDao.inheritRolePermissions(creator, project, project.getNodeRoot());
+		userDao.inheritRolePermissions(creator, project, toProject(project).getTagFamilyRoot());
+		userDao.inheritRolePermissions(creator, project, toProject(project).getSchemaContainerRoot());
+		userDao.inheritRolePermissions(creator, project, toProject(project).getMicroschemaContainerRoot());
+		userDao.inheritRolePermissions(creator, project, toProject(project).getNodeRoot());
 		userDao.inheritRolePermissions(creator, project, initialBranch);
 
 		// Store the project and the branch in the index
@@ -330,6 +330,12 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implem
 	public String getETag(HibProject project, InternalActionContext ac) {
 		Project graphProject = toProject(project);
 		return graphProject.getETag(ac);
+	}
+
+	@Override
+	public String getAPIPath(HibProject project, InternalActionContext ac) {
+		Project graphProject = toProject(project);
+		return graphProject.getAPIPath(ac);
 	}
 
 }

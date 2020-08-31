@@ -53,4 +53,6 @@ public interface ProjectDaoWrapper extends ProjectDao, DaoWrapper<HibProject>, D
 
 	String getETag(HibProject project, InternalActionContext ac);
 
+	String getAPIPath(HibProject project, InternalActionContext ac);
+
 }

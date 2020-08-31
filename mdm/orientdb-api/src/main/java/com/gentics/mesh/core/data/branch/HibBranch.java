@@ -236,14 +236,14 @@ public interface HibBranch extends HibCoreElement, HibUserTracking {
 	 * 
 	 * @return Iterable
 	 */
-	Result<? extends MicroschemaVersion> findAllMicroschemaVersions();
+	Result<? extends HibMicroschemaVersion> findAllMicroschemaVersions();
 
 	/**
 	 * Get an iterable of all latest microschema container versions.
 	 * 
 	 * @return Iterable
 	 */
-	Result<? extends BranchMicroschemaEdge> findAllLatestMicroschemaVersionEdges();
+	Result<? extends HibBranchMicroschemaVersion> findAllLatestMicroschemaVersionEdges();
 
 	/**
 	 * Get an iterable over all active schema container versions. An active version is one which still contains {@link NodeGraphFieldContainer}'s or one which
@@ -251,7 +251,7 @@ public interface HibBranch extends HibCoreElement, HibUserTracking {
 	 * 
 	 * @return Iterable
 	 */
-	Result<? extends SchemaVersion> findActiveSchemaVersions();
+	Result<? extends HibSchemaVersion> findActiveSchemaVersions();
 
 	/**
 	 * Get an iterable over all active microschema container versions. An active version is one which still contains {@link NodeGraphFieldContainer}'s or one
@@ -259,14 +259,14 @@ public interface HibBranch extends HibCoreElement, HibUserTracking {
 	 *
 	 * @return Iterable
 	 */
-	Iterable<? extends MicroschemaVersion> findActiveMicroschemaVersions();
+	Iterable<? extends HibMicroschemaVersion> findActiveMicroschemaVersions();
 
 	/**
 	 * Get an iterable of all latest schema container versions.
 	 * 
 	 * @return Iterable
 	 */
-	Iterable<? extends BranchSchemaEdge> findAllLatestSchemaVersionEdges();
+	Iterable<? extends HibBranchSchemaVersion> findAllLatestSchemaVersionEdges();
 
 	/**
 	 * Assign the branch to a specific project.
@@ -281,14 +281,14 @@ public interface HibBranch extends HibCoreElement, HibUserTracking {
 	 * 
 	 * @return
 	 */
-	Result<? extends BranchSchemaEdge> findAllSchemaVersionEdges();
+	Result<? extends HibBranchSchemaVersion> findAllSchemaVersionEdges();
 
 	/**
 	 * Return all microschema versions which are linked to the branch.
 	 * 
 	 * @return
 	 */
-	Result<? extends BranchMicroschemaEdge> findAllMicroschemaVersionEdges();
+	Result<? extends HibBranchMicroschemaVersion> findAllMicroschemaVersionEdges();
 
 	/**
 	 * Find the branch schema edge for the given version.

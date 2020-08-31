@@ -36,10 +36,9 @@ import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
@@ -225,11 +224,11 @@ public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResp
 	 * @return single emitting the rest model
 	 */
 	public BranchInfoMicroschemaList getMicroschemaVersions(HibBranch branch) {
-		List<BranchMicroschemaInfo> list = StreamUtil.toStream(branch.findAllLatestMicroschemaVersionEdges()).map(edge -> {
-			MicroschemaReference reference = edge.getMicroschemaContainerVersion().transformToReference();
+		List<BranchMicroschemaInfo> list = StreamUtil.toStream(branch.findAllLatestMicroschemaVersionEdges()).map(assignment -> {
+			MicroschemaReference reference = assignment.getMicroschemaContainerVersion().transformToReference();
 			BranchMicroschemaInfo info = new BranchMicroschemaInfo(reference);
-			info.setMigrationStatus(edge.getMigrationStatus());
-			info.setJobUuid(edge.getJobUuid());
+			info.setMigrationStatus(assignment.getMigrationStatus());
+			info.setJobUuid(assignment.getJobUuid());
 			return info;
 		}).collect(Collectors.toList());
 
@@ -268,7 +267,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResp
 	 * @param <T>
 	 *            The type of the schema version (either schema version or microschema version)
 	 */
-	private <T extends GraphFieldSchemaContainerVersion> void handleMigrateRemaining(InternalActionContext ac, String branchUuid,
+	private <T extends HibFieldSchemaVersionElement> void handleMigrateRemaining(InternalActionContext ac, String branchUuid,
 		Function<HibBranch, Iterable<T>> activeSchemas, PentaFunction<JobRoot, HibUser, HibBranch, T, T, HibJob> enqueueMigration) {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
@@ -278,12 +277,12 @@ public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResp
 
 				// Get all active versions and group by Microschema
 				Collection<? extends List<T>> versions = StreamSupport.stream(activeSchemas.apply(branch).spliterator(), false)
-					.collect(Collectors.groupingBy(GraphFieldSchemaContainerVersion::getName)).values();
+					.collect(Collectors.groupingBy(HibFieldSchemaVersionElement::getName)).values();
 
 				// Get latest versions of all active Microschemas
 				Map<String, T> latestVersions = versions.stream()
 					.map(list -> (T) list.stream().max(Comparator.comparing(Function.identity())).get())
-					.collect(Collectors.toMap(GraphFieldSchemaContainerVersion::getName, Function.identity()));
+					.collect(Collectors.toMap(HibFieldSchemaVersionElement::getName, Function.identity()));
 
 				latestVersions.values().stream()
 					.flatMap(v -> (Stream<T>) v.getPreviousVersions())
