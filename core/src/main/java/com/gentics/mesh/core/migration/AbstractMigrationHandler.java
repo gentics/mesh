@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.migration;
 
+import static com.gentics.mesh.core.data.util.HibClassConverter.toVersion;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,10 +15,9 @@ import com.gentics.mesh.context.NodeMigrationActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
+import com.gentics.mesh.core.data.schema.HibSchemaChange;
 import com.gentics.mesh.core.data.schema.RemoveFieldChange;
-import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.impl.FieldTypeChangeImpl;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
@@ -48,7 +49,8 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 
 	protected final Provider<EventQueueBatch> batchProvider;
 
-	public AbstractMigrationHandler(Database db, BinaryUploadHandler binaryFieldHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider) {
+	public AbstractMigrationHandler(Database db, BinaryUploadHandler binaryFieldHandler, MetricsService metrics,
+		Provider<EventQueueBatch> batchProvider) {
 		this.db = db;
 		this.binaryFieldHandler = binaryFieldHandler;
 		this.metrics = metrics;
@@ -64,14 +66,14 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 	 *            Set of touched fields (will be modified)
 	 * @throws IOException
 	 */
-	protected void prepareMigration(GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion, Set<String> touchedFields) throws IOException {
-		SchemaChange<?> change = fromVersion.getNextChange();
+	protected void prepareMigration(HibFieldSchemaVersionElement fromVersion, Set<String> touchedFields) throws IOException {
+		HibSchemaChange<?> change = fromVersion.getNextChange();
 		while (change != null) {
 			// if either the type changes or the field is removed, the field is
 			// "touched"
-//			if (change instanceof UpdateFieldChangeImpl) {
-//				touchedFields.add(((UpdateFieldChangeImpl) change).getFieldName());
-//			} else
+			// if (change instanceof UpdateFieldChangeImpl) {
+			// touchedFields.add(((UpdateFieldChangeImpl) change).getFieldName());
+			// } else
 			if (change instanceof FieldTypeChangeImpl) {
 				touchedFields.add(((FieldTypeChangeImpl) change).getFieldName());
 			} else if (change instanceof RemoveFieldChange) {
@@ -96,8 +98,8 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 	 * @throws Exception
 	 */
 	protected void migrate(NodeMigrationActionContext ac, GraphFieldContainer newContainer, FieldContainer newContent,
-		   	GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion,
-		   	HibFieldSchemaVersionElement newVersion, Set<String> touchedFields) throws Exception {
+		HibFieldSchemaVersionElement fromVersion,
+		HibFieldSchemaVersionElement newVersion, Set<String> touchedFields) throws Exception {
 
 		// Remove all touched fields (if necessary, they will be readded later)
 		newContainer.getFields().stream().filter(f -> touchedFields.contains(f.getFieldKey())).forEach(f -> f.removeField(newContainer));
@@ -105,7 +107,7 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 
 		FieldMap fields = newContent.getFields();
 
-		Map<String, Field> newFields = fromVersion.getChanges()
+		Map<String, Field> newFields = toVersion(fromVersion).getChanges()
 			.map(change -> change.createFields(fromVersion.getSchema(), newContent))
 			.collect(StreamUtil.mergeMaps());
 

@@ -26,7 +26,7 @@ import io.vertx.core.json.JsonObject;
  * The schema change stores {@link SchemaChangeModel} data. Since the {@link SchemaChangeModel} class is generic we will also store the model specific
  * properties in a generic way. The {@link #setRestProperty(String, Object)} method can be used to set such properties.
  */
-public interface SchemaChange<T extends FieldSchemaContainer> extends MeshVertex {
+public interface SchemaChange<T extends FieldSchemaContainer> extends MeshVertex, HibSchemaChange<T> {
 
 	/**
 	 * Return the schema change operation.

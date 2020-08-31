@@ -21,7 +21,7 @@ import org.junit.Rule;
 
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -114,7 +114,7 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 		return Tx.get().data().nodeDao().transformToRestSync(node, ac, 0).toJson();
 	}
 
-	protected void testPermission(InternalPermission perm, HibElement element) {
+	protected void testPermission(InternalPermission perm, HibBaseElement element) {
 		RoutingContext rc = tx(() -> mockRoutingContext());
 
 		try (Tx tx = tx()) {

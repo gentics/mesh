@@ -13,7 +13,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
@@ -84,7 +84,7 @@ public class PermissionChangedEventHandler implements EventHandler {
 
 			return ofNullable(projectDao.findByUuid(model.getProject().getUuid()))
 				.flatMap(project -> ofNullable(nodeDao.findByUuid(project, model.getUuid()))
-					.flatMap(node -> branchDao.findAll(project).stream().map(HibElement::getUuid)
+					.flatMap(node -> branchDao.findAll(project).stream().map(HibBaseElement::getUuid)
 						.flatMap(branchUuid -> Util.latestVersionTypes()
 							.flatMap(type -> tx.data().contentDao().getGraphFieldContainers(node, branchUuid, type).stream()
 								.map(container -> meshHelper.updateDocumentRequest(

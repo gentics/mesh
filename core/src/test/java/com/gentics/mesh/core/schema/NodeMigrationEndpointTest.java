@@ -32,6 +32,7 @@ import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.branch.HibBranchSchemaVersion;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
@@ -118,12 +119,12 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, initialBranchUuid(), schemaResponse.toReference()));
 
 		// Assert that the index was created and that no job was scheduled. We need no job since no migration is required
-		BranchSchemaEdge edge1;
+		HibBranchSchemaVersion assignment1;
 		try (Tx tx = tx()) {
-			edge1 = initialBranch().findBranchSchemaEdge(tx.data().schemaDao().findByName("dummy").getLatestVersion());
-			assertEquals(COMPLETED, edge1.getMigrationStatus());
-			assertNull(edge1.getJobUuid());
-			assertTrue("The assignment should be active.", edge1.isActive());
+			assignment1 = initialBranch().findBranchSchemaEdge(tx.data().schemaDao().findByName("dummy").getLatestVersion());
+			assertEquals(COMPLETED, assignment1.getMigrationStatus());
+			assertNull(assignment1.getJobUuid());
+			assertTrue("The assignment should be active.", assignment1.isActive());
 		}
 		assertThat(adminCall(() -> client().findJobs())).isEmpty();
 
@@ -152,7 +153,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		waitForSearchIdleEvent();
 
 		// Assert that the indices have been created and the job has been queued
-		BranchSchemaEdge edge2;
+		HibBranchSchemaVersion assignment2;
 		HibSchemaVersion versionB;
 		String versionBUuid;
 		try (Tx tx = tx()) {
@@ -160,10 +161,10 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			versionB = schemaDao.findByName("dummy").getLatestVersion();
 			versionBUuid = versionB.getUuid();
 			assertNotEquals(versionUuid, versionBUuid);
-			edge2 = initialBranch().findBranchSchemaEdge(schemaDao.findByName("dummy").getLatestVersion());
-			assertNotNull(edge2.getJobUuid());
-			assertEquals("The migration should be queued", QUEUED, edge2.getMigrationStatus());
-			assertTrue("The assignment should be active.", edge2.isActive());
+			assignment2 = initialBranch().findBranchSchemaEdge(schemaDao.findByName("dummy").getLatestVersion());
+			assertNotNull(assignment2.getJobUuid());
+			assertEquals("The migration should be queued", QUEUED, assignment2.getMigrationStatus());
+			assertTrue("The assignment should be active.", assignment2.isActive());
 			assertThat(trackingSearchProvider()).hasCreate(ContentDaoWrapper.composeIndexName(projectUuid(), initialBranchUuid(), versionBUuid,
 				DRAFT)).hasNoDropEvents();
 			assertThat(trackingSearchProvider()).hasCreate(ContentDaoWrapper.composeIndexName(projectUuid(), initialBranchUuid(), versionBUuid,
@@ -179,10 +180,10 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		triggerAndWaitForAllJobs(COMPLETED);
 
 		try (Tx tx = tx()) {
-			assertNotNull(edge2.getJobUuid());
-			assertEquals(COMPLETED, edge2.getMigrationStatus());
-			assertTrue("The assignment should be active.", edge2.isActive());
-			assertFalse("The previous assignment should be inactive.", edge1.isActive());
+			assertNotNull(assignment2.getJobUuid());
+			assertEquals(COMPLETED, assignment2.getMigrationStatus());
+			assertTrue("The assignment should be active.", assignment2.isActive());
+			assertFalse("The previous assignment should be inactive.", assignment1.isActive());
 		}
 
 		// The initial index should have been removed
@@ -216,7 +217,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 		waitForSearchIdleEvent();
 
-		BranchSchemaEdge edge3;
+		HibBranchSchemaVersion edge3;
 		HibSchemaVersion versionC;
 		String versionCUuid;
 		try (Tx tx = tx()) {
@@ -232,8 +233,8 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			edge3 = initialBranch().findBranchSchemaEdge(schemaDao.findByName("dummy").getLatestVersion());
 			assertNotNull(edge3.getJobUuid());
 			assertEquals(QUEUED, edge3.getMigrationStatus());
-			assertFalse("The previous assignment should be inactive.", edge1.isActive());
-			assertTrue("The previous assignment should be active since it has not yet been migrated.", edge2.isActive());
+			assertFalse("The previous assignment should be inactive.", assignment1.isActive());
+			assertTrue("The previous assignment should be active since it has not yet been migrated.", assignment2.isActive());
 			assertTrue("The assignment should be active.", edge3.isActive());
 			assertThat(trackingSearchProvider()).hasCreate(ContentDaoWrapper.composeIndexName(projectUuid(), initialBranchUuid(), versionCUuid,
 				DRAFT)).hasNoDropEvents();
@@ -251,8 +252,8 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 			assertNotNull(edge3.getJobUuid());
 			assertEquals(COMPLETED, edge3.getMigrationStatus());
-			assertFalse("The previous assignment should be inactive.", edge1.isActive());
-			assertFalse("The previous assignment should be inactive since it has been been migrated.", edge2.isActive());
+			assertFalse("The previous assignment should be inactive.", assignment1.isActive());
+			assertFalse("The previous assignment should be inactive since it has been been migrated.", assignment1.isActive());
 			assertTrue("The assignment should be active.", edge3.isActive());
 			assertFalse(
 				"There should no longer be an editable container (one draft) linked to the version since the migration should have updated the link.",

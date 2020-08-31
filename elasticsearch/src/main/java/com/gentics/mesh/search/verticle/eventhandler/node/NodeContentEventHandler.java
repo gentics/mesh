@@ -16,7 +16,7 @@ import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -134,7 +134,7 @@ public class NodeContentEventHandler implements EventHandler {
 
 	private Transactional<String> getSchemaVersionUuid(NodeMeshEventModel message) {
 		return findLatestSchemaVersion(message)
-			.mapInTx(HibElement::getUuid);
+			.mapInTx(HibBaseElement::getUuid);
 	}
 
 	private Transactional<HibSchemaVersion> findLatestSchemaVersion(NodeMeshEventModel message) {

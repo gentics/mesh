@@ -6,7 +6,7 @@ import java.util.function.Predicate;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HasPermissions;
-import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.User;
@@ -38,12 +38,12 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<HibUser>, DaoTransfo
 	 * @param element
 	 * @param permission
 	 * @return
-	 * @deprecated Use {@link #hasPermission(HibUser, HibElement, InternalPermission)} instead.
+	 * @deprecated Use {@link #hasPermission(HibUser, HibBaseElement, InternalPermission)} instead.
 	 */
 	@Deprecated
 	boolean hasPermission(HibUser user, MeshVertex element, InternalPermission permission);
 
-	boolean hasPermission(HibUser user, HibElement element, InternalPermission permission);
+	boolean hasPermission(HibUser user, HibBaseElement element, InternalPermission permission);
 
 	/**
 	 * Check whether the user has the given permission on the element with the given id.
@@ -102,7 +102,7 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<HibUser>, DaoTransfo
 	 * @param element
 	 * @return
 	 */
-	PermissionInfo getPermissionInfo(HibUser user, HibElement element);
+	PermissionInfo getPermissionInfo(HibUser user, HibBaseElement element);
 
 	/**
 	 * Return a set of permissions which the user got for the given vertex.
@@ -110,7 +110,7 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<HibUser>, DaoTransfo
 	 * @param element
 	 * @return
 	 */
-	Set<InternalPermission> getPermissions(HibUser user, HibElement element);
+	Set<InternalPermission> getPermissions(HibUser user, HibBaseElement element);
 
 	/**
 	 * Update the vertex using the action context information.
@@ -207,12 +207,12 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<HibUser>, DaoTransfo
 	 * @param sourceNode
 	 * @param targetNode
 	 * @return Fluent API
-	 * @deprecated Use {@link #inheritRolePermissions(HibUser, HibElement, HibElement)} instead.
+	 * @deprecated Use {@link #inheritRolePermissions(HibUser, HibBaseElement, HibBaseElement)} instead.
 	 */
 	@Deprecated
 	HibUser inheritRolePermissions(HibUser user, MeshVertex sourceNode, MeshVertex targetNode);
 
-	HibUser inheritRolePermissions(HibUser user, HibElement source, HibElement target);
+	HibUser inheritRolePermissions(HibUser user, HibBaseElement source, HibBaseElement target);
 
 	/**
 	 * Set the plaintext password. Internally the password string will be hashed and the password hash will be set. This will also set

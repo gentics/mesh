@@ -22,7 +22,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
@@ -90,7 +90,7 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 	}
 
 	@Override
-	public Set<InternalPermission> getPermissions(HibRole role, HibElement element) {
+	public Set<InternalPermission> getPermissions(HibRole role, HibBaseElement element) {
 		Set<InternalPermission> permissions = new HashSet<>();
 		InternalPermission[] possiblePermissions = element.hasPublishPermissions()
 			? InternalPermission.values()
@@ -105,13 +105,13 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 	}
 
 	@Override
-	public boolean hasPermission(HibRole role, InternalPermission permission, HibElement vertex) {
+	public boolean hasPermission(HibRole role, InternalPermission permission, HibBaseElement vertex) {
 		Set<String> allowedUuids = vertex.getRoleUuidsForPerm(permission);
 		return allowedUuids != null && allowedUuids.contains(role.getUuid());
 	}
 
 	@Override
-	public void grantPermissions(HibRole role, HibElement vertex, InternalPermission... permissions) {
+	public void grantPermissions(HibRole role, HibBaseElement vertex, InternalPermission... permissions) {
 		for (InternalPermission permission : permissions) {
 			Set<String> allowedRoles = vertex.getRoleUuidsForPerm(permission);
 			if (allowedRoles == null) {
@@ -124,7 +124,7 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 	}
 
 	@Override
-	public void revokePermissions(HibRole role, HibElement vertex, InternalPermission... permissions) {
+	public void revokePermissions(HibRole role, HibBaseElement vertex, InternalPermission... permissions) {
 		boolean permissionRevoked = false;
 		for (InternalPermission permission : permissions) {
 			Set<String> allowedRoles = vertex.getRoleUuidsForPerm(permission);
@@ -299,7 +299,7 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 	}
 
 	@Override
-	public void applyPermissions(HibElement element, EventQueueBatch batch, HibRole role, boolean recursive, Set<InternalPermission> permissionsToGrant,
+	public void applyPermissions(HibBaseElement element, EventQueueBatch batch, HibRole role, boolean recursive, Set<InternalPermission> permissionsToGrant,
 		Set<InternalPermission> permissionsToRevoke) {
 		Role graphRole = toRole(role);
 		MeshVertex graphElement = (MeshVertex) element;

@@ -12,7 +12,6 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BranchMigrationContext;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -52,7 +51,8 @@ public class BranchMigrationJobImpl extends JobImpl {
 	}
 
 	private BranchMigrationContext prepareContext() {
-		MigrationStatusHandlerImpl status = new MigrationStatusHandlerImpl(this, vertx(), JobType.branch);
+		MigrationStatusHandlerImpl status = new MigrationStatusHandlerImpl(this, JobType.branch);
+		log.debug("Preparing branch migration job");
 		try {
 			return db().tx(() -> {
 				BranchMigrationContextImpl context = new BranchMigrationContextImpl();

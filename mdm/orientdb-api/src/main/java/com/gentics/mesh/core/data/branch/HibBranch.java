@@ -295,7 +295,7 @@ public interface HibBranch extends HibCoreElement {
 	 * @param schemaVersion
 	 * @return Found edge between branch and version
 	 */
-	BranchSchemaEdge findBranchSchemaEdge(HibSchemaVersion schemaVersion);
+	HibBranchSchemaVersion findBranchSchemaEdge(HibSchemaVersion schemaVersion);
 
 	/**
 	 * Find the branch microschema edge for the given version.
@@ -303,7 +303,7 @@ public interface HibBranch extends HibCoreElement {
 	 * @param microschemaVersion
 	 * @return Found edge between branch and version
 	 */
-	BranchMicroschemaEdge findBranchMicroschemaEdge(HibMicroschemaVersion microschemaVersion);
+	HibBranchMicroschemaVersion findBranchMicroschemaEdge(HibMicroschemaVersion microschemaVersion);
 
 	/**
 	 * Find the latest schema version which is assigned to the branch which matches the provided schema container

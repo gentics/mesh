@@ -14,7 +14,7 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
@@ -39,7 +39,7 @@ import io.vertx.core.Vertx;
  * @see MeshVertex
  */
 @GraphElement
-public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, HibElement {
+public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, HibBaseElement {
 
 	private String uuid;
 

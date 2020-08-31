@@ -12,7 +12,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
@@ -30,7 +30,7 @@ public class PermissionProperties {
 		this.boot = boot;
 	}
 
-	public Result<? extends HibRole> getRolesWithPerm(HibElement element, InternalPermission perm) {
+	public Result<? extends HibRole> getRolesWithPerm(HibBaseElement element, InternalPermission perm) {
 		Set<String> roleUuids = element.getRoleUuidsForPerm(perm);
 		Stream<String> stream = roleUuids == null
 			? Stream.empty()
@@ -41,7 +41,7 @@ public class PermissionProperties {
 			.filter(Objects::nonNull));
 	}
 
-	public PermissionInfo getRolePermissions(HibElement element, InternalActionContext ac, String roleUuid) {
+	public PermissionInfo getRolePermissions(HibBaseElement element, InternalActionContext ac, String roleUuid) {
 		if (!isEmpty(roleUuid)) {
 			RoleDaoWrapper roleDao = boot.roleDao();
 			HibRole role = roleDao.loadObjectByUuid(ac, roleUuid, READ_PERM);

@@ -8,7 +8,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
@@ -64,12 +64,12 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	}
 
 	@Override
-	public PermissionInfo getRolePermissions(HibElement element, InternalActionContext ac, String roleUuid) {
+	public PermissionInfo getRolePermissions(HibBaseElement element, InternalActionContext ac, String roleUuid) {
 		return mesh().permissionProperties().getRolePermissions(element, ac, roleUuid);
 	}
 
 	@Override
-	public Result<? extends HibRole> getRolesWithPerm(HibElement vertex, InternalPermission perm) {
+	public Result<? extends HibRole> getRolesWithPerm(HibBaseElement vertex, InternalPermission perm) {
 		return mesh().permissionProperties().getRolesWithPerm(vertex, perm);
 	}
 

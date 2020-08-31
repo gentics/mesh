@@ -13,8 +13,8 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.MicronodeMigrationContext;
 import com.gentics.mesh.context.impl.MicronodeMigrationContextImpl;
-import com.gentics.mesh.core.data.branch.BranchMicroschemaEdge;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.branch.HibBranchMicroschemaVersion;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.Microschema;
@@ -64,7 +64,7 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 	}
 
 	private MicronodeMigrationContext prepareContext() {
-		MigrationStatusHandler status = new MigrationStatusHandlerImpl(this, vertx(), JobType.microschema);
+		MigrationStatusHandler status = new MigrationStatusHandlerImpl(this, JobType.microschema);
 		try {
 			return db().tx(() -> {
 				MicronodeMigrationContextImpl context = new MicronodeMigrationContextImpl();
@@ -91,7 +91,7 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 				context.setToVersion(toContainerVersion);
 
 				Microschema schemaContainer = fromContainerVersion.getSchemaContainer();
-				BranchMicroschemaEdge branchVersionEdge = branch.findBranchMicroschemaEdge(toContainerVersion);
+				HibBranchMicroschemaVersion branchVersionEdge = branch.findBranchMicroschemaEdge(toContainerVersion);
 				context.getStatus().setVersionEdge(branchVersionEdge);
 				if (log.isDebugEnabled()) {
 					log.debug("Micronode migration for microschema {" + schemaContainer.getUuid() + "} from version {"

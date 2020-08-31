@@ -25,7 +25,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
-import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.branch.HibBranch;
@@ -210,7 +210,7 @@ public class TestDataProvider {
 		boot.userDao().findByUsername("admin").setPasswordHash(hash);
 	}
 
-	private void addPermissions(HibElement element) {
+	private void addPermissions(HibBaseElement element) {
 		addPermissions(Arrays.asList(element));
 	}
 
@@ -218,11 +218,11 @@ public class TestDataProvider {
 		return size;
 	}
 
-	private void addPermissions(Collection<? extends HibElement> elements) {
+	private void addPermissions(Collection<? extends HibBaseElement> elements) {
 		RoleDaoWrapper roleDao = Tx.get().data().roleDao();
 
 		HibRole role = userInfo.getRole();
-		for (HibElement meshVertex : elements) {
+		for (HibBaseElement meshVertex : elements) {
 			if (log.isTraceEnabled()) {
 				log.trace("Granting CRUD permissions on {" + meshVertex.getId() + "} with role {" + role.getId() + "}");
 			}

@@ -24,7 +24,7 @@ import com.gentics.mesh.core.action.DAOActions;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.HibCoreElement;
-import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.NodeContent;
@@ -361,7 +361,7 @@ public abstract class AbstractTypeProvider {
 		return element;
 	}
 
-	protected HibElement handleBranchSchema(DataFetchingEnvironment env) {
+	protected HibBaseElement handleBranchSchema(DataFetchingEnvironment env) {
 		GraphQLContext gc = env.getContext();
 		Branch branch = env.getSource();
 		Stream<? extends SchemaVersion> schemas = StreamSupport.stream(branch.findActiveSchemaVersions().spliterator(), false);

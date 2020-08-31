@@ -12,10 +12,11 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.NodeMigrationActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
-import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.branch.HibBranchSchemaVersion;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.migration.impl.MigrationStatusHandlerImpl;
@@ -61,7 +62,7 @@ public class NodeMigrationJobImpl extends JobImpl {
 	}
 
 	private NodeMigrationActionContextImpl prepareContext() {
-		MigrationStatusHandlerImpl status = new MigrationStatusHandlerImpl(this, vertx(), JobType.schema);
+		MigrationStatusHandlerImpl status = new MigrationStatusHandlerImpl(this, JobType.schema);
 		try {
 			return db().tx(() -> {
 				NodeMigrationActionContextImpl context = new NodeMigrationActionContextImpl();
@@ -98,8 +99,8 @@ public class NodeMigrationJobImpl extends JobImpl {
 				}
 				context.setProject(project);
 
-				BranchSchemaEdge branchVersionEdge = branch.findBranchSchemaEdge(toContainerVersion);
-				context.getStatus().setVersionEdge(branchVersionEdge);
+				HibBranchSchemaVersion branchVersionAssignment = branch.findBranchSchemaEdge(toContainerVersion);
+				context.getStatus().setVersionEdge(branchVersionAssignment);
 
 				log.info("Handling node migration request for schema {" + schemaContainer.getUuid() + "} from version {"
 					+ fromContainerVersion.getUuid() + "} to version {" + toContainerVersion.getUuid() + "} for release {" + branch.getUuid()
@@ -159,10 +160,10 @@ public class NodeMigrationJobImpl extends JobImpl {
 		// Deactivate edge
 		db().tx(() -> {
 			HibBranch branch = context.getBranch();
-			SchemaVersion fromContainerVersion = context.getFromVersion();
-			BranchSchemaEdge edge = branch.findBranchSchemaEdge(fromContainerVersion);
-			if (edge != null) {
-				edge.setActive(false);
+			HibSchemaVersion fromContainerVersion = context.getFromVersion();
+			HibBranchSchemaVersion assignment = branch.findBranchSchemaEdge(fromContainerVersion);
+			if (assignment != null) {
+				assignment.setActive(false);
 			}
 			if (log.isDebugEnabled()) {
 				log.debug("Deactivated schema version {}-{} for branch {}",

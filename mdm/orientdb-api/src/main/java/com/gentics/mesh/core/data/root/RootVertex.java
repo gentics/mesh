@@ -15,7 +15,7 @@ import java.util.stream.StreamSupport;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HasPermissions;
-import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
@@ -273,7 +273,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 *            Stack which contains the remaining path elements which should be resolved starting with the current graph element
 	 * @return
 	 */
-	default HibElement resolveToElement(Stack<String> stack) {
+	default HibBaseElement resolveToElement(Stack<String> stack) {
 		if (log.isDebugEnabled()) {
 			log.debug("Resolving for {" + getPersistanceClass().getSimpleName() + "}.");
 			if (stack.isEmpty()) {
@@ -366,7 +366,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @param roleUuid
 	 * @return
 	 */
-	default PermissionInfo getRolePermissions(HibElement element, InternalActionContext ac, String roleUuid) {
+	default PermissionInfo getRolePermissions(HibBaseElement element, InternalActionContext ac, String roleUuid) {
 		// TODO implement
 		throw new RuntimeException("Not implemented");
 	}
@@ -378,7 +378,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @param perm
 	 * @return
 	 */
-	default Result<? extends HibRole> getRolesWithPerm(HibElement vertex, InternalPermission perm) {
+	default Result<? extends HibRole> getRolesWithPerm(HibBaseElement vertex, InternalPermission perm) {
 		// TODO implement
 		throw new RuntimeException("Not implemented");
 	}

@@ -17,7 +17,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.UserDAOActions;
 import com.gentics.mesh.core.actions.impl.UserDAOActionsImpl;
-import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -79,7 +79,7 @@ public class UserCrudHandler extends AbstractCrudHandler<HibUser, UserResponse> 
 				HibUser user = userDao.loadObjectByUuid(ac, userUuid, READ_PERM);
 
 				// 2. Resolve the path to element that is targeted
-				HibElement targetElement = boot.meshRoot().resolvePathToElement(pathToElement);
+				HibBaseElement targetElement = boot.meshRoot().resolvePathToElement(pathToElement);
 				if (targetElement == null) {
 					throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
 				}

@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.root;
 
-import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibMeshVersion;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
@@ -98,7 +98,7 @@ public interface MeshRoot extends MeshVertex, HibMeshVersion {
 	 * @param pathToElement
 	 * @return Resolved element or null if no element could be found
 	 */
-	HibElement resolvePathToElement(String pathToElement);
+	HibBaseElement resolvePathToElement(String pathToElement);
 
 	void clearReferences();
 

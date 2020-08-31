@@ -8,7 +8,7 @@ import com.gentics.graphqlfilter.filter.DateFilter;
 import com.gentics.graphqlfilter.filter.FilterField;
 import com.gentics.graphqlfilter.filter.MappedFilter;
 import com.gentics.graphqlfilter.filter.StringFilter;
-import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibNamedElement;
 import com.gentics.mesh.core.data.NamedElement;
 import com.gentics.mesh.core.data.UserTrackingVertex;
@@ -37,8 +37,8 @@ public final class CommonFields {
 	 * @param <T>
 	 * @return
 	 */
-	public static <T extends HibElement> FilterField<T, Map<String, ?>> hibUuidFilter() {
-		return new MappedFilter<>("uuid", "Filters by uuid", StringFilter.filter(), HibElement::getUuid);
+	public static <T extends HibBaseElement> FilterField<T, Map<String, ?>> hibUuidFilter() {
+		return new MappedFilter<>("uuid", "Filters by uuid", StringFilter.filter(), HibBaseElement::getUuid);
 	}
 
 	/**

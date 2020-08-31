@@ -31,7 +31,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.DummyEventQueueBatch;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.HasPermissions;
-import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.NodeMigrationUser;
@@ -410,7 +410,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	}
 
 	@Override
-	public boolean hasPermission(HibUser user, HibElement element, InternalPermission permission) {
+	public boolean hasPermission(HibUser user, HibBaseElement element, InternalPermission permission) {
 		if (log.isTraceEnabled()) {
 			log.debug("Checking permissions for vertex {" + element.getUuid() + "}");
 		}
@@ -572,7 +572,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	}
 
 	@Override
-	public HibUser inheritRolePermissions(HibUser user, HibElement source, HibElement target) {
+	public HibUser inheritRolePermissions(HibUser user, HibBaseElement source, HibBaseElement target) {
 		return inheritRolePermissions(user, (MeshVertex) source, (MeshVertex) target);
 	}
 
@@ -630,7 +630,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	}
 
 	@Override
-	public PermissionInfo getPermissionInfo(HibUser user, HibElement element) {
+	public PermissionInfo getPermissionInfo(HibUser user, HibBaseElement element) {
 		PermissionInfo info = new PermissionInfo();
 		Set<InternalPermission> permissions = getPermissions(user, element);
 		for (InternalPermission perm : permissions) {
@@ -642,7 +642,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	}
 
 	@Override
-	public Set<InternalPermission> getPermissions(HibUser user, HibElement element) {
+	public Set<InternalPermission> getPermissions(HibUser user, HibBaseElement element) {
 		Predicate<? super InternalPermission> isValidPermission = perm -> perm != READ_PUBLISHED_PERM && perm != PUBLISH_PERM
 			|| element.hasPublishPermissions();
 

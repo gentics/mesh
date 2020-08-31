@@ -13,7 +13,9 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.binary.HibBinary;
+import com.gentics.mesh.core.data.branch.BranchVersionEdge;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.branch.HibBranchVersionAssignment;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.job.Job;
@@ -21,6 +23,8 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchema;
@@ -32,7 +36,7 @@ import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.graphdb.model.MeshElement;
+import com.syncleus.ferma.ElementFrame;
 
 public final class HibClassConverter {
 
@@ -49,6 +53,14 @@ public final class HibClassConverter {
 
 	public static User toUser(HibUser user) {
 		return checkAndCast(user, User.class);
+	}
+
+	public static BranchVersionEdge toBranchVersionEdge(HibBranchVersionAssignment assignment) {
+		return checkAndCast(assignment, BranchVersionEdge.class);
+	}
+
+	public static GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> toVersion(HibFieldSchemaVersionElement element) {
+		return checkAndCast(element, GraphFieldSchemaContainerVersion.class);
 	}
 
 	public static Group toGroup(HibGroup group) {
@@ -106,7 +118,7 @@ public final class HibClassConverter {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <T> T checkAndCast(HibElement element, Class<? extends MeshElement> clazz) {
+	public static <T> T checkAndCast(HibElement element, Class<? extends ElementFrame> clazz) {
 		Objects.requireNonNull(element, "The provided element was null and thus can't be converted to " + clazz.getName());
 		if (clazz.isInstance(element)) {
 			return (T) clazz.cast(element);

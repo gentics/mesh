@@ -3,7 +3,7 @@ package com.gentics.mesh.core.data.dao;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
-import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
@@ -13,7 +13,7 @@ import com.gentics.mesh.core.result.Result;
 
 import dagger.Lazy;
 
-public abstract class AbstractDaoWrapper<T extends HibElement> implements DaoWrapper<T> {
+public abstract class AbstractDaoWrapper<T extends HibBaseElement> implements DaoWrapper<T> {
 
 	protected final Lazy<BootstrapInitializer> boot;
 

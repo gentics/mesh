@@ -16,7 +16,7 @@ import com.gentics.mesh.ElementType;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -246,7 +246,7 @@ public class MeshEntities {
 		return event -> Optional.ofNullable(elementLoader.apply(event.getUuid()));
 	}
 
-	private <T extends HibElement> EventVertexMapper<T> byHibElementUuid(Function<String, T> elementLoader) {
+	private <T extends HibBaseElement> EventVertexMapper<T> byHibElementUuid(Function<String, T> elementLoader) {
 		return event -> Optional.ofNullable(elementLoader.apply(event.getUuid()));
 	}
 

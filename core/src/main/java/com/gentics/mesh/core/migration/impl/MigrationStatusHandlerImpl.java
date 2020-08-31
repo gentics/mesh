@@ -9,14 +9,13 @@ import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
-import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.data.branch.BranchVersionEdge;
+import com.gentics.mesh.core.data.branch.HibBranchVersionAssignment;
 import com.gentics.mesh.core.data.job.Job;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
-import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.core.rest.job.JobStatus;
+import com.gentics.mesh.core.rest.job.JobType;
 
-import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -29,9 +28,7 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 
 	private MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 
-	private Vertx vertx;
-
-	private BranchVersionEdge versionEdge;
+	private HibBranchVersionAssignment versionEdge;
 
 	private Job job;
 
@@ -39,8 +36,7 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 
 	private JobStatus status;
 
-	public MigrationStatusHandlerImpl(Job job, Vertx vertx, JobType type) {
-		this.vertx = vertx;
+	public MigrationStatusHandlerImpl(Job job, JobType type) {
 		this.job = job;
 	}
 
@@ -117,7 +113,7 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 	}
 
 	@Override
-	public void setVersionEdge(BranchVersionEdge versionEdge) {
+	public void setVersionEdge(HibBranchVersionAssignment versionEdge) {
 		this.versionEdge = versionEdge;
 	}
 
