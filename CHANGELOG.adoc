@@ -25,6 +25,10 @@ include::content/docs/variables.adoc-include[]
 
 * The Mesh Server will require Java 11 with the release of 2.0.0. The runtime support for Java 8 will be dropped. The Mesh Java REST client will still be usable with Java 8.
 
+[[TBD]]
+
+icon:check[] Core: Fixed a bug that which prevented to update a node reference of a user if the user already had one set. link:https://github.com/gentics/mesh/issues/1114[#1114]
+
 [[v1.4.9]]
 == 1.4.9 (07.04.2020)
 
