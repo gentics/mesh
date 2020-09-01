@@ -33,6 +33,7 @@ import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.PermissionRoots;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
@@ -171,7 +172,6 @@ public class TestDataProvider {
 			if (getSize() == FULL) {
 				addContents();
 			}
-			tx.getGraph().commit();
 
 			long startPerm = System.currentTimeMillis();
 			addPermissions(tagFamilies.values());
@@ -190,12 +190,13 @@ public class TestDataProvider {
 			addPermissions(project.toProject().getBranchRoot());
 			addPermissions(project.getInitialBranch());
 			addPermissions(project.getTagFamilyRoot());
-			addPermissions(boot.projectRoot());
-			addPermissions(boot.userRoot());
-			addPermissions(boot.groupRoot());
-			addPermissions(boot.roleRoot());
-			addPermissions(boot.microschemaContainerRoot());
-			addPermissions(boot.schemaContainerRoot());
+			PermissionRoots permissionRoots = tx.data().permissionRoots();
+			addPermissions(permissionRoots.project());
+			addPermissions(permissionRoots.user());
+			addPermissions(permissionRoots.group());
+			addPermissions(permissionRoots.role());
+			addPermissions(permissionRoots.microschema());
+			addPermissions(permissionRoots.schema());
 			log.debug("Added BasicPermissions to nodes took {" + (System.currentTimeMillis() - startPerm) + "} ms.");
 			tx.success();
 		});

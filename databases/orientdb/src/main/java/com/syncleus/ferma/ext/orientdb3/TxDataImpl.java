@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.dao.JobDaoWrapper;
 import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.PermissionRoots;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
@@ -46,11 +47,13 @@ public class TxDataImpl implements TxData {
 	private final DaoCollection daos;
 	private final BootstrapInitializer boot;
 	private final MeshOptions options;
+	private final PermissionRoots permissionRoots;
 
-	public TxDataImpl(MeshOptions options, DaoCollection daoCollection, BootstrapInitializer boot) {
+	public TxDataImpl(MeshOptions options, DaoCollection daoCollection, BootstrapInitializer boot, PermissionRoots permissionRoots) {
 		this.options = options;
 		this.daos = daoCollection;
 		this.boot = boot;
+		this.permissionRoots = permissionRoots;
 	}
 
 	@Override
@@ -407,5 +410,10 @@ public class TxDataImpl implements TxData {
 	@Override
 	public HibMeshVersion meshVersion() {
 		return boot.meshRoot();
+	}
+
+	@Override
+	public PermissionRoots permissionRoots() {
+		return permissionRoots;
 	}
 }

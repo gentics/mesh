@@ -5,7 +5,6 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.dagger.module.BindModule;
-import com.gentics.mesh.dagger.module.DaoModule;
 import com.gentics.mesh.dagger.module.DebugInfoProviderModule;
 import com.gentics.mesh.dagger.module.MeshModule;
 import com.gentics.mesh.dagger.module.MicrometerModule;
@@ -20,7 +19,7 @@ import dagger.Component;
  * Central dagger mesh component which will expose dependencies.
  */
 @Singleton
-@Component(modules = { MeshModule.class, PluginModule.class, SearchProviderModule.class, BindModule.class, DebugInfoProviderModule.class, MicrometerModule.class, DaoModule.class })
+@Component(modules = { MeshModule.class, PluginModule.class, SearchProviderModule.class, BindModule.class, DebugInfoProviderModule.class, MicrometerModule.class })
 public interface OrientDBMeshComponent extends MeshComponent {
 	@Component.Builder
 	interface Builder extends MeshComponent.Builder {

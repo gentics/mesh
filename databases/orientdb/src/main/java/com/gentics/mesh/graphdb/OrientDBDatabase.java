@@ -25,6 +25,7 @@ import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.dao.DaoCollection;
+import com.gentics.mesh.core.data.dao.PermissionRoots;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.db.TxAction;
 import com.gentics.mesh.core.db.TxAction0;
@@ -119,6 +120,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private final Lazy<DaoCollection> daos;
 
+	private final Lazy<PermissionRoots> permissionRoots;
+
 	private Thread txCleanupThread;
 
 	private Timer topologyLockTimer;
@@ -137,8 +140,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 		OrientDBIndexHandler indexHandler,
 		OrientDBClusterManager clusterManager,
 		TxCleanupTask txCleanupTask,
-		Mesh mesh, WriteLock writeLock) {
+		Lazy<PermissionRoots> permissionRoots, Mesh mesh, WriteLock writeLock) {
 		super(vertx);
+		this.permissionRoots = permissionRoots;
 		this.options = options;
 		this.boot = boot;
 		this.daos = daos;
@@ -374,7 +378,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	@Deprecated
 	public Tx tx() {
-		return new OrientDBTx(options, this, boot.get(), daos.get(), txProvider, resolver, commitTimer);
+		return new OrientDBTx(options, this, boot.get(), daos.get(), txProvider, resolver, commitTimer, permissionRoots.get());
 	}
 
 	@Override
