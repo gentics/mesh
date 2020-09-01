@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.user;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-
 import static com.gentics.mesh.core.data.User.composeIndexName;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
@@ -636,7 +635,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String nodeUuid = tx(() -> folder("news").getUuid());
 		String nodeUuid2 = tx(() -> folder("2015").getUuid());
 		String userUuid = userUuid();
-		HibUser user = user();
+		User user = user();
 		UserUpdateRequest updateRequest = new UserUpdateRequest();
 		String username = tx(() -> user.getUsername());
 		try (Tx tx = tx()) {
@@ -658,14 +657,13 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		UserResponse restUser = call(() -> client().updateUser(userUuid, updateRequest));
 
 		try (Tx tx = tx()) {
-			UserDaoWrapper userDao = tx.data().userDao();
 			assertNotNull(user().getReferencedNode());
 			assertNotNull(restUser.getNodeReference());
 			assertEquals(PROJECT_NAME, ((NodeReference) restUser.getNodeReference()).getProjectName());
 			assertEquals(nodeUuid, restUser.getNodeReference().getUuid());
 			assertThat(restUser).matches(updateRequest);
-			assertNull("The user node should have been updated and thus no user should be found.", userDao.findByUsername(username));
-			HibUser reloadedUser = userDao.findByUsername("dummy_user_changed");
+			assertNull("The user node should have been updated and thus no user should be found.", boot().userRoot().findByUsername(username));
+			User reloadedUser = boot().userRoot().findByUsername("dummy_user_changed");
 			assertNotNull(reloadedUser);
 			assertEquals("Epic Stark", reloadedUser.getLastname());
 			assertEquals("Tony Awesome", reloadedUser.getFirstname());
