@@ -335,7 +335,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public MeshAuthUser toAuthUser() {
-		return reframeExplicit(MeshAuthUserImpl.class);
+		return MeshAuthUserImpl.create(db(), this);
 	}
 
 	@Override

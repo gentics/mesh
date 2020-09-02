@@ -17,7 +17,6 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
-import com.gentics.mesh.core.data.util.HibClassConverter;
 import com.gentics.mesh.core.rest.auth.TokenResponse;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -251,8 +250,6 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 				// TODO use NoStackTraceThrowable?
 				throw new Exception("Invalid credentials!");
 			}
-			// Set the uuid to cache it in the element. We know it is valid.
-			HibClassConverter.toUser(user).setCachedUuid(userUuid);
 
 			// TODO Re-enable isEnabled cache and check if User#delete behaviour changes
 			//	if (!user.isEnabled()) {
