@@ -263,7 +263,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public HibUser setReferencedNode(HibInNode node) {
-		setUniqueLinkOutTo(toNode(node), HAS_NODE_REFERENCE);
+		setSingleLinkOutTo(toNode(node), HAS_NODE_REFERENCE);
 		return this;
 	}
 

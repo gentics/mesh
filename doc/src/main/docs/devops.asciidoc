@@ -1,0 +1,56 @@
+---
+title: DevOps
+---
+
+include::content/docs/variables.adoc-include[]
+
+
+This page contains some useful DevOps related information.
+
+
+== Apache Reverse Proxy
+
+The `AllowEncodedSlashes` and `nocanon` flag are needed in order to correctly proxy Gentics Mesh requests.
+
+```xml
+<VirtualHost *:80 [::]:80>
+        ProxyPreserveHost On
+        AllowEncodedSlashes On
+
+        ProxyPass / http://127.0.0.1:8080/ nocanon
+        ProxyPassReverse / http://127.0.0.1:8080/
+        ServerName mesh
+        ServerAlias mesh.*
+</VirtualHost>
+```
+
+== Nginx Reverse Proxy
+
+The following configuration creates a mesh load balancer / failover setup for Nginx.
+
+
+```yaml
+# Upstream for 4 a four node cluster.
+# The localhost:8191 instance will be used
+# as a primary server.
+upstream mesh {
+    server localhost:8191 weight=5;
+    server localhost:8192 backup;
+    server localhost:8193 backup;
+    server localhost:8194 backup;
+}
+
+server {
+    listen 9099;
+    # Body size needs to be increased to support uploads to mesh.
+    client_max_body_size 400M;
+
+    location / {
+        proxy_pass http://mesh;
+        # Add needed headers in order to support websockets
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}
+```
