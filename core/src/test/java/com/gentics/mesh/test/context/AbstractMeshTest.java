@@ -10,6 +10,7 @@ import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -27,7 +28,6 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
-import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.shared.SharedKeys;
@@ -75,9 +75,10 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 
 	@After
 	public void checkConsistency() {
+		List<ConsistencyCheck> checks = mesh().consistencyChecks();
 		try (Tx tx = tx()) {
 			ConsistencyCheckResponse response = new ConsistencyCheckResponse();
-			for (ConsistencyCheck check : ConsistencyCheckHandler.getChecks()) {
+			for (ConsistencyCheck check : checks) {
 				ConsistencyCheckResult result = check.invoke(db(), tx, false);
 				response.getInconsistencies().addAll(result.getResults());
 			}

@@ -1,5 +1,8 @@
 package com.gentics.mesh.dagger.module;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -90,6 +93,21 @@ import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparatorImpl;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.data.service.WebRootServiceImpl;
+import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.check.BinaryCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.check.BranchCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.check.FieldCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.check.GraphFieldContainerCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.check.GroupCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.check.MicronodeCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.check.MicroschemaContainerCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.check.NodeCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.check.ProjectCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.check.RoleCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.check.SchemaContainerCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.check.TagCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.check.TagFamilyCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.check.UserCheck;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.core.verticle.handler.WriteLockImpl;
 import com.gentics.mesh.distributed.RequestDelegator;
@@ -120,9 +138,10 @@ import com.syncleus.ferma.ext.orientdb3.PermissionRootsImpl;
 
 import dagger.Binds;
 import dagger.Module;
+import dagger.Provides;
 
 @Module
-public abstract class BindModule {
+public abstract class OrientDBModule {
 
 	@Binds
 	abstract DropIndexHandler bindCommonHandler(DropIndexHandlerImpl e);
@@ -299,4 +318,24 @@ public abstract class BindModule {
 
 	@Binds
 	abstract SchemaComparator schemaComparator(SchemaComparatorImpl e);
+
+	@Provides
+	public static List<ConsistencyCheck> consistencyCheckList() {
+		return Arrays.asList(
+			new GroupCheck(),
+			new MicroschemaContainerCheck(),
+			new NodeCheck(),
+			new ProjectCheck(),
+			new BranchCheck(),
+			new RoleCheck(),
+			new SchemaContainerCheck(),
+			new TagCheck(),
+			new TagFamilyCheck(),
+			new UserCheck(),
+			new GraphFieldContainerCheck(),
+			new MicronodeCheck(),
+			new BinaryCheck(),
+			new FieldCheck()
+		);
+	}
 }
