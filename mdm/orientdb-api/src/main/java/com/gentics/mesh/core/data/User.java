@@ -33,7 +33,7 @@ import com.gentics.mesh.util.DateUtils;
  * <img src= "http://getmesh.io/docs/javadoc/cypher/com.gentics.mesh.core.data.impl.UserImpl.jpg" alt="">
  * </p>
  */
-public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableElement<UserReference>, UserTrackingVertex, HibUser {
+public interface User extends MeshCoreVertex<UserResponse>, ReferenceableElement<UserReference>, UserTrackingVertex, HibUser {
 
 	/**
 	 * API token id property name {@value #API_TOKEN_ID}

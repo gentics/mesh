@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.actions.impl;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toUser;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
 import java.util.function.Predicate;
 
@@ -82,13 +82,13 @@ public class UserDAOActionsImpl implements UserDAOActions {
 
 	@Override
 	public String getAPIPath(Tx tx, InternalActionContext ac, HibUser user) {
-		User graphUser = toUser(user);
+		User graphUser = toGraph(user);
 		return graphUser.getAPIPath(ac);
 	}
 
 	@Override
 	public String getETag(Tx tx, InternalActionContext ac, HibUser user) {
-		User graphUser = toUser(user);
+		User graphUser = toGraph(user);
 		return graphUser.getETag(ac);
 	}
 

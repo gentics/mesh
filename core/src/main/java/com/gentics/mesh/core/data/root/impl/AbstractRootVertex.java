@@ -34,7 +34,7 @@ import com.gentics.mesh.util.ETag;
  * @see RootVertex
  * @param <T>
  */
-public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends RestModel, T>> extends MeshVertexImpl implements RootVertex<T> {
+public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends RestModel>> extends MeshVertexImpl implements RootVertex<T> {
 
 	@Override
 	abstract public Class<? extends T> getPersistanceClass();

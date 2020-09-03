@@ -15,7 +15,7 @@ import com.gentics.mesh.core.rest.schema.MicroschemaReference;
  * A microschema container is a graph element which stores the JSON microschema data.
  */
 public interface Microschema extends
-		GraphFieldSchemaContainer<MicroschemaResponse, MicroschemaReference, Microschema, MicroschemaVersion>, HibMicroschema {
+		GraphFieldSchemaContainer<MicroschemaResponse, MicroschemaReference, HibMicroschema, HibMicroschemaVersion>, HibMicroschema {
 
 	TypeInfo TYPE_INFO = new TypeInfo(ElementType.MICROSCHEMA, MICROSCHEMA_CREATED, MICROSCHEMA_UPDATED, MICROSCHEMA_DELETED);
 

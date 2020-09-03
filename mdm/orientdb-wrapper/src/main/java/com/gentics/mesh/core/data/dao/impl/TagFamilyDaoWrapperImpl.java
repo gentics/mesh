@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.data.dao.impl;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toTag;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toTagFamily;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -89,7 +89,7 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper<HibTagFamily> im
 		GenericParameters generic = ac.getGenericParameters();
 		FieldsSet fields = generic.getFields();
 
-		TagFamily graphTagFamily = toTagFamily(tagFamily);
+		TagFamily graphTagFamily = toGraph(tagFamily);
 
 		TagFamilyResponse restTagFamily = new TagFamilyResponse();
 		if (fields.has("uuid")) {
@@ -193,23 +193,23 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper<HibTagFamily> im
 
 	@Override
 	public String getETag(HibTagFamily tagfamily, InternalActionContext ac) {
-		return toTagFamily(tagfamily).getETag(ac);
+		return toGraph(tagfamily).getETag(ac);
 	}
 
 	@Override
 	public String getAPIPath(HibTagFamily tagFamily, InternalActionContext ac) {
-		return toTagFamily(tagFamily).getAPIPath(ac);
+		return toGraph(tagFamily).getAPIPath(ac);
 	}
 
 	@Override
 	public void removeTag(HibTagFamily tagFamily, HibTag tag) {
-		TagFamily graphTagFamily = toTagFamily(tagFamily);
-		graphTagFamily.removeTag(toTag(tag));
+		TagFamily graphTagFamily = toGraph(tagFamily);
+		graphTagFamily.removeTag(toGraph(tag));
 	}
 
 	@Override
 	public void addTag(HibTagFamily tagFamily, HibTag tag) {
-		TagFamily graphTagFamily = toTagFamily(tagFamily);
-		graphTagFamily.addTag(toTag(tag));
+		TagFamily graphTagFamily = toGraph(tagFamily);
+		graphTagFamily.addTag(toGraph(tag));
 	}
 }

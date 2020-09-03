@@ -43,7 +43,7 @@ import io.vertx.core.logging.SLF4JLogDelegateFactory;
 import io.vertx.ext.web.RoutingContext;
 import okhttp3.OkHttpClient;
 
-public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelper, PluginHelper {
+public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelper, PluginHelper, WrapperHelper {
 
 	static {
 		// Use slf4j instead of JUL

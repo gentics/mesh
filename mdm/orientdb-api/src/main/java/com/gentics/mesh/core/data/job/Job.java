@@ -16,7 +16,7 @@ import io.reactivex.Completable;
 /**
  * A job can be added to the {@link JobRoot} vertex. Jobs are used to persist information about long running tasks.
  */
-public interface Job extends MeshCoreVertex<JobResponse, Job>, CreatorTrackingVertex, HibJob {
+public interface Job extends MeshCoreVertex<JobResponse>, CreatorTrackingVertex, HibJob {
 
 	String TYPE_PROPERTY_KEY = "type";
 

@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FRO
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TO_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.MICROSCHEMA_VERSION_KEY_PROPERTY;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.util.StreamUtil.toStream;
 import static com.gentics.mesh.util.StreamUtil.uniqueBy;
 
@@ -21,6 +22,8 @@ import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.SchemaChange;
@@ -39,7 +42,7 @@ import com.gentics.mesh.parameter.value.FieldsSet;
 import com.syncleus.ferma.ElementFrame;
 
 public class MicroschemaContainerVersionImpl extends
-	AbstractGraphFieldSchemaContainerVersion<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, MicroschemaVersion, Microschema>
+	AbstractGraphFieldSchemaContainerVersion<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, HibMicroschemaVersion, HibMicroschema>
 	implements MicroschemaVersion {
 
 	public static void init(TypeHandler type, IndexHandler index) {
@@ -105,7 +108,7 @@ public class MicroschemaContainerVersionImpl extends
 		// TODO apply fields filtering here
 
 		// Role permissions
-		Microschema container = getSchemaContainer();
+		Microschema container = toGraph(getSchemaContainer());
 		microschema.setRolePerms(container.getRolePermissions(ac, ac.getRolePermissionParameters().getRoleUuid()));
 		container.fillCommonRestFields(ac, fields, microschema);
 

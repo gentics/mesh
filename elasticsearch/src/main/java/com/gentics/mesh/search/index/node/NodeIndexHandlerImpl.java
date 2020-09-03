@@ -30,12 +30,13 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
+import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.search.MoveDocumentEntry;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.bulk.BulkEntry;
@@ -196,10 +197,13 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	@Override
 	public Set<String> filterUnknownIndices(Set<String> indices) {
 		Set<String> activeIndices = new HashSet<>();
-		db.tx(() -> {
-			for (Project currentProject : boot.meshRoot().getProjectRoot().findAll()) {
-				for (Branch branch : currentProject.getBranchRoot().findAll()) {
-					for (SchemaVersion version : branch.findActiveSchemaVersions()) {
+		db.tx(tx -> {
+			ProjectDaoWrapper projectDao = tx.data().projectDao();
+			BranchDaoWrapper branchDao = tx.data().branchDao();
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			for (HibProject currentProject : projectDao.findAll()) {
+				for (HibBranch branch : branchDao.findAll(currentProject)) {
+					for (HibSchemaVersion version : schemaDao.findActiveSchemaVersions(branch)) {
 						if (log.isDebugEnabled()) {
 							log.debug("Found active schema version {}-{} in branch {}", version.getSchema().getName(), version.getVersion(),
 								branch.getName());
@@ -231,9 +235,13 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 
 	@Override
 	public Flowable<SearchRequest> syncIndices() {
-		return Flowable.defer(() -> db.tx(() -> {
-			return boot.meshRoot().getProjectRoot().findAll().stream()
-				.flatMap(project -> project.getBranchRoot().findAll().stream()
+		return Flowable.defer(() -> db.tx(tx -> {
+			ProjectDaoWrapper projectDao = tx.data().projectDao();
+			BranchDaoWrapper branchDao = tx.data().branchDao();
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+
+			return projectDao.findAll().stream()
+				.flatMap(project -> branchDao.findAll(project).stream()
 					.flatMap(branch -> branch.findActiveSchemaVersions().stream()
 						.flatMap(version -> Stream.of(DRAFT, PUBLISHED)
 							.map(type -> diffAndSync(project, branch, version, type)))))
@@ -248,13 +256,14 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	 * @param type
 	 * @return indexName -> documentName -> NodeGraphFieldContainer
 	 */
-	private Map<String, Map<String, NodeGraphFieldContainer>> loadVersionsFromGraph(Branch branch, SchemaVersion version, ContainerType type) {
+	private Map<String, Map<String, NodeGraphFieldContainer>> loadVersionsFromGraph(HibBranch branch, HibSchemaVersion version, ContainerType type) {
 		return db.tx(tx -> {
 			ContentDaoWrapper contentDao = tx.data().contentDao();
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 			String branchUuid = branch.getUuid();
 			List<String> indexLanguages = version.getSchema().findOverriddenSearchLanguages().collect(Collectors.toList());
 
-			return version.getFieldContainers(branchUuid)
+			return schemaDao.getFieldContainers(version, branchUuid)
 				.filter(c -> c.isType(type, branchUuid))
 				.map(NodeGraphFieldContainer.class::cast)
 				.collect(Collectors.groupingBy(content -> {
@@ -289,7 +298,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 		}
 	}
 
-	private Flowable<SearchRequest> diffAndSync(Project project, Branch branch, SchemaVersion version, ContainerType type) {
+	private Flowable<SearchRequest> diffAndSync(HibProject project, HibBranch branch, HibSchemaVersion version, ContainerType type) {
 		return Flowable.defer(() -> {
 			Map<String, Map<String, NodeGraphFieldContainer>> sourceNodesPerIndex = loadVersionsFromGraph(branch, version, type);
 			return Flowable.fromIterable(getIndexNames(project, branch, version, type))
@@ -337,7 +346,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 		});
 	}
 
-	private List<String> getIndexNames(Project project, Branch branch, SchemaVersion version, ContainerType type) {
+	private List<String> getIndexNames(HibProject project, HibBranch branch, HibSchemaVersion version, ContainerType type) {
 		return db.tx(() -> {
 			Stream<String> languageIndices = version.getSchema().findOverriddenSearchLanguages()
 				.map(lang -> ContentDaoWrapper.composeIndexName(

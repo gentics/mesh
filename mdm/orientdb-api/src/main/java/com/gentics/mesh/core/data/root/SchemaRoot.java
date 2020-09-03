@@ -25,7 +25,7 @@ public interface SchemaRoot extends RootVertex<Schema> {
 	 * @param schemaContainer
 	 * @param batch
 	 */
-	void addSchemaContainer(HibUser user, Schema schemaContainer, EventQueueBatch batch);
+	void addSchemaContainer(HibUser user, HibSchema schemaContainer, EventQueueBatch batch);
 
 	/**
 	 * Remove the schema container from the aggregation node.

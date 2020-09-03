@@ -16,7 +16,7 @@ import com.gentics.mesh.core.result.Result;
 /**
  * Graph domain model interface for a role.
  */
-public interface Role extends MeshCoreVertex<RoleResponse, Role>, ReferenceableElement<RoleReference>, UserTrackingVertex, HibRole {
+public interface Role extends MeshCoreVertex<RoleResponse>, ReferenceableElement<RoleReference>, UserTrackingVertex, HibRole {
 
 	TypeInfo TYPE_INFO = new TypeInfo(ElementType.ROLE, ROLE_CREATED, ROLE_UPDATED, ROLE_DELETED);
 

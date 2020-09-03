@@ -2,6 +2,8 @@ package com.gentics.mesh.core.data.schema.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LATEST_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_CONTAINER;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraphVersion;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
@@ -12,13 +14,15 @@ import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
-import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.HibFieldSchemaElement;
+import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.util.ETag;
 
@@ -37,8 +41,8 @@ import com.gentics.mesh.util.ETag;
  * @param <SCV>
  *            Graph vertex version type
  */
-public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaContainer, RM extends FieldSchemaContainer, RE extends NameUuidReference<RE>, SC extends GraphFieldSchemaContainer<R, RE, SC, SCV>, SCV extends GraphFieldSchemaContainerVersion<R, RM, RE, SCV, SC>>
-		extends AbstractMeshCoreVertex<R, SC> implements GraphFieldSchemaContainer<R, RE, SC, SCV> {
+public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaContainer, RM extends FieldSchemaContainerVersion, RE extends NameUuidReference<RE>, SC extends HibFieldSchemaElement<R, RM, SC, SCV>, SCV extends HibFieldSchemaVersionElement<R, RM, SC, SCV>>
+	extends AbstractMeshCoreVertex<R> implements GraphFieldSchemaContainer<R, RE, SC, SCV> {
 
 	/**
 	 * Return the class that is used to construct new containers.
@@ -61,7 +65,7 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 
 	@Override
 	public void setLatestVersion(SCV version) {
-		setSingleLinkOutTo(version, HAS_LATEST_VERSION);
+		setSingleLinkOutTo(toGraph(version), HAS_LATEST_VERSION);
 	}
 
 	@Override
@@ -77,7 +81,7 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 	@Override
 	public SCV findVersionByRev(String version) {
 		return out(HAS_PARENT_CONTAINER).has(AbstractGraphFieldSchemaContainerVersion.VERSION_PROPERTY_KEY, version)
-				.nextOrDefaultExplicit(getContainerVersionClass(), null);
+			.nextOrDefaultExplicit(getContainerVersionClass(), null);
 	}
 
 	@Override
@@ -90,13 +94,13 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 		String version = ac.getVersioningParameters().getVersion();
 		// Delegate transform call to latest version
 		if (version == null || version.equals("draft")) {
-			return getLatestVersion().transformToRestSync(ac, level, languageTags);
+			return toGraphVersion(getLatestVersion()).transformToRestSync(ac, level, languageTags);
 		} else {
 			SCV foundVersion = findVersionByRev(version);
 			if (foundVersion == null) {
 				throw error(NOT_FOUND, "object_not_found_for_uuid_version", getUuid(), version);
 			}
-			return foundVersion.transformToRestSync(ac, level, languageTags);
+			return toGraphVersion(foundVersion).transformToRestSync(ac, level, languageTags);
 		}
 	}
 
@@ -120,14 +124,14 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 
 	@Override
 	public String getSubETag(InternalActionContext ac) {
-		return ETag.hash(getLatestVersion().getETag(ac));
+		return ETag.hash(toGraph(getLatestVersion()).getETag(ac));
 	}
 
 	@Override
-	public Map<Branch, SCV> findReferencedBranches() {
-		Map<Branch, SCV> references = new HashMap<>();
+	public Map<HibBranch, SCV> findReferencedBranches() {
+		Map<HibBranch, SCV> references = new HashMap<>();
 		for (SCV version : findAll()) {
-			version.getBranches().forEach(branch -> references.put(branch, version));
+			toGraphVersion(version).getBranches().forEach(branch -> references.put(branch, version));
 		}
 		return references;
 	}

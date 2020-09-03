@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.field.micronode;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toMicroschemaVersion;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER_ES6;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -297,13 +296,13 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 
 			NodeGraphFieldContainer containerWithBoth = boot().contentDao().getGraphFieldContainer(folder("2015"), "en");
 			containerWithBoth.createMicronode("single", vcard);
-			containerWithBoth.createMicronodeFieldList("list").createMicronode().setSchemaContainerVersion(toMicroschemaVersion(vcard));
+			containerWithBoth.createMicronodeFieldList("list").createMicronode().setSchemaContainerVersion(vcard);
 
 			NodeGraphFieldContainer containerWithField = boot().contentDao().getGraphFieldContainer(folder("news"), "en");
 			containerWithField.createMicronode("single", vcard);
 
 			NodeGraphFieldContainer containerWithList = boot().contentDao().getGraphFieldContainer(folder("products"), "en");
-			containerWithList.createMicronodeFieldList("list").createMicronode().setSchemaContainerVersion(toMicroschemaVersion(vcard));
+			containerWithList.createMicronodeFieldList("list").createMicronode().setSchemaContainerVersion(vcard);
 
 			NodeGraphFieldContainer containerWithOtherVersion = boot().contentDao().getGraphFieldContainer(folder("deals"), "en");
 			containerWithOtherVersion.createMicronode("single", newVCard);

@@ -36,7 +36,7 @@ import com.gentics.mesh.event.Assignment;
  * (called basenode). Additionally languages and schemas can be assigned to projects to make them available for node creation. Various root vertices (eg.:
  * {@link NodeRoot}, {@link TagRoot}, {@link TagFamilyRoot} ) are linked to the project to store references to basic building blocks.
  */
-public interface Project extends MeshCoreVertex<ProjectResponse, Project>, ReferenceableElement<ProjectReference>, UserTrackingVertex, HibUserTracking, HibProject {
+public interface Project extends MeshCoreVertex<ProjectResponse>, ReferenceableElement<ProjectReference>, UserTrackingVertex, HibUserTracking, HibProject {
 
 	TypeInfo TYPE_INFO = new TypeInfo(ElementType.PROJECT, PROJECT_CREATED, PROJECT_UPDATED, PROJECT_DELETED);
 

@@ -1,6 +1,6 @@
 package com.gentics.mesh.assertj.impl;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toNode;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -156,7 +156,7 @@ public class NodeAssert extends AbstractAssert<NodeAssert, HibNode> {
 	}
 
 	public NodeAssert matches(NodeResponse restNode) {
-		assertGenericNode(toNode(actual), restNode);
+		assertGenericNode(toGraph(actual), restNode);
 		HibSchema schema = actual.getSchemaContainer();
 		assertNotNull("The schema of the test object should not be null. No further assertion can be verified.", schema);
 		assertEquals(schema.getName(), restNode.getSchema().getName());
@@ -166,7 +166,7 @@ public class NodeAssert extends AbstractAssert<NodeAssert, HibNode> {
 		return this;
 	}
 
-	public void assertGenericNode(MeshCoreVertex<?, ?> node, AbstractGenericRestResponse model) {
+	public void assertGenericNode(MeshCoreVertex<?> node, AbstractGenericRestResponse model) {
 		assertNotNull(node);
 		assertNotNull(model);
 		assertNotNull("UUID field was not set in the rest response.", model.getUuid());

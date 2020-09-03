@@ -2,11 +2,11 @@ package com.gentics.mesh.core.data.dao.impl;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toBranch;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toNode;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toProject;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toTag;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toTagFamily;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.event.Assignment.UNASSIGNED;
@@ -70,13 +70,13 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements Tag
 
 	@Override
 	public String getAPIPath(HibTag tag, InternalActionContext ac) {
-		Tag graphTag = toTag(tag);
+		Tag graphTag = toGraph(tag);
 		return graphTag.getAPIPath(ac);
 	}
 
 	@Override
 	public String getETag(HibTag tag, InternalActionContext ac) {
-		Tag graphTag = toTag(tag);
+		Tag graphTag = toGraph(tag);
 		return graphTag.getETag(ac);
 	}
 
@@ -84,7 +84,7 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements Tag
 
 	@Override
 	public Result<? extends HibTag> findAll(HibTagFamily tagFamily) {
-		TagFamily graphTagFamily = toTagFamily(tagFamily);
+		TagFamily graphTagFamily = toGraph(tagFamily);
 		return graphTagFamily.findAll();
 	}
 
@@ -98,7 +98,7 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements Tag
 	public HibTag loadObjectByUuid(HibBranch branch, InternalActionContext ac, String tagUuid, InternalPermission perm) {
 		TagRoot tagRoot = boot.get().tagRoot();
 		HibTag tag = branch.findTagByUuid(tagUuid);
-		return tagRoot.checkPerms(tag.toTag(), tagUuid, ac, perm, true);
+		return tagRoot.checkPerms(toGraph(tag), tagUuid, ac, perm, true);
 	}
 
 	@Override
@@ -151,12 +151,12 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements Tag
 
 	@Override
 	public HibTag findByName(HibTagFamily tagFamily, String name) {
-		return HibClassConverter.toTagFamily(tagFamily).findByName(name);
+		return HibClassConverter.toGraph(tagFamily).findByName(name);
 	}
 
 	@Override
 	public HibTag findByUuid(HibProject project, String uuid) {
-		Project graphProject = HibClassConverter.toProject(project);
+		Project graphProject = HibClassConverter.toGraph(project);
 		// TODO this is actually wrong. We should actually search within the tag familes of the project instead.
 		Tag tag = boot.get().tagRoot().findByUuid(uuid);
 		return tag;
@@ -164,14 +164,14 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements Tag
 
 	@Override
 	public HibTag findByUuid(HibTagFamily tagFamily, String uuid) {
-		TagFamily graphTagFamily = HibClassConverter.toTagFamily(tagFamily);
+		TagFamily graphTagFamily = HibClassConverter.toGraph(tagFamily);
 		return graphTagFamily.findByUuid(uuid);
 	}
 
 	@Override
 	public Page<? extends HibTag> findAll(HibTagFamily tagFamily, InternalActionContext ac, PagingParameters pagingInfo,
 		Predicate<HibTag> extraFilter) {
-		TagFamily graphTagFamily = HibClassConverter.toTagFamily(tagFamily);
+		TagFamily graphTagFamily = HibClassConverter.toGraph(tagFamily);
 		return graphTagFamily.findAll(ac, pagingInfo, tag -> {
 			return extraFilter.test(tag);
 		});
@@ -179,7 +179,7 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements Tag
 
 	@Override
 	public Page<? extends HibTag> findAll(HibTagFamily tagFamily, InternalActionContext ac, PagingParameters pagingParameters) {
-		TagFamily graphTagFamily = HibClassConverter.toTagFamily(tagFamily);
+		TagFamily graphTagFamily = HibClassConverter.toGraph(tagFamily);
 		return graphTagFamily.findAll(ac, pagingParameters);
 	}
 
@@ -191,7 +191,7 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements Tag
 
 	@Override
 	public TagResponse transformToRestSync(HibTag tag, InternalActionContext ac, int level, String... languageTags) {
-		Tag graphTag = toTag(tag);
+		Tag graphTag = toGraph(tag);
 		GenericParameters generic = ac.getGenericParameters();
 		FieldsSet fields = generic.getFields();
 
@@ -232,10 +232,10 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements Tag
 		bac.add(tag.onDeleted());
 
 		// For node which have been previously tagged we need to fire the untagged event.
-		Project graphProject = toProject(tag.getProject());
+		Project graphProject = toGraph(tag.getProject());
 		for (Branch branch : graphProject.getBranchRoot().findAll()) {
 			for (HibNode node : getNodes(tag, branch)) {
-				bac.add(toNode(node).onTagged(tag, branch, UNASSIGNED));
+				bac.add(toGraph(node).onTagged(tag, branch, UNASSIGNED));
 			}
 		}
 		tag.deleteElement();
@@ -246,7 +246,7 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements Tag
 	@Override
 	public TransformablePage<? extends Node> findTaggedNodes(HibTag tag, HibUser requestUser, HibBranch branch, List<String> languageTags,
 		ContainerType type, PagingParameters pagingInfo) {
-		return boot.get().tagRoot().findTaggedNodes(toTag(tag), requestUser, toBranch(branch), languageTags, type, pagingInfo);
+		return boot.get().tagRoot().findTaggedNodes(toGraph(tag), requestUser, toGraph(branch), languageTags, type, pagingInfo);
 	}
 
 	@Override
@@ -256,12 +256,12 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements Tag
 
 	@Override
 	public Result<? extends HibNode> getNodes(HibTag tag, HibBranch branch) {
-		return boot.get().tagRoot().getNodes(toTag(tag), branch);
+		return boot.get().tagRoot().getNodes(toGraph(tag), branch);
 	}
 
 	@Override
 	public void removeNode(HibTag tag, HibNode node) {
-		toTag(tag).unlinkIn(toNode(node), HAS_TAG);
+		toGraph(tag).unlinkIn(toGraph(node), HAS_TAG);
 	}
 
 	@Override
@@ -271,7 +271,7 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements Tag
 
 	@Override
 	public HibTag create(HibTagFamily tagFamily, InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		TagFamily graphTagFamily = toTagFamily(tagFamily);
+		TagFamily graphTagFamily = toGraph(tagFamily);
 
 		HibProject project = ac.getProject();
 		TagCreateRequest requestModel = ac.fromJson(TagCreateRequest.class);
@@ -294,7 +294,7 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements Tag
 		HibTag newTag = create(tagFamily, requestModel.getName(), project, requestUser, uuid);
 		userDao.inheritRolePermissions(ac.getUser(), tagFamily, newTag);
 
-		Tag newGraphTag = toTag(newTag);
+		Tag newGraphTag = toGraph(newTag);
 		graphTagFamily.addTag(newGraphTag);
 
 		batch.add(newTag.onCreated());
@@ -318,37 +318,37 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements Tag
 
 	@Override
 	public long computeCount(HibTagFamily tagFamily) {
-		TagFamily graphTagFamily = toTagFamily(tagFamily);
+		TagFamily graphTagFamily = toGraph(tagFamily);
 		return graphTagFamily.computeCount();
 	}
 
 	@Override
 	public void addTag(HibNode node, HibTag tag, HibBranch branch) {
-		toNode(node).addTag(tag, branch);
+		toGraph(node).addTag(tag, branch);
 	}
 
 	@Override
 	public void removeTag(HibNode node, HibTag tag, HibBranch branch) {
-		toNode(node).removeTag(tag, branch);
+		toGraph(node).removeTag(tag, branch);
 	}
 
 	@Override
 	public void removeAllTags(HibNode node, HibBranch branch) {
-		toNode(node).removeAllTags(branch);
+		toGraph(node).removeAllTags(branch);
 	}
 
 	@Override
 	public Result<HibTag> getTags(HibNode node, HibBranch branch) {
-		return toNode(node).getTags(branch);
+		return toGraph(node).getTags(branch);
 	}
 
 	@Override
 	public TransformablePage<? extends HibTag> getTags(HibNode node, HibUser user, PagingParameters params, HibBranch branch) {
-		return toNode(node).getTags(user, params, branch);
+		return toGraph(node).getTags(user, params, branch);
 	}
 
 	@Override
 	public boolean hasTag(HibNode node, HibTag tag, HibBranch branch) {
-		return toNode(node).hasTag(tag, branch);
+		return toGraph(node).hasTag(tag, branch);
 	}
 }

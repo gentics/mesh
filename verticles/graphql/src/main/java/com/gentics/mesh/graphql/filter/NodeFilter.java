@@ -13,7 +13,7 @@ import com.gentics.graphqlfilter.filter.MappedFilter;
 import com.gentics.graphqlfilter.filter.StartMainFilter;
 import com.gentics.graphqlfilter.filter.StringFilter;
 import com.gentics.mesh.core.data.node.NodeContent;
-import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 
 /**
@@ -61,7 +61,7 @@ public class NodeFilter extends StartMainFilter<NodeContent> {
 		return MainFilter.mainFilter("FieldFilter", "Filters by fields", schemaFields, false);
 	}
 
-	private FilterField<NodeContent, ?> createFieldFilter(Schema schema) {
+	private FilterField<NodeContent, ?> createFieldFilter(HibSchema schema) {
 		return new MappedFilter<>(schema.getName(), "Filters by fields of the " + schema.getName() + " schema",
 			FieldFilter.filter(context, schema.getLatestVersion().getSchema()),
 			NodeContent::getContainer);

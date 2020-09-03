@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.impl;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toUser;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 
 import java.util.Set;
@@ -27,7 +27,7 @@ import com.gentics.mesh.madl.field.FieldType;
 /**
  * @see Group
  */
-public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> implements Group {
+public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse> implements Group {
 
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(GroupImpl.class, MeshVertexImpl.class);
@@ -68,7 +68,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 		GroupDaoWrapper groupDao = Tx.get().data().groupDao();
 		if (recursive) {
 			for (HibUser user : groupDao.getUsers(this)) {
-				User graphUser = toUser(user);
+				User graphUser = toGraph(user);
 				graphUser.applyPermissions(batch, role, false, permissionsToGrant, permissionsToRevoke);
 			}
 		}

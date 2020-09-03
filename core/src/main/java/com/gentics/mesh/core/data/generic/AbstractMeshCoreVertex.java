@@ -46,8 +46,8 @@ import io.vertx.core.logging.LoggerFactory;
  * @param <R>
  *            Type of the core vertex which is used to determine type of chained vertices
  */
-public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends MeshCoreVertex<T, R>> extends MeshVertexImpl
-	implements MeshCoreVertex<T, R> {
+public abstract class AbstractMeshCoreVertex<T extends RestModel> extends MeshVertexImpl
+	implements MeshCoreVertex<T> {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractMeshCoreVertex.class);
 

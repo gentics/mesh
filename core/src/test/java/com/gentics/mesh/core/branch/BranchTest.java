@@ -2,9 +2,9 @@ package com.gentics.mesh.core.branch;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toBranch;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toProject;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toSchema;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -30,7 +30,6 @@ import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparatorImpl;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparatorImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
@@ -108,7 +107,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	public void testRootNode() throws Exception {
 		try (Tx tx = tx()) {
 			HibProject project = project();
-			BranchRoot branchRoot = toProject(project).getBranchRoot();
+			BranchRoot branchRoot = toGraph(project).getBranchRoot();
 			assertThat(branchRoot).as("Branch Root of Project").isNotNull();
 			HibBranch initialBranch = project.getInitialBranch();
 			assertThat(initialBranch).as("Initial Branch of Project").isNotNull().isActive().isNamed(project.getName()).hasUuid().hasNext(null)
@@ -151,6 +150,8 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	public void testCreate() throws Exception {
 		try (Tx tx = tx()) {
 			BranchDaoWrapper branchDao = tx.data().branchDao();
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+
 			HibBranch initialBranch = initialBranch();
 			HibBranch firstNewBranch = createBranch("First new Branch");
 			HibBranch secondNewBranch = createBranch("Second new Branch");
@@ -167,7 +168,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 				initialBranch,
 				firstNewBranch, secondNewBranch, thirdNewBranch);
 
-			for (Schema schema : project.getSchemaContainerRoot().findAll()) {
+			for (HibSchema schema : schemaDao.findAll(project)) {
 				for (HibBranch branch : Arrays.asList(initialBranch, firstNewBranch, secondNewBranch, thirdNewBranch)) {
 					assertThat(branch).as(branch.getName()).hasSchema(schema).hasSchemaVersion(schema.getLatestVersion());
 				}
@@ -266,8 +267,8 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			newVersion.setVersion("4.0");
 			newVersion.setName("content");
 			versions.add(newVersion);
-			newVersion.setSchemaContainer(toSchema(schemaContainer("content")));
-			toBranch(branch).linkOut(newVersion, HAS_SCHEMA_VERSION);
+			newVersion.setSchemaContainer(toGraph(schemaContainer("content")));
+			toGraph(branch).linkOut(newVersion, HAS_SCHEMA_VERSION);
 
 			List<HibSchemaVersion> found = new ArrayList<>();
 			for (HibBranchSchemaVersion versionedge : branch.findAllLatestSchemaVersionEdges()) {
@@ -325,8 +326,9 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	public void testUnassignSchema() throws Exception {
 		try (Tx tx = tx()) {
 			HibProject project = project();
-			List<? extends Schema> schemas = project.getSchemaContainerRoot().findAll().list();
-			Schema schemaContainer = schemas.get(0);
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			List<? extends HibSchema> schemas = schemaDao.findAll(project).list();
+			HibSchema schemaContainer = schemas.get(0);
 
 			HibBranch initialBranch = initialBranch();
 			HibBranch newBranch = createBranch("New Branch");

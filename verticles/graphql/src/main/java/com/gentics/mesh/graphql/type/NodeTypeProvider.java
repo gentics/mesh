@@ -36,6 +36,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
@@ -43,8 +44,8 @@ import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.schema.Schema;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -699,8 +700,8 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	private List<GraphQLObjectType> generateSchemaFieldTypesV1(GraphQLContext context) {
 		HibProject project = context.getProject();
 		List<GraphQLObjectType> schemaTypes = new ArrayList<>();
-		for (Schema container : project.getSchemaContainerRoot().findAll()) {
-			SchemaVersion version = container.getLatestVersion();
+		for (HibSchema container : project.getSchemaContainerRoot().findAll()) {
+			HibSchemaVersion version = container.getLatestVersion();
 			SchemaModel schema = version.getSchema();
 			GraphQLObjectType.Builder root = newObject();
 			// TODO remove this workaround
@@ -750,8 +751,9 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	private List<GraphQLObjectType> generateSchemaFieldTypesV2(GraphQLContext context) {
 		HibProject project = context.getProject();
 
-		return project.getSchemaContainerRoot().findAll().stream().map(container -> {
-			SchemaVersion version = container.getLatestVersion();
+		SchemaDaoWrapper schemaDao = Tx.get().data().schemaDao();
+		return schemaDao.findAll(project).stream().map(container -> {
+			HibSchemaVersion version = container.getLatestVersion();
 			SchemaModel schema = version.getSchema();
 			GraphQLObjectType.Builder root = newObject();
 			root.withInterface(GraphQLTypeReference.typeRef(NODE_TYPE_NAME));

@@ -4,7 +4,7 @@ import java.util.function.Predicate;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.Tx;
@@ -23,7 +23,7 @@ import com.gentics.mesh.parameter.PagingParameters;
  * @param <RM>
  *            Response REST Model for the element of this action
  */
-public interface DAOActions<T extends HibCoreElement, RM extends RestModel> extends LoadAllAction<T> {
+public interface DAOActions<T extends HibBaseElement, RM extends RestModel> extends LoadAllAction<T> {
 
 	T create(Tx tx, InternalActionContext ac, EventQueueBatch batch, String uuid);
 

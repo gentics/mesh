@@ -69,8 +69,8 @@ import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
@@ -130,7 +130,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public SchemaVersion getSchemaContainerVersion() {
+	public HibSchemaVersion getSchemaContainerVersion() {
 		return db().index().findByUuid(SchemaContainerVersionImpl.class, property(SCHEMA_CONTAINER_VERSION_KEY_PROPERTY));
 	}
 
@@ -639,7 +639,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public List<MicronodeGraphField> getMicronodeFields(MicroschemaVersion version) {
+	public List<MicronodeGraphField> getMicronodeFields(HibMicroschemaVersion version) {
 		String microschemaVersionUuid = version.getUuid();
 		return new TraversalResult<>(outE(HAS_FIELD)
 			.has(MicronodeGraphFieldImpl.class)
@@ -650,7 +650,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public Result<MicronodeGraphFieldList> getMicronodeListFields(MicroschemaVersion version) {
+	public Result<MicronodeGraphFieldList> getMicronodeListFields(HibMicroschemaVersion version) {
 		String microschemaVersionUuid = version.getUuid();
 		TraversalResult<? extends MicronodeGraphFieldList> lists = new TraversalResult<>(out(HAS_LIST)
 			.has(MicronodeGraphFieldListImpl.class)
@@ -784,7 +784,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		model.setBranchUuid(branchUuid);
 		model.setLanguageTag(getLanguageTag());
 		model.setType(type);
-		SchemaVersion version = getSchemaContainerVersion();
+		HibSchemaVersion version = getSchemaContainerVersion();
 		if (version != null) {
 			model.setSchema(version.transformToReference());
 		}
@@ -814,7 +814,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public boolean isAutoPurgeEnabled() {
-		SchemaVersion schema = getSchemaContainerVersion();
+		HibSchemaVersion schema = getSchemaContainerVersion();
 		return schema.isAutoPurgeEnabled();
 	}
 

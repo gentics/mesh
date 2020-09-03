@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.endpoint.admin.debuginfo.providers;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toProject;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -52,18 +52,18 @@ public class EntitiesProvider implements DebugInfoProvider {
 		return db.singleTx(tx -> tx.data().projectDao().findAll().stream()
 			.map(project -> DebugInfoBufferEntry.fromString(
 				String.format("entities/branches/%s.json", project.getName()),
-				rootToString(ac, toProject(project).getBranchRoot())
+				rootToString(ac, toGraph(project).getBranchRoot())
 			)).collect(Collectors.toList()))
 			.flatMapPublisher(Flowable::fromIterable);
 	}
 
-	private <T extends MeshCoreVertex<? extends RestModel, T>> Flowable<DebugInfoEntry> rootElements(InternalActionContext ac, Supplier<RootVertex<T>> root, String filename) {
+	private <T extends MeshCoreVertex<? extends RestModel>> Flowable<DebugInfoEntry> rootElements(InternalActionContext ac, Supplier<RootVertex<T>> root, String filename) {
 		return db.singleTx(() -> rootToString(ac, root.get()))
 			.map(elementList -> DebugInfoBufferEntry.fromString(filename, elementList))
 			.toFlowable();
 	}
 
-	private <T extends MeshCoreVertex<? extends RestModel, T>> String rootToString(InternalActionContext ac, RootVertex<T> root) {
+	private <T extends MeshCoreVertex<? extends RestModel>> String rootToString(InternalActionContext ac, RootVertex<T> root) {
 		return JsonUtil.toJson(root.findAll().stream()
 			.map(branch -> branch.transformToRestSync(ac, 0))
 			.collect(Collectors.toList()));

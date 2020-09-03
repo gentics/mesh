@@ -5,7 +5,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNE
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_REFERENCE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toNode;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 
 import java.util.Optional;
@@ -52,7 +52,7 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * @see User
  */
-public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> implements User {
+public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements User {
 
 	private static final Logger log = LoggerFactory.getLogger(UserImpl.class);
 
@@ -264,7 +264,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public HibUser setReferencedNode(HibInNode node) {
-		setUniqueLinkOutTo(toNode(node), HAS_NODE_REFERENCE);
+		setUniqueLinkOutTo(toGraph(node), HAS_NODE_REFERENCE);
 		return this;
 	}
 

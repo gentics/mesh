@@ -15,7 +15,7 @@ import com.gentics.mesh.core.rest.group.GroupResponse;
 /**
  * Graph domain model interface for groups.
  */
-public interface Group extends MeshCoreVertex<GroupResponse, Group>, ReferenceableElement<GroupReference>, UserTrackingVertex, HibGroup {
+public interface Group extends MeshCoreVertex<GroupResponse>, ReferenceableElement<GroupReference>, UserTrackingVertex, HibGroup {
 
 	TypeInfo TYPE_INFO = new TypeInfo(ElementType.GROUP, GROUP_CREATED, GROUP_UPDATED, GROUP_DELETED);
 

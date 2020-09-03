@@ -23,7 +23,7 @@ public class AbstractMeshAssert<S extends AbstractMeshAssert<S, A>, A> extends A
 		super(actual, selfType);
 	}
 
-	public void assertGenericNode(MeshCoreVertex<?, ?> node, AbstractGenericRestResponse model) {
+	public void assertGenericNode(MeshCoreVertex<?> node, AbstractGenericRestResponse model) {
 		assertNotNull(node);
 		assertNotNull(model);
 		assertNotNull("UUID field was not set in the rest response.", model.getUuid());

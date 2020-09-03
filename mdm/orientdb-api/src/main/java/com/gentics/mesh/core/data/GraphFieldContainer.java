@@ -343,7 +343,7 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	 * 
 	 * @return schema container version
 	 */
-	HibFieldSchemaVersionElement<?> getSchemaContainerVersion();
+	HibFieldSchemaVersionElement<?, ?, ?, ?> getSchemaContainerVersion();
 
 	/**
 	 * Set the schema container version used by this container
@@ -351,23 +351,23 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	 * @param version
 	 *            schema container version
 	 */
-	void setSchemaContainerVersion(HibFieldSchemaVersionElement<?> version);
+	void setSchemaContainerVersion(HibFieldSchemaVersionElement<?, ?, ?, ?> version);
 
 	/**
 	 * Get all nodes that are in any way referenced by this node. This includes the following cases:
 	 * <ul>
-	 *     <li>Node fields</li>
-	 *     <li>Node list fields</li>
-	 *     <li>Micronode fields with node fields or node list fields</li>
-	 *     <li>Micronode list fields with node fields or node list fields</li>
+	 * <li>Node fields</li>
+	 * <li>Node list fields</li>
+	 * <li>Micronode fields with node fields or node list fields</li>
+	 * <li>Micronode list fields with node fields or node list fields</li>
 	 * </ul>
 	 */
 	Iterable<? extends HibNode> getReferencedNodes();
 
 	/**
-	 * Gets the NodeGraphFieldContainers connected to this FieldContainer.
-	 * For NodeGraphFieldContainers this is simply the same object.
-	 * For Micronodes this is will return all contents that use this micronode.
+	 * Gets the NodeGraphFieldContainers connected to this FieldContainer. For NodeGraphFieldContainers this is simply the same object. For Micronodes this is
+	 * will return all contents that use this micronode.
+	 * 
 	 * @return
 	 */
 	Stream<? extends NodeGraphFieldContainer> getContents();

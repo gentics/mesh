@@ -26,7 +26,7 @@ import com.gentics.mesh.parameter.PagingParameters;
  * A tag family is the parent element for multiple tags. A typical tag family would be "colors" for tags "red", "blue", "green". Tag families are bound to
  * projects via the {@link TagFamilyRootImpl} class.
  */
-public interface TagFamily extends MeshCoreVertex<TagFamilyResponse, TagFamily>, ReferenceableElement<TagFamilyReference>, UserTrackingVertex,
+public interface TagFamily extends MeshCoreVertex<TagFamilyResponse>, ReferenceableElement<TagFamilyReference>, UserTrackingVertex,
 	RootVertex<Tag>, ProjectElement, HibTagFamily {
 
 	TypeInfo TYPE_INFO = new TypeInfo(ElementType.TAGFAMILY, TAG_FAMILY_CREATED, TAG_FAMILY_UPDATED, TAG_FAMILY_DELETED);

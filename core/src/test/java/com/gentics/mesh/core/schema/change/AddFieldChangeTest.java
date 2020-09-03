@@ -2,6 +2,7 @@ package com.gentics.mesh.core.schema.change;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -12,9 +13,8 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.schema.AddFieldChange;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.AddFieldChangeImpl;
-import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.DateFieldSchema;
@@ -54,7 +54,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Override
 	public void testApply() {
 		try (Tx tx = tx()) {
-			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			HibSchemaVersion version = createSchemaVersion(tx);
 			SchemaModelImpl schema = new SchemaModelImpl();
 			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("name");
@@ -69,7 +69,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyStringFieldAtEndPosition() {
 		try (Tx tx = tx()) {
-			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			HibSchemaVersion version = createSchemaVersion(tx);
 			SchemaVersionModel schema = new SchemaModelImpl();
 			schema.addField(FieldUtil.createStringFieldSchema("firstField"));
 			schema.addField(FieldUtil.createStringFieldSchema("secondField"));
@@ -84,7 +84,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 
 			FieldSchemaContainer updatedSchema = mutator.apply(version);
 			assertArrayEquals(new String[] { "firstField", "secondField", "thirdField", "stringField" },
-					updatedSchema.getFields().stream().map(field -> field.getName()).toArray());
+				updatedSchema.getFields().stream().map(field -> field.getName()).toArray());
 			assertThat(updatedSchema).hasField("stringField");
 			assertTrue("The created field was not of the string string field.", updatedSchema.getField("stringField") instanceof StringFieldSchema);
 		}
@@ -93,7 +93,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyStringFieldAtPosition() {
 		try (Tx tx = tx()) {
-			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			HibSchemaVersion version = createSchemaVersion(tx);
 			SchemaModelImpl schema = new SchemaModelImpl();
 			schema.addField(FieldUtil.createStringFieldSchema("firstField"));
 			schema.addField(FieldUtil.createStringFieldSchema("secondField"));
@@ -108,7 +108,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 
 			FieldSchemaContainer updatedSchema = mutator.apply(version);
 			assertArrayEquals(new String[] { "firstField", "stringField", "secondField", "thirdField" },
-					updatedSchema.getFields().stream().map(FieldSchema::getName).toArray());
+				updatedSchema.getFields().stream().map(FieldSchema::getName).toArray());
 			assertThat(updatedSchema).hasField("stringField");
 			assertTrue("The created field was not of the string string field.", updatedSchema.getField("stringField") instanceof StringFieldSchema);
 		}
@@ -117,7 +117,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyStringField() {
 		try (Tx tx = tx()) {
-			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			HibSchemaVersion version = createSchemaVersion(tx);
 			SchemaModelImpl schema = new SchemaModelImpl();
 			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("stringField");
@@ -133,7 +133,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyNodeField() {
 		try (Tx tx = tx()) {
-			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			HibSchemaVersion version = createSchemaVersion(tx);
 			SchemaModelImpl schema = new SchemaModelImpl();
 			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("nodeField");
@@ -143,15 +143,14 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 			FieldSchemaContainer updatedSchema = mutator.apply(version);
 			assertThat(updatedSchema).hasField("nodeField");
 			assertTrue("The created field was not of the type node field." + updatedSchema.getField("nodeField").getClass(),
-					updatedSchema.getField("nodeField") instanceof NodeFieldSchema);
+				updatedSchema.getField("nodeField") instanceof NodeFieldSchema);
 		}
 	}
 
 	@Test
 	public void testApplyMicronodeField() {
 		try (Tx tx = tx()) {
-			
-			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			HibSchemaVersion version = createSchemaVersion(tx);
 			SchemaModelImpl schema = new SchemaModelImpl();
 			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("micronodeField");
@@ -161,14 +160,14 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 			FieldSchemaContainer updatedSchema = mutator.apply(version);
 			assertThat(updatedSchema).hasField("micronodeField");
 			assertTrue("The created field was not of the type micronode field.",
-					updatedSchema.getField("micronodeField") instanceof MicronodeFieldSchema);
+				updatedSchema.getField("micronodeField") instanceof MicronodeFieldSchema);
 		}
 	}
 
 	@Test
 	public void testApplyDateField() {
 		try (Tx tx = tx()) {
-			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			HibSchemaVersion version = createSchemaVersion(tx);
 			SchemaModelImpl schema = new SchemaModelImpl();
 			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("dateField");
@@ -184,7 +183,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyNumberField() {
 		try (Tx tx = tx()) {
-			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			HibSchemaVersion version = createSchemaVersion(tx);
 			SchemaModelImpl schema = new SchemaModelImpl();
 			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("numberField");
@@ -200,7 +199,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyBinaryField() {
 		try (Tx tx = tx()) {
-			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			HibSchemaVersion version = createSchemaVersion(tx);
 			SchemaModelImpl schema = new SchemaModelImpl();
 			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("binaryField");
@@ -216,7 +215,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyListField() {
 		try (Tx tx = tx()) {
-			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			HibSchemaVersion version = createSchemaVersion(tx);
 			SchemaModelImpl schema = new SchemaModelImpl();
 			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("listField");
@@ -235,7 +234,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyRequiredTrue() {
 		try (Tx tx = tx()) {
-			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			HibSchemaVersion version = createSchemaVersion(tx);
 			SchemaModelImpl schema = new SchemaModelImpl();
 			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("requiredField");
@@ -252,7 +251,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyRequiredFalse() {
 		try (Tx tx = tx()) {
-			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			HibSchemaVersion version = createSchemaVersion(tx);
 			SchemaModelImpl schema = new SchemaModelImpl();
 			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("optionalField");
@@ -269,7 +268,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyRequiredNull() {
 		try (Tx tx = tx()) {
-			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			HibSchemaVersion version = createSchemaVersion(tx);
 			SchemaModelImpl schema = new SchemaModelImpl();
 			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("defaultRequiredField");
@@ -285,88 +284,93 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyStringFieldAllow() {
 		try (Tx tx = tx()) {
-			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			HibSchemaVersion version = createSchemaVersion(tx);
 			SchemaModelImpl schema = new SchemaModelImpl();
 			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("stringAllowField");
 			change.setType("string");
-			change.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] {"one", "two", "three"});
+			change.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] { "one", "two", "three" });
 			version.setSchema(schema);
 			version.setNextChange(change);
 			FieldSchemaContainer updatedSchema = mutator.apply(version);
 			assertThat(updatedSchema).hasField("stringAllowField");
-			assertThat(updatedSchema.getField("stringAllowField", StringFieldSchema.class).getAllowedValues()).as("Allowed values").containsExactly("one",
-					"two", "three");
+			assertThat(updatedSchema.getField("stringAllowField", StringFieldSchema.class).getAllowedValues()).as("Allowed values").containsExactly(
+				"one",
+				"two", "three");
 		}
 	}
 
 	@Test
 	public void testApplyNodeFieldAllow() {
 		try (Tx tx = tx()) {
-			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			HibSchemaVersion version = createSchemaVersion(tx);
 			SchemaModelImpl schema = new SchemaModelImpl();
 			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("nodeAllowField");
 			change.setType("node");
-			change.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] {"content"});
+			change.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] { "content" });
 			version.setSchema(schema);
 			version.setNextChange(change);
 			FieldSchemaContainer updatedSchema = mutator.apply(version);
 			assertThat(updatedSchema).hasField("nodeAllowField");
-			assertThat(updatedSchema.getField("nodeAllowField", NodeFieldSchema.class).getAllowedSchemas()).as("Allowed schemas").containsExactly("content");
+			assertThat(updatedSchema.getField("nodeAllowField", NodeFieldSchema.class).getAllowedSchemas()).as("Allowed schemas")
+				.containsExactly("content");
 		}
 	}
 
 	@Test
 	public void testApplyNodeListFieldAllow() {
 		try (Tx tx = tx()) {
-			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			HibSchemaVersion version = createSchemaVersion(tx);
 			SchemaModelImpl schema = new SchemaModelImpl();
 			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("nodeListFieldAllow");
 			change.setType("list");
 			change.setListType("node");
-			change.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] {"content"});
+			change.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] { "content" });
 			version.setSchema(schema);
 			version.setNextChange(change);
 			FieldSchemaContainer updatedSchema = mutator.apply(version);
 			assertThat(updatedSchema).hasField("nodeListFieldAllow");
-			assertThat(updatedSchema.getField("nodeListFieldAllow", ListFieldSchema.class).getAllowedSchemas()).as("Allowed schemas").containsExactly("content");
+			assertThat(updatedSchema.getField("nodeListFieldAllow", ListFieldSchema.class).getAllowedSchemas()).as("Allowed schemas")
+				.containsExactly("content");
 		}
 	}
 
 	@Test
 	public void testApplyMicronodeFieldAllow() {
 		try (Tx tx = tx()) {
-			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			HibSchemaVersion version = createSchemaVersion(tx);
 			SchemaModelImpl schema = new SchemaModelImpl();
 			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("micronodeAllowField");
 			change.setType("micronode");
-			change.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] {"content"});
+			change.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] { "content" });
 			version.setSchema(schema);
 			version.setNextChange(change);
 			FieldSchemaContainer updatedSchema = mutator.apply(version);
 			assertThat(updatedSchema).hasField("micronodeAllowField");
-			assertThat(updatedSchema.getField("micronodeAllowField", MicronodeFieldSchema.class).getAllowedMicroSchemas()).as("Allowed schemas").containsExactly("content");
+			assertThat(updatedSchema.getField("micronodeAllowField", MicronodeFieldSchema.class).getAllowedMicroSchemas()).as("Allowed schemas")
+				.containsExactly("content");
 		}
 	}
 
 	@Test
 	public void testApplyMicronodeListFieldAllow() {
 		try (Tx tx = tx()) {
-			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			HibSchemaVersion version = createSchemaVersion(tx);
 			SchemaModelImpl schema = new SchemaModelImpl();
 			AddFieldChange change = tx.getGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("micronodeListFieldAllow");
 			change.setType("list");
 			change.setListType("micronode");
-			change.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] {"content"});
+			change.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] { "content" });
 			version.setSchema(schema);
 			version.setNextChange(change);
 			FieldSchemaContainer updatedSchema = mutator.apply(version);
 			assertThat(updatedSchema).hasField("micronodeListFieldAllow");
-			assertThat(updatedSchema.getField("micronodeListFieldAllow", ListFieldSchema.class).getAllowedSchemas()).as("Allowed schemas").containsExactly("content");
+			assertThat(updatedSchema.getField("micronodeListFieldAllow", ListFieldSchema.class).getAllowedSchemas()).as("Allowed schemas")
+				.containsExactly("content");
 		}
 	}
 
@@ -398,7 +402,8 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 			assertEquals(change.getType(), model.getProperty(SchemaChangeModel.TYPE_KEY));
 			assertEquals(change.getFieldName(), model.getProperty(SchemaChangeModel.FIELD_NAME_KEY));
 			assertEquals("The generic rest property from the change should have been set for the rest model.", "test",
-					change.getRestProperty("someProperty"));
+				change.getRestProperty("someProperty"));
 		}
 	}
+
 }

@@ -34,7 +34,7 @@ import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
@@ -71,7 +71,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 
 		NodeParametersImpl parameters = new NodeParametersImpl(ac);
 		MicronodeResponse restMicronode = new MicronodeResponse();
-		MicroschemaVersion microschemaContainer = getSchemaContainerVersion();
+		HibMicroschemaVersion microschemaContainer = getSchemaContainerVersion();
 		if (microschemaContainer == null) {
 			throw error(BAD_REQUEST, "The microschema container for micronode {" + getUuid() + "} could not be found.");
 		}
@@ -107,7 +107,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	}
 
 	@Override
-	public MicroschemaVersion getSchemaContainerVersion() {
+	public HibMicroschemaVersion getSchemaContainerVersion() {
 		return db().index().findByUuid(MicroschemaContainerVersionImpl.class, property(MICROSCHEMA_VERSION_KEY_PROPERTY));
 	}
 

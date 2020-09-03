@@ -14,7 +14,6 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -24,6 +23,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -223,7 +223,7 @@ public class MeshEntities {
 	 * @param <T>
 	 * @return
 	 */
-	public static <T extends MeshCoreVertex<? extends RestModel, T>> Optional<T> findElementByUuid(RootVertex<T> rootVertex, String uuid) {
+	public static <T extends MeshCoreVertex<? extends RestModel>> Optional<T> findElementByUuid(RootVertex<T> rootVertex, String uuid) {
 		return warningOptional(
 			String.format("Could not find element with uuid {%s} in class {%s}", uuid, rootVertex.getClass().getSimpleName()),
 			rootVertex.findByUuid(uuid)
@@ -238,11 +238,11 @@ public class MeshEntities {
 	 * @param <T>
 	 * @return
 	 */
-	public static <T extends MeshCoreVertex<? extends RestModel, T>> Stream<T> findElementByUuidStream(RootVertex<T> rootVertex, String uuid) {
+	public static <T extends MeshCoreVertex<? extends RestModel>> Stream<T> findElementByUuidStream(RootVertex<T> rootVertex, String uuid) {
 		return findElementByUuid(rootVertex, uuid).stream();
 	}
 
-	private <T extends MeshCoreVertex<? extends RestModel, T>> EventVertexMapper<T> byUuid(Function<String, T> elementLoader) {
+	private <T extends MeshCoreVertex<? extends RestModel>> EventVertexMapper<T> byUuid(Function<String, T> elementLoader) {
 		return event -> Optional.ofNullable(elementLoader.apply(event.getUuid()));
 	}
 
@@ -295,7 +295,7 @@ public class MeshEntities {
 	 * @param branch
 	 * @return
 	 */
-	public Stream<CreateDocumentRequest> generateNodeRequests(String nodeUuid, Project project, Branch branch) {
+	public Stream<CreateDocumentRequest> generateNodeRequests(String nodeUuid, HibProject project, HibBranch branch) {
 		NodeContainerTransformer transformer = (NodeContainerTransformer) nodeContent.getTransformer();
 		return findElementByUuidStream(project.getNodeRoot(), nodeUuid)
 		.flatMap(node -> latestVersionTypes()

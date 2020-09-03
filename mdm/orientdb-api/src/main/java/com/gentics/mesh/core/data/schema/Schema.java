@@ -14,7 +14,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 /**
  * A schema container is a graph element which stores the JSON schema data.
  */
-public interface Schema extends GraphFieldSchemaContainer<SchemaResponse, SchemaReference, Schema, SchemaVersion>, HibSchema {
+public interface Schema extends GraphFieldSchemaContainer<SchemaResponse, SchemaReference, HibSchema, HibSchemaVersion>, HibSchema {
 
 	TypeInfo TYPE_INFO = new TypeInfo(SCHEMA, SCHEMA_CREATED, SCHEMA_UPDATED, SCHEMA_DELETED);
 

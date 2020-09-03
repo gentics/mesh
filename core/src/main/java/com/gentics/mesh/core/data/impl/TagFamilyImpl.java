@@ -46,7 +46,7 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * @see TagFamily
  */
-public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, TagFamily> implements TagFamily {
+public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> implements TagFamily {
 
 	private static final Logger log = LoggerFactory.getLogger(TagFamilyImpl.class);
 
@@ -106,12 +106,12 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public Tag create(InternalActionContext ac, EventQueueBatch batch) {
-		return HibClassConverter.toTag(mesh().boot().tagDao().create(this, ac, batch));
+		return HibClassConverter.toGraph(mesh().boot().tagDao().create(this, ac, batch));
 	}
 
 	@Override
 	public Tag create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		return HibClassConverter.toTag(mesh().boot().tagDao().create(this, ac, batch, uuid));
+		return HibClassConverter.toGraph(mesh().boot().tagDao().create(this, ac, batch, uuid));
 	}
 
 	@Override

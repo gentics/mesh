@@ -16,9 +16,8 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.branch.HibBranchSchemaVersion;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.schema.Schema;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.migration.impl.MigrationStatusHandlerImpl;
 import com.gentics.mesh.core.migration.impl.NodeMigrationImpl;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -45,10 +44,10 @@ public class NodeMigrationJobImpl extends JobImpl {
 		SchemaMigrationMeshEventModel model = new SchemaMigrationMeshEventModel();
 		model.setEvent(event);
 
-		SchemaVersion toVersion = getToSchemaVersion();
+		HibSchemaVersion toVersion = getToSchemaVersion();
 		model.setToVersion(toVersion.transformToReference());
 
-		SchemaVersion fromVersion = getFromSchemaVersion();
+		HibSchemaVersion fromVersion = getFromSchemaVersion();
 		model.setFromVersion(fromVersion.transformToReference());
 
 		HibBranch branch = getBranch();
@@ -76,19 +75,19 @@ public class NodeMigrationJobImpl extends JobImpl {
 				}
 				context.setBranch(branch);
 
-				SchemaVersion fromContainerVersion = getFromSchemaVersion();
+				HibSchemaVersion fromContainerVersion = getFromSchemaVersion();
 				if (fromContainerVersion == null) {
 					throw error(BAD_REQUEST, "Source schema version for job {" + getUuid() + "} could not be found.");
 				}
 				context.setFromVersion(fromContainerVersion);
 
-				SchemaVersion toContainerVersion = getToSchemaVersion();
+				HibSchemaVersion toContainerVersion = getToSchemaVersion();
 				if (toContainerVersion == null) {
 					throw error(BAD_REQUEST, "Target schema version for job {" + getUuid() + "} could not be found.");
 				}
 				context.setToVersion(toContainerVersion);
 
-				Schema schemaContainer = toContainerVersion.getSchemaContainer();
+				HibSchema schemaContainer = toContainerVersion.getSchemaContainer();
 				if (schemaContainer == null) {
 					throw error(BAD_REQUEST, "Schema container for job {" + getUuid() + "} can't be found.");
 				}

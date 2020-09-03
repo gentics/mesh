@@ -8,10 +8,11 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
@@ -21,7 +22,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
  * @see Schema
  */
 public class SchemaContainerImpl extends
-		AbstractGraphFieldSchemaContainer<SchemaResponse, SchemaVersionModel, SchemaReference, Schema, SchemaVersion> implements
+		AbstractGraphFieldSchemaContainer<SchemaResponse, SchemaVersionModel, SchemaReference, HibSchema, HibSchemaVersion> implements
 	Schema {
 
 	@Override
@@ -44,7 +45,7 @@ public class SchemaContainerImpl extends
 	}
 
 	@Override
-	public RootVertex<Schema> getRoot() {
+	public RootVertex<? extends Schema> getRoot() {
 		return mesh().boot().meshRoot().getSchemaContainerRoot();
 	}
 

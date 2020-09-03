@@ -1,6 +1,6 @@
 package com.gentics.mesh.assertj.impl;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toTagFamily;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 
@@ -15,7 +15,7 @@ public class TagFamilyResponseAssert extends AbstractMeshAssert<TagFamilyRespons
 	}
 
 	public TagFamilyResponseAssert matches(HibTagFamily tagFamily) {
-		assertGenericNode(toTagFamily(tagFamily), actual);
+		assertGenericNode(toGraph(tagFamily), actual);
 		assertNotNull("Name field was not set in the rest response.", actual.getName());
 		return this;
 	}

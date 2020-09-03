@@ -5,12 +5,14 @@ import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.core.data.Branch;
-import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
+import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.event.EventQueueBatch;
 
 /**
@@ -23,25 +25,31 @@ public class ProjectSchemaContainerRootImpl extends SchemaContainerRootImpl {
 	}
 
 	@Override
-	public void addSchemaContainer(HibUser user, Schema schema, EventQueueBatch batch) {
-		Project project = getProject();
-		batch.add(project.onSchemaAssignEvent(schema, ASSIGNED));
+	public void addSchemaContainer(HibUser user, HibSchema schema, EventQueueBatch batch) {
+		ProjectDaoWrapper projectDao = Tx.get().data().projectDao();
+		BranchDaoWrapper branchDao = Tx.get().data().branchDao();
+
+		HibProject project = getProject();
+		batch.add(projectDao.onSchemaAssignEvent(project,schema, ASSIGNED));
 		super.addSchemaContainer(user, schema, batch);
 
 		// assign the latest schema version to all branches of the project
-		for (Branch branch : project.getBranchRoot().findAll()) {
+		for (HibBranch branch : branchDao.findAll(project)) {
 			branch.assignSchemaVersion(user, schema.getLatestVersion(), batch);
 		}
 	}
 
 	@Override
 	public void removeSchemaContainer(HibSchema schema, EventQueueBatch batch) {
-		Project project = getProject();
-		batch.add(project.onSchemaAssignEvent(schema, UNASSIGNED));
+		ProjectDaoWrapper projectDao = Tx.get().data().projectDao();
+		BranchDaoWrapper branchDao = Tx.get().data().branchDao();
+
+		HibProject project = getProject();
+		batch.add(projectDao.onSchemaAssignEvent(project, schema, UNASSIGNED));
 		super.removeSchemaContainer(schema, batch);
 
 		// unassign the schema from all branches
-		for (Branch branch : project.getBranchRoot().findAll()) {
+		for (HibBranch branch : branchDao.findAll(project)) {
 			branch.unassignSchema(schema);
 		}
 	}

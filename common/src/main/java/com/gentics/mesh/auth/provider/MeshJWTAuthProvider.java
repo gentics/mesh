@@ -275,7 +275,7 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 				throw new Exception("Invalid credentials!");
 			}
 			// Set the uuid to cache it in the element. We know it is valid.
-			HibClassConverter.toUser(user).setCachedUuid(userUuid);
+			HibClassConverter.toGraph(user).setCachedUuid(userUuid);
 
 			// TODO Re-enable isEnabled cache and check if User#delete behaviour changes
 			//	if (!user.isEnabled()) {

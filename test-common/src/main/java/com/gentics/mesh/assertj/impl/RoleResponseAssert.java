@@ -17,7 +17,7 @@ public class RoleResponseAssert extends AbstractMeshAssert<RoleResponseAssert, R
 	}
 
 	public RoleResponseAssert matches(HibRole role) {
-		assertGenericNode(HibClassConverter.toRole(role), actual);
+		assertGenericNode(HibClassConverter.toGraph(role), actual);
 		assertEquals(role.getName(), actual.getName());
 		assertNotNull(actual.getGroups());
 		return this;

@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import javax.inject.Inject;
@@ -41,6 +40,7 @@ import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
@@ -237,7 +237,10 @@ public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResp
 
 	public void handleMigrateRemainingMicronodes(InternalActionContext ac, String branchUuid) {
 		handleMigrateRemaining(ac, branchUuid,
-			HibBranch::findActiveMicroschemaVersions,
+			branch-> {
+				MicroschemaDaoWrapper microschemaDao = Tx.get().data().microschemaDao();
+				return microschemaDao.findActiveMicroschemaVersions(branch);
+			},
 			JobRoot::enqueueMicroschemaMigration);
 	}
 
@@ -249,7 +252,10 @@ public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResp
 	 */
 	public void handleMigrateRemainingNodes(InternalActionContext ac, String branchUuid) {
 		handleMigrateRemaining(ac, branchUuid,
-			HibBranch::findActiveSchemaVersions,
+			branch -> {
+				SchemaDaoWrapper schemaDao = Tx.get().data().schemaDao();
+				return schemaDao.findActiveSchemaVersions(branch);
+			},
 			JobRoot::enqueueSchemaMigration);
 	}
 
@@ -267,14 +273,14 @@ public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResp
 	 * @param <T>
 	 *            The type of the schema version (either schema version or microschema version)
 	 */
-	private <T extends HibFieldSchemaVersionElement> void handleMigrateRemaining(InternalActionContext ac, String branchUuid,
+	private <T extends HibFieldSchemaVersionElement<?, ?, ?, T>> void handleMigrateRemaining(InternalActionContext ac, String branchUuid,
 		Function<HibBranch, Iterable<T>> activeSchemas, PentaFunction<JobRoot, HibUser, HibBranch, T, T, HibJob> enqueueMigration) {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				HibProject project = ac.getProject();
 				BranchDaoWrapper branchDao = tx.data().branchDao();
-				HibBranch branch = branchDao.findByUuid(project, branchUuid);
 
+				HibBranch branch = branchDao.findByUuid(project, branchUuid);
 				// Get all active versions and group by Microschema
 				Collection<? extends List<T>> versions = StreamSupport.stream(activeSchemas.apply(branch).spliterator(), false)
 					.collect(Collectors.groupingBy(HibFieldSchemaVersionElement::getName)).values();
@@ -285,7 +291,15 @@ public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResp
 					.collect(Collectors.toMap(HibFieldSchemaVersionElement::getName, Function.identity()));
 
 				latestVersions.values().stream()
-					.flatMap(v -> (Stream<T>) v.getPreviousVersions())
+					.flatMap(v -> {
+						if (v instanceof HibMicroschemaVersion) {
+							return ((HibMicroschemaVersion) v).getPreviousVersions();
+						} else if (v instanceof HibSchemaVersion) {
+							return ((HibSchemaVersion) v).getPreviousVersions();
+						} else {
+							throw new RuntimeException("Unknown type  {" + v + "}");
+						}
+					})
 					.forEach(schemaVersion -> {
 						enqueueMigration.apply(boot.jobRoot(), ac.getUser(), branch, schemaVersion, latestVersions.get(schemaVersion.getName()));
 					});

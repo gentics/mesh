@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_ITEM;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toMicroschema;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static com.gentics.mesh.madl.type.EdgeTypeDefinition.edgeType;
 
@@ -44,13 +44,13 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 
 	@Override
 	public void addMicroschema(HibUser user, HibMicroschema container, EventQueueBatch batch) {
-		Microschema graphMicroschema = toMicroschema(container);
+		Microschema graphMicroschema = toGraph(container);
 		addItem(graphMicroschema);
 	}
 
 	@Override
 	public void removeMicroschema(HibMicroschema container, EventQueueBatch batch) {
-		Microschema graphMicroschema = toMicroschema(container);
+		Microschema graphMicroschema = toGraph(container);
 		removeItem(graphMicroschema);
 	}
 

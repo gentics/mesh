@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.job.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PROJECT;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toProject;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_VERSION_PURGE_FINISHED;
 import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.job.JobStatus.FAILED;
@@ -40,7 +40,7 @@ public class VersionPurgeJobImpl extends JobImpl {
 	}
 
 	public void setProject(HibProject project) {
-		setSingleLinkOutTo(toProject(project), HAS_PROJECT);
+		setSingleLinkOutTo(toGraph(project), HAS_PROJECT);
 	}
 
 	public Optional<ZonedDateTime> getMaxAge() {

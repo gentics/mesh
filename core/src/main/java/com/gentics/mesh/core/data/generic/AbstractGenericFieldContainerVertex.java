@@ -19,8 +19,8 @@ import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
-public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResponse, R extends MeshCoreVertex<T, R>> extends
-		AbstractMeshCoreVertex<T, R> {
+public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResponse, R extends MeshCoreVertex<T>> extends
+		AbstractMeshCoreVertex<T> {
 
 	protected <U extends BasicFieldContainer> U getGraphFieldContainer(String languageTag, HibBranch branch, ContainerType type, Class<U> classOfU) {
 		return getGraphFieldContainer(languageTag, branch != null ? branch.getUuid() : null, type, classOfU);

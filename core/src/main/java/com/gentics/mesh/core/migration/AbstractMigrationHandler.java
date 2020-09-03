@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.migration;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toVersion;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -66,7 +66,7 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 	 *            Set of touched fields (will be modified)
 	 * @throws IOException
 	 */
-	protected void prepareMigration(HibFieldSchemaVersionElement fromVersion, Set<String> touchedFields) throws IOException {
+	protected void prepareMigration(HibFieldSchemaVersionElement<?, ?, ?, ?> fromVersion, Set<String> touchedFields) throws IOException {
 		HibSchemaChange<?> change = fromVersion.getNextChange();
 		while (change != null) {
 			// if either the type changes or the field is removed, the field is
@@ -107,7 +107,7 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 
 		FieldMap fields = newContent.getFields();
 
-		Map<String, Field> newFields = toVersion(fromVersion).getChanges()
+		Map<String, Field> newFields = toGraph(fromVersion).getChanges()
 			.map(change -> change.createFields(fromVersion.getSchema(), newContent))
 			.collect(StreamUtil.mergeMaps());
 

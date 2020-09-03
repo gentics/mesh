@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.schema.Microschema;
@@ -55,7 +55,7 @@ public class MicroschemaTypeProvider extends AbstractTypeProvider {
 			Microschema microschema = env.getSource();
 			UserDaoWrapper userDao = Tx.get().data().userDao();
 			return microschema.findReferencedBranches().keySet().stream()
-				.map(Branch::getProject)
+				.map(HibBranch::getProject)
 				.distinct()
 				.filter(it -> userDao.hasPermission(gc.getUser(), it, InternalPermission.READ_PERM))
 				.collect(Collectors.toList());
