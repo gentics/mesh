@@ -176,7 +176,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 			if (oldPublished != null && !oldPublished.equals(container)) {
 				// We only need to migrate the container if the container's schema version is also "old"
 				boolean hasSameOldSchemaVersion = container != null
-					&& container.getSchemaContainerVersion().id().equals(container.getSchemaContainerVersion().id());
+					&& container.getSchemaContainerVersion().getId().equals(container.getSchemaContainerVersion().getId());
 				if (hasSameOldSchemaVersion) {
 					nextDraftVersion = migratePublishedContainer(ac, batch, branch, node, oldPublished, fromVersion, toVersion, touchedFields,
 						newSchema);

@@ -18,8 +18,6 @@ import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.branch.BranchReference;
@@ -55,7 +53,7 @@ import com.gentics.mesh.parameter.PagingParameters;
  * 
  */
 public interface Branch
-	extends MeshCoreVertex<BranchResponse, Branch>, NamedElement, ReferenceableElement<BranchReference>, UserTrackingVertex, Taggable, ProjectElement, HibBranch {
+	extends MeshCoreVertex<BranchResponse>, NamedElement, ReferenceableElement<BranchReference>, UserTrackingVertex, Taggable, ProjectElement, HibBranch {
 
 	TypeInfo TYPE_INFO = new TypeInfo(BRANCH, BRANCH_CREATED, BRANCH_UPDATED, BRANCH_DELETED);
 
@@ -234,7 +232,7 @@ public interface Branch
 	 * 
 	 * @return
 	 */
-	Result<? extends SchemaVersion> findAllSchemaVersions();
+	Result<? extends HibSchemaVersion> findAllSchemaVersions();
 
 	/**
 	 * Assign the given microschema version to the branch and queue a job which executes the migration.
@@ -278,7 +276,7 @@ public interface Branch
 	 * 
 	 * @return Iterable
 	 */
-	Result<? extends MicroschemaVersion> findAllMicroschemaVersions();
+	Result<? extends HibMicroschemaVersion> findAllMicroschemaVersions();
 
 	/**
 	 * Get an iterable of all latest microschema container versions.
@@ -293,7 +291,7 @@ public interface Branch
 	 * 
 	 * @return Iterable
 	 */
-	Result<? extends SchemaVersion> findActiveSchemaVersions();
+	Result<HibSchemaVersion> findActiveSchemaVersions();
 
 	/**
 	 * Get an iterable over all active microschema container versions. An active version is one which still contains {@link NodeGraphFieldContainer}'s or one
@@ -301,7 +299,7 @@ public interface Branch
 	 *
 	 * @return Iterable
 	 */
-	Iterable<? extends MicroschemaVersion> findActiveMicroschemaVersions();
+	Result<HibMicroschemaVersion> findActiveMicroschemaVersions();
 
 	/**
 	 * Get an iterable of all latest schema container versions.

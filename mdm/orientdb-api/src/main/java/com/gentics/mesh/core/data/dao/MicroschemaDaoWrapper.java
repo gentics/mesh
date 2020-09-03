@@ -120,4 +120,10 @@ public interface MicroschemaDaoWrapper extends MicroschemaDao, DaoWrapper<HibMic
 
 	String getETag(HibMicroschema schema, InternalActionContext ac);
 
+	void addMicroschema(HibMicroschema schema, HibUser user, EventQueueBatch batch);
+
+	Result<? extends HibMicroschema> findAll(HibProject project);
+
+	Result<HibMicroschemaVersion> findActiveMicroschemaVersions(HibBranch branch);
+
 }

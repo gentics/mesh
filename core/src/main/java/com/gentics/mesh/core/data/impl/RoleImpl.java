@@ -23,7 +23,7 @@ import com.gentics.mesh.madl.field.FieldType;
 /**
  * @see Role
  */
-public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> implements Role {
+public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse> implements Role {
 
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(RoleImpl.class, MeshVertexImpl.class);

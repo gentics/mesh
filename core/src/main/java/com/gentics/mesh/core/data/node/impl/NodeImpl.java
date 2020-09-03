@@ -14,7 +14,8 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.PARENTS_KEY_PROPERTY;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.PROJECT_KEY_PROPERTY;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.SCHEMA_CONTAINER_KEY_PROPERTY;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toNode;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_MOVED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_REFERENCE_UPDATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_TAGGED;
@@ -92,8 +93,6 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.schema.Schema;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -271,7 +270,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					break;
 				}
 				// For the path segments of the container, we allow ANY language (of the project)
-				segment = toNode(current).getPathSegment(branchUuid, type, true, languageTag);
+				segment = toGraph(current).getPathSegment(branchUuid, type, true, languageTag);
 
 				// Abort early if one of the path segments could not be resolved. We
 				// need to return a 404 in those cases.
@@ -502,13 +501,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public void addTag(HibTag tag, HibBranch branch) {
 		removeTag(tag, branch);
-		TagEdge edge = addFramedEdge(HAS_TAG, tag.toTag(), TagEdgeImpl.class);
+		TagEdge edge = addFramedEdge(HAS_TAG, toGraph(tag), TagEdgeImpl.class);
 		edge.setBranchUuid(branch.getUuid());
 	}
 
 	@Override
 	public void removeTag(HibTag tag, HibBranch branch) {
-		outE(HAS_TAG).has(TagEdgeImpl.BRANCH_UUID_KEY, branch.getUuid()).mark().inV().retain(tag.toTag()).back().removeAll();
+		outE(HAS_TAG).has(TagEdgeImpl.BRANCH_UUID_KEY, branch.getUuid()).mark().inV().retain(toGraph(tag)).back().removeAll();
 	}
 
 	@Override
@@ -522,7 +521,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Schema getSchemaContainer() {
+	public HibSchema getSchemaContainer() {
 		String uuid = property(SCHEMA_CONTAINER_KEY_PROPERTY);
 		if (uuid == null) {
 			return null;
@@ -648,7 +647,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 		}
 
-		Schema container = getSchemaContainer();
+		HibSchema container = getSchemaContainer();
 		if (container == null) {
 			throw error(BAD_REQUEST, "The schema container for node {" + getUuid() + "} could not be found.");
 		}
@@ -1675,7 +1674,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 
 			// Make sure the container was already migrated. Otherwise the update can't proceed.
-			SchemaVersion schemaVersion = latestDraftVersion.getSchemaContainerVersion();
+			HibSchemaVersion schemaVersion = latestDraftVersion.getSchemaContainerVersion();
 			if (!latestDraftVersion.getSchemaContainerVersion().equals(branch.findLatestSchemaVersion(schemaVersion
 				.getSchemaContainer()))) {
 				throw error(BAD_REQUEST, "node_error_migration_incomplete");
@@ -2058,7 +2057,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		HibNode current = getParentNode(branch.getUuid());
 		if (current != null) {
 			while (current != null) {
-				String key = current.getUuid() + toNode(current).getDisplayName(ac);
+				String key = current.getUuid() + toGraph(current).getDisplayName(ac);
 				keyBuilder.append(key);
 				if (LinkType.OFF != ac.getNodeParameters().getResolveLinks()) {
 					WebRootLinkReplacer linkReplacer = mesh().webRootLinkReplacer();
@@ -2133,7 +2132,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return model;
 	}
 
-	public NodeMeshEventModel onReferenceUpdated(String uuid, Schema schema, String branchUuid, ContainerType type, String languageTag) {
+	public NodeMeshEventModel onReferenceUpdated(String uuid, HibSchema schema, String branchUuid, ContainerType type, String languageTag) {
 		NodeMeshEventModel event = new NodeMeshEventModel();
 		event.setEvent(NODE_REFERENCE_UPDATED);
 		event.setUuid(uuid);
@@ -2148,7 +2147,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public NodeMeshEventModel onDeleted(String uuid, Schema schema, String branchUuid, ContainerType type, String languageTag) {
+	public NodeMeshEventModel onDeleted(String uuid, HibSchema schema, String branchUuid, ContainerType type, String languageTag) {
 		NodeMeshEventModel event = new NodeMeshEventModel();
 		event.setEvent(getTypeInfo().getOnDeleted());
 		event.setUuid(uuid);

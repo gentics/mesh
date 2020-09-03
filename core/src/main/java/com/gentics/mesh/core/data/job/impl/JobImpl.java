@@ -3,9 +3,7 @@ package com.gentics.mesh.core.data.job.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRANCH;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FROM_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TO_VERSION;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toBranch;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toMicroschemaVersion;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toSchemaVersion;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.job.JobStatus.STARTING;
 import static com.gentics.mesh.core.rest.job.JobStatus.UNKNOWN;
 
@@ -22,12 +20,10 @@ import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.impl.BranchImpl;
 import com.gentics.mesh.core.data.job.Job;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.schema.Microschema;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
-import com.gentics.mesh.core.data.schema.Schema;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.job.JobResponse;
@@ -44,7 +40,7 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * @see Job
  */
-public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements Job {
+public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse> implements Job {
 
 	private static final Logger log = LoggerFactory.getLogger(JobImpl.class);
 
@@ -103,18 +99,18 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 			log.debug("No referenced branch found.");
 		}
 
-		SchemaVersion toSchema = getToSchemaVersion();
+		HibSchemaVersion toSchema = getToSchemaVersion();
 		if (toSchema != null) {
-			Schema container = toSchema.getSchemaContainer();
+			HibSchema container = toSchema.getSchemaContainer();
 			props.put("schemaName", container.getName());
 			props.put("schemaUuid", container.getUuid());
 			props.put("fromVersion", getFromSchemaVersion().getVersion());
 			props.put("toVersion", toSchema.getVersion());
 		}
 
-		MicroschemaVersion toMicroschema = getToMicroschemaVersion();
+		HibMicroschemaVersion toMicroschema = getToMicroschemaVersion();
 		if (toMicroschema != null) {
-			Microschema container = toMicroschema.getSchemaContainer();
+			HibMicroschema container = toMicroschema.getSchemaContainer();
 			props.put("microschemaName", container.getName());
 			props.put("microschemaUuid", container.getUuid());
 			props.put("fromVersion", getFromMicroschemaVersion().getVersion());
@@ -197,47 +193,47 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> i
 
 	@Override
 	public void setBranch(HibBranch branch) {
-		setSingleLinkOutTo(toBranch(branch), HAS_BRANCH);
+		setSingleLinkOutTo(toGraph(branch), HAS_BRANCH);
 	}
 
 	@Override
-	public SchemaVersion getFromSchemaVersion() {
+	public HibSchemaVersion getFromSchemaVersion() {
 		return out(HAS_FROM_VERSION).has(SchemaContainerVersionImpl.class).nextOrDefaultExplicit(SchemaContainerVersionImpl.class, null);
 	}
 
 	@Override
 	public void setFromSchemaVersion(HibSchemaVersion version) {
-		setSingleLinkOutTo(toSchemaVersion(version), HAS_FROM_VERSION);
+		setSingleLinkOutTo(toGraph(version), HAS_FROM_VERSION);
 	}
 
 	@Override
-	public SchemaVersion getToSchemaVersion() {
+	public HibSchemaVersion getToSchemaVersion() {
 		return out(HAS_TO_VERSION).has(SchemaContainerVersionImpl.class).nextOrDefaultExplicit(SchemaContainerVersionImpl.class, null);
 	}
 
 	@Override
 	public void setToSchemaVersion(HibSchemaVersion version) {
-		setSingleLinkOutTo(toSchemaVersion(version), HAS_TO_VERSION);
+		setSingleLinkOutTo(toGraph(version), HAS_TO_VERSION);
 	}
 
 	@Override
-	public MicroschemaVersion getFromMicroschemaVersion() {
+	public HibMicroschemaVersion getFromMicroschemaVersion() {
 		return out(HAS_FROM_VERSION).has(MicroschemaContainerVersionImpl.class).nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class, null);
 	}
 
 	@Override
 	public void setFromMicroschemaVersion(HibMicroschemaVersion fromVersion) {
-		setSingleLinkOutTo(toMicroschemaVersion(fromVersion), HAS_FROM_VERSION);
+		setSingleLinkOutTo(toGraph(fromVersion), HAS_FROM_VERSION);
 	}
 
 	@Override
-	public MicroschemaVersion getToMicroschemaVersion() {
+	public HibMicroschemaVersion getToMicroschemaVersion() {
 		return out(HAS_TO_VERSION).has(MicroschemaContainerVersionImpl.class).nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class, null);
 	}
 
 	@Override
 	public void setToMicroschemaVersion(HibMicroschemaVersion toVersion) {
-		setSingleLinkOutTo(toMicroschemaVersion(toVersion), HAS_TO_VERSION);
+		setSingleLinkOutTo(toGraph(toVersion), HAS_TO_VERSION);
 	}
 
 	@Override

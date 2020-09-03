@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.actions.impl;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toSchema;
-
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import java.util.function.Predicate;
 
 import javax.inject.Inject;
@@ -88,19 +87,19 @@ public class SchemaDAOActionsImpl implements SchemaDAOActions {
 
 	@Override
 	public SchemaResponse transformToRestSync(Tx tx, HibSchema schema, InternalActionContext ac, int level, String... languageTags) {
-		Schema graphSchema = toSchema(schema);
+		Schema graphSchema = toGraph(schema);
 		return graphSchema.transformToRestSync(ac, level, languageTags);
 	}
 
 	@Override
 	public String getAPIPath(Tx tx, InternalActionContext ac, HibSchema schema) {
-		Schema graphSchema = toSchema(schema);
+		Schema graphSchema = toGraph(schema);
 		return graphSchema.getAPIPath(ac);
 	}
 
 	@Override
 	public String getETag(Tx tx, InternalActionContext ac, HibSchema schema) {
-		Schema graphSchema = toSchema(schema);
+		Schema graphSchema = toGraph(schema);
 		return graphSchema.getETag(ac);
 	}
 

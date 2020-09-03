@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.dao.impl;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toBinary;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
 import java.io.InputStream;
 import java.util.stream.Stream;
@@ -53,22 +53,22 @@ public class BinaryDaoWrapperImpl extends AbstractDaoWrapper<HibBinary> implemen
 
 	@Override
 	public Flowable<Buffer> getStream(HibBinary binary) {
-		return toBinary(binary).getStream();
+		return toGraph(binary).getStream();
 	}
 
 	@Override
 	public Supplier<InputStream> openBlockingStream(HibBinary binary) {
-		return toBinary(binary).openBlockingStream();
+		return toGraph(binary).openBlockingStream();
 	}
 
 	@Override
 	public String getBase64ContentSync(HibBinary binary) {
-		return toBinary(binary).getBase64ContentSync();
+		return toGraph(binary).getBase64ContentSync();
 	}
 
 	@Override
 	public Result<BinaryGraphField> findFields(HibBinary binary) {
-		return toBinary(binary).findFields();
+		return toGraph(binary).findFields();
 	}
 
 	@Override

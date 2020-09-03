@@ -8,10 +8,13 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
@@ -52,5 +55,9 @@ public interface ProjectDaoWrapper extends ProjectDao, DaoWrapper<HibProject>, D
 		String uuid, EventQueueBatch batch);
 
 	String getETag(HibProject project, InternalActionContext ac);
+
+	String getAPIPath(HibProject project, InternalActionContext ac);
+
+	MeshEventModel onSchemaAssignEvent(HibProject project, HibSchema schema, Assignment assignment);
 
 }

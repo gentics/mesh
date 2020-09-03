@@ -4,7 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PAR
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_ITEM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.SCHEMA_CONTAINER_KEY_PROPERTY;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toSchema;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static com.gentics.mesh.madl.type.EdgeTypeDefinition.edgeType;
@@ -61,13 +61,13 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<Schema> implemen
 	}
 
 	@Override
-	public void addSchemaContainer(HibUser user, Schema schema, EventQueueBatch batch) {
-		addItem(schema);
+	public void addSchemaContainer(HibUser user, HibSchema schema, EventQueueBatch batch) {
+		addItem(toGraph(schema));
 	}
 
 	@Override
 	public void removeSchemaContainer(HibSchema schemaContainer, EventQueueBatch batch) {
-		removeItem(toSchema(schemaContainer));
+		removeItem(toGraph(schemaContainer));
 	}
 
 	@Override
@@ -125,9 +125,8 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<Schema> implemen
 	public Result<? extends Node> getNodes(Schema schema) {
 		Iterator<Vertex> vertices = mesh().database().getVertices(
 			NodeImpl.class,
-			new String[]{SCHEMA_CONTAINER_KEY_PROPERTY},
-			new Object[]{schema.getUuid()}
-		);
+			new String[] { SCHEMA_CONTAINER_KEY_PROPERTY },
+			new Object[] { schema.getUuid() });
 		return new TraversalResult<>(graph.frameExplicit(vertices, NodeImpl.class));
 	}
 

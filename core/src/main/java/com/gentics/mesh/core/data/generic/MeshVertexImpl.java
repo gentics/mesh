@@ -123,7 +123,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 		roleDao.revokePermissions(role, this, permissionsToRevoke.toArray(new InternalPermission[permissionsToRevoke.size()]));
 
 		if (this instanceof MeshCoreVertex) {
-			MeshCoreVertex<?, ?> coreVertex = (MeshCoreVertex<?, ?>) this;
+			MeshCoreVertex<?> coreVertex = (MeshCoreVertex<?>) this;
 			batch.add(coreVertex.onPermissionChanged(role));
 		}
 		// TODO Also handle RootVertex - We need to add a dedicated event in those cases.

@@ -8,7 +8,7 @@ import static com.gentics.mesh.ElementType.LANGUAGE;
 /**
  * Graph Domain Model interface for languages.
  */
-public interface Language extends MeshCoreVertex<LanguageResponse, Language>, NamedElement, HibLanguage {
+public interface Language extends MeshCoreVertex<LanguageResponse>, NamedElement, HibLanguage {
 
 	TypeInfo TYPE_INFO = new TypeInfo(LANGUAGE, null, null, null);
 

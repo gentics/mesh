@@ -11,12 +11,12 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
-import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
@@ -97,12 +97,12 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 		try (Tx tx = tx()) {
 			ContentDaoWrapper contentDao = tx.data().contentDao();
 			NodeGraphFieldContainer containerA = createContainer(
-					FieldUtil.createMicronodeFieldSchema("micronodeField").setAllowedMicroSchemas("vcard"));
+				FieldUtil.createMicronodeFieldSchema("micronodeField").setAllowedMicroSchemas("vcard"));
 
-			// Create microschema vcard 
+			// Create microschema vcard
 			FramedGraph graph = tx.getGraph();
-			Microschema schemaContainer = graph.addFramedVertex(MicroschemaContainerImpl.class);
-			MicroschemaContainerVersionImpl version = graph.addFramedVertex(MicroschemaContainerVersionImpl.class);
+			Microschema schemaContainer = createMicroschema(tx);
+			HibMicroschemaVersion version = createMicroschemaVersion(tx);
 			schemaContainer.setLatestVersion(version);
 			version.setSchemaContainer(schemaContainer);
 			MicroschemaVersionModel microschema = new MicroschemaModelImpl();
@@ -116,7 +116,7 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 			micronodeA.getMicronode().createString("lastName").setString("lastnameValue");
 
 			NodeGraphFieldContainer containerB = createContainer(
-					FieldUtil.createMicronodeFieldSchema("micronodeField").setAllowedMicroSchemas("vcard"));
+				FieldUtil.createMicronodeFieldSchema("micronodeField").setAllowedMicroSchemas("vcard"));
 			MicronodeGraphField micronodeB = containerB.createMicronode("micronodeField", version);
 			micronodeB.getMicronode().createString("firstName").setString("firstnameValue");
 			micronodeB.getMicronode().createString("lastName").setString("lastnameValue-CHANGED");

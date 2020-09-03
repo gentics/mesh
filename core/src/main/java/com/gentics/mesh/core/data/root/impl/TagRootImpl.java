@@ -4,7 +4,8 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toTagFamily;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
@@ -81,12 +82,12 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 
 	@Override
 	public void addTag(HibTag tag) {
-		addItem(tag.toTag());
+		addItem(toGraph(tag));
 	}
 
 	@Override
 	public void removeTag(HibTag tag) {
-		removeItem(tag.toTag());
+		removeItem(toGraph(tag));
 	}
 
 	@Override
@@ -161,7 +162,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 		HibBranch branch = ac.getBranch();
 		String branchUuid = branch.getUuid();
 		UserDaoWrapper userRoot = Tx.get().data().userDao();
-		TraversalResult<? extends Node> nodes = new TraversalResult<>(tag.toTag().inE(HAS_TAG).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branch.getUuid()).outV().frameExplicit(NodeImpl.class));
+		TraversalResult<? extends Node> nodes = new TraversalResult<>(toGraph(tag).inE(HAS_TAG).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branch.getUuid()).outV().frameExplicit(NodeImpl.class));
 		Stream<? extends Node> s = nodes.stream()
 			.filter(item -> {
 				// Check whether the node has at least a draft in the selected branch - Otherwise the node should be skipped
@@ -231,7 +232,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 		// Add the tag to the global tag root
 		mesh().boot().meshRoot().getTagRoot().addTag(tag);
 		// And to the tag family
-		toTagFamily(tagFamily).addTag(tag);
+		toGraph(tagFamily).addTag(tag);
 
 		// Set the tag family for the tag
 		tag.setTagFamily(tagFamily);

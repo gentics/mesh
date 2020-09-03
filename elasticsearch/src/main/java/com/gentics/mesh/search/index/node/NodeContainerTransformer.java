@@ -2,7 +2,7 @@ package com.gentics.mesh.search.index.node;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toNode;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
@@ -45,8 +45,8 @@ import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.Tx;
@@ -91,7 +91,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	 * @param document
 	 * @param schemaVersion
 	 */
-	private void addSchema(JsonObject document, SchemaVersion schemaVersion) {
+	private void addSchema(JsonObject document, HibSchemaVersion schemaVersion) {
 		String name = schemaVersion.getName();
 		String uuid = schemaVersion.getSchemaContainer().getUuid();
 		Map<String, String> schemaFields = new HashMap<>();
@@ -128,13 +128,13 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	private void addPermissionInfo(JsonObject document, HibNode node, ContainerType type) {
 		List<String> roleUuids = new ArrayList<>();
 
-		for (HibRole role : toNode(node).getRolesWithPerm(READ_PERM)) {
+		for (HibRole role : toGraph(node).getRolesWithPerm(READ_PERM)) {
 			roleUuids.add(role.getUuid());
 		}
 
 		// Also add the roles which would grant read on published nodes if the container is published.
 		if (type == PUBLISHED) {
-			for (HibRole role : toNode(node).getRolesWithPerm(READ_PUBLISHED_PERM)) {
+			for (HibRole role : toGraph(node).getRolesWithPerm(READ_PUBLISHED_PERM)) {
 				roleUuids.add(role.getUuid());
 			}
 		}
@@ -326,7 +326,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 							fieldsMap.put(fieldSchema.getName(), Observable.fromIterable(micronodeGraphFieldList.getList()).map(item -> {
 								JsonObject itemMap = new JsonObject();
 								Micronode micronode = item.getMicronode();
-								MicroschemaVersion microschameContainerVersion = micronode.getSchemaContainerVersion();
+								HibMicroschemaVersion microschameContainerVersion = micronode.getSchemaContainerVersion();
 								addMicroschema(itemMap, microschameContainerVersion);
 								addFields(itemMap, "fields-" + microschameContainerVersion.getName(), micronode,
 									microschameContainerVersion.getSchema().getFields());
@@ -406,7 +406,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	 * @param document
 	 * @param microschemaVersion
 	 */
-	private void addMicroschema(JsonObject document, MicroschemaVersion microschemaVersion) {
+	private void addMicroschema(JsonObject document, HibMicroschemaVersion microschemaVersion) {
 		JsonObject info = new JsonObject();
 		info.put(NAME_KEY, microschemaVersion.getName());
 		info.put(UUID_KEY, microschemaVersion.getUuid());

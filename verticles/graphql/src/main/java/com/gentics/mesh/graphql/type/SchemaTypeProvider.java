@@ -15,7 +15,10 @@ import javax.inject.Singleton;
 import com.gentics.mesh.core.data.NamedElement;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.node.NodeContent;
+import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.db.Tx;
@@ -104,9 +107,8 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 			GraphQLContext gc = env.getContext();
 			List<String> languageTags = getLanguageArgument(env);
 			ContainerType type = getNodeVersion(env);
-
-			Stream<? extends NodeContent> nodes = getSchemaContainerVersion(env).getNodes(
-					gc.getBranch().getUuid(),
+			SchemaDaoWrapper schemaDao = Tx.get().data().schemaDao();
+			Stream<? extends NodeContent> nodes = schemaDao.findNodes(getSchemaContainerVersion(env), gc.getBranch().getUuid(),
 					gc.getUser(),
 					ContainerType.forVersion(gc.getVersioningParameters().getVersion())
 			).stream()
@@ -145,12 +147,12 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 		return schemaType.build();
 	}
 
-	private SchemaVersion getSchemaContainerVersion(DataFetchingEnvironment env) {
+	private HibSchemaVersion getSchemaContainerVersion(DataFetchingEnvironment env) {
 		Object source = env.getSource();
-		if (source instanceof SchemaVersion) {
-			return (SchemaVersion) source;
+		if (source instanceof HibSchemaVersion) {
+			return (HibSchemaVersion) source;
 		} else if (source instanceof Schema) {
-			return ((Schema) source).getLatestVersion();
+			return ((HibSchema) source).getLatestVersion();
 		} else {
 			throw new RuntimeException("Invalid type {" + source + "}.");
 		}
@@ -159,12 +161,12 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 	private SchemaVersionModel loadModelWithFallback(DataFetchingEnvironment env) {
 		Object source = env.getSource();
 		if (source instanceof Schema) {
-			Schema schema = env.getSource();
+			HibSchema schema = env.getSource();
 			SchemaVersionModel model = JsonUtil.readValue(schema.getLatestVersion().getJson(), SchemaModelImpl.class);
 			return model;
 		}
 		if (source instanceof SchemaVersion) {
-			SchemaVersion schema = env.getSource();
+			HibSchemaVersion schema = env.getSource();
 			SchemaVersionModel model = JsonUtil.readValue(schema.getJson(), SchemaModelImpl.class);
 			return model;
 		}

@@ -24,6 +24,7 @@ public interface HibProject extends HibCoreElement, HibUserTracking {
 
 	HibBranch findBranchOrLatest(String branchNameOrUuid);
 
+	@Deprecated
 	Result<? extends Node> findNodes();
 
 	HibBranch getLatestBranch();
@@ -36,23 +37,15 @@ public interface HibProject extends HibCoreElement, HibUserTracking {
 
 	HibBranch findBranch(String branchNameOrUuid);
 
+	@Deprecated
 	NodeRoot getNodeRoot();
 
 	void setBaseNode(Node baseNode);
 
+	@Deprecated
 	SchemaRoot getSchemaContainerRoot();
 
-	MicroschemaRoot getMicroschemaContainerRoot();
-
-	/**
-	 * Convert this back to the non-mdm project
-	 * 
-	 * @return
-	 * @deprecated This method should only be used when there is really no other way
-	 */
 	@Deprecated
-	default Project toProject() {
-		return (Project) this;
-	}
+	MicroschemaRoot getMicroschemaContainerRoot();
 
 }

@@ -20,7 +20,7 @@ import io.reactivex.Single;
 /**
  * @see Language
  */
-public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Language> implements Language {
+public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse> implements Language {
 
 	public static final String LANGUAGE_TAG_PROPERTY_KEY = "languageTag";
 	public static final String LANGUAGE_NATIVE_NAME_PROPERTY_KEY = "nativeName";

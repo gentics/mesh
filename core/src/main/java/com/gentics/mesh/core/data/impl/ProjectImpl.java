@@ -68,7 +68,7 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * @see Project
  */
-public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project> implements Project {
+public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> implements Project {
 
 	private static final Logger log = LoggerFactory.getLogger(ProjectImpl.class);
 

@@ -4,9 +4,9 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGroup;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toRole;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toUser;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.MeshEvent.GROUP_ROLE_ASSIGNED;
 import static com.gentics.mesh.core.rest.MeshEvent.GROUP_ROLE_UNASSIGNED;
 import static com.gentics.mesh.core.rest.MeshEvent.GROUP_USER_ASSIGNED;
@@ -123,8 +123,8 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 
 	@Override
 	public void addUser(HibGroup group, HibUser user) {
-		Group graphGroup = toGroup(group);
-		User graphUser = toUser(user);
+		Group graphGroup = toGraph(group);
+		User graphUser = toGraph(user);
 
 		graphGroup.setUniqueLinkInTo(graphUser, HAS_USER);
 
@@ -136,8 +136,8 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 
 	@Override
 	public void removeUser(HibGroup group, HibUser user) {
-		Group graphGroup = toGroup(group);
-		User graphUser = toUser(user);
+		Group graphGroup = toGraph(group);
+		User graphUser = toGraph(user);
 
 		graphGroup.unlinkIn(graphUser, HAS_USER);
 
@@ -148,35 +148,35 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 
 	@Override
 	public Result<? extends HibUser> getUsers(HibGroup group) {
-		Group graphGroup = toGroup(group);
+		Group graphGroup = toGraph(group);
 		GroupRoot groupRoot = boot.get().groupRoot();
 		return groupRoot.getUsers(graphGroup);
 	}
 
 	@Override
 	public Result<? extends Role> getRoles(HibGroup group) {
-		Group graphGroup = toGroup(group);
+		Group graphGroup = toGraph(group);
 		GroupRoot groupRoot = boot.get().groupRoot();
 		return groupRoot.getRoles(graphGroup);
 	}
 
 	@Override
 	public void addRole(HibGroup group, HibRole role) {
-		Group graphGroup = toGroup(group);
-		Role graphRole = toRole(role);
+		Group graphGroup = toGraph(group);
+		Role graphRole = toGraph(role);
 		graphGroup.setUniqueLinkInTo(graphRole, HAS_ROLE);
 
 		// Add shortcut edges from role to users of this group
 		for (HibUser user : getUsers(group)) {
-			toUser(user).setUniqueLinkOutTo(graphRole, ASSIGNED_TO_ROLE);
+			toGraph(user).setUniqueLinkOutTo(graphRole, ASSIGNED_TO_ROLE);
 		}
 
 	}
 
 	@Override
 	public void removeRole(HibGroup group, HibRole role) {
-		Role graphRole = toRole(role);
-		Group graphGroup = toGroup(group);
+		Role graphRole = toGraph(role);
+		Group graphGroup = toGraph(group);
 		graphGroup.unlinkIn(graphRole, HAS_ROLE);
 
 		// Update the shortcut edges since the role does no longer belong to the group
@@ -188,28 +188,28 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 
 	@Override
 	public boolean hasRole(HibGroup group, HibRole role) {
-		Role graphRole = toRole(role);
-		Group graphGroup = toGroup(group);
+		Role graphRole = toGraph(role);
+		Group graphGroup = toGraph(group);
 		return graphGroup.in(HAS_ROLE).retain(graphRole).hasNext();
 	}
 
 	@Override
 	public boolean hasUser(HibGroup group, HibUser user) {
-		Group graphGroup = toGroup(group);
+		Group graphGroup = toGraph(group);
 		return graphGroup.in(HAS_USER).retain((User) user).hasNext();
 	}
 
 	@Override
 	public TransformablePage<? extends HibUser> getVisibleUsers(HibGroup group, MeshAuthUser user, PagingParameters pagingInfo) {
 		GroupRoot groupRoot = boot.get().groupRoot();
-		Group graphGroup = toGroup(group);
+		Group graphGroup = toGraph(group);
 		return groupRoot.getVisibleUsers(graphGroup, user, pagingInfo);
 	}
 
 	@Override
 	public TransformablePage<? extends Role> getRoles(HibGroup group, HibUser user, PagingParameters pagingInfo) {
 		GroupRoot groupRoot = boot.get().groupRoot();
-		Group graphGroup = toGroup(group);
+		Group graphGroup = toGraph(group);
 		return groupRoot.getRoles(graphGroup, user, pagingInfo);
 	}
 
@@ -247,7 +247,7 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 
 	@Override
 	public GroupResponse transformToRestSync(HibGroup group, InternalActionContext ac, int level, String... languageTags) {
-		Group graphGroup = toGroup(group);
+		Group graphGroup = toGraph(group);
 		GenericParameters generic = ac.getGenericParameters();
 		FieldsSet fields = generic.getFields();
 
@@ -281,21 +281,21 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 
 	@Override
 	public void addGroup(HibGroup group) {
-		Group graphGroup = toGroup(group);
+		Group graphGroup = toGraph(group);
 		GroupRoot groupRoot = boot.get().groupRoot();
 		groupRoot.addItem(graphGroup);
 	}
 
 	@Override
 	public void removeGroup(HibGroup group) {
-		Group graphGroup = toGroup(group);
+		Group graphGroup = toGraph(group);
 		GroupRoot groupRoot = boot.get().groupRoot();
 		groupRoot.removeItem(graphGroup);
 	}
 
 	@Override
 	public void delete(HibGroup group, BulkActionContext bac) {
-		Group graphGroup = toGroup(group);
+		Group graphGroup = toGraph(group);
 		// TODO don't allow deletion of the admin group
 		bac.batch().add(group.onDeleted());
 
@@ -386,13 +386,13 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 
 	@Override
 	public String getAPIPath(HibGroup group, InternalActionContext ac) {
-		Group graphGroup = toGroup(group);
+		Group graphGroup = toGraph(group);
 		return graphGroup.getAPIPath(ac);
 	}
 
 	@Override
 	public String getETag(HibGroup group, InternalActionContext ac) {
-		Group graphGroup = toGroup(group);
+		Group graphGroup = toGraph(group);
 		return graphGroup.getETag(ac);
 		//return boot.get().groupRoot().getETag(graphGroup, ac);
 	}

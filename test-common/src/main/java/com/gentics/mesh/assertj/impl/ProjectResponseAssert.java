@@ -1,5 +1,6 @@
 package com.gentics.mesh.assertj.impl;
 
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -16,7 +17,7 @@ public class ProjectResponseAssert extends AbstractMeshAssert<ProjectResponseAss
 	}
 
 	public ProjectResponseAssert matches(HibProject project) {
-		assertGenericNode(project.toProject(), actual);
+		assertGenericNode(toGraph(project), actual);
 		assertNotNull(actual.getRootNode());
 		assertEquals(project.getName(), actual.getName());
 		assertNotNull(actual.getRootNode());

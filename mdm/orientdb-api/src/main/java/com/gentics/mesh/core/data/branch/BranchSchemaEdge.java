@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.branch;
 
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 
 /**
  * Edge between branch and schema version.
@@ -12,6 +12,6 @@ public interface BranchSchemaEdge extends BranchVersionEdge, HibBranchSchemaVers
 	 * 
 	 * @return
 	 */
-	SchemaVersion getSchemaContainerVersion();
+	HibSchemaVersion getSchemaContainerVersion();
 
 }

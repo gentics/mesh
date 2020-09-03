@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.actions.impl;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toMicroschema;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
 import java.util.function.Predicate;
 
@@ -80,19 +80,19 @@ public class MicroschemaDAOActionsImpl implements MicroschemaDAOActions {
 
 	@Override
 	public MicroschemaResponse transformToRestSync(Tx tx, HibMicroschema element, InternalActionContext ac, int level, String... languageTags) {
-		Microschema graphSchema = toMicroschema(element);
+		Microschema graphSchema = toGraph(element);
 		return graphSchema.transformToRestSync(ac, level, languageTags);
 	}
 
 	@Override
 	public String getAPIPath(Tx tx, InternalActionContext ac, HibMicroschema element) {
-		Microschema graphSchema = toMicroschema(element);
+		Microschema graphSchema = toGraph(element);
 		return graphSchema.getAPIPath(ac);
 	}
 
 	@Override
 	public String getETag(Tx tx, InternalActionContext ac, HibMicroschema element) {
-		Microschema graphSchema = toMicroschema(element);
+		Microschema graphSchema = toGraph(element);
 		return graphSchema.getETag(ac);
 	}
 

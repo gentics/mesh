@@ -44,7 +44,7 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * A root vertex is an aggregation vertex that is used to aggregate various basic elements such as users, nodes, groups.
  */
-public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> extends MeshVertex, HasPermissions, HasPermissionsRoot {
+public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> extends MeshVertex, HasPermissions, HasPermissionsRoot {
 
 	public static final Logger log = LoggerFactory.getLogger(RootVertex.class);
 

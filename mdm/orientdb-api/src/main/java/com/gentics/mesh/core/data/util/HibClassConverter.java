@@ -23,19 +23,25 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.HibFieldSchemaElement;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.schema.HibSchemaChange;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.syncleus.ferma.ElementFrame;
 
 public final class HibClassConverter {
@@ -43,78 +49,92 @@ public final class HibClassConverter {
 	private HibClassConverter() {
 	}
 
-	public static Tag toTag(HibTag tag) {
+	public static Tag toGraph(HibTag tag) {
 		return checkAndCast(tag, Tag.class);
 	}
 
-	public static TagFamily toTagFamily(HibTagFamily tagFamily) {
+	public static TagFamily toGraph(HibTagFamily tagFamily) {
 		return checkAndCast(tagFamily, TagFamily.class);
 	}
 
-	public static User toUser(HibUser user) {
+	public static User toGraph(HibUser user) {
 		return checkAndCast(user, User.class);
 	}
 
-	public static BranchVersionEdge toBranchVersionEdge(HibBranchVersionAssignment assignment) {
+	public static BranchVersionEdge toGraph(HibBranchVersionAssignment assignment) {
 		return checkAndCast(assignment, BranchVersionEdge.class);
 	}
 
-	public static GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> toVersion(HibFieldSchemaVersionElement element) {
+	public static <SC extends HibFieldSchemaElement<R, RM, SC, SCV>, SCV extends HibFieldSchemaVersionElement<R, RM, SC, SCV>, R extends FieldSchemaContainer, RM extends FieldSchemaContainerVersion> GraphFieldSchemaContainer<R, ?, SC, SCV> toGraphContainer(
+		HibFieldSchemaElement<R, RM, SC, SCV> element) {
+		return checkAndCast(element, GraphFieldSchemaContainer.class);
+	}
+
+	public static <RM extends FieldSchemaContainerVersion, SC extends HibFieldSchemaElement<R, RM, SC, SCV>, SCV extends HibFieldSchemaVersionElement<R, RM, SC, SCV>, R extends FieldSchemaContainer> GraphFieldSchemaContainerVersion<R, RM, ?, SCV, ?> toGraphVersion(
+		HibFieldSchemaVersionElement<R, RM, SC, SCV> element) {
 		return checkAndCast(element, GraphFieldSchemaContainerVersion.class);
 	}
 
-	public static Group toGroup(HibGroup group) {
+	public static Group toGraph(HibGroup group) {
 		return checkAndCast(group, Group.class);
 	}
 
-	public static Branch toBranch(HibBranch branch) {
+	public static Branch toGraph(HibBranch branch) {
 		return checkAndCast(branch, Branch.class);
 	}
 
-	public static Schema toSchema(HibSchema schema) {
+	public static Schema toGraph(HibSchema schema) {
 		return checkAndCast(schema, Schema.class);
 	}
 
-	public static SchemaVersion toSchemaVersion(HibSchemaVersion version) {
+	public static SchemaVersion toGraph(HibSchemaVersion version) {
 		return checkAndCast(version, SchemaVersion.class);
 	}
 
-	public static Microschema toMicroschema(HibMicroschema schema) {
+	public static Microschema toGraph(HibMicroschema schema) {
 		return checkAndCast(schema, Microschema.class);
 	}
 
-	public static MicroschemaVersion toMicroschemaVersion(HibMicroschemaVersion version) {
+	public static MicroschemaVersion toGraph(HibMicroschemaVersion version) {
 		return checkAndCast(version, MicroschemaVersion.class);
 	}
 
-	public static Project toProject(HibProject project) {
+	public static Project toGraph(HibProject project) {
 		return checkAndCast(project, Project.class);
 	}
 
-	public static Role toRole(HibRole role) {
+	public static Role toGraph(HibRole role) {
 		return checkAndCast(role, Role.class);
 	}
 
-	public static Binary toBinary(HibBinary binary) {
+	public static Binary toGraph(HibBinary binary) {
 		return checkAndCast(binary, Binary.class);
 	}
 
 	/**
 	 * @param node
 	 * @return
-	 * @deprecated Use {@link #toNode(HibNode)} instead.
+	 * @deprecated Use {@link #toGraph(HibNode)} instead.
 	 */
 	@Deprecated
-	public static Node toNode(HibInNode node) {
+	public static Node toGraph(HibInNode node) {
 		return checkAndCast(node, Node.class);
 	}
 
-	public static Node toNode(HibNode node) {
+	public static Node toGraph(HibNode node) {
 		return checkAndCast(node, Node.class);
 	}
 
-	public static Job toJob(HibJob job) {
+	public static Job toGraph(HibJob job) {
 		return checkAndCast(job, Job.class);
+	}
+
+	public static SchemaChange<?> toGraph(HibSchemaChange<?> change) {
+		return checkAndCast(change, SchemaChange.class);
+	}
+
+	public static GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> toGraph(HibFieldSchemaVersionElement<?, ?, ?, ?> version) {
+		return checkAndCast(version, GraphFieldSchemaContainerVersion.class);
 	}
 
 	@SuppressWarnings("unchecked")

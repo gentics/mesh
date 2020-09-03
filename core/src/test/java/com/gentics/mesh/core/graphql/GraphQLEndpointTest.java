@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.graphql;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toSchema;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_VERSION;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.CONTENT_UUID;
@@ -31,6 +31,7 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.assertj.impl.JsonObjectAssert;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
@@ -221,6 +222,8 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
+			MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
+
 			HibNode node = folder("2015");
 			HibNode folder = folder("news");
 			boot().contentDao().updateWebrootPathInfo(boot().contentDao().getGraphFieldContainer(folder, "de"), initialBranchUuid(), null);
@@ -407,7 +410,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 				firstMicronode.createString("postcode").setString("1010");
 
 				Micronode secondMicronode = micronodeList.createMicronode();
-				secondMicronode.setSchemaContainerVersion(boot().microschemaContainerRoot().findByUuid(microschemaUuid).getLatestVersion());
+				secondMicronode.setSchemaContainerVersion(microschemaDao.findByUuid(microschemaUuid).getLatestVersion());
 				secondMicronode.createString("text").setString("Joe");
 				secondMicronode.createNode("nodeRef", content());
 				NodeGraphFieldList micrnodeNodeList = secondMicronode.createNodeList("nodeList");
@@ -490,7 +493,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		for (Vertex node : tx.getGraph().getVertices("schema", schemaContainer.getUuid())) {
 			node.setProperty("schema", uuid);
 		}
-		toSchema(schemaContainer).setUuid(uuid);
+		toGraph(schemaContainer).setUuid(uuid);
 	}
 
 	private long dateToMilis(String date) throws ParseException {
@@ -543,7 +546,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 
 		return client.createNode(nodeUuid, PROJECT_NAME, createRequest).toSingle()
 			.flatMap(updateNode)
-			.toCompletable();
+			.ignoreElement();
 	}
 
 	/**

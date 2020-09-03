@@ -18,12 +18,13 @@ import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
@@ -60,8 +61,8 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 		context.validate();
 		return Completable.defer(() -> {
 			HibBranch branch = context.getBranch();
-			MicroschemaVersion fromVersion = context.getFromVersion();
-			MicroschemaVersion toVersion = context.getToVersion();
+			HibMicroschemaVersion fromVersion = context.getFromVersion();
+			HibMicroschemaVersion toVersion = context.getToVersion();
 			MigrationStatusHandler status = context.getStatus();
 			MicroschemaMigrationCause cause = context.getCause();
 
@@ -85,8 +86,9 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 			}
 
 			// Get the containers, that need to be transformed
-			List<? extends NodeGraphFieldContainer> fieldContainersResult = db.tx(() -> {
-				return fromVersion.getDraftFieldContainers(branch.getUuid()).list();
+			List<? extends NodeGraphFieldContainer> fieldContainersResult = db.tx(tx -> {
+				MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
+				return microschemaDao.findDraftFieldContainers(fromVersion, branch.getUuid()).list();
 			});
 
 			// No field containers, migration is done
@@ -135,7 +137,7 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 	 * @throws Exception
 	 */
 	private void migrateDraftContainer(NodeMigrationActionContextImpl ac, EventQueueBatch sqb, HibBranch branch, HibNode node,
-		NodeGraphFieldContainer container, MicroschemaVersion fromVersion, MicroschemaVersion toVersion,
+		NodeGraphFieldContainer container, HibMicroschemaVersion fromVersion, HibMicroschemaVersion toVersion,
 		Set<String> touchedFields, VersionNumber nextDraftVersion)
 		throws Exception {
 		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
@@ -181,8 +183,8 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 	 * @param errorsDetected
 	 */
 	private void migrateMicronodeContainer(NodeMigrationActionContextImpl ac, EventQueueBatch batch, HibBranch branch,
-										   MicroschemaVersion fromVersion,
-										   MicroschemaVersion toVersion, NodeGraphFieldContainer container, Set<String> touchedFields,
+										   HibMicroschemaVersion fromVersion,
+										   HibMicroschemaVersion toVersion, NodeGraphFieldContainer container, Set<String> touchedFields,
 										   List<Exception> errorsDetected) {
 		String containerUuid = container.getUuid();
 
@@ -193,7 +195,7 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 
 		// Run the actual migration in a dedicated transaction
 		try {
-			db.tx((tx) -> {
+			db.tx(tx -> {
 				ContentDaoWrapper contentDao = tx.data().contentDao();
 
 				HibNode node = contentDao.getNode(container);
@@ -239,7 +241,7 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 	 * @throws Exception
 	 */
 	private VersionNumber migratePublishedContainer(NodeMigrationActionContextImpl ac, EventQueueBatch sqb, HibBranch branch, HibNode node,
-		NodeGraphFieldContainer container, MicroschemaVersion fromVersion, MicroschemaVersion toVersion,
+		NodeGraphFieldContainer container, HibMicroschemaVersion fromVersion, HibMicroschemaVersion toVersion,
 		Set<String> touchedFields) throws Exception {
 		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
 		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
@@ -273,7 +275,7 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 	 * @throws Exception
 	 */
 	protected void migrateMicronodeFields(NodeMigrationActionContextImpl ac, NodeGraphFieldContainer container,
-		MicroschemaVersion fromVersion, MicroschemaVersion toVersion, Set<String> touchedFields) throws Exception {
+		HibMicroschemaVersion fromVersion, HibMicroschemaVersion toVersion, Set<String> touchedFields) throws Exception {
 		// iterate over all fields with micronodes to migrate
 		for (MicronodeGraphField field : container.getMicronodeFields(fromVersion)) {
 			// clone the field (this will clone the micronode)

@@ -1,9 +1,7 @@
 package com.gentics.mesh.core.data.dao.impl;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toMicroschema;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toMicroschemaVersion;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toProject;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -205,72 +203,73 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 
 	@Override
 	public void delete(HibMicroschema microschema, BulkActionContext bac) {
-		Microschema graphMicroschema = toMicroschema(microschema);
-		for (MicroschemaVersion version : graphMicroschema.findAll()) {
-			if (version.findMicronodes().hasNext()) {
+		Microschema graphMicroschema = toGraph(microschema);
+		for (HibMicroschemaVersion version : graphMicroschema.findAll()) {
+			MicroschemaVersion graphVersion = toGraph(version);
+			if (graphVersion.findMicronodes().hasNext()) {
 				throw error(BAD_REQUEST, "microschema_delete_still_in_use", microschema.getUuid());
 			}
-			version.delete(bac);
+			graphVersion.delete(bac);
 		}
 		graphMicroschema.delete(bac);
 	}
 
 	@Override
 	public boolean isLinkedToProject(HibMicroschema microschema, HibProject project) {
-		Project graphProject = toProject(project);
-		Microschema graphMicroschema = toMicroschema(microschema);
+		Project graphProject = toGraph(project);
+		Microschema graphMicroschema = toGraph(microschema);
 		MicroschemaRoot root = graphProject.getMicroschemaContainerRoot();
 		return root.contains(graphMicroschema);
 	}
 
 	@Override
 	public HibMicroschemaVersion applyChanges(HibMicroschemaVersion version, InternalActionContext ac, EventQueueBatch batch) {
-		MicroschemaVersion graphMicroschemaVersion = toMicroschemaVersion(version);
+		MicroschemaVersion graphMicroschemaVersion = toGraph(version);
 		return graphMicroschemaVersion.applyChanges(ac, batch);
 	}
 
 	@Override
 	public HibMicroschemaVersion applyChanges(HibMicroschemaVersion version, InternalActionContext ac, SchemaChangesListModel model,
 		EventQueueBatch batch) {
-		MicroschemaVersion graphMicroschemaVersion = toMicroschemaVersion(version);
+		MicroschemaVersion graphMicroschemaVersion = toGraph(version);
 		return graphMicroschemaVersion.applyChanges(ac, model, batch);
 	}
 
 	@Override
 	public SchemaChangesListModel diff(HibMicroschemaVersion version, InternalActionContext ac, MicroschemaModel requestModel) {
-		MicroschemaVersion graphVersion = toMicroschemaVersion(version);
+		MicroschemaVersion graphVersion = toGraph(version);
 		return graphVersion.diff(ac, comparator, requestModel);
 	}
 
 	@Override
 	public Iterable<? extends HibMicroschemaVersion> findAllVersions(HibMicroschema microschema) {
-		return toMicroschema(microschema).findAll();
+		return toGraph(microschema).findAll();
 	}
 
 	@Override
 	public Map<HibBranch, HibMicroschemaVersion> findReferencedBranches(HibMicroschema microschema) {
-		Map<?, ?> map = toMicroschema(microschema).findReferencedBranches();
+		Map<?, ?> map = toGraph(microschema).findReferencedBranches();
 		return (Map<HibBranch, HibMicroschemaVersion>) map;
 	}
 
 	@Override
 	public Result<? extends NodeGraphFieldContainer> findDraftFieldContainers(HibMicroschemaVersion version, String branchUuid) {
-		return toMicroschemaVersion(version).getDraftFieldContainers(branchUuid);
+		return toGraph(version).getDraftFieldContainers(branchUuid);
 	}
 
 	@Override
 	public MicroschemaResponse transformToRestSync(HibMicroschema microschema, InternalActionContext ac, int level, String... languageTags) {
-		return toMicroschema(microschema).transformToRestSync(ac, level, languageTags);
+		return toGraph(microschema).transformToRestSync(ac, level, languageTags);
 	}
 
 	@Override
 	public void unlink(HibMicroschema microschema, HibProject project, EventQueueBatch batch) {
-		toProject(project).getMicroschemaContainerRoot().removeMicroschema(toMicroschema(microschema), batch);
+		toGraph(project).getMicroschemaContainerRoot().removeMicroschema(toGraph(microschema), batch);
 	}
 
 	@Override
 	public String getETag(HibMicroschema schema, InternalActionContext ac) {
-		return toMicroschema(schema).getETag(ac);
+		return toGraph(schema).getETag(ac);
 	}
 
 	@Override
@@ -281,6 +280,21 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 	@Override
 	public long computeGlobalCount() {
 		return boot.get().microschemaContainerRoot().computeCount();
+	}
+
+	@Override
+	public void addMicroschema(HibMicroschema schema, HibUser user, EventQueueBatch batch) {
+		boot.get().microschemaContainerRoot().addMicroschema(user, schema, batch);
+	}
+
+	@Override
+	public Result<? extends HibMicroschema> findAll(HibProject project) {
+		return toGraph(project).getMicroschemaContainerRoot().findAll();
+	}
+
+	@Override
+	public Result<HibMicroschemaVersion> findActiveMicroschemaVersions(HibBranch branch) {
+		return toGraph(branch).findActiveMicroschemaVersions();
 	}
 
 }

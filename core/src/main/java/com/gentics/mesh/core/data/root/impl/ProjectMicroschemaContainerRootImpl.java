@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_ROOT;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toProject;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.event.Assignment.ASSIGNED;
 import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 
@@ -36,7 +36,7 @@ public class ProjectMicroschemaContainerRootImpl extends MicroschemaContainerRoo
 
 	@Override
 	public void addMicroschema(HibUser user, HibMicroschema microschema, EventQueueBatch batch) {
-		Project project = toProject(getProject());
+		Project project = toGraph(getProject());
 		batch.add(project.onMicroschemaAssignEvent(microschema, ASSIGNED));
 		super.addMicroschema(user, microschema, batch);
 
@@ -48,7 +48,7 @@ public class ProjectMicroschemaContainerRootImpl extends MicroschemaContainerRoo
 
 	@Override
 	public void removeMicroschema(HibMicroschema microschema, EventQueueBatch batch) {
-		Project project = toProject(getProject());
+		Project project = toGraph(getProject());
 		batch.add(project.onMicroschemaAssignEvent(microschema, UNASSIGNED));
 		super.removeMicroschema(microschema, batch);
 

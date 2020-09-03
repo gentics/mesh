@@ -2,7 +2,7 @@ package com.gentics.mesh.core.data.container.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toNode;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -98,7 +98,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	@Override
 	public NodeGraphField createNode(String key, HibNode node) {
-		NodeGraphFieldImpl field = getGraph().addFramedEdge(this, toNode(node), HAS_FIELD, NodeGraphFieldImpl.class);
+		NodeGraphFieldImpl field = getGraph().addFramedEdge(this, toGraph(node), HAS_FIELD, NodeGraphFieldImpl.class);
 		field.setFieldKey(key);
 		return field;
 	}

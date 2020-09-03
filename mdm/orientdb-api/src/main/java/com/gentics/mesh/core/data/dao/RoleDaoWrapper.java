@@ -6,7 +6,6 @@ import java.util.function.Predicate;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
-import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
@@ -129,7 +128,7 @@ public interface RoleDaoWrapper extends RoleDao, DaoWrapper<HibRole>, DaoTransfo
 
 	TransformablePage<? extends HibRole> findAll(InternalActionContext ac, PagingParameters pagingInfo);
 
-	Page<? extends HibRole> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Role> extraFilter);
+	Page<? extends HibRole> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibRole> extraFilter);
 
 	String getETag(HibRole role, InternalActionContext ac);
 

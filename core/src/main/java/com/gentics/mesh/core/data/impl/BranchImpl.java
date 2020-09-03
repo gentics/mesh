@@ -8,11 +8,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LAT
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NEXT_BRANCH;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toMicroschema;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toMicroschemaVersion;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toProject;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toSchema;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toSchemaVersion;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_TAGGED;
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UNTAGGED;
 import static com.gentics.mesh.core.rest.MeshEvent.MICROSCHEMA_BRANCH_ASSIGN;
@@ -44,6 +40,7 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.branch.impl.BranchMicroschemaEdgeImpl;
 import com.gentics.mesh.core.data.branch.impl.BranchSchemaEdgeImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
+import com.gentics.mesh.core.data.dao.JobDaoWrapper;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.job.HibJob;
@@ -52,19 +49,20 @@ import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.root.impl.BranchRootImpl;
-import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.HibFieldSchemaElement;
+import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
-import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
@@ -78,6 +76,7 @@ import com.gentics.mesh.core.rest.event.project.ProjectBranchEventModel;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -93,7 +92,7 @@ import io.reactivex.Observable;
 /**
  * @see Branch
  */
-public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> implements Branch {
+public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implements Branch {
 
 	public static final String UNIQUENAME_PROPERTY_KEY = "uniqueName";
 
@@ -264,8 +263,8 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public Branch unassignSchema(HibSchema schemaContainer) {
-		Schema graphSchema = toSchema(schemaContainer);
-		unassign(graphSchema);
+		// Schema graphSchema = toGraph(schemaContainer);
+		unassign(schemaContainer);
 		return this;
 	}
 
@@ -288,8 +287,8 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
-	public SchemaVersion findLatestSchemaVersion(HibSchema schemaContainer) {
-		return out(HAS_SCHEMA_VERSION, SchemaContainerVersionImpl.class)
+	public HibSchemaVersion findLatestSchemaVersion(HibSchema schemaContainer) {
+		SchemaContainerVersionImpl graphVersion = out(HAS_SCHEMA_VERSION, SchemaContainerVersionImpl.class)
 			.stream()
 			.filter(version -> {
 				return schemaContainer.getUuid().equals(version.getSchemaContainer().getUuid());
@@ -298,6 +297,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 				String v2 = o2.getProperty(GraphFieldSchemaContainerVersion.VERSION_PROPERTY_KEY);
 				return VersionUtil.compareVersions(v2, v1);
 			}).findFirst().orElse(null);
+		return graphVersion;
 	}
 
 	@Override
@@ -314,20 +314,20 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
-	public Result<? extends SchemaVersion> findAllSchemaVersions() {
+	public Result<? extends HibSchemaVersion> findAllSchemaVersions() {
 		return out(HAS_SCHEMA_VERSION, SchemaContainerVersionImpl.class);
 	}
 
 	@Override
-	public Result<? extends SchemaVersion> findActiveSchemaVersions() {
+	public Result<HibSchemaVersion> findActiveSchemaVersions() {
 		return new TraversalResult<>(
 			outE(HAS_SCHEMA_VERSION).has(BranchVersionEdge.ACTIVE_PROPERTY_KEY, true).inV().frameExplicit(SchemaContainerVersionImpl.class));
 	}
 
 	@Override
-	public Iterable<? extends MicroschemaVersion> findActiveMicroschemaVersions() {
-		return outE(HAS_MICROSCHEMA_VERSION).has(BranchVersionEdge.ACTIVE_PROPERTY_KEY, true).inV()
-			.frameExplicit(MicroschemaContainerVersionImpl.class);
+	public Result<HibMicroschemaVersion> findActiveMicroschemaVersions() {
+		return new TraversalResult<>(outE(HAS_MICROSCHEMA_VERSION).has(BranchVersionEdge.ACTIVE_PROPERTY_KEY, true).inV()
+			.frameExplicit(MicroschemaContainerVersionImpl.class));
 	}
 
 	@Override
@@ -365,16 +365,17 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public HibJob assignSchemaVersion(HibUser user, HibSchemaVersion schemaVersion, EventQueueBatch batch) {
+		JobDaoWrapper jobDao = Tx.get().data().jobDao();
 		BranchSchemaEdge edge = findBranchSchemaEdge(schemaVersion);
 		HibJob job = null;
 		// Don't remove any existing edge. Otherwise the edge properties are lost
 		if (edge == null) {
 			HibSchemaVersion currentVersion = findLatestSchemaVersion(schemaVersion.getSchemaContainer());
-			edge = addFramedEdgeExplicit(HAS_SCHEMA_VERSION, toSchemaVersion(schemaVersion), BranchSchemaEdgeImpl.class);
+			edge = addFramedEdgeExplicit(HAS_SCHEMA_VERSION, toGraph(schemaVersion), BranchSchemaEdgeImpl.class);
 			// Enqueue the schema migration for each found schema version
 			edge.setActive(true);
 			if (currentVersion != null) {
-				job = mesh().boot().jobRoot().enqueueSchemaMigration(user, this, currentVersion, schemaVersion);
+				job = jobDao.enqueueSchemaMigration(user, this, currentVersion, schemaVersion);
 				edge.setMigrationStatus(QUEUED);
 				edge.setJobUuid(job.getUuid());
 			} else {
@@ -388,16 +389,17 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public HibJob assignMicroschemaVersion(HibUser user, HibMicroschemaVersion microschemaVersion, EventQueueBatch batch) {
+		JobDaoWrapper jobDao = Tx.get().data().jobDao();
 		BranchMicroschemaEdge edge = findBranchMicroschemaEdge(microschemaVersion);
 		HibJob job = null;
 		// Don't remove any existing edge. Otherwise the edge properties are lost
 		if (edge == null) {
 			HibMicroschemaVersion currentVersion = findLatestMicroschemaVersion(microschemaVersion.getSchemaContainer());
-			edge = addFramedEdgeExplicit(HAS_MICROSCHEMA_VERSION, toMicroschemaVersion(microschemaVersion), BranchMicroschemaEdgeImpl.class);
+			edge = addFramedEdgeExplicit(HAS_MICROSCHEMA_VERSION, toGraph(microschemaVersion), BranchMicroschemaEdgeImpl.class);
 			// Enqueue the job so that the worker can process it later on
 			edge.setActive(true);
 			if (currentVersion != null) {
-				job = mesh().boot().jobRoot().enqueueMicroschemaMigration(user, this, currentVersion, microschemaVersion);
+				job = jobDao.enqueueMicroschemaMigration(user, this, currentVersion, microschemaVersion);
 				edge.setMigrationStatus(QUEUED);
 				edge.setJobUuid(job.getUuid());
 			} else {
@@ -450,7 +452,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public HibBranch unassignMicroschema(HibMicroschema microschema) {
-		Microschema graphMicroschema = toMicroschema(microschema);
+		Microschema graphMicroschema = toGraph(microschema);
 		unassign(graphMicroschema);
 		return this;
 	}
@@ -474,7 +476,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	}
 
 	@Override
-	public Result<? extends MicroschemaVersion> findAllMicroschemaVersions() {
+	public Result<? extends HibMicroschemaVersion> findAllMicroschemaVersions() {
 		return out(HAS_MICROSCHEMA_VERSION, MicroschemaContainerVersionImpl.class);
 	}
 
@@ -484,8 +486,8 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	 * @param container
 	 *            Container to handle
 	 */
-	protected <R extends FieldSchemaContainer, RM extends FieldSchemaContainer, RE extends NameUuidReference<RE>, SCV extends GraphFieldSchemaContainerVersion<R, RM, RE, SCV, SC>, SC extends GraphFieldSchemaContainer<R, RE, SC, SCV>> void unassign(
-		GraphFieldSchemaContainer<R, RE, SC, SCV> container) {
+	protected <R extends FieldSchemaContainer, RM extends FieldSchemaContainerVersion, RE extends NameUuidReference<RE>, SCV extends HibFieldSchemaVersionElement<R, RM, SC, SCV>, SC extends HibFieldSchemaElement<R, RM, SC, SCV>> void unassign(
+		HibFieldSchemaElement<R, RM, SC, SCV> container) {
 		SCV version = container.getLatestVersion();
 		String edgeLabel = null;
 		if (version instanceof SchemaVersion) {
@@ -499,7 +501,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 		// branch. We don't know which version was assigned to the branch
 		// so we just unassign all versions of the container.
 		while (version != null) {
-			unlinkOut(version, edgeLabel);
+			unlinkOut(toGraph(version), edgeLabel);
 			version = version.getPreviousVersion();
 		}
 	}
@@ -521,7 +523,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public HibBranch setProject(HibProject project) {
-		setUniqueLinkOutTo(toProject(project), ASSIGNED_TO_PROJECT);
+		setUniqueLinkOutTo(toGraph(project), ASSIGNED_TO_PROJECT);
 		return this;
 	}
 
@@ -537,13 +539,13 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public BranchSchemaEdge findBranchSchemaEdge(HibSchemaVersion schemaVersion) {
-		SchemaVersion graphSchemaVersion = toSchemaVersion(schemaVersion);
+		SchemaVersion graphSchemaVersion = toGraph(schemaVersion);
 		return outE(HAS_SCHEMA_VERSION).mark().inV().retain(graphSchemaVersion).back().nextOrDefaultExplicit(BranchSchemaEdgeImpl.class, null);
 	}
 
 	@Override
 	public BranchMicroschemaEdge findBranchMicroschemaEdge(HibMicroschemaVersion microschemaVersion) {
-		MicroschemaVersion graphMicroschemaVersion = toMicroschemaVersion(microschemaVersion);
+		MicroschemaVersion graphMicroschemaVersion = toGraph(microschemaVersion);
 		return outE(HAS_MICROSCHEMA_VERSION).mark().inV().retain(graphMicroschemaVersion).back().nextOrDefaultExplicit(
 			BranchMicroschemaEdgeImpl.class, null);
 	}
@@ -610,12 +612,12 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 	@Override
 	public void addTag(HibTag tag) {
 		removeTag(tag);
-		addFramedEdge(HAS_BRANCH_TAG, tag.toTag());
+		addFramedEdge(HAS_BRANCH_TAG, toGraph(tag));
 	}
 
 	@Override
 	public void removeTag(HibTag tag) {
-		outE(HAS_BRANCH_TAG).mark().inV().retain(tag.toTag()).back().removeAll();
+		outE(HAS_BRANCH_TAG).mark().inV().retain(toGraph(tag)).back().removeAll();
 	}
 
 	@Override

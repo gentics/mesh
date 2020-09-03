@@ -67,22 +67,26 @@ public class ProjectDAOActionsImpl implements ProjectDAOActions {
 	}
 
 	public void delete(Tx tx, HibProject project, BulkActionContext bac) {
-		tx.data().projectDao().delete(project, bac);
+		ProjectDaoWrapper projectDao = tx.data().projectDao();
+		projectDao.delete(project, bac);
 	}
 
 	@Override
 	public ProjectResponse transformToRestSync(Tx tx, HibProject project, InternalActionContext ac, int level, String... languageTags) {
-		return tx.data().projectDao().transformToRestSync(project, ac, level, languageTags);
+		ProjectDaoWrapper projectDao = tx.data().projectDao();
+		return projectDao.transformToRestSync(project, ac, level, languageTags);
 	}
 
 	@Override
 	public String getAPIPath(Tx tx, InternalActionContext ac, HibProject project) {
-		return project.toProject().getAPIPath(ac);
+		ProjectDaoWrapper projectDao = tx.data().projectDao();
+		return projectDao.getAPIPath(project, ac);
 	}
 
 	@Override
 	public String getETag(Tx tx, InternalActionContext ac, HibProject project) {
-		return project.toProject().getETag(ac);
+		ProjectDaoWrapper projectDao = tx.data().projectDao();
+		return projectDao.getETag(project, ac);
 	}
 
 }

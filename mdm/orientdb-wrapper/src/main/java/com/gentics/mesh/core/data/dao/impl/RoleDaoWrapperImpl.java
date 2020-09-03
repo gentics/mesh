@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.dao.impl;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toRole;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -65,7 +65,7 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 
 	@Override
 	public RoleResponse transformToRestSync(HibRole role, InternalActionContext ac, int level, String... languageTags) {
-		Role graphRole = toRole(role);
+		Role graphRole = toGraph(role);
 		GenericParameters generic = ac.getGenericParameters();
 		FieldsSet fields = generic.getFields();
 
@@ -86,7 +86,7 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 	}
 
 	private void setGroups(HibRole role, InternalActionContext ac, RoleResponse restRole) {
-		Role graphRole = toRole(role);
+		Role graphRole = toGraph(role);
 		for (Group group : graphRole.getGroups()) {
 			restRole.getGroups().add(group.transformToReference());
 		}
@@ -186,14 +186,14 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 
 	@Override
 	public Page<? extends HibGroup> getGroups(HibRole role, HibUser user, PagingParameters pagingInfo) {
-		Role graphRole = toRole(role);
+		Role graphRole = toGraph(role);
 		RoleRoot roleRoot = boot.get().roleRoot();
 		return roleRoot.getGroups(graphRole, user, pagingInfo);
 	}
 
 	@Override
 	public Result<? extends HibGroup> getGroups(HibRole role) {
-		Role graphRole = toRole(role);
+		Role graphRole = toGraph(role);
 		return graphRole.getGroups();
 	}
 
@@ -247,14 +247,14 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 
 	@Override
 	public void addRole(HibRole role) {
-		Role graphRole = toRole(role);
+		Role graphRole = toGraph(role);
 		RoleRoot roleRoot = boot.get().roleRoot();
 		roleRoot.addRole(graphRole);
 	}
 
 	@Override
 	public void removeRole(HibRole role) {
-		Role graphRole = toRole(role);
+		Role graphRole = toGraph(role);
 		RoleRoot roleRoot = boot.get().roleRoot();
 		roleRoot.removeRole(graphRole);
 	}
@@ -266,9 +266,11 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 	}
 
 	@Override
-	public Page<? extends HibRole> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Role> extraFilter) {
+	public Page<? extends HibRole> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibRole> extraFilter) {
 		RoleRoot roleRoot = boot.get().roleRoot();
-		return roleRoot.findAll(ac, pagingInfo, extraFilter);
+		return roleRoot.findAll(ac, pagingInfo, role -> {
+			return extraFilter.test(role);
+		});
 	}
 
 	@Override
@@ -296,14 +298,14 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 
 	@Override
 	public String getETag(HibRole role, InternalActionContext ac) {
-		Role graphRole = toRole(role);
+		Role graphRole = toGraph(role);
 		return graphRole.getETag(ac);
 	}
 
 	@Override
 	public void applyPermissions(HibBaseElement element, EventQueueBatch batch, HibRole role, boolean recursive, Set<InternalPermission> permissionsToGrant,
 		Set<InternalPermission> permissionsToRevoke) {
-		Role graphRole = toRole(role);
+		Role graphRole = toGraph(role);
 		MeshVertex graphElement = (MeshVertex) element;
 		graphElement.applyPermissions(batch, graphRole, recursive, permissionsToGrant, permissionsToRevoke);
 	}

@@ -69,7 +69,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 	@Test
 	public void testUpdateTypeAndAllowProperty() {
 		try (Tx tx = tx()) {
-			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			HibSchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
 			SchemaModelImpl schema = new SchemaModelImpl("testschema");
@@ -100,7 +100,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 	@Test
 	public void testUpdateLabel() {
 		try (Tx tx = tx()) {
-			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			HibSchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
 			SchemaModelImpl schema = new SchemaModelImpl("testschema");

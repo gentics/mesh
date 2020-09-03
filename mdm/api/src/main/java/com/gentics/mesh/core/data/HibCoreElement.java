@@ -33,4 +33,5 @@ public interface HibCoreElement extends HibBaseElement {
 	 * @return
 	 */
 	TypeInfo getTypeInfo();
+
 }

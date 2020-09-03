@@ -40,7 +40,7 @@ public interface SchemaChange<T extends FieldSchemaContainer> extends MeshVertex
 	 * 
 	 * @return
 	 */
-	SchemaChange<?> getNextChange();
+	HibSchemaChange<?> getNextChange();
 
 	/**
 	 * Set the next change.
@@ -48,14 +48,14 @@ public interface SchemaChange<T extends FieldSchemaContainer> extends MeshVertex
 	 * @param change
 	 * @return
 	 */
-	SchemaChange<T> setNextChange(SchemaChange<?> change);
+	HibSchemaChange<T> setNextChange(SchemaChange<?> change);
 
 	/**
 	 * Return the previous schema change.
 	 * 
 	 * @return
 	 */
-	SchemaChange<?> getPreviousChange();
+	HibSchemaChange<?> getPreviousChange();
 
 	/**
 	 * Set the previous change.
@@ -63,14 +63,14 @@ public interface SchemaChange<T extends FieldSchemaContainer> extends MeshVertex
 	 * @param change
 	 * @return
 	 */
-	SchemaChange<T> setPreviousChange(SchemaChange<?> change);
+	HibSchemaChange<T> setPreviousChange(SchemaChange<?> change);
 
 	/**
 	 * Return the <b>in-bound</b> connected schema container version.
 	 * 
 	 * @return
 	 */
-	<R extends GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?>> R getPreviousContainerVersion();
+	<R extends HibFieldSchemaVersionElement<?, ?, ?, ?>> R getPreviousContainerVersion();
 
 	/**
 	 * Set the <b>in-bound</b> connection from the schema change to the container version.
@@ -78,14 +78,14 @@ public interface SchemaChange<T extends FieldSchemaContainer> extends MeshVertex
 	 * @param containerVersion
 	 * @return Fluent API
 	 */
-	SchemaChange<T> setPreviousContainerVersion(GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> containerVersion);
+	SchemaChange<T> setPreviousContainerVersion(HibFieldSchemaVersionElement<?, ?, ?, ?> containerVersion);
 
 	/**
 	 * Return the out-bound connected schema container version.
 	 * 
 	 * @return
 	 */
-	<R extends GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?>> R getNextContainerVersion();
+	<R extends HibFieldSchemaVersionElement<?, ?, ?, ?>> R getNextContainerVersion();
 
 	/**
 	 * Set the out-bound connected schema container.
@@ -93,7 +93,7 @@ public interface SchemaChange<T extends FieldSchemaContainer> extends MeshVertex
 	 * @param containerVersion
 	 * @return
 	 */
-	SchemaChange<T> setNextSchemaContainerVersion(GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> containerVersion);
+	HibSchemaChange<T> setNextSchemaContainerVersion(HibFieldSchemaVersionElement<?, ?, ?, ?> containerVersion);
 
 	/**
 	 *

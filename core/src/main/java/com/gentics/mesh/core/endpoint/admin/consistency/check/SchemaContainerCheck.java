@@ -3,12 +3,14 @@ package com.gentics.mesh.core.endpoint.admin.consistency.check;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LATEST_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_ITEM;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.HIGH;
 import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.MEDIUM;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.root.impl.SchemaContainerRootImpl;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
@@ -75,7 +77,7 @@ public class SchemaContainerCheck extends AbstractConsistencyCheck {
 			try {
 				Double version = Double.valueOf(schemaVersion.getVersion());
 				if (version > 1) {
-					SchemaVersion previousVersion = schemaVersion.getPreviousVersion();
+					HibSchemaVersion previousVersion = schemaVersion.getPreviousVersion();
 					if (previousVersion == null) {
 						result.addInconsistency(String.format("Schema container version %s must have a previous version", schemaVersion
 							.getVersion()), uuid, MEDIUM);
@@ -88,7 +90,7 @@ public class SchemaContainerCheck extends AbstractConsistencyCheck {
 
 						MeshVertex parent = in(HAS_PARENT_CONTAINER, SchemaContainerImpl.class).follow(schemaVersion);
 						if (parent != null) {
-							MeshVertex previousParent = in(HAS_PARENT_CONTAINER, SchemaContainerImpl.class).follow(previousVersion);
+							MeshVertex previousParent = in(HAS_PARENT_CONTAINER, SchemaContainerImpl.class).follow(toGraph(previousVersion));
 							if (!parent.equals(previousParent)) {
 								result.addInconsistency("Previous schema container version has different schema container", uuid, HIGH);
 							}
