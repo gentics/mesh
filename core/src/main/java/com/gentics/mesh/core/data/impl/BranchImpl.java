@@ -319,15 +319,15 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 	}
 
 	@Override
-	public Result<? extends HibSchemaVersion> findActiveSchemaVersions() {
+	public Result<HibSchemaVersion> findActiveSchemaVersions() {
 		return new TraversalResult<>(
 			outE(HAS_SCHEMA_VERSION).has(BranchVersionEdge.ACTIVE_PROPERTY_KEY, true).inV().frameExplicit(SchemaContainerVersionImpl.class));
 	}
 
 	@Override
-	public Iterable<? extends HibMicroschemaVersion> findActiveMicroschemaVersions() {
-		return outE(HAS_MICROSCHEMA_VERSION).has(BranchVersionEdge.ACTIVE_PROPERTY_KEY, true).inV()
-			.frameExplicit(MicroschemaContainerVersionImpl.class);
+	public Result<HibMicroschemaVersion> findActiveMicroschemaVersions() {
+		return new TraversalResult<>(outE(HAS_MICROSCHEMA_VERSION).has(BranchVersionEdge.ACTIVE_PROPERTY_KEY, true).inV()
+			.frameExplicit(MicroschemaContainerVersionImpl.class));
 	}
 
 	@Override

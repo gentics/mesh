@@ -293,7 +293,7 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 	}
 
 	@Override
-	public Iterable<HibMicroschemaVersion> findActiveMicroschemaVersions(HibBranch branch) {
+	public Result<HibMicroschemaVersion> findActiveMicroschemaVersions(HibBranch branch) {
 		return toGraph(branch).findActiveMicroschemaVersions();
 	}
 

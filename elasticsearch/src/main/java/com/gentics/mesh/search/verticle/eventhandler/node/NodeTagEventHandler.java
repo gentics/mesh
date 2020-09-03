@@ -5,6 +5,8 @@ import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNTAGGED;
 import static com.gentics.mesh.search.verticle.entity.MeshEntities.findElementByUuidStream;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
+import static com.gentics.mesh.search.verticle.eventhandler.Util.toFlowable;
+
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -39,16 +41,17 @@ public class NodeTagEventHandler implements EventHandler {
 		return Arrays.asList(NODE_TAGGED, NODE_UNTAGGED);
 	}
 
+
 	@Override
 	public Flowable<SearchRequest> handle(MessageEvent messageEvent) {
 		return Flowable.defer(() -> {
 			NodeTaggedEventModel model = requireType(NodeTaggedEventModel.class, messageEvent.message);
 			return helper.getDb().transactional(tx -> {
-				ProjectDaoWrapper projectDao = tx.data().projectDao();
+				//ProjectDaoWrapper projectDao = tx.data().projectDao();
 				return findElementByUuidStream(helper.getBoot().projectRoot(), model.getProject().getUuid())
 					.flatMap(project -> findElementByUuidStream(toGraph(project).getBranchRoot(), model.getBranch().getUuid())
-						.flatMap(branch -> entities.generateNodeRequests(model.getNode().getUuid(), project, branch))
-					).collect(toFlowable());
+						.flatMap(branch -> entities.generateNodeRequests(model.getNode().getUuid(), project, branch)))
+					.collect(toFlowable());
 			}).runInNewTx();
 		});
 	}

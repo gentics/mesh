@@ -70,7 +70,7 @@ public final class HibClassConverter {
 		return checkAndCast(element, GraphFieldSchemaContainer.class);
 	}
 
-	public static <RM extends FieldSchemaContainerVersion, SC extends HibFieldSchemaElement<R, RM, SC, SCV>, SCV extends HibFieldSchemaVersionElement<R, RM, SC, SCV>, R extends FieldSchemaContainer> GraphFieldSchemaContainerVersion<?, RM, ?, SCV, ?> toGraphVersion(
+	public static <RM extends FieldSchemaContainerVersion, SC extends HibFieldSchemaElement<R, RM, SC, SCV>, SCV extends HibFieldSchemaVersionElement<R, RM, SC, SCV>, R extends FieldSchemaContainer> GraphFieldSchemaContainerVersion<R, RM, ?, SCV, ?> toGraphVersion(
 		HibFieldSchemaVersionElement<R, RM, SC, SCV> element) {
 		return checkAndCast(element, GraphFieldSchemaContainerVersion.class);
 	}

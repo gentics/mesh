@@ -124,6 +124,6 @@ public interface MicroschemaDaoWrapper extends MicroschemaDao, DaoWrapper<HibMic
 
 	Result<? extends HibMicroschema> findAll(HibProject project);
 
-	Iterable<HibMicroschemaVersion> findActiveMicroschemaVersions(HibBranch branch);
+	Result<HibMicroschemaVersion> findActiveMicroschemaVersions(HibBranch branch);
 
 }

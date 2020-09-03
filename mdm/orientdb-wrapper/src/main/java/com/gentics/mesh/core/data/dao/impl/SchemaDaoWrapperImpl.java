@@ -419,7 +419,7 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 	}
 
 	@Override
-	public Iterable<HibSchemaVersion> findActiveSchemaVersions(HibBranch branch) {
+	public Result<HibSchemaVersion> findActiveSchemaVersions(HibBranch branch) {
 		Branch graphBranch = toGraph(branch);
 		return graphBranch.findActiveSchemaVersions();
 	}

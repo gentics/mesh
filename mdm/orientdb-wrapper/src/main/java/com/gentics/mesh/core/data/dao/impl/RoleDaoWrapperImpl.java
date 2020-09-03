@@ -263,9 +263,11 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 	}
 
 	@Override
-	public Page<? extends HibRole> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Role> extraFilter) {
+	public Page<? extends HibRole> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibRole> extraFilter) {
 		RoleRoot roleRoot = boot.get().roleRoot();
-		return roleRoot.findAll(ac, pagingInfo, extraFilter);
+		return roleRoot.findAll(ac, pagingInfo, role -> {
+			return extraFilter.test(role);
+		});
 	}
 
 	@Override

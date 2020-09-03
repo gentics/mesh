@@ -361,13 +361,13 @@ public abstract class AbstractTypeProvider {
 		return element;
 	}
 
-	protected HibCoreElement handleBranchSchema(DataFetchingEnvironment env) {
+	protected HibBaseElement handleBranchSchema(DataFetchingEnvironment env) {
 		GraphQLContext gc = env.getContext();
 		HibBranch branch = env.getSource();
 		Stream<? extends HibSchemaVersion> schemas = StreamSupport.stream(branch.findActiveSchemaVersions().spliterator(), false);
 		UserDaoWrapper userDao = Tx.get().data().userDao();
 
-		// We need to handle permissions dedicately since we check the schema container perm and not the schema container version perm.
+		// We need to handle permissions here since we check the schema container perm and not the schema container version perm.
 		return handleUuidNameArgsNoPerm(env, uuid -> schemas.filter(schema -> {
 			HibSchema container = schema.getSchemaContainer();
 			return container.getUuid().equals(uuid) && userDao.hasPermission(gc.getUser(), container, READ_PERM);

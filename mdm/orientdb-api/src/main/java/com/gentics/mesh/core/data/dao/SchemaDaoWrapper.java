@@ -181,7 +181,7 @@ public interface SchemaDaoWrapper extends SchemaDao, DaoWrapper<HibSchema> {
 
 	void addSchema(HibSchema schema);
 
-	Iterable<HibSchemaVersion> findActiveSchemaVersions(HibBranch branch);
+	Result<HibSchemaVersion> findActiveSchemaVersions(HibBranch branch);
 
 	/**
 	 * Return a stream for {@link NodeGraphFieldContainer}'s that use this schema version and are versions for the given branch.

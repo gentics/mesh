@@ -291,7 +291,7 @@ public interface Branch
 	 * 
 	 * @return Iterable
 	 */
-	Result<? extends HibSchemaVersion> findActiveSchemaVersions();
+	Result<HibSchemaVersion> findActiveSchemaVersions();
 
 	/**
 	 * Get an iterable over all active microschema container versions. An active version is one which still contains {@link NodeGraphFieldContainer}'s or one
@@ -299,7 +299,7 @@ public interface Branch
 	 *
 	 * @return Iterable
 	 */
-	Iterable<? extends HibMicroschemaVersion> findActiveMicroschemaVersions();
+	Result<HibMicroschemaVersion> findActiveMicroschemaVersions();
 
 	/**
 	 * Get an iterable of all latest schema container versions.
