@@ -329,4 +329,9 @@ public class NodeMigrationUser implements MeshAuthUser {
 		return null;
 	}
 
+	@Override
+	public void setCachedUuid(String userUuid) {
+
+	}
+
 }

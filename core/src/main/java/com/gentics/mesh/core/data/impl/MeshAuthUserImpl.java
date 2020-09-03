@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.impl;
 
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
+
 import java.util.Objects;
 import java.util.Set;
 
@@ -27,6 +29,7 @@ import io.vertx.ext.auth.User;
 
 /**
  * Wraps a {@link HibUser} to implement {@link MeshAuthUser}.
+ * 
  * @see MeshAuthUser
  */
 public class MeshAuthUserImpl implements MeshAuthUser {
@@ -406,5 +409,10 @@ public class MeshAuthUserImpl implements MeshAuthUser {
 
 	public HibUser getDelegate() {
 		return delegate;
+	}
+
+	@Override
+	public void setCachedUuid(String userUuid) {
+		toGraph(delegate).setCachedUuid(userUuid);
 	}
 }
