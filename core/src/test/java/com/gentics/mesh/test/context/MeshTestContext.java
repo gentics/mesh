@@ -28,6 +28,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
@@ -700,7 +701,7 @@ public class MeshTestContext extends TestWatcher {
 	private MeshComponent.Builder getMeshDaggerBuilder() {
 //		String builderFactoryName = System.getenv("MESH_BUILDER_FACTORY");
 		String builderFactoryName = System.getProperty("mesh.mdm.provider.factory");
-		if (builderFactoryName == null || builderFactoryName.equals("TODO")) {
+		if (StringUtils.isEmpty(builderFactoryName) || builderFactoryName.equals("TODO")) {
 			return DaggerOrientDBMeshComponent.builder();
 		} else {
 			try {
