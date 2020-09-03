@@ -403,4 +403,8 @@ public class MeshAuthUserImpl implements MeshAuthUser {
 	public Long getCreationTimestamp() {
 		return delegate.getCreationTimestamp();
 	}
+
+	public HibUser getDelegate() {
+		return delegate;
+	}
 }

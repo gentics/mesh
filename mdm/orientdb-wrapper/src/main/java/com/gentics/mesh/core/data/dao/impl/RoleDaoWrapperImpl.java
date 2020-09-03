@@ -42,6 +42,7 @@ import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.data.dao.util.CommonDaoHelper;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -53,11 +54,13 @@ import dagger.Lazy;
 public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements RoleDaoWrapper {
 
 	private final Lazy<PermissionCache> permissionCache;
+	private final CommonDaoHelper commonDaoHelper;
 
 	@Inject
-	public RoleDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionProperties> permissions, Lazy<PermissionCache> permissionCache) {
+	public RoleDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionProperties> permissions, Lazy<PermissionCache> permissionCache, CommonDaoHelper commonDaoHelper) {
 		super(boot, permissions);
 		this.permissionCache = permissionCache;
+		this.commonDaoHelper = commonDaoHelper;
 	}
 
 	@Override
@@ -288,8 +291,7 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 
 	@Override
 	public String getAPIPath(HibRole role, InternalActionContext ac) {
-		Role graphRole = toRole(role);
-		return graphRole.getAPIPath(ac);
+		return commonDaoHelper.getRootLevelAPIPath(ac, role);
 	}
 
 	@Override

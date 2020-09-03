@@ -37,7 +37,6 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.util.ResultInfo;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -183,9 +182,6 @@ public class HandlerUtilities {
 					});
 					RM model = actions.transformToRestSync(tx, createdElement, ac, 0);
 					String path = actions.getAPIPath(tx, ac, createdElement);
-					ResultInfo info = new ResultInfo(model);
-					info.setProperty("path", path);
-					createdElement.onCreated();
 					ac.setLocation(path);
 					return model;
 				}

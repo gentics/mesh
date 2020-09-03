@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data;
 
-public interface HibContent extends HibElement {
+public interface HibContent extends HibBaseElement {
 
 	//void setEditor(HibUser user);
 
