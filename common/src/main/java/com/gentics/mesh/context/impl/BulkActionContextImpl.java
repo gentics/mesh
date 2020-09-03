@@ -7,8 +7,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.context.BulkActionContext;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 
@@ -56,7 +56,7 @@ public class BulkActionContextImpl implements BulkActionContext {
 			log.info("Processing transaction batch {" + batchCounter.get() + "}. I counted {" + elementCounter.get() + "} elements.");
 			// Check before commit to ensure we are 100% safe
 			db.blockingTopologyLockCheck();
-			Tx.getActive().getGraph().commit();
+			Tx.get().commit();
 			Completable.merge(asyncActions).subscribe(() -> {
 				log.trace("Async action processed");
 			});

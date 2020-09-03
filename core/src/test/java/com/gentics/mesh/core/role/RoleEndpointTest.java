@@ -39,7 +39,6 @@ import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
@@ -82,7 +81,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		try (Tx tx = tx()) {
 			UserDaoWrapper userDao = tx.data().userDao();
-			Role createdRole = meshRoot().getRoleRoot().findByUuid(restRole.getUuid());
+			HibRole createdRole = tx.data().roleDao().findByUuid(restRole.getUuid());
 			assertTrue(userDao.hasPermission(user(), createdRole, UPDATE_PERM));
 			assertTrue(userDao.hasPermission(user(), createdRole, READ_PERM));
 			assertTrue(userDao.hasPermission(user(), createdRole, DELETE_PERM));
@@ -101,12 +100,12 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
-			roleDao.revokePermissions(role(), meshRoot().getRoleRoot(), CREATE_PERM);
+			roleDao.revokePermissions(role(), tx.data().permissionRoots().role(), CREATE_PERM);
 			tx.success();
 		}
 
 		String roleRootUuid = db().tx(tx -> {
-			return boot().roleRoot().getUuid();
+			return tx.data().permissionRoots().role().getUuid();
 		});
 		RoleCreateRequest request = new RoleCreateRequest();
 		request.setName("new_role");
@@ -166,12 +165,12 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			// Add needed permission to group
-			roleDao.revokePermissions(role(), meshRoot().getRoleRoot(), CREATE_PERM);
+			roleDao.revokePermissions(role(), tx.data().permissionRoots().role(), CREATE_PERM);
 			tx.success();
 		}
 
 		try (Tx tx = tx()) {
-			call(() -> client().createRole(request), FORBIDDEN, "error_missing_perm", meshRoot().getRoleRoot().getUuid(),
+			call(() -> client().createRole(request), FORBIDDEN, "error_missing_perm", tx.data().permissionRoots().role().getUuid(),
 				CREATE_PERM.getRestPerm().getName());
 		}
 	}
@@ -236,7 +235,6 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			GroupDaoWrapper groupRoot = tx.data().groupDao();
-			RoleRoot roleRoot = meshRoot().getRoleRoot();
 			HibRole extraRole = roleDao.create("extra role", user());
 			extraRoleUuid = extraRole.getUuid();
 			groupRoot.addRole(group(), extraRole);
@@ -349,7 +347,6 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String extraRoleUuid = tx(tx -> {
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			GroupDaoWrapper groupDao = tx.data().groupDao();
-			RoleRoot roleRoot = meshRoot().getRoleRoot();
 			HibRole extraRole = roleDao.create("extra role", user());
 			groupDao.addRole(group(), extraRole);
 			roleDao.grantPermissions(role(), extraRole, UPDATE_PERM);
@@ -372,8 +369,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		try (Tx tx = tx()) {
 			// Check that the extra role was updated as expected
-			RoleRoot roleRoot = meshRoot().getRoleRoot();
-			Role reloadedRole = roleRoot.findByUuid(extraRoleUuid);
+			HibRole reloadedRole = tx.data().roleDao().findByUuid(extraRoleUuid);
 			assertEquals("The role should have been renamed", request.getName(), reloadedRole.getName());
 		}
 	}
