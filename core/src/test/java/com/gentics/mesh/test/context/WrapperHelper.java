@@ -2,9 +2,9 @@ package com.gentics.mesh.test.context;
 
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
@@ -21,7 +21,7 @@ public interface WrapperHelper {
 		return graphVersion;
 	}
 
-	default Microschema createMicroschema(Tx tx) {
+	default HibMicroschema createMicroschema(Tx tx) {
 		return tx.getGraph().addFramedVertex(MicroschemaContainerImpl.class);
 	}
 

@@ -58,7 +58,7 @@ public interface MicroschemaDaoWrapper extends MicroschemaDao, DaoWrapper<HibMic
 	 */
 	HibMicroschema create(MicroschemaVersionModel microschema, HibUser user, String uuid, EventQueueBatch batch);
 
-	Microschema create(InternalActionContext ac, EventQueueBatch batch, String uuid);
+	HibMicroschema create(InternalActionContext ac, EventQueueBatch batch, String uuid);
 
 	TransformablePage<? extends Microschema> findAll(InternalActionContext ac, PagingParameters pagingInfo);
 

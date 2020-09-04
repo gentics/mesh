@@ -62,7 +62,7 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 	}
 
 	@Override
-	public Microschema create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
+	public HibMicroschema create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		UserDaoWrapper userRoot = Tx.get().data().userDao();
 		MicroschemaRoot microschemaRoot = boot.get().microschemaContainerRoot();
 
@@ -72,14 +72,14 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 		if (!userRoot.hasPermission(requestUser, microschemaRoot, InternalPermission.CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", microschemaRoot.getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
-		Microschema container = create(microschema, requestUser, uuid, batch);
+		HibMicroschema container = create(microschema, requestUser, uuid, batch);
 		userRoot.inheritRolePermissions(requestUser, microschemaRoot, container);
 		batch.add(container.onCreated());
 		return container;
 	}
 
 	@Override
-	public Microschema create(MicroschemaVersionModel microschema, HibUser user, String uuid, EventQueueBatch batch) {
+	public HibMicroschema create(MicroschemaVersionModel microschema, HibUser user, String uuid, EventQueueBatch batch) {
 		microschema.validate();
 
 		SchemaDaoWrapper schemaDao = Tx.get().data().schemaDao();
@@ -96,11 +96,11 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 			throw conflict(conflictingSchema.getUuid(), name, "schema_conflicting_name", name);
 		}
 
-		Microschema container = microschemaRoot.create();
+		HibMicroschema container = microschemaRoot.create();
 		if (uuid != null) {
-			container.setUuid(uuid);
+			toGraph(container).setUuid(uuid);
 		}
-		MicroschemaVersion version = microschemaRoot.createVersion();
+		HibMicroschemaVersion version = microschemaRoot.createVersion();
 
 		microschema.setVersion("1.0");
 		container.setLatestVersion(version);

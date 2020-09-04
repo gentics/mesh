@@ -64,7 +64,7 @@ public class MicroschemaDAOActionsImpl implements MicroschemaDAOActions {
 	}
 
 	@Override
-	public Microschema create(Tx tx, InternalActionContext ac, EventQueueBatch batch, String uuid) {
+	public HibMicroschema create(Tx tx, InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		return tx.data().microschemaDao().create(ac, batch, uuid);
 	}
 

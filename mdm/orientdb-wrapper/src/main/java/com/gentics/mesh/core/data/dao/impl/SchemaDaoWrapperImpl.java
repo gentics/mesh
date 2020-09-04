@@ -233,11 +233,11 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 			throw conflict(conflictingMicroschema.getUuid(), name, "microschema_conflicting_name", name);
 		}
 
-		Schema container = schemaRoot.create();
+		HibSchema container = schemaRoot.create();
 		if (uuid != null) {
-			container.setUuid(uuid);
+			toGraph(container).setUuid(uuid);
 		}
-		SchemaVersion version = schemaRoot.createVersion();
+		HibSchemaVersion version = schemaRoot.createVersion();
 		container.setLatestVersion(version);
 
 		// set the initial version
