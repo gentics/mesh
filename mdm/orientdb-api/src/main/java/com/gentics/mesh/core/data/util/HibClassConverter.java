@@ -40,6 +40,7 @@ import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.syncleus.ferma.ElementFrame;
@@ -55,6 +56,13 @@ public final class HibClassConverter {
 
 	public static TagFamily toGraph(HibTagFamily tagFamily) {
 		return checkAndCast(tagFamily, TagFamily.class);
+	}
+
+	public static User toGraph(MeshAuthUser user) {
+		if (user == null) {
+			return null;
+		}
+		return toGraph(user.getDelegate());
 	}
 
 	public static User toGraph(HibUser user) {

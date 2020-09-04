@@ -330,8 +330,8 @@ public class NodeMigrationUser implements MeshAuthUser {
 	}
 
 	@Override
-	public void setCachedUuid(String userUuid) {
-
+	public HibUser getDelegate() {
+		return null;
 	}
 
 }

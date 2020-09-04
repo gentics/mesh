@@ -411,8 +411,4 @@ public class MeshAuthUserImpl implements MeshAuthUser {
 		return delegate;
 	}
 
-	@Override
-	public void setCachedUuid(String userUuid) {
-		toGraph(delegate).setCachedUuid(userUuid);
-	}
 }
