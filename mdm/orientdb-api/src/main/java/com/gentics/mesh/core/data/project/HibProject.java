@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.project;
 
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibCoreElement;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.MicroschemaRoot;
@@ -48,4 +48,5 @@ public interface HibProject extends HibCoreElement, HibUserTracking {
 	@Deprecated
 	MicroschemaRoot getMicroschemaContainerRoot();
 
+	HibBaseElement getBranchPermissionRoot();
 }
