@@ -66,6 +66,9 @@ public final class HibClassConverter {
 	}
 
 	public static User toGraph(HibUser user) {
+		if (user instanceof MeshAuthUser) {
+			return toGraph((MeshAuthUser) user);
+		}
 		return checkAndCast(user, User.class);
 	}
 

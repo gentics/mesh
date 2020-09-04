@@ -356,7 +356,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 		NodeParameters parameters = ac.getNodeParameters();
 
 		// Check whether a node reference was set.
-		Node node = ((User) user).getReferencedNode();
+		Node node = toGraph(user).getReferencedNode();
 		if (node == null) {
 			return;
 		}

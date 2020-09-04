@@ -194,7 +194,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			UserDaoWrapper userDao = tx.data().userDao();
-			MeshAuthUser requestUser = ((User)user()).reframe(MeshAuthUserImpl.class);
+			MeshAuthUser requestUser = MeshAuthUserImpl.create(db(), user());
 			// userRoot.findMeshAuthUserByUsername(requestUser.getUsername())
 			HibNode parentNode = folder("news");
 			assertNotNull(parentNode);
