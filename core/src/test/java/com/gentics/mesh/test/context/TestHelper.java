@@ -103,8 +103,8 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	}
 
 	default MeshAuthUser getRequestUser() {
-		User graphUser = (User) data().getUserInfo().getUser();
-		return graphUser.reframe(MeshAuthUserImpl.class);
+		HibUser user = data().getUserInfo().getUser();
+		return MeshAuthUserImpl.create(db(), user);
 	}
 
 	default HibRole anonymousRole() {
