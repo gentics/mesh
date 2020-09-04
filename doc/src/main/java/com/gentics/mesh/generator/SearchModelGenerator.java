@@ -146,6 +146,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 			when(txData.contentDao()).thenReturn(contentDao);
 			when(txData.userDao()).thenReturn(userDao);
 			when(txData.tagDao()).thenReturn(tagDao);
+			when(txData.tagFamilyDao()).thenReturn(tagFamilyDao);
 
 			writeNodeDocumentExample(nodeDao, contentDao, tagDao);
 			writeTagDocumentExample();
@@ -234,7 +235,9 @@ public class SearchModelGenerator extends AbstractGenerator {
 		tagList.add(mockTag("red", user, tagFamily, project));
 		tagList.add(mockTag("green", user, tagFamily, project));
 
-		when(tagDao.findAll(Mockito.any())).thenCallRealMethod();
+		when(tagDao.findAll(Mockito.any())).then(answer -> {
+			return new TraversalResult<>(tagList);
+		});
 		when(tagFamilyDao.findAll(Mockito.any())).then(answer -> {
 			return new TraversalResult<>(tagList);
 		});
