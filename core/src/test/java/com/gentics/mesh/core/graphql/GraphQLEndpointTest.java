@@ -42,8 +42,8 @@ import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
@@ -214,8 +214,8 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			call(() -> client.assignMicroschemaToProject(PROJECT_NAME, microschemaResponse.getUuid()));
 		} else {
 			try (Tx tx = tx()) {
-				for (Microschema microschema : meshRoot().getMicroschemaContainerRoot().findAll()) {
-					microschema.remove();
+				for (HibMicroschema microschema : meshRoot().getMicroschemaContainerRoot().findAll()) {
+					toGraph(microschema).remove();
 				}
 				tx.success();
 			}

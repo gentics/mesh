@@ -8,7 +8,6 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_
 import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_ROLE;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -713,5 +712,15 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 					? READ_PUBLISHED_PERM.getRestPerm().getName()
 					: READ_PERM.getRestPerm().getName());
 		}
+	}
+
+	@Override
+	public Page<? extends HibRole> getRolesViaShortcut(HibUser fromUser, MeshAuthUser authUser, PagingParameters pagingInfo) {
+		return toGraph(fromUser).getRolesViaShortcut(authUser, pagingInfo);
+	}
+
+	@Override
+	public Page<? extends HibGroup> getGroups(HibUser fromUser, MeshAuthUser authUser, PagingParameters pagingInfo) {
+		return toGraph(fromUser).getGroups(authUser, pagingInfo);
 	}
 }

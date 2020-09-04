@@ -10,6 +10,7 @@ import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.user.UserReference;
@@ -201,14 +202,14 @@ public interface User extends MeshCoreVertex<UserResponse>, ReferenceableElement
 	 *
 	 * @return
 	 */
-	Iterable<? extends Role> getRoles();
+	Iterable<? extends HibRole> getRoles();
 
 	/**
 	 * Return an iterable of roles that belong to the user. Internally this will check the user role shortcut edge.
 	 *
 	 * @return
 	 */
-	Iterable<? extends Role> getRolesViaShortcut();
+	Iterable<? extends HibRole> getRolesViaShortcut();
 
 	/**
 	 * Return a page of roles which the user was assigned to.
@@ -217,7 +218,7 @@ public interface User extends MeshCoreVertex<UserResponse>, ReferenceableElement
 	 * @param params
 	 * @return
 	 */
-	Page<? extends Role> getRolesViaShortcut(HibUser user, PagingParameters params);
+	Page<? extends HibRole> getRolesViaShortcut(HibUser user, PagingParameters params);
 
 	/**
 	 * Update all shortcut edges.

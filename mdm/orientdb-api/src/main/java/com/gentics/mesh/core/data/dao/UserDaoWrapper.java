@@ -297,4 +297,8 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<HibUser>, DaoTransfo
 	Result<? extends HibGroup> getGroups(HibUser user);
 
 	String getETag(HibUser user, InternalActionContext ac);
+
+	Page<? extends HibRole> getRolesViaShortcut(HibUser fromUser, MeshAuthUser authUser, PagingParameters pagingInfo);
+
+	Page<? extends HibGroup> getGroups(HibUser fromUser, MeshAuthUser authUser, PagingParameters pagingInfo);
 }

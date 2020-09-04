@@ -9,7 +9,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.impl.UserImpl;
@@ -66,7 +65,7 @@ public class UserCheck extends AbstractConsistencyCheck {
 			.collect(Collectors.toSet());
 		Set<HibRole> shortCutRoles = new HashSet<>();
 
-		for (Role role : user.getRolesViaShortcut()) {
+		for (HibRole role : user.getRolesViaShortcut()) {
 			shortCutRoles.add(role);
 		}
 
