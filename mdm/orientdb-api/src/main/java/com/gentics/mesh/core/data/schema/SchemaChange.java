@@ -48,7 +48,7 @@ public interface SchemaChange<T extends FieldSchemaContainer> extends MeshVertex
 	 * @param change
 	 * @return
 	 */
-	HibSchemaChange<T> setNextChange(SchemaChange<?> change);
+	HibSchemaChange<T> setNextChange(HibSchemaChange<?> change);
 
 	/**
 	 * Return the previous schema change.

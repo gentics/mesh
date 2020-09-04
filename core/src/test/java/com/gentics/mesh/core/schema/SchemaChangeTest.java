@@ -8,23 +8,18 @@ import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
-import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
-import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaElement;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaChange;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.schema.Microschema;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.RemoveFieldChange;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaChange;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.RemoveFieldChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
-import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -69,12 +64,11 @@ public class SchemaChangeTest extends AbstractMeshTest {
 	@Test
 	public void testMicroschemaChanges() {
 		try (Tx tx = tx()) {
-			Microschema container = tx.getGraph().addFramedVertex(MicroschemaContainerImpl.class);
-
-			MicroschemaVersion versionA = tx.getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
-			MicroschemaVersion versionB = tx.getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
+			HibMicroschema container = createMicroschema(tx);
+			HibMicroschemaVersion versionA = createMicroschemaVersion(tx);
+			HibMicroschemaVersion versionB = createMicroschemaVersion(tx);
 			container.setLatestVersion(versionB);
-			SchemaChange<?> oldChange = chainChanges(versionA, versionB);
+			HibSchemaChange<?> oldChange = chainChanges(versionA, versionB);
 			validate(container, versionA, versionB, oldChange);
 		}
 	}
@@ -82,11 +76,11 @@ public class SchemaChangeTest extends AbstractMeshTest {
 	@Test
 	public void testChangeChain() {
 		try (Tx tx = tx()) {
-			Schema container = tx.getGraph().addFramedVertex(SchemaContainerImpl.class);
-			SchemaVersion versionA = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
-			SchemaVersion versionB = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			Schema container = createSchema(tx);
+			HibSchemaVersion versionA = createSchemaVersion(tx);
+			HibSchemaVersion versionB = createSchemaVersion(tx);
 			container.setLatestVersion(versionA);
-			SchemaChange<?> oldChange = chainChanges(versionA, versionB);
+			HibSchemaChange<?> oldChange = chainChanges(versionA, versionB);
 			validate(container, versionA, versionB, oldChange);
 		}
 	}
@@ -98,10 +92,10 @@ public class SchemaChangeTest extends AbstractMeshTest {
 	 * @param versionB
 	 * @return
 	 */
-	private SchemaChange<?> chainChanges(GraphFieldSchemaContainerVersion versionA, GraphFieldSchemaContainerVersion versionB) {
-		SchemaChange<?> oldChange = null;
+	private HibSchemaChange<?> chainChanges(HibFieldSchemaVersionElement versionA, HibFieldSchemaVersionElement versionB) {
+		HibSchemaChange<?> oldChange = null;
 		for (int i = 0; i < 3; i++) {
-			SchemaChange<?> change = Tx.get().getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
+			HibSchemaChange<?> change = Tx.get().getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
 			if (oldChange == null) {
 				oldChange = change;
 				assertNull("The change has not yet been connected to any schema", oldChange.getPreviousContainerVersion());

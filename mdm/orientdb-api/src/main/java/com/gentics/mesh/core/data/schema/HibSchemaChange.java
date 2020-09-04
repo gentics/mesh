@@ -7,6 +7,8 @@ public interface HibSchemaChange<T extends FieldSchemaContainer> extends HibBase
 
 	HibSchemaChange<?> getNextChange();
 
+	HibSchemaChange<T> setNextChange(HibSchemaChange<?> change);
+
 	HibSchemaChange<?> getPreviousChange();
 
 	<R extends FieldSchemaContainer> R apply(R container);
@@ -35,4 +37,5 @@ public interface HibSchemaChange<T extends FieldSchemaContainer> extends HibBase
 	 * @return
 	 */
 	HibSchemaChange<T> setNextSchemaContainerVersion(HibFieldSchemaVersionElement<?, ?, ?, ?> containerVersion);
+
 }
