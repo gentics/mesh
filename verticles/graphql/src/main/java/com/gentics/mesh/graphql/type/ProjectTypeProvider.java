@@ -13,7 +13,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
@@ -58,7 +57,7 @@ public class ProjectTypeProvider extends AbstractTypeProvider {
 	private NodeContent baseNodeFetcher(DataFetchingEnvironment env) {
 		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 		GraphQLContext gc = env.getContext();
-		Project project = env.getSource();
+		HibProject project = env.getSource();
 		Node node = project.getBaseNode();
 		gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 		List<String> languageTags = getLanguageArgument(env);

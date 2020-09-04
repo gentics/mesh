@@ -9,8 +9,8 @@ import static graphql.schema.GraphQLObjectType.newObject;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
+import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
@@ -46,7 +46,7 @@ public class GroupTypeProvider extends AbstractTypeProvider {
 		groupType.field(newPagingFieldWithFetcher("roles", "Roles assigned to the group.", (env) -> {
 			GroupDaoWrapper groupDao = Tx.get().data().groupDao();
 			GraphQLContext gc = env.getContext();
-			Group group = env.getSource();
+			HibGroup group = env.getSource();
 			return groupDao.getRoles(group, gc.getUser(), getPagingInfo(env));
 		}, ROLE_PAGE_TYPE_NAME));
 
@@ -54,7 +54,7 @@ public class GroupTypeProvider extends AbstractTypeProvider {
 		groupType.field(newPagingFieldWithFetcher("users", "Users assigned to the group.", (env) -> {
 			GroupDaoWrapper groupDao = Tx.get().data().groupDao();
 			GraphQLContext gc = env.getContext();
-			Group group = env.getSource();
+			HibGroup group = env.getSource();
 			return groupDao.getVisibleUsers(group, gc.getUser(), getPagingInfo(env));
 		}, USER_PAGE_TYPE_NAME));
 		return groupType.build();

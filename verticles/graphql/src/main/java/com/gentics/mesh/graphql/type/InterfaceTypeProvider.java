@@ -13,9 +13,8 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.EditorTrackingVertex;
-import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibBaseElement;
-import com.gentics.mesh.core.data.MeshCoreVertex;
+import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.TransformableElement;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.NodeContent;

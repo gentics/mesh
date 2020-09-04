@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data.dao.impl;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -23,6 +22,7 @@ import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.tag.HibTag;
@@ -35,6 +35,7 @@ import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.GenericParameters;
+import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 
 import dagger.Lazy;
@@ -211,5 +212,10 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper<HibTagFamily> im
 	public void addTag(HibTagFamily tagFamily, HibTag tag) {
 		TagFamily graphTagFamily = toGraph(tagFamily);
 		graphTagFamily.addTag(toGraph(tag));
+	}
+
+	@Override
+	public Page<? extends HibTag> getTags(HibTagFamily tagFamily, MeshAuthUser user, PagingParameters pagingInfo) {
+		return toGraph(tagFamily).getTags(user, pagingInfo);
 	}
 }

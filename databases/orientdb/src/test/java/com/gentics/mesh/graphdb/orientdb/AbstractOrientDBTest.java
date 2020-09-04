@@ -7,6 +7,7 @@ import org.mockito.Mockito;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.dao.DaoCollection;
+import com.gentics.mesh.core.data.dao.PermissionRoots;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.graphdb.cluster.OrientDBClusterManager;
@@ -14,6 +15,7 @@ import com.gentics.mesh.graphdb.orientdb.graph.Person;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.metric.MetricsService;
 import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.ext.orientdb3.PermissionRootsImpl;
 
 import dagger.Lazy;
 import io.micrometer.core.instrument.Counter;
@@ -25,12 +27,18 @@ public class AbstractOrientDBTest {
 		MetricsService metrics = Mockito.mock(MetricsService.class);
 		when(metrics.timer(Mockito.any())).thenReturn(Mockito.mock(Timer.class));
 		when(metrics.counter(Mockito.any())).thenReturn(Mockito.mock(Counter.class));
-		Lazy<BootstrapInitializer> lazyBoot = mock(Lazy.class);
 		Lazy<DaoCollection> lazyDaos = mock(Lazy.class);
+
+		Lazy<BootstrapInitializer> lazyBoot = mock(Lazy.class);
 		BootstrapInitializer bootMock = mock(BootstrapInitializer.class);
 		when(lazyBoot.get()).thenReturn(bootMock);
+		
+		PermissionRoots  permRoots = mock(PermissionRootsImpl.class);
+		Lazy<PermissionRoots> lazyPermRoots = mock(Lazy.class);
+		when(lazyPermRoots.get()).thenReturn(permRoots);
+		
 		Database db = new OrientDBDatabase(options, null, lazyBoot, lazyDaos, metrics, null, null, new OrientDBClusterManager(null, null, null, options, null),
-			null, null, null, null);
+			null, lazyPermRoots, null, null);
 		return db;
 	}
 
