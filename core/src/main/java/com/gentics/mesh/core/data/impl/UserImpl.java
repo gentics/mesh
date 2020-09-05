@@ -26,10 +26,12 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
@@ -213,7 +215,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements Us
 	}
 
 	@Override
-	public Result<? extends Group> getGroups() {
+	public Result<? extends HibGroup> getGroups() {
 		return out(HAS_USER, GroupImpl.class);
 	}
 
@@ -250,9 +252,9 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements Us
 	public void updateShortcutEdges() {
 		GroupRoot groupRoot = mesh().boot().groupRoot();
 		outE(ASSIGNED_TO_ROLE).removeAll();
-		for (Group group : getGroups()) {
-			for (Role role : groupRoot.getRoles(group)) {
-				setUniqueLinkOutTo(role, ASSIGNED_TO_ROLE);
+		for (HibGroup group : getGroups()) {
+			for (HibRole role : groupRoot.getRoles(group)) {
+				setUniqueLinkOutTo(toGraph(role), ASSIGNED_TO_ROLE);
 			}
 		}
 	}

@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data;
 
 import java.util.Set;
 
-import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 
 public interface HibBaseElement extends HibElement {

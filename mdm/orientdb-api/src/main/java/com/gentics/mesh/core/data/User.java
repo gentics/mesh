@@ -8,6 +8,7 @@ import java.util.Objects;
 
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.TypeInfo;
+import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.role.HibRole;
@@ -180,7 +181,7 @@ public interface User extends MeshCoreVertex<UserResponse>, ReferenceableElement
 	 *
 	 * @return
 	 */
-	Result<? extends Group> getGroups();
+	Result<? extends HibGroup> getGroups();
 
 	/**
 	 * Add the user to the given group.

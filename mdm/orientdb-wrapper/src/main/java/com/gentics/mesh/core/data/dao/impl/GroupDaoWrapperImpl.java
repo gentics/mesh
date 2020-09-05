@@ -127,8 +127,8 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 		graphGroup.setUniqueLinkInTo(graphUser, HAS_USER);
 
 		// Add shortcut edge from user to roles of this group
-		for (Role role : getRoles(group)) {
-			graphUser.setUniqueLinkOutTo(role, ASSIGNED_TO_ROLE);
+		for (HibRole role : getRoles(group)) {
+			graphUser.setUniqueLinkOutTo(toGraph(role), ASSIGNED_TO_ROLE);
 		}
 	}
 
@@ -152,7 +152,7 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 	}
 
 	@Override
-	public Result<? extends Role> getRoles(HibGroup group) {
+	public Result<? extends HibRole> getRoles(HibGroup group) {
 		Group graphGroup = toGraph(group);
 		GroupRoot groupRoot = boot.get().groupRoot();
 		return groupRoot.getRoles(graphGroup);
@@ -269,7 +269,7 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 	 * @param restGroup
 	 */
 	private void setRoles(HibGroup group, InternalActionContext ac, GroupResponse restGroup) {
-		for (Role role : getRoles(group)) {
+		for (HibRole role : getRoles(group)) {
 			String name = role.getName();
 			if (name != null) {
 				restGroup.getRoles().add(role.transformToReference());
