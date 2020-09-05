@@ -32,12 +32,13 @@ public class AbstractOrientDBTest {
 		Lazy<BootstrapInitializer> lazyBoot = mock(Lazy.class);
 		BootstrapInitializer bootMock = mock(BootstrapInitializer.class);
 		when(lazyBoot.get()).thenReturn(bootMock);
-		
-		PermissionRoots  permRoots = mock(PermissionRootsImpl.class);
+
+		PermissionRoots permRoots = mock(PermissionRootsImpl.class);
 		Lazy<PermissionRoots> lazyPermRoots = mock(Lazy.class);
 		when(lazyPermRoots.get()).thenReturn(permRoots);
-		
-		Database db = new OrientDBDatabase(options, null, lazyBoot, lazyDaos, metrics, null, null, new OrientDBClusterManager(null, null, null, options, null),
+
+		Database db = new OrientDBDatabase(options, null, lazyBoot, lazyDaos, metrics, null, null,
+			new OrientDBClusterManager(null, null, null, options, null),
 			null, lazyPermRoots, null, null);
 		return db;
 	}

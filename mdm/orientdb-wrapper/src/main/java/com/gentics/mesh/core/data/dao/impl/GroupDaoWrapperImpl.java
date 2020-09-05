@@ -5,8 +5,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNE
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.MeshEvent.GROUP_ROLE_ASSIGNED;
 import static com.gentics.mesh.core.rest.MeshEvent.GROUP_ROLE_UNASSIGNED;
 import static com.gentics.mesh.core.rest.MeshEvent.GROUP_USER_ASSIGNED;
@@ -196,7 +194,7 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 	@Override
 	public boolean hasUser(HibGroup group, HibUser user) {
 		Group graphGroup = toGraph(group);
-		return graphGroup.in(HAS_USER).retain((User) user).hasNext();
+		return graphGroup.in(HAS_USER).retain(toGraph(user)).hasNext();
 	}
 
 	@Override
