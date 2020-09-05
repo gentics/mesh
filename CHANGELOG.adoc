@@ -26,6 +26,8 @@ include::content/docs/variables.adoc-include[]
 [[v1.7.1]]
 == 1.7.1 (TBD)
 
+icon:check[] Core: Fixed a bug that which prevented to update a node reference of a user if the user already had one set. link:https://github.com/gentics/mesh/issues/1114[#1114]
+
 icon:plus[] Internal: The internal code has been refactored and cleaned up.
 
 icon:plus[] Plugins: The default plugin timeout has been increased from 15 seconds to two minutes.

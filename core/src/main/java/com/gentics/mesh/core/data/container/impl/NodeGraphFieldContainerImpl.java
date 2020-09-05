@@ -799,7 +799,10 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		VersionInfo info = new VersionInfo();
 		info.setVersion(getVersion().getFullVersion());
 		info.setCreated(getLastEditedDate());
-		info.setCreator(getEditor().transformToReference());
+		HibUser editor = getEditor();
+		if (editor != null) {
+			info.setCreator(editor.transformToReference());
+		}
 		info.setPublished(isPublished(branchUuid));
 		info.setDraft(isDraft(branchUuid));
 		info.setBranchRoot(isInitial());
