@@ -1,8 +1,7 @@
 package com.gentics.mesh.core.data.dao.impl;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toProject;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toSchemaVersion;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
@@ -34,17 +33,20 @@ import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.ProjectRoot;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.error.NameConflictException;
+import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
+import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
@@ -95,7 +97,7 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implem
 	}
 
 	@Override
-	public TraversalResult<? extends HibProject> findAll() {
+	public Result<? extends HibProject> findAll() {
 		return boot.get().projectRoot().findAll();
 	}
 
@@ -147,7 +149,7 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implem
 	@Override
 	public HibProject create(String name, String hostname, Boolean ssl, String pathPrefix, HibUser creator, HibSchemaVersion schemaVersion,
 		String uuid, EventQueueBatch batch) {
-		SchemaVersion graphSchemaVersion = toSchemaVersion(schemaVersion);
+		SchemaVersion graphSchemaVersion = toGraph(schemaVersion);
 		ProjectRoot root = boot.get().projectRoot();
 
 		Project project = root.create();
@@ -175,7 +177,7 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implem
 		branch.assignSchemaVersion(creator, schemaVersion, batch);
 
 		// Assign the provided schema container to the project
-		project.getSchemaContainerRoot().addItem(graphSchemaVersion.getSchemaContainer());
+		project.getSchemaContainerRoot().addItem(toGraph(graphSchemaVersion.getSchemaContainer()));
 		// project.getLatestBranch().assignSchemaVersion(creator,
 		// schemaContainerVersion);
 		project.createBaseNode(creator, graphSchemaVersion);
@@ -230,12 +232,12 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implem
 		String branchUuid = initialBranch.getUuid();
 
 		// Add project permissions
-		userDao.addCRUDPermissionOnRole(creator, projectRoot, CREATE_PERM, project.toProject());
+		userDao.addCRUDPermissionOnRole(creator, projectRoot, CREATE_PERM, toGraph(project));
 		userDao.inheritRolePermissions(creator, project, project.getBaseNode());
-		userDao.inheritRolePermissions(creator, project, project.getTagFamilyRoot());
-		userDao.inheritRolePermissions(creator, project, project.getSchemaContainerRoot());
-		userDao.inheritRolePermissions(creator, project, project.getMicroschemaContainerRoot());
-		userDao.inheritRolePermissions(creator, project, project.getNodeRoot());
+		userDao.inheritRolePermissions(creator, project, toGraph(project).getTagFamilyRoot());
+		userDao.inheritRolePermissions(creator, project, toGraph(project).getSchemaContainerRoot());
+		userDao.inheritRolePermissions(creator, project, toGraph(project).getMicroschemaContainerRoot());
+		userDao.inheritRolePermissions(creator, project, toGraph(project).getNodeRoot());
 		userDao.inheritRolePermissions(creator, project, initialBranch);
 
 		// Store the project and the branch in the index
@@ -259,7 +261,7 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implem
 		}
 		NodeDaoWrapper nodeDao = boot.get().nodeDao();
 
-		Project graphProject = toProject(project);
+		Project graphProject = toGraph(project);
 
 		// Remove the nodes in the project hierarchy
 		Node base = graphProject.getBaseNode();
@@ -300,7 +302,7 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implem
 
 	@Override
 	public ProjectResponse transformToRestSync(HibProject project, InternalActionContext ac, int level, String... languageTags) {
-		Project graphProject = toProject(project);
+		Project graphProject = toGraph(project);
 
 		GenericParameters generic = ac.getGenericParameters();
 		FieldsSet fields = generic.getFields();
@@ -328,8 +330,20 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implem
 
 	@Override
 	public String getETag(HibProject project, InternalActionContext ac) {
-		Project graphProject = toProject(project);
+		Project graphProject = toGraph(project);
 		return graphProject.getETag(ac);
+	}
+
+	@Override
+	public String getAPIPath(HibProject project, InternalActionContext ac) {
+		Project graphProject = toGraph(project);
+		return graphProject.getAPIPath(ac);
+	}
+
+	@Override
+	public MeshEventModel onSchemaAssignEvent(HibProject project, HibSchema schema, Assignment assignment) {
+		Project graphProject = toGraph(project);
+		return graphProject.onSchemaAssignEvent(schema, assignment);
 	}
 
 }

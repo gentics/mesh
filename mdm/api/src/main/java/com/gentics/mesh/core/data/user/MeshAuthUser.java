@@ -8,4 +8,6 @@ import io.vertx.ext.auth.User;
  */
 public interface MeshAuthUser extends User, HibUser, ClusterSerializable {
 
+	HibUser getDelegate();
+
 }

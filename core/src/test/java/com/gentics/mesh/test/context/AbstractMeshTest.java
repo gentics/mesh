@@ -10,6 +10,7 @@ import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -21,13 +22,12 @@ import org.junit.Rule;
 
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
-import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.shared.SharedKeys;
@@ -43,7 +43,7 @@ import io.vertx.core.logging.SLF4JLogDelegateFactory;
 import io.vertx.ext.web.RoutingContext;
 import okhttp3.OkHttpClient;
 
-public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelper, PluginHelper {
+public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelper, PluginHelper, WrapperHelper {
 
 	static {
 		// Use slf4j instead of JUL
@@ -75,9 +75,10 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 
 	@After
 	public void checkConsistency() {
+		List<ConsistencyCheck> checks = mesh().consistencyChecks();
 		try (Tx tx = tx()) {
 			ConsistencyCheckResponse response = new ConsistencyCheckResponse();
-			for (ConsistencyCheck check : ConsistencyCheckHandler.getChecks()) {
+			for (ConsistencyCheck check : checks) {
 				ConsistencyCheckResult result = check.invoke(db(), tx, false);
 				response.getInconsistencies().addAll(result.getResults());
 			}
@@ -114,7 +115,7 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 		return Tx.get().data().nodeDao().transformToRestSync(node, ac, 0).toJson();
 	}
 
-	protected void testPermission(InternalPermission perm, HibElement element) {
+	protected void testPermission(InternalPermission perm, HibBaseElement element) {
 		RoutingContext rc = tx(() -> mockRoutingContext());
 
 		try (Tx tx = tx()) {

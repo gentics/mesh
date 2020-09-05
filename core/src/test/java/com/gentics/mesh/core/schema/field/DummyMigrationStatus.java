@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.schema.field;
 
-import com.gentics.mesh.core.data.branch.BranchVersionEdge;
+import com.gentics.mesh.core.data.branch.HibBranchVersionAssignment;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.rest.job.JobStatus;
 
@@ -31,7 +31,7 @@ public class DummyMigrationStatus implements MigrationStatusHandler {
 	}
 
 	@Override
-	public void setVersionEdge(BranchVersionEdge versionEdge) {
+	public void setVersionEdge(HibBranchVersionAssignment versionEdge) {
 
 	}
 

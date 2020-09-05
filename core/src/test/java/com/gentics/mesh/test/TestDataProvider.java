@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.test.TestSize.EMPTY;
 import static com.gentics.mesh.test.TestSize.FULL;
 
@@ -25,17 +26,15 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
-import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.PermissionRoots;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
@@ -43,10 +42,8 @@ import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchema;
@@ -150,7 +147,6 @@ public class TestDataProvider {
 				setAdminPassword();
 			}
 			boot.initOptionalData(true);
-			tx.getGraph().commit();
 			schemaContainers.clear();
 			microschemaContainers.clear();
 			tagFamilies.clear();
@@ -161,7 +157,9 @@ public class TestDataProvider {
 			roles.clear();
 			groups.clear();
 
-			root = boot.meshRoot();
+			if (db.requiresTypeInit()) {
+				root = boot.meshRoot();
+			}
 
 			addBootstrappedData(tx);
 			addSchemaContainers();
@@ -175,7 +173,6 @@ public class TestDataProvider {
 			if (getSize() == FULL) {
 				addContents();
 			}
-			tx.getGraph().commit();
 
 			long startPerm = System.currentTimeMillis();
 			addPermissions(tagFamilies.values());
@@ -189,17 +186,18 @@ public class TestDataProvider {
 			addPermissions(microschemaContainers.values());
 			addPermissions(project);
 			addPermissions(project.getBaseNode());
-			addPermissions(project.getMicroschemaContainerRoot());
-			addPermissions(project.getSchemaContainerRoot());
-			addPermissions(project.toProject().getBranchRoot());
+			addPermissions(toGraph(project).getMicroschemaContainerRoot());
+			addPermissions(toGraph(project).getSchemaContainerRoot());
+			addPermissions(toGraph(project).getBranchRoot());
 			addPermissions(project.getInitialBranch());
 			addPermissions(project.getTagFamilyRoot());
-			addPermissions(boot.projectRoot());
-			addPermissions(boot.userRoot());
-			addPermissions(boot.groupRoot());
-			addPermissions(boot.roleRoot());
-			addPermissions(boot.microschemaContainerRoot());
-			addPermissions(boot.schemaContainerRoot());
+			PermissionRoots permissionRoots = tx.data().permissionRoots();
+			addPermissions(permissionRoots.project());
+			addPermissions(permissionRoots.user());
+			addPermissions(permissionRoots.group());
+			addPermissions(permissionRoots.role());
+			addPermissions(permissionRoots.microschema());
+			addPermissions(permissionRoots.schema());
 			log.debug("Added BasicPermissions to nodes took {" + (System.currentTimeMillis() - startPerm) + "} ms.");
 			tx.success();
 		});
@@ -213,7 +211,7 @@ public class TestDataProvider {
 		boot.userDao().findByUsername("admin").setPasswordHash(hash);
 	}
 
-	private void addPermissions(HibElement element) {
+	private void addPermissions(HibBaseElement element) {
 		addPermissions(Arrays.asList(element));
 	}
 
@@ -221,11 +219,11 @@ public class TestDataProvider {
 		return size;
 	}
 
-	private void addPermissions(Collection<? extends HibElement> elements) {
+	private void addPermissions(Collection<? extends HibBaseElement> elements) {
 		RoleDaoWrapper roleDao = Tx.get().data().roleDao();
 
 		HibRole role = userInfo.getRole();
-		for (HibElement meshVertex : elements) {
+		for (HibBaseElement meshVertex : elements) {
 			if (log.isTraceEnabled()) {
 				log.trace("Granting CRUD permissions on {" + meshVertex.getId() + "} with role {" + role.getId() + "}");
 			}
@@ -239,13 +237,13 @@ public class TestDataProvider {
 	 * @param tx
 	 */
 	private void addBootstrappedData(Tx tx) {
-		for (Group group : root.getGroupRoot().findAll()) {
+		for (HibGroup group : tx.data().groupDao().findAll()) {
 			groups.put(group.getName(), group);
 		}
-		for (User user : root.getUserRoot().findAll()) {
+		for (HibUser user : tx.data().userDao().findAll()) {
 			users.put(user.getUsername(), user);
 		}
-		for (Role role : root.getRoleRoot().findAll()) {
+		for (HibRole role : tx.data().roleDao().findAll()) {
 			roles.put(role.getName(), role);
 		}
 	}
@@ -355,7 +353,6 @@ public class TestDataProvider {
 		users.put(username, user);
 
 		String groupName = username + "_group";
-		GroupRoot groupRoot = root.getGroupRoot();
 		HibGroup group = groupDao.create(groupName, user);
 		groupDao.addUser(group, user);
 		group.setCreator(user);
@@ -378,10 +375,10 @@ public class TestDataProvider {
 		RoleDaoWrapper roleDao = Tx.get().data().roleDao();
 		GroupDaoWrapper groupDao = Tx.get().data().groupDao();
 		SchemaDaoWrapper schemaDao = Tx.get().data().schemaDao();
+		ProjectDaoWrapper projectDao = Tx.get().data().projectDao();
 
 		// User, Groups, Roles
 		userInfo = createUserInfo("joe1", "Joe", "Doe");
-		ProjectDaoWrapper projectDao = boot.projectDao();
 		EventQueueBatch batch = Mockito.mock(EventQueueBatch.class);
 		project = projectDao.create(PROJECT_NAME, null, null, null, userInfo.getUser(), getSchemaContainer("folder").getLatestVersion(), batch);
 		HibUser jobUser = userInfo.getUser();

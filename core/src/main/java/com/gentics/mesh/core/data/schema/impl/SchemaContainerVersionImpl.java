@@ -8,6 +8,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FRO
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TO_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.SCHEMA_CONTAINER_VERSION_KEY_PROPERTY;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 import static com.gentics.mesh.util.StreamUtil.toStream;
@@ -30,6 +31,8 @@ import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
@@ -43,6 +46,7 @@ import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.etc.config.ContentConfig;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.madl.traversal.TraversalResult;
@@ -57,7 +61,7 @@ import io.vertx.core.logging.LoggerFactory;
  * @see SchemaVersion
  */
 public class SchemaContainerVersionImpl extends
-	AbstractGraphFieldSchemaContainerVersion<SchemaResponse, SchemaVersionModel, SchemaReference, SchemaVersion, Schema> implements
+	AbstractGraphFieldSchemaContainerVersion<SchemaResponse, SchemaVersionModel, SchemaReference, HibSchemaVersion, HibSchema> implements
 	SchemaVersion {
 
 	private static final Logger log = LoggerFactory.getLogger(SchemaContainerVersionImpl.class);
@@ -67,12 +71,12 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	protected Class<? extends SchemaVersion> getContainerVersionClass() {
+	protected Class<? extends HibSchemaVersion> getContainerVersionClass() {
 		return SchemaContainerVersionImpl.class;
 	}
 
 	@Override
-	protected Class<? extends Schema> getContainerClass() {
+	protected Class<? extends HibSchema> getContainerClass() {
 		return SchemaContainerImpl.class;
 	}
 
@@ -89,7 +93,7 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public TraversalResult<? extends Node> getNodes(String branchUuid, HibUser user, ContainerType type) {
+	public Result<? extends Node> getNodes(String branchUuid, HibUser user, ContainerType type) {
 		UserDaoWrapper userDao = Tx.get().data().userDao();
 		SchemaDaoWrapper schemaDao = Tx.get().data().schemaDao();
 		return new TraversalResult<>(schemaDao.getNodes(getSchemaContainer()).stream()
@@ -126,9 +130,10 @@ public class SchemaContainerVersionImpl extends
 		// Load the schema and add/overwrite some properties
 		// Use getSchema to utilise the schema storage
 		SchemaResponse restSchema = JsonUtil.readValue(getJson(), SchemaResponse.class);
-		Schema container = getSchemaContainer();
-		container.fillCommonRestFields(ac, fields, restSchema);
-		restSchema.setRolePerms(container.getRolePermissions(ac, ac.getRolePermissionParameters().getRoleUuid()));
+		HibSchema container = getSchemaContainer();
+		Schema graphSchema = toGraph(container);
+		graphSchema.fillCommonRestFields(ac, fields, restSchema);
+		restSchema.setRolePerms(graphSchema.getRolePermissions(ac, ac.getRolePermissionParameters().getRoleUuid()));
 		return restSchema;
 
 	}
@@ -163,7 +168,7 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public TraversalResult<? extends Branch> getBranches() {
+	public Result<? extends Branch> getBranches() {
 		return in(HAS_SCHEMA_VERSION, BranchImpl.class);
 	}
 
@@ -173,7 +178,7 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public TraversalResult<HibJob> referencedJobsViaFrom() {
+	public Result<HibJob> referencedJobsViaFrom() {
 		return new TraversalResult<>(in(HAS_FROM_VERSION).frame(Job.class));
 	}
 

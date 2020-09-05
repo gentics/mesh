@@ -5,9 +5,9 @@ import java.util.stream.Stream;
 
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.graphdb.spi.Supplier;
 import com.gentics.mesh.graphdb.spi.Transactional;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.reactivex.Flowable;
@@ -67,6 +67,6 @@ public interface BinaryDaoWrapper extends BinaryDao, DaoWrapper<HibBinary> {
 	 *
 	 * @return
 	 */
-	TraversalResult<BinaryGraphField> findFields(HibBinary binary);
+	Result<BinaryGraphField> findFields(HibBinary binary);
 
 }

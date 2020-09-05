@@ -26,8 +26,8 @@ import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
 import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.Assignment;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 
 /**
  * The Project Domain Model interface.
@@ -36,7 +36,7 @@ import com.gentics.mesh.madl.traversal.TraversalResult;
  * (called basenode). Additionally languages and schemas can be assigned to projects to make them available for node creation. Various root vertices (eg.:
  * {@link NodeRoot}, {@link TagRoot}, {@link TagFamilyRoot} ) are linked to the project to store references to basic building blocks.
  */
-public interface Project extends MeshCoreVertex<ProjectResponse, Project>, ReferenceableElement<ProjectReference>, UserTrackingVertex, HibUserTracking, HibProject {
+public interface Project extends MeshCoreVertex<ProjectResponse>, ReferenceableElement<ProjectReference>, UserTrackingVertex, HibUserTracking, HibProject {
 
 	TypeInfo TYPE_INFO = new TypeInfo(ElementType.PROJECT, PROJECT_CREATED, PROJECT_UPDATED, PROJECT_DELETED);
 
@@ -117,7 +117,7 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	 * 
 	 * @return
 	 */
-	TraversalResult<? extends Language> getLanguages();
+	Result<? extends Language> getLanguages();
 
 	/**
 	 * Unassign the language from the project.
@@ -201,7 +201,7 @@ public interface Project extends MeshCoreVertex<ProjectResponse, Project>, Refer
 	 * 
 	 * @return
 	 */
-	TraversalResult<? extends Node> findNodes();
+	Result<? extends Node> findNodes();
 
 	/**
 	 * Find a node in this project. Null if the node could not be found.

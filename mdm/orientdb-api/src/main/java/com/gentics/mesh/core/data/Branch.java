@@ -18,8 +18,6 @@ import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.branch.BranchReference;
@@ -29,9 +27,9 @@ import com.gentics.mesh.core.rest.event.branch.BranchSchemaAssignEventModel;
 import com.gentics.mesh.core.rest.event.branch.BranchTaggedEventModel;
 import com.gentics.mesh.core.rest.event.project.ProjectBranchEventModel;
 import com.gentics.mesh.core.rest.job.JobStatus;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 
 /**
@@ -55,7 +53,7 @@ import com.gentics.mesh.parameter.PagingParameters;
  * 
  */
 public interface Branch
-	extends MeshCoreVertex<BranchResponse, Branch>, NamedElement, ReferenceableElement<BranchReference>, UserTrackingVertex, Taggable, ProjectElement, HibBranch {
+	extends MeshCoreVertex<BranchResponse>, NamedElement, ReferenceableElement<BranchReference>, UserTrackingVertex, Taggable, ProjectElement, HibBranch {
 
 	TypeInfo TYPE_INFO = new TypeInfo(BRANCH, BRANCH_CREATED, BRANCH_UPDATED, BRANCH_DELETED);
 
@@ -234,7 +232,7 @@ public interface Branch
 	 * 
 	 * @return
 	 */
-	TraversalResult<? extends SchemaVersion> findAllSchemaVersions();
+	Result<? extends HibSchemaVersion> findAllSchemaVersions();
 
 	/**
 	 * Assign the given microschema version to the branch and queue a job which executes the migration.
@@ -278,14 +276,14 @@ public interface Branch
 	 * 
 	 * @return Iterable
 	 */
-	TraversalResult<? extends MicroschemaVersion> findAllMicroschemaVersions();
+	Result<? extends HibMicroschemaVersion> findAllMicroschemaVersions();
 
 	/**
 	 * Get an iterable of all latest microschema container versions.
 	 * 
 	 * @return Iterable
 	 */
-	TraversalResult<? extends BranchMicroschemaEdge> findAllLatestMicroschemaVersionEdges();
+	Result<? extends BranchMicroschemaEdge> findAllLatestMicroschemaVersionEdges();
 
 	/**
 	 * Get an iterable over all active schema container versions. An active version is one which still contains {@link NodeGraphFieldContainer}'s or one which
@@ -293,7 +291,7 @@ public interface Branch
 	 * 
 	 * @return Iterable
 	 */
-	TraversalResult<? extends SchemaVersion> findActiveSchemaVersions();
+	Result<HibSchemaVersion> findActiveSchemaVersions();
 
 	/**
 	 * Get an iterable over all active microschema container versions. An active version is one which still contains {@link NodeGraphFieldContainer}'s or one
@@ -301,7 +299,7 @@ public interface Branch
 	 *
 	 * @return Iterable
 	 */
-	Iterable<? extends MicroschemaVersion> findActiveMicroschemaVersions();
+	Result<HibMicroschemaVersion> findActiveMicroschemaVersions();
 
 	/**
 	 * Get an iterable of all latest schema container versions.
@@ -323,14 +321,14 @@ public interface Branch
 	 * 
 	 * @return
 	 */
-	TraversalResult<? extends BranchSchemaEdge> findAllSchemaVersionEdges();
+	Result<? extends BranchSchemaEdge> findAllSchemaVersionEdges();
 
 	/**
 	 * Return all microschema versions which are linked to the branch.
 	 * 
 	 * @return
 	 */
-	TraversalResult<? extends BranchMicroschemaEdge> findAllMicroschemaVersionEdges();
+	Result<? extends BranchMicroschemaEdge> findAllMicroschemaVersionEdges();
 
 	/**
 	 * Find the branch schema edge for the given version.
@@ -388,7 +386,7 @@ public interface Branch
 	 *
 	 * @return
 	 */
-	TraversalResult<? extends HibTag> getTags();
+	Result<? extends HibTag> getTags();
 
 	/**
 	 * Return a page of all visible tags that are assigned to the branch.

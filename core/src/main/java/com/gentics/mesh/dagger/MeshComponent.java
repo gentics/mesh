@@ -1,5 +1,7 @@
 package com.gentics.mesh.dagger;
 
+import java.util.List;
+
 import javax.annotation.Nullable;
 import javax.inject.Provider;
 
@@ -18,6 +20,7 @@ import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.generic.UserProperties;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparatorImpl;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
+import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.core.endpoint.role.RoleCrudHandler;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
@@ -160,6 +163,8 @@ public interface MeshComponent {
 	WriteLock globalLock();
 
 	RoleCrudHandler roleCrudHandler();
+
+	List<ConsistencyCheck> consistencyChecks();
 
 	interface Builder {
 		Builder configuration(MeshOptions options);

@@ -6,7 +6,7 @@ import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 /**
  * A core element is a public element which is also usually accessible via REST.
  */
-public interface HibCoreElement extends HibElement {
+public interface HibCoreElement extends HibBaseElement {
 
 	/**
 	 * Method which is being invoked once the element has been created.
@@ -33,4 +33,5 @@ public interface HibCoreElement extends HibElement {
 	 * @return
 	 */
 	TypeInfo getTypeInfo();
+
 }

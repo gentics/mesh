@@ -12,7 +12,7 @@ import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.elasticsearch.client.okhttp.RequestBuilder;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.search.CreateIndexEntry;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
@@ -54,7 +54,7 @@ import io.vertx.core.logging.LoggerFactory;
  * @param <T>
  *            Type of the elements which are handled by the index handler
  */
-public abstract class AbstractIndexHandler<T extends HibElement> implements IndexHandler<T> {
+public abstract class AbstractIndexHandler<T extends HibBaseElement> implements IndexHandler<T> {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractIndexHandler.class);
 
@@ -245,7 +245,7 @@ public abstract class AbstractIndexHandler<T extends HibElement> implements Inde
 		return db.tx(tx -> {
 			return loadAllElements(tx)
 				.collect(Collectors.toMap(
-					HibElement::getUuid,
+					HibBaseElement::getUuid,
 					this::generateVersion));
 		});
 	}

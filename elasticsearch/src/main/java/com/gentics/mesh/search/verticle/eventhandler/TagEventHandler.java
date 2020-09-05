@@ -6,7 +6,6 @@ import static com.gentics.mesh.core.rest.MeshEvent.TAG_UPDATED;
 import static com.gentics.mesh.search.verticle.entity.MeshEntities.findElementByUuidStream;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.concat;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
-import static com.gentics.mesh.util.StreamUtil.toStream;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -64,10 +63,10 @@ public class TagEventHandler implements EventHandler {
 					Optional<HibTagFamily> tagFamily = tag.map(HibTag::getTagFamily);
 
 					return concat(
-						toStream(tag).map(t -> entities.createRequest(t, projectUuid)),
-						toStream(tagFamily).map(tf -> entities.createRequest(tf, projectUuid)),
+						tag.stream().map(t -> entities.createRequest(t, projectUuid)),
+						tagFamily.stream().map(tf -> entities.createRequest(tf, projectUuid)),
 						event == TAG_UPDATED
-							? toStream(tag).flatMap(t -> taggedNodes(model, t))
+							? tag.stream().flatMap(t -> taggedNodes(model, t))
 							: Stream.empty()
 					).collect(Util.toFlowable());
 				});

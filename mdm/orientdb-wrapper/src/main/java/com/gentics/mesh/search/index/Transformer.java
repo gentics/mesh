@@ -1,6 +1,6 @@
 package com.gentics.mesh.search.index;
 
-import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 
 import io.vertx.core.json.JsonObject;
 
@@ -25,7 +25,7 @@ public interface Transformer<T> {
 	 * @param element
 	 * @return
 	 */
-	JsonObject toPermissionPartial(HibElement element);
+	JsonObject toPermissionPartial(HibBaseElement element);
 
 	/**
 	 * Generate the version for the given element.

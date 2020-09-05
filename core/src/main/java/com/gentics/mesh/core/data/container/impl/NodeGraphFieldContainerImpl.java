@@ -69,8 +69,8 @@ import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
@@ -85,6 +85,7 @@ import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
@@ -129,7 +130,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public SchemaVersion getSchemaContainerVersion() {
+	public HibSchemaVersion getSchemaContainerVersion() {
 		return db().index().findByUuid(SchemaContainerVersionImpl.class, property(SCHEMA_CONTAINER_VERSION_KEY_PROPERTY));
 	}
 
@@ -461,9 +462,9 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public TraversalResult<NodeGraphFieldContainer> getNextVersions() {
+	public Result<NodeGraphFieldContainer> getNextVersions() {
 		// TODO out function should not return wildcard generics.
-		return (TraversalResult<NodeGraphFieldContainer>)(TraversalResult<?>)out(HAS_VERSION, NodeGraphFieldContainerImpl.class);
+		return (Result<NodeGraphFieldContainer>) (Result<?>) out(HAS_VERSION, NodeGraphFieldContainerImpl.class);
 	}
 
 	@Override
@@ -638,18 +639,18 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public List<MicronodeGraphField> getMicronodeFields(MicroschemaVersion version) {
+	public List<MicronodeGraphField> getMicronodeFields(HibMicroschemaVersion version) {
 		String microschemaVersionUuid = version.getUuid();
 		return new TraversalResult<>(outE(HAS_FIELD)
 			.has(MicronodeGraphFieldImpl.class)
 			.frameExplicit(MicronodeGraphFieldImpl.class))
-			.stream()
-			.filter(edge -> edge.getMicronode().property(MICROSCHEMA_VERSION_KEY_PROPERTY).equals(microschemaVersionUuid))
-			.collect(Collectors.toList());
+				.stream()
+				.filter(edge -> edge.getMicronode().property(MICROSCHEMA_VERSION_KEY_PROPERTY).equals(microschemaVersionUuid))
+				.collect(Collectors.toList());
 	}
 
 	@Override
-	public TraversalResult<MicronodeGraphFieldList> getMicronodeListFields(MicroschemaVersion version) {
+	public Result<MicronodeGraphFieldList> getMicronodeListFields(HibMicroschemaVersion version) {
 		String microschemaVersionUuid = version.getUuid();
 		TraversalResult<? extends MicronodeGraphFieldList> lists = new TraversalResult<>(out(HAS_LIST)
 			.has(MicronodeGraphFieldListImpl.class)
@@ -657,8 +658,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		return new TraversalResult<>(lists
 			.stream()
 			.filter(list -> list.getValues().stream()
-			.anyMatch(micronode -> micronode.property(MICROSCHEMA_VERSION_KEY_PROPERTY).equals(microschemaVersionUuid)))
-		);
+				.anyMatch(micronode -> micronode.property(MICROSCHEMA_VERSION_KEY_PROPERTY).equals(microschemaVersionUuid))));
 	}
 
 	@Override
@@ -784,7 +784,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		model.setBranchUuid(branchUuid);
 		model.setLanguageTag(getLanguageTag());
 		model.setType(type);
-		SchemaVersion version = getSchemaContainerVersion();
+		HibSchemaVersion version = getSchemaContainerVersion();
 		if (version != null) {
 			model.setSchema(version.transformToReference());
 		}
@@ -814,7 +814,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public boolean isAutoPurgeEnabled() {
-		SchemaVersion schema = getSchemaContainerVersion();
+		HibSchemaVersion schema = getSchemaContainerVersion();
 		return schema.isAutoPurgeEnabled();
 	}
 
@@ -832,7 +832,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public TraversalResult<NodeGraphFieldContainer> versions() {
+	public Result<NodeGraphFieldContainer> versions() {
 		return new TraversalResult<>(StreamUtil.untilNull(() -> this, NodeGraphFieldContainer::getPreviousVersion));
 	}
 

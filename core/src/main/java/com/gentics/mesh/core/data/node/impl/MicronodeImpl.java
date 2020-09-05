@@ -34,7 +34,7 @@ import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
@@ -45,6 +45,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.madl.field.FieldType;
 import com.gentics.mesh.madl.index.VertexIndexDefinition;
 import com.gentics.mesh.madl.traversal.TraversalResult;
@@ -70,7 +71,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 
 		NodeParametersImpl parameters = new NodeParametersImpl(ac);
 		MicronodeResponse restMicronode = new MicronodeResponse();
-		MicroschemaVersion microschemaContainer = getSchemaContainerVersion();
+		HibMicroschemaVersion microschemaContainer = getSchemaContainerVersion();
 		if (microschemaContainer == null) {
 			throw error(BAD_REQUEST, "The microschema container for micronode {" + getUuid() + "} could not be found.");
 		}
@@ -106,7 +107,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	}
 
 	@Override
-	public MicroschemaVersion getSchemaContainerVersion() {
+	public HibMicroschemaVersion getSchemaContainerVersion() {
 		return db().index().findByUuid(MicroschemaContainerVersionImpl.class, property(MICROSCHEMA_VERSION_KEY_PROPERTY));
 	}
 
@@ -138,7 +139,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	}
 	
 	@Override
-	public TraversalResult<? extends NodeGraphFieldContainer> getContainers() {
+	public Result<? extends NodeGraphFieldContainer> getContainers() {
 		// First try to get the container in case for normal fields
 		Iterable<? extends NodeGraphFieldContainerImpl> containers = in(HAS_FIELD).frameExplicit(NodeGraphFieldContainerImpl.class);
 

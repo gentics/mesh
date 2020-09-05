@@ -1,9 +1,7 @@
 package com.gentics.mesh.core.data.dao.impl;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toProject;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toSchema;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toSchemaVersion;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.event.Assignment.UNASSIGNED;
@@ -24,6 +22,7 @@ import javax.inject.Provider;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
@@ -32,6 +31,7 @@ import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -46,6 +46,7 @@ import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -54,6 +55,7 @@ import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.madl.traversal.TraversalResult;
@@ -98,9 +100,10 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 	}
 
 	@Override
-	public TraversalResult<? extends Schema> findAll() {
+	public Result<HibSchema> findAll() {
 		SchemaRoot schemaRoot = boot.get().schemaContainerRoot();
-		return schemaRoot.findAll();
+		// TODO findAll should not return wildcard generics
+		return (Result<HibSchema>) (Result<?>) schemaRoot.findAll();
 	}
 
 	@Override
@@ -176,7 +179,7 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 		if (schemaVersion == null) {
 			return schemaContainer.getLatestVersion();
 		} else {
-			SchemaVersion foundVersion = toSchema(schemaContainer).findVersionByRev(schemaVersion);
+			HibSchemaVersion foundVersion = toGraph(schemaContainer).findVersionByRev(schemaVersion);
 			if (foundVersion == null) {
 				throw error(BAD_REQUEST, "error_schema_reference_not_found", isEmpty(schemaName) ? "-" : schemaName, isEmpty(schemaUuid) ? "-"
 					: schemaUuid, schemaVersion == null ? "-" : schemaVersion.toString());
@@ -230,11 +233,11 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 			throw conflict(conflictingMicroschema.getUuid(), name, "microschema_conflicting_name", name);
 		}
 
-		Schema container = schemaRoot.create();
+		HibSchema container = schemaRoot.create();
 		if (uuid != null) {
-			container.setUuid(uuid);
+			toGraph(container).setUuid(uuid);
 		}
-		SchemaVersion version = schemaRoot.createVersion();
+		HibSchemaVersion version = schemaRoot.createVersion();
 		container.setLatestVersion(version);
 
 		// set the initial version
@@ -277,25 +280,25 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 	}
 
 	@Override
-	public TraversalResult<? extends SchemaRoot> getRoots(HibSchema schema) {
-		return boot.get().schemaContainerRoot().getRoots(toSchema(schema));
+	public Result<? extends SchemaRoot> getRoots(HibSchema schema) {
+		return boot.get().schemaContainerRoot().getRoots(toGraph(schema));
 	}
 
 	@Override
-	public Iterable<? extends SchemaVersion> findAllVersions(HibSchema schema) {
-		Schema graphSchema = toSchema(schema);
-		return boot.get().schemaContainerRoot().findAllVersions(graphSchema);
+	public Iterable<SchemaVersion> findAllVersions(HibSchema schema) {
+		Schema graphSchema = toGraph(schema);
+		return (Iterable<SchemaVersion>) (Iterable<?>) boot.get().schemaContainerRoot().findAllVersions(graphSchema);
 	}
 
 	@Override
-	public TraversalResult<? extends Node> getNodes(HibSchema schema) {
-		Schema graphSchema = toSchema(schema);
+	public Result<? extends Node> getNodes(HibSchema schema) {
+		Schema graphSchema = toGraph(schema);
 		return boot.get().schemaContainerRoot().getNodes(graphSchema);
 	}
 
 	@Override
 	public void delete(HibSchema schema, BulkActionContext bac) {
-		Schema graphSchema = toSchema(schema);
+		Schema graphSchema = toGraph(schema);
 
 		// Check whether the schema is currently being referenced by nodes.
 		Iterator<? extends Node> it = getNodes(schema).iterator();
@@ -327,76 +330,104 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 
 	@Override
 	public void addSchema(HibSchema schemaContainer, HibProject project, HibUser user, EventQueueBatch batch) {
-		Project graphProject = toProject(project);
-		Schema graphSchemaContainer = toSchema(schemaContainer);
+		Project graphProject = toGraph(project);
+		Schema graphSchemaContainer = toGraph(schemaContainer);
 		graphProject.getSchemaContainerRoot().addSchemaContainer(user, graphSchemaContainer, batch);
 	}
 
 	@Override
 	public HibSchemaVersion applyChanges(HibSchemaVersion version, InternalActionContext ac, SchemaChangesListModel model, EventQueueBatch batch) {
-		SchemaVersion graphSchemaVersion = toSchemaVersion(version);
+		SchemaVersion graphSchemaVersion = toGraph(version);
 		return graphSchemaVersion.applyChanges(ac, model, batch);
 	}
 
 	@Override
 	public HibSchemaVersion applyChanges(HibSchemaVersion version, InternalActionContext ac, EventQueueBatch batch) {
-		return toSchemaVersion(version).applyChanges(ac, batch);
+		return toGraph(version).applyChanges(ac, batch);
 	}
 
 	@Override
 	public HibSchemaVersion findVersionByRev(HibSchema schema, String version) {
-		return toSchema(schema).findVersionByRev(version);
+		return toGraph(schema).findVersionByRev(version);
 	}
 
 	@Override
 	public boolean isLinkedToProject(HibSchema schema, HibProject project) {
-		Project graphProject = toProject(project);
-		Schema graphSchema = toSchema(schema);
+		Project graphProject = toGraph(project);
+		Schema graphSchema = toGraph(schema);
 		SchemaRoot root = graphProject.getSchemaContainerRoot();
 		return root.contains(graphSchema);
 	}
 
 	@Override
 	public SchemaResponse transformToRestSync(HibSchema schema, InternalActionContext ac, int level) {
-		Schema graphSchema = toSchema(schema);
+		Schema graphSchema = toGraph(schema);
 		return graphSchema.transformToRestSync(ac, level);
 	}
 
 	@Override
 	public void removeSchema(HibSchema schema, HibProject project, EventQueueBatch batch) {
-		toProject(project).getSchemaContainerRoot().removeSchemaContainer(toSchema(schema), batch);
+		toGraph(project).getSchemaContainerRoot().removeSchemaContainer(toGraph(schema), batch);
 	}
 
 	@Override
 	public SchemaChangesListModel diff(HibSchemaVersion version, InternalActionContext ac, SchemaModel requestModel) {
-		SchemaVersion graphVersion = toSchemaVersion(version);
+		SchemaVersion graphVersion = toGraph(version);
 		return graphVersion.diff(ac, comparator, requestModel);
 	}
 
 	@Override
 	public HibSchemaVersion findVersionByUuid(HibSchema schema, String versionUuid) {
-		return toSchema(schema).findVersionByUuid(versionUuid);
+		Schema graphSchema = toGraph(schema);
+		return graphSchema.findVersionByUuid(versionUuid);
 	}
 
 	@Override
 	public Map<HibBranch, HibSchemaVersion> findReferencedBranches(HibSchema schema) {
-		Map<?, ?> map = toSchema(schema).findReferencedBranches();
+		Map<?, ?> map = toGraph(schema).findReferencedBranches();
 		return (Map<HibBranch, HibSchemaVersion>) map;
 	}
 
 	@Override
 	public Iterator<? extends NodeGraphFieldContainer> findDraftFieldContainers(HibSchemaVersion version, String branchUuid) {
-		return toSchemaVersion(version).getDraftFieldContainers(branchUuid);
+		return toGraph(version).getDraftFieldContainers(branchUuid);
 	}
 
 	@Override
-	public TraversalResult<HibProject> findLinkedProjects(HibSchema schema) {
+	public Result<HibProject> findLinkedProjects(HibSchema schema) {
 		return new TraversalResult<>(getRoots(schema).stream().map(root -> root.getProject()));
 	}
 
 	@Override
 	public String getETag(HibSchema schema, InternalActionContext ac) {
-		return toSchema(schema).getETag(ac);
+		return toGraph(schema).getETag(ac);
+	}
+
+	@Override
+	public Result<? extends HibNode> findNodes(HibSchemaVersion version, String branchUuid, MeshAuthUser user, ContainerType type) {
+		return toGraph(version).getNodes(branchUuid, user, type);
+	}
+
+	@Override
+	public Result<? extends HibSchema> findAll(HibProject project) {
+		return toGraph(project).getSchemaContainerRoot().findAll();
+	}
+
+	@Override
+	public void addSchema(HibSchema schema) {
+		boot.get().schemaContainerRoot().addItem(toGraph(schema));
+	}
+
+	@Override
+	public Result<HibSchemaVersion> findActiveSchemaVersions(HibBranch branch) {
+		Branch graphBranch = toGraph(branch);
+		return graphBranch.findActiveSchemaVersions();
+	}
+
+	@Override
+	public Stream<? extends NodeGraphFieldContainer> getFieldContainers(HibSchemaVersion version, String branchUuid) {
+		SchemaVersion graphVersion = toGraph(version);
+		return graphVersion.getFieldContainers(branchUuid);
 	}
 
 }

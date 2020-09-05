@@ -1,15 +1,13 @@
 package com.gentics.mesh.core.data.dao.impl;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toJob;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toRole;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
 import java.util.Set;
 import java.util.function.Predicate;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-
-import org.apache.commons.lang3.NotImplementedException;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
@@ -27,8 +25,8 @@ import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.job.JobResponse;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 
 import dagger.Lazy;
@@ -42,7 +40,7 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper<HibJob> implements Job
 	}
 
 	@Override
-	public TraversalResult<? extends HibJob> findAll() {
+	public Result<? extends HibJob> findAll() {
 		return boot.get().jobRoot().findAll();
 	}
 
@@ -101,7 +99,7 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper<HibJob> implements Job
 
 	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<InternalPermission> permissionsToGrant,
 		Set<InternalPermission> permissionsToRevoke) {
-		Role graphRole = toRole(role);
+		Role graphRole = toGraph(role);
 		boot.get().jobRoot().applyPermissions(batch, graphRole, recursive, permissionsToGrant, permissionsToRevoke);
 	}
 
@@ -112,17 +110,17 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper<HibJob> implements Job
 
 	@Override
 	public String getAPIPath(HibJob job, InternalActionContext ac) {
-		return toJob(job).getAPIPath(ac);
+		return toGraph(job).getAPIPath(ac);
 	}
 
 	@Override
 	public String getETag(HibJob job, InternalActionContext ac) {
-		return toJob(job).getETag(ac);
+		return toGraph(job).getETag(ac);
 	}
 
 	@Override
 	public boolean update(HibJob job, InternalActionContext ac, EventQueueBatch batch) {
-		return boot.get().jobRoot().update(toJob(job), ac, batch);
+		return boot.get().jobRoot().update(toGraph(job), ac, batch);
 	}
 
 	@Override
@@ -132,12 +130,12 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper<HibJob> implements Job
 
 	@Override
 	public void delete(HibJob job, BulkActionContext bac) {
-		boot.get().jobRoot().delete(toJob(job), bac);
+		boot.get().jobRoot().delete(toGraph(job), bac);
 	}
 
 	@Override
 	public JobResponse transformToRestSync(HibJob job, InternalActionContext ac, int level, String... languageTags) {
-		return toJob(job).transformToRestSync(ac, level, languageTags);
+		return toGraph(job).transformToRestSync(ac, level, languageTags);
 	}
 
 	@Override

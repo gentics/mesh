@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.schema.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CHANGE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.ELASTICSEARCH_KEY;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -12,7 +13,8 @@ import java.util.Map;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
+import com.gentics.mesh.core.data.schema.HibSchemaChange;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
@@ -30,18 +32,18 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 	public static final String REST_PROPERTY_PREFIX_KEY = "fieldProperty_";
 
 	@Override
-	public SchemaChange<?> getNextChange() {
+	public HibSchemaChange<?> getNextChange() {
 		return (SchemaChange) out(HAS_CHANGE).nextOrDefault(null);
 	}
 
 	@Override
-	public SchemaChange<T> setNextChange(SchemaChange<?> change) {
-		setUniqueLinkOutTo(change, HAS_CHANGE);
+	public HibSchemaChange<T> setNextChange(HibSchemaChange<?> change) {
+		setUniqueLinkOutTo(toGraph(change), HAS_CHANGE);
 		return this;
 	}
 
 	@Override
-	public SchemaChange<?> getPreviousChange() {
+	public SchemaChange<T> getPreviousChange() {
 		return (SchemaChange) in(HAS_CHANGE).nextOrDefault(null);
 	}
 
@@ -55,24 +57,24 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 	abstract public SchemaChangeOperation getOperation();
 
 	@Override
-	public <R extends GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?>> R getPreviousContainerVersion() {
+	public <R extends HibFieldSchemaVersionElement<?, ?, ?, ?>> R getPreviousContainerVersion() {
 		return (R) in(HAS_SCHEMA_CONTAINER).nextOrDefault(null);
 	}
 
 	@Override
-	public SchemaChange<T> setPreviousContainerVersion(GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> containerVersion) {
-		setSingleLinkInTo(containerVersion, HAS_SCHEMA_CONTAINER);
+	public SchemaChange<T> setPreviousContainerVersion(HibFieldSchemaVersionElement<?, ?, ?, ?> containerVersion) {
+		setSingleLinkInTo(toGraph(containerVersion), HAS_SCHEMA_CONTAINER);
 		return this;
 	}
 
 	@Override
-	public <R extends GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?>> R getNextContainerVersion() {
+	public <R extends HibFieldSchemaVersionElement<?, ?, ?, ?>> R getNextContainerVersion() {
 		return (R) out(HAS_SCHEMA_CONTAINER).nextOrDefault(null);
 	}
 
 	@Override
-	public SchemaChange<T> setNextSchemaContainerVersion(GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> containerVersion) {
-		setSingleLinkOutTo(containerVersion, HAS_SCHEMA_CONTAINER);
+	public HibSchemaChange<T> setNextSchemaContainerVersion(HibFieldSchemaVersionElement<?, ?, ?, ?> containerVersion) {
+		setSingleLinkOutTo(toGraph(containerVersion), HAS_SCHEMA_CONTAINER);
 		return this;
 	}
 
@@ -140,9 +142,9 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 
 	@Override
 	public void delete(BulkActionContext bc) {
-		SchemaChange<?> next = getNextChange();
+		HibSchemaChange<?> next = getNextChange();
 		if (next != null) {
-			next.delete(bc);
+			toGraph(next).delete(bc);
 		}
 		getElement().remove();
 	}

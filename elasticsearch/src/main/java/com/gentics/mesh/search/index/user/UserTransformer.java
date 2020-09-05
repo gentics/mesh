@@ -15,7 +15,7 @@ import com.gentics.mesh.core.data.HibInNode;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.madl.traversal.TraversalResult;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.search.index.AbstractTransformer;
 import com.gentics.mesh.util.ETag;
 
@@ -90,7 +90,7 @@ public class UserTransformer extends AbstractTransformer<HibUser> {
 	 * @param document
 	 * @param groups
 	 */
-	private void addGroups(JsonObject document, TraversalResult<? extends HibGroup> groups) {
+	private void addGroups(JsonObject document, Result<? extends HibGroup> groups) {
 		List<String> groupUuids = new ArrayList<>();
 		List<String> groupNames = new ArrayList<>();
 		for (HibGroup group : groups) {

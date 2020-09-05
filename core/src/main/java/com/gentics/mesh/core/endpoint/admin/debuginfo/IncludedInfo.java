@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.endpoint.admin.debuginfo;
 
-import static com.gentics.mesh.util.StreamUtil.toStream;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -24,7 +22,7 @@ public class IncludedInfo {
 			return;
 		}
 		Stream.of(include.get(0).split(","))
-			.flatMap(part -> toStream(Inclusion.fromQueryPart(part)))
+			.flatMap(part -> Inclusion.fromQueryPart(part).stream())
 			.forEach(inclusion -> {
 				if (inclusion.excluded) {
 					excluded.add(inclusion.name);

@@ -10,9 +10,10 @@ import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.VersionUtil;
 
@@ -31,8 +32,8 @@ import com.gentics.mesh.util.VersionUtil;
  *            Schema container type
  * 
  */
-public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer, RM extends FieldSchemaContainer, RE extends NameUuidReference<RE>, SCV extends GraphFieldSchemaContainerVersion<R, RM, RE, SCV, SC>, SC extends GraphFieldSchemaContainer<R, RE, SC, SCV>>
-		extends MeshCoreVertex<R, SCV>, ReferenceableElement<RE>, Comparable<SCV> {
+public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer, RM extends FieldSchemaContainerVersion, RE extends NameUuidReference<RE>, SCV extends HibFieldSchemaVersionElement<R, RM, SC, SCV>, SC extends HibFieldSchemaElement<R, RM, SC, SCV>>
+	extends MeshCoreVertex<R>, ReferenceableElement<RE>, Comparable<SCV>, HibFieldSchemaVersionElement<R, RM, SC, SCV> {
 
 	public static final String VERSION_PROPERTY_KEY = "version";
 
@@ -85,9 +86,8 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 	 */
 	default Stream<SchemaChange<FieldSchemaContainer>> getChanges() {
 		return StreamUtil.untilNull(
-			() -> (SchemaChange<FieldSchemaContainer>)getNextChange(),
-			change -> (SchemaChange<FieldSchemaContainer>)change.getNextChange()
-		);
+			() -> (SchemaChange<FieldSchemaContainer>) getNextChange(),
+			change -> (SchemaChange<FieldSchemaContainer>) change.getNextChange());
 	}
 
 	/**
@@ -95,14 +95,14 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 	 * 
 	 * @param change
 	 */
-	void setNextChange(SchemaChange<?> change);
+	void setNextChange(HibSchemaChange<?> change);
 
 	/**
 	 * Set the previous change for the schema. The previous change is the last change in the chain of changes that was used to create the schema container.
 	 * 
 	 * @param change
 	 */
-	void setPreviousChange(SchemaChange<?> change);
+	void setPreviousChange(HibSchemaChange<?> change);
 
 	/**
 	 * Return the next version of this schema.
@@ -127,13 +127,13 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 
 	/**
 	 * Returns a stream of all previous versions.
+	 * 
 	 * @return
 	 */
 	default Stream<SCV> getPreviousVersions() {
 		return StreamUtil.untilNull(
 			this::getPreviousVersion,
-			GraphFieldSchemaContainerVersion::getPreviousVersion
-		);
+			HibFieldSchemaVersionElement::getPreviousVersion);
 	}
 
 	/**
@@ -195,7 +195,7 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 	 *
 	 * @return Found branches of this version
 	 */
-	TraversalResult<? extends Branch> getBranches();
+	Result<? extends Branch> getBranches();
 
 	/**
 	 * Load the stored schema JSON data.

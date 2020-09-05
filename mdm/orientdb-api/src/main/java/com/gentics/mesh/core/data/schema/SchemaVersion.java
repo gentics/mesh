@@ -16,14 +16,14 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
-import com.gentics.mesh.madl.traversal.TraversalResult;
+import com.gentics.mesh.core.result.Result;
 
 /**
  * Each schema update is stored within a dedicated schema container version in order to be able to keep track of changes in between different schema container
  * versions.
  */
 public interface SchemaVersion
-		extends GraphFieldSchemaContainerVersion<SchemaResponse, SchemaVersionModel, SchemaReference, SchemaVersion, Schema>, HibSchemaVersion {
+		extends GraphFieldSchemaContainerVersion<SchemaResponse, SchemaVersionModel, SchemaReference, HibSchemaVersion, HibSchema>, HibSchemaVersion {
 
 	static final TypeInfo TYPE_INFO = new TypeInfo(SCHEMAVERSION, SCHEMA_CREATED, SCHEMA_UPDATED, SCHEMA_DELETED);
 
@@ -57,7 +57,7 @@ public interface SchemaVersion
 	 * @param type Container type
 	 * @return
 	 */
-	TraversalResult<? extends Node> getNodes(String branchUuid, HibUser user, ContainerType type);
+	Result<? extends Node> getNodes(String branchUuid, HibUser user, ContainerType type);
 
 	/**
 	 * Check whether versioning is disabled by default or via the schema setting.

@@ -25,7 +25,6 @@ import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -38,10 +37,10 @@ import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.handler.ActionContext;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.path.Path;
 import com.syncleus.ferma.EdgeFrame;
@@ -53,7 +52,7 @@ import com.syncleus.ferma.EdgeFrame;
  * this node and to the created nodes in order to create a project data structure. Each node may be linked to one or more {@link NodeGraphFieldContainer}
  * vertices which contain the language specific data.
  */
-public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackingVertex, Taggable, ProjectElement, HibNode {
+public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVertex, Taggable, ProjectElement, HibNode {
 
 	String BRANCH_UUID_KEY = "branchUuid";
 
@@ -98,7 +97,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param branch
 	 * @return
 	 */
-	TraversalResult<HibTag> getTags(HibBranch branch);
+	Result<HibTag> getTags(HibBranch branch);
 
 	/**
 	 * Return a page of all visible tags that are assigned to the node.
@@ -191,7 +190,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *
 	 * @return
 	 */
-	default TraversalResult<NodeGraphFieldContainer> getDraftGraphFieldContainers() {
+	default Result<NodeGraphFieldContainer> getDraftGraphFieldContainers() {
 		// FIX ME: We should not rely on specific branches.
 		return getGraphFieldContainers(getProject().getLatestBranch(), DRAFT);
 	}
@@ -203,7 +202,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param type
 	 * @return
 	 */
-	default TraversalResult<NodeGraphFieldContainer> getGraphFieldContainers(HibBranch branch, ContainerType type) {
+	default Result<NodeGraphFieldContainer> getGraphFieldContainers(HibBranch branch, ContainerType type) {
 		return getGraphFieldContainers(branch.getUuid(), type);
 	}
 
@@ -214,7 +213,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param type
 	 * @return
 	 */
-	TraversalResult<NodeGraphFieldContainer> getGraphFieldContainers(String branchUuid, ContainerType type);
+	Result<NodeGraphFieldContainer> getGraphFieldContainers(String branchUuid, ContainerType type);
 
 	/**
 	 * Return containers of the given type
@@ -222,7 +221,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param type
 	 * @return
 	 */
-	TraversalResult<NodeGraphFieldContainer> getGraphFieldContainers(ContainerType type);
+	Result<NodeGraphFieldContainer> getGraphFieldContainers(ContainerType type);
 
 	/**
 	 * Return the number of field containers of the node of type DRAFT or PUBLISHED in any branch.
@@ -250,7 +249,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *
 	 * @return
 	 */
-	TraversalResult<Node> getChildren();
+	Result<Node> getChildren();
 
 	/**
 	 * Return the children for this node in the given branch.
@@ -258,7 +257,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param branchUuid
 	 * @return
 	 */
-	TraversalResult<Node> getChildren(String branchUuid);
+	Result<Node> getChildren(String branchUuid);
 
 	/**
 	 * Return the children for this node. Only fetches nodes from the provided branch and also checks permissions.
@@ -588,7 +587,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *
 	 * @return
 	 */
-	Schema getSchemaContainer();
+	HibSchema getSchemaContainer();
 
 	/**
 	 * Set the schema container of the node.
@@ -633,7 +632,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param ac
 	 * @return Deque with breadcrumb nodes
 	 */
-	TraversalResult<HibNode> getBreadcrumbNodes(InternalActionContext ac);
+	Result<HibNode> getBreadcrumbNodes(InternalActionContext ac);
 
 	/**
 	 * Create the node specific delete event.
@@ -645,7 +644,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param languageTag
 	 * @return Created event
 	 */
-	NodeMeshEventModel onDeleted(String uuid, Schema schema, String branchUuid, ContainerType type, String languageTag);
+	NodeMeshEventModel onDeleted(String uuid, HibSchema schema, String branchUuid, ContainerType type, String languageTag);
 
 	/**
 	 * Create a node tagged / untagged event.

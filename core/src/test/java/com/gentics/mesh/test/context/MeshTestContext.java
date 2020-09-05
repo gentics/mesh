@@ -28,6 +28,8 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.testcontainers.containers.Network;
@@ -43,6 +45,7 @@ import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.crypto.KeyStoreHelper;
 import com.gentics.mesh.dagger.DaggerOrientDBMeshComponent;
+import com.gentics.mesh.dagger.MeshBuilderFactory;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
@@ -672,7 +675,7 @@ public class MeshTestContext extends TestWatcher {
 		log.info("Initializing dagger context");
 		try {
 			mesh = Mesh.create(options);
-			meshDagger = DaggerOrientDBMeshComponent.builder()
+			meshDagger = getMeshDaggerBuilder()
 				.configuration(options)
 				.searchProviderType(settings.elasticsearch().toSearchProviderType())
 				.mesh(mesh)
@@ -691,6 +694,22 @@ public class MeshTestContext extends TestWatcher {
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw e;
+		}
+	}
+
+	@NotNull
+	private MeshComponent.Builder getMeshDaggerBuilder() {
+//		String builderFactoryName = System.getenv("MESH_BUILDER_FACTORY");
+		String builderFactoryName = System.getProperty("mesh.mdm.provider.factory");
+		if (StringUtils.isEmpty(builderFactoryName) || builderFactoryName.equals("TODO")) {
+			return DaggerOrientDBMeshComponent.builder();
+		} else {
+			try {
+				MeshBuilderFactory builderFactory = (MeshBuilderFactory) Class.forName(builderFactoryName).getDeclaredConstructor().newInstance();
+				return builderFactory.getBuilder();
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
 		}
 	}
 

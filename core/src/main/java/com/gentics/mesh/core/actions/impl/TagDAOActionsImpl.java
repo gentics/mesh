@@ -39,7 +39,7 @@ public class TagDAOActionsImpl implements TagDAOActions {
 	@Override
 	public HibTag loadByUuid(DAOActionContext ctx, String tagUuid, InternalPermission perm, boolean errorIfNotFound) {
 		HibTagFamily hibTagFamily = ctx.parent();
-		TagFamily tagFamily = HibClassConverter.toTagFamily(hibTagFamily);
+		TagFamily tagFamily = HibClassConverter.toGraph(hibTagFamily);
 		if (perm == null) {
 			return tagFamily.findByUuid(tagUuid);
 			// TagDaoWrapper tagDao = tx.data().tagDao();
@@ -69,7 +69,7 @@ public class TagDAOActionsImpl implements TagDAOActions {
 		// TagDaoWrapper tagDao = tx.data().tagDao();
 		HibTagFamily hibTagFamily = ctx.parent();
 		if (hibTagFamily != null) {
-			TagFamily tagFamily = HibClassConverter.toTagFamily(hibTagFamily);
+			TagFamily tagFamily = HibClassConverter.toGraph(hibTagFamily);
 			return tagFamily.findAll(ctx.ac(), pagingInfo);
 		} else {
 			return boot.get().tagRoot().findAll(ctx.ac(), pagingInfo);

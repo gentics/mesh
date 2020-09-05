@@ -7,10 +7,10 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.TransformableElement;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
-import com.gentics.mesh.madl.traversal.TraversalResult;
+import com.gentics.mesh.core.result.Result;
 
 /**
  * A micronodes is similar to a node but instead of nodes these elements can't be directly accessed via the REST API. A micronode can have it's own set of
@@ -34,7 +34,7 @@ public interface Micronode extends GraphFieldContainer, MeshVertex, Transformabl
 	 *
 	 * @return container
 	 */
-	TraversalResult<? extends NodeGraphFieldContainer> getContainers();
+	Result<? extends NodeGraphFieldContainer> getContainers();
 
 	/**
 	 * Make this micronode a clone of the given micronode. Property Vertices are reused
@@ -45,7 +45,7 @@ public interface Micronode extends GraphFieldContainer, MeshVertex, Transformabl
 	void clone(Micronode micronode);
 
 	@Override
-	MicroschemaVersion getSchemaContainerVersion();
+	HibMicroschemaVersion getSchemaContainerVersion();
 
 	/**
 	 * Compare the micronode and return a list of changes which identify the changes.

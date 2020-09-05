@@ -49,8 +49,8 @@ public class ServerSchemaStorage implements SchemaStorage {
 		SchemaDaoWrapper schemaDao = Tx.get().data().schemaDao();
 		MicroschemaDaoWrapper microschemaDao = Tx.get().data().microschemaDao();
 
-		for (HibSchema container : schemaDao.findAll()) {
-			for (HibSchemaVersion version : schemaDao.findAllVersions(container)) {
+		for (HibSchema schema : schemaDao.findAll()) {
+			for (HibSchemaVersion version : schemaDao.findAllVersions(schema)) {
 				SchemaVersionModel restSchema = version.getSchema();
 				schemas.computeIfAbsent(restSchema.getName(), k -> new HashMap<>()).put(restSchema.getVersion(), restSchema);
 			}

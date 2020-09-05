@@ -14,7 +14,7 @@ import org.junit.Test;
 import com.gentics.mesh.BuildInfo;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshVersion;
-import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -174,8 +174,8 @@ public class MeshRootTest extends AbstractMeshTest {
 	}
 
 	@Deprecated
-	private void expectSuccess(String path, HibElement vertex) throws InterruptedException {
-		HibElement resolvedVertex = resolve(path);
+	private void expectSuccess(String path, HibBaseElement vertex) throws InterruptedException {
+		HibBaseElement resolvedVertex = resolve(path);
 		assertNotNull("We expected that the path {" + path + "} could be resolved but resolving failed.", resolvedVertex);
 		assertEquals(vertex.getUuid(), resolvedVertex.getUuid());
 	}
@@ -183,7 +183,7 @@ public class MeshRootTest extends AbstractMeshTest {
 	private void expectFailure(String path) throws InterruptedException {
 		boolean error = false;
 		try {
-			HibElement vertex = resolve(path);
+			HibBaseElement vertex = resolve(path);
 			assertNull("We expected that the path {" + path + "} can't be resolved successfully but it was.", vertex);
 			error = true;
 		} catch (Exception e) {
@@ -194,7 +194,7 @@ public class MeshRootTest extends AbstractMeshTest {
 		}
 	}
 
-	private HibElement resolve(String pathToElement) throws InterruptedException {
+	private HibBaseElement resolve(String pathToElement) throws InterruptedException {
 		return mesh().boot().meshRoot().resolvePathToElement(pathToElement);
 	}
 

@@ -32,11 +32,13 @@ public final class StreamUtil {
 
 	/**
 	 * Turns an optional into a stream.
-	 * TODO Remove this with Java 9
+	 *
+	 * @deprecated Use {@link Optional#stream()} instead
 	 * @param opt
 	 * @param <T>
 	 * @return
 	 */
+	@Deprecated
 	public static <T> Stream<T> toStream(Optional<T> opt) {
 		return opt.map(Stream::of).orElseGet(Stream::empty);
 	}

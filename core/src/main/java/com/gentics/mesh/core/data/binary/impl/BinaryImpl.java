@@ -13,9 +13,9 @@ import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.graphdb.spi.Supplier;
 import com.gentics.mesh.madl.field.FieldType;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.storage.BinaryStorage;
 
 import io.reactivex.Flowable;
@@ -36,9 +36,9 @@ public class BinaryImpl extends MeshVertexImpl implements Binary {
 	}
 
 	@Override
-	public TraversalResult<BinaryGraphField> findFields() {
+	public Result<BinaryGraphField> findFields() {
 		// TODO inE should not return wildcard generics
-		return (TraversalResult<BinaryGraphField>)(TraversalResult<?>)inE(HAS_FIELD, BinaryGraphFieldImpl.class);
+		return (Result<BinaryGraphField>)(Result<?>)inE(HAS_FIELD, BinaryGraphFieldImpl.class);
 	}
 
 	@Override

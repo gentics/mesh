@@ -18,6 +18,10 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<mesh.version>${project.version}</mesh.version>
 		<skip.test-plugins>true</skip.test-plugins>
+		<mesh.mdm.provider.groupId>${project.groupId}</mesh.mdm.provider.groupId>
+		<mesh.mdm.provider.artifactId>mesh-orientdb</mesh.mdm.provider.artifactId>
+		<mesh.mdm.provider.version>${project.version}</mesh.mdm.provider.version>
+		<mesh.mdm.provider.factory>TODO</mesh.mdm.provider.factory>
 	</properties>
 
 	<dependencyManagement>
@@ -34,6 +38,12 @@
 
 
 	<dependencies>
+<!--		<dependency>-->
+<!--			<groupId>${mesh.mdm.provider.groupId}</groupId>-->
+<!--			<artifactId>${mesh.mdm.provider.artifactId}</artifactId>-->
+<!--			<version>${mesh.mdm.provider.version}</version>-->
+<!--		</dependency>-->
+
 		<!-- Internal dependencies -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
@@ -284,6 +294,11 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<systemPropertyVariables>
+						<mesh.mdm.provider.factory></mesh.mdm.provider.factory>
+					</systemPropertyVariables>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

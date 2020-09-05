@@ -3,6 +3,8 @@ package com.gentics.mesh.core.data.schema.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraphContainer;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -12,9 +14,10 @@ import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
-import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
+import com.gentics.mesh.core.data.schema.HibFieldSchemaElement;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
+import com.gentics.mesh.core.data.schema.HibSchemaChange;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerMutator;
@@ -38,8 +41,8 @@ import com.gentics.mesh.json.JsonUtil;
  * @param <SC>
  *            Schema container type
  */
-public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSchemaContainer, RM extends FieldSchemaContainerVersion, RE extends NameUuidReference<RE>, SCV extends GraphFieldSchemaContainerVersion<R, RM, RE, SCV, SC>, SC extends GraphFieldSchemaContainer<R, RE, SC, SCV>>
-		extends AbstractMeshCoreVertex<R, SCV> implements GraphFieldSchemaContainerVersion<R, RM, RE, SCV, SC>, HibFieldSchemaVersionElement<RM> {
+public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSchemaContainer, RM extends FieldSchemaContainerVersion, RE extends NameUuidReference<RE>, SCV extends HibFieldSchemaVersionElement<R, RM, SC, SCV>, SC extends HibFieldSchemaElement<R, RM, SC, SCV>>
+	extends AbstractMeshCoreVertex<R> implements GraphFieldSchemaContainerVersion<R, RM, RE, SCV, SC>, HibFieldSchemaVersionElement<R, RM, SC, SCV> {
 
 	@Override
 	public void setName(String name) {
@@ -81,8 +84,8 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 	}
 
 	@Override
-	public void setNextChange(SchemaChange<?> change) {
-		setSingleLinkOutTo(change, HAS_SCHEMA_CONTAINER);
+	public void setNextChange(HibSchemaChange<?> change) {
+		setSingleLinkOutTo(toGraph(change), HAS_SCHEMA_CONTAINER);
 	}
 
 	@Override
@@ -91,8 +94,8 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 	}
 
 	@Override
-	public void setPreviousChange(SchemaChange<?> change) {
-		setSingleLinkInTo(change, HAS_SCHEMA_CONTAINER);
+	public void setPreviousChange(HibSchemaChange<?> change) {
+		setSingleLinkInTo(toGraph(change), HAS_SCHEMA_CONTAINER);
 	}
 
 	@Override
@@ -107,12 +110,12 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 
 	@Override
 	public void setPreviousVersion(SCV container) {
-		setSingleLinkInTo(container, HAS_VERSION);
+		setSingleLinkInTo(toGraph(container), HAS_VERSION);
 	}
 
 	@Override
 	public void setNextVersion(SCV container) {
-		setSingleLinkOutTo(container, HAS_VERSION);
+		setSingleLinkOutTo(toGraph(container), HAS_VERSION);
 	}
 
 	/**
@@ -197,7 +200,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 
 		// Check for conflicting container names
 		String newName = resultingSchema.getName();
-		SC foundContainer = getSchemaContainer().getRoot().findByName(resultingSchema.getName());
+		SC foundContainer = toGraphContainer(getSchemaContainer()).getRoot().findByName(resultingSchema.getName());
 		if (foundContainer != null && !foundContainer.getUuid().equals(getSchemaContainer().getUuid())) {
 			throw conflict(foundContainer.getUuid(), newName, "schema_conflicting_name", newName);
 		}
@@ -227,7 +230,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 
 	@Override
 	public SchemaChangesListModel diff(InternalActionContext ac, FieldSchemaContainerComparator comparator,
-			FieldSchemaContainer fieldContainerModel) {
+		FieldSchemaContainer fieldContainerModel) {
 		SchemaChangesListModel list = new SchemaChangesListModel();
 		fieldContainerModel.validate();
 		list.getChanges().addAll(comparator.diff(transformToRestSync(ac, 0), fieldContainerModel));
@@ -236,7 +239,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 
 	@Override
 	public void setSchemaContainer(SC container) {
-		setUniqueLinkInTo(container, HAS_PARENT_CONTAINER);
+		setUniqueLinkInTo(toGraphContainer(container), HAS_PARENT_CONTAINER);
 	}
 
 	@Override

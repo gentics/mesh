@@ -2,7 +2,8 @@ package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAGFAMILY_ROOT;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toTagFamily;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
 
 import com.gentics.madl.index.IndexHandler;
@@ -34,7 +35,7 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * @see Tag
  */
-public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements Tag {
+public class TagImpl extends AbstractMeshCoreVertex<TagResponse> implements Tag {
 
 	private static final Logger log = LoggerFactory.getLogger(TagImpl.class);
 
@@ -71,7 +72,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 
 	@Override
 	public void setTagFamily(HibTagFamily tagFamily) {
-		setUniqueLinkOutTo(toTagFamily(tagFamily), HAS_TAGFAMILY_ROOT);
+		setUniqueLinkOutTo(toGraph(tagFamily), HAS_TAGFAMILY_ROOT);
 	}
 
 	@Override
@@ -80,7 +81,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 	}
 
 	public void setProject(HibProject project) {
-		setUniqueLinkOutTo(project.toProject(), ASSIGNED_TO_PROJECT);
+		setUniqueLinkOutTo(toGraph(project), ASSIGNED_TO_PROJECT);
 	}
 
 	@Override

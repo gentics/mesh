@@ -8,7 +8,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
@@ -21,8 +21,8 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.util.ETag;
@@ -34,7 +34,7 @@ import com.gentics.mesh.util.ETag;
  * @see RootVertex
  * @param <T>
  */
-public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends RestModel, T>> extends MeshVertexImpl implements RootVertex<T> {
+public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends RestModel>> extends MeshVertexImpl implements RootVertex<T> {
 
 	@Override
 	abstract public Class<? extends T> getPersistanceClass();
@@ -48,7 +48,7 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	}
 
 	@Override
-	public TraversalResult<? extends HibRole> getRolesWithPerm(InternalPermission perm) {
+	public Result<? extends HibRole> getRolesWithPerm(InternalPermission perm) {
 		return mesh().permissionProperties().getRolesWithPerm(this, perm);
 	}
 
@@ -64,12 +64,12 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	}
 
 	@Override
-	public PermissionInfo getRolePermissions(HibElement element, InternalActionContext ac, String roleUuid) {
+	public PermissionInfo getRolePermissions(HibBaseElement element, InternalActionContext ac, String roleUuid) {
 		return mesh().permissionProperties().getRolePermissions(element, ac, roleUuid);
 	}
 
 	@Override
-	public TraversalResult<? extends HibRole> getRolesWithPerm(HibElement vertex, InternalPermission perm) {
+	public Result<? extends HibRole> getRolesWithPerm(HibBaseElement vertex, InternalPermission perm) {
 		return mesh().permissionProperties().getRolesWithPerm(vertex, perm);
 	}
 

@@ -24,7 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
-import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
 import com.gentics.mesh.core.data.changelog.ChangelogRootImpl;
@@ -326,7 +326,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	}
 
 	@Override
-	public HibElement resolvePathToElement(String pathToElement) {
+	public HibBaseElement resolvePathToElement(String pathToElement) {
 		MeshRoot root = mesh().boot().meshRoot();
 		if (StringUtils.isEmpty(pathToElement)) {
 			throw error(BAD_REQUEST, "Could not resolve path. The path must must not be empty or null.");

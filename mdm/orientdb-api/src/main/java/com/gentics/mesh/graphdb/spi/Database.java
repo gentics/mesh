@@ -16,11 +16,11 @@ import com.gentics.mesh.core.db.TxAction1;
 import com.gentics.mesh.core.db.TxFactory;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.graphdb.cluster.ClusterManager;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.madl.frame.VertexFrame;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.syncleus.ferma.EdgeFrame;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.TransactionalGraph;
@@ -71,6 +71,21 @@ public interface Database extends TxFactory {
 	 * Remove all edges and all vertices from the graph.
 	 */
 	void clear();
+
+	/**
+	 * Checks if the database is empty.
+	 *
+	 * @return
+	 */
+	boolean isEmptyDatabase();
+
+	/**
+	 * Returns true if the database requires type and index initialization using {@link #type()} and {@link #index()}.
+	 * @return
+	 * @deprecated The logic creating these types should be in {@link #init(String, String...)} or there should be a createTypes() method.
+	 */
+	@Deprecated
+	boolean requiresTypeInit();
 
 	/**
 	 * Asynchronously execute the given handler within a transaction and return the completable.
@@ -296,7 +311,7 @@ public interface Database extends TxFactory {
 	 * @param fieldValues
 	 * @return
 	 */
-	<T extends VertexFrame> TraversalResult<T> getVerticesTraversal(Class<T> classOfVertex, String[] fieldNames, Object[] fieldValues);
+	<T extends VertexFrame> Result<T> getVerticesTraversal(Class<T> classOfVertex, String[] fieldNames, Object[] fieldValues);
 
 	/**
 	 * Utilize the index and locate the matching vertices.
@@ -307,7 +322,7 @@ public interface Database extends TxFactory {
 	 * @param fieldValue
 	 * @return
 	 */
-	default <T extends VertexFrame> TraversalResult<T> getVerticesTraversal(Class<T> classOfVertex, String fieldName, Object fieldValue) {
+	default <T extends VertexFrame> Result<T> getVerticesTraversal(Class<T> classOfVertex, String fieldName, Object fieldValue) {
 		return getVerticesTraversal(classOfVertex, new String[] { fieldName }, new Object[] { fieldValue });
 	}
 
@@ -498,5 +513,4 @@ public interface Database extends TxFactory {
 	 * @return
 	 */
 	WriteLock writeLock();
-
 }

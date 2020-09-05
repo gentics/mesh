@@ -26,8 +26,8 @@ import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.group.GroupResponse;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
@@ -53,12 +53,12 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 	}
 
 	@Override
-	public TraversalResult<? extends User> getUsers(Group group) {
+	public Result<? extends User> getUsers(Group group) {
 		return group.in(HAS_USER, UserImpl.class);
 	}
 
 	@Override
-	public TraversalResult<? extends Role> getRoles(Group group) {
+	public Result<? extends Role> getRoles(Group group) {
 		return group.in(HAS_ROLE, RoleImpl.class);
 	}
 

@@ -13,9 +13,8 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.EditorTrackingVertex;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibCoreElement;
-import com.gentics.mesh.core.data.HibElement;
-import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.TransformableElement;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.NodeContent;
@@ -144,7 +143,7 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 
 		// .uuid
 		setField.accept(newFieldDefinition().name("uuid").description("UUID of the element").type(GraphQLString).dataFetcher(env -> {
-			HibElement element = null;
+			HibBaseElement element = null;
 			Object source = env.getSource();
 			if (source instanceof NodeContent) {
 				element = ((NodeContent) source).getNode();

@@ -14,8 +14,8 @@ import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.tag.TagResponse;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 
 /**
@@ -89,7 +89,7 @@ public interface TagRoot extends RootVertex<Tag>, TransformableElementRoot<Tag, 
 	TransformablePage<? extends Node> findTaggedNodes(Tag tag, HibUser requestUser, Branch branch, List<String> languageTags, ContainerType type,
 		PagingParameters pagingInfo);
 
-	TraversalResult<? extends Node> findTaggedNodes(HibTag tag, InternalActionContext ac);
+	Result<? extends Node> findTaggedNodes(HibTag tag, InternalActionContext ac);
 
 	/**
 	 * Return a traversal result of nodes that were tagged by this tag in the given branch
@@ -99,6 +99,6 @@ public interface TagRoot extends RootVertex<Tag>, TransformableElementRoot<Tag, 
 	 *
 	 * @return Result
 	 */
-	TraversalResult<? extends Node> getNodes(Tag tag, HibBranch branch);
+	Result<? extends Node> getNodes(Tag tag, HibBranch branch);
 
 }

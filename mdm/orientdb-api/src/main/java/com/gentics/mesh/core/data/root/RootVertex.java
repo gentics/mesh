@@ -15,7 +15,7 @@ import java.util.stream.StreamSupport;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HasPermissions;
-import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
@@ -29,6 +29,7 @@ import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -43,7 +44,7 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * A root vertex is an aggregation vertex that is used to aggregate various basic elements such as users, nodes, groups.
  */
-public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> extends MeshVertex, HasPermissions, HasPermissionsRoot {
+public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> extends MeshVertex, HasPermissions, HasPermissionsRoot {
 
 	public static final Logger log = LoggerFactory.getLogger(RootVertex.class);
 
@@ -52,7 +53,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * 
 	 * @return
 	 */
-	default TraversalResult<? extends T> findAll() {
+	default Result<? extends T> findAll() {
 		return out(getRootLabel(), getPersistanceClass());
 	}
 
@@ -84,7 +85,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * 
 	 * @return
 	 */
-	default TraversalResult<? extends T> findAllDynamic() {
+	default Result<? extends T> findAllDynamic() {
 		return new TraversalResult<>(out(getRootLabel()).frame(getPersistanceClass()));
 	}
 
@@ -272,7 +273,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 *            Stack which contains the remaining path elements which should be resolved starting with the current graph element
 	 * @return
 	 */
-	default HibElement resolveToElement(Stack<String> stack) {
+	default HibBaseElement resolveToElement(Stack<String> stack) {
 		if (log.isDebugEnabled()) {
 			log.debug("Resolving for {" + getPersistanceClass().getSimpleName() + "}.");
 			if (stack.isEmpty()) {
@@ -365,7 +366,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @param roleUuid
 	 * @return
 	 */
-	default PermissionInfo getRolePermissions(HibElement element, InternalActionContext ac, String roleUuid) {
+	default PermissionInfo getRolePermissions(HibBaseElement element, InternalActionContext ac, String roleUuid) {
 		// TODO implement
 		throw new RuntimeException("Not implemented");
 	}
@@ -377,7 +378,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @param perm
 	 * @return
 	 */
-	default TraversalResult<? extends HibRole> getRolesWithPerm(HibElement vertex, InternalPermission perm) {
+	default Result<? extends HibRole> getRolesWithPerm(HibBaseElement vertex, InternalPermission perm) {
 		// TODO implement
 		throw new RuntimeException("Not implemented");
 	}

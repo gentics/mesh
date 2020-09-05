@@ -1,8 +1,7 @@
 package com.gentics.mesh.core.data.dao.impl;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toTag;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toTagFamily;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -17,27 +16,26 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibElement;
-import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
+import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 
 import dagger.Lazy;
@@ -53,7 +51,7 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper<HibTagFamily> im
 	}
 
 	@Override
-	public TraversalResult<? extends TagFamily> findAllGlobal() {
+	public Result<? extends TagFamily> findAllGlobal() {
 		return boot.get().tagFamilyRoot().findAll();
 	}
 
@@ -92,7 +90,7 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper<HibTagFamily> im
 		GenericParameters generic = ac.getGenericParameters();
 		FieldsSet fields = generic.getFields();
 
-		TagFamily graphTagFamily = toTagFamily(tagFamily);
+		TagFamily graphTagFamily = toGraph(tagFamily);
 
 		TagFamilyResponse restTagFamily = new TagFamilyResponse();
 		if (fields.has("uuid")) {
@@ -170,7 +168,7 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper<HibTagFamily> im
 	}
 
 	@Override
-	public TraversalResult<? extends TagFamily> findAll(HibProject project) {
+	public Result<? extends TagFamily> findAll(HibProject project) {
 		return project.getTagFamilyRoot().findAll();
 	}
 
@@ -196,23 +194,28 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper<HibTagFamily> im
 
 	@Override
 	public String getETag(HibTagFamily tagfamily, InternalActionContext ac) {
-		return toTagFamily(tagfamily).getETag(ac);
+		return toGraph(tagfamily).getETag(ac);
 	}
 
 	@Override
 	public String getAPIPath(HibTagFamily tagFamily, InternalActionContext ac) {
-		return toTagFamily(tagFamily).getAPIPath(ac);
+		return toGraph(tagFamily).getAPIPath(ac);
 	}
 
 	@Override
 	public void removeTag(HibTagFamily tagFamily, HibTag tag) {
-		TagFamily graphTagFamily = toTagFamily(tagFamily);
-		graphTagFamily.removeTag(toTag(tag));
+		TagFamily graphTagFamily = toGraph(tagFamily);
+		graphTagFamily.removeTag(toGraph(tag));
 	}
 
 	@Override
 	public void addTag(HibTagFamily tagFamily, HibTag tag) {
-		TagFamily graphTagFamily = toTagFamily(tagFamily);
-		graphTagFamily.addTag(toTag(tag));
+		TagFamily graphTagFamily = toGraph(tagFamily);
+		graphTagFamily.addTag(toGraph(tag));
+	}
+
+	@Override
+	public Page<? extends HibTag> getTags(HibTagFamily tagFamily, MeshAuthUser user, PagingParameters pagingInfo) {
+		return toGraph(tagFamily).getTags(user, pagingInfo);
 	}
 }

@@ -2,6 +2,7 @@ package com.gentics.mesh.changelog.highlevel.change;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
 import java.util.Comparator;
 import java.util.HashSet;
@@ -204,7 +205,7 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 	}
 
 	private boolean hasSingleBranch(HibProject project) {
-		long count = project.toProject().getBranchRoot().computeCount();
+		long count = toGraph(project).getBranchRoot().computeCount();
 		if (count == 1) {
 			return true;
 		} else {

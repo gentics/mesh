@@ -5,7 +5,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNE
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_REFERENCE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toNode;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 
 import java.util.Optional;
@@ -36,6 +36,7 @@ import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.madl.traversal.TraversalResult;
@@ -51,7 +52,7 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * @see User
  */
-public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> implements User {
+public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements User {
 
 	private static final Logger log = LoggerFactory.getLogger(UserImpl.class);
 
@@ -212,7 +213,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public TraversalResult<? extends Group> getGroups() {
+	public Result<? extends Group> getGroups() {
 		return out(HAS_USER, GroupImpl.class);
 	}
 
@@ -229,12 +230,12 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public TraversalResult<? extends Role> getRoles() {
+	public Result<? extends Role> getRoles() {
 		return new TraversalResult<>(out(HAS_USER).in(HAS_ROLE).frameExplicit(RoleImpl.class));
 	}
 
 	@Override
-	public TraversalResult<? extends Role> getRolesViaShortcut() {
+	public Result<? extends Role> getRolesViaShortcut() {
 		// TODO Use shortcut index.
 		return out(ASSIGNED_TO_ROLE, RoleImpl.class);
 	}
@@ -263,7 +264,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public HibUser setReferencedNode(HibInNode node) {
-		setSingleLinkOutTo(toNode(node), HAS_NODE_REFERENCE);
+		setSingleLinkOutTo(toGraph(node), HAS_NODE_REFERENCE);
 		return this;
 	}
 
@@ -334,7 +335,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public MeshAuthUser toAuthUser() {
-		return reframeExplicit(MeshAuthUserImpl.class);
+		return MeshAuthUserImpl.create(db(), this);
 	}
 
 	@Override

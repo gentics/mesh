@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data;
 
-public interface HibLanguage extends HibElement {
+public interface HibLanguage extends HibBaseElement {
 
 	String getName();
 

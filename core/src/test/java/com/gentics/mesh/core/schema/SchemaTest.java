@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.schema;
 
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -22,8 +23,8 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.SchemaRoot;
 import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -57,8 +58,9 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Test
 	public void testGetRoot() {
 		try (Tx tx = tx()) {
-			Schema schemaContainer = meshRoot().getSchemaContainerRoot().findByName("content");
-			RootVertex<Schema> root = schemaContainer.getRoot();
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			HibSchema schemaContainer = schemaDao.findByName("content");
+			RootVertex<? extends HibSchema> root = toGraph(schemaContainer).getRoot();
 			assertNotNull(root);
 		}
 	}
@@ -67,10 +69,11 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Override
 	public void testFindByName() throws IOException {
 		try (Tx tx = tx()) {
-			Schema schemaContainer = meshRoot().getSchemaContainerRoot().findByName("content");
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			HibSchema schemaContainer = schemaDao.findByName("content");
 			assertNotNull(schemaContainer);
 			assertEquals("content", schemaContainer.getLatestVersion().getSchema().getName());
-			assertNull(meshRoot().getSchemaContainerRoot().findByName("content1235"));
+			assertNull(schemaDao.findByName("content1235"));
 		}
 	}
 
@@ -218,8 +221,9 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Override
 	public void testUpdate() throws IOException {
 		try (Tx tx = tx()) {
-			Schema schemaContainer = meshRoot().getSchemaContainerRoot().findByName("content");
-			SchemaVersion currentVersion = schemaContainer.getLatestVersion();
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			HibSchema schemaContainer = schemaDao.findByName("content");
+			HibSchemaVersion currentVersion = schemaContainer.getLatestVersion();
 			SchemaVersionModel schema = currentVersion.getSchema();
 			schema.setName("changed");
 			currentVersion.setSchema(schema);

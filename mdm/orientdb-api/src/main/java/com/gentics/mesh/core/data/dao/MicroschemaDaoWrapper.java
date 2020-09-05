@@ -20,8 +20,8 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 
 public interface MicroschemaDaoWrapper extends MicroschemaDao, DaoWrapper<HibMicroschema> {
@@ -58,7 +58,7 @@ public interface MicroschemaDaoWrapper extends MicroschemaDao, DaoWrapper<HibMic
 	 */
 	HibMicroschema create(MicroschemaVersionModel microschema, HibUser user, String uuid, EventQueueBatch batch);
 
-	Microschema create(InternalActionContext ac, EventQueueBatch batch, String uuid);
+	HibMicroschema create(InternalActionContext ac, EventQueueBatch batch, String uuid);
 
 	TransformablePage<? extends Microschema> findAll(InternalActionContext ac, PagingParameters pagingInfo);
 
@@ -68,7 +68,7 @@ public interface MicroschemaDaoWrapper extends MicroschemaDao, DaoWrapper<HibMic
 
 	HibMicroschema findByName(String name);
 
-	TraversalResult<? extends Microschema> findAll();
+	Result<? extends Microschema> findAll();
 
 	default HibMicroschemaVersion fromReference(MicroschemaReference reference) {
 		return fromReference(null, reference);
@@ -112,12 +112,18 @@ public interface MicroschemaDaoWrapper extends MicroschemaDao, DaoWrapper<HibMic
 
 	Map<HibBranch, HibMicroschemaVersion> findReferencedBranches(HibMicroschema microschema);
 
-	TraversalResult<? extends NodeGraphFieldContainer> findDraftFieldContainers(HibMicroschemaVersion version, String branchUuid);
+	Result<? extends NodeGraphFieldContainer> findDraftFieldContainers(HibMicroschemaVersion version, String branchUuid);
 
 	void unlink(HibMicroschema microschema, HibProject project, EventQueueBatch batch);
 
 	MicroschemaResponse transformToRestSync(HibMicroschema microschema, InternalActionContext ac, int level, String... languageTags);
 
 	String getETag(HibMicroschema schema, InternalActionContext ac);
+
+	void addMicroschema(HibMicroschema schema, HibUser user, EventQueueBatch batch);
+
+	Result<? extends HibMicroschema> findAll(HibProject project);
+
+	Result<HibMicroschemaVersion> findActiveMicroschemaVersions(HibBranch branch);
 
 }

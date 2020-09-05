@@ -5,8 +5,7 @@ import java.util.function.Predicate;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibElement;
-import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
@@ -14,8 +13,8 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.role.RoleResponse;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 
 public interface RoleDaoWrapper extends RoleDao, DaoWrapper<HibRole>, DaoTransformable<HibRole, RoleResponse> {
@@ -55,7 +54,7 @@ public interface RoleDaoWrapper extends RoleDao, DaoWrapper<HibRole>, DaoTransfo
 	 * @param vertex
 	 * @param permissions
 	 */
-	void grantPermissions(HibRole role, HibElement element, InternalPermission... permissions);
+	void grantPermissions(HibRole role, HibBaseElement element, InternalPermission... permissions);
 
 	/**
 	 * Revoke the given permissions on the vertex.
@@ -64,7 +63,7 @@ public interface RoleDaoWrapper extends RoleDao, DaoWrapper<HibRole>, DaoTransfo
 	 * @param vertex
 	 * @param permissions
 	 */
-	void revokePermissions(HibRole role, HibElement element, InternalPermission... permissions);
+	void revokePermissions(HibRole role, HibBaseElement element, InternalPermission... permissions);
 
 	/**
 	 * Return a set of permissions which the role is granting to the given element.
@@ -73,7 +72,7 @@ public interface RoleDaoWrapper extends RoleDao, DaoWrapper<HibRole>, DaoTransfo
 	 * @param element
 	 * @return Set of permissions of the element
 	 */
-	Set<InternalPermission> getPermissions(HibRole role, HibElement element);
+	Set<InternalPermission> getPermissions(HibRole role, HibBaseElement element);
 
 	/**
 	 * Add the given role to this aggregation vertex.
@@ -91,7 +90,7 @@ public interface RoleDaoWrapper extends RoleDao, DaoWrapper<HibRole>, DaoTransfo
 	 */
 	void removeRole(HibRole role);
 
-	TraversalResult<? extends HibGroup> getGroups(HibRole role);
+	Result<? extends HibGroup> getGroups(HibRole role);
 
 	/**
 	 * Return a page of groups to which this role was assigned.
@@ -111,7 +110,7 @@ public interface RoleDaoWrapper extends RoleDao, DaoWrapper<HibRole>, DaoTransfo
 	 * @param element
 	 * @return
 	 */
-	boolean hasPermission(HibRole role, InternalPermission permission, HibElement element);
+	boolean hasPermission(HibRole role, InternalPermission permission, HibBaseElement element);
 
 	HibRole findByUuid(String uuid);
 
@@ -125,17 +124,17 @@ public interface RoleDaoWrapper extends RoleDao, DaoWrapper<HibRole>, DaoTransfo
 
 	boolean update(HibRole role, InternalActionContext ac, EventQueueBatch batch);
 
-	TraversalResult<? extends HibRole> findAll();
+	Result<? extends HibRole> findAll();
 
 	TransformablePage<? extends HibRole> findAll(InternalActionContext ac, PagingParameters pagingInfo);
 
-	Page<? extends HibRole> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Role> extraFilter);
+	Page<? extends HibRole> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibRole> extraFilter);
 
 	String getETag(HibRole role, InternalActionContext ac);
 
 	String getAPIPath(HibRole role, InternalActionContext ac);
 
-	void applyPermissions(HibElement element, EventQueueBatch batch, HibRole role, boolean recursive, Set<InternalPermission> permissionsToGrant,
+	void applyPermissions(HibBaseElement element, EventQueueBatch batch, HibRole role, boolean recursive, Set<InternalPermission> permissionsToGrant,
 		Set<InternalPermission> permissionsToRevoke);
 
 }

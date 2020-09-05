@@ -158,7 +158,7 @@ public final class DatabaseHelper {
 
 	}
 
-	public static void initPermissions(TypeHandler type, IndexHandler index) {
+	private static void initPermissions(TypeHandler type, IndexHandler index) {
 		for (String label : InternalPermission.labels()) {
 			type.createType(edgeType(label));
 			index.createIndex(edgeIndex(label).withInOut());

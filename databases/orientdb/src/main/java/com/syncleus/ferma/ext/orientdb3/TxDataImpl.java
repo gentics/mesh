@@ -1,5 +1,6 @@
 package com.syncleus.ferma.ext.orientdb3;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.action.BranchDAOActions;
 import com.gentics.mesh.core.action.GroupDAOActions;
 import com.gentics.mesh.core.action.MicroschemaDAOActions;
@@ -9,6 +10,7 @@ import com.gentics.mesh.core.action.SchemaDAOActions;
 import com.gentics.mesh.core.action.TagDAOActions;
 import com.gentics.mesh.core.action.TagFamilyDAOActions;
 import com.gentics.mesh.core.action.UserDAOActions;
+import com.gentics.mesh.core.data.HibMeshVersion;
 import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
@@ -18,6 +20,7 @@ import com.gentics.mesh.core.data.dao.JobDaoWrapper;
 import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.PermissionRoots;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
@@ -39,15 +42,18 @@ import com.gentics.mesh.etc.config.MonitoringConfig;
 import com.gentics.mesh.etc.config.VertxOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 
-public class OrientTxData implements TxData {
+public class TxDataImpl implements TxData {
 
 	private final DaoCollection daos;
-
+	private final BootstrapInitializer boot;
 	private final MeshOptions options;
+	private final PermissionRoots permissionRoots;
 
-	public OrientTxData(MeshOptions options, DaoCollection daoCollection) {
+	public TxDataImpl(MeshOptions options, DaoCollection daoCollection, BootstrapInitializer boot, PermissionRoots permissionRoots) {
 		this.options = options;
 		this.daos = daoCollection;
+		this.boot = boot;
+		this.permissionRoots = permissionRoots;
 	}
 
 	@Override
@@ -399,5 +405,15 @@ public class OrientTxData implements TxData {
 	@Override
 	public ContentDaoWrapper contentDao() {
 		return daos.contentDao();
+	}
+
+	@Override
+	public HibMeshVersion meshVersion() {
+		return boot.meshRoot();
+	}
+
+	@Override
+	public PermissionRoots permissionRoots() {
+		return permissionRoots;
 	}
 }

@@ -7,8 +7,7 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_ROLE;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGroup;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toUser;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -31,7 +30,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.DummyEventQueueBatch;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.HasPermissions;
-import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.NodeMigrationUser;
@@ -66,9 +65,9 @@ import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -190,7 +189,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	}
 
 	private boolean update(HibUser user, InternalActionContext ac, EventQueueBatch batch, boolean dry) {
-		User graphUser = toUser(user);
+		User graphUser = toGraph(user);
 		UserRoot userRoot = boot.get().userRoot();
 		UserUpdateRequest requestModel = ac.fromJson(UserUpdateRequest.class);
 		boolean modified = false;
@@ -303,7 +302,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 
 	@Override
 	public UserResponse transformToRestSync(HibUser user, InternalActionContext ac, int level, String... languageTags) {
-		User graphUser = toUser(user);
+		User graphUser = toGraph(user);
 		GenericParameters generic = ac.getGenericParameters();
 		FieldsSet fields = generic.getFields();
 		UserResponse restUser = new UserResponse();
@@ -356,7 +355,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 		NodeParameters parameters = ac.getNodeParameters();
 
 		// Check whether a node reference was set.
-		Node node = ((User) user).getReferencedNode();
+		Node node = toGraph(user).getReferencedNode();
 		if (node == null) {
 			return;
 		}
@@ -379,7 +378,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	 * @param restUser
 	 */
 	private void setGroups(HibUser user, InternalActionContext ac, UserResponse restUser) {
-		User graphUser = toUser(user);
+		User graphUser = toGraph(user);
 		// TODO filter by permissions
 		for (HibGroup group : graphUser.getGroups()) {
 			GroupReference reference = group.transformToReference();
@@ -410,7 +409,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	}
 
 	@Override
-	public boolean hasPermission(HibUser user, HibElement element, InternalPermission permission) {
+	public boolean hasPermission(HibUser user, HibBaseElement element, InternalPermission permission) {
 		if (log.isTraceEnabled()) {
 			log.debug("Checking permissions for vertex {" + element.getUuid() + "}");
 		}
@@ -461,7 +460,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	}
 
 	@Override
-	public TraversalResult<? extends User> findAll() {
+	public Result<? extends User> findAll() {
 		UserRoot userRoot = boot.get().userRoot();
 		return userRoot.findAll();
 	}
@@ -572,7 +571,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	}
 
 	@Override
-	public HibUser inheritRolePermissions(HibUser user, HibElement source, HibElement target) {
+	public HibUser inheritRolePermissions(HibUser user, HibBaseElement source, HibBaseElement target) {
 		return inheritRolePermissions(user, (MeshVertex) source, (MeshVertex) target);
 	}
 
@@ -591,7 +590,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 
 	@Override
 	public String getSubETag(HibUser user, InternalActionContext ac) {
-		User graphUser = toUser(user);
+		User graphUser = toGraph(user);
 		StringBuilder keyBuilder = new StringBuilder();
 		keyBuilder.append(user.getLastEditedTimestamp());
 
@@ -630,7 +629,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	}
 
 	@Override
-	public PermissionInfo getPermissionInfo(HibUser user, HibElement element) {
+	public PermissionInfo getPermissionInfo(HibUser user, HibBaseElement element) {
 		PermissionInfo info = new PermissionInfo();
 		Set<InternalPermission> permissions = getPermissions(user, element);
 		for (InternalPermission perm : permissions) {
@@ -642,7 +641,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	}
 
 	@Override
-	public Set<InternalPermission> getPermissions(HibUser user, HibElement element) {
+	public Set<InternalPermission> getPermissions(HibUser user, HibBaseElement element) {
 		Predicate<? super InternalPermission> isValidPermission = perm -> perm != READ_PUBLISHED_PERM && perm != PUBLISH_PERM
 			|| element.hasPublishPermissions();
 
@@ -675,8 +674,8 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 
 	@Override
 	public HibUser addGroup(HibUser user, HibGroup group) {
-		User graphUser = toUser(user);
-		Group graphGroup = toGroup(group);
+		User graphUser = toGraph(user);
+		Group graphGroup = toGraph(group);
 		graphUser.addGroup(graphGroup);
 		return user;
 	}
@@ -687,19 +686,19 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 
 	@Override
 	public String getETag(HibUser user, InternalActionContext ac) {
-		User graphUser = toUser(user);
+		User graphUser = toGraph(user);
 		return graphUser.getETag(ac);
 	}
 
 	@Override
-	public TraversalResult<? extends HibGroup> getGroups(HibUser user) {
-		User graphUser = toUser(user);
+	public Result<? extends HibGroup> getGroups(HibUser user) {
+		User graphUser = toGraph(user);
 		return graphUser.getGroups();
 	}
 
 	@Override
 	public Iterable<? extends HibRole> getRoles(HibUser user) {
-		User graphUser = toUser(user);
+		User graphUser = toGraph(user);
 		return graphUser.getRoles();
 	}
 
@@ -713,5 +712,15 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 					? READ_PUBLISHED_PERM.getRestPerm().getName()
 					: READ_PERM.getRestPerm().getName());
 		}
+	}
+
+	@Override
+	public Page<? extends HibRole> getRolesViaShortcut(HibUser fromUser, MeshAuthUser authUser, PagingParameters pagingInfo) {
+		return toGraph(fromUser).getRolesViaShortcut(authUser, pagingInfo);
+	}
+
+	@Override
+	public Page<? extends HibGroup> getGroups(HibUser fromUser, MeshAuthUser authUser, PagingParameters pagingInfo) {
+		return toGraph(fromUser).getGroups(authUser, pagingInfo);
 	}
 }

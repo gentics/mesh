@@ -76,4 +76,28 @@ public final class UUIDUtil {
 		}
 	}
 
+	/**
+	 * Convert a mesh style uuid to a java {@link UUID}.
+	 * @param uuid
+	 * @return
+	 */
+	public static UUID toJavaUuid(String uuid) {
+		if (uuid == null) {
+			return null;
+		}
+		return UUID.fromString(toFullUuid(uuid));
+	}
+
+	/**
+	 * Convert a uuid with dashes to a uuid without dashes.
+	 *
+	 * @return
+	 * @param uuid
+	 */
+	public static String toShortUuid(UUID uuid) {
+		if (uuid == null) {
+			return null;
+		}
+		return toShortUuid(uuid.toString());
+	}
 }

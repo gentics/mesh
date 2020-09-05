@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.node.field.list.impl;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toNode;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
@@ -122,7 +122,7 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 
 	@Override
 	public NodeGraphField createNode(String key, HibNode node) {
-		return addItem(key, toNode(node));
+		return addItem(key, toGraph(node));
 	}
 
 	@Override

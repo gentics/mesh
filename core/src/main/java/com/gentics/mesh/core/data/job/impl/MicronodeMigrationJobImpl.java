@@ -13,12 +13,12 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.MicronodeMigrationContext;
 import com.gentics.mesh.context.impl.MicronodeMigrationContextImpl;
-import com.gentics.mesh.core.data.branch.BranchMicroschemaEdge;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.branch.HibBranchMicroschemaVersion;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.schema.Microschema;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.migration.impl.MicronodeMigrationImpl;
 import com.gentics.mesh.core.migration.impl.MigrationStatusHandlerImpl;
@@ -45,10 +45,10 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 		MicroschemaMigrationMeshEventModel model = new MicroschemaMigrationMeshEventModel();
 		model.setEvent(event);
 
-		MicroschemaVersion toVersion = getToMicroschemaVersion();
+		HibMicroschemaVersion toVersion = getToMicroschemaVersion();
 		model.setToVersion(toVersion.transformToReference());
 
-		MicroschemaVersion fromVersion = getFromMicroschemaVersion();
+		HibMicroschemaVersion fromVersion = getFromMicroschemaVersion();
 		model.setFromVersion(fromVersion.transformToReference());
 
 		HibBranch branch = getBranch();
@@ -64,7 +64,7 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 	}
 
 	private MicronodeMigrationContext prepareContext() {
-		MigrationStatusHandler status = new MigrationStatusHandlerImpl(this, vertx(), JobType.microschema);
+		MigrationStatusHandler status = new MigrationStatusHandlerImpl(this, JobType.microschema);
 		try {
 			return db().tx(() -> {
 				MicronodeMigrationContextImpl context = new MicronodeMigrationContextImpl();
@@ -78,20 +78,20 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 				}
 				context.setBranch(branch);
 
-				MicroschemaVersion fromContainerVersion = getFromMicroschemaVersion();
+				HibMicroschemaVersion fromContainerVersion = getFromMicroschemaVersion();
 				if (fromContainerVersion == null) {
 					throw error(BAD_REQUEST, "Source version of microschema for job {" + getUuid() + "} could not be found.");
 				}
 				context.setFromVersion(fromContainerVersion);
 
-				MicroschemaVersion toContainerVersion = getToMicroschemaVersion();
+				HibMicroschemaVersion toContainerVersion = getToMicroschemaVersion();
 				if (toContainerVersion == null) {
 					throw error(BAD_REQUEST, "Target version of microschema for job {" + getUuid() + "} could not be found.");
 				}
 				context.setToVersion(toContainerVersion);
 
-				Microschema schemaContainer = fromContainerVersion.getSchemaContainer();
-				BranchMicroschemaEdge branchVersionEdge = branch.findBranchMicroschemaEdge(toContainerVersion);
+				HibMicroschema schemaContainer = fromContainerVersion.getSchemaContainer();
+				HibBranchMicroschemaVersion branchVersionEdge = branch.findBranchMicroschemaEdge(toContainerVersion);
 				context.getStatus().setVersionEdge(branchVersionEdge);
 				if (log.isDebugEnabled()) {
 					log.debug("Micronode migration for microschema {" + schemaContainer.getUuid() + "} from version {"

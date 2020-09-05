@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.endpoint.migration;
 
-import com.gentics.mesh.core.data.branch.BranchVersionEdge;
+import com.gentics.mesh.core.data.branch.HibBranchVersionAssignment;
 import com.gentics.mesh.core.rest.error.Errors;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.job.JobStatus;
@@ -41,7 +41,7 @@ public interface MigrationStatusHandler {
 	 * 
 	 * @param versionEdge
 	 */
-	void setVersionEdge(BranchVersionEdge versionEdge);
+	void setVersionEdge(HibBranchVersionAssignment versionEdge);
 
 	/**
 	 * Set the current status.

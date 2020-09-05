@@ -6,27 +6,12 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
-import java.util.Arrays;
 import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.endpoint.admin.consistency.check.BinaryCheck;
-import com.gentics.mesh.core.endpoint.admin.consistency.check.BranchCheck;
-import com.gentics.mesh.core.endpoint.admin.consistency.check.FieldCheck;
-import com.gentics.mesh.core.endpoint.admin.consistency.check.GraphFieldContainerCheck;
-import com.gentics.mesh.core.endpoint.admin.consistency.check.GroupCheck;
-import com.gentics.mesh.core.endpoint.admin.consistency.check.MicronodeCheck;
-import com.gentics.mesh.core.endpoint.admin.consistency.check.MicroschemaContainerCheck;
-import com.gentics.mesh.core.endpoint.admin.consistency.check.NodeCheck;
-import com.gentics.mesh.core.endpoint.admin.consistency.check.ProjectCheck;
-import com.gentics.mesh.core.endpoint.admin.consistency.check.RoleCheck;
-import com.gentics.mesh.core.endpoint.admin.consistency.check.SchemaContainerCheck;
-import com.gentics.mesh.core.endpoint.admin.consistency.check.TagCheck;
-import com.gentics.mesh.core.endpoint.admin.consistency.check.TagFamilyCheck;
-import com.gentics.mesh.core.endpoint.admin.consistency.check.UserCheck;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
@@ -45,42 +30,17 @@ public class ConsistencyCheckHandler extends AbstractHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(ConsistencyCheckHandler.class);
 
-	private Database db;
-
-	private HandlerUtilities utils;
-
-	private Vertx vertx;
-
-	private static List<ConsistencyCheck> checks = Arrays.asList(
-		new GroupCheck(),
-		new MicroschemaContainerCheck(),
-		new NodeCheck(),
-		new ProjectCheck(),
-		new BranchCheck(),
-		new RoleCheck(),
-		new SchemaContainerCheck(),
-		new TagCheck(),
-		new TagFamilyCheck(),
-		new UserCheck(),
-		new GraphFieldContainerCheck(),
-		new MicronodeCheck(),
-		new BinaryCheck(),
-		new FieldCheck());
-
-	/**
-	 * Get the list of checks
-	 * 
-	 * @return list of checks
-	 */
-	public static List<ConsistencyCheck> getChecks() {
-		return checks;
-	}
+	private final List<ConsistencyCheck> checks;
+	private final Database db;
+	private final HandlerUtilities utils;
+	private final Vertx vertx;
 
 	@Inject
-	public ConsistencyCheckHandler(Vertx vertx, Database db, HandlerUtilities utils) {
+	public ConsistencyCheckHandler(Vertx vertx, Database db, HandlerUtilities utils, List<ConsistencyCheck> checks) {
 		this.vertx = vertx;
 		this.db = db;
 		this.utils = utils;
+		this.checks = checks;
 	}
 
 	/**

@@ -16,8 +16,8 @@ import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.tag.TagResponse;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 
 public interface TagDaoWrapper extends TagDao, DaoWrapper<HibTag>, DaoTransformable<HibTag, TagResponse> {
@@ -28,7 +28,7 @@ public interface TagDaoWrapper extends TagDao, DaoWrapper<HibTag>, DaoTransforma
 	 * @param tagFamily
 	 * @return
 	 */
-	TraversalResult<? extends HibTag> findAll(HibTagFamily tagFamily);
+	Result<? extends HibTag> findAll(HibTagFamily tagFamily);
 
 	HibTag findByUuid(HibProject project, String uuid);
 
@@ -88,7 +88,7 @@ public interface TagDaoWrapper extends TagDao, DaoWrapper<HibTag>, DaoTransforma
 
 	HibTag loadObjectByUuid(HibBranch branch, InternalActionContext ac, String tagUuid, InternalPermission perm);
 
-	TraversalResult<? extends HibTag> findAllGlobal();
+	Result<? extends HibTag> findAllGlobal();
 
 	HibTag loadObjectByUuid(HibProject project, InternalActionContext ac, String tagUuid, InternalPermission readPerm);
 
@@ -107,7 +107,7 @@ public interface TagDaoWrapper extends TagDao, DaoWrapper<HibTag>, DaoTransforma
 		ContainerType type,
 		PagingParameters pagingInfo);
 
-	TraversalResult<? extends HibNode> findTaggedNodes(HibTag tag, InternalActionContext ac);
+	Result<? extends HibNode> findTaggedNodes(HibTag tag, InternalActionContext ac);
 
 	/**
 	 * Unassign the the node from the tag.
@@ -122,7 +122,7 @@ public interface TagDaoWrapper extends TagDao, DaoWrapper<HibTag>, DaoTransforma
 	 * @param branch
 	 * @return Result
 	 */
-	TraversalResult<? extends HibNode> getNodes(HibTag tag, HibBranch branch);
+	Result<? extends HibNode> getNodes(HibTag tag, HibBranch branch);
 
 	long computeCount(HibTagFamily tagFamily);
 
@@ -155,7 +155,7 @@ public interface TagDaoWrapper extends TagDao, DaoWrapper<HibTag>, DaoTransforma
 	 * @param branch
 	 * @return
 	 */
-	TraversalResult<HibTag> getTags(HibNode node, HibBranch branch);
+	Result<HibTag> getTags(HibNode node, HibBranch branch);
 
 	/**
 	 * Return a page of all visible tags that are assigned to the node.

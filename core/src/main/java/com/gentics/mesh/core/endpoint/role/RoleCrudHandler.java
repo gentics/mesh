@@ -19,7 +19,7 @@ import org.apache.commons.lang3.BooleanUtils;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.RoleDAOActions;
-import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
@@ -72,7 +72,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<HibRole, RoleResponse> 
 			HibRole role = roleDao.loadObjectByUuid(ac, roleUuid, READ_PERM);
 
 			// 2. Resolve the path to element that is targeted
-			HibElement targetElement = boot.meshRoot().resolvePathToElement(pathToElement);
+			HibBaseElement targetElement = boot.meshRoot().resolvePathToElement(pathToElement);
 			if (targetElement == null) {
 				throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
 			}
@@ -118,7 +118,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<HibRole, RoleResponse> 
 				HibRole role = roleDao.loadObjectByUuid(ac, roleUuid, UPDATE_PERM);
 
 				// 2. Resolve the path to element that is targeted
-				HibElement element = boot.meshRoot().resolvePathToElement(pathToElement);
+				HibBaseElement element = boot.meshRoot().resolvePathToElement(pathToElement);
 
 				if (element == null) {
 					throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);

@@ -8,7 +8,7 @@ import java.util.Set;
 
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.EditorTrackingVertex;
-import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.tag.HibTag;
@@ -59,7 +59,7 @@ public abstract class AbstractTransformer<T> implements Transformer<T> {
 	 * @param element
 	 *            Element which will be used to load the basic references
 	 */
-	protected void addBasicReferences(JsonObject document, HibElement element) {
+	protected void addBasicReferences(JsonObject document, HibBaseElement element) {
 		document.put("uuid", element.getUuid());
 		if (element instanceof CreatorTrackingVertex) {
 			CreatorTrackingVertex createdVertex = (CreatorTrackingVertex) element;
@@ -116,14 +116,14 @@ public abstract class AbstractTransformer<T> implements Transformer<T> {
 	 * @param document
 	 * @param element
 	 */
-	protected void addPermissionInfo(JsonObject document, HibElement element) {
+	protected void addPermissionInfo(JsonObject document, HibBaseElement element) {
 		Set<String> roleUuids = element.getRoleUuidsForPerm(InternalPermission.READ_PERM);
 		List<String> roleUuidsList = new ArrayList<>(roleUuids);
 		document.put("_roleUuids", roleUuidsList);
 	}
 
 	@Override
-	public JsonObject toPermissionPartial(HibElement element) {
+	public JsonObject toPermissionPartial(HibBaseElement element) {
 		JsonObject document = new JsonObject();
 		addPermissionInfo(document, element);
 		return document;

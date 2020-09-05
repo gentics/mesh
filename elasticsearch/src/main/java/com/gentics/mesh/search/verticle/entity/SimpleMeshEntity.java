@@ -23,6 +23,6 @@ public class SimpleMeshEntity<T> extends MeshEntity<T> {
 
 	@Override
 	public Optional<JsonObject> getPermissionPartial(PermissionChangedEventModelImpl event) {
-		return getElement(event).map(element -> transformer.toPermissionPartial((MeshCoreVertex<?, ?>) element));
+		return getElement(event).map(element -> transformer.toPermissionPartial((MeshCoreVertex<?>) element));
 	}
 }

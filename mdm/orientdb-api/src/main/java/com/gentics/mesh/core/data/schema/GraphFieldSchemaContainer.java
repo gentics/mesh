@@ -2,10 +2,10 @@ package com.gentics.mesh.core.data.schema;
 
 import java.util.Map;
 
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.ReferenceableElement;
 import com.gentics.mesh.core.data.UserTrackingVertex;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
@@ -24,8 +24,8 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
  * @param <VV>
  *            Container version type
  */
-public interface GraphFieldSchemaContainer<R extends FieldSchemaContainer, RE extends NameUuidReference<RE>, V extends GraphFieldSchemaContainer<R, RE, V, VV>, VV extends GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?>>
-		extends MeshCoreVertex<R, V>, ReferenceableElement<RE>, UserTrackingVertex {
+public interface GraphFieldSchemaContainer<R extends FieldSchemaContainer, RE extends NameUuidReference<RE>, V extends HibFieldSchemaElement<R, ?, V, VV>, VV extends HibFieldSchemaVersionElement<R, ?, V, VV>>
+	extends MeshCoreVertex<R>, ReferenceableElement<RE>, UserTrackingVertex {
 
 	/**
 	 * Return the version of the container using the version UUID as a reference.
@@ -69,7 +69,7 @@ public interface GraphFieldSchemaContainer<R extends FieldSchemaContainer, RE ex
 	 * 
 	 * @return
 	 */
-	RootVertex<V> getRoot();
+	RootVertex<? extends V> getRoot();
 
 	/**
 	 * Return a map of all branches which reference the container via an assigned container version. The found container version will be added as key to the
@@ -77,6 +77,6 @@ public interface GraphFieldSchemaContainer<R extends FieldSchemaContainer, RE ex
 	 * 
 	 * @return
 	 */
-	Map<Branch, VV> findReferencedBranches();
+	Map<HibBranch, VV> findReferencedBranches();
 
 }

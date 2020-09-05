@@ -1,5 +1,8 @@
 package com.gentics.mesh.dagger.module;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -15,6 +18,10 @@ import com.gentics.mesh.cache.ProjectNameCache;
 import com.gentics.mesh.cache.ProjectNameCacheImpl;
 import com.gentics.mesh.cache.WebrootPathCache;
 import com.gentics.mesh.cache.WebrootPathCacheImpl;
+import com.gentics.mesh.changelog.ChangelogSystem;
+import com.gentics.mesh.changelog.ChangelogSystemImpl;
+import com.gentics.mesh.changelog.highlevel.HighLevelChangelogSystem;
+import com.gentics.mesh.changelog.highlevel.HighLevelChangelogSystemImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.context.BulkActionContext;
@@ -52,11 +59,14 @@ import com.gentics.mesh.core.data.binary.impl.BinariesImpl;
 import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.DaoCollection;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.JobDaoWrapper;
 import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.OrientDBDaoCollection;
+import com.gentics.mesh.core.data.dao.PermissionRoots;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
@@ -83,6 +93,21 @@ import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparatorImpl;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.data.service.WebRootServiceImpl;
+import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.check.BinaryCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.check.BranchCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.check.FieldCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.check.GraphFieldContainerCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.check.GroupCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.check.MicronodeCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.check.MicroschemaContainerCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.check.NodeCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.check.ProjectCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.check.RoleCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.check.SchemaContainerCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.check.TagCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.check.TagFamilyCheck;
+import com.gentics.mesh.core.endpoint.admin.consistency.check.UserCheck;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.core.verticle.handler.WriteLockImpl;
 import com.gentics.mesh.distributed.RequestDelegator;
@@ -109,12 +134,14 @@ import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.search.index.node.NodeIndexHandlerImpl;
 import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.storage.LocalBinaryStorage;
+import com.syncleus.ferma.ext.orientdb3.PermissionRootsImpl;
 
 import dagger.Binds;
 import dagger.Module;
+import dagger.Provides;
 
 @Module
-public abstract class BindModule {
+public abstract class OrientDBModule {
 
 	@Binds
 	abstract DropIndexHandler bindCommonHandler(DropIndexHandlerImpl e);
@@ -182,6 +209,12 @@ public abstract class BindModule {
 	@Binds
 	abstract DelegatingPluginRegistry bindPluginRegistry(DelegatingPluginRegistryImpl e);
 
+	@Binds
+	abstract ChangelogSystem bindChangelogSystem(ChangelogSystemImpl e);
+
+	@Binds
+	abstract HighLevelChangelogSystem bindHighLevelChangelogSystem(HighLevelChangelogSystemImpl e);
+
 	// Daos
 
 	@Binds
@@ -242,6 +275,12 @@ public abstract class BindModule {
 	abstract DAOActionsCollection bindDaoCollection(DAOActionsCollectionImpl e);
 
 	@Binds
+	abstract DaoCollection daoCollection(OrientDBDaoCollection daoCollection);
+
+	@Binds
+	abstract PermissionRoots permissionRoots(PermissionRootsImpl daoCollection);
+
+	@Binds
 	abstract UserDAOActions userDAOActions(UserDAOActionsImpl e);
 
 	@Binds
@@ -280,4 +319,23 @@ public abstract class BindModule {
 	@Binds
 	abstract SchemaComparator schemaComparator(SchemaComparatorImpl e);
 
+	@Provides
+	public static List<ConsistencyCheck> consistencyCheckList() {
+		return Arrays.asList(
+			new GroupCheck(),
+			new MicroschemaContainerCheck(),
+			new NodeCheck(),
+			new ProjectCheck(),
+			new BranchCheck(),
+			new RoleCheck(),
+			new SchemaContainerCheck(),
+			new TagCheck(),
+			new TagFamilyCheck(),
+			new UserCheck(),
+			new GraphFieldContainerCheck(),
+			new MicronodeCheck(),
+			new BinaryCheck(),
+			new FieldCheck()
+		);
+	}
 }

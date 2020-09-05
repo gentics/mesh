@@ -25,6 +25,7 @@ import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.dao.DaoCollection;
+import com.gentics.mesh.core.data.dao.PermissionRoots;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.db.TxAction;
 import com.gentics.mesh.core.db.TxAction0;
@@ -33,6 +34,7 @@ import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterServerConfig;
 import com.gentics.mesh.core.rest.admin.cluster.ServerRole;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
@@ -118,6 +120,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private final Lazy<DaoCollection> daos;
 
+	private final Lazy<PermissionRoots> permissionRoots;
+
 	private Thread txCleanupThread;
 
 	private Timer topologyLockTimer;
@@ -136,8 +140,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 		OrientDBIndexHandler indexHandler,
 		OrientDBClusterManager clusterManager,
 		TxCleanupTask txCleanupTask,
-		Mesh mesh, WriteLock writeLock) {
+		Lazy<PermissionRoots> permissionRoots, Mesh mesh, WriteLock writeLock) {
 		super(vertx);
+		this.permissionRoots = permissionRoots;
 		this.options = options;
 		this.boot = boot;
 		this.daos = daos;
@@ -294,7 +299,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public <T extends VertexFrame> TraversalResult<T> getVerticesTraversal(Class<T> classOfVertex, String[] fieldNames, Object[] fieldValues) {
+	public <T extends VertexFrame> Result<T> getVerticesTraversal(Class<T> classOfVertex, String[] fieldNames, Object[] fieldValues) {
 		Stream<Vertex> stream = toStream(getVertices(classOfVertex, fieldNames, fieldValues));
 		FramedGraph graph = Tx.get().getGraph();
 
@@ -373,7 +378,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	@Deprecated
 	public Tx tx() {
-		return new OrientDBTx(options, this, boot.get(), daos.get(), txProvider, resolver, commitTimer);
+		return new OrientDBTx(options, this, boot.get(), daos.get(), txProvider, resolver, commitTimer, permissionRoots.get());
 	}
 
 	@Override
@@ -659,4 +664,13 @@ public class OrientDBDatabase extends AbstractDatabase {
 		return writeLock;
 	}
 
+	@Override
+	public boolean isEmptyDatabase() {
+		return tx(tx -> !tx.getGraph().v().hasNext());
+	}
+
+	@Override
+	public boolean requiresTypeInit() {
+		return true;
+	}
 }

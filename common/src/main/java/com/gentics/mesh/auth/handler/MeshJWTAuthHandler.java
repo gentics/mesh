@@ -166,8 +166,7 @@ public class MeshJWTAuthHandler extends AuthHandlerImpl implements JWTAuthHandle
 					context.addCookie(Cookie.cookie(SharedKeys.TOKEN_COOKIE_KEY, jwtToken)
 						.setMaxAge(meshOptions.getAuthenticationOptions().getTokenExpirationTime()).setPath("/"));
 				}
-				authorizeUser(authenticatedUser, context);
-				return;
+				context.next();
 			} else {
 				if (res.cause() != null) {
 					if (log.isDebugEnabled()) {
@@ -179,7 +178,6 @@ public class MeshJWTAuthHandler extends AuthHandlerImpl implements JWTAuthHandle
 				} else {
 					log.warn("JWT decode failure", res.cause());
 					handle401(context);
-					return;
 				}
 			}
 		});

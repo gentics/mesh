@@ -16,8 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import javax.inject.Inject;
 
@@ -28,18 +26,15 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.BranchDAOActions;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
+import com.gentics.mesh.core.data.dao.JobDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
-import com.gentics.mesh.core.data.job.HibJob;
-import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
@@ -54,7 +49,6 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.util.PentaFunction;
 import com.gentics.mesh.util.StreamUtil;
 
 import io.vertx.core.logging.Logger;
@@ -225,11 +219,11 @@ public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResp
 	 * @return single emitting the rest model
 	 */
 	public BranchInfoMicroschemaList getMicroschemaVersions(HibBranch branch) {
-		List<BranchMicroschemaInfo> list = StreamUtil.toStream(branch.findAllLatestMicroschemaVersionEdges()).map(edge -> {
-			MicroschemaReference reference = edge.getMicroschemaContainerVersion().transformToReference();
+		List<BranchMicroschemaInfo> list = StreamUtil.toStream(branch.findAllLatestMicroschemaVersionEdges()).map(assignment -> {
+			MicroschemaReference reference = assignment.getMicroschemaContainerVersion().transformToReference();
 			BranchMicroschemaInfo info = new BranchMicroschemaInfo(reference);
-			info.setMigrationStatus(edge.getMigrationStatus());
-			info.setJobUuid(edge.getJobUuid());
+			info.setMigrationStatus(assignment.getMigrationStatus());
+			info.setJobUuid(assignment.getJobUuid());
 			return info;
 		}).collect(Collectors.toList());
 
@@ -237,9 +231,44 @@ public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResp
 	}
 
 	public void handleMigrateRemainingMicronodes(InternalActionContext ac, String branchUuid) {
-		handleMigrateRemaining(ac, branchUuid,
-			HibBranch::findActiveMicroschemaVersions,
-			JobRoot::enqueueMicroschemaMigration);
+
+		try (WriteLock lock = writeLock.lock(ac)) {
+			utils.syncTx(ac, tx -> {
+				JobDaoWrapper jobDao = tx.data().jobDao();
+				BranchDaoWrapper branchDao = tx.data().branchDao();
+				MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
+
+				HibProject project = ac.getProject();
+				HibBranch branch = branchDao.findByUuid(project, branchUuid);
+
+				// Get all active versions and group by name
+				Collection<List<HibMicroschemaVersion>> versions = microschemaDao.findActiveMicroschemaVersions(branch).stream()
+					.collect(Collectors.groupingBy(HibMicroschemaVersion::getName)).values();
+
+				// Get latest versions of all active microschemas
+				Map<String, HibMicroschemaVersion> latestVersions = versions.stream()
+					.map(list -> {
+						return list.stream().max(Comparator.comparing(Function.identity())).get();
+					})
+					.collect(Collectors.toMap(HibMicroschemaVersion::getName, Function.identity()));
+
+				latestVersions.values().stream()
+					.flatMap(v -> {
+						return v.getPreviousVersions();
+					})
+					.forEach(schemaVersion -> {
+						jobDao.enqueueMicroschemaMigration(ac.getUser(), branch, schemaVersion, latestVersions.get(schemaVersion.getName()));
+					});
+
+				return message(ac, "schema_migration_invoked");
+			}, model -> {
+				// Trigger job worker after jobs have been queued
+				MeshEvent.triggerJobWorker(boot.mesh());
+				ac.send(model, OK);
+			});
+
+		}
+
 	}
 
 	/**
@@ -249,46 +278,32 @@ public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResp
 	 * @param branchUuid
 	 */
 	public void handleMigrateRemainingNodes(InternalActionContext ac, String branchUuid) {
-		handleMigrateRemaining(ac, branchUuid,
-			HibBranch::findActiveSchemaVersions,
-			JobRoot::enqueueSchemaMigration);
-	}
-
-	/**
-	 * A generic version to migrate remaining nodes/micronodes.
-	 * 
-	 * @param ac
-	 *            The action context
-	 * @param branchUuid
-	 *            The branch uuid
-	 * @param activeSchemas
-	 *            A function that returns an iterable of all active schema versions / microschema versions
-	 * @param enqueueMigration
-	 *            A function that enqueues a new migration job
-	 * @param <T>
-	 *            The type of the schema version (either schema version or microschema version)
-	 */
-	private <T extends GraphFieldSchemaContainerVersion> void handleMigrateRemaining(InternalActionContext ac, String branchUuid,
-		Function<HibBranch, Iterable<T>> activeSchemas, PentaFunction<JobRoot, HibUser, HibBranch, T, T, HibJob> enqueueMigration) {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				HibProject project = ac.getProject();
+				JobDaoWrapper jobDao = tx.data().jobDao();
 				BranchDaoWrapper branchDao = tx.data().branchDao();
+				SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+
+				HibProject project = ac.getProject();
 				HibBranch branch = branchDao.findByUuid(project, branchUuid);
 
-				// Get all active versions and group by Microschema
-				Collection<? extends List<T>> versions = StreamSupport.stream(activeSchemas.apply(branch).spliterator(), false)
-					.collect(Collectors.groupingBy(GraphFieldSchemaContainerVersion::getName)).values();
+				// Get all active versions and group by name
+				Collection<List<HibSchemaVersion>> versions = schemaDao.findActiveSchemaVersions(branch).stream()
+					.collect(Collectors.groupingBy(HibSchemaVersion::getName)).values();
 
-				// Get latest versions of all active Microschemas
-				Map<String, T> latestVersions = versions.stream()
-					.map(list -> (T) list.stream().max(Comparator.comparing(Function.identity())).get())
-					.collect(Collectors.toMap(GraphFieldSchemaContainerVersion::getName, Function.identity()));
+				// Get latest versions of all active schemas
+				Map<String, HibSchemaVersion> latestVersions = versions.stream()
+					.map(list -> {
+						return list.stream().max(Comparator.comparing(Function.identity())).get();
+					})
+					.collect(Collectors.toMap(HibSchemaVersion::getName, Function.identity()));
 
 				latestVersions.values().stream()
-					.flatMap(v -> (Stream<T>) v.getPreviousVersions())
+					.flatMap(v -> {
+						return v.getPreviousVersions();
+					})
 					.forEach(schemaVersion -> {
-						enqueueMigration.apply(boot.jobRoot(), ac.getUser(), branch, schemaVersion, latestVersions.get(schemaVersion.getName()));
+						jobDao.enqueueSchemaMigration(ac.getUser(), branch, schemaVersion, latestVersions.get(schemaVersion.getName()));
 					});
 
 				return message(ac, "schema_migration_invoked");
@@ -297,8 +312,63 @@ public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResp
 				MeshEvent.triggerJobWorker(boot.mesh());
 				ac.send(model, OK);
 			});
+
 		}
 	}
+
+	// /**
+	// * A generic version to migrate remaining nodes/micronodes.
+	// *
+	// * @param ac
+	// * The action context
+	// * @param branchUuid
+	// * The branch uuid
+	// * @param activeSchemas
+	// * A function that returns an iterable of all active schema versions / microschema versions
+	// * @param enqueueMigration
+	// * A function that enqueues a new migration job
+	// * @param <T>
+	// * The type of the schema version (either schema version or microschema version)
+	// */
+	// private <T extends HibFieldSchemaVersionElement<?, ?, ?, T>> void handleMigrateRemaining(InternalActionContext ac, String branchUuid,
+	// Function<HibBranch, Iterable<T>> activeSchemas, PentaFunction<JobRoot, HibUser, HibBranch, T, T, HibJob> enqueueMigration) {
+	// try (WriteLock lock = writeLock.lock(ac)) {
+	// utils.syncTx(ac, tx -> {
+	// HibProject project = ac.getProject();
+	// BranchDaoWrapper branchDao = tx.data().branchDao();
+	//
+	// HibBranch branch = branchDao.findByUuid(project, branchUuid);
+	// // Get all active versions and group by Microschema
+	// Collection<? extends List<T>> versions = StreamSupport.stream(activeSchemas.apply(branch).spliterator(), false)
+	// .collect(Collectors.groupingBy(HibFieldSchemaVersionElement::getName)).values();
+	//
+	// // Get latest versions of all active Microschemas
+	// Map<String, T> latestVersions = versions.stream()
+	// .map(list -> (T) list.stream().max(Comparator.comparing(Function.identity())).get())
+	// .collect(Collectors.toMap(HibFieldSchemaVersionElement::getName, Function.identity()));
+	//
+	// latestVersions.values().stream()
+	// .flatMap(v -> {
+	// if (v instanceof HibMicroschemaVersion) {
+	// return ((HibMicroschemaVersion) v).getPreviousVersions();
+	// } else if (v instanceof HibSchemaVersion) {
+	// return ((HibSchemaVersion) v).getPreviousVersions();
+	// } else {
+	// throw new RuntimeException("Unknown type {" + v + "}");
+	// }
+	// })
+	// .forEach(schemaVersion -> {
+	// enqueueMigration.apply(boot.jobRoot(), ac.getUser(), branch, schemaVersion, latestVersions.get(schemaVersion.getName()));
+	// });
+	//
+	// return message(ac, "schema_migration_invoked");
+	// }, model -> {
+	// // Trigger job worker after jobs have been queued
+	// MeshEvent.triggerJobWorker(boot.mesh());
+	// ac.send(model, OK);
+	// });
+	// }
+	// }
 
 	/**
 	 * Handle requests to make a branch the latest

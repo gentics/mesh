@@ -1,5 +1,6 @@
 package com.gentics.mesh.mock;
 
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.handler.VersionHandler.API_VERSION_CONTEXT_KEY;
 import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_VERSION;
 import static org.mockito.Mockito.mock;
@@ -60,7 +61,9 @@ public final class Mocks {
 		});
 		paramMap.entrySet().stream().forEach(entry -> when(request.getParam(entry.getKey())).thenReturn(entry.getValue()));
 		if (user != null) {
-			MeshAuthUserImpl requestUser = Tx.get().getGraph().frameElement(((User)user).getElement(), MeshAuthUserImpl.class);
+			User graphUser = toGraph(user);
+			MeshAuthUserImpl requestUser = MeshAuthUserImpl.create(graphUser.db(), graphUser);
+
 			when(rc.user()).thenReturn(requestUser);
 			// JsonObject principal = new JsonObject();
 			// principal.put("uuid", user.getUuid());

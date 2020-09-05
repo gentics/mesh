@@ -12,7 +12,7 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -100,7 +100,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 	}
 
 	@Override
-	public HibElement resolveToElement(Stack<String> stack) {
+	public HibBaseElement resolveToElement(Stack<String> stack) {
 		if (stack.isEmpty()) {
 			return this;
 		} else {

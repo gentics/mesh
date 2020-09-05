@@ -2,7 +2,6 @@ package com.gentics.mesh.graphql.model;
 
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
-import static com.gentics.mesh.util.StreamUtil.toStream;
 
 import java.util.stream.Stream;
 
@@ -40,7 +39,7 @@ public class NodeReferenceIn {
 		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
 		String branchUuid = context.getBranch().getUuid();
 		return contentDao.getInboundReferences(content.getNode())
-			.flatMap(ref -> toStream(ref.getReferencingContents()
+			.flatMap(ref -> ref.getReferencingContents()
 				.filter(container -> {
 					if (type == DRAFT && container.isDraft(branchUuid)) {
 						return true;
@@ -51,7 +50,7 @@ public class NodeReferenceIn {
 					return false;
 				})
 				.filter(context::hasReadPerm)
-				.findAny())
+				.findAny().stream()
 					.map(referencingContent -> new NodeReferenceIn(
 						new NodeContent(null, referencingContent, content.getLanguageFallback(), type),
 						ref)));

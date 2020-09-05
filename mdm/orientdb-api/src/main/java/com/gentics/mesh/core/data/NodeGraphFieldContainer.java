@@ -17,14 +17,14 @@ import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.Errors;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.version.VersionInfo;
-import com.gentics.mesh.madl.traversal.TraversalResult;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.util.VersionNumber;
 
@@ -275,7 +275,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	List<FieldContainerChange> compareTo(FieldMap fieldMap);
 
 	@Override
-	SchemaVersion getSchemaContainerVersion();
+	HibSchemaVersion getSchemaContainerVersion();
 
 	/**
 	 * Get all micronode fields that have a micronode using the given microschema container version.
@@ -284,7 +284,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 *            microschema container version
 	 * @return list of micronode fields
 	 */
-	List<MicronodeGraphField> getMicronodeFields(MicroschemaVersion version);
+	List<MicronodeGraphField> getMicronodeFields(HibMicroschemaVersion version);
 
 	/**
 	 * Get all micronode list fields that have at least one micronode using the given microschema container version.
@@ -293,7 +293,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 *            microschema container version
 	 * @return list of micronode list fields
 	 */
-	TraversalResult<MicronodeGraphFieldList> getMicronodeListFields(MicroschemaVersion version);
+	Result<MicronodeGraphFieldList> getMicronodeListFields(HibMicroschemaVersion version);
 
 	/**
 	 * Return the ETag for the field container.
@@ -429,5 +429,5 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 *
 	 * @return
 	 */
-	TraversalResult<NodeGraphFieldContainer> versions();
+	Result<NodeGraphFieldContainer> versions();
 }

@@ -15,6 +15,7 @@ import java.io.IOException;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.UpdateSchemaChange;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
@@ -64,7 +65,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApply() {
 		try (Tx tx = tx()) {
-			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			HibSchemaVersion version = createSchemaVersion(tx);
 			SchemaVersionModel schema = new SchemaModelImpl();
 			UpdateSchemaChange change = tx.getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
 			change.setIndexOptions(new JsonObject().put("key", "value"));
@@ -87,7 +88,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 	public void testFieldOrderChange() {
 		try (Tx tx = tx()) {
 			// 1. Create the schema container
-			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			HibSchemaVersion version = createSchemaVersion(tx);
 
 			SchemaVersionModel schema = new SchemaModelImpl();
 			schema.setSegmentField("someField");
@@ -113,7 +114,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 	@Test
 	public void testUpdateSchemaSegmentFieldToNull() {
 		try (Tx tx = tx()) {
-			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			HibSchemaVersion version = createSchemaVersion(tx);
 
 			// 1. Create schema
 			SchemaVersionModel schema = new SchemaModelImpl();
@@ -135,7 +136,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 	@Test
 	public void testUpdateSchema() {
 		try (Tx tx = tx()) {
-			SchemaVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			HibSchemaVersion version = createSchemaVersion(tx);
 
 			// 1. Create schema
 			SchemaVersionModel schema = new SchemaModelImpl();

@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.root;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.HibMeshVersion;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
 import com.gentics.mesh.core.data.job.JobRoot;
@@ -10,40 +10,11 @@ import com.gentics.mesh.core.data.node.Node;
 /**
  * The mesh root is the primary graph element. All other aggregation nodes for users, roles, groups, projects connect to this element.
  */
-public interface MeshRoot extends MeshVertex {
+public interface MeshRoot extends MeshVertex, HibMeshVersion {
 
 	public static final String MESH_VERSION = "meshVersion";
 
 	public static final String MESH_DB_REV = "meshDatabaseRevision";
-
-	/**
-	 * Returns the mesh version which was last used to access the graph. This version is usually updated by the {@link BootstrapInitializer} during startup of
-	 * mesh.
-	 * 
-	 * @return Plain text version or null if this information has not yet been stored
-	 */
-	String getMeshVersion();
-
-	/**
-	 * Set the plain text mesh version which was last used to access the graph.
-	 * 
-	 * @param version
-	 */
-	void setMeshVersion(String version);
-
-	/**
-	 * Return the currently stored database revision hash.
-	 * 
-	 * @return
-	 */
-	String getDatabaseRevision();
-
-	/**
-	 * Update the stored database revision hash.
-	 * 
-	 * @param databaseRevision
-	 */
-	void setDatabaseRevision(String databaseRevision);
 
 	/**
 	 * Returns the user aggregation vertex.
@@ -127,7 +98,7 @@ public interface MeshRoot extends MeshVertex {
 	 * @param pathToElement
 	 * @return Resolved element or null if no element could be found
 	 */
-	HibElement resolvePathToElement(String pathToElement);
+	HibBaseElement resolvePathToElement(String pathToElement);
 
 	void clearReferences();
 
