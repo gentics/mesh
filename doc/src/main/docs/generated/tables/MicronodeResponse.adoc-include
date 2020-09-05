@@ -12,10 +12,10 @@
 | object
 | Fields that are stored in the micronode.
 
-| microschemaModel
+| microschema
 | true
 | object
-| Reference to the microschemaModel of the micronode.
+| Reference to the microschema of the micronode.
 
 | uuid
 | true

@@ -10,7 +10,7 @@
 | description
 | false
 | string
-| Description of the microschemaModel
+| Description of the microschema
 
 | elasticsearch
 | false
@@ -20,16 +20,16 @@
 | fields
 | false
 | array
-| List of microschemaModel fields
+| List of microschema fields
 
 | name
 | false
 | string
-| Name of the microschemaModel
+| Name of the microschema
 
 | version
 | false
 | string
-| Version of the microschemaModel
+| Version of the microschema
 
 |======

@@ -12,10 +12,10 @@
 | object
 | Some events will be caused by another action. This object contains information about the cause of the event.
 
-| microschemaModel
+| microschema
 | true
 | object
-| Reference to the microschemaModel.
+| Reference to the microschema.
 
 | origin
 | true

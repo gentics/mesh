@@ -177,40 +177,9 @@ Emitted once a schema has been unassigned from a branch.
 
 
 
-=== _mesh.microschemaModel-branch.assign_
+=== _mesh.microschema-branch.assign_
 
-Emitted once a microschemaModel gets assigned to a branch.
-
-
-
-.Example
-[source,json]
-----
-{
-  "project" : {
-    "name" : "demo",
-    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
-  },
-  "branch" : {
-    "name" : "demoV1",
-    "uuid" : "b12272150db4490ea272150db4190e72"
-  },
-  "schema" : {
-    "name" : "vcard",
-    "uuid" : "cd6b4f2851814773ab4f28518137735f",
-    "version" : "1",
-    "versionUuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
-  },
-  "status" : "COMPLETED"
-}
-----
-
-
-
-
-=== _mesh.microschemaModel-branch.unassign_
-
-Emitted once a microschemaModel gets unassigned from a branch.
+Emitted once a microschema gets assigned to a branch.
 
 
 
@@ -239,9 +208,40 @@ Emitted once a microschemaModel gets unassigned from a branch.
 
 
 
-=== _mesh.microschemaModel.migration.start_
+=== _mesh.microschema-branch.unassign_
 
-Emitted when a microschemaModel migration starts.
+Emitted once a microschema gets unassigned from a branch.
+
+
+
+.Example
+[source,json]
+----
+{
+  "project" : {
+    "name" : "demo",
+    "uuid" : "ec2f5106764c4d94af5106764ccd948a"
+  },
+  "branch" : {
+    "name" : "demoV1",
+    "uuid" : "b12272150db4490ea272150db4190e72"
+  },
+  "schema" : {
+    "name" : "vcard",
+    "uuid" : "cd6b4f2851814773ab4f28518137735f",
+    "version" : "1",
+    "versionUuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+  },
+  "status" : "COMPLETED"
+}
+----
+
+
+
+
+=== _mesh.microschema.migration.start_
+
+Emitted when a microschema migration starts.
 
 
 
@@ -277,9 +277,9 @@ Emitted when a microschemaModel migration starts.
 
 
 
-=== _mesh.microschemaModel.migration.finished_
+=== _mesh.microschema.migration.finished_
 
-Emitted when a microschemaModel migration finishes.
+Emitted when a microschema migration finishes.
 
 
 
@@ -947,18 +947,18 @@ Emitted when a schema was unassigned from a project.
 
 
 
-=== _mesh.project-microschemaModel.assigned_
+=== _mesh.project-microschema.assigned_
 
-Emitted when a microschemaModel was assigned to a projec.t
-
-
+Emitted when a microschema was assigned to a projec.t
 
 
 
 
-=== _mesh.project-microschemaModel.unassigned_
 
-Emitted when a microschemaModel was unassigned from a project.
+
+=== _mesh.project-microschema.unassigned_
+
+Emitted when a microschema was unassigned from a project.
 
 
 
@@ -1299,27 +1299,9 @@ Emitted when a schema was deleted
 
 
 
-=== _mesh.microschemaModel.created_
+=== _mesh.microschema.created_
 
-Emitted when a microschemaModel was created.
-
-
-
-.Example
-[source,json]
-----
-{
-  "uuid" : "2619185de0db4a5399185de0dbda53da",
-  "name" : "vcard"
-}
-----
-
-
-
-
-=== _mesh.microschemaModel.updated_
-
-Emitted when a microschemaModel was updated.
+Emitted when a microschema was created.
 
 
 
@@ -1335,9 +1317,27 @@ Emitted when a microschemaModel was updated.
 
 
 
-=== _mesh.microschemaModel.deleted_
+=== _mesh.microschema.updated_
 
-Emitted when a microschemaModel was deleted.
+Emitted when a microschema was updated.
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da",
+  "name" : "vcard"
+}
+----
+
+
+
+
+=== _mesh.microschema.deleted_
+
+Emitted when a microschema was deleted.
 
 
 

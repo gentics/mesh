@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "1.7.0"
+version: "1.7.1"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -2765,16 +2765,16 @@ mediaType: application/json
     description: Endpoint which provides methods to manipulate microschemas.
     /: 
         post: 
-            description: Create a new microschemaModel.
+            description: Create a new microschema.
             body: 
                 application/json: 
                     schema: |
                         | Property | Mandatory | Type | Description |
                         |----------|-----------|------|-------------|
-                        | description | false | string | Description of the microschemaModel |
+                        | description | false | string | Description of the microschema |
                         | elasticsearch | false | object | Additional elasticsearch index configuration. This can be used to setup custom analyzers and filters. |
-                        | fields | false | array | List of microschemaModel fields |
-                        | name | true | string | Name of the microschemaModel |
+                        | fields | false | array | List of microschema fields |
+                        | name | true | string | Name of the microschema |
                     example: |
                         {
                           "description" : "Microschema for Geolocations",
@@ -2793,7 +2793,7 @@ mediaType: application/json
                         }
             responses: 
                 "201": 
-                    description: Created microschemaModel.
+                    description: Created microschema.
                     body: 
                         application/json: 
                             schema: |
@@ -2801,12 +2801,12 @@ mediaType: application/json
                                 |----------|-----------|------|-------------|
                                 | created | true | string | ISO8601 formatted created date string. |
                                 | creator | true | object | User reference of the creator of the element. |
-                                | description | false | string | Description of the microschemaModel |
+                                | description | false | string | Description of the microschema |
                                 | edited | true | string | ISO8601 formatted edited date string. |
                                 | editor | false | object | User reference of the editor of the element. |
                                 | elasticsearch | false | object | Additional search index configuration. This can be used to setup custom analyzers and filters. |
-                                | fields | true | array | List of microschemaModel fields |
-                                | name | true | string | Name of the microschemaModel |
+                                | fields | true | array | List of microschema fields |
+                                | name | true | string | Name of the microschema |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
                                 | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
@@ -2815,7 +2815,7 @@ mediaType: application/json
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
                                 | uuid | true | string | Uuid of the element |
-                                | version | true | string | Version of the microschemaModel |
+                                | version | true | string | Version of the microschema |
                             example: |
                                 {
                                   "uuid" : "2715307deafc4ecc95307deafccecc10",
@@ -2930,13 +2930,13 @@ mediaType: application/json
         uriParameters: 
             microschemaUuid: 
                 displayName: microschemaUuid
-                description: Uuid of the microschemaModel.
+                description: Uuid of the microschema.
                 type: string
                 required: true
                 repeat: false
                 example: "2715307deafc4ecc95307deafccecc10"
         get: 
-            description: Read the microschemaModel with the given uuid.
+            description: Read the microschema with the given uuid.
             queryParameters: 
                 branch: 
                     description: Specifies the branch to be used for loading data. The latest project branch will be used if this parameter is omitted.
@@ -2953,7 +2953,7 @@ mediaType: application/json
                     example: "1.1"
             responses: 
                 "200": 
-                    description: Loaded microschemaModel.
+                    description: Loaded microschema.
                     body: 
                         application/json: 
                             schema: |
@@ -2961,12 +2961,12 @@ mediaType: application/json
                                 |----------|-----------|------|-------------|
                                 | created | true | string | ISO8601 formatted created date string. |
                                 | creator | true | object | User reference of the creator of the element. |
-                                | description | false | string | Description of the microschemaModel |
+                                | description | false | string | Description of the microschema |
                                 | edited | true | string | ISO8601 formatted edited date string. |
                                 | editor | false | object | User reference of the editor of the element. |
                                 | elasticsearch | false | object | Additional search index configuration. This can be used to setup custom analyzers and filters. |
-                                | fields | true | array | List of microschemaModel fields |
-                                | name | true | string | Name of the microschemaModel |
+                                | fields | true | array | List of microschema fields |
+                                | name | true | string | Name of the microschema |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
                                 | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
@@ -2975,7 +2975,7 @@ mediaType: application/json
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
                                 | uuid | true | string | Uuid of the element |
-                                | version | true | string | Version of the microschemaModel |
+                                | version | true | string | Version of the microschema |
                             example: |
                                 {
                                   "uuid" : "2715307deafc4ecc95307deafccecc10",
@@ -3003,17 +3003,17 @@ mediaType: application/json
                                   }
                                 }
         post: 
-            description: Update the microschemaModel with the given uuid.
+            description: Update the microschema with the given uuid.
             body: 
                 application/json: 
                     schema: |
                         | Property | Mandatory | Type | Description |
                         |----------|-----------|------|-------------|
-                        | description | false | string | Description of the microschemaModel |
+                        | description | false | string | Description of the microschema |
                         | elasticsearch | false | object | Additional elasticsearch index configuration. This can be used to setup custom analyzers and filters. |
-                        | fields | false | array | List of microschemaModel fields |
-                        | name | false | string | Name of the microschemaModel |
-                        | version | false | string | Version of the microschemaModel |
+                        | fields | false | array | List of microschema fields |
+                        | name | false | string | Name of the microschema |
+                        | version | false | string | Version of the microschema |
                     example: |
                         {
                           "name" : "geolocation-renamed",
@@ -3035,7 +3035,7 @@ mediaType: application/json
                                   "message" : "I18n message"
                                 }
         delete: 
-            description: Delete the microschemaModel with the given uuid.
+            description: Delete the microschema with the given uuid.
             responses: 
                 "204": 
                     description: Microschema was deleted.
@@ -3043,7 +3043,7 @@ mediaType: application/json
         uriParameters: 
             microschemaUuid: 
                 displayName: microschemaUuid
-                description: Uuid of the microschemaModel.
+                description: Uuid of the microschema.
                 type: string
                 required: true
                 repeat: false
@@ -3109,7 +3109,7 @@ mediaType: application/json
         uriParameters: 
             microschemaUuid: 
                 displayName: microschemaUuid
-                description: Uuid of the microschemaModel.
+                description: Uuid of the microschema.
                 type: string
                 required: true
                 repeat: false
@@ -3121,10 +3121,10 @@ mediaType: application/json
                     schema: |
                         | Property | Mandatory | Type | Description |
                         |----------|-----------|------|-------------|
-                        | description | false | string | Description of the microschemaModel |
+                        | description | false | string | Description of the microschema |
                         | elasticsearch | false | object | Additional elasticsearch index configuration. This can be used to setup custom analyzers and filters. |
-                        | fields | false | array | List of microschemaModel fields |
-                        | name | true | string | Name of the microschemaModel |
+                        | fields | false | array | List of microschema fields |
+                        | name | true | string | Name of the microschema |
                     example: |
                         {
                           "description" : "Microschema for Geolocations",
@@ -4222,7 +4222,7 @@ mediaType: application/json
                                         }
                                       },
                                       "location" : {
-                                        "microschemaModel" : {
+                                        "microschema" : {
                                           "name" : "geolocation"
                                         },
                                         "fields" : {
@@ -4231,7 +4231,7 @@ mediaType: application/json
                                         }
                                       },
                                       "locations" : [ {
-                                        "microschemaModel" : {
+                                        "microschema" : {
                                           "name" : "geolocation"
                                         },
                                         "fields" : {
@@ -4239,7 +4239,7 @@ mediaType: application/json
                                           "longitude" : 16.373063840833
                                         }
                                       }, {
-                                        "microschemaModel" : {
+                                        "microschema" : {
                                           "name" : "geolocation"
                                         },
                                         "fields" : {
@@ -4766,7 +4766,7 @@ mediaType: application/json
                                         "pending" : 0
                                       }
                                     },
-                                    "microschemaModel" : {
+                                    "microschema" : {
                                       "insert" : {
                                         "synced" : 0,
                                         "pending" : 0
@@ -5360,16 +5360,16 @@ mediaType: application/json
                     description: Some text before /api/v2/dummy/webroot/flower.jpg and after
     /validateMicroschema: 
         post: 
-            description: Validate the posted microschemaModel and report errors.
+            description: Validate the posted microschema and report errors.
             body: 
                 application/json: 
                     schema: |
                         | Property | Mandatory | Type | Description |
                         |----------|-----------|------|-------------|
-                        | description | false | string | Description of the microschemaModel |
+                        | description | false | string | Description of the microschema |
                         | elasticsearch | false | object | Additional elasticsearch index configuration. This can be used to setup custom analyzers and filters. |
-                        | fields | false | array | List of microschemaModel fields |
-                        | name | true | string | Name of the microschemaModel |
+                        | fields | false | array | List of microschema fields |
+                        | name | true | string | Name of the microschema |
                     example: |
                         {
                           "description" : "Microschema for Geolocations",
@@ -6014,7 +6014,7 @@ mediaType: application/json
                                 | vertxVersion | false | string | Used Vert.x version. |
                             example: |
                                 {
-                                  "meshVersion" : "1.7.0",
+                                  "meshVersion" : "1.7.1",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",
@@ -6259,7 +6259,7 @@ mediaType: application/json
                                       }
                                     },
                                     "location" : {
-                                      "microschemaModel" : {
+                                      "microschema" : {
                                         "name" : "geolocation"
                                       },
                                       "fields" : {
@@ -6268,7 +6268,7 @@ mediaType: application/json
                                       }
                                     },
                                     "locations" : [ {
-                                      "microschemaModel" : {
+                                      "microschema" : {
                                         "name" : "geolocation"
                                       },
                                       "fields" : {
@@ -6276,7 +6276,7 @@ mediaType: application/json
                                         "longitude" : 16.373063840833
                                       }
                                     }, {
-                                      "microschemaModel" : {
+                                      "microschema" : {
                                         "name" : "geolocation"
                                       },
                                       "fields" : {
@@ -6475,7 +6475,7 @@ mediaType: application/json
                                         }
                                       },
                                       "location" : {
-                                        "microschemaModel" : {
+                                        "microschema" : {
                                           "name" : "geolocation"
                                         },
                                         "fields" : {
@@ -6484,7 +6484,7 @@ mediaType: application/json
                                         }
                                       },
                                       "locations" : [ {
-                                        "microschemaModel" : {
+                                        "microschema" : {
                                           "name" : "geolocation"
                                         },
                                         "fields" : {
@@ -6492,7 +6492,7 @@ mediaType: application/json
                                           "longitude" : 16.373063840833
                                         }
                                       }, {
-                                        "microschemaModel" : {
+                                        "microschema" : {
                                           "name" : "geolocation"
                                         },
                                         "fields" : {
@@ -6795,7 +6795,7 @@ mediaType: application/json
                                       }
                                     },
                                     "location" : {
-                                      "microschemaModel" : {
+                                      "microschema" : {
                                         "name" : "geolocation"
                                       },
                                       "fields" : {
@@ -6804,7 +6804,7 @@ mediaType: application/json
                                       }
                                     },
                                     "locations" : [ {
-                                      "microschemaModel" : {
+                                      "microschema" : {
                                         "name" : "geolocation"
                                       },
                                       "fields" : {
@@ -6812,7 +6812,7 @@ mediaType: application/json
                                         "longitude" : 16.373063840833
                                       }
                                     }, {
-                                      "microschemaModel" : {
+                                      "microschema" : {
                                         "name" : "geolocation"
                                       },
                                       "fields" : {
@@ -6885,7 +6885,7 @@ mediaType: application/json
                             "names" : [ "Jack", "Joe", "Mary", "Tom" ],
                             "categoryIds" : [ 1, 42, 133, 7 ],
                             "location" : {
-                              "microschemaModel" : {
+                              "microschema" : {
                                 "name" : "geolocation"
                               },
                               "fields" : {
@@ -6894,7 +6894,7 @@ mediaType: application/json
                               }
                             },
                             "locations" : [ {
-                              "microschemaModel" : {
+                              "microschema" : {
                                 "name" : "geolocation"
                               },
                               "fields" : {
@@ -6902,7 +6902,7 @@ mediaType: application/json
                                 "longitude" : 16.373063840833
                               }
                             }, {
-                              "microschemaModel" : {
+                              "microschema" : {
                                 "name" : "geolocation"
                               },
                               "fields" : {
@@ -7259,7 +7259,7 @@ mediaType: application/json
                                       }
                                     },
                                     "location" : {
-                                      "microschemaModel" : {
+                                      "microschema" : {
                                         "name" : "geolocation"
                                       },
                                       "fields" : {
@@ -7268,7 +7268,7 @@ mediaType: application/json
                                       }
                                     },
                                     "locations" : [ {
-                                      "microschemaModel" : {
+                                      "microschema" : {
                                         "name" : "geolocation"
                                       },
                                       "fields" : {
@@ -7276,7 +7276,7 @@ mediaType: application/json
                                         "longitude" : 16.373063840833
                                       }
                                     }, {
-                                      "microschemaModel" : {
+                                      "microschema" : {
                                         "name" : "geolocation"
                                       },
                                       "fields" : {
@@ -7576,7 +7576,7 @@ mediaType: application/json
                                       }
                                     },
                                     "location" : {
-                                      "microschemaModel" : {
+                                      "microschema" : {
                                         "name" : "geolocation"
                                       },
                                       "fields" : {
@@ -7585,7 +7585,7 @@ mediaType: application/json
                                       }
                                     },
                                     "locations" : [ {
-                                      "microschemaModel" : {
+                                      "microschema" : {
                                         "name" : "geolocation"
                                       },
                                       "fields" : {
@@ -7593,7 +7593,7 @@ mediaType: application/json
                                         "longitude" : 16.373063840833
                                       }
                                     }, {
-                                      "microschemaModel" : {
+                                      "microschema" : {
                                         "name" : "geolocation"
                                       },
                                       "fields" : {
@@ -7806,7 +7806,7 @@ mediaType: application/json
                                         }
                                       },
                                       "location" : {
-                                        "microschemaModel" : {
+                                        "microschema" : {
                                           "name" : "geolocation"
                                         },
                                         "fields" : {
@@ -7815,7 +7815,7 @@ mediaType: application/json
                                         }
                                       },
                                       "locations" : [ {
-                                        "microschemaModel" : {
+                                        "microschema" : {
                                           "name" : "geolocation"
                                         },
                                         "fields" : {
@@ -7823,7 +7823,7 @@ mediaType: application/json
                                           "longitude" : 16.373063840833
                                         }
                                       }, {
-                                        "microschemaModel" : {
+                                        "microschema" : {
                                           "name" : "geolocation"
                                         },
                                         "fields" : {
@@ -9495,7 +9495,7 @@ mediaType: application/json
                                         }
                                       },
                                       "location" : {
-                                        "microschemaModel" : {
+                                        "microschema" : {
                                           "name" : "geolocation"
                                         },
                                         "fields" : {
@@ -9504,7 +9504,7 @@ mediaType: application/json
                                         }
                                       },
                                       "locations" : [ {
-                                        "microschemaModel" : {
+                                        "microschema" : {
                                           "name" : "geolocation"
                                         },
                                         "fields" : {
@@ -9512,7 +9512,7 @@ mediaType: application/json
                                           "longitude" : 16.373063840833
                                         }
                                       }, {
-                                        "microschemaModel" : {
+                                        "microschema" : {
                                           "name" : "geolocation"
                                         },
                                         "fields" : {
@@ -9755,7 +9755,7 @@ mediaType: application/json
                                         }
                                       },
                                       "location" : {
-                                        "microschemaModel" : {
+                                        "microschema" : {
                                           "name" : "geolocation"
                                         },
                                         "fields" : {
@@ -9764,7 +9764,7 @@ mediaType: application/json
                                         }
                                       },
                                       "locations" : [ {
-                                        "microschemaModel" : {
+                                        "microschema" : {
                                           "name" : "geolocation"
                                         },
                                         "fields" : {
@@ -9772,7 +9772,7 @@ mediaType: application/json
                                           "longitude" : 16.373063840833
                                         }
                                       }, {
-                                        "microschemaModel" : {
+                                        "microschema" : {
                                           "name" : "geolocation"
                                         },
                                         "fields" : {
@@ -9905,7 +9905,7 @@ mediaType: application/json
                                           }
                                         },
                                         "location" : {
-                                          "microschemaModel" : {
+                                          "microschema" : {
                                             "name" : "geolocation"
                                           },
                                           "fields" : {
@@ -9914,7 +9914,7 @@ mediaType: application/json
                                           }
                                         },
                                         "locations" : [ {
-                                          "microschemaModel" : {
+                                          "microschema" : {
                                             "name" : "geolocation"
                                           },
                                           "fields" : {
@@ -9922,7 +9922,7 @@ mediaType: application/json
                                             "longitude" : 16.373063840833
                                           }
                                         }, {
-                                          "microschemaModel" : {
+                                          "microschema" : {
                                             "name" : "geolocation"
                                           },
                                           "fields" : {
@@ -10077,7 +10077,7 @@ mediaType: application/json
                             "names" : [ "Jack", "Joe", "Mary", "Tom" ],
                             "categoryIds" : [ 1, 42, 133, 7 ],
                             "location" : {
-                              "microschemaModel" : {
+                              "microschema" : {
                                 "name" : "geolocation"
                               },
                               "fields" : {
@@ -10086,7 +10086,7 @@ mediaType: application/json
                               }
                             },
                             "locations" : [ {
-                              "microschemaModel" : {
+                              "microschema" : {
                                 "name" : "geolocation"
                               },
                               "fields" : {
@@ -10094,7 +10094,7 @@ mediaType: application/json
                                 "longitude" : 16.373063840833
                               }
                             }, {
-                              "microschemaModel" : {
+                              "microschema" : {
                                 "name" : "geolocation"
                               },
                               "fields" : {
@@ -10849,7 +10849,7 @@ mediaType: application/json
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
-                                | microschemas | false | array | List of microschemaModel references. |
+                                | microschemas | false | array | List of microschema references. |
                             example: |
                                 {
                                   "microschemas" : [ {
@@ -10863,13 +10863,13 @@ mediaType: application/json
                                   } ]
                                 }
         post: 
-            description: Assign a microschemaModel version to the branch.
+            description: Assign a microschema version to the branch.
             body: 
                 application/json: 
                     schema: |
                         | Property | Mandatory | Type | Description |
                         |----------|-----------|------|-------------|
-                        | microschemas | false | array | List of microschemaModel references. |
+                        | microschemas | false | array | List of microschema references. |
                     example: |
                         {
                           "microschemas" : [ {
@@ -10884,13 +10884,13 @@ mediaType: application/json
                         }
             responses: 
                 "200": 
-                    description: Updated microschemaModel list.
+                    description: Updated microschema list.
                     body: 
                         application/json: 
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
-                                | microschemas | false | array | List of microschemaModel references. |
+                                | microschemas | false | array | List of microschema references. |
                             example: |
                                 {
                                   "microschemas" : [ {
@@ -11497,7 +11497,7 @@ mediaType: application/json
                                         }
                                       },
                                       "location" : {
-                                        "microschemaModel" : {
+                                        "microschema" : {
                                           "name" : "geolocation"
                                         },
                                         "fields" : {
@@ -11506,7 +11506,7 @@ mediaType: application/json
                                         }
                                       },
                                       "locations" : [ {
-                                        "microschemaModel" : {
+                                        "microschema" : {
                                           "name" : "geolocation"
                                         },
                                         "fields" : {
@@ -11514,7 +11514,7 @@ mediaType: application/json
                                           "longitude" : 16.373063840833
                                         }
                                       }, {
-                                        "microschemaModel" : {
+                                        "microschema" : {
                                           "name" : "geolocation"
                                         },
                                         "fields" : {
@@ -12210,13 +12210,13 @@ mediaType: application/json
         uriParameters: 
             microschemaUuid: 
                 displayName: microschemaUuid
-                description: Uuid of the microschemaModel.
+                description: Uuid of the microschema.
                 type: string
                 required: true
                 repeat: false
                 example: "2715307deafc4ecc95307deafccecc10"
         post: 
-            description: Add the microschemaModel to the project.
+            description: Add the microschema to the project.
             responses: 
                 "200": 
                     description: Microschema was added to the project.
@@ -12227,12 +12227,12 @@ mediaType: application/json
                                 |----------|-----------|------|-------------|
                                 | created | true | string | ISO8601 formatted created date string. |
                                 | creator | true | object | User reference of the creator of the element. |
-                                | description | false | string | Description of the microschemaModel |
+                                | description | false | string | Description of the microschema |
                                 | edited | true | string | ISO8601 formatted edited date string. |
                                 | editor | false | object | User reference of the editor of the element. |
                                 | elasticsearch | false | object | Additional search index configuration. This can be used to setup custom analyzers and filters. |
-                                | fields | true | array | List of microschemaModel fields |
-                                | name | true | string | Name of the microschemaModel |
+                                | fields | true | array | List of microschema fields |
+                                | name | true | string | Name of the microschema |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
                                 | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
@@ -12241,7 +12241,7 @@ mediaType: application/json
                                 | permissions.update | true | boolean | Flag which indicates whether the update permission is granted. |
                                 | rolePerms | false | object | Permission information for provided role. This property will only be populated if a role query parameter has been specified. |
                                 | uuid | true | string | Uuid of the element |
-                                | version | true | string | Version of the microschemaModel |
+                                | version | true | string | Version of the microschema |
                             example: |
                                 {
                                   "uuid" : "2715307deafc4ecc95307deafccecc10",
@@ -12269,7 +12269,7 @@ mediaType: application/json
                                   }
                                 }
         delete: 
-            description: Remove the microschemaModel from the project.
+            description: Remove the microschema from the project.
             responses: 
                 "204": 
                     description: Microschema was removed from project.
