@@ -510,7 +510,7 @@ include::content/docs/examples/search/tagFamily.search.json[]
 
 [source,json]
 ----
-include::content/docs/examples/search/microschemaModel.search.json[]
+include::content/docs/examples/search/microschema.search.json[]
 ----
 
 === Schemas
