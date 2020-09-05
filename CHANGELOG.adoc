@@ -32,6 +32,8 @@ icon:plus[] Internal: The internal code has been refactored and cleaned up.
 
 icon:plus[] Plugins: The default plugin timeout has been increased from 15 seconds to two minutes.
 
+icon:check[] Core: Fixed a bug which caused a `NullPointerException` when loading the content for which the last editor has been deleted. link:https://github.com/gentics/mesh/issues/1117[#1117]
+
 [[v1.7.0]]
 == 1.7.0 (07.08.2020)
 
