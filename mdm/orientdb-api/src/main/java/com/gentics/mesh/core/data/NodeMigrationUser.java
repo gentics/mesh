@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data;
 
-import java.util.Collections;
 import java.util.Set;
 
 import com.gentics.mesh.core.TypeInfo;
@@ -303,11 +302,6 @@ public class NodeMigrationUser implements MeshAuthUser {
 	@Override
 	public Object getId() {
 		return null;
-	}
-
-	@Override
-	public Set<String> getRoleUuidsForPerm(InternalPermission permission) {
-		return Collections.emptySet();
 	}
 
 	@Override

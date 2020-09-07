@@ -31,11 +31,11 @@ public class PermissionProperties {
 	}
 
 	public Result<? extends HibRole> getRolesWithPerm(HibBaseElement element, InternalPermission perm) {
-		Set<String> roleUuids = element.getRoleUuidsForPerm(perm);
+		RoleDaoWrapper roleDao = boot.roleDao();
+		Set<String> roleUuids = roleDao.getRoleUuidsForPerm(element, perm);
 		Stream<String> stream = roleUuids == null
 			? Stream.empty()
 			: roleUuids.stream();
-		RoleDaoWrapper roleDao = boot.roleDao();
 		return new TraversalResult<>(stream
 			.map(roleDao::findByUuid)
 			.filter(Objects::nonNull));

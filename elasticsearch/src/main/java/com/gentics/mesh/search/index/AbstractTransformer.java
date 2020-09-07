@@ -9,10 +9,12 @@ import java.util.Set;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.EditorTrackingVertex;
 import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.Tx;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -117,7 +119,8 @@ public abstract class AbstractTransformer<T> implements Transformer<T> {
 	 * @param element
 	 */
 	protected void addPermissionInfo(JsonObject document, HibBaseElement element) {
-		Set<String> roleUuids = element.getRoleUuidsForPerm(InternalPermission.READ_PERM);
+		RoleDaoWrapper roleDao = Tx.get().data().roleDao();
+		Set<String> roleUuids = roleDao.getRoleUuidsForPerm(element, InternalPermission.READ_PERM);
 		List<String> roleUuidsList = new ArrayList<>(roleUuids);
 		document.put("_roleUuids", roleUuidsList);
 	}

@@ -109,14 +109,14 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 
 	@Override
 	public boolean hasPermission(HibRole role, InternalPermission permission, HibBaseElement vertex) {
-		Set<String> allowedUuids = vertex.getRoleUuidsForPerm(permission);
+		Set<String> allowedUuids = getRoleUuidsForPerm(vertex, permission);
 		return allowedUuids != null && allowedUuids.contains(role.getUuid());
 	}
 
 	@Override
 	public void grantPermissions(HibRole role, HibBaseElement vertex, InternalPermission... permissions) {
 		for (InternalPermission permission : permissions) {
-			Set<String> allowedRoles = vertex.getRoleUuidsForPerm(permission);
+			Set<String> allowedRoles = getRoleUuidsForPerm(vertex, permission);
 			if (allowedRoles == null) {
 				vertex.setRoleUuidForPerm(permission, Collections.singleton(role.getUuid()));
 			} else {
@@ -130,7 +130,7 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 	public void revokePermissions(HibRole role, HibBaseElement vertex, InternalPermission... permissions) {
 		boolean permissionRevoked = false;
 		for (InternalPermission permission : permissions) {
-			Set<String> allowedRoles = vertex.getRoleUuidsForPerm(permission);
+			Set<String> allowedRoles = getRoleUuidsForPerm(vertex, permission);
 			if (allowedRoles != null) {
 				permissionRevoked = allowedRoles.remove(role.getUuid()) || permissionRevoked;
 				vertex.setRoleUuidForPerm(permission, allowedRoles);
@@ -310,4 +310,8 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 		graphElement.applyPermissions(batch, graphRole, recursive, permissionsToGrant, permissionsToRevoke);
 	}
 
+	@Override
+	public Set<String> getRoleUuidsForPerm(HibBaseElement element, InternalPermission permission) {
+		return ((MeshVertex) element).getRoleUuidsForPerm(permission);
+	}
 }
