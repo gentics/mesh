@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.handler.VersionHandler;
@@ -247,7 +248,8 @@ public class WebRootLinkReplacer {
 	public String resolve(InternalActionContext ac, String branchNameOrUuid, ContainerType edgeType, Node node, LinkType type,
 		boolean forceAbsolute,
 		String... languageTags) {
-		NodeDaoWrapper nodeDao = boot.nodeDao();
+		Tx tx = Tx.get();
+		NodeDaoWrapper nodeDao = tx.data().nodeDao();
 
 		String defaultLanguage = options.getDefaultLanguage();
 		if (languageTags == null || languageTags.length == 0) {
@@ -283,7 +285,7 @@ public class WebRootLinkReplacer {
 		case SHORT:
 			// We also try to append the scheme and authority part of the uri for foreign nodes.
 			// Otherwise that part will be empty and thus the link relative.
-			if (!forceAbsolute && ac.getProject() != null && ac.getBranch().equals(branch)) {
+			if (!forceAbsolute && tx.getProject(ac) != null && tx.getBranch(ac).equals(branch)) {
 				return path;
 			} else {
 				return generateSchemeAuthorityForNode(node, branch) + path;

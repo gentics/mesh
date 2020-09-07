@@ -223,7 +223,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	@Override
 	public void updateFieldsFromRest(InternalActionContext ac, FieldMap restFields) {
 		super.updateFieldsFromRest(ac, restFields);
-		String branchUuid = ac.getBranch().getUuid();
+		String branchUuid = Tx.get().getBranch(ac).getUuid();
 
 		updateWebrootPathInfo(ac, branchUuid, "node_conflicting_segmentfield_update");
 		updateDisplayFieldValue();
@@ -795,7 +795,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public VersionInfo transformToVersionInfo(InternalActionContext ac) {
-		String branchUuid = ac.getBranch().getUuid();
+		String branchUuid = Tx.get().getBranch(ac).getUuid();
 		VersionInfo info = new VersionInfo();
 		info.setVersion(getVersion().getFullVersion());
 		info.setCreated(getLastEditedDate());

@@ -30,6 +30,7 @@ import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.root.NodeRoot;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
@@ -52,6 +53,7 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 	};
 
 	public static FieldUpdater NODE_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
+		Tx tx = Tx.get();
 		MeshComponent mesh = container.getGraphAttribute(GraphAttribute.MESH_COMPONENT);
 		NodeFieldList nodeList = fieldMap.getNodeFieldList(fieldKey);
 		NodeGraphFieldList graphNodeFieldList = container.getNodeList(fieldKey);
@@ -84,7 +86,7 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 		graphNodeFieldList.removeAll();
 
 		// Handle Update
-		NodeRoot nodeRoot = ac.getProject().getNodeRoot();
+		NodeRoot nodeRoot = tx.getProject(ac).getNodeRoot();
 		AtomicInteger integer = new AtomicInteger();
 		for (NodeFieldListItem item : nodeList.getItems()) {
 			if (item == null) {

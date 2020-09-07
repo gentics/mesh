@@ -203,11 +203,12 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				GraphFieldContainer container = env.getSource();
 				HtmlGraphField htmlField = container.getHtml(schema.getName());
 				if (htmlField != null) {
+					Tx tx = Tx.get();
 					GraphQLContext gc = env.getContext();
 					LinkType type = getLinkType(env);
 					String content = htmlField.getHTML();
-					return linkReplacer.replace(gc, gc.getBranch()
-						.getUuid(), null, content, type, gc.getProject().getName(), Arrays.asList(container.getLanguageTag()));
+					return linkReplacer.replace(gc, tx.getBranch(gc)
+						.getUuid(), null, content, type, tx.getProject(gc).getName(), Arrays.asList(container.getLanguageTag()));
 				}
 				return null;
 			}).build();
@@ -216,14 +217,15 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	public GraphQLFieldDefinition createStringDef(FieldSchema schema) {
 		return newFieldDefinition().name(schema.getName()).description(schema.getLabel()).type(GraphQLString).argument(createLinkTypeArg())
 			.dataFetcher(env -> {
+				Tx tx = Tx.get();
 				GraphFieldContainer container = env.getSource();
 				StringGraphField field = container.getString(schema.getName());
 				if (field != null) {
 					GraphQLContext gc = env.getContext();
 					LinkType type = getLinkType(env);
 					String content = field.getString();
-					return linkReplacer.replace(gc, gc.getBranch()
-						.getUuid(), null, content, type, gc.getProject().getName(), Arrays.asList(container.getLanguageTag()));
+					return linkReplacer.replace(gc, tx.getBranch(gc)
+						.getUuid(), null, content, type, tx.getProject(gc).getName(), Arrays.asList(container.getLanguageTag()));
 				}
 				return null;
 			}).build();
@@ -269,7 +271,8 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		}
 
 		return fieldType.dataFetcher(env -> {
-			ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+			Tx tx = Tx.get();
+			ContentDaoWrapper contentDao = tx.data().contentDao();
 			GraphFieldContainer container = env.getSource();
 			GraphQLContext gc = env.getContext();
 
@@ -288,7 +291,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				return htmlList.getList().stream().map(item -> {
 					String content = item.getHTML();
 					LinkType linkType = getLinkType(env);
-					return linkReplacer.replace(gc, null, null, content, linkType, gc.getProject().getName(),
+					return linkReplacer.replace(gc, null, null, content, linkType, tx.getProject(gc).getName(),
 						Arrays.asList(container.getLanguageTag()));
 				}).collect(Collectors.toList());
 			case "string":
@@ -299,7 +302,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				return stringList.getList().stream().map(item -> {
 					String content = item.getString();
 					LinkType linkType = getLinkType(env);
-					return linkReplacer.replace(gc, null, null, content, linkType, gc.getProject().getName(),
+					return linkReplacer.replace(gc, null, null, content, linkType, tx.getProject(gc).getName(),
 						Arrays.asList(container.getLanguageTag()));
 				}).collect(Collectors.toList());
 			case "number":

@@ -4,8 +4,6 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.handler.ActionContext;
@@ -33,33 +31,6 @@ public interface InternalActionContext extends ActionContext, ParameterProviderC
 	 * @param user
 	 */
 	void setUser(MeshAuthUser user);
-
-	/**
-	 * Return the project that may be set when this action context is used for a project specific request (e.g.: /api/v2/dummy/nodes..)
-	 * 
-	 * @return
-	 */
-	HibProject getProject();
-
-	/**
-	 * Return the latest branch of the project.
-	 * 
-	 * @return branch
-	 */
-	default HibBranch getBranch() {
-		return getBranch(null);
-	}
-
-	/**
-	 * Return the branch that may be specified in this action context as query parameter. This method will fail, if no project is set, or if the specified
-	 * branch does not exist for the project When no branch was specified (but a project was set), this will return the latest branch of the project.
-	 * 
-	 * @param project
-	 *            project for overriding the project set in the action context
-	 *
-	 * @return branch
-	 */
-	HibBranch getBranch(HibProject project);
 
 	/**
 	 * Return the mesh auth user.
@@ -197,6 +168,7 @@ public interface InternalActionContext extends ActionContext, ParameterProviderC
 
 	/**
 	 * Set a flag to skip the write lock.
+	 * 
 	 * @return
 	 */
 	InternalActionContext skipWriteLock();

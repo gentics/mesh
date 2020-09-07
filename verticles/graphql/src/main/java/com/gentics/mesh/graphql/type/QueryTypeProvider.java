@@ -56,7 +56,6 @@ import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
@@ -204,7 +203,10 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 * @return A page containing all found nodes matching the given UUIDs
 	 */
 	private Page<NodeContent> fetchNodesByUuid(DataFetchingEnvironment env) {
-		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+		Tx tx = Tx.get();
+		ContentDaoWrapper contentDao = tx.data().contentDao();
+		NodeDaoWrapper nodeDao = tx.data().nodeDao();
+
 		List<String> uuids = env.getArgument("uuids");
 
 		if (uuids == null || uuids.isEmpty()) {
@@ -212,14 +214,14 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		}
 
 		GraphQLContext gc = env.getContext();
-		NodeRoot root = gc.getProject().getNodeRoot();
+		HibProject project = tx.getProject(gc);
 		ExecutionContext ec = env.getExecutionContext();
 		List<String> languageTags = getLanguageArgument(env);
 		ContainerType type = getNodeVersion(env);
 
 		Stream<NodeContent> contents = uuids.stream()
 			// When a node cannot be found, we still need the UUID for the error message.
-			.map(uuid -> Pair.of(uuid, root.findByUuid(uuid)))
+			.map(uuid -> Pair.of(uuid, nodeDao.findByUuid(project, uuid)))
 			.map(node -> {
 				Throwable error = null;
 
@@ -256,12 +258,13 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 * @return
 	 */
 	public Object nodeFetcher(DataFetchingEnvironment env) {
-		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+		Tx tx = Tx.get();
+		ContentDaoWrapper contentDao = tx.data().contentDao();
 		String uuid = env.getArgument("uuid");
 		if (uuid != null) {
-			NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
 			GraphQLContext gc = env.getContext();
-			HibNode node = nodeDao.findByUuid(gc.getProject(), uuid);
+			HibNode node = nodeDao.findByUuid(tx.getProject(gc), uuid);
 			if (node == null) {
 				// TODO Throw graphql aware not found exception
 				return null;
@@ -322,7 +325,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 */
 	public Object projectFetcher(DataFetchingEnvironment env) {
 		GraphQLContext gc = env.getContext();
-		HibProject project = gc.getProject();
+		HibProject project = Tx.get().getProject(gc);
 		return gc.requiresPerm(project, READ_PERM);
 	}
 
@@ -334,7 +337,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 */
 	public Object branchFetcher(DataFetchingEnvironment env) {
 		GraphQLContext gc = env.getContext();
-		HibBranch branch = gc.getBranch();
+		HibBranch branch = Tx.get().getBranch(gc);
 		return gc.requiresPerm(branch, READ_PERM);
 	}
 
@@ -345,9 +348,10 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 * @return
 	 */
 	public Object rootNodeFetcher(DataFetchingEnvironment env) {
-		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+		Tx tx = Tx.get();
+		ContentDaoWrapper contentDao = tx.data().contentDao();
 		GraphQLContext gc = env.getContext();
-		HibProject project = gc.getProject();
+		HibProject project = tx.getProject(gc);
 		if (project != null) {
 			Node node = project.getBaseNode();
 			gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
@@ -571,7 +575,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 * @return
 	 */
 	public GraphQLSchema getRootSchema(GraphQLContext context) {
-		HibProject project = context.getProject();
+		HibProject project = Tx.get().getProject(context);
 		graphql.schema.GraphQLSchema.Builder builder = GraphQLSchema.newSchema();
 
 		Set<GraphQLType> additionalTypes = new HashSet<>();

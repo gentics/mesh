@@ -18,14 +18,12 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.SchemaDAOActions;
 import com.gentics.mesh.core.actions.impl.ProjectSchemaLoadAllActionImpl;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.dao.impl.SchemaDaoWrapperImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.root.SchemaRoot;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.Microschema;
@@ -233,13 +231,14 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				HibProject project = ac.getProject();
-				String projectUuid = project.getUuid();
 				UserDaoWrapper userDao = tx.data().userDao();
+				SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+
+				HibProject project = tx.getProject(ac);
+				String projectUuid = project.getUuid();
 				if (!userDao.hasPermission(ac.getUser(), project, InternalPermission.UPDATE_PERM)) {
 					throw error(FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
 				}
-				SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 				HibSchema schema = schemaDao.loadObjectByUuid(ac, schemaUuid, READ_PERM);
 				if(schemaDao.isLinkedToProject(schema, project)) {
 					// Schema has already been assigned. No need to create indices
@@ -269,7 +268,8 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 			utils.syncTx(ac, tx -> {
 				SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 				UserDaoWrapper userDao = tx.data().userDao();
-				HibProject project = ac.getProject();
+
+				HibProject project = tx.getProject(ac);
 				String projectUuid = project.getUuid();
 
 				if (!userDao.hasPermission(ac.getUser(), project, InternalPermission.UPDATE_PERM)) {

@@ -159,7 +159,8 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	@Override
 	public Result<? extends Node> findTaggedNodes(HibTag tag, InternalActionContext ac) {
 		MeshAuthUser user = ac.getUser();
-		HibBranch branch = ac.getBranch();
+		Tx tx = Tx.get();
+		HibBranch branch = tx.getBranch(ac);
 		String branchUuid = branch.getUuid();
 		UserDaoWrapper userRoot = Tx.get().data().userDao();
 		TraversalResult<? extends Node> nodes = new TraversalResult<>(toGraph(tag).inE(HAS_TAG).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branch.getUuid()).outV().frameExplicit(NodeImpl.class));

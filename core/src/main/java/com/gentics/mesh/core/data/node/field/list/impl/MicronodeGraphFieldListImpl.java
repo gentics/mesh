@@ -147,8 +147,9 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 					return Observable.error(error(INTERNAL_SERVER_ERROR, "Found micronode without microschema reference"));
 				}
 
-				MicroschemaDaoWrapper microschemaDao = Tx.get().data().microschemaDao();
-				HibMicroschemaVersion container = microschemaDao.fromReference(ac.getProject(), microschemaReference, ac.getBranch());
+				Tx tx = Tx.get();
+				MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
+				HibMicroschemaVersion container = microschemaDao.fromReference(tx.getProject(ac), microschemaReference, tx.getBranch(ac));
 				return Observable.just(container);
 				// TODO add onError in order to return nice exceptions if the schema / version could not be found
 			}, (node, microschemaContainerVersion) -> {

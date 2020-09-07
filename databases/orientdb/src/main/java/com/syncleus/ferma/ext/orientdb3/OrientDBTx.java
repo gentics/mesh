@@ -1,15 +1,22 @@
 package com.syncleus.ferma.ext.orientdb3;
 
 import static com.gentics.mesh.core.graph.GraphAttribute.MESH_COMPONENT;
+import static com.gentics.mesh.metric.SimpleMetric.COMMIT_TIME;
 
 import java.util.function.Function;
+
+import javax.inject.Inject;
 
 import com.gentics.madl.traversal.RawTraversalResult;
 import com.gentics.madl.traversal.RawTraversalResultImpl;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.context.ContextDataRegistry;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.DaoCollection;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.AbstractTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.db.TxData;
@@ -20,6 +27,7 @@ import com.gentics.mesh.graphdb.tx.OrientStorage;
 import com.gentics.mesh.madl.tp3.mock.Element;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
 import com.gentics.mesh.madl.tp3.mock.GraphTraversalSource;
+import com.gentics.mesh.metric.MetricsService;
 import com.orientechnologies.common.concur.ONeedRetryException;
 import com.syncleus.ferma.FramedTransactionalGraph;
 import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
@@ -38,16 +46,22 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 
 	private final TypeResolver typeResolver;
 
-	private final Timer commitTimer;
 	private final Database db;
 	private final BootstrapInitializer boot;
 	private final TxData txData;
+	private Timer commitTimer;
 
-	public OrientDBTx(MeshOptions options, Database db, BootstrapInitializer boot, DaoCollection daos, OrientStorage provider, TypeResolver typeResolver, Timer commitTimer, PermissionRoots permissionRoots) {
+	private ContextDataRegistry contextDataRegistry;
+
+	@Inject
+	public OrientDBTx(MeshOptions options, Database db, BootstrapInitializer boot, DaoCollection daos, OrientStorage provider,
+		TypeResolver typeResolver, MetricsService metrics, PermissionRoots permissionRoots, ContextDataRegistry contextDataRegistry) {
 		this.db = db;
 		this.boot = boot;
 		this.typeResolver = typeResolver;
-		this.commitTimer = commitTimer;
+		if (metrics != null) {
+			this.commitTimer = metrics.timer(COMMIT_TIME);
+		}
 		// Check if an active transaction already exists.
 		Tx activeTx = Tx.get();
 		if (activeTx != null) {
@@ -57,7 +71,8 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 			DelegatingFramedOrientGraph transaction = new DelegatingFramedOrientGraph((OrientGraph) provider.rawTx(), typeResolver);
 			init(transaction);
 		}
-		this.txData = new TxDataImpl(options, daos, boot, permissionRoots);
+		this.txData = new TxDataImpl(options, daos, boot, permissionRoots, contextDataRegistry);
+		this.contextDataRegistry = contextDataRegistry;
 	}
 
 	@Override
@@ -138,4 +153,20 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	public TxData data() {
 		return txData;
 	}
+
+	@Override
+	public HibBranch getBranch(InternalActionContext ac) {
+		return contextDataRegistry.getBranch(ac);
+	}
+
+	@Override
+	public HibBranch getBranch(InternalActionContext ac, HibProject project) {
+		return contextDataRegistry.getBranch(ac, project);
+	}
+
+	@Override
+	public HibProject getProject(InternalActionContext ac) {
+		return contextDataRegistry.getProject(ac);
+	}
+
 }

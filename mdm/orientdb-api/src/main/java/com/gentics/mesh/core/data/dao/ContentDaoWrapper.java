@@ -26,6 +26,7 @@ import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.Errors;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
@@ -316,7 +317,8 @@ public interface ContentDaoWrapper extends ContentDao {
 	 * @return Next matching field container or null when no language matches
 	 */
 	default NodeGraphFieldContainer findVersion(HibNode node, InternalActionContext ac, List<String> languageTags, String version) {
-		return findVersion(node, languageTags, ac.getBranch().getUuid(), version);
+		Tx tx = Tx.get();
+		return findVersion(node, languageTags, tx.getBranch(ac).getUuid(), version);
 	}
 
 	/**

@@ -16,6 +16,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
@@ -120,9 +121,10 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<HibTagFamily> {
 
 	@Override
 	public Set<String> filterUnknownIndices(Set<String> indices) {
-		return db.tx(() -> {
+		return db.tx(tx -> {
+			ProjectDaoWrapper projectDao = tx.data().projectDao();
 			Set<String> activeIndices = new HashSet<>();
-			for (Project project : boot.meshRoot().getProjectRoot().findAll()) {
+			for (HibProject project : projectDao.findAll()) {
 				activeIndices.add(TagFamily.composeIndexName(project.getUuid()));
 			}
 
@@ -136,8 +138,8 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<HibTagFamily> {
 
 	@Override
 	public Set<String> getIndicesForSearch(InternalActionContext ac) {
-		return db.tx(() -> {
-			HibProject project = ac.getProject();
+		return db.tx(tx -> {
+			HibProject project = tx.getProject(ac);
 			if (project != null) {
 				return Collections.singleton(TagFamily.composeIndexName(project.getUuid()));
 			} else {
@@ -148,7 +150,7 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<HibTagFamily> {
 
 	@Override
 	public Function<String, HibTagFamily> elementLoader() {
-		return (uuid) -> boot.meshRoot().getTagFamilyRoot().findByUuid(uuid);
+		return uuid -> boot.meshRoot().getTagFamilyRoot().findByUuid(uuid);
 	}
 
 	@Override

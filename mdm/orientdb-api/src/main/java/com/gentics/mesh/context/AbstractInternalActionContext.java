@@ -41,19 +41,6 @@ public abstract class AbstractInternalActionContext extends AbstractActionContex
 	}
 
 	@Override
-	public HibBranch getBranch(HibProject project) {
-		if (project == null) {
-			project = getProject();
-		}
-		if (project == null) {
-			// TODO i18n
-			throw error(INTERNAL_SERVER_ERROR, "Cannot get branch without a project");
-		}
-		String branchNameOrUuid = getVersioningParameters().getBranch();
-		return project.findBranch(branchNameOrUuid);
-	}
-
-	@Override
 	public void setBody(Object model) {
 		this.bodyModel = model;
 	}

@@ -119,7 +119,8 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper<HibTagFamily> im
 	@Override
 	public boolean update(HibTagFamily tagFamily, InternalActionContext ac, EventQueueBatch batch) {
 		TagFamilyUpdateRequest requestModel = ac.fromJson(TagFamilyUpdateRequest.class);
-		HibProject project = ac.getProject();
+		Tx tx = Tx.get();
+		HibProject project = tx.getProject(ac);
 		String newName = requestModel.getName();
 
 		if (isEmpty(newName)) {

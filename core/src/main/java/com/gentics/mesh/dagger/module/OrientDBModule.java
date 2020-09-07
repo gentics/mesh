@@ -52,6 +52,8 @@ import com.gentics.mesh.core.actions.impl.TagFamilyDAOActionsImpl;
 import com.gentics.mesh.core.actions.impl.UserDAOActionsImpl;
 import com.gentics.mesh.core.binary.BinaryProcessorRegistry;
 import com.gentics.mesh.core.binary.BinaryProcessorRegistryImpl;
+import com.gentics.mesh.core.context.ContextDataRegistry;
+import com.gentics.mesh.core.context.impl.GraphContextDataRegistryImpl;
 import com.gentics.mesh.core.data.PersistenceClassMap;
 import com.gentics.mesh.core.data.PersistenceClassMapImpl;
 import com.gentics.mesh.core.data.binary.Binaries;
@@ -115,6 +117,7 @@ import com.gentics.mesh.distributed.coordinator.proxy.RequestDelegatorImpl;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.event.impl.EventQueueBatchImpl;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
+import com.gentics.mesh.graphdb.dagger.OrientDBCoreModule;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.RangeRequestHandler;
 import com.gentics.mesh.handler.impl.RangeRequestHandlerImpl;
@@ -140,7 +143,7 @@ import dagger.Binds;
 import dagger.Module;
 import dagger.Provides;
 
-@Module
+@Module(includes = { OrientDBCoreModule.class })
 public abstract class OrientDBModule {
 
 	@Binds
@@ -319,6 +322,9 @@ public abstract class OrientDBModule {
 	@Binds
 	abstract SchemaComparator schemaComparator(SchemaComparatorImpl e);
 
+	@Binds
+	abstract ContextDataRegistry contextDataRegistry(GraphContextDataRegistryImpl e);
+
 	@Provides
 	public static List<ConsistencyCheck> consistencyCheckList() {
 		return Arrays.asList(
@@ -335,7 +341,6 @@ public abstract class OrientDBModule {
 			new GraphFieldContainerCheck(),
 			new MicronodeCheck(),
 			new BinaryCheck(),
-			new FieldCheck()
-		);
+			new FieldCheck());
 	}
 }

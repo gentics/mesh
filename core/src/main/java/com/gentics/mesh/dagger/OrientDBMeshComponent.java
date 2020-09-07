@@ -21,6 +21,7 @@ import dagger.Component;
 @Singleton
 @Component(modules = { MeshModule.class, PluginModule.class, SearchProviderModule.class, OrientDBModule.class, DebugInfoProviderModule.class, MicrometerModule.class })
 public interface OrientDBMeshComponent extends MeshComponent {
+
 	@Component.Builder
 	interface Builder extends MeshComponent.Builder {
 		@BindsInstance

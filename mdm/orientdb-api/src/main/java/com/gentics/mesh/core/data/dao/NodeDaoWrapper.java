@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.dao;
 
 import java.util.List;
 import java.util.Stack;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -9,10 +10,12 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
@@ -302,5 +305,13 @@ public interface NodeDaoWrapper extends NodeDao, DaoWrapper<HibNode>, DaoTransfo
 	String getETag(HibNode node, InternalActionContext ac);
 
 	String getAPIPath(HibNode node, InternalActionContext ac);
+
+	TransformablePage<? extends HibTag> updateTags(HibNode node, InternalActionContext ac, EventQueueBatch batch);
+
+	HibNode create(HibProject project, InternalActionContext ac, EventQueueBatch batch, String uuid);
+
+	Page<? extends HibNode> findAll(HibProject project, InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibNode> filter);
+
+	Stream<? extends HibNode> findAllStream(HibProject project, InternalActionContext ac, InternalPermission perm);
 
 }

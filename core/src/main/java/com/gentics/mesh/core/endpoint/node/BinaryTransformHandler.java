@@ -108,7 +108,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 		// Load needed elements
 		HibNode node = db.tx(tx -> {
 			NodeDaoWrapper nodeDao = tx.data().nodeDao();
-			HibProject project = ac.getProject();
+			HibProject project = tx.getProject(ac);
 			HibNode n = nodeDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
 
 			HibLanguage language = tx.data().languageDao().findByLanguageTag(languageTag);
@@ -217,7 +217,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 
 			NodeGraphFieldContainer latestDraftVersion = loadTargetedContent(node, languageTag, fieldName);
 
-			HibBranch branch = ac.getBranch();
+			HibBranch branch = tx.getBranch(ac);
 
 			// Create a new node version field container to store the upload
 			NodeGraphFieldContainer newDraftVersion = contentDao.createGraphFieldContainer(node, languageTag, branch, ac.getUser(), latestDraftVersion, true);

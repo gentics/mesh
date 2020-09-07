@@ -1,3 +1,4 @@
+
 package com.gentics.mesh.auth.handler;
 
 import static io.vertx.core.http.HttpHeaders.AUTHORIZATION;

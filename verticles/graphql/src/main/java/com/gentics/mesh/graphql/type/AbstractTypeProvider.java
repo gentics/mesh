@@ -26,11 +26,12 @@ import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
-import com.gentics.mesh.core.data.root.NodeRoot;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.Tx;
@@ -513,7 +514,6 @@ public abstract class AbstractTypeProvider {
 			.argument(createUuidArg("Uuid of the " + name + "."))
 			.argument(createNameArg("Name of the " + name + "."))
 			.type(new GraphQLTypeReference(elementType)).dataFetcher(env -> {
-				GraphQLContext gc = env.getContext();
 				if (hidePermissionsErrors) {
 					try {
 						return handleUuidNameArgs(env, null, actions);
@@ -554,14 +554,16 @@ public abstract class AbstractTypeProvider {
 	 * @return the filtered nodes
 	 */
 	protected DynamicStreamPageImpl<NodeContent> fetchFilteredNodes(DataFetchingEnvironment env) {
-		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+		Tx tx = Tx.get();
+		ContentDaoWrapper contentDao = tx.data().contentDao();
+		NodeDaoWrapper nodeDao = tx.data().nodeDao();
 		GraphQLContext gc = env.getContext();
-		NodeRoot nodeRoot = gc.getProject().getNodeRoot();
+		HibProject project = tx.getProject(gc);
 
 		List<String> languageTags = getLanguageArgument(env);
 		ContainerType type = getNodeVersion(env);
 
-		Stream<NodeContent> contents = nodeRoot.findAllStream(gc, READ_PUBLISHED_PERM)
+		Stream<NodeContent> contents = nodeDao.findAllStream(project, gc, READ_PUBLISHED_PERM)
 			// Now lets try to load the containers for those found nodes - apply the language fallback
 			.map(node -> new NodeContent(node, contentDao.findVersion(node, gc, languageTags, type), languageTags, type))
 			// Filter nodes without a container

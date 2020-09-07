@@ -368,10 +368,10 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	}
 
 	public Set<String> getIndicesForSearch(InternalActionContext ac, ContainerType type) {
-		return db.tx(() -> {
-			HibProject project = ac.getProject();
+		return db.tx(tx -> {
+			HibProject project = tx.getProject(ac);
 			if (project != null) {
-				HibBranch branch = ac.getBranch();
+				HibBranch branch = tx.getBranch(ac);
 				return Collections.singleton(ContentDaoWrapper.composeIndexPattern(
 					project.getUuid(),
 					branch.getUuid(),

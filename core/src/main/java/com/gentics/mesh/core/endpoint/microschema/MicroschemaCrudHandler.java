@@ -204,7 +204,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<HibMicroschema, 
 		validateParameter(microschemaUuid, "microschemaUuid");
 
 		utils.syncTx(ac, tx -> {
-			HibProject project = ac.getProject();
+			HibProject project = tx.getProject(ac);
 			UserDaoWrapper userDao = tx.data().userDao();
 			MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
 			
@@ -231,10 +231,10 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<HibMicroschema, 
 
 		utils.syncTx(ac, tx -> {
 			MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
-
-			HibProject project = ac.getProject();
-			String projectUuid = project.getUuid();
 			UserDaoWrapper userDao = tx.data().userDao();
+
+			HibProject project = tx.getProject(ac);
+			String projectUuid = project.getUuid();
 			if (!userDao.hasPermission(ac.getUser(), project, UPDATE_PERM)) {
 				throw error(FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
 			}

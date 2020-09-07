@@ -183,11 +183,6 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 
 	}
 
-	@Override
-	public HibProject getProject() {
-		return project;
-	}
-
 	/**
 	 * Set the project that will be used to invoke project scope specific actions.
 	 * 

@@ -106,11 +106,12 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 	@Override
 	public Stream<? extends Node> findAllStream(InternalActionContext ac, InternalPermission perm) {
+		Tx tx = Tx.get();
 		MeshAuthUser user = ac.getUser();
-		String branchUuid = ac.getBranch().getUuid();
+		String branchUuid = tx.getBranch(ac).getUuid();
 		UserDaoWrapper userDao = mesh().boot().userDao();
 
-		return findAll(ac.getProject().getUuid())
+		return findAll(tx.getProject(ac).getUuid())
 			.filter(item -> {
 				boolean hasRead = userDao.hasPermissionForId(user, item.getId(), READ_PERM);
 				if (hasRead) {
@@ -144,11 +145,11 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		MeshAuthUser user = ac.getUser();
 		FramedTransactionalGraph graph = Tx.get().getGraph();
 
-		HibBranch branch = ac.getBranch();
+		HibBranch branch = Tx.get().getBranch(ac);
 		String branchUuid = branch.getUuid();
 		UserDaoWrapper userDao = mesh().boot().userDao();
 
-		return findAll(ac.getProject().getUuid()).filter(item -> {
+		return findAll(Tx.get().getProject(ac).getUuid()).filter(item -> {
 			// Check whether the node has at least one content of the type in the selected branch - Otherwise the node should be skipped
 			return GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, type);
 		}).filter(item -> {
@@ -174,19 +175,21 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 	@Override
 	public Node loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
+		Tx tx = Tx.get();
+		UserDaoWrapper userDao = tx.data().userDao();
+		ContentDaoWrapper contentDao = tx.data().contentDao();
+
 		Node element = findByUuid(uuid);
 		if (!errorIfNotFound && element == null) {
 			return null;
 		}
-		UserDaoWrapper userDao = mesh().boot().userDao();
-		ContentDaoWrapper contentDao = mesh().boot().contentDao();
 		if (element == null) {
 			throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);
 		}
 
 		MeshAuthUser requestUser = ac.getUser();
 		if (perm == READ_PUBLISHED_PERM) {
-			HibBranch branch = ac.getBranch(element.getProject());
+			HibBranch branch = tx.getBranch(ac, element.getProject());
 
 			List<String> requestedLanguageTags = ac.getNodeParameters().getLanguageList(options());
 			NodeGraphFieldContainer fieldContainer = contentDao.findVersion(element, requestedLanguageTags, branch.getUuid(), ac.getVersioningParameters().getVersion());
@@ -247,7 +250,8 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	// TODO use schema container version instead of container
 	private Node createNode(InternalActionContext ac, HibSchemaVersion schemaVersion, EventQueueBatch batch,
 		String uuid) {
-		HibProject project = ac.getProject();
+		Tx tx = Tx.get();
+		HibProject project = tx.getProject(ac);
 		MeshAuthUser requestUser = ac.getUser();
 		BootstrapInitializer boot = mesh().boot();
 		UserDaoWrapper userRoot = boot.userDao();
@@ -262,9 +266,9 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		}
 
 		// Load the parent node in order to create the node
-		Node parentNode = project.getNodeRoot().loadObjectByUuid(ac, requestModel.getParentNode().getUuid(),
+		HibNode parentNode = nodeDao.loadObjectByUuid(project, ac, requestModel.getParentNode().getUuid(),
 			CREATE_PERM);
-		HibBranch branch = ac.getBranch();
+		HibBranch branch = tx.getBranch(ac);
 		// BUG: Don't use the latest version. Use the version which is linked to the
 		// branch!
 		HibNode node = nodeDao.create(parentNode, requestUser, schemaVersion, project, branch, uuid);
@@ -301,13 +305,13 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 	@Override
 	public Node create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-
+		Tx tx = Tx.get();
 		// Override any given version parameter. Creation is always scoped to drafts
 		ac.getVersioningParameters().setVersion("draft");
 
-		HibProject project = ac.getProject();
+		HibProject project = tx.getProject(ac);
 		MeshAuthUser requestUser = ac.getUser();
-		HibBranch branch = ac.getBranch();
+		HibBranch branch = tx.getBranch(ac);
 		UserDaoWrapper userDao = mesh().boot().userDao();
 
 		String body = ac.getBodyAsString();

@@ -63,7 +63,9 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 	};
 
 	public static FieldUpdater NODE_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
-		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+		Tx tx = Tx.get();
+		NodeDaoWrapper nodeDao = tx.data().nodeDao();
+
 		NodeGraphField graphNodeField = container.getNode(fieldKey);
 		NodeField nodeField = fieldMap.getNodeField(fieldKey);
 		boolean isNodeFieldSetToNull = fieldMap.hasField(fieldKey) && (nodeField == null);
@@ -92,7 +94,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 		}
 
 		// Handle Update / Create
-		HibNode node = nodeDao.findByUuid(ac.getProject(), nodeField.getUuid());
+		HibNode node = nodeDao.findByUuid(tx.getProject(ac), nodeField.getUuid());
 		if (node == null) {
 			// TODO We want to delete the field when the field has been explicitly set to null
 			if (log.isDebugEnabled()) {
@@ -185,10 +187,11 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 			nodeField.setUuid(node.getUuid());
 			LinkType type = ac.getNodeParameters().getResolveLinks();
 			if (type != LinkType.OFF) {
-				ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+				Tx tx = Tx.get();
+				ContentDaoWrapper contentDao = tx.data().contentDao();
 
 				WebRootLinkReplacer linkReplacer = mesh().webRootLinkReplacer();
-				HibBranch branch = ac.getBranch();
+				HibBranch branch = tx.getBranch(ac);
 				ContainerType containerType = forVersion(ac.getVersioningParameters().getVersion());
 
 				// Set the webroot path for the currently active language

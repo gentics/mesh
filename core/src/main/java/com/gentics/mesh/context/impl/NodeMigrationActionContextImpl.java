@@ -110,11 +110,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 		this.project = project;
 	}
 
-	@Override
-	public HibBranch getBranch(HibProject project) {
-		return branch;
-	}
-
 	public void setBranch(HibBranch branch) {
 		this.branch = branch;
 	}

@@ -106,7 +106,7 @@ public class WebRootHandler {
 				UserDaoWrapper userDao = tx.data().userDao();
 				NodeDaoWrapper nodeDao = tx.data().nodeDao();
 
-				String branchUuid = ac.getBranch().getUuid();
+				String branchUuid = tx.getBranch(ac).getUuid();
 				// Load all nodes for the given path
 				ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
 				Path nodePath = webrootService.findByProjectPath(ac, path, type);
@@ -227,7 +227,7 @@ public class WebRootHandler {
 				ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
 				Path nodePath = webrootService.findByProjectPath(ac, path, type);
 				if (nodePath.isPrefixMismatch()) {
-					throw error(NOT_FOUND, "webroot_error_prefix_invalid", decodeSegment(path), ac.getBranch().getPathPrefix());
+					throw error(NOT_FOUND, "webroot_error_prefix_invalid", decodeSegment(path), tx.getBranch(ac).getPathPrefix());
 				}
 
 				// Check whether path could be resolved at all
@@ -264,7 +264,7 @@ public class WebRootHandler {
 					if (request.getParentNode() == null || request.getParentNode().getUuid() == null) {
 						HibNode parentNode = null;
 						if (segments.size() == 0) {
-							parentNode = ac.getProject().getBaseNode();
+							parentNode = tx.getProject(ac).getBaseNode();
 						} else {
 							PathSegment parentSegment = segments.get(segments.size() - 1);
 							parentNode = contentDao.getNode(parentSegment.getContainer());

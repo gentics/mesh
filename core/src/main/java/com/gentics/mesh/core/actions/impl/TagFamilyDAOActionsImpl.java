@@ -67,7 +67,7 @@ public class TagFamilyDAOActionsImpl implements TagFamilyDAOActions {
 	@Override
 	public HibTagFamily create(Tx tx, InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		TagFamilyDaoWrapper tagFamilyDao = tx.data().tagFamilyDao();
-		return tagFamilyDao.create(ac.getProject(), ac, batch, uuid);
+		return tagFamilyDao.create(tx.getProject(ac), ac, batch, uuid);
 	}
 
 	@Override

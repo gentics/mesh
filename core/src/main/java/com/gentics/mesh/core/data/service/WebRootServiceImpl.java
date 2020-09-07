@@ -47,10 +47,11 @@ public class WebRootServiceImpl implements WebRootService {
 
 	@Override
 	public Path findByProjectPath(InternalActionContext ac, String path, ContainerType type) {
-		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
-		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
-		HibProject project = ac.getProject();
-		HibBranch branch = ac.getBranch();
+		Tx tx = Tx.get();
+		NodeDaoWrapper nodeDao = tx.data().nodeDao();
+		ContentDaoWrapper contentDao = tx.data().contentDao();
+		HibProject project = tx.getProject(ac);
+		HibBranch branch = tx.getBranch(ac);
 
 		Path cachedPath = pathStore.getPath(project, branch, type, path);
 		if (cachedPath != null) {
@@ -109,7 +110,7 @@ public class WebRootServiceImpl implements WebRootService {
 		}
 
 		// Traverse the graph and buildup the result path while doing so
-		Path resolvedPath = nodeDao.resolvePath(baseNode, ac.getBranch().getUuid(), type, nodePath, stack);
+		Path resolvedPath = nodeDao.resolvePath(baseNode, tx.getBranch(ac).getUuid(), type, nodePath, stack);
 		pathStore.store(project, branch, type, path, nodePath);
 		return resolvedPath;
 	}

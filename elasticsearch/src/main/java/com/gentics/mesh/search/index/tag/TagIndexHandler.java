@@ -146,8 +146,8 @@ public class TagIndexHandler extends AbstractIndexHandler<HibTag> {
 
 	@Override
 	public Set<String> getIndicesForSearch(InternalActionContext ac) {
-		return db.tx(() -> {
-			HibProject project = ac.getProject();
+		return db.tx(tx -> {
+			HibProject project = tx.getProject(ac);
 			if (project != null) {
 				return Collections.singleton(Tag.composeIndexName(project.getUuid()));
 			} else {

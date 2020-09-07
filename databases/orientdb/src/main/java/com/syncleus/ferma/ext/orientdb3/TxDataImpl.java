@@ -10,6 +10,7 @@ import com.gentics.mesh.core.action.SchemaDAOActions;
 import com.gentics.mesh.core.action.TagDAOActions;
 import com.gentics.mesh.core.action.TagFamilyDAOActions;
 import com.gentics.mesh.core.action.UserDAOActions;
+import com.gentics.mesh.core.context.ContextDataRegistry;
 import com.gentics.mesh.core.data.HibMeshVersion;
 import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
@@ -48,12 +49,15 @@ public class TxDataImpl implements TxData {
 	private final BootstrapInitializer boot;
 	private final MeshOptions options;
 	private final PermissionRoots permissionRoots;
+	private final ContextDataRegistry contextDataRegistry;
 
-	public TxDataImpl(MeshOptions options, DaoCollection daoCollection, BootstrapInitializer boot, PermissionRoots permissionRoots) {
+	public TxDataImpl(MeshOptions options, DaoCollection daoCollection, BootstrapInitializer boot, PermissionRoots permissionRoots,
+		ContextDataRegistry contextDataRegistry) {
 		this.options = options;
 		this.daos = daoCollection;
 		this.boot = boot;
 		this.permissionRoots = permissionRoots;
+		this.contextDataRegistry = contextDataRegistry;
 	}
 
 	@Override
@@ -415,5 +419,10 @@ public class TxDataImpl implements TxData {
 	@Override
 	public PermissionRoots permissionRoots() {
 		return permissionRoots;
+	}
+
+	@Override
+	public ContextDataRegistry contextDataRegistry() {
+		return contextDataRegistry;
 	}
 }

@@ -128,7 +128,7 @@ public class TagDAOActionsImpl implements TagDAOActions {
 	}
 
 	private HibTagFamily getTagFamily(Tx tx, InternalActionContext ac, String tagFamilyUuid) {
-		return tx.data().tagFamilyDao().findByUuid(ac.getProject(), tagFamilyUuid);
+		return tx.data().tagFamilyDao().findByUuid(tx.getProject(ac), tagFamilyUuid);
 	}
 
 }

@@ -9,6 +9,7 @@ import com.gentics.mesh.core.action.SchemaDAOActions;
 import com.gentics.mesh.core.action.TagDAOActions;
 import com.gentics.mesh.core.action.TagFamilyDAOActions;
 import com.gentics.mesh.core.action.UserDAOActions;
+import com.gentics.mesh.core.context.ContextDataRegistry;
 
 public interface DaoCollection {
 
@@ -57,4 +58,9 @@ public interface DaoCollection {
 	NodeDaoWrapper nodeDao();
 
 	ContentDaoWrapper contentDao();
+
+	// Extra helper
+
+	ContextDataRegistry contextDataRegistry();
+
 }

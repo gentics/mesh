@@ -27,6 +27,7 @@ import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeTaggedEventModel;
@@ -374,7 +375,7 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 * @return Next matching field container or null when no language matches
 	 */
 	default NodeGraphFieldContainer findVersion(InternalActionContext ac, List<String> languageTags, String version) {
-		return findVersion(languageTags, ac.getBranch().getUuid(), version);
+		return findVersion(languageTags, Tx.get().getBranch(ac).getUuid(), version);
 	}
 
 	/**

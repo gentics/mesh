@@ -111,9 +111,10 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements Tag
 
 	@Override
 	public String getSubETag(HibTag tag, InternalActionContext ac) {
+		Tx tx = Tx.get();
 		StringBuilder keyBuilder = new StringBuilder();
 		keyBuilder.append(tag.getLastEditedTimestamp());
-		keyBuilder.append(ac.getBranch(tag.getProject()).getUuid());
+		keyBuilder.append(tx.getBranch(ac, tag.getProject()).getUuid());
 		return keyBuilder.toString();
 	}
 
@@ -271,9 +272,9 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements Tag
 
 	@Override
 	public HibTag create(HibTagFamily tagFamily, InternalActionContext ac, EventQueueBatch batch, String uuid) {
+		Tx tx = Tx.get();
 		TagFamily graphTagFamily = toGraph(tagFamily);
-
-		HibProject project = ac.getProject();
+		HibProject project = tx.getProject(ac);
 		TagCreateRequest requestModel = ac.fromJson(TagCreateRequest.class);
 		String tagName = requestModel.getName();
 		if (isEmpty(tagName)) {

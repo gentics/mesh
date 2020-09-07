@@ -26,9 +26,10 @@ import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
@@ -258,9 +259,10 @@ public class BinaryUploadHandler extends AbstractHandler {
 
 		return db.singleTxWriteLock(tx -> {
 			ContentDaoWrapper contentDao = tx.data().contentDao();
-			HibProject project = ac.getProject();
-			HibBranch branch = ac.getBranch();
-			Node node = project.getNodeRoot().loadObjectByUuid(ac, nodeUuid, UPDATE_PERM);
+			HibProject project = tx.getProject(ac);
+			HibBranch branch = tx.getBranch(ac);
+			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, UPDATE_PERM);
 
 			utils.eventAction(batch -> {
 
@@ -369,8 +371,7 @@ public class BinaryUploadHandler extends AbstractHandler {
 
 				batch.add(newDraftVersion.onUpdated(branch.getUuid(), DRAFT));
 			});
-			return node.transformToRestSync(ac, 0);
-
+			return nodeDao.transformToRestSync(node, ac, 0);
 		});
 	}
 

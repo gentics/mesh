@@ -14,6 +14,7 @@ import com.gentics.graphqlfilter.filter.StartMainFilter;
 import com.gentics.graphqlfilter.filter.StringFilter;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 
 /**
@@ -55,7 +56,7 @@ public class NodeFilter extends StartMainFilter<NodeContent> {
 
 	private MainFilter<NodeContent> createAllFieldFilters() {
 		List<FilterField<NodeContent, ?>> schemaFields = StreamSupport
-			.stream(context.getProject().getSchemaContainerRoot().findAll().spliterator(), false)
+			.stream(Tx.get().getProject(context).getSchemaContainerRoot().findAll().spliterator(), false)
 			.map(this::createFieldFilter)
 			.collect(Collectors.toList());
 		return MainFilter.mainFilter("FieldFilter", "Filters by fields", schemaFields, false);

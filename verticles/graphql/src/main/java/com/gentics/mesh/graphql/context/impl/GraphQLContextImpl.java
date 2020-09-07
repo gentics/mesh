@@ -3,7 +3,6 @@ package com.gentics.mesh.graphql.context.impl;
 import static com.gentics.mesh.core.rest.error.Errors.missingPerm;
 
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
@@ -52,16 +51,17 @@ public class GraphQLContextImpl extends InternalRoutingActionContextImpl impleme
 
 	@Override
 	public boolean hasReadPerm(NodeGraphFieldContainer container) {
-		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+		Tx tx = Tx.get();
+		ContentDaoWrapper contentDao = tx.data().contentDao();
 		HibNode node = contentDao.getNode(container);
 		Object nodeId = node.getId();
-		UserDaoWrapper userDao = Tx.get().data().userDao();
+		UserDaoWrapper userDao = tx.data().userDao();
 
 		if (userDao.hasPermissionForId(getUser(), nodeId, InternalPermission.READ_PERM)) {
 			return true;
 		}
 
-		boolean isPublished = container.isPublished(getBranch().getUuid());
+		boolean isPublished = container.isPublished(tx.getBranch(this).getUuid());
 		if (isPublished && userDao.hasPermissionForId(getUser(), nodeId, InternalPermission.READ_PUBLISHED_PERM)) {
 			return true;
 		}
@@ -87,22 +87,22 @@ public class GraphQLContextImpl extends InternalRoutingActionContextImpl impleme
 
 	@Override
 	public String branchName() {
-		return getBranch().getName();
+		return Tx.get().getBranch(this).getName();
 	}
 
 	@Override
 	public String branchUuid() {
-		return getBranch().getUuid();
+		return Tx.get().getBranch(this).getUuid();
 	}
 
 	@Override
 	public String projectName() {
-		return getProject().getName();
+		return Tx.get().getProject(this).getName();
 	}
 
 	@Override
 	public String projectUuid() {
-		return getProject().getUuid();
+		return Tx.get().getProject(this).getUuid();
 	}
 
 	@Override

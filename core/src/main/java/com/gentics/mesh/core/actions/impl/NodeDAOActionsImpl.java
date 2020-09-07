@@ -15,6 +15,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -53,9 +54,8 @@ public class NodeDAOActionsImpl implements NodeDAOActions {
 
 	@Override
 	public Page<? extends HibNode> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, Predicate<HibNode> extraFilter) {
-		return ctx.project().getNodeRoot().findAll(ctx.ac(), pagingInfo, node -> {
-			return extraFilter.test(node);
-		});
+		NodeDaoWrapper nodeDao = ctx.tx().data().nodeDao();
+		return nodeDao.findAll(ctx.project(), ctx.ac(), pagingInfo, extraFilter);
 	}
 
 	@Override
@@ -65,9 +65,10 @@ public class NodeDAOActionsImpl implements NodeDAOActions {
 	}
 
 	@Override
-	public Node create(Tx tx, InternalActionContext ac, EventQueueBatch batch, String uuid) {
+	public HibNode create(Tx tx, InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		NodeDaoWrapper nodeDao = tx.data().nodeDao();
-		return ac.getProject().getNodeRoot().create(ac, batch, uuid);
+		HibProject project = tx.getProject(ac);
+		return nodeDao.create(project, ac, batch, uuid);
 	}
 
 	@Override

@@ -70,7 +70,7 @@ public class TagCrudHandler extends AbstractHandler {
 				NodeParameters nodeParams = ac.getNodeParameters();
 				HibTagFamily tagFamily = tagFamilyActions.loadByUuid(context(tx, ac), tagFamilyUuid, READ_PERM, true);
 				HibTag tag = tagActions.loadByUuid(context(tx, ac, tagFamily), tagUuid, READ_PERM, true);
-				TransformablePage<? extends HibNode> page = tagDao.findTaggedNodes(tag, ac.getUser(), ac.getBranch(),
+				TransformablePage<? extends HibNode> page = tagDao.findTaggedNodes(tag, ac.getUser(), tx.getBranch(ac),
 					nodeParams.getLanguageList(options),
 					ContainerType.forVersion(ac.getVersioningParameters().getVersion()), pagingParams);
 				return page.transformToRestSync(ac, 0);

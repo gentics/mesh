@@ -1,10 +1,10 @@
 package com.gentics.mesh.core.data.dao.impl;
 
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
 import java.util.List;
 import java.util.Stack;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -14,16 +14,19 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
@@ -58,6 +61,14 @@ public class NodeDaoWrapperImpl extends AbstractDaoWrapper<HibNode> implements N
 	}
 
 	@Override
+	public Page<? extends HibNode> findAll(HibProject project, InternalActionContext ac, PagingParameters pagingInfo,
+		Predicate<HibNode> extraFilter) {
+		return toGraph(project).getNodeRoot().findAll(ac, pagingInfo, node -> {
+			return extraFilter.test(node);
+		});
+	}
+
+	@Override
 	public Node findByUuidGlobal(String uuid) {
 		// TODO Probably wrong interface hierarchy. There is no need for this method
 		throw new RuntimeException("Not implemented");
@@ -82,6 +93,11 @@ public class NodeDaoWrapperImpl extends AbstractDaoWrapper<HibNode> implements N
 	@Override
 	public HibNode create(HibNode parentNode, HibUser creator, HibSchemaVersion schemaVersion, HibProject project, HibBranch branch, String uuid) {
 		return toGraph(parentNode).create(creator, schemaVersion, project, branch, uuid);
+	}
+
+	@Override
+	public HibNode create(HibProject project, InternalActionContext ac, EventQueueBatch batch, String uuid) {
+		return toGraph(project).getNodeRoot().create(ac, batch, uuid);
 	}
 
 	@Override
@@ -219,6 +235,18 @@ public class NodeDaoWrapperImpl extends AbstractDaoWrapper<HibNode> implements N
 	@Override
 	public String getETag(HibNode node, InternalActionContext ac) {
 		return toGraph(node).getETag(ac);
+	}
+
+	@Override
+	public TransformablePage<? extends HibTag> updateTags(HibNode node, InternalActionContext ac, EventQueueBatch batch) {
+		Node graphNode = toGraph(node);
+		return graphNode.updateTags(ac, batch);
+	}
+
+	@Override
+	public Stream<? extends HibNode> findAllStream(HibProject project, InternalActionContext ac, InternalPermission perm) {
+		Project graphProject = toGraph(project);
+		return graphProject.getNodeRoot().findAllStream(ac, perm);
 	}
 
 }

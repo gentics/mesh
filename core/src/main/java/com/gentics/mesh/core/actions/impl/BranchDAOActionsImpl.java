@@ -63,7 +63,7 @@ public class BranchDAOActionsImpl implements BranchDAOActions {
 	@Override
 	public HibBranch create(Tx tx, InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		BranchDaoWrapper branchDao = tx.data().branchDao();
-		return branchDao.create(ac.getProject(), ac, batch, uuid);
+		return branchDao.create(tx.getProject(ac), ac, batch, uuid);
 	}
 
 	@Override

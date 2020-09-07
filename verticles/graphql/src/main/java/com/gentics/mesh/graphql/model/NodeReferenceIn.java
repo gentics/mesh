@@ -30,14 +30,15 @@ public class NodeReferenceIn {
 
 	/**
 	 * Creates a stream of incoming node references for the given content.
-	 * @param context
+	 * @param gc
 	 * @param content
 	 * @param type
 	 * @return
 	 */
-	public static Stream<NodeReferenceIn> fromContent(GraphQLContext context, NodeContent content, ContainerType type) {
-		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
-		String branchUuid = context.getBranch().getUuid();
+	public static Stream<NodeReferenceIn> fromContent(GraphQLContext gc, NodeContent content, ContainerType type) {
+		Tx tx = Tx.get();
+		ContentDaoWrapper contentDao = tx.data().contentDao();
+		String branchUuid = tx.getBranch(gc).getUuid();
 		return contentDao.getInboundReferences(content.getNode())
 			.flatMap(ref -> ref.getReferencingContents()
 				.filter(container -> {
@@ -49,7 +50,7 @@ public class NodeReferenceIn {
 					}
 					return false;
 				})
-				.filter(context::hasReadPerm)
+				.filter(gc::hasReadPerm)
 				.findAny().stream()
 					.map(referencingContent -> new NodeReferenceIn(
 						new NodeContent(null, referencingContent, content.getLanguageFallback(), type),
