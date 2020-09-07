@@ -80,8 +80,10 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testTagFamilyTagCreation() {
 		try (Tx tx = tx()) {
 			TagDaoWrapper tagDao = tx.tagDao();
+			TagFamilyDaoWrapper tagFamilyDao = tx.tagFamilyDao();
+
 			final String TAG_FAMILY_NAME = "mycustomtagFamily";
-			HibTagFamily tagFamily = project().getTagFamilyRoot().create(TAG_FAMILY_NAME, user());
+			HibTagFamily tagFamily = tagFamilyDao.create(project(), TAG_FAMILY_NAME, user());
 			assertNotNull(tagFamily);
 			assertEquals(TAG_FAMILY_NAME, tagFamily.getName());
 			assertNull(tagFamily.getDescription());

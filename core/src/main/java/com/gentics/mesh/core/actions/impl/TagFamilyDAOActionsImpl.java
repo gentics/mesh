@@ -14,6 +14,7 @@ import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
@@ -28,18 +29,23 @@ public class TagFamilyDAOActionsImpl implements TagFamilyDAOActions {
 	}
 
 	@Override
-	public HibTagFamily loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
+	public HibTagFamily loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm,
+			boolean errorIfNotFound) {
+		TagFamilyDaoWrapper tagFamilyDao = ctx.tx().tagFamilyDao();
+		HibProject project = ctx.project();
 		if (perm == null) {
-			return ctx.project().getTagFamilyRoot().findByUuid(uuid);
+			return tagFamilyDao.findByUuid(project, uuid);
 		} else {
-			return ctx.project().getTagFamilyRoot().loadObjectByUuid(ctx.ac(), uuid, perm, errorIfNotFound);
+			return tagFamilyDao.loadObjectByUuid(project, ctx.ac(), uuid, perm, errorIfNotFound);
 		}
 	}
 
 	@Override
-	public HibTagFamily loadByName(DAOActionContext ctx, String name, InternalPermission perm, boolean errorIfNotFound) {
+	public HibTagFamily loadByName(DAOActionContext ctx, String name, InternalPermission perm,
+			boolean errorIfNotFound) {
+		TagFamilyDaoWrapper tagFamilyDao = ctx.tx().tagFamilyDao();
 		if (perm == null) {
-			return ctx.project().getTagFamilyRoot().findByName(name);
+			return tagFamilyDao.findByName(ctx.project(), name);
 		} else {
 			throw new RuntimeException("Not supported");
 		}
@@ -47,13 +53,17 @@ public class TagFamilyDAOActionsImpl implements TagFamilyDAOActions {
 
 	@Override
 	public TransformablePage<? extends TagFamily> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
-		return ctx.project().getTagFamilyRoot().findAll(ctx.ac(), pagingInfo);
+		HibProject project = ctx.project();
+		TagFamilyDaoWrapper tagFamilyDao = ctx.tx().tagFamilyDao();
+		return tagFamilyDao.findAll(project, ctx.ac(), pagingInfo);
 	}
 
 	@Override
 	public Page<? extends HibTagFamily> loadAll(DAOActionContext ctx, PagingParameters pagingInfo,
-		Predicate<HibTagFamily> extraFilter) {
-		return ctx.project().getTagFamilyRoot().findAll(ctx.ac(), pagingInfo, tagFamily -> {
+			Predicate<HibTagFamily> extraFilter) {
+		HibProject project = ctx.project();
+		TagFamilyDaoWrapper tagFamilyDao = ctx.tx().tagFamilyDao();
+		return tagFamilyDao.findAll(project, ctx.ac(), pagingInfo, tagFamily -> {
 			return extraFilter.test(tagFamily);
 		});
 	}
@@ -77,7 +87,8 @@ public class TagFamilyDAOActionsImpl implements TagFamilyDAOActions {
 	}
 
 	@Override
-	public TagFamilyResponse transformToRestSync(Tx tx, HibTagFamily element, InternalActionContext ac, int level, String... languageTags) {
+	public TagFamilyResponse transformToRestSync(Tx tx, HibTagFamily element, InternalActionContext ac, int level,
+			String... languageTags) {
 		TagFamilyDaoWrapper tagFamilyDao = tx.tagFamilyDao();
 		return tagFamilyDao.transformToRestSync(element, ac, level, languageTags);
 	}

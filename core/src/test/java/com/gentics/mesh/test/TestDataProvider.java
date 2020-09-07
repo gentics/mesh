@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.test.TestSize.EMPTY;
 import static com.gentics.mesh.test.TestSize.FULL;
 
@@ -27,7 +28,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
@@ -38,6 +38,7 @@ import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -120,7 +121,8 @@ public class TestDataProvider {
 
 	private Provider<EventQueueBatch> queueProvider;
 
-	public TestDataProvider(TestSize size, BootstrapInitializer boot, Database database, Provider<EventQueueBatch> queueProvider) {
+	public TestDataProvider(TestSize size, BootstrapInitializer boot, Database database,
+			Provider<EventQueueBatch> queueProvider) {
 		this.size = size;
 		this.boot = boot;
 		this.db = database;
@@ -129,7 +131,7 @@ public class TestDataProvider {
 	}
 
 	public void setup(MeshOptions meshOptions, boolean setAdminPassword)
-		throws JsonParseException, JsonMappingException, IOException, MeshSchemaException {
+			throws JsonParseException, JsonMappingException, IOException, MeshSchemaException {
 		long start = System.currentTimeMillis();
 		if (getSize() == EMPTY) {
 			return;
@@ -137,8 +139,10 @@ public class TestDataProvider {
 
 		db.tx(tx -> {
 			boot.globalCacheClear();
-			if (meshOptions.getInitialAdminPassword() != null && !meshOptions.getInitialAdminPassword().startsWith("debug")) {
-				// We omit creating the initial admin password since hashing the password would slow down tests
+			if (meshOptions.getInitialAdminPassword() != null
+					&& !meshOptions.getInitialAdminPassword().startsWith("debug")) {
+				// We omit creating the initial admin password since hashing the password would
+				// slow down tests
 				meshOptions.setInitialAdminPassword(null);
 			}
 			boot.initMandatoryData(meshOptions);
@@ -189,7 +193,7 @@ public class TestDataProvider {
 //			addPermissions(toGraph(project).getSchemaContainerRoot());
 			addPermissions(project.getBranchPermissionRoot());
 			addPermissions(project.getInitialBranch());
-			addPermissions(project.getTagFamilyRoot());
+			addPermissions(toGraph(project).getTagFamilyRoot());
 			PermissionRoots permissionRoots = tx.data().permissionRoots();
 			addPermissions(permissionRoots.project());
 			addPermissions(permissionRoots.user());
@@ -226,12 +230,14 @@ public class TestDataProvider {
 			if (log.isTraceEnabled()) {
 				log.trace("Granting CRUD permissions on {" + meshVertex.getId() + "} with role {" + role.getId() + "}");
 			}
-			roleDao.grantPermissions(role, meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM, READ_PUBLISHED_PERM, PUBLISH_PERM);
+			roleDao.grantPermissions(role, meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM,
+					READ_PUBLISHED_PERM, PUBLISH_PERM);
 		}
 	}
 
 	/**
-	 * Add data to the internal maps which was created within the {@link BootstrapInitializer} (eg. admin groups, roles, users)
+	 * Add data to the internal maps which was created within the
+	 * {@link BootstrapInitializer} (eg. admin groups, roles, users)
 	 * 
 	 * @param tx
 	 */
@@ -255,25 +261,28 @@ public class TestDataProvider {
 		addContent(folders.get("2014"), "News_2014", "News!", "Neuigkeiten!");
 		addContent(folders.get("march"), "New_in_March_2014", "This is new in march 2014.", "Das ist neu im März 2014");
 
-		HibNode content = addContent(folders.get("news"), "News Overview", "News Overview", "News Übersicht", CONTENT_UUID);
+		HibNode content = addContent(folders.get("news"), "News Overview", "News Overview", "News Übersicht",
+				CONTENT_UUID);
 		contentUuid = content.getUuid();
 
-		addContent(folders.get("deals"), "Super Special Deal 2015", "Buy two get nine!", "Kauf zwei und nimm neun mit!");
-		addContent(folders.get("deals"), "Special Deal June 2015", "Buy two get three!", "Kauf zwei und nimm drei mit!");
+		addContent(folders.get("deals"), "Super Special Deal 2015", "Buy two get nine!",
+				"Kauf zwei und nimm neun mit!");
+		addContent(folders.get("deals"), "Special Deal June 2015", "Buy two get three!",
+				"Kauf zwei und nimm drei mit!");
 
 		addContent(folders.get("2015"), "Special News_2014", "News!", "Neuigkeiten!");
 		addContent(folders.get("2015"), "News_2015", "News!", "Neuigkeiten!");
 
 		HibNode concorde = addContent(folders.get("products"), "Concorde",
-			"Aérospatiale-BAC Concorde is a turbojet-powered supersonic passenger jet airliner that was in service from 1976 to 2003.",
-			"Die Aérospatiale-BAC Concorde 101/102, kurz Concorde (französisch und englisch für Eintracht, Einigkeit), ist ein Überschall-Passagierflugzeug, das von 1976 bis 2003 betrieben wurde.");
+				"Aérospatiale-BAC Concorde is a turbojet-powered supersonic passenger jet airliner that was in service from 1976 to 2003.",
+				"Die Aérospatiale-BAC Concorde 101/102, kurz Concorde (französisch und englisch für Eintracht, Einigkeit), ist ein Überschall-Passagierflugzeug, das von 1976 bis 2003 betrieben wurde.");
 		tagDao.addTag(concorde, tags.get("plane"), project.getLatestBranch());
 		tagDao.addTag(concorde, tags.get("twinjet"), project.getLatestBranch());
 		tagDao.addTag(concorde, tags.get("red"), project.getLatestBranch());
 
 		HibNode hondaNR = addContent(folders.get("products"), "Honda NR",
-			"The Honda NR (New Racing) was a V-four motorcycle engine series started by Honda in 1979 with the 500cc NR500 Grand Prix racer that used oval pistons.",
-			"Die NR750 ist ein Motorrad mit Ovalkolben-Motor des japanischen Motorradherstellers Honda, von dem in den Jahren 1991 und 1992 300 Exemplare gebaut wurden.");
+				"The Honda NR (New Racing) was a V-four motorcycle engine series started by Honda in 1979 with the 500cc NR500 Grand Prix racer that used oval pistons.",
+				"Die NR750 ist ein Motorrad mit Ovalkolben-Motor des japanischen Motorradherstellers Honda, von dem in den Jahren 1991 und 1992 300 Exemplare gebaut wurden.");
 		tagDao.addTag(hondaNR, tags.get("vehicle"), project.getLatestBranch());
 		tagDao.addTag(hondaNR, tags.get("motorcycle"), project.getLatestBranch());
 		tagDao.addTag(hondaNR, tags.get("green"), project.getLatestBranch());
@@ -339,7 +348,8 @@ public class TestDataProvider {
 
 		String email = firstname.toLowerCase().substring(0, 1) + "." + lastname.toLowerCase() + "@spam.gentics.com";
 		HibUser user = userDao.create(username, null);
-		// Precomputed hash since hashing takes some time and we want to keep out tests fast
+		// Precomputed hash since hashing takes some time and we want to keep out tests
+		// fast
 		user.setPasswordHash(hashedPassword);
 		user.setFirstname(firstname);
 		user.setLastname(lastname);
@@ -379,7 +389,8 @@ public class TestDataProvider {
 		// User, Groups, Roles
 		userInfo = createUserInfo("joe1", "Joe", "Doe");
 		EventQueueBatch batch = Mockito.mock(EventQueueBatch.class);
-		project = projectDao.create(PROJECT_NAME, null, null, null, userInfo.getUser(), getSchemaContainer("folder").getLatestVersion(), batch);
+		project = projectDao.create(PROJECT_NAME, null, null, null, userInfo.getUser(),
+				getSchemaContainer("folder").getLatestVersion(), batch);
 		HibUser jobUser = userInfo.getUser();
 		schemaDao.addSchema(getSchemaContainer("folder"), project, jobUser, batch);
 		schemaDao.addSchema(getSchemaContainer("content"), project, jobUser, batch);
@@ -412,17 +423,19 @@ public class TestDataProvider {
 		}
 		// Publish the project basenode
 		InternalActionContext ac = new NodeMigrationActionContextImpl();
-		boot.contentDao().publish(project.getBaseNode(), ac, getEnglish(), getProject().getLatestBranch(), getUserInfo().getUser());
+		boot.contentDao().publish(project.getBaseNode(), ac, getEnglish(), getProject().getLatestBranch(),
+				getUserInfo().getUser());
 		contentCount++;
 
 	}
 
 	public void addTagFamilies() {
-		TagFamily basicTagFamily = getProject().getTagFamilyRoot().create("basic", userInfo.getUser());
+		TagFamilyDaoWrapper tagFamilyDao = Tx.get().tagFamilyDao();
+		HibTagFamily basicTagFamily = tagFamilyDao.create(getProject(), "basic", userInfo.getUser());
 		basicTagFamily.setDescription("Description for basic tag family");
 		tagFamilies.put("basic", basicTagFamily);
 
-		TagFamily colorTagFamily = getProject().getTagFamilyRoot().create("colors", userInfo.getUser());
+		HibTagFamily colorTagFamily = tagFamilyDao.create(getProject(), "colors", userInfo.getUser());
 		colorTagFamily.setDescription("Description for color tag family");
 		tagFamilies.put("colors", colorTagFamily);
 	}
@@ -496,7 +509,8 @@ public class TestDataProvider {
 		postcodeFieldSchema.setLabel("Post Code");
 		vcardMicroschema.addField(postcodeFieldSchema);
 
-		HibMicroschema vcardMicroschemaContainer = microschemaDao.create(vcardMicroschema, userInfo.getUser(), createBatch());
+		HibMicroschema vcardMicroschemaContainer = microschemaDao.create(vcardMicroschema, userInfo.getUser(),
+				createBatch());
 		microschemaContainers.put(vcardMicroschemaContainer.getName(), vcardMicroschemaContainer);
 		project.getMicroschemaContainerRoot().addMicroschema(user(), vcardMicroschemaContainer, createBatch());
 	}
@@ -526,7 +540,8 @@ public class TestDataProvider {
 		captionFieldSchema.setLabel("Caption");
 		captionedImageMicroschema.addField(captionFieldSchema);
 
-		HibMicroschema microschema = microschemaDao.create(captionedImageMicroschema, userInfo.getUser(), createBatch());
+		HibMicroschema microschema = microschemaDao.create(captionedImageMicroschema, userInfo.getUser(),
+				createBatch());
 		microschemaContainers.put(captionedImageMicroschema.getName(), microschema);
 		project.getMicroschemaContainerRoot().addMicroschema(user(), microschema, createBatch());
 	}
@@ -547,7 +562,8 @@ public class TestDataProvider {
 			folderNode = nodeDao.create(rootNode, userInfo.getUser(), schemaVersion, project, branch, uuid);
 		}
 		if (germanName != null) {
-			NodeGraphFieldContainer germanContainer = boot.contentDao().createGraphFieldContainer(folderNode, german, branch, userInfo.getUser());
+			NodeGraphFieldContainer germanContainer = boot.contentDao().createGraphFieldContainer(folderNode, german,
+					branch, userInfo.getUser());
 			// germanContainer.createString("displayName").setString(germanName);
 			germanContainer.createString("teaser").setString(germanName);
 			germanContainer.createString("slug").setString(germanName);
@@ -556,7 +572,8 @@ public class TestDataProvider {
 			boot.contentDao().publish(folderNode, ac, getGerman(), branch, getUserInfo().getUser());
 		}
 		if (englishName != null) {
-			NodeGraphFieldContainer englishContainer = boot.contentDao().createGraphFieldContainer(folderNode, english, branch, userInfo.getUser());
+			NodeGraphFieldContainer englishContainer = boot.contentDao().createGraphFieldContainer(folderNode, english,
+					branch, userInfo.getUser());
 			// englishContainer.createString("displayName").setString(englishName);
 			englishContainer.createString("name").setString(englishName);
 			englishContainer.createString("slug").setString(englishName);
@@ -594,18 +611,22 @@ public class TestDataProvider {
 		return addContent(parentNode, name, englishContent, germanContent, null);
 	}
 
-	private HibNode addContent(HibNode parentNode, String name, String englishContent, String germanContent, String uuid) {
+	private HibNode addContent(HibNode parentNode, String name, String englishContent, String germanContent,
+			String uuid) {
 		NodeDaoWrapper nodeDao = boot.nodeDao();
 		InternalActionContext ac = new NodeMigrationActionContextImpl();
 		HibBranch branch = project.getLatestBranch();
 		HibNode node;
 		if (uuid == null) {
-			node = nodeDao.create(parentNode, userInfo.getUser(), schemaContainers.get("content").getLatestVersion(), project);
+			node = nodeDao.create(parentNode, userInfo.getUser(), schemaContainers.get("content").getLatestVersion(),
+					project);
 		} else {
-			node = nodeDao.create(parentNode, userInfo.getUser(), schemaContainers.get("content").getLatestVersion(), project, branch, uuid);
+			node = nodeDao.create(parentNode, userInfo.getUser(), schemaContainers.get("content").getLatestVersion(),
+					project, branch, uuid);
 		}
 		if (englishContent != null) {
-			NodeGraphFieldContainer englishContainer = boot.contentDao().createGraphFieldContainer(node, english, branch, userInfo.getUser());
+			NodeGraphFieldContainer englishContainer = boot.contentDao().createGraphFieldContainer(node, english,
+					branch, userInfo.getUser());
 			englishContainer.createString("teaser").setString(name + "_english_name");
 			englishContainer.createString("title").setString(name + " english title");
 			englishContainer.createString("displayName").setString(name + " english displayName");
@@ -617,7 +638,8 @@ public class TestDataProvider {
 		}
 
 		if (germanContent != null) {
-			NodeGraphFieldContainer germanContainer = boot.contentDao().createGraphFieldContainer(node, german, branch, userInfo.getUser());
+			NodeGraphFieldContainer germanContainer = boot.contentDao().createGraphFieldContainer(node, german, branch,
+					userInfo.getUser());
 			germanContainer.createString("teaser").setString(name + " german");
 			germanContainer.createString("title").setString(name + " german title");
 			germanContainer.createString("displayName").setString(name + " german");
@@ -642,8 +664,10 @@ public class TestDataProvider {
 	public String getPathForNews2015Tag(String languageTag) {
 		ContentDaoWrapper contentDao = boot.contentDao();
 
-		String name = contentDao.getLatestDraftFieldContainer(folders.get("news"), languageTag).getString("name").getString();
-		String name2 = contentDao.getLatestDraftFieldContainer(folders.get("2015"), languageTag).getString("name").getString();
+		String name = contentDao.getLatestDraftFieldContainer(folders.get("news"), languageTag).getString("name")
+				.getString();
+		String name2 = contentDao.getLatestDraftFieldContainer(folders.get("2015"), languageTag).getString("name")
+				.getString();
 		return name + "/" + name2;
 	}
 

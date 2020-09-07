@@ -33,8 +33,6 @@ public interface HibProject extends HibCoreElement, HibUserTracking {
 
 	HibBranch getInitialBranch();
 
-	TagFamilyRoot getTagFamilyRoot();
-
 	HibBranch findBranch(String branchNameOrUuid);
 
 	@Deprecated

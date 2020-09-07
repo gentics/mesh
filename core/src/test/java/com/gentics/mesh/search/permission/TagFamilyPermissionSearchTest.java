@@ -7,11 +7,12 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
@@ -31,7 +32,7 @@ public class TagFamilyPermissionSearchTest extends AbstractMeshTest {
 			UserDaoWrapper userDao = tx.userDao();
 			RoleDaoWrapper roleDao = tx.roleDao();
 
-			TagFamily tagFamily = project().getTagFamilyRoot().findByUuid(response.getUuid());
+			HibTagFamily tagFamily = tx.tagFamilyDao().findByUuid(project(), response.getUuid());
 			System.out.println("TagFamily Uuid:" + response.getUuid());
 			for (HibRole role : userDao.getRoles(user())) {
 				roleDao.revokePermissions(role, tagFamily, InternalPermission.READ_PERM);
@@ -50,8 +51,9 @@ public class TagFamilyPermissionSearchTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			UserDaoWrapper userDao = tx.userDao();
 			RoleDaoWrapper roleDao = tx.roleDao();
+			TagFamilyDaoWrapper tagFamilyDao = tx.tagFamilyDao();
 
-			TagFamily tagFamily = project().getTagFamilyRoot().findByUuid(response.getUuid());
+			HibTagFamily tagFamily = tagFamilyDao.findByUuid(project(), response.getUuid());
 			System.out.println("TagFamily Uuid:" + response.getUuid());
 			for (HibRole role : userDao.getRoles(user())) {
 				roleDao.grantPermissions(role, tagFamily, InternalPermission.READ_PERM);

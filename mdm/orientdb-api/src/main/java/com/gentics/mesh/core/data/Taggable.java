@@ -13,9 +13,9 @@ import java.util.List;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -58,9 +58,9 @@ public interface Taggable {
 	default List<HibTag> getTagsToSet(List<TagReference> list, InternalActionContext ac, EventQueueBatch batch) {
 		List<HibTag> tags = new ArrayList<>();
 		HibProject project = getProject();
-		TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();
 		UserDaoWrapper userDao = Tx.get().userDao();
 		TagDaoWrapper tagDao = Tx.get().tagDao();
+		TagFamilyDaoWrapper tagFamilyDao = Tx.get().tagFamilyDao();
 
 		HibUser user = ac.getUser();
 		for (TagReference tagReference : list) {
@@ -71,7 +71,7 @@ public interface Taggable {
 				throw error(BAD_REQUEST, "tag_error_tagfamily_not_set");
 			}
 			// 1. Locate the tag family
-			HibTagFamily tagFamily = tagFamilyRoot.findByName(tagReference.getTagFamily());
+			HibTagFamily tagFamily = tagFamilyDao.findByName(project, tagReference.getTagFamily());
 			// Tag Family could not be found so lets create a new one
 			if (tagFamily == null) {
 				throw error(NOT_FOUND, "tagfamily_not_found", tagReference.getTagFamily());

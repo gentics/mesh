@@ -563,7 +563,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 				expectedCount += tx.contentDao().getGraphFieldContainerCount(node);
 			}
 			expectedCount += meshRoot().getTagRoot().computeCount();
-			expectedCount += project.getTagFamilyRoot().computeCount();
+			expectedCount += tx.tagFamilyDao().computeCount(project);
 
 			assertThat(trackingSearchProvider()).hasStore(Project.composeIndexName(), Project.composeDocumentId(uuid));
 			assertThat(trackingSearchProvider()).hasEvents(expectedCount, 0, 0, 0, 0);

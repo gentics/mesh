@@ -7,14 +7,12 @@ import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.Tag;
-import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.LanguageRoot;
-import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -34,8 +32,7 @@ public class AtomicTagTest extends AbstractMeshTest {
 			assertNotNull(languageRoot);
 
 			HibProject project = project();
-			TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();
-			TagFamily tagFamily = tagFamilyRoot.create("basic", user);
+			HibTagFamily tagFamily = tx.tagFamilyDao().create(project, "basic", user);
 
 			HibTag tag = tagDao.create(tagFamily, "dummyName", project, user);
 			String uuid = tag.getUuid();

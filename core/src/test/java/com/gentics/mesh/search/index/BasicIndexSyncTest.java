@@ -1,6 +1,7 @@
 package com.gentics.mesh.search.index;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC_FINISHED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER_ES6;
@@ -200,7 +201,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		// Assert insert
 		tx(() -> {
 			for (int i = 0; i < 400; i++) {
-				project().getTagFamilyRoot().create("tagfamily_" + i, user());
+				toGraph(project()).getTagFamilyRoot().create("tagfamily_" + i, user());
 			}
 		});
 		syncIndex();

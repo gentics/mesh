@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.tagfamily;
 
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
 import static org.junit.Assert.assertEquals;
@@ -76,10 +77,10 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 			assertNotNull(families);
 			assertEquals(2, families.size());
 
-			TagFamilyRoot projectTagFamilyRoot = project().getTagFamilyRoot();
+			TagFamilyRoot projectTagFamilyRoot = toGraph(project()).getTagFamilyRoot();
 			assertNotNull(projectTagFamilyRoot);
 
-			TagFamily projectTagFamily = projectTagFamilyRoot.findByName("colors");
+			HibTagFamily projectTagFamily = tx.tagFamilyDao().findByName(project(), "colors");
 			assertNotNull(projectTagFamily);
 
 			assertNotNull(projectTagFamilyRoot.create("bogus", user()));
@@ -92,7 +93,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Override
 	public void testRootNode() {
 		try (Tx tx = tx()) {
-			TagFamilyRoot root = project().getTagFamilyRoot();
+			TagFamilyRoot root = toGraph(project()).getTagFamilyRoot();
 			long nProjectsBefore = root.computeCount();
 			assertNotNull(root.create("test1234556", user()));
 			long nProjectsAfter = root.computeCount();
@@ -104,9 +105,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Override
 	public void testFindByName() {
 		try (Tx tx = tx()) {
-			TagFamilyRoot root = meshRoot().getTagFamilyRoot();
-			assertNotNull(root);
-			assertNotNull(root.findByName("colors"));
+			TagFamilyDaoWrapper tagFamilyDao = tx.tagFamilyDao();
+			assertNotNull(tagFamilyDao.findByName("colors"));
 		}
 	}
 
@@ -114,10 +114,10 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Override
 	public void testFindByUUID() throws Exception {
 		try (Tx tx = tx()) {
-			TagFamilyRoot root = project().getTagFamilyRoot();
+			TagFamilyDaoWrapper tagFamilyDao = tx.tagFamilyDao();
 			HibTagFamily tagFamily = tagFamily("colors");
 
-			HibTagFamily foundTagFamily = root.findByUuid(tagFamily.getUuid());
+			HibTagFamily foundTagFamily = tagFamilyDao.findByUuid(tagFamily.getUuid());
 			assertNotNull(foundTagFamily);
 		}
 	}
@@ -138,9 +138,9 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Override
 	public void testCreate() throws IOException {
 		try (Tx tx = tx()) {
-			TagFamilyRoot root = project().getTagFamilyRoot();
-			HibTagFamily family = root.create("test", user());
-			HibTagFamily family2 = root.findByName(family.getName());
+			TagFamilyDaoWrapper tagFamilyDao = tx.tagFamilyDao();
+			HibTagFamily family = tagFamilyDao.create(project(), "test", user());
+			HibTagFamily family2 = tagFamilyDao.findByName(project(), family.getName());
 			assertNotNull(family2);
 			assertEquals("test", family2.getName());
 			assertEquals(family.getUuid(), family2.getUuid());
@@ -175,7 +175,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Override
 	public void testReadPermission() {
 		try (Tx tx = tx()) {
-			TagFamily tagFamily = project().getTagFamilyRoot().create("newProject", user());
+			HibTagFamily tagFamily = tx.tagFamilyDao().create(project(), "newProject", user());
 			testPermission(InternalPermission.READ_PERM, tagFamily);
 		}
 	}
@@ -184,7 +184,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Override
 	public void testDeletePermission() {
 		try (Tx tx = tx()) {
-			HibTagFamily tagFamily = project().getTagFamilyRoot().create("newProject", user());
+			HibTagFamily tagFamily = tx.tagFamilyDao().create(project(), "newProject", user());
 			testPermission(InternalPermission.DELETE_PERM, tagFamily);
 		}
 	}
@@ -193,7 +193,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Override
 	public void testUpdatePermission() {
 		try (Tx tx = tx()) {
-			HibTagFamily tagFamily = project().getTagFamilyRoot().create("newProject", user());
+			HibTagFamily tagFamily = tx.tagFamilyDao().create(project(), "newProject", user());
 			testPermission(InternalPermission.UPDATE_PERM, tagFamily);
 		}
 	}
@@ -202,7 +202,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Override
 	public void testCreatePermission() {
 		try (Tx tx = tx()) {
-			HibTagFamily tagFamily = project().getTagFamilyRoot().create("newProject", user());
+			HibTagFamily tagFamily = tx.tagFamilyDao().create(project(), "newProject", user());
 			testPermission(InternalPermission.CREATE_PERM, tagFamily);
 		}
 	}
@@ -227,11 +227,10 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	public void testCreateDelete() throws Exception {
 		try (Tx tx = tx()) {
 			TagFamilyDaoWrapper tagFamilyDao = tx.tagFamilyDao();
-			TagFamilyRoot root = project().getTagFamilyRoot();
-			HibTagFamily tagFamily = root.create("test123", user());
+			HibTagFamily tagFamily = tagFamilyDao.create(project(), "test123", user());
 			assertNotNull(tagFamily);
 			String uuid = tagFamily.getUuid();
-			HibTagFamily foundTagFamily = root.findByUuid(uuid);
+			HibTagFamily foundTagFamily = tagFamilyDao.findByUuid(uuid);
 			assertNotNull(foundTagFamily);
 			BulkActionContext bac = createBulkContext();
 			tagFamilyDao.delete(tagFamily, bac);
@@ -247,10 +246,10 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	public void testCRUDPermissions() {
 		try (Tx tx = tx()) {
 			UserDaoWrapper userDao = tx.userDao();
-			TagFamilyRoot root = project().getTagFamilyRoot();
-			HibTagFamily tagFamily = root.create("test123", user());
+			TagFamilyDaoWrapper tagFamilyDao = tx.tagFamilyDao();
+			HibTagFamily tagFamily = tagFamilyDao.create(project(), "test123", user());
 			assertFalse(userDao.hasPermission(user(), tagFamily, InternalPermission.CREATE_PERM));
-			userDao.inheritRolePermissions(user(), root, tagFamily);
+			userDao.inheritRolePermissions(user(), toGraph(project()).getTagFamilyRoot(), tagFamily);
 			assertTrue(userDao.hasPermission(user(), tagFamily, InternalPermission.CREATE_PERM));
 		}
 	}
