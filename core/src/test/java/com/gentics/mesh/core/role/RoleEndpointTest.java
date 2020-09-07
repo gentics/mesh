@@ -433,7 +433,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// Check that the role was updated
 		try (Tx tx = tx()) {
-			Role reloadedRole = boot().roleRoot().findByUuid(roleUuid());
+			HibRole reloadedRole = tx.data().roleDao().findByUuid(roleUuid());
 			assertEquals(restRole.getName(), reloadedRole.getName());
 		}
 
