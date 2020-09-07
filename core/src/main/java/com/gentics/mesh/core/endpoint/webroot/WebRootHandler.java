@@ -103,8 +103,8 @@ public class WebRootHandler {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				MeshAuthUser requestUser = ac.getUser();
-				UserDaoWrapper userDao = tx.data().userDao();
-				NodeDaoWrapper nodeDao = tx.data().nodeDao();
+				UserDaoWrapper userDao = tx.userDao();
+				NodeDaoWrapper nodeDao = tx.nodeDao();
 
 				String branchUuid = tx.getBranch(ac).getUuid();
 				// Load all nodes for the given path
@@ -125,7 +125,7 @@ public class WebRootHandler {
 				}
 
 				String version = ac.getVersioningParameters().getVersion();
-				HibNode node = tx.data().contentDao().getNode(container);
+				HibNode node = tx.contentDao().getNode(container);
 				addCacheControl(rc, node, version);
 				userDao.failOnNoReadPermission(requestUser, container, branchUuid, version);
 
@@ -197,7 +197,7 @@ public class WebRootHandler {
 	 */
 	
 	private boolean isPublic(HibNode node, String version) {
-		RoleDaoWrapper roleDao = Tx.get().data().roleDao();
+		RoleDaoWrapper roleDao = Tx.get().roleDao();
 
 		HibRole anonymousRole = boot.anonymousRole();
 		AuthenticationOptions authOptions = options.getAuthenticationOptions();
@@ -221,7 +221,7 @@ public class WebRootHandler {
 		String uuid = null;
 		try (WriteLock lock = writeLock.lock(ac)) {
 			uuid = db.tx(tx -> {
-				ContentDaoWrapper contentDao = tx.data().contentDao();
+				ContentDaoWrapper contentDao = tx.contentDao();
 
 				// Load all nodes for the given path
 				ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());

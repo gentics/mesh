@@ -278,7 +278,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 				/*
 				 * TODO decide whether we need to check perms on the project as well
 				 */
-				HibProject project = Tx.get().data().projectDao().findByName(projectName);
+				HibProject project = Tx.get().projectDao().findByName(projectName);
 				if (project == null) {
 					throw error(BAD_REQUEST, "project_not_found", projectName);
 				}
@@ -663,7 +663,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	public HibUser addPermissionsOnRole(HibUser user, HasPermissions sourceNode, InternalPermission permission, MeshVertex targetNode,
 		InternalPermission... toGrant) {
 		// TODO inject dao via DI
-		RoleDaoWrapper roleDao = Tx.get().data().roleDao();
+		RoleDaoWrapper roleDao = Tx.get().roleDao();
 
 		// 2. Add CRUD permission to identified roles and target node
 		for (HibRole role : sourceNode.getRolesWithPerm(permission)) {

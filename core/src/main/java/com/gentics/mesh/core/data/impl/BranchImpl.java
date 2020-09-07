@@ -365,7 +365,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 
 	@Override
 	public HibJob assignSchemaVersion(HibUser user, HibSchemaVersion schemaVersion, EventQueueBatch batch) {
-		JobDaoWrapper jobDao = Tx.get().data().jobDao();
+		JobDaoWrapper jobDao = Tx.get().jobDao();
 		BranchSchemaEdge edge = findBranchSchemaEdge(schemaVersion);
 		HibJob job = null;
 		// Don't remove any existing edge. Otherwise the edge properties are lost
@@ -389,7 +389,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 
 	@Override
 	public HibJob assignMicroschemaVersion(HibUser user, HibMicroschemaVersion microschemaVersion, EventQueueBatch batch) {
-		JobDaoWrapper jobDao = Tx.get().data().jobDao();
+		JobDaoWrapper jobDao = Tx.get().jobDao();
 		BranchMicroschemaEdge edge = findBranchMicroschemaEdge(microschemaVersion);
 		HibJob job = null;
 		// Don't remove any existing edge. Otherwise the edge properties are lost

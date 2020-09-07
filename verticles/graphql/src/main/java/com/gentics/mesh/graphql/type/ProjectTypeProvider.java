@@ -55,7 +55,7 @@ public class ProjectTypeProvider extends AbstractTypeProvider {
 	 * @return
 	 */
 	private NodeContent baseNodeFetcher(DataFetchingEnvironment env) {
-		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+		ContentDaoWrapper contentDao = Tx.get().contentDao();
 		GraphQLContext gc = env.getContext();
 		HibProject project = env.getSource();
 		Node node = project.getBaseNode();

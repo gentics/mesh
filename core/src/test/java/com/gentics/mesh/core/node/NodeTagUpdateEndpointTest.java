@@ -67,7 +67,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testUpdateByTagUuid() {
 		long previousCount = tx(tx -> {
-			return tx.data().tagDao().findAll(tagFamily("colors")).count();
+			return tx.tagDao().findAll(tagFamily("colors")).count();
 		});
 		String tagUuid = tx(() -> tag("red").getUuid());
 		String nodeUuid = tx(() -> content().getUuid());
@@ -76,7 +76,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 		TagListResponse response = call(() -> client().updateTagsForNode(PROJECT_NAME, nodeUuid, request));
 		assertEquals(1, response.getMetainfo().getTotalCount());
 		long afterCount = tx(tx -> {
-			return tx.data().tagDao().findAll(tagFamily("colors")).count();
+			return tx.tagDao().findAll(tagFamily("colors")).count();
 		});
 		assertEquals("The colors tag family should not have any additional tags.", previousCount, afterCount);
 
@@ -90,7 +90,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testUpdateByTagName() {
 		long previousCount = tx(tx -> {
-			TagDaoWrapper tagDao = tx.data().tagDao();
+			TagDaoWrapper tagDao = tx.tagDao();
 			return tagDao.findAll(tagFamily("colors")).count();
 		});
 		assertEquals("The colors tag family did not have the expected amount of tags", 3, previousCount);
@@ -128,13 +128,13 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 
 		assertEquals("The node should have two tags.", 2, response.getMetainfo().getTotalCount());
 		long afterCount = tx(tx -> {
-			TagDaoWrapper tagDao = tx.data().tagDao();
+			TagDaoWrapper tagDao = tx.tagDao();
 			return tagDao.findAll(tagFamily("colors")).count();
 		});
 		assertEquals("The colors tag family should now have one additional color tag.", previousCount + 1, afterCount);
 
 		try (Tx tx = tx()) {
-			TagDaoWrapper tagDao = tx.data().tagDao();
+			TagDaoWrapper tagDao = tx.tagDao();
 
 			assertThat(trackingSearchProvider()).storedAllContainers(content(), project(), latestBranch(), "en", "de");
 			assertThat(trackingSearchProvider()).stored(tagFamily("colors"));
@@ -240,7 +240,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 	public void testUpdateWithNoNodePerm() {
 		// 1. Revoke the update permission
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), content(), UPDATE_PERM);
 			tx.success();
 		}
@@ -259,7 +259,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 	public void testUpdateWithNoTagFamilyCreatePerm() {
 		// 1. Revoke the tag create permission
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), tagFamily("colors"), CREATE_PERM);
 			tx.success();
 		}

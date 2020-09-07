@@ -176,8 +176,8 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	@Override
 	public Node loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
 		Tx tx = Tx.get();
-		UserDaoWrapper userDao = tx.data().userDao();
-		ContentDaoWrapper contentDao = tx.data().contentDao();
+		UserDaoWrapper userDao = tx.userDao();
+		ContentDaoWrapper contentDao = tx.contentDao();
 
 		Node element = findByUuid(uuid);
 		if (!errorIfNotFound && element == null) {
@@ -277,7 +277,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		userRoot.inheritRolePermissions(requestUser, parentNode, node);
 
 		// Create the language specific graph field container for the node
-		HibLanguage language = Tx.get().data().languageDao().findByLanguageTag(requestModel.getLanguage());
+		HibLanguage language = Tx.get().languageDao().findByLanguageTag(requestModel.getLanguage());
 		if (language == null) {
 			throw error(BAD_REQUEST, "language_not_found", requestModel.getLanguage());
 		}

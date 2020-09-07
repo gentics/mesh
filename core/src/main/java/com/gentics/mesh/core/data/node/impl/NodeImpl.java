@@ -246,7 +246,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public String getPath(ActionContext ac, String branchUuid, ContainerType type, String... languageTag) {
-		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+		NodeDaoWrapper nodeDao = Tx.get().nodeDao();
 
 		// We want to avoid rending the path again for nodes which we have already handled.
 		// Thus utilise the action context data map to retrieve already handled paths.
@@ -285,7 +285,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			StringBuilder builder = new StringBuilder();
 
 			// Append the prefix first
-			BranchDaoWrapper branchDao = Tx.get().data().branchDao();
+			BranchDaoWrapper branchDao = Tx.get().branchDao();
 			HibBranch branch = branchDao.findByUuid(getProject(), branchUuid);
 			if (branch != null) {
 				String prefix = PathPrefixUtil.sanitize(branch.getPathPrefix());
@@ -552,7 +552,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public Stream<Node> getChildrenStream(InternalActionContext ac) {
 		MeshAuthUser user = ac.getUser();
 		Tx tx = Tx.get();
-		UserDaoWrapper userDao = tx.data().userDao();
+		UserDaoWrapper userDao = tx.userDao();
 		return toStream(getUnframedChildren(tx.getBranch(ac).getUuid()))
 			.filter(node -> {
 				Object id = node.getId();
@@ -860,7 +860,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 */
 	private void setChildrenInfo(InternalActionContext ac, HibBranch branch, NodeResponse restNode) {
 		Map<String, NodeChildrenInfo> childrenInfo = new HashMap<>();
-		UserDaoWrapper userDao = Tx.get().data().userDao();
+		UserDaoWrapper userDao = Tx.get().userDao();
 
 		for (Node child : getChildren(branch.getUuid())) {
 			if (userDao.hasPermission(ac.getUser(), child, READ_PERM)) {
@@ -961,7 +961,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	private Stream<HibNode> getBreadcrumbNodeStream(InternalActionContext ac) {
 		Tx tx = Tx.get();
-		NodeDaoWrapper nodeDao = tx.data().nodeDao();
+		NodeDaoWrapper nodeDao = tx.nodeDao();
 
 		String branchUuid = tx.getBranch(ac, getProject()).getUuid();
 		HibNode current = this;
@@ -1539,7 +1539,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	private Stream<Node> getChildren(MeshAuthUser requestUser, String branchUuid, List<String> languageTags, ContainerType type) {
 		InternalPermission perm = type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM;
-		UserDaoWrapper userRoot = Tx.get().data().userDao();
+		UserDaoWrapper userRoot = Tx.get().userDao();
 
 		Predicate<Node> languageFilter = languageTags == null || languageTags.isEmpty()
 			? item -> true
@@ -1641,12 +1641,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		NodeParameters nodeParameters = ac.getNodeParameters();
 		nodeParameters.setLanguages(languageTag);
 
-		HibLanguage language = Tx.get().data().languageDao().findByLanguageTag(languageTag);
+		HibLanguage language = Tx.get().languageDao().findByLanguageTag(languageTag);
 		if (language == null) {
 			throw error(BAD_REQUEST, "error_language_not_found", requestModel.getLanguage());
 		}
 		Tx tx = Tx.get();
-		NodeDaoWrapper nodeDao = tx.data().nodeDao();
+		NodeDaoWrapper nodeDao = tx.nodeDao();
 		HibBranch branch = tx.getBranch(ac, getProject());
 		NodeGraphFieldContainer latestDraftVersion = getGraphFieldContainer(languageTag, branch, DRAFT);
 
@@ -1800,7 +1800,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public void moveTo(InternalActionContext ac, Node targetNode, EventQueueBatch batch) {
 		Tx tx = Tx.get();
-		NodeDaoWrapper nodeDao = tx.data().nodeDao();
+		NodeDaoWrapper nodeDao = tx.nodeDao();
 
 		// TODO should we add a guard that terminates this loop when it runs to
 		// long?
@@ -1982,9 +1982,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public String getSubETag(InternalActionContext ac) {
 		Tx tx = Tx.get();
-		UserDaoWrapper userDao = tx.data().userDao();
-		TagDaoWrapper tagDao = tx.data().tagDao();
-		NodeDaoWrapper nodeDao = tx.data().nodeDao();
+		UserDaoWrapper userDao = tx.userDao();
+		TagDaoWrapper tagDao = tx.tagDao();
+		NodeDaoWrapper nodeDao = tx.nodeDao();
 
 		StringBuilder keyBuilder = new StringBuilder();
 

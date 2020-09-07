@@ -68,12 +68,12 @@ public class ProjectUpdateEventHandler implements EventHandler {
 	private Flowable<SearchRequest> updateNodes(MeshElementEventModelImpl model) {
 		return Flowable.defer(() -> helper.getDb().transactional(tx -> entities.project.getElement(model).stream()
 			.flatMap(project -> {
-				BranchDaoWrapper branchDao = tx.data().branchDao();
+				BranchDaoWrapper branchDao = tx.branchDao();
 				List<Branch> branches = (List<Branch>) branchDao.findAll(project).list();
 				return project.findNodes().stream()
 					.flatMap(node -> Stream.of(DRAFT, PUBLISHED)
 						.flatMap(type -> branches.stream()
-							.flatMap(branch -> tx.data().contentDao().getGraphFieldContainers(node, branch, type).stream()
+							.flatMap(branch -> tx.contentDao().getGraphFieldContainers(node, branch, type).stream()
 								.map(container -> helper.createDocumentRequest(
 									ContentDaoWrapper.composeIndexName(
 										project.getUuid(),

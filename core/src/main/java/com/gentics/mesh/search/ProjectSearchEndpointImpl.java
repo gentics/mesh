@@ -80,12 +80,12 @@ public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implement
 		}, NodeListResponse.class, nodeSearchHandler, nodeExamples.getNodeListResponse(), true);
 
 		registerSearchHandler("tags", uuid -> {
-			HibTag tag = Tx.get().data().tagDao().findByUuidGlobal(uuid);
+			HibTag tag = Tx.get().tagDao().findByUuidGlobal(uuid);
 			return tag;
 		}, TagListResponse.class, tagSearchHandler, tagExamples.createTagListResponse(), false);
 
 		registerSearchHandler("tagFamilies", uuid -> {
-			TagFamilyDaoWrapper tagFamilyDao = Tx.get().data().tagFamilyDao();
+			TagFamilyDaoWrapper tagFamilyDao = Tx.get().tagFamilyDao();
 			return tagFamilyDao.findByUuid(uuid);
 		}, TagFamilyListResponse.class, tagFamilySearchHandler, tagFamilyExamples.getTagFamilyListResponse(), false);
 	}

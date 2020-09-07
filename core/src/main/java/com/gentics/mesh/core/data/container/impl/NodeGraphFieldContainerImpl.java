@@ -376,8 +376,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	private boolean updateWebrootPathInfo(Node node, GraphFieldContainerEdge edge, String languageTag, String branchUuid, String segmentFieldName,
 		String conflictI18n,
 		ContainerType type) {
-		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
-		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+		NodeDaoWrapper nodeDao = Tx.get().nodeDao();
+		ContentDaoWrapper contentDao = Tx.get().contentDao();
 
 		// Determine the webroot path of the container parent node
 		String segment = contentDao.getPathSegment(node, branchUuid, type, getLanguageTag());

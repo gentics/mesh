@@ -37,7 +37,7 @@ public class NodeReferenceIn {
 	 */
 	public static Stream<NodeReferenceIn> fromContent(GraphQLContext gc, NodeContent content, ContainerType type) {
 		Tx tx = Tx.get();
-		ContentDaoWrapper contentDao = tx.data().contentDao();
+		ContentDaoWrapper contentDao = tx.contentDao();
 		String branchUuid = tx.getBranch(gc).getUuid();
 		return contentDao.getInboundReferences(content.getNode())
 			.flatMap(ref -> ref.getReferencingContents()

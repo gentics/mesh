@@ -31,7 +31,7 @@ public class NodeDAOActionsImpl implements NodeDAOActions {
 	@Override
 	public HibNode loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
 		if (perm == null) {
-			return ctx.tx().data().nodeDao().findByUuid(ctx.project(), uuid);
+			return ctx.tx().nodeDao().findByUuid(ctx.project(), uuid);
 		} else {
 			return ctx.project().getNodeRoot().loadObjectByUuid(ctx.ac(), uuid, perm, errorIfNotFound);
 		}
@@ -39,7 +39,7 @@ public class NodeDAOActionsImpl implements NodeDAOActions {
 
 	@Override
 	public HibNode loadByName(DAOActionContext ctx, String name, InternalPermission perm, boolean errorIfNotFound) {
-		// NodeDaoWrapper nodeDao = tx.data().nodeDao();
+		// NodeDaoWrapper nodeDao = tx.nodeDao();
 		if (perm == null) {
 			return ctx.project().getNodeRoot().findByName(name);
 		} else {
@@ -54,44 +54,44 @@ public class NodeDAOActionsImpl implements NodeDAOActions {
 
 	@Override
 	public Page<? extends HibNode> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, Predicate<HibNode> extraFilter) {
-		NodeDaoWrapper nodeDao = ctx.tx().data().nodeDao();
+		NodeDaoWrapper nodeDao = ctx.tx().nodeDao();
 		return nodeDao.findAll(ctx.project(), ctx.ac(), pagingInfo, extraFilter);
 	}
 
 	@Override
 	public boolean update(Tx tx, HibNode node, InternalActionContext ac, EventQueueBatch batch) {
-		NodeDaoWrapper nodeDao = tx.data().nodeDao();
+		NodeDaoWrapper nodeDao = tx.nodeDao();
 		return nodeDao.update(node, ac, batch);
 	}
 
 	@Override
 	public HibNode create(Tx tx, InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		NodeDaoWrapper nodeDao = tx.data().nodeDao();
+		NodeDaoWrapper nodeDao = tx.nodeDao();
 		HibProject project = tx.getProject(ac);
 		return nodeDao.create(project, ac, batch, uuid);
 	}
 
 	@Override
 	public void delete(Tx tx, HibNode node, BulkActionContext bac) {
-		NodeDaoWrapper nodeDao = tx.data().nodeDao();
+		NodeDaoWrapper nodeDao = tx.nodeDao();
 		nodeDao.delete(node, bac, false, true);
 	}
 
 	@Override
 	public NodeResponse transformToRestSync(Tx tx, HibNode node, InternalActionContext ac, int level, String... languageTags) {
-		NodeDaoWrapper nodeDao = tx.data().nodeDao();
+		NodeDaoWrapper nodeDao = tx.nodeDao();
 		return nodeDao.transformToRestSync(node, ac, level, languageTags);
 	}
 
 	@Override
 	public String getAPIPath(Tx tx, InternalActionContext ac, HibNode node) {
-		NodeDaoWrapper nodeDao = tx.data().nodeDao();
+		NodeDaoWrapper nodeDao = tx.nodeDao();
 		return nodeDao.getAPIPath(node, ac);
 	}
 
 	@Override
 	public String getETag(Tx tx, InternalActionContext ac, HibNode node) {
-		NodeDaoWrapper nodeDao = tx.data().nodeDao();
+		NodeDaoWrapper nodeDao = tx.nodeDao();
 		return nodeDao.getETag(node, ac);
 	}
 

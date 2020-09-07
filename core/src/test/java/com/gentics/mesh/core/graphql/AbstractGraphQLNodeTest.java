@@ -36,7 +36,7 @@ public abstract class AbstractGraphQLNodeTest extends AbstractMeshTest {
 				if (tag.getName().equals("blue")) {
 					continue;
 				} else {
-					tx.data().tagDao().delete(tag, createBulkContext());
+					tx.tagDao().delete(tag, createBulkContext());
 				}
 			}
 		});

@@ -50,7 +50,7 @@ public class UserEndpointETagTest extends AbstractMeshTest {
 		assertEquals(etag, etag2);
 
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), user(), UPDATE_PERM);
 			tx.success();
 		}
@@ -65,7 +65,7 @@ public class UserEndpointETagTest extends AbstractMeshTest {
 	public void testReadOne() {
 		String etag;
 		try (Tx tx = tx()) {
-			UserDaoWrapper userDao = tx.data().userDao();
+			UserDaoWrapper userDao = tx.userDao();
 			HibUser user = user();
 
 			etag = userDao.getETag(user(), mockActionContext());

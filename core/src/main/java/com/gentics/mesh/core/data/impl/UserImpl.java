@@ -310,7 +310,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements Us
 
 	@Override
 	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
-		UserDaoWrapper userDao = Tx.get().data().userDao();
+		UserDaoWrapper userDao = Tx.get().userDao();
 		return userDao.update(this, ac, batch);
 	}
 

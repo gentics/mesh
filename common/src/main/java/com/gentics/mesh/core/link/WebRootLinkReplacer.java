@@ -249,7 +249,7 @@ public class WebRootLinkReplacer {
 		boolean forceAbsolute,
 		String... languageTags) {
 		Tx tx = Tx.get();
-		NodeDaoWrapper nodeDao = tx.data().nodeDao();
+		NodeDaoWrapper nodeDao = tx.nodeDao();
 
 		String defaultLanguage = options.getDefaultLanguage();
 		if (languageTags == null || languageTags.length == 0) {

@@ -130,7 +130,7 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 				builder.deprecate("Usage of fields in micronodes has changed in /api/v2. See https://github.com/gentics/mesh/issues/317");
 			HibProject project = tx.getProject(context);
 
-			MicroschemaDaoWrapper microschemaDao = Tx.get().data().microschemaDao();
+			MicroschemaDaoWrapper microschemaDao = Tx.get().microschemaDao();
 			List<GraphQLObjectType> schemaTypes = new ArrayList<>();
 			for (HibMicroschema container : microschemaDao.findAll(project)) {
 				HibMicroschemaVersion version = container.getLatestVersion();
@@ -178,7 +178,7 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 		}).since(2, () -> {
 			Tx tx = Tx.get();
 			HibProject project = tx.getProject(context);
-			return tx.data().microschemaDao().findAll(project).stream().map(container -> {
+			return tx.microschemaDao().findAll(project).stream().map(container -> {
 				HibMicroschemaVersion version = container.getLatestVersion();
 				MicroschemaModel microschemaModel = version.getSchema();
 				String microschemaName = microschemaModel.getName();

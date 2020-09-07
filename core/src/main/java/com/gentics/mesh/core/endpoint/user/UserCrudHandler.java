@@ -72,7 +72,7 @@ public class UserCrudHandler extends AbstractCrudHandler<HibUser, UserResponse> 
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				UserDaoWrapper userDao = tx.data().userDao();
+				UserDaoWrapper userDao = tx.userDao();
 
 				// 1. Load the user that should be used - read perm implies that the
 				// user is able to read the attached permissions
@@ -111,7 +111,7 @@ public class UserCrudHandler extends AbstractCrudHandler<HibUser, UserResponse> 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				// 1. Load the user that should be used
-				HibUser user = tx.data().userDao().loadObjectByUuid(ac, userUuid, CREATE_PERM);
+				HibUser user = tx.userDao().loadObjectByUuid(ac, userUuid, CREATE_PERM);
 
 				// 2. Generate a new token and store it for the user
 				UserResetTokenResponse tokenResponse = db.tx(() -> {
@@ -144,7 +144,7 @@ public class UserCrudHandler extends AbstractCrudHandler<HibUser, UserResponse> 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				// 1. Load the user that should be used
-				HibUser user = tx.data().userDao().loadObjectByUuid(ac, userUuid, UPDATE_PERM);
+				HibUser user = tx.userDao().loadObjectByUuid(ac, userUuid, UPDATE_PERM);
 
 				// 2. Generate the API key for the user
 				UserAPITokenResponse apiKeyRespose = db.tx(() -> {
@@ -176,7 +176,7 @@ public class UserCrudHandler extends AbstractCrudHandler<HibUser, UserResponse> 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				// 1. Load the user that should be used
-				HibUser user = tx.data().userDao().loadObjectByUuid(ac, userUuid, UPDATE_PERM);
+				HibUser user = tx.userDao().loadObjectByUuid(ac, userUuid, UPDATE_PERM);
 
 				// 2. Generate the API key for the user
 				GenericMessageResponse message = db.tx(() -> {

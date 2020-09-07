@@ -84,14 +84,14 @@ public class ProjectsRouter {
 			projectRouter.route().handler(ctx -> {
 				Database db = apiRouter.getRoot().getStorage().getDb().get();
 				HibProject project = db.tx(tx -> {
-					return tx.data().projectDao().findByName(name);
+					return tx.projectDao().findByName(name);
 				});
 				if (project == null) {
 					log.warn("Project for name {" + name + "} could not be found.");
 					ctx.fail(error(NOT_FOUND, "project_not_found", name));
 					return;
 				}
-				ctx.data().put(SharedKeys.PROJECT_CONTEXT_KEY, project);
+				ctx.put(SharedKeys.PROJECT_CONTEXT_KEY, project);
 				ctx.next();
 			});
 			router.mountSubRouter("/" + encodedName, projectRouter);

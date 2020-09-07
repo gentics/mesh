@@ -58,7 +58,7 @@ public class UserCheck extends AbstractConsistencyCheck {
 	}
 
 	private void assertShortcutRoleEdges(User user, ConsistencyCheckResult result) {
-		GroupDaoWrapper groupDao = Tx.get().data().groupDao();
+		GroupDaoWrapper groupDao = Tx.get().groupDao();
 		String uuid = user.getUuid();
 		Set<HibRole> roles = user.getGroups().stream()
 			.flatMap(g -> groupDao.getRoles(g).stream())

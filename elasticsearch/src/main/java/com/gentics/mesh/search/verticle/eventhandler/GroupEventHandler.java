@@ -53,7 +53,7 @@ public class GroupEventHandler implements EventHandler {
 				return helper.getDb().tx(tx -> {
 					// We also need to update all users of the group
 					Optional<HibGroup> groupOptional = entities.group.getElement(model);
-					GroupDaoWrapper groupDao = tx.data().groupDao();
+					GroupDaoWrapper groupDao = tx.groupDao();
 
 					return Stream.concat(
 						groupOptional.stream().map(entities::createRequest),

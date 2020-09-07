@@ -175,7 +175,7 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper<HibTagFamily> im
 
 	@Override
 	public void delete(HibTagFamily tagFamily, BulkActionContext bac) {
-		TagDaoWrapper tagDao = Tx.get().data().tagDao();
+		TagDaoWrapper tagDao = Tx.get().tagDao();
 
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting tagFamily {" + tagFamily.getName() + "}");

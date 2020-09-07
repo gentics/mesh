@@ -127,7 +127,7 @@ public class RouterStorage {
 				database.tx(tx -> {
 					// Check whether there are any projects which do not have an
 					// active project router
-					for (HibProject project : tx.data().projectDao().findAll()) {
+					for (HibProject project : tx.projectDao().findAll()) {
 						if (!projectsRouter.hasProjectRouter(project.getName())) {
 							log.info("Mounting project {" + project.getName() + "}");
 							projectsRouter.addProjectRouter(project.getName());

@@ -94,7 +94,7 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 	@Override
 	public HibGroup create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		MeshAuthUser requestUser = ac.getUser();
-		UserDaoWrapper userDao = Tx.get().data().userDao();
+		UserDaoWrapper userDao = Tx.get().userDao();
 		GroupCreateRequest requestModel = ac.fromJson(GroupCreateRequest.class);
 		GroupRoot groupRoot = boot.get().groupRoot();
 

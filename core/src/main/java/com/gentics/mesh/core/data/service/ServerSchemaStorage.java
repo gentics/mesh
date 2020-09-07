@@ -46,8 +46,8 @@ public class ServerSchemaStorage implements SchemaStorage {
 
 	public void init() {
 		// Iterate over all schemas and load them into the storage
-		SchemaDaoWrapper schemaDao = Tx.get().data().schemaDao();
-		MicroschemaDaoWrapper microschemaDao = Tx.get().data().microschemaDao();
+		SchemaDaoWrapper schemaDao = Tx.get().schemaDao();
+		MicroschemaDaoWrapper microschemaDao = Tx.get().microschemaDao();
 
 		for (HibSchema schema : schemaDao.findAll()) {
 			for (HibSchemaVersion version : schemaDao.findAllVersions(schema)) {

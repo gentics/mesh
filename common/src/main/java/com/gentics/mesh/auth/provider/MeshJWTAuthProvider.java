@@ -242,7 +242,7 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 	private User loadUserByJWT(JsonObject jwt) throws Exception {
 		return db.tx(tx -> {
 			String userUuid = jwt.getString(USERID_FIELD_NAME);
-			MeshAuthUser user = tx.data().userDao().findMeshAuthUserByUuid(userUuid);
+			MeshAuthUser user = tx.userDao().findMeshAuthUserByUuid(userUuid);
 			if (user == null) {
 				if (log.isDebugEnabled()) {
 					log.debug("Could not load user with UUID {" + userUuid + "}.");

@@ -184,7 +184,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 			assertThat(call(() -> client().publishNode(PROJECT_NAME, nodeUuid))).as("Publish Status").isPublished("en").isPublished("de");
 
 			db().tx(() -> {
-				RoleDaoWrapper roleDao = tx.data().roleDao();
+				RoleDaoWrapper roleDao = tx.roleDao();
 				roleDao.revokePermissions(role(), node, PUBLISH_PERM);
 				return null;
 			});
@@ -202,7 +202,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 			assertThat(call(() -> client().publishNode(PROJECT_NAME, nodeUuid))).as("Publish Status").isPublished("en").isPublished("de");
 
 			db().tx(() -> {
-				RoleDaoWrapper roleDao = tx.data().roleDao();
+				RoleDaoWrapper roleDao = tx.roleDao();
 				roleDao.revokePermissions(role(), node, PUBLISH_PERM);
 				return null;
 			});

@@ -272,7 +272,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 
 		return fieldType.dataFetcher(env -> {
 			Tx tx = Tx.get();
-			ContentDaoWrapper contentDao = tx.data().contentDao();
+			ContentDaoWrapper contentDao = tx.contentDao();
 			GraphFieldContainer container = env.getSource();
 			GraphQLContext gc = env.getContext();
 
@@ -412,7 +412,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 			.argument(createNodeVersionArg())
 			.description(schema.getLabel())
 			.type(new GraphQLTypeReference(NODE_TYPE_NAME)).dataFetcher(env -> {
-				ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+				ContentDaoWrapper contentDao = Tx.get().contentDao();
 				GraphQLContext gc = env.getContext();
 				GraphFieldContainer source = env.getSource();
 				ContainerType type = getNodeVersion(env);

@@ -35,7 +35,7 @@ public class UserEndpointPerformanceTest extends AbstractMeshTest {
 	public void testPermissionPerformance() {
 		loggingStopWatch(logger, "user.hasPermission", 100000, (step) -> {
 			try (Tx tx = tx()) {
-				UserDaoWrapper userDao = tx.data().userDao();
+				UserDaoWrapper userDao = tx.userDao();
 				userDao.hasPermission(user(), content(), InternalPermission.READ_PERM);
 			}
 		});
@@ -47,7 +47,7 @@ public class UserEndpointPerformanceTest extends AbstractMeshTest {
 		HibNode content = tx(() -> content());
 		loggingStopWatch(logger, "user.getPermissionInfo", 70000, (step) -> {
 			try (Tx tx = tx()) {
-				UserDaoWrapper userDao = tx.data().userDao();
+				UserDaoWrapper userDao = tx.userDao();
 				userDao.getPermissionInfo(user, content);
 			}
 		});

@@ -44,7 +44,7 @@ public class GroupTypeProvider extends AbstractTypeProvider {
 
 		// .roles
 		groupType.field(newPagingFieldWithFetcher("roles", "Roles assigned to the group.", (env) -> {
-			GroupDaoWrapper groupDao = Tx.get().data().groupDao();
+			GroupDaoWrapper groupDao = Tx.get().groupDao();
 			GraphQLContext gc = env.getContext();
 			HibGroup group = env.getSource();
 			return groupDao.getRoles(group, gc.getUser(), getPagingInfo(env));
@@ -52,7 +52,7 @@ public class GroupTypeProvider extends AbstractTypeProvider {
 
 		// .users
 		groupType.field(newPagingFieldWithFetcher("users", "Users assigned to the group.", (env) -> {
-			GroupDaoWrapper groupDao = Tx.get().data().groupDao();
+			GroupDaoWrapper groupDao = Tx.get().groupDao();
 			GraphQLContext gc = env.getContext();
 			HibGroup group = env.getSource();
 			return groupDao.getVisibleUsers(group, gc.getUser(), getPagingInfo(env));

@@ -91,7 +91,7 @@ public class BinaryFieldResponseHandler {
 	}
 
 	private void respond(RoutingContext rc, BinaryGraphField binaryField) {
-		BinaryDaoWrapper binaryDao = Tx.get().data().binaryDao();
+		BinaryDaoWrapper binaryDao = Tx.get().binaryDao();
 		HttpServerResponse response = rc.response();
 
 		Binary binary = binaryField.getBinary();

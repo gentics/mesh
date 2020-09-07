@@ -85,7 +85,7 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 
 		Set<String> childrenUuids = new HashSet<>();
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 			assertThat(nodeDao.getChildren(node, initialBranchUuid())).as("The node must have children").isNotEmpty();
 			for (HibNode child : nodeDao.getChildren(node, initialBranchUuid())) {
 				collectUuids(child, childrenUuids);
@@ -282,7 +282,7 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 		String uuid = tx(() -> node.getUuid());
 
 		HibBranch newBranch = tx(tx -> {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 			// Publish the node
 			BulkActionContext bac = createBulkContext();
 			nodeDao.publish(node, mockActionContext(), bac);
@@ -623,7 +623,7 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 	 * @param childrenUuids
 	 */
 	private void collectUuids(HibNode child, Set<String> childrenUuids) {
-		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+		NodeDaoWrapper nodeDao = Tx.get().nodeDao();
 		childrenUuids.add(child.getUuid());
 		for (HibNode subchild : nodeDao.getChildren(child, initialBranchUuid())) {
 			collectUuids(subchild, childrenUuids);

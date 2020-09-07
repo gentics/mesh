@@ -35,7 +35,7 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 
 	public HibLanguage englishLang() {
 		try (Tx tx = tx()) {
-			return tx.data().languageDao().findByLanguageTag("en");
+			return tx.languageDao().findByLanguageTag("en");
 		}
 	}
 
@@ -43,7 +43,7 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 	@Override
 	public void testRootNode() {
 		try (Tx tx = tx()) {
-			LanguageDaoWrapper languageDao = tx.data().languageDao();
+			LanguageDaoWrapper languageDao = tx.languageDao();
 
 			long nLanguagesBefore = languageDao.computeGlobalCount();
 
@@ -173,7 +173,7 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 	@Override
 	public void testCreate() {
 		try (Tx tx = tx()) {
-			LanguageDaoWrapper languageDao = tx.data().languageDao();
+			LanguageDaoWrapper languageDao = tx.languageDao();
 			final String languageTag = "tlh";
 			final String languageName = "klingon";
 			HibLanguage lang = languageDao.create(languageName, languageTag);

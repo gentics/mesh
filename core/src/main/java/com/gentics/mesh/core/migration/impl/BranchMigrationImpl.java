@@ -108,9 +108,9 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 	private void migrateNode(HibNode node, EventQueueBatch batch, HibBranch oldBranch, HibBranch newBranch, List<Exception> errorsDetected) {
 		try {
 			db.tx((tx) -> {
-				NodeDaoWrapper nodeDao = tx.data().nodeDao();
-				TagDaoWrapper tagDao = tx.data().tagDao();
-				ContentDaoWrapper contentDao = tx.data().contentDao();
+				NodeDaoWrapper nodeDao = tx.nodeDao();
+				TagDaoWrapper tagDao = tx.tagDao();
+				ContentDaoWrapper contentDao = tx.contentDao();
 
 				// Check whether the node already has an initial container and thus was already migrated
 				if (contentDao.getGraphFieldContainers(node, newBranch, INITIAL).hasNext()) {

@@ -89,7 +89,7 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 		}
 
 		Tx tx = Tx.get();
-		MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
+		MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
 		HibMicroschemaVersion microschemaVersion = microschemaDao.fromReference(tx.getProject(ac), microschemaReference,
 			tx.getBranch(ac));
 

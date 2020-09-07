@@ -214,7 +214,7 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 	public HibRole create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		RoleCreateRequest requestModel = ac.fromJson(RoleCreateRequest.class);
 		String roleName = requestModel.getName();
-		UserDaoWrapper userDao = Tx.get().data().userDao();
+		UserDaoWrapper userDao = Tx.get().userDao();
 		RoleRoot roleRoot = boot.get().roleRoot();
 
 		MeshAuthUser requestUser = ac.getUser();

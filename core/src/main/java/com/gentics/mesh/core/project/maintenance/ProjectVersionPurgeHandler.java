@@ -61,7 +61,7 @@ public class ProjectVersionPurgeHandler {
 	}
 
 	private void purgeNode(Tx tx, Node node, ZonedDateTime maxAge) {
-		Iterable<? extends NodeGraphFieldContainer> initials = tx.data().contentDao().getGraphFieldContainers(node, ContainerType.INITIAL);
+		Iterable<? extends NodeGraphFieldContainer> initials = tx.contentDao().getGraphFieldContainers(node, ContainerType.INITIAL);
 		for (NodeGraphFieldContainer initial : initials) {
 			Long counter = 0L;
 			purgeVersion(tx, counter, bulkProvider.get(), initial, initial, false, maxAge);
@@ -86,7 +86,7 @@ public class ProjectVersionPurgeHandler {
 	private void purgeVersion(Tx tx, Long txCounter, BulkActionContext bac, NodeGraphFieldContainer lastRemaining, NodeGraphFieldContainer version,
 		boolean previousRemoved, ZonedDateTime maxAge) {
 
-		ContentDaoWrapper contentDao = tx.data().contentDao();
+		ContentDaoWrapper contentDao = tx.contentDao();
 		// We need to load some information first since we may remove the version in this step
 		List<NodeGraphFieldContainer> nextVersions = Lists.newArrayList(contentDao.getNextVersions(version));
 		boolean isNewerThanMaxAge = maxAge != null && !isOlderThanMaxAge(version, maxAge);

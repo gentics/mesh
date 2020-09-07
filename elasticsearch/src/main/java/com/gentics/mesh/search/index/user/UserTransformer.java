@@ -43,7 +43,7 @@ public class UserTransformer extends AbstractTransformer<HibUser> {
 		StringBuilder builder = new StringBuilder();
 		builder.append(user.getElementVersion());
 		builder.append("|");
-		for (HibGroup group : Tx.get().data().userDao().getGroups(user)) {
+		for (HibGroup group : Tx.get().userDao().getGroups(user)) {
 			builder.append(group.getElementVersion());
 			builder.append("|");
 		}
@@ -73,7 +73,7 @@ public class UserTransformer extends AbstractTransformer<HibUser> {
 		document.put(EMAIL_KEY, user.getEmailAddress());
 		document.put(FIRSTNAME_KEY, user.getFirstname());
 		document.put(LASTNAME_KEY, user.getLastname());
-		addGroups(document, Tx.get().data().userDao().getGroups(user));
+		addGroups(document, Tx.get().userDao().getGroups(user));
 		addPermissionInfo(document, user);
 		// TODO add disabled / enabled flag
 		HibInNode referencedNode = user.getReferencedNode();

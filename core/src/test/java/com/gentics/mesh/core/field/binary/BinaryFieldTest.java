@@ -73,7 +73,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 			}
 			Binary binary = mesh().binaries().create("hashsum", 1L).runInExistingTx(tx);
 			mesh().binaryStorage().store(Flowable.just(Buffer.buffer(input)), binary.getUuid()).blockingAwait();
-			String base64 = tx.data().binaryDao().getBase64ContentSync(binary);
+			String base64 = tx.binaryDao().getBase64ContentSync(binary);
 			assertEquals(input.toString(), new String(BASE64.decode(base64)));
 		}
 	}
@@ -84,7 +84,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 			String input = " ";
 			Binary binary = mesh().binaries().create("hashsum", 1L).runInExistingTx(tx);
 			mesh().binaryStorage().store(Flowable.just(Buffer.buffer(input)), binary.getUuid()).blockingAwait();
-			String base64 = tx.data().binaryDao().getBase64ContentSync(binary);
+			String base64 = tx.binaryDao().getBase64ContentSync(binary);
 			assertEquals(input.toString(), new String(BASE64.decode(base64)));
 		}
 	}
@@ -95,7 +95,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 		String hash = "6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc";
 		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.data().contentDao();
+			ContentDaoWrapper contentDao = tx.contentDao();
 			// Update the schema and add a binary field
 			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 

@@ -42,7 +42,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 	abstract protected FS createFieldSchema(boolean isRequired);
 
 	protected Tuple<Node, NodeGraphFieldContainer> createNode(boolean isRequiredField, String segmentField) {
-		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+		NodeDaoWrapper nodeDao = Tx.get().nodeDao();
 
 		Schema container = Tx.get().getGraph().addFramedVertex(SchemaContainerImpl.class);
 		SchemaContainerVersionImpl version = Tx.get().getGraph().addFramedVertex(SchemaContainerVersionImpl.class);

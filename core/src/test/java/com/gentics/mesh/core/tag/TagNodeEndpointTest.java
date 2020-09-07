@@ -48,7 +48,7 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testReadPublishedNodesForTag() {
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 
 			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParametersImpl().setRecursive(true)));
 			NodeListResponse nodeList = call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
@@ -97,8 +97,8 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testTagOrder() {
 		try (Tx tx = tx()) {
-			TagDaoWrapper tagDao = tx.data().tagDao();
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			TagDaoWrapper tagDao = tx.tagDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			HibTagFamily root = tagFamily("basic");
 			HibTag tag1 = tagDao.create(root, "test1", project(), user());
 			HibTag tag2 = tagDao.create(root, "test2", project(), user());

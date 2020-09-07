@@ -111,7 +111,7 @@ public abstract class AbstractSearchHandler<T extends HibCoreElement, RM extends
 
 			JsonArray roleUuids = db.tx(tx -> {
 				JsonArray json = new JsonArray();
-				for (HibRole role : tx.data().userDao().getRoles(ac.getUser())) {
+				for (HibRole role : tx.userDao().getRoles(ac.getUser())) {
 					json.add(role.getUuid());
 				}
 				return json;

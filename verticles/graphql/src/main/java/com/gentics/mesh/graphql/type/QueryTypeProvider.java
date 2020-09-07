@@ -204,8 +204,8 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 */
 	private Page<NodeContent> fetchNodesByUuid(DataFetchingEnvironment env) {
 		Tx tx = Tx.get();
-		ContentDaoWrapper contentDao = tx.data().contentDao();
-		NodeDaoWrapper nodeDao = tx.data().nodeDao();
+		ContentDaoWrapper contentDao = tx.contentDao();
+		NodeDaoWrapper nodeDao = tx.nodeDao();
 
 		List<String> uuids = env.getArgument("uuids");
 
@@ -259,10 +259,10 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 */
 	public Object nodeFetcher(DataFetchingEnvironment env) {
 		Tx tx = Tx.get();
-		ContentDaoWrapper contentDao = tx.data().contentDao();
+		ContentDaoWrapper contentDao = tx.contentDao();
 		String uuid = env.getArgument("uuid");
 		if (uuid != null) {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 			GraphQLContext gc = env.getContext();
 			HibNode node = nodeDao.findByUuid(tx.getProject(gc), uuid);
 			if (node == null) {
@@ -349,7 +349,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 */
 	public Object rootNodeFetcher(DataFetchingEnvironment env) {
 		Tx tx = Tx.get();
-		ContentDaoWrapper contentDao = tx.data().contentDao();
+		ContentDaoWrapper contentDao = tx.contentDao();
 		GraphQLContext gc = env.getContext();
 		HibProject project = tx.getProject(gc);
 		if (project != null) {

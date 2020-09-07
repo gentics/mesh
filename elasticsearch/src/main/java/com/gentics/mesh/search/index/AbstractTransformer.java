@@ -119,7 +119,7 @@ public abstract class AbstractTransformer<T> implements Transformer<T> {
 	 * @param element
 	 */
 	protected void addPermissionInfo(JsonObject document, HibBaseElement element) {
-		RoleDaoWrapper roleDao = Tx.get().data().roleDao();
+		RoleDaoWrapper roleDao = Tx.get().roleDao();
 		Set<String> roleUuids = roleDao.getRoleUuidsForPerm(element, InternalPermission.READ_PERM);
 		List<String> roleUuidsList = new ArrayList<>(roleUuids);
 		document.put("_roleUuids", roleUuidsList);

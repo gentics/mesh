@@ -32,7 +32,7 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 	@Test
 	public void testResizeImage() throws IOException {
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.data().contentDao();
+			ContentDaoWrapper contentDao = tx.contentDao();
 			String path = "/News/2015/blume.jpg";
 			HibNode node = content("news_2015");
 
@@ -66,7 +66,7 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 		String fileName = "somefile.dat";
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.data().contentDao();
+			ContentDaoWrapper contentDao = tx.contentDao();
 
 			// 1. Transform the node into a binary content
 			HibSchema container = schemaContainer("binary_content");
@@ -109,7 +109,7 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 			() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(), new NodeParametersImpl().setLanguages("en", "de")));
 
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 			HibNode node = content("news_2015");
 			String etag = nodeDao.getETag(node, mockActionContext());
 			assertEquals(etag, responseTag);

@@ -53,7 +53,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse> implements 
 
 	@Override
 	public void delete(BulkActionContext bac) {
-		GroupDaoWrapper groupRoot = Tx.get().data().groupDao();
+		GroupDaoWrapper groupRoot = Tx.get().groupDao();
 		groupRoot.delete(this, bac);
 	}
 
@@ -65,7 +65,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse> implements 
 	@Override
 	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<InternalPermission> permissionsToGrant,
 		Set<InternalPermission> permissionsToRevoke) {
-		GroupDaoWrapper groupDao = Tx.get().data().groupDao();
+		GroupDaoWrapper groupDao = Tx.get().groupDao();
 		if (recursive) {
 			for (HibUser user : groupDao.getUsers(this)) {
 				User graphUser = toGraph(user);

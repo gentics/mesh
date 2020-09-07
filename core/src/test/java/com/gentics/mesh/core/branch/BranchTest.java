@@ -70,7 +70,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Override
 	public void testFindAllVisible() throws Exception {
 		try (Tx tx = tx()) {
-			BranchDaoWrapper branchDao = tx.data().branchDao();
+			BranchDaoWrapper branchDao = tx.branchDao();
 			EventQueueBatch batch = createBatch();
 			HibBranch initialBranch = project().getInitialBranch();
 			HibBranch branchOne = branchDao.create(project(), "One", user(), batch);
@@ -89,7 +89,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Override
 	public void testFindAll() throws Exception {
 		try (Tx tx = tx()) {
-			BranchDaoWrapper branchDao = tx.data().branchDao();
+			BranchDaoWrapper branchDao = tx.branchDao();
 			HibProject project = project();
 			HibBranch initialBranch = initialBranch();
 			HibBranch branchOne = createBranch("One");
@@ -121,7 +121,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Override
 	public void testFindByName() throws Exception {
 		try (Tx tx = tx()) {
-			BranchDaoWrapper branchDao = tx.data().branchDao();
+			BranchDaoWrapper branchDao = tx.branchDao();
 			HibProject project = project();
 			HibBranch foundBranch = branchDao.findByName(project, project.getName());
 			assertThat(foundBranch).as("Branch with name " + project.getName()).isNotNull().matches(project.getInitialBranch());
@@ -132,7 +132,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Override
 	public void testFindByUUID() throws Exception {
 		try (Tx tx = tx()) {
-			BranchDaoWrapper branchDao = tx.data().branchDao();
+			BranchDaoWrapper branchDao = tx.branchDao();
 			HibProject project = project();
 			HibBranch initialBranch = project.getInitialBranch();
 			HibBranch foundBranch = branchDao.findByUuid(project, initialBranch.getUuid());
@@ -149,8 +149,8 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Override
 	public void testCreate() throws Exception {
 		try (Tx tx = tx()) {
-			BranchDaoWrapper branchDao = tx.data().branchDao();
-			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			BranchDaoWrapper branchDao = tx.branchDao();
+			SchemaDaoWrapper schemaDao = tx.schemaDao();
 
 			HibBranch initialBranch = initialBranch();
 			HibBranch firstNewBranch = createBranch("First new Branch");
@@ -234,7 +234,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Override
 	public void testTransformation() throws Exception {
 		try (Tx tx = tx()) {
-			BranchDaoWrapper branchDao = tx.data().branchDao();
+			BranchDaoWrapper branchDao = tx.branchDao();
 			HibBranch branch = project().getInitialBranch();
 
 			RoutingContext rc = mockRoutingContext();
@@ -287,7 +287,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Test
 	public void testAssignSchema() throws Exception {
 		try (Tx tx = tx()) {
-			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			SchemaDaoWrapper schemaDao = tx.schemaDao();
 
 			HibSchema schemaContainer = createSchemaDirect("bla");
 			updateSchema(schemaContainer, "newfield");
@@ -326,7 +326,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	public void testUnassignSchema() throws Exception {
 		try (Tx tx = tx()) {
 			HibProject project = project();
-			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			SchemaDaoWrapper schemaDao = tx.schemaDao();
 			List<? extends HibSchema> schemas = schemaDao.findAll(project).list();
 			HibSchema schemaContainer = schemas.get(0);
 
@@ -358,7 +358,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Test
 	public void testBranchSchemaVersion() throws Exception {
 		try (Tx tx = tx()) {
-			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			SchemaDaoWrapper schemaDao = tx.schemaDao();
 			HibProject project = project();
 
 			HibSchema schemaContainer = createSchemaDirect("bla");
@@ -494,7 +494,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 		schema.setName(name);
 		schema.addField(FieldUtil.createStringFieldSchema("name"));
 		schema.setDisplayField("name");
-		SchemaDaoWrapper schemaDao = Tx.get().data().schemaDao();
+		SchemaDaoWrapper schemaDao = Tx.get().schemaDao();
 		return schemaDao.create(schema, user());
 	}
 
@@ -521,7 +521,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 
 		InternalActionContext ac = mockActionContext();
 		EventQueueBatch batch = createBatch();
-		Tx.get().data().schemaDao().applyChanges(schemaContainer.getLatestVersion(), ac, model, batch);
+		Tx.get().schemaDao().applyChanges(schemaContainer.getLatestVersion(), ac, model, batch);
 	}
 
 	/**
@@ -561,6 +561,6 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 
 		InternalActionContext ac = mockActionContext();
 		EventQueueBatch batch = createBatch();
-		Tx.get().data().microschemaDao().applyChanges(microschemaContainer.getLatestVersion(), ac, model, batch);
+		Tx.get().microschemaDao().applyChanges(microschemaContainer.getLatestVersion(), ac, model, batch);
 	}
 }

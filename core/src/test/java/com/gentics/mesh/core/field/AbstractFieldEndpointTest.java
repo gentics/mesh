@@ -73,7 +73,7 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 		nodeUpdateRequest.setLanguage("en");
 		nodeUpdateRequest.getFields().put(fieldKey, field);
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.data().contentDao();
+			ContentDaoWrapper contentDao = tx.contentDao();
 			HibNode node = folder("2015");
 			nodeUpdateRequest.setVersion(contentDao.getLatestDraftFieldContainer(node, english()).getVersion().toString());
 			tx.success();
@@ -91,7 +91,7 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 		nodeUpdateRequest.setLanguage("en");
 		nodeUpdateRequest.getFields().put(fieldKey, field);
 		nodeUpdateRequest.setVersion(tx(tx -> {
-			return tx.data().contentDao().getLatestDraftFieldContainer(node, english()).getVersion().toString();
+			return tx.contentDao().getLatestDraftFieldContainer(node, english()).getVersion().toString();
 		}));
 
 		call(() -> client().updateNode(PROJECT_NAME, tx(() -> node.getUuid()), nodeUpdateRequest, new NodeParametersImpl().setLanguages("en")),

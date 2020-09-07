@@ -85,7 +85,7 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 	public void testSearchMissingVertex() throws Exception {
 		recreateIndices();
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 			BulkActionContext context = createBulkContext();
 			nodeDao.delete(content("honda nr"), context, false, true);
 			tx.success();

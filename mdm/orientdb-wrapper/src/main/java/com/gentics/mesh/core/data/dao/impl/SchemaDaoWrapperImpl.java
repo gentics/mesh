@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -33,6 +34,7 @@ import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -128,9 +130,18 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 	}
 
 	@Override
+	public Page<? extends HibSchema> findAll(HibProject project, InternalActionContext ac, PagingParameters pagingInfo,
+		Predicate<HibSchema> extraFilter) {
+		Project graphProject = toGraph(project);
+		return graphProject.getSchemaContainerRoot().findAll(ac, pagingInfo, schema -> {
+			return extraFilter.test(schema);
+		});
+	}
+
+	@Override
 	public HibSchema create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		MeshAuthUser requestUser = ac.getUser();
-		UserDaoWrapper userDao = Tx.get().data().userDao();
+		UserDaoWrapper userDao = Tx.get().userDao();
 		SchemaRoot schemaRoot = boot.get().schemaContainerRoot();
 
 		SchemaVersionModel requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModelImpl.class);
@@ -214,7 +225,7 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 	@Override
 	public HibSchema create(SchemaVersionModel schema, HibUser creator, String uuid, boolean validate) {
 		SchemaRoot schemaRoot = boot.get().schemaContainerRoot();
-		MicroschemaDaoWrapper microschemaDao = Tx.get().data().microschemaDao();
+		MicroschemaDaoWrapper microschemaDao = Tx.get().microschemaDao();
 
 		// TODO FIXME - We need to skip the validation check if the instance is creating a clustered instance because vert.x is not yet ready.
 		// https://github.com/gentics/mesh/issues/210

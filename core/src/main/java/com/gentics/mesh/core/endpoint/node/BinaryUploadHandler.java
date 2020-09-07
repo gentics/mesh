@@ -258,10 +258,10 @@ public class BinaryUploadHandler extends AbstractHandler {
 		String binaryUuid = context.getBinaryUuid();
 
 		return db.singleTxWriteLock(tx -> {
-			ContentDaoWrapper contentDao = tx.data().contentDao();
+			ContentDaoWrapper contentDao = tx.contentDao();
 			HibProject project = tx.getProject(ac);
 			HibBranch branch = tx.getBranch(ac);
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 			HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, UPDATE_PERM);
 
 			utils.eventAction(batch -> {
@@ -271,7 +271,7 @@ public class BinaryUploadHandler extends AbstractHandler {
 				if (binary == null) {
 					binary = binaries.create(binaryUuid, hash, upload.size()).runInExistingTx(tx);
 				}
-				HibLanguage language = tx.data().languageDao().findByLanguageTag(languageTag);
+				HibLanguage language = tx.languageDao().findByLanguageTag(languageTag);
 				if (language == null) {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
 				}

@@ -44,7 +44,7 @@ public class RoleEndpointETagTest extends AbstractMeshTest {
 	@Test
 	public void testReadOne() {
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			HibRole role = role();
 			String responseEtag = callETag(() -> client().findRoleByUuid(role.getUuid()));
 			String etag = roleDao.getETag(role, mockActionContext());

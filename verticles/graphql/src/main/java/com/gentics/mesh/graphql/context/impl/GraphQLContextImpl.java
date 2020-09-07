@@ -30,7 +30,7 @@ public class GraphQLContextImpl extends InternalRoutingActionContextImpl impleme
 
 	@Override
 	public <T extends HibCoreElement> T requiresPerm(T element, InternalPermission... permission) {
-		UserDaoWrapper userDao = Tx.get().data().userDao();
+		UserDaoWrapper userDao = Tx.get().userDao();
 		for (InternalPermission perm : permission) {
 			if (userDao.hasPermission(getUser(), element, perm)) {
 				return element;
@@ -52,10 +52,10 @@ public class GraphQLContextImpl extends InternalRoutingActionContextImpl impleme
 	@Override
 	public boolean hasReadPerm(NodeGraphFieldContainer container) {
 		Tx tx = Tx.get();
-		ContentDaoWrapper contentDao = tx.data().contentDao();
+		ContentDaoWrapper contentDao = tx.contentDao();
 		HibNode node = contentDao.getNode(container);
 		Object nodeId = node.getId();
-		UserDaoWrapper userDao = tx.data().userDao();
+		UserDaoWrapper userDao = tx.userDao();
 
 		if (userDao.hasPermissionForId(getUser(), nodeId, InternalPermission.READ_PERM)) {
 			return true;
@@ -70,7 +70,7 @@ public class GraphQLContextImpl extends InternalRoutingActionContextImpl impleme
 
 	@Override
 	public NodeGraphFieldContainer requiresReadPermSoft(NodeGraphFieldContainer container, DataFetchingEnvironment env) {
-		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+		ContentDaoWrapper contentDao = Tx.get().contentDao();
 		if (container == null) {
 			return null;
 		}

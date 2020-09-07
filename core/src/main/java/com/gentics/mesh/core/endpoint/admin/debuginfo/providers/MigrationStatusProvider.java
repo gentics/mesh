@@ -56,8 +56,8 @@ public class MigrationStatusProvider implements DebugInfoProvider {
 
 	private Flowable<ProjectBranch> getAllBranches() {
 		return db.singleTx(tx -> {
-			BranchDaoWrapper branchDao = tx.data().branchDao();
-			ProjectDaoWrapper projectDao = tx.data().projectDao();
+			BranchDaoWrapper branchDao = tx.branchDao();
+			ProjectDaoWrapper projectDao = tx.projectDao();
 			return projectDao.findAll().stream()
 				.flatMap(project -> branchDao.findAll(project).stream()
 					.map(branch -> new ProjectBranch(project.getName(), branch.getName(), branch)))

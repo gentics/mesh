@@ -107,11 +107,11 @@ public class BinaryTransformHandler extends AbstractHandler {
 
 		// Load needed elements
 		HibNode node = db.tx(tx -> {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 			HibProject project = tx.getProject(ac);
 			HibNode n = nodeDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
 
-			HibLanguage language = tx.data().languageDao().findByLanguageTag(languageTag);
+			HibLanguage language = tx.languageDao().findByLanguageTag(languageTag);
 			if (language == null) {
 				throw error(NOT_FOUND, "error_language_not_found", transformation.getLanguage());
 			}
@@ -213,7 +213,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 	private NodeResponse updateNodeInGraph(InternalActionContext ac, UploadContext context, TransformationResult result, HibNode node,
 		String languageTag, String fieldName, ImageManipulationParameters parameters) {
 		return utils.eventAction((tx, batch) -> {
-			ContentDaoWrapper contentDao = tx.data().contentDao();
+			ContentDaoWrapper contentDao = tx.contentDao();
 
 			NodeGraphFieldContainer latestDraftVersion = loadTargetedContent(node, languageTag, fieldName);
 
@@ -258,7 +258,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 			if (field.getFieldKey().equals(newDraftVersion.getSchemaContainerVersion().getSchema().getSegmentField())) {
 				contentDao.updateWebrootPathInfo(newDraftVersion, branch.getUuid(), "node_conflicting_segmentfield_upload");
 			}
-			BranchDaoWrapper branchDao = tx.data().branchDao();
+			BranchDaoWrapper branchDao = tx.branchDao();
 			// TODO maybe use a fixed method in project?
 			String branchUuid = branchDao.getLatestBranch(node.getProject()).getUuid();
 
@@ -268,7 +268,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 			}
 
 			batch.add(newDraftVersion.onCreated(branchUuid, DRAFT));
-			return tx.data().nodeDao().transformToRestSync(node, ac, 0);
+			return tx.nodeDao().transformToRestSync(node, ac, 0);
 		});
 	}
 

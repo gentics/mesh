@@ -273,7 +273,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 	@Test
 	public void testNodeReplace() throws IOException, InterruptedException, ExecutionException {
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 			String german = german();
 			String english = english();
 			HibNode parentNode = folder("2015");
@@ -298,7 +298,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 	@Test
 	public void testBinaryFieldLinkResolving() {
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.data().contentDao();
+			ContentDaoWrapper contentDao = tx.contentDao();
 			HibNode node = content("news overview");
 			String uuid = node.getUuid();
 

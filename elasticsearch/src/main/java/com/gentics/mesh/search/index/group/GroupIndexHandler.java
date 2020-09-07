@@ -93,7 +93,7 @@ public class GroupIndexHandler extends AbstractIndexHandler<HibGroup> {
 
 	@Override
 	public Stream<? extends HibGroup> loadAllElements(Tx tx) {
-		return tx.data().groupDao().findAll().stream();
+		return tx.groupDao().findAll().stream();
 	}
 
 	@Override

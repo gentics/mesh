@@ -33,7 +33,7 @@ public class NodeLanguagesEndpointTest extends AbstractMeshTest {
 		HibNode node = content();
 		int nLanguagesBefore;
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 			nLanguagesBefore = nodeDao.getAvailableLanguageNames(node).size();
 			assertThat(nodeDao.getAvailableLanguageNames(node)).contains("en", "de");
 		}
@@ -53,7 +53,7 @@ public class NodeLanguagesEndpointTest extends AbstractMeshTest {
 		waitForSearchIdleEvent();
 		
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 			// Check the deletion
 			assertThat(trackingSearchProvider()).recordedDeleteEvents(2);
 			assertFalse(nodeDao.getAvailableLanguageNames(node).contains("en"));
@@ -79,7 +79,7 @@ public class NodeLanguagesEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testDeleteLanguageNoPerm() {
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), content(), DELETE_PERM);
 			tx.success();
 		}

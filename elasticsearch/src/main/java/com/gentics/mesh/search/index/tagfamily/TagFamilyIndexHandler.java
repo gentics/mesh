@@ -122,7 +122,7 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<HibTagFamily> {
 	@Override
 	public Set<String> filterUnknownIndices(Set<String> indices) {
 		return db.tx(tx -> {
-			ProjectDaoWrapper projectDao = tx.data().projectDao();
+			ProjectDaoWrapper projectDao = tx.projectDao();
 			Set<String> activeIndices = new HashSet<>();
 			for (HibProject project : projectDao.findAll()) {
 				activeIndices.add(TagFamily.composeIndexName(project.getUuid()));
@@ -155,7 +155,7 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<HibTagFamily> {
 
 	@Override
 	public Stream<? extends HibTagFamily> loadAllElements(Tx tx) {
-		return tx.data().tagFamilyDao().findAllGlobal().stream();
+		return tx.tagFamilyDao().findAllGlobal().stream();
 	}
 
 }

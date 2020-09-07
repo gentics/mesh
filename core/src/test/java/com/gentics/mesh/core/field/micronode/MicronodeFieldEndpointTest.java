@@ -118,7 +118,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			NodeResponse response = updateNode(FIELD_NAME, field);
 
 			try (Tx tx = tx()) {
-				ContentDaoWrapper contentDao = tx.data().contentDao();
+				ContentDaoWrapper contentDao = tx.contentDao();
 				MicronodeResponse fieldResponse = response.getFields().getMicronodeField(FIELD_NAME);
 				assertThat(fieldResponse).hasStringField("firstName", "Max").hasStringField("lastName", newLastName);
 
@@ -166,7 +166,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		// Assert that a null field value request will delete the micronode
 		NodeResponse secondResponse = updateNode(FIELD_NAME, null);
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.data().contentDao();
+			ContentDaoWrapper contentDao = tx.contentDao();
 			assertThat(secondResponse.getFields().getMicronodeField(FIELD_NAME)).isNull();
 			assertThat(secondResponse.getVersion()).as("New version number").isNotEqualTo(oldNumber);
 
@@ -385,7 +385,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	public void testReadNodeWithExistingField() throws IOException {
 		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.data().contentDao();
+			ContentDaoWrapper contentDao = tx.contentDao();
 			HibMicroschemaVersion microschema = microschemaContainers().get("vcard").getLatestVersion();
 			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
 			MicronodeGraphField micronodeField = container.createMicronode(FIELD_NAME, microschema);
@@ -415,7 +415,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		MicroschemaVersionModel nodeMicroschema = new MicroschemaModelImpl();
 
 		try (Tx tx = tx()) {
-			MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
+			MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
 
 			// 1. Create microschema noderef with nodefield
 			nodeMicroschema.setName("noderef");
@@ -464,7 +464,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		MicroschemaVersionModel fullMicroschema = new MicroschemaModelImpl();
 
 		try (Tx tx = tx()) {
-			MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
+			MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
 
 			// 1. Create microschema that includes all field types
 			fullMicroschema.setName("full");

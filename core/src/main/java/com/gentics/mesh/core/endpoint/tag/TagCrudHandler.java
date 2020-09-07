@@ -65,7 +65,7 @@ public class TagCrudHandler extends AbstractHandler {
 
 		try (WriteLock lock = globalLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				TagDaoWrapper tagDao = tx.data().tagDao();
+				TagDaoWrapper tagDao = tx.tagDao();
 				PagingParameters pagingParams = ac.getPagingParameters();
 				NodeParameters nodeParams = ac.getNodeParameters();
 				HibTagFamily tagFamily = tagFamilyActions.loadByUuid(context(tx, ac), tagFamilyUuid, READ_PERM, true);
@@ -89,7 +89,7 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 
 		Function<Tx, Object> tagFamilyLoader = tx -> {
-			return tx.data().tagFamilyActions().loadByUuid(context(tx, ac), tagFamilyUuid, READ_PERM, true);
+			return tx.tagFamilyActions().loadByUuid(context(tx, ac), tagFamilyUuid, READ_PERM, true);
 		};
 		utils.readElementList(ac, tagFamilyLoader, tagActions);
 	}
@@ -107,7 +107,7 @@ public class TagCrudHandler extends AbstractHandler {
 
 		try (WriteLock lock = globalLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				TagDaoWrapper tagDao = tx.data().tagDao();
+				TagDaoWrapper tagDao = tx.tagDao();
 				ResultInfo info = utils.eventAction(batch -> {
 					// TODO use DAOActionContext and load tagFamily by uuid first. Without a parent this is inconsistent.
 					HibTag tag = tagActions.create(tx, ac, batch, null);
@@ -141,7 +141,7 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagUuid, "tagUuid");
 
 		Function<Tx, Object> tagFamilyLoader = tx -> {
-			return tx.data().tagFamilyActions().loadByUuid(context(tx, ac), tagFamilyUuid, READ_PERM, true);
+			return tx.tagFamilyActions().loadByUuid(context(tx, ac), tagFamilyUuid, READ_PERM, true);
 		};
 		utils.createOrUpdateElement(ac, tagFamilyLoader, tagUuid, tagActions);
 	}
@@ -161,7 +161,7 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagUuid, "tagUuid");
 
 		Function<Tx, Object> tagFamilyLoader = tx -> {
-			return tx.data().tagFamilyActions().loadByUuid(context(tx, ac), tagFamilyUuid, READ_PERM, true);
+			return tx.tagFamilyActions().loadByUuid(context(tx, ac), tagFamilyUuid, READ_PERM, true);
 		};
 		utils.readElement(ac, tagFamilyLoader, tagUuid, tagActions, READ_PERM);
 

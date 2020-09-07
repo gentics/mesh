@@ -53,7 +53,7 @@ public class NodeAssert extends AbstractAssert<NodeAssert, HibNode> {
 	 * @return fluent API
 	 */
 	public NodeAssert hasTranslation(String languageTag) {
-		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+		NodeDaoWrapper nodeDao = Tx.get().nodeDao();
 		assertThat(nodeDao.getAvailableLanguageNames(actual)).as(descriptionText() + " languages").contains(languageTag);
 		return this;
 	}
@@ -66,7 +66,7 @@ public class NodeAssert extends AbstractAssert<NodeAssert, HibNode> {
 	 * @return fluent API
 	 */
 	public NodeAssert doesNotHaveTranslation(String languageTag) {
-		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+		NodeDaoWrapper nodeDao = Tx.get().nodeDao();
 		assertThat(nodeDao.getAvailableLanguageNames(actual)).as(descriptionText() + " languages").doesNotContain(languageTag);
 		return this;
 	}
@@ -81,7 +81,7 @@ public class NodeAssert extends AbstractAssert<NodeAssert, HibNode> {
 	 * @return fluent API
 	 */
 	public NodeAssert hasChildren(HibBranch branch, HibNode... nodes) {
-		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+		NodeDaoWrapper nodeDao = Tx.get().nodeDao();
 		Stream<? extends HibNode> stream = StreamSupport.stream(nodeDao.getChildren(actual, branch.getUuid()).spliterator(), false);
 		List<HibNode> list = stream.collect(Collectors.toList());
 		assertThat(list).as(descriptionText() + " children").usingElementComparatorOnFields("uuid").contains(nodes);
@@ -96,7 +96,7 @@ public class NodeAssert extends AbstractAssert<NodeAssert, HibNode> {
 	 * @return fluent API
 	 */
 	public NodeAssert hasNoChildren(HibBranch branch) {
-		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+		NodeDaoWrapper nodeDao = Tx.get().nodeDao();
 		Stream<? extends HibNode> stream = StreamSupport.stream(nodeDao.getChildren(actual, branch.getUuid()).spliterator(), false);
 		List<HibNode> list = stream.collect(Collectors.toList());
 		assertThat(list).as(descriptionText() + " children").hasSize(0);
@@ -113,7 +113,7 @@ public class NodeAssert extends AbstractAssert<NodeAssert, HibNode> {
 	 * @return fluent API
 	 */
 	public NodeAssert hasOnlyChildren(HibBranch branch, HibNode... nodes) {
-		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+		NodeDaoWrapper nodeDao = Tx.get().nodeDao();
 		Stream<? extends HibNode> stream = StreamSupport.stream(nodeDao.getChildren(actual, branch.getUuid()).spliterator(), false);
 		List<HibNode> list = stream.collect(Collectors.toList());
 		assertThat(list).as(descriptionText() + " children").usingElementComparatorOnFields("uuid").containsOnly(nodes);
@@ -130,7 +130,7 @@ public class NodeAssert extends AbstractAssert<NodeAssert, HibNode> {
 	 * @return fluent API
 	 */
 	public NodeAssert hasNotChildren(HibBranch branch, HibNode... nodes) {
-		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+		NodeDaoWrapper nodeDao = Tx.get().nodeDao();
 		Result<? extends HibNode> children = nodeDao.getChildren(actual, branch.getUuid());
 		List<HibNode> childrenNodes = (List<HibNode>) children.list();
 		assertThat(childrenNodes)

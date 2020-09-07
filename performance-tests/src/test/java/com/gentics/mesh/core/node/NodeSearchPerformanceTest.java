@@ -58,7 +58,7 @@ public class NodeSearchPerformanceTest extends AbstractMeshTest {
 
 		// Revoke all but one permission
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			for (Node node : project().getNodeRoot().findAll()) {
 				if (!node.getUuid().equals(lastNodeUuid)) {
 					roleDao.revokePermissions(role(), node, READ_PERM);

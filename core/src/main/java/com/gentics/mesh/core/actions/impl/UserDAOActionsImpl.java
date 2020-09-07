@@ -31,7 +31,7 @@ public class UserDAOActionsImpl implements UserDAOActions {
 
 	@Override
 	public HibUser loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
-		UserDaoWrapper userDao = ctx.tx().data().userDao();
+		UserDaoWrapper userDao = ctx.tx().userDao();
 		if (perm == null) {
 			return userDao.findByUuid(uuid);
 		} else {
@@ -41,7 +41,7 @@ public class UserDAOActionsImpl implements UserDAOActions {
 
 	@Override
 	public HibUser loadByName(DAOActionContext ctx, String name, InternalPermission perm, boolean errorIfNotFound) {
-		UserDaoWrapper userDao = ctx.tx().data().userDao();
+		UserDaoWrapper userDao = ctx.tx().userDao();
 		if (perm == null) {
 			return userDao.findByName(name);
 		} else {
@@ -51,33 +51,33 @@ public class UserDAOActionsImpl implements UserDAOActions {
 
 	@Override
 	public TransformablePage<? extends HibUser> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
-		return ctx.tx().data().userDao().findAll(ctx.ac(), pagingInfo);
+		return ctx.tx().userDao().findAll(ctx.ac(), pagingInfo);
 	}
 
 	@Override
 	public Page<? extends HibUser> loadAll(DAOActionContext ctx, PagingParameters pagingInfo,
 		Predicate<HibUser> extraFilter) {
-		return ctx.tx().data().userDao().findAll(ctx.ac(), pagingInfo, extraFilter);
+		return ctx.tx().userDao().findAll(ctx.ac(), pagingInfo, extraFilter);
 	}
 
 	@Override
 	public HibUser create(Tx tx, InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		return tx.data().userDao().create(ac, batch, uuid);
+		return tx.userDao().create(ac, batch, uuid);
 	}
 
 	@Override
 	public void delete(Tx tx, HibUser user, BulkActionContext bac) {
-		tx.data().userDao().delete(user, bac);
+		tx.userDao().delete(user, bac);
 	}
 
 	@Override
 	public boolean update(Tx tx, HibUser user, InternalActionContext ac, EventQueueBatch batch) {
-		return tx.data().userDao().update(user, ac, batch);
+		return tx.userDao().update(user, ac, batch);
 	}
 
 	@Override
 	public UserResponse transformToRestSync(Tx tx, HibUser user, InternalActionContext ac, int level, String... languageTags) {
-		return tx.data().userDao().transformToRestSync(user, ac, level, languageTags);
+		return tx.userDao().transformToRestSync(user, ac, level, languageTags);
 	}
 
 	@Override

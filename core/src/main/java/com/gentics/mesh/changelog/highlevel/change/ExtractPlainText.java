@@ -62,7 +62,7 @@ public class ExtractPlainText extends AbstractHighLevelChange {
 		log.info("Applying change: " + getName());
 		FramedTransactionalGraph graph = Tx.getActive().getGraph();
 		AtomicLong total = new AtomicLong(0);
-		BinaryDaoWrapper binaryDao = Tx.get().data().binaryDao();
+		BinaryDaoWrapper binaryDao = Tx.get().binaryDao();
 		binaryDao.findAll().runInExistingTx(Tx.get()).forEach(binary -> {
 			final String filename = storage.get().getFilePath(binary.getUuid());
 			File uploadFile = new File(filename);

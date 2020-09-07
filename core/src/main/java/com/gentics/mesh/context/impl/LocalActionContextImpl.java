@@ -191,7 +191,7 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	public void setProject(String projectName) {
 		MeshComponent mesh = toGraph(user).getGraphAttribute(GraphAttribute.MESH_COMPONENT);
 		this.project = mesh.database().tx(tx -> {
-			return tx.data().projectDao().findByName(projectName);
+			return tx.projectDao().findByName(projectName);
 		});
 	}
 

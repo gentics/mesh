@@ -135,18 +135,18 @@ public class SearchModelGenerator extends AbstractGenerator {
 		provider = (TrackingSearchProvider) meshDagger.searchProvider();
 
 		try {
-			TxData txData = mockTx();
+			Tx tx = mockTx();
 			NodeDaoWrapper nodeDao = mock(NodeDaoWrapperImpl.class);
 			ContentDaoWrapper contentDao = mock(ContentDaoWrapperImpl.class);
 			UserDaoWrapper userDao = mock(UserDaoWrapperImpl.class);
 			TagDaoWrapper tagDao = mock(TagDaoWrapperImpl.class);
 			TagFamilyDaoWrapper tagFamilyDao = mock(TagFamilyDaoWrapperImpl.class);
 
-			when(txData.nodeDao()).thenReturn(nodeDao);
-			when(txData.contentDao()).thenReturn(contentDao);
-			when(txData.userDao()).thenReturn(userDao);
-			when(txData.tagDao()).thenReturn(tagDao);
-			when(txData.tagFamilyDao()).thenReturn(tagFamilyDao);
+			when(tx.nodeDao()).thenReturn(nodeDao);
+			when(tx.contentDao()).thenReturn(contentDao);
+			when(tx.userDao()).thenReturn(userDao);
+			when(tx.tagDao()).thenReturn(tagDao);
+			when(tx.tagFamilyDao()).thenReturn(tagFamilyDao);
 
 			writeNodeDocumentExample(nodeDao, contentDao, tagDao);
 			writeTagDocumentExample();
@@ -163,12 +163,12 @@ public class SearchModelGenerator extends AbstractGenerator {
 		}
 	}
 
-	private TxData mockTx() {
+	private Tx mockTx() {
 		Tx txMock = mock(Tx.class);
 		Tx.setActive(txMock);
 		TxData txData = mock(TxData.class);
 		when(txMock.data()).thenReturn(txData);
-		return txData;
+		return txMock;
 	}
 
 	private void writeNodeDocumentExample(NodeDaoWrapper nodeDao, ContentDaoWrapper contentDao, TagDaoWrapper tagDao) throws Exception {

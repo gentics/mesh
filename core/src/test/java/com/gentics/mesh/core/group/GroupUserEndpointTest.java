@@ -48,9 +48,9 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 	public void testGetUsersByGroup() throws Exception {
 		String extraUserUuid;
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
-			GroupDaoWrapper groupDao = tx.data().groupDao();
-			UserDaoWrapper userDao = tx.data().userDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
+			GroupDaoWrapper groupDao = tx.groupDao();
+			UserDaoWrapper userDao = tx.userDao();
 
 			HibUser extraUser = userDao.create("extraUser", user());
 			groupDao.addUser(group(), extraUser);
@@ -78,8 +78,8 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 	public void testAddUserToGroupWithBogusGroupId() throws Exception {
 		String userUuid;
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
-			UserDaoWrapper userDao = tx.data().userDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
+			UserDaoWrapper userDao = tx.userDao();
 
 			HibUser extraUser = userDao.create("extraUser", user());
 			userUuid = extraUser.getUuid();
@@ -98,9 +98,9 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 		final String groupUuid = groupUuid();
 		final String groupName = tx(() -> group().getName());
 		HibUser extraUser = tx(tx -> {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
-			UserDaoWrapper userDao = tx.data().userDao();
-			GroupDaoWrapper groupDao = tx.data().groupDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
+			UserDaoWrapper userDao = tx.userDao();
+			GroupDaoWrapper groupDao = tx.groupDao();
 
 			HibUser user = userDao.create("extraUser", user());
 			user.setFirstname(userFirstname);
@@ -129,7 +129,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 		waitForSearchIdleEvent();
 
 		try (Tx tx = tx()) {
-			GroupDaoWrapper groupDao = tx.data().groupDao();
+			GroupDaoWrapper groupDao = tx.groupDao();
 			assertThat(restGroup).matches(group());
 			assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), extraUserUuid);
 			assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
@@ -146,8 +146,8 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 	public void testAddUserToGroupWithoutPermOnGroup() throws Exception {
 		HibUser extraUser;
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
-			UserDaoWrapper userDao = tx.data().userDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
+			UserDaoWrapper userDao = tx.userDao();
 
 			HibGroup group = group();
 			extraUser = userDao.create("extraUser", user());
@@ -157,7 +157,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			GroupDaoWrapper groupDao = tx.data().groupDao();
+			GroupDaoWrapper groupDao = tx.groupDao();
 			call(() -> client().addUserToGroup(groupUuid(), extraUser.getUuid()), FORBIDDEN, "error_missing_perm", groupUuid(),
 				UPDATE_PERM.getRestPerm().getName());
 			assertFalse("User should not be member of the group.", groupDao.hasUser(group(), extraUser));
@@ -169,8 +169,8 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 	public void testAddUserToGroupWithoutPermOnUser() throws Exception {
 		HibUser extraUser;
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
-			UserDaoWrapper userDao = tx.data().userDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
+			UserDaoWrapper userDao = tx.userDao();
 
 			extraUser = userDao.create("extraUser", user());
 			roleDao.grantPermissions(role(), extraUser, DELETE_PERM);
@@ -178,7 +178,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			GroupDaoWrapper groupDao = tx.data().groupDao();
+			GroupDaoWrapper groupDao = tx.groupDao();
 			call(() -> client().addUserToGroup(group().getUuid(), extraUser.getUuid()), FORBIDDEN, "error_missing_perm", extraUser.getUuid(),
 				READ_PERM.getRestPerm().getName());
 			assertFalse("User should not be member of the group.", groupDao.hasUser(group(), extraUser));
@@ -188,8 +188,8 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testRemoveUserFromGroupWithoutPerm() throws Exception {
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
-			GroupDaoWrapper groupDao = tx.data().groupDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
+			GroupDaoWrapper groupDao = tx.groupDao();
 			assertTrue("User should be a member of the group.", groupDao.hasUser(group(), user()));
 			roleDao.revokePermissions(role(), group(), UPDATE_PERM);
 			tx.success();
@@ -198,7 +198,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 		call(() -> client().removeUserFromGroup(groupUuid(), userUuid()), FORBIDDEN, "error_missing_perm", groupUuid(),
 			UPDATE_PERM.getRestPerm().getName());
 		try (Tx tx = tx()) {
-			GroupDaoWrapper groupDao = tx.data().groupDao();
+			GroupDaoWrapper groupDao = tx.groupDao();
 			assertTrue("User should still be a member of the group.", groupDao.hasUser(group(), user()));
 		}
 	}
@@ -211,9 +211,9 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 		final String userLastname = "Einstein";
 
 		HibUser extraUser = tx(tx -> {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
-			UserDaoWrapper userDao = tx.data().userDao();
-			GroupDaoWrapper groupRoot = tx.data().groupDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
+			UserDaoWrapper userDao = tx.userDao();
+			GroupDaoWrapper groupRoot = tx.groupDao();
 
 			HibUser user = userDao.create("extraUser", user());
 			user.setFirstname(userFirstname);
@@ -242,7 +242,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 		waitForSearchIdleEvent();
 
 		try (Tx tx = tx()) {
-			GroupDaoWrapper groupDao = tx.data().groupDao();
+			GroupDaoWrapper groupDao = tx.groupDao();
 			assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), extraUserUuid);
 			assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 			assertFalse("User should not be member of the group.", groupDao.hasUser(group(), extraUser));
@@ -265,7 +265,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 	public void testRemoveUserFromLastGroupWithPerm() throws Exception {
 		call(() -> client().removeUserFromGroup(groupUuid(), userUuid()));
 		try (Tx tx = tx()) {
-			GroupDaoWrapper groupDao = tx.data().groupDao();
+			GroupDaoWrapper groupDao = tx.groupDao();
 			assertFalse("User should no longer be member of the group.", groupDao.hasUser(group(), user()));
 		}
 	}
@@ -274,7 +274,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 	public void testRemoveUserFromGroupWithBogusUserUuid() throws Exception {
 		call(() -> client().removeUserFromGroup(groupUuid(), "bogus"), NOT_FOUND, "object_not_found_for_uuid", "bogus");
 		try (Tx tx = tx()) {
-			GroupDaoWrapper groupDao = tx.data().groupDao();
+			GroupDaoWrapper groupDao = tx.groupDao();
 			assertTrue("User should still be member of the group.", groupDao.hasUser(group(), user()));
 		}
 	}

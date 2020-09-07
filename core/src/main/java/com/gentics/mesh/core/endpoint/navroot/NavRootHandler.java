@@ -50,8 +50,8 @@ public class NavRootHandler {
 			ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
 			Path nodePath = webrootService.findByProjectPath(ac, path, type);
 			PathSegment lastSegment = nodePath.getLast();
-			UserDaoWrapper userDao = tx.data().userDao();
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			UserDaoWrapper userDao = tx.userDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 
 			if (lastSegment == null) {
 				throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(path));
@@ -60,7 +60,7 @@ public class NavRootHandler {
 			if (container == null) {
 				throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(path));
 			}
-			HibNode node = tx.data().contentDao().getNode(container);
+			HibNode node = tx.contentDao().getNode(container);
 			if (!userDao.hasPermission(requestUser, node, READ_PUBLISHED_PERM)) {
 				throw error(FORBIDDEN, "error_missing_perm", node.getUuid(), READ_PUBLISHED_PERM.getRestPerm().getName());
 			}

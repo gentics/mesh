@@ -152,7 +152,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	public void testDelete() {
 		BulkActionContext context = createBulkContext();
 		try (Tx tx = tx()) {
-			TagFamilyDaoWrapper tagFamilyDao = tx.data().tagFamilyDao();
+			TagFamilyDaoWrapper tagFamilyDao = tx.tagFamilyDao();
 			HibTagFamily tagFamily = tagFamily("colors");
 			tagFamilyDao.delete(tagFamily, context);
 			tx.success();
@@ -211,7 +211,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Override
 	public void testTransformation() throws Exception {
 		try (Tx tx = tx()) {
-			TagFamilyDaoWrapper tagFamilyDao = tx.data().tagFamilyDao();
+			TagFamilyDaoWrapper tagFamilyDao = tx.tagFamilyDao();
 			HibTagFamily tagFamily = tagFamily("colors");
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
@@ -226,7 +226,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Override
 	public void testCreateDelete() throws Exception {
 		try (Tx tx = tx()) {
-			TagFamilyDaoWrapper tagFamilyDao = tx.data().tagFamilyDao();
+			TagFamilyDaoWrapper tagFamilyDao = tx.tagFamilyDao();
 			TagFamilyRoot root = project().getTagFamilyRoot();
 			HibTagFamily tagFamily = root.create("test123", user());
 			assertNotNull(tagFamily);
@@ -246,7 +246,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Override
 	public void testCRUDPermissions() {
 		try (Tx tx = tx()) {
-			UserDaoWrapper userDao = tx.data().userDao();
+			UserDaoWrapper userDao = tx.userDao();
 			TagFamilyRoot root = project().getTagFamilyRoot();
 			HibTagFamily tagFamily = root.create("test123", user());
 			assertFalse(userDao.hasPermission(user(), tagFamily, InternalPermission.CREATE_PERM));

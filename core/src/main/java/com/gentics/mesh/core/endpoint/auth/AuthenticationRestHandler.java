@@ -39,7 +39,7 @@ public class AuthenticationRestHandler extends AbstractHandler {
 		utils.syncTx(ac, tx -> {
 			// TODO add permission check
 			MeshAuthUser requestUser = ac.getUser();
-			return tx.data().userDao().transformToRestSync(requestUser, ac, 0);
+			return tx.userDao().transformToRestSync(requestUser, ac, 0);
 		}, model -> ac.send(model, OK));
 	}
 

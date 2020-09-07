@@ -48,8 +48,8 @@ public class WebRootServiceImpl implements WebRootService {
 	@Override
 	public Path findByProjectPath(InternalActionContext ac, String path, ContainerType type) {
 		Tx tx = Tx.get();
-		NodeDaoWrapper nodeDao = tx.data().nodeDao();
-		ContentDaoWrapper contentDao = tx.data().contentDao();
+		NodeDaoWrapper nodeDao = tx.nodeDao();
+		ContentDaoWrapper contentDao = tx.contentDao();
 		HibProject project = tx.getProject(ac);
 		HibBranch branch = tx.getBranch(ac);
 

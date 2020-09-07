@@ -463,7 +463,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	}
 
 	public String generateVersion(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
-		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+		ContentDaoWrapper contentDao = Tx.get().contentDao();
 		HibNode node = contentDao.getNode(container);
 		HibProject project = node.getProject();
 
@@ -499,9 +499,9 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	 * @return
 	 */
 	public JsonObject toDocument(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
-		TagDaoWrapper tagDao = Tx.get().data().tagDao();
-		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
-		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+		TagDaoWrapper tagDao = Tx.get().tagDao();
+		NodeDaoWrapper nodeDao = Tx.get().nodeDao();
+		ContentDaoWrapper contentDao = Tx.get().contentDao();
 
 		HibNode node = contentDao.getNode(container);
 		JsonObject document = new JsonObject();

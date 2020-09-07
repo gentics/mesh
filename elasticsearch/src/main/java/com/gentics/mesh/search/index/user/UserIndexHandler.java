@@ -95,7 +95,7 @@ public class UserIndexHandler extends AbstractIndexHandler<HibUser> {
 
 	@Override
 	public Stream<? extends HibUser> loadAllElements(Tx tx) {
-		return tx.data().userDao().findAll().stream();
+		return tx.userDao().findAll().stream();
 	}
 
 	@Override

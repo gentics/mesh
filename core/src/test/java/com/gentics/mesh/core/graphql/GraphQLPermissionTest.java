@@ -38,7 +38,7 @@ public class GraphQLPermissionTest extends AbstractMeshTest {
 
 		// 3. Revoke all read perm from all nodes also read_published from /News
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			for (Node node : project().getNodeRoot().findAll()) {
 				roleDao.revokePermissions(role(), node, InternalPermission.READ_PERM);
 			}

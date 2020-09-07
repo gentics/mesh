@@ -85,7 +85,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 				if (!UUIDUtil.isUUID(uuid)) {
 					return false;
 				}
-				HibSchema schemaContainer = tx.data().schemaDao().findByUuid(uuid);
+				HibSchema schemaContainer = tx.schemaDao().findByUuid(uuid);
 				return schemaContainer == null;
 			});
 
@@ -97,8 +97,8 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 			}
 
 			utils.syncTx(ac, tx1 -> {
-				UserDaoWrapper userDao = tx1.data().userDao();
-				SchemaDaoWrapper schemaDao = tx1.data().schemaDao();
+				UserDaoWrapper userDao = tx1.userDao();
+				SchemaDaoWrapper schemaDao = tx1.schemaDao();
 
 				// 1. Load the schema container with update permissions
 				HibSchema schemaContainer = schemaDao.loadObjectByUuid(ac, uuid, UPDATE_PERM);
@@ -201,7 +201,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 		validateParameter(uuid, "uuid");
 
 		utils.syncTx(ac, tx -> {
-			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			SchemaDaoWrapper schemaDao = tx.schemaDao();
 			HibSchema schema = schemaDao.loadObjectByUuid(ac, uuid, READ_PERM);
 			SchemaModel requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaUpdateRequest.class);
 			requestModel.validate();
@@ -231,8 +231,8 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				UserDaoWrapper userDao = tx.data().userDao();
-				SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+				UserDaoWrapper userDao = tx.userDao();
+				SchemaDaoWrapper schemaDao = tx.schemaDao();
 
 				HibProject project = tx.getProject(ac);
 				String projectUuid = project.getUuid();
@@ -266,8 +266,8 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				SchemaDaoWrapper schemaDao = tx.data().schemaDao();
-				UserDaoWrapper userDao = tx.data().userDao();
+				SchemaDaoWrapper schemaDao = tx.schemaDao();
+				UserDaoWrapper userDao = tx.userDao();
 
 				HibProject project = tx.getProject(ac);
 				String projectUuid = project.getUuid();
@@ -309,7 +309,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+				SchemaDaoWrapper schemaDao = tx.schemaDao();
 				HibSchema schema = schemaDao.loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
 				String version = utils.eventAction(batch -> {
 					HibSchemaVersion newVersion = schemaDao.applyChanges(schema.getLatestVersion(), ac, batch);

@@ -162,7 +162,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 		Tx tx = Tx.get();
 		HibBranch branch = tx.getBranch(ac);
 		String branchUuid = branch.getUuid();
-		UserDaoWrapper userRoot = Tx.get().data().userDao();
+		UserDaoWrapper userRoot = Tx.get().userDao();
 		TraversalResult<? extends Node> nodes = new TraversalResult<>(toGraph(tag).inE(HAS_TAG).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branch.getUuid()).outV().frameExplicit(NodeImpl.class));
 		Stream<? extends Node> s = nodes.stream()
 			.filter(item -> {

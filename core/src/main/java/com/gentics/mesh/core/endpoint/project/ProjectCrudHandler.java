@@ -49,7 +49,7 @@ public class ProjectCrudHandler extends AbstractCrudHandler<HibProject, ProjectR
 	 */
 	public void handleReadByName(InternalActionContext ac, String projectName) {
 		utils.syncTx(ac, tx -> {
-			HibProject project = tx.data().projectDao().findByName(ac, projectName, READ_PERM);
+			HibProject project = tx.projectDao().findByName(ac, projectName, READ_PERM);
 			return crudActions().transformToRestSync(tx, project, ac, 0);
 		}, model -> ac.send(model, OK));
 	}
@@ -72,7 +72,7 @@ public class ProjectCrudHandler extends AbstractCrudHandler<HibProject, ProjectR
 					throw error(FORBIDDEN, "error_admin_permission_required");
 				}
 				HibUser user = ac.getUser();
-				ProjectDaoWrapper projectDao = tx.data().projectDao();
+				ProjectDaoWrapper projectDao = tx.projectDao();
 				HibProject project = projectDao.loadObjectByUuid(ac, uuid, DELETE_PERM);
 				db.tx(() -> {
 					if (before.isPresent()) {

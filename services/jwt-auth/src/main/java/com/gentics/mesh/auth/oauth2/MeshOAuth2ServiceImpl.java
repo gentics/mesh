@@ -239,7 +239,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 				assertReadOnlyDeactivated()
 					.andThen(requiresWriteCompletable())
 					.andThen(db.singleTxWriteLock(tx -> {
-						UserDaoWrapper userDao = tx.data().userDao();
+						UserDaoWrapper userDao = tx.userDao();
 						UserRoot userRoot = boot.userRoot();
 						HibUser admin = userDao.findByUsername("admin");
 						HibUser createdUser = userDao.create(username, admin);

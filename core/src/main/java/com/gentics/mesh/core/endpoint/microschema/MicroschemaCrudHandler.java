@@ -73,7 +73,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<HibMicroschema, 
 				if (!UUIDUtil.isUUID(uuid)) {
 					return false;
 				}
-				MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
+				MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
 				HibMicroschema microschema = microschemaDao.findByUuid(uuid);
 				return microschema == null;
 			});
@@ -86,7 +86,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<HibMicroschema, 
 			}
 
 			utils.syncTx(ac, tx -> {
-				MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
+				MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
 				HibMicroschema microschema = microschemaDao.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 				MicroschemaModel requestModel = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModelImpl.class);
 				requestModel.validate();
@@ -144,7 +144,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<HibMicroschema, 
 	 */
 	public void handleDiff(InternalActionContext ac, String uuid) {
 		utils.syncTx(ac, tx -> {
-			MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
+			MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
 
 			HibMicroschema microschema = microschemaDao.loadObjectByUuid(ac, uuid, READ_PERM);
 			MicroschemaModel requestModel = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModelImpl.class);
@@ -164,8 +164,8 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<HibMicroschema, 
 	public void handleApplySchemaChanges(InternalActionContext ac, String schemaUuid) {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
-				HibMicroschema schema = tx.data().microschemaDao().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
+				MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
+				HibMicroschema schema = tx.microschemaDao().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
 				utils.eventAction(batch -> {
 					microschemaDao.applyChanges(schema.getLatestVersion(), ac, batch);
 				});
@@ -205,14 +205,14 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<HibMicroschema, 
 
 		utils.syncTx(ac, tx -> {
 			HibProject project = tx.getProject(ac);
-			UserDaoWrapper userDao = tx.data().userDao();
-			MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
+			UserDaoWrapper userDao = tx.userDao();
+			MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
 			
 			if (!userDao.hasPermission(ac.getUser(), project, UPDATE_PERM)) {
 				String projectUuid = project.getUuid();
 				throw error(FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
 			}
-			HibMicroschema microschema = tx.data().microschemaDao().loadObjectByUuid(ac, microschemaUuid, READ_PERM);
+			HibMicroschema microschema = tx.microschemaDao().loadObjectByUuid(ac, microschemaUuid, READ_PERM);
 			MicroschemaRoot root = project.getMicroschemaContainerRoot();
 
 			// Only assign if the microschema has not already been assigned.
@@ -230,15 +230,15 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<HibMicroschema, 
 		validateParameter(microschemaUuid, "microschemaUuid");
 
 		utils.syncTx(ac, tx -> {
-			MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
-			UserDaoWrapper userDao = tx.data().userDao();
+			MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
+			UserDaoWrapper userDao = tx.userDao();
 
 			HibProject project = tx.getProject(ac);
 			String projectUuid = project.getUuid();
 			if (!userDao.hasPermission(ac.getUser(), project, UPDATE_PERM)) {
 				throw error(FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
 			}
-			HibMicroschema microschema = tx.data().microschemaDao().loadObjectByUuid(ac, microschemaUuid, READ_PERM);
+			HibMicroschema microschema = tx.microschemaDao().loadObjectByUuid(ac, microschemaUuid, READ_PERM);
 			if (microschemaDao.isLinkedToProject(microschema, project)) {
 				utils.eventAction(batch -> {
 					// Remove the microschema from the project

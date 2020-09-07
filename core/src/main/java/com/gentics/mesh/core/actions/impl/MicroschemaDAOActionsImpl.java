@@ -31,7 +31,7 @@ public class MicroschemaDAOActionsImpl implements MicroschemaDAOActions {
 
 	@Override
 	public HibMicroschema loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
-		MicroschemaDaoWrapper microschemaDao = ctx.tx().data().microschemaDao();
+		MicroschemaDaoWrapper microschemaDao = ctx.tx().microschemaDao();
 		if (perm == null) {
 			return microschemaDao.findByUuid(uuid);
 		} else {
@@ -41,7 +41,7 @@ public class MicroschemaDAOActionsImpl implements MicroschemaDAOActions {
 	
 	@Override
 	public HibMicroschema loadByName(DAOActionContext ctx, String name, InternalPermission perm, boolean errorIfNotFound) {
-		MicroschemaDaoWrapper microschemaDao = ctx.tx().data().microschemaDao();
+		MicroschemaDaoWrapper microschemaDao = ctx.tx().microschemaDao();
 		if (perm == null) {
 			return microschemaDao.findByName(name);
 		} else {
@@ -51,21 +51,21 @@ public class MicroschemaDAOActionsImpl implements MicroschemaDAOActions {
 
 	@Override
 	public TransformablePage<? extends Microschema> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
-		return ctx.tx().data().microschemaDao().findAll(ctx.ac(), pagingInfo);
+		return ctx.tx().microschemaDao().findAll(ctx.ac(), pagingInfo);
 		// return ac.getProject().getMicroschemaContainerRoot().findAll(ac2, pagingInfo);
 	}
 
 	@Override
 	public Page<? extends Microschema> loadAll(DAOActionContext ctx, PagingParameters pagingInfo,
 		Predicate<HibMicroschema> extraFilter) {
-		return ctx.tx().data().microschemaDao().findAll(ctx.ac(), pagingInfo, schema -> {
+		return ctx.tx().microschemaDao().findAll(ctx.ac(), pagingInfo, schema -> {
 			return extraFilter.test(schema);
 		});
 	}
 
 	@Override
 	public HibMicroschema create(Tx tx, InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		return tx.data().microschemaDao().create(ac, batch, uuid);
+		return tx.microschemaDao().create(ac, batch, uuid);
 	}
 
 	@Override
@@ -75,7 +75,7 @@ public class MicroschemaDAOActionsImpl implements MicroschemaDAOActions {
 	}
 
 	public void delete(Tx tx, HibMicroschema element, BulkActionContext bac) {
-		tx.data().microschemaDao().delete(element, bac);
+		tx.microschemaDao().delete(element, bac);
 	}
 
 	@Override

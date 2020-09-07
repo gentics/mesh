@@ -484,7 +484,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	private void changeSchemaType(FieldSchemaCreator oldField, DataProvider dataProvider, FieldFetcher oldFieldFetcher, FieldSchemaCreator newField,
 		DataAsserter asserter) throws InterruptedException, ExecutionException, TimeoutException {
 		NodeDaoWrapper nodeDao = boot().nodeDao();
-		SchemaDaoWrapper schemaDao = Tx.get().data().schemaDao();
+		SchemaDaoWrapper schemaDao = Tx.get().schemaDao();
 
 		String fieldName = "changedfield";
 		String schemaName = "schema_" + System.currentTimeMillis();
@@ -871,7 +871,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	private void invalidSchemaMigrationScript(FieldSchemaCreator creator, DataProvider dataProvider, String script) throws InterruptedException,
 		ExecutionException, TimeoutException {
 		NodeDaoWrapper nodeDao = boot().nodeDao();
-		SchemaDaoWrapper schemaDao = Tx.get().data().schemaDao();
+		SchemaDaoWrapper schemaDao = Tx.get().schemaDao();
 
 		String fieldName = "migratedField";
 		String schemaName = "migratedSchema";

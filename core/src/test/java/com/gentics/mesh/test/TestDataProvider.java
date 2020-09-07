@@ -219,7 +219,7 @@ public class TestDataProvider {
 	}
 
 	private void addPermissions(Collection<? extends HibBaseElement> elements) {
-		RoleDaoWrapper roleDao = Tx.get().data().roleDao();
+		RoleDaoWrapper roleDao = Tx.get().roleDao();
 
 		HibRole role = userInfo.getRole();
 		for (HibBaseElement meshVertex : elements) {
@@ -236,19 +236,19 @@ public class TestDataProvider {
 	 * @param tx
 	 */
 	private void addBootstrappedData(Tx tx) {
-		for (HibGroup group : tx.data().groupDao().findAll()) {
+		for (HibGroup group : tx.groupDao().findAll()) {
 			groups.put(group.getName(), group);
 		}
-		for (HibUser user : tx.data().userDao().findAll()) {
+		for (HibUser user : tx.userDao().findAll()) {
 			users.put(user.getUsername(), user);
 		}
-		for (HibRole role : tx.data().roleDao().findAll()) {
+		for (HibRole role : tx.roleDao().findAll()) {
 			roles.put(role.getName(), role);
 		}
 	}
 
 	private void addContents() {
-		TagDaoWrapper tagDao = Tx.get().data().tagDao();
+		TagDaoWrapper tagDao = Tx.get().tagDao();
 
 		HibSchema contentSchema = schemaContainers.get("content");
 
@@ -281,8 +281,8 @@ public class TestDataProvider {
 	}
 
 	private void addFolderStructure() {
-		TagDaoWrapper tagDao = Tx.get().data().tagDao();
-		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+		TagDaoWrapper tagDao = Tx.get().tagDao();
+		NodeDaoWrapper nodeDao = Tx.get().nodeDao();
 
 		HibNode baseNode = project.getBaseNode();
 		// rootNode.addProject(project);
@@ -328,9 +328,9 @@ public class TestDataProvider {
 	}
 
 	public UserInfo createUserInfo(String username, String firstname, String lastname) {
-		UserDaoWrapper userDao = Tx.get().data().userDao();
-		GroupDaoWrapper groupDao = Tx.get().data().groupDao();
-		RoleDaoWrapper roleDao = Tx.get().data().roleDao();
+		UserDaoWrapper userDao = Tx.get().userDao();
+		GroupDaoWrapper groupDao = Tx.get().groupDao();
+		RoleDaoWrapper roleDao = Tx.get().roleDao();
 
 		String password = "test123";
 		String hashedPassword = "$2a$10$n/UeWGbY9c1FHFyCqlVsY.XvNYmZ7Jjgww99SF94q/B5nomYuquom";
@@ -370,11 +370,11 @@ public class TestDataProvider {
 	}
 
 	private void addUserGroupRoleProject() {
-		UserDaoWrapper userDao = Tx.get().data().userDao();
-		RoleDaoWrapper roleDao = Tx.get().data().roleDao();
-		GroupDaoWrapper groupDao = Tx.get().data().groupDao();
-		SchemaDaoWrapper schemaDao = Tx.get().data().schemaDao();
-		ProjectDaoWrapper projectDao = Tx.get().data().projectDao();
+		UserDaoWrapper userDao = Tx.get().userDao();
+		RoleDaoWrapper roleDao = Tx.get().roleDao();
+		GroupDaoWrapper groupDao = Tx.get().groupDao();
+		SchemaDaoWrapper schemaDao = Tx.get().schemaDao();
+		ProjectDaoWrapper projectDao = Tx.get().projectDao();
 
 		// User, Groups, Roles
 		userInfo = createUserInfo("joe1", "Joe", "Doe");
@@ -432,7 +432,7 @@ public class TestDataProvider {
 	}
 
 	private void addBootstrapSchemas() {
-		SchemaDaoWrapper schemaDao = Tx.get().data().schemaDao();
+		SchemaDaoWrapper schemaDao = Tx.get().schemaDao();
 
 		// folder
 		HibSchema folderSchemaContainer = schemaDao.findByName("folder");
@@ -464,7 +464,7 @@ public class TestDataProvider {
 	 * @throws MeshJsonException
 	 */
 	private void addVCardMicroschema() throws MeshJsonException {
-		MicroschemaDaoWrapper microschemaDao = Tx.get().data().microschemaDao();
+		MicroschemaDaoWrapper microschemaDao = Tx.get().microschemaDao();
 
 		MicroschemaVersionModel vcardMicroschema = new MicroschemaModelImpl();
 		vcardMicroschema.setName("vcard");
@@ -507,7 +507,7 @@ public class TestDataProvider {
 	 * @throws MeshJsonException
 	 */
 	private void addCaptionedImageMicroschema() throws MeshJsonException {
-		MicroschemaDaoWrapper microschemaDao = Tx.get().data().microschemaDao();
+		MicroschemaDaoWrapper microschemaDao = Tx.get().microschemaDao();
 
 		MicroschemaVersionModel captionedImageMicroschema = new MicroschemaModelImpl();
 		captionedImageMicroschema.setName("captionedImage");
@@ -581,7 +581,7 @@ public class TestDataProvider {
 	}
 
 	public HibTag addTag(String name, HibTagFamily tagFamily) {
-		TagDaoWrapper tagDao = Tx.get().data().tagDao();
+		TagDaoWrapper tagDao = Tx.get().tagDao();
 		if (name == null || StringUtils.isEmpty(name)) {
 			throw new RuntimeException("Name for tag empty");
 		}

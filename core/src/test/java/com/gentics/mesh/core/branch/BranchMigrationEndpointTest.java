@@ -68,7 +68,7 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 
 		published = Arrays.asList(folder("news"), folder("2015"), folder("2014"), folder("march"));
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 
 			nodes = project.getNodeRoot().findAll().stream().filter(node -> nodeDao.getParentNode(node, project.getLatestBranch().getUuid()) != null)
 				.collect(Collectors.toList());
@@ -81,7 +81,7 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 		});
 
 		try (Tx tx = tx()) {
-			newBranch = tx.data().branchDao().create(project, "newbranch", user(), batch);
+			newBranch = tx.branchDao().create(project, "newbranch", user(), batch);
 			assertThat(newBranch.isMigrated()).as("Branch migration status").isEqualTo(false);
 			tx.success();
 		}
@@ -95,7 +95,7 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 		triggerAndWaitForJob(requestBranchMigration(newBranch));
 
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 
 			assertThat(newBranch.isMigrated()).as("Branch migration status").isEqualTo(true);
 
@@ -138,7 +138,7 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 	public void testStartAgain() throws Throwable {
 		EventQueueBatch batch = createBatch();
 		HibBranch newBranch = tx(tx -> {
-			return tx.data().branchDao().create(project(), "newbranch", user(), batch);
+			return tx.branchDao().create(project(), "newbranch", user(), batch);
 		});
 		String jobUuidA = requestBranchMigration(newBranch);
 		triggerAndWaitForJob(jobUuidA, COMPLETED);
@@ -156,10 +156,10 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 		HibProject project = project();
 		EventQueueBatch batch = createBatch();
 		HibBranch newBranch = tx(tx -> {
-			return tx.data().branchDao().create(project, "newbranch", user(), batch);
+			return tx.branchDao().create(project, "newbranch", user(), batch);
 		});
 		HibBranch newestBranch = tx(tx -> {
-			return tx.data().branchDao().create(project, "newestbranch", user(), batch);
+			return tx.branchDao().create(project, "newestbranch", user(), batch);
 		});
 
 		try (Tx tx = tx()) {
@@ -230,7 +230,7 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 				future.get();
 			}
 
-			newBranch = tx.data().branchDao().create(project(), "newbranch", user(), batch);
+			newBranch = tx.branchDao().create(project(), "newbranch", user(), batch);
 			tx.success();
 		}
 

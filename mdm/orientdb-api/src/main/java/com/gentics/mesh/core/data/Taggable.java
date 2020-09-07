@@ -59,8 +59,8 @@ public interface Taggable {
 		List<HibTag> tags = new ArrayList<>();
 		HibProject project = getProject();
 		TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();
-		UserDaoWrapper userDao = Tx.get().data().userDao();
-		TagDaoWrapper tagDao = Tx.get().data().tagDao();
+		UserDaoWrapper userDao = Tx.get().userDao();
+		TagDaoWrapper tagDao = Tx.get().tagDao();
 
 		HibUser user = ac.getUser();
 		for (TagReference tagReference : list) {

@@ -591,7 +591,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	private void handleLocalData(boolean forceIndexSync, MeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
 		// Load the verticles
 		List<String> initialProjects = db.tx(tx -> {
-			return tx.data().projectDao().findAll().stream()
+			return tx.projectDao().findAll().stream()
 				.map(HibProject::getName)
 				.collect(Collectors.toList());
 		});
@@ -614,7 +614,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		String password = configuration.getAdminPassword();
 		if (password != null) {
 			db.tx(tx -> {
-				UserDaoWrapper userDao = tx.data().userDao();
+				UserDaoWrapper userDao = tx.userDao();
 				HibUser adminUser = userDao.findByName(ADMIN_USERNAME);
 				if (adminUser != null) {
 					userDao.setPassword(adminUser, password);
@@ -933,10 +933,10 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	public void initMandatoryData(MeshOptions config) throws Exception {
 
 		db.tx(tx -> {
-			UserDaoWrapper userDao = tx.data().userDao();
-			GroupDaoWrapper groupDao = tx.data().groupDao();
-			RoleDaoWrapper roleDao = tx.data().roleDao();
-			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			UserDaoWrapper userDao = tx.userDao();
+			GroupDaoWrapper groupDao = tx.groupDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
+			SchemaDaoWrapper schemaDao = tx.schemaDao();
 
 			if (db.requiresTypeInit()) {
 				MeshRoot meshRoot = meshRoot();
@@ -1103,9 +1103,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		// Only setup optional data for empty installations
 		if (isEmptyInstallation) {
 			db.tx(tx -> {
-				UserDaoWrapper userDao = tx.data().userDao();
-				GroupDaoWrapper groupDao = tx.data().groupDao();
-				RoleDaoWrapper roleDao = tx.data().roleDao();
+				UserDaoWrapper userDao = tx.userDao();
+				GroupDaoWrapper groupDao = tx.groupDao();
+				RoleDaoWrapper roleDao = tx.roleDao();
 
 				if (db.requiresTypeInit()) {
 					meshRoot = meshRoot();
@@ -1145,7 +1145,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	@Override
 	public void initPermissions() {
 		db.tx(tx -> {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			HibRole adminRole = roleDao.findByName("admin");
 			for (Vertex vertex : tx.getGraph().getVertices()) {
 				WrappedVertex wrappedVertex = (WrappedVertex) vertex;

@@ -22,8 +22,8 @@ public class AuthUserTest extends AbstractMeshTest {
 	@Test
 	public void testAuthorization() throws Exception {
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
-			UserDaoWrapper userDao = Tx.get().data().userDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
+			UserDaoWrapper userDao = Tx.get().userDao();
 
 			InternalActionContext ac = mockActionContext();
 			MeshAuthUser requestUser = ac.getUser();

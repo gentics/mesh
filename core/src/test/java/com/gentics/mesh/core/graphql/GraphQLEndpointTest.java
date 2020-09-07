@@ -222,7 +222,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
+			MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
 
 			HibNode node = folder("2015");
 			HibNode folder = folder("news");

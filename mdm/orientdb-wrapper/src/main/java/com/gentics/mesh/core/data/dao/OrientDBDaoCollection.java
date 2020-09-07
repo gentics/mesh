@@ -51,8 +51,6 @@ public class OrientDBDaoCollection implements DaoCollection {
 	private final BinaryDaoWrapper binaryDao;
 	private final JobDaoWrapper jobDao;
 
-	private final ContextDataRegistry contextDataRegistry;
-
 	@Inject
 	public OrientDBDaoCollection(
 		UserDaoWrapper userDao,
@@ -123,8 +121,6 @@ public class OrientDBDaoCollection implements DaoCollection {
 		this.languageDao = languageDao;
 		this.binaryDao = binaryDao;
 		this.jobDao = jobDao;
-
-		this.contextDataRegistry = contextDataRegistry;
 	}
 
 	@Override
@@ -242,8 +238,4 @@ public class OrientDBDaoCollection implements DaoCollection {
 		return contentDao;
 	}
 
-	@Override
-	public ContextDataRegistry contextDataRegistry() {
-		return contextDataRegistry;
-	}
 }

@@ -93,7 +93,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 			// Get the draft containers that need to be transformed. Containers which need to be transformed are those which are still linked to older schema
 			// versions. We'll work on drafts. The migration code will later on also handle publish versions.
 			List<? extends NodeGraphFieldContainer> containers = db.tx(tx -> {
-				SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+				SchemaDaoWrapper schemaDao = tx.schemaDao();
 				Iterator<? extends NodeGraphFieldContainer> it = schemaDao.findDraftFieldContainers(fromVersion, branch.getUuid());
 				return Lists.newArrayList(it);
 			});
@@ -153,7 +153,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 	private void migrateContainer(NodeMigrationActionContext ac, EventQueueBatch batch, NodeGraphFieldContainer container,
 		HibSchemaVersion fromVersion, SchemaVersionModel newSchema, List<Exception> errorsDetected,
 		Set<String> touchedFields) {
-		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+		ContentDaoWrapper contentDao = Tx.get().contentDao();
 
 		String containerUuid = container.getUuid();
 		String parentNodeUuid = contentDao.getNode(container).getUuid();
@@ -221,8 +221,8 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 		Set<String> touchedFields,
 		SchemaVersionModel newSchema, VersionNumber nextDraftVersion)
 		throws Exception {
-		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
-		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+		NodeDaoWrapper nodeDao = Tx.get().nodeDao();
+		ContentDaoWrapper contentDao = Tx.get().contentDao();
 
 		String branchUuid = branch.getUuid();
 		String languageTag = container.getLanguageTag();
@@ -282,8 +282,8 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 	private VersionNumber migratePublishedContainer(NodeMigrationActionContext ac, EventQueueBatch sqb, HibBranch branch, HibNode node,
 		NodeGraphFieldContainer content, HibSchemaVersion fromVersion, HibSchemaVersion toVersion,
 		Set<String> touchedFields, SchemaVersionModel newSchema) throws Exception {
-		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
-		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+		NodeDaoWrapper nodeDao = Tx.get().nodeDao();
+		ContentDaoWrapper contentDao = Tx.get().contentDao();
 
 		String languageTag = content.getLanguageTag();
 		String branchUuid = branch.getUuid();

@@ -80,7 +80,7 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 	@Override
 	public void testChangeToBinary() throws Exception {
 		changeType(CREATEBINARY, FILL, FETCH, CREATEBINARY, (container, name) -> {
-			BinaryDaoWrapper binaryDao = Tx.get().data().binaryDao();
+			BinaryDaoWrapper binaryDao = Tx.get().binaryDao();
 			assertThat(container.getBinary(name)).as(NEWFIELD).isNotNull();
 			assertThat(container.getBinary(name).getFileName()).as(NEWFIELDVALUE).isEqualTo(FILENAME);
 			assertThat(container.getBinary(name).getMimeType()).as(NEWFIELDVALUE).isEqualTo(MIMETYPE);

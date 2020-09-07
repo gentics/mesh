@@ -99,7 +99,7 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<HibMi
 
 	@Override
 	public Stream<? extends HibMicroschema> loadAllElements(Tx tx) {
-		return tx.data().microschemaDao().findAll().stream();
+		return tx.microschemaDao().findAll().stream();
 	}
 
 	@Override

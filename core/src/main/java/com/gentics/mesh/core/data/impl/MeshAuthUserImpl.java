@@ -54,7 +54,7 @@ public class MeshAuthUserImpl implements MeshAuthUser {
 	@Override
 	public JsonObject principal() {
 		return db.tx(tx -> {
-			UserDaoWrapper userDao = tx.data().userDao();
+			UserDaoWrapper userDao = tx.userDao();
 			JsonObject user = new JsonObject();
 			user.put("uuid", getUuid());
 			user.put("username", getUsername());

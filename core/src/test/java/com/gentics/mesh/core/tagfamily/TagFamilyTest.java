@@ -23,18 +23,18 @@ public class TagFamilyTest extends AbstractMeshTest {
 	public void testDelete() {
 		HibTagFamily tagFamily = tagFamily("colors");
 		Long nTags = tx(tx -> {
-			return tx.data().tagDao().findAll(tagFamily).count();
+			return tx.tagDao().findAll(tagFamily).count();
 		});
 		int nExtraTags = 100;
 		try (Tx tx = tx()) {
-			TagDaoWrapper tagDao = tx.data().tagDao();
+			TagDaoWrapper tagDao = tx.tagDao();
 			for (int i = 0; i < nExtraTags; i++) {
 				tagDao.create(tagFamily, "green" + i, project(), user());
 			}
 			tx.success();
 		}
 		try (Tx tx = tx()) {
-			TagFamilyDaoWrapper tagFamilyDao = tx.data().tagFamilyDao();
+			TagFamilyDaoWrapper tagFamilyDao = tx.tagFamilyDao();
 			BulkActionContext bac = createBulkContext();
 			tagFamilyDao.delete(tagFamily, bac);
 			bac.process(true);

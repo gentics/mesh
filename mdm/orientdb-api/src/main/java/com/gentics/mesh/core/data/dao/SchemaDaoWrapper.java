@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.dao;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -10,6 +11,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -192,5 +194,7 @@ public interface SchemaDaoWrapper extends SchemaDao, DaoWrapper<HibSchema> {
 	 * @return
 	 */
 	Stream<? extends NodeGraphFieldContainer> getFieldContainers(HibSchemaVersion version, String branchUuid);
+
+	Page<? extends HibSchema> findAll(HibProject project, InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibSchema> extraFilter);
 
 }

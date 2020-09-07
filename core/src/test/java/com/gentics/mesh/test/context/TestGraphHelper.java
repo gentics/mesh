@@ -23,18 +23,18 @@ public interface TestGraphHelper extends TestHelper {
 
 	default HibProject createProject(String name, String schema) {
 		EventQueueBatch batch = Mockito.mock(EventQueueBatch.class);
-		return Tx.get().data().projectDao().create(name, null, null, null, user(), schemaContainer(schema).getLatestVersion(), batch);
+		return Tx.get().projectDao().create(name, null, null, null, user(), schemaContainer(schema).getLatestVersion(), batch);
 	}
 
 	default HibBranch createBranch(String name) {
 		EventQueueBatch batch = Mockito.mock(EventQueueBatch.class);
 		HibProject project = project();
-		return Tx.get().data().branchDao().create(project, name, user(), batch);
+		return Tx.get().branchDao().create(project, name, user(), batch);
 	}
 
 	default HibMicroschema createMicroschema(MicroschemaVersionModel schema) {
 		EventQueueBatch batch = Mockito.mock(EventQueueBatch.class);
-		MicroschemaDaoWrapper microschemaDao = Tx.get().data().microschemaDao();
+		MicroschemaDaoWrapper microschemaDao = Tx.get().microschemaDao();
 		return microschemaDao.create(schema, user(), batch);
 	}
 

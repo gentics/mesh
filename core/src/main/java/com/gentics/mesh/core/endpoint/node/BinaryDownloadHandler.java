@@ -45,7 +45,7 @@ public class BinaryDownloadHandler extends AbstractHandler {
 			// }
 
 			HibBranch branch = tx.getBranch(ac, node.getProject());
-			NodeGraphFieldContainer fieldContainer = tx.data().contentDao().findVersion(node, ac.getNodeParameters().getLanguageList(options), branch.getUuid(),
+			NodeGraphFieldContainer fieldContainer = tx.contentDao().findVersion(node, ac.getNodeParameters().getLanguageList(options), branch.getUuid(),
 				ac.getVersioningParameters().getVersion());
 			if (fieldContainer == null) {
 				throw error(NOT_FOUND, "object_not_found_for_version", ac.getVersioningParameters().getVersion());

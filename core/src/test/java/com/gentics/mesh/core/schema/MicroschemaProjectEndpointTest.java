@@ -81,7 +81,7 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 		HibMicroschema microschema = microschemaContainer("vcard");
 
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
 
 			ProjectCreateRequest request = new ProjectCreateRequest();
@@ -109,7 +109,7 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 		String microschemaUuid;
 		Project extraProject;
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			HibMicroschema microschema = microschemaContainer("vcard");
 			microschemaUuid = microschema.getUuid();
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
@@ -177,7 +177,7 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 		HibMicroschema microschema = microschemaContainer("vcard");
 
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			assertTrue("The microschema should be assigned to the project.", project.getMicroschemaContainerRoot().contains(microschema));
 			// Revoke update perms on the project
 			roleDao.revokePermissions(role(), project, UPDATE_PERM);

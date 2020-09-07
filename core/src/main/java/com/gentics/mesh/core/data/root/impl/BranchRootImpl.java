@@ -136,7 +136,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 		String projectName = project.getName();
 		String projectUuid = project.getUuid();
 
-		UserDaoWrapper userDao = Tx.get().data().userDao();
+		UserDaoWrapper userDao = Tx.get().userDao();
 
 		if (!userDao.hasPermission(requestUser, project, InternalPermission.UPDATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", projectUuid + "/" + projectName, UPDATE_PERM.getRestPerm().getName());

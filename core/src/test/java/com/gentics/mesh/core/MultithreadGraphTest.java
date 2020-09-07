@@ -20,7 +20,7 @@ public class MultithreadGraphTest extends AbstractMeshTest {
 
 		runAndWait(() -> {
 			try (Tx tx = tx()) {
-				UserDaoWrapper userDao = tx.data().userDao();
+				UserDaoWrapper userDao = tx.userDao();
 				HibUser user = userDao.create("test", null);
 				user.setCreated(user());
 				assertNotNull(user);

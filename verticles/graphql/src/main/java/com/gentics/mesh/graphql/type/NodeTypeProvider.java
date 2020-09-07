@@ -118,8 +118,8 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	 */
 	public Object parentNodeFetcher(DataFetchingEnvironment env) {
 		Tx tx = Tx.get();
-		NodeDaoWrapper nodeDao = tx.data().nodeDao();
-		ContentDaoWrapper contentDao = tx.data().contentDao();
+		NodeDaoWrapper nodeDao = tx.nodeDao();
+		ContentDaoWrapper contentDao = tx.contentDao();
 
 		NodeContent content = env.getSource();
 		if (content == null) {
@@ -144,7 +144,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	}
 
 	public Object nodeLanguageFetcher(DataFetchingEnvironment env) {
-		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+		ContentDaoWrapper contentDao = Tx.get().contentDao();
 		NodeContent content = env.getSource();
 		if (content == null) {
 			return null;
@@ -160,8 +160,8 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	}
 
 	public Object breadcrumbFetcher(DataFetchingEnvironment env) {
-		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
-		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+		ContentDaoWrapper contentDao = Tx.get().contentDao();
+		NodeDaoWrapper nodeDao = Tx.get().nodeDao();
 		GraphQLContext gc = env.getContext();
 		NodeContent content = env.getSource();
 		if (content == null) {
@@ -185,7 +185,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			return null;
 		}
 		Tx tx = Tx.get();
-		ContentDaoWrapper contentDao = tx.data().contentDao();
+		ContentDaoWrapper contentDao = tx.contentDao();
 		GraphQLContext gc = env.getContext();
 		HibBranch branch = tx.getBranch(gc);
 
@@ -252,7 +252,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			// .availableLanguages
 			newFieldDefinition().name("availableLanguages").description("List all available languages for the node").type(new GraphQLList(
 				GraphQLString)).dataFetcher(env -> {
-					NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+					NodeDaoWrapper nodeDao = Tx.get().nodeDao();
 					NodeContent content = env.getSource();
 					if (content == null) {
 						return null;
@@ -296,7 +296,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 						pathStack.add(nodePath);
 						Path path = new Path();
 						try {
-							NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+							NodeDaoWrapper nodeDao = Tx.get().nodeDao();
 							nodeDao.resolvePath(node, branchUuid, type, path, pathStack);
 						} catch (GenericRestException e) {
 							// Check whether the path could not be resolved
@@ -332,8 +332,8 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 			// .children
 			newPagingFieldWithFetcherBuilder("children", "Load child nodes of the node.", (env) -> {
-				ContentDaoWrapper contentDao = Tx.get().data().contentDao();
-				NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+				ContentDaoWrapper contentDao = Tx.get().contentDao();
+				NodeDaoWrapper nodeDao = Tx.get().nodeDao();
 				GraphQLContext gc = env.getContext();
 				NodeContent content = env.getSource();
 				if (content == null) {
@@ -368,7 +368,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				.argument(createPagingArgs()).type(new GraphQLTypeReference(TAG_PAGE_TYPE_NAME))
 				.dataFetcher(env -> {
 					Tx tx = Tx.get();
-					TagDaoWrapper tagDao = tx.data().tagDao();
+					TagDaoWrapper tagDao = tx.tagDao();
 
 					GraphQLContext gc = env.getContext();
 					NodeContent content = env.getSource();
@@ -512,7 +512,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				.argument(createSingleLanguageTagArg(true))
 				.type(GraphQLList.list(GraphQLTypeReference.typeRef(NODE_CONTENT_VERSION_TYPE_NAME))).dataFetcher(env -> {
 					Tx tx = Tx.get();
-					ContentDaoWrapper contentDao = tx.data().contentDao();
+					ContentDaoWrapper contentDao = tx.contentDao();
 					GraphQLContext gc = env.getContext();
 					String languageTag = getSingleLanguageArgument(env);
 					NodeContent content = env.getSource();
@@ -763,7 +763,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		Tx tx = Tx.get();
 		HibProject project = tx.getProject(context);
 
-		SchemaDaoWrapper schemaDao = Tx.get().data().schemaDao();
+		SchemaDaoWrapper schemaDao = Tx.get().schemaDao();
 		return schemaDao.findAll(project).stream().map(container -> {
 			HibSchemaVersion version = container.getLatestVersion();
 			SchemaModel schema = version.getSchema();

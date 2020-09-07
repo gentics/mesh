@@ -79,7 +79,7 @@ public class OAuth2KeycloakPluginTest extends AbstractOAuthTest {
 		assertEquals("group2", me2.getGroups().get(1).getName());
 
 		assertNotNull(tx(tx -> {
-			return tx.data().groupDao().findByName("group1");
+			return tx.groupDao().findByName("group1");
 		}));
 		assertNotNull(tx(() -> boot().groupDao().findByName("group2")));
 

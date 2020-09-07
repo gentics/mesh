@@ -73,10 +73,10 @@ public class TagTypeProvider extends AbstractTypeProvider {
 				.argument(createLanguageTagArg(true))
 				.argument(createNodeVersionArg())
 				.dataFetcher((env) -> {
-					ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+					ContentDaoWrapper contentDao = Tx.get().contentDao();
 					GraphQLContext gc = env.getContext();
 					Tag tag = env.getSource();
-					TagDaoWrapper tagDao = Tx.get().data().tagDao();
+					TagDaoWrapper tagDao = Tx.get().tagDao();
 
 					List<String> languageTags = getLanguageArgument(env);
 					ContainerType type = getNodeVersion(env);

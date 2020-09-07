@@ -26,8 +26,8 @@ public class AtomicTagTest extends AbstractMeshTest {
 	@Test
 	public void testTagCreation() throws Exception {
 		try (Tx tx = tx()) {
-			UserDaoWrapper userDao = tx.data().userDao();
-			TagDaoWrapper tagDao = tx.data().tagDao();
+			UserDaoWrapper userDao = tx.userDao();
+			TagDaoWrapper tagDao = tx.tagDao();
 
 			HibUser user = userDao.create("test", null);
 			LanguageRoot languageRoot = boot().languageRoot();

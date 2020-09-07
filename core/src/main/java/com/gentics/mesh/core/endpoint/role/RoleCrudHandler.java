@@ -64,7 +64,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<HibRole, RoleResponse> 
 		}
 
 		utils.syncTx(ac, tx -> {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			if (log.isDebugEnabled()) {
 				log.debug("Handling permission request for element on path {" + pathToElement + "}");
 			}
@@ -113,7 +113,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<HibRole, RoleResponse> 
 					log.debug("Handling permission request for element on path {" + pathToElement + "}");
 				}
 
-				RoleDaoWrapper roleDao = tx.data().roleDao();
+				RoleDaoWrapper roleDao = tx.roleDao();
 				// 1. Load the role that should be used
 				HibRole role = roleDao.loadObjectByUuid(ac, roleUuid, UPDATE_PERM);
 

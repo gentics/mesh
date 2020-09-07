@@ -50,7 +50,7 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 		HibNode nodeB = content();
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.data().contentDao();
+			ContentDaoWrapper contentDao = tx.contentDao();
 			SchemaVersionModel schema = nodeA.getSchemaContainer().getLatestVersion().getSchema();
 
 			List<String> names = Arrays.asList("binary", "binary2", "binary3");
@@ -119,7 +119,7 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 		HibNode nodeB = content();
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.data().contentDao();
+			ContentDaoWrapper contentDao = tx.contentDao();
 			SchemaVersionModel schema = nodeA.getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(new BinaryFieldSchemaImpl().setName("binary"));
 			nodeA.getSchemaContainer().getLatestVersion().setSchema(schema);

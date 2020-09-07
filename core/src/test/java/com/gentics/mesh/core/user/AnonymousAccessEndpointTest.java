@@ -36,7 +36,7 @@ public class AnonymousAccessEndpointTest extends AbstractMeshTest {
 		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid), FORBIDDEN, "error_missing_perm", uuid, READ_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			roleDao.grantPermissions(anonymousRole(), content(), READ_PERM);
 			tx.success();
 		}
@@ -59,7 +59,7 @@ public class AnonymousAccessEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testReadPublishedNode() {
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			roleDao.grantPermissions(anonymousRole(), content(), READ_PERM);
 			tx.success();
 		}

@@ -366,7 +366,7 @@ public abstract class AbstractTypeProvider {
 		GraphQLContext gc = env.getContext();
 		HibBranch branch = env.getSource();
 		Stream<? extends HibSchemaVersion> schemas = StreamSupport.stream(branch.findActiveSchemaVersions().spliterator(), false);
-		UserDaoWrapper userDao = Tx.get().data().userDao();
+		UserDaoWrapper userDao = Tx.get().userDao();
 
 		// We need to handle permissions here since we check the schema container perm and not the schema container version perm.
 		return handleUuidNameArgsNoPerm(env, uuid -> schemas.filter(schema -> {
@@ -379,7 +379,7 @@ public abstract class AbstractTypeProvider {
 	protected Page<HibSchemaVersion> handleBranchSchemas(DataFetchingEnvironment env) {
 		GraphQLContext gc = env.getContext();
 		HibBranch branch = env.getSource();
-		UserDaoWrapper userDao = Tx.get().data().userDao();
+		UserDaoWrapper userDao = Tx.get().userDao();
 
 		Stream<? extends HibSchemaVersion> schemas = StreamSupport.stream(branch.findActiveSchemaVersions().spliterator(), false).filter(
 			schema -> userDao.hasPermission(gc.getUser(), schema.getSchemaContainer(), READ_PERM));
@@ -555,8 +555,8 @@ public abstract class AbstractTypeProvider {
 	 */
 	protected DynamicStreamPageImpl<NodeContent> fetchFilteredNodes(DataFetchingEnvironment env) {
 		Tx tx = Tx.get();
-		ContentDaoWrapper contentDao = tx.data().contentDao();
-		NodeDaoWrapper nodeDao = tx.data().nodeDao();
+		ContentDaoWrapper contentDao = tx.contentDao();
+		NodeDaoWrapper nodeDao = tx.nodeDao();
 		GraphQLContext gc = env.getContext();
 		HibProject project = tx.getProject(gc);
 

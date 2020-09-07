@@ -64,7 +64,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 
 	public static FieldUpdater NODE_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
 		Tx tx = Tx.get();
-		NodeDaoWrapper nodeDao = tx.data().nodeDao();
+		NodeDaoWrapper nodeDao = tx.nodeDao();
 
 		NodeGraphField graphNodeField = container.getNode(fieldKey);
 		NodeField nodeField = fieldMap.getNodeField(fieldKey);
@@ -188,7 +188,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 			LinkType type = ac.getNodeParameters().getResolveLinks();
 			if (type != LinkType.OFF) {
 				Tx tx = Tx.get();
-				ContentDaoWrapper contentDao = tx.data().contentDao();
+				ContentDaoWrapper contentDao = tx.contentDao();
 
 				WebRootLinkReplacer linkReplacer = mesh().webRootLinkReplacer();
 				HibBranch branch = tx.getBranch(ac);

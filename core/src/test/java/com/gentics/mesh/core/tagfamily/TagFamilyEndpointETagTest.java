@@ -30,7 +30,7 @@ public class TagFamilyEndpointETagTest extends AbstractMeshTest {
 	@Test
 	public void testReadOne() {
 		try (Tx tx = tx()) {
-			TagFamilyDaoWrapper tagFamilyDao = tx.data().tagFamilyDao();
+			TagFamilyDaoWrapper tagFamilyDao = tx.tagFamilyDao();
 
 			HibTagFamily tagfamily = tagFamily("colors");
 

@@ -28,7 +28,7 @@ public class RoleDAOActionsImpl implements RoleDAOActions {
 
 	@Override
 	public HibRole loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
-		RoleDaoWrapper roleDao = ctx.tx().data().roleDao();
+		RoleDaoWrapper roleDao = ctx.tx().roleDao();
 		if (perm == null) {
 			return roleDao.findByUuid(uuid);
 		} else {
@@ -38,7 +38,7 @@ public class RoleDAOActionsImpl implements RoleDAOActions {
 
 	@Override
 	public HibRole loadByName(DAOActionContext ctx, String name, InternalPermission perm, boolean errorIfNotFound) {
-		RoleDaoWrapper roleDao = ctx.tx().data().roleDao();
+		RoleDaoWrapper roleDao = ctx.tx().roleDao();
 		if (perm == null) {
 			return roleDao.findByName(name);
 		} else {
@@ -48,44 +48,44 @@ public class RoleDAOActionsImpl implements RoleDAOActions {
 
 	@Override
 	public TransformablePage<? extends HibRole> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
-		return ctx.tx().data().roleDao().findAll(ctx.ac(), pagingInfo);
+		return ctx.tx().roleDao().findAll(ctx.ac(), pagingInfo);
 	}
 
 	@Override
 	public Page<? extends HibRole> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, Predicate<HibRole> extraFilter) {
-		return ctx.tx().data().roleDao().findAll(ctx.ac(), pagingInfo, role -> {
+		return ctx.tx().roleDao().findAll(ctx.ac(), pagingInfo, role -> {
 			return extraFilter.test(role);
 		});
 	}
 
 	@Override
 	public HibRole create(Tx tx, InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		return tx.data().roleDao().create(ac, batch, uuid);
+		return tx.roleDao().create(ac, batch, uuid);
 	}
 
 	@Override
 	public boolean update(Tx tx, HibRole role, InternalActionContext ac, EventQueueBatch batch) {
-		return tx.data().roleDao().update(role, ac, batch);
+		return tx.roleDao().update(role, ac, batch);
 	}
 
 	@Override
 	public void delete(Tx tx, HibRole role, BulkActionContext bac) {
-		tx.data().roleDao().delete(role, bac);
+		tx.roleDao().delete(role, bac);
 	}
 
 	@Override
 	public RoleResponse transformToRestSync(Tx tx, HibRole role, InternalActionContext ac, int level, String... languageTags) {
-		return tx.data().roleDao().transformToRestSync(role, ac, 0);
+		return tx.roleDao().transformToRestSync(role, ac, 0);
 	}
 
 	@Override
 	public String getAPIPath(Tx tx, InternalActionContext ac, HibRole role) {
-		return tx.data().roleDao().getAPIPath(role, ac);
+		return tx.roleDao().getAPIPath(role, ac);
 	}
 
 	@Override
 	public String getETag(Tx tx, InternalActionContext ac, HibRole role) {
-		return tx.data().roleDao().getETag(role, ac);
+		return tx.roleDao().getETag(role, ac);
 	}
 
 }

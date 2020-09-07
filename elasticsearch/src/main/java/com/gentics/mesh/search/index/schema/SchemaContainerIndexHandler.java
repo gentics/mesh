@@ -104,6 +104,6 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<HibSchema>
 
 	@Override
 	public Stream<? extends HibSchema> loadAllElements(Tx tx) {
-		return tx.data().schemaDao().findAll().stream();
+		return tx.schemaDao().findAll().stream();
 	}
 }

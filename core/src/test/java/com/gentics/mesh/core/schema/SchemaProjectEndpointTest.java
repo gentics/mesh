@@ -78,8 +78,8 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 		String projectName = created.getName();
 
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
-			ProjectDaoWrapper projectDao = tx.data().projectDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
+			ProjectDaoWrapper projectDao = tx.projectDao();
 
 			HibProject extraProject = projectDao.findByUuid(created.getUuid());
 			// Add only read perms
@@ -122,8 +122,8 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 		String projectUuid = response.getUuid();
 
 		HibProject extraProject = tx((tx) -> {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
-			ProjectDaoWrapper projectDao = tx.data().projectDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
+			ProjectDaoWrapper projectDao = tx.projectDao();
 			// Revoke Update perm on project
 			HibProject p = projectDao.findByUuid(projectUuid);
 			roleDao.revokePermissions(role(), p, UPDATE_PERM);
@@ -182,7 +182,7 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 	public void testRemoveSchemaFromProjectWithoutPerm() throws Exception {
 		HibSchema schema = schemaContainer("content");
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			assertTrue("The schema should be assigned to the project.", project().getSchemaContainerRoot().contains(schema));
 			// Revoke update perms on the project
 			roleDao.revokePermissions(role(), project(), UPDATE_PERM);

@@ -80,8 +80,8 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 
 		try (Tx tx = tx()) {
-			UserDaoWrapper userDao = tx.data().userDao();
-			HibRole createdRole = tx.data().roleDao().findByUuid(restRole.getUuid());
+			UserDaoWrapper userDao = tx.userDao();
+			HibRole createdRole = tx.roleDao().findByUuid(restRole.getUuid());
 			assertTrue(userDao.hasPermission(user(), createdRole, UPDATE_PERM));
 			assertTrue(userDao.hasPermission(user(), createdRole, READ_PERM));
 			assertTrue(userDao.hasPermission(user(), createdRole, DELETE_PERM));
@@ -90,7 +90,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			String roleUuid = restRole.getUuid();
 			restRole = call(() -> client().findRoleByUuid(roleUuid));
 			assertThat(restRole).matches(request);
-			assertNotNull(tx.data().roleDao().findByUuid(restRole.getUuid()));
+			assertNotNull(tx.roleDao().findByUuid(restRole.getUuid()));
 		}
 	}
 
@@ -99,12 +99,12 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testCreateWithNoPerm() throws Exception {
 
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), tx.data().permissionRoots().role(), CREATE_PERM);
 			tx.success();
 		}
 
-		String roleRootUuid = db().tx(tx -> {
+		String roleRootUuid = tx(tx -> {
 			return tx.data().permissionRoots().role().getUuid();
 		});
 		RoleCreateRequest request = new RoleCreateRequest();
@@ -163,7 +163,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.setName("new_role");
 
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			// Add needed permission to group
 			roleDao.revokePermissions(role(), tx.data().permissionRoots().role(), CREATE_PERM);
 			tx.success();
@@ -204,8 +204,8 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testReadByUUID() throws Exception {
 		HibRole extraRole;
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
-			GroupDaoWrapper groupDao = tx.data().groupDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
+			GroupDaoWrapper groupDao = tx.groupDao();
 
 			extraRole = roleDao.create("extra role", user());
 			groupDao.addRole(group(), extraRole);
@@ -233,8 +233,8 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testReadByUUIDWithMissingPermission() throws Exception {
 		String extraRoleUuid;
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
-			GroupDaoWrapper groupRoot = tx.data().groupDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
+			GroupDaoWrapper groupRoot = tx.groupDao();
 			HibRole extraRole = roleDao.create("extra role", user());
 			extraRoleUuid = extraRole.getUuid();
 			groupRoot.addRole(group(), extraRole);
@@ -250,7 +250,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testReadOwnRoleByUUIDWithMissingPermission() throws Exception {
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), role(), READ_PERM);
 			tx.success();
 		}
@@ -266,8 +266,8 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		final int initialRolesCount = roles().size();
 
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
-			GroupDaoWrapper groupRoot = tx.data().groupDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
+			GroupDaoWrapper groupRoot = tx.groupDao();
 
 			HibRole noPermRole = roleDao.create(noPermRoleName, user());
 			roleDao.grantPermissions(role(), group(), READ_PERM);
@@ -345,8 +345,8 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Override
 	public void testUpdate() throws JsonGenerationException, JsonMappingException, IOException, Exception {
 		String extraRoleUuid = tx(tx -> {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
-			GroupDaoWrapper groupDao = tx.data().groupDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
+			GroupDaoWrapper groupDao = tx.groupDao();
 			HibRole extraRole = roleDao.create("extra role", user());
 			groupDao.addRole(group(), extraRole);
 			roleDao.grantPermissions(role(), extraRole, UPDATE_PERM);
@@ -369,7 +369,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		try (Tx tx = tx()) {
 			// Check that the extra role was updated as expected
-			HibRole reloadedRole = tx.data().roleDao().findByUuid(extraRoleUuid);
+			HibRole reloadedRole = tx.roleDao().findByUuid(extraRoleUuid);
 			assertEquals("The role should have been renamed", request.getName(), reloadedRole.getName());
 		}
 	}
@@ -378,7 +378,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), role(), UPDATE_PERM);
 			tx.success();
 		}
@@ -392,7 +392,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testUpdateConflictCheck() {
 		try (Tx tx = tx()) {
-			tx.data().roleDao().create("test123", user());
+			tx.roleDao().create("test123", user());
 			tx.success();
 		}
 
@@ -414,7 +414,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testUpdateOwnRole() throws JsonGenerationException, JsonMappingException, IOException, Exception {
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), role(), UPDATE_PERM);
 			tx.success();
 		}
@@ -424,7 +424,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// Add the missing permission and try again
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			roleDao.grantPermissions(role(), role(), InternalPermission.UPDATE_PERM);
 			tx.success();
 		}
@@ -433,7 +433,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// Check that the role was updated
 		try (Tx tx = tx()) {
-			HibRole reloadedRole = tx.data().roleDao().findByUuid(roleUuid());
+			HibRole reloadedRole = tx.roleDao().findByUuid(roleUuid());
 			assertEquals(restRole.getName(), reloadedRole.getName());
 		}
 
@@ -444,8 +444,8 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testDeleteByUUID() throws Exception {
 
 		String extraRoleUuid = tx(tx -> {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
-			GroupDaoWrapper groupDao = tx.data().groupDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
+			GroupDaoWrapper groupDao = tx.groupDao();
 			HibRole extraRole = roleDao.create("extra role", user());
 			groupDao.addRole(group(), extraRole);
 			roleDao.grantPermissions(role(), extraRole, DELETE_PERM);
@@ -466,7 +466,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertThat(trackingSearchProvider()).hasEvents(0, 0, 1, 0, 0);
 
 		try (Tx tx = tx()) {
-			assertElement(tx.data().roleDao(), extraRoleUuid, false);
+			assertElement(tx.roleDao(), extraRoleUuid, false);
 		}
 
 	}
@@ -475,7 +475,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), role(), DELETE_PERM);
 			tx.success();
 		}
@@ -483,7 +483,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		try (Tx tx = tx()) {
 			String uuid = role().getUuid();
 			call(() -> client().deleteRole(uuid), FORBIDDEN, "error_missing_perm", uuid, DELETE_PERM.getRestPerm().getName());
-			assertElement(tx.data().roleDao(), uuid, true);
+			assertElement(tx.roleDao(), uuid, true);
 		}
 	}
 

@@ -50,7 +50,7 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	public void testFieldTransformation() throws Exception {
 		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.data().contentDao();
+			ContentDaoWrapper contentDao = tx.contentDao();
 			prepareNode(node, "dateList", "date");
 
 			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());

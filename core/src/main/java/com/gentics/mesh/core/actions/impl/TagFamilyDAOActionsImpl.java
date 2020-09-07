@@ -60,37 +60,37 @@ public class TagFamilyDAOActionsImpl implements TagFamilyDAOActions {
 
 	@Override
 	public boolean update(Tx tx, HibTagFamily tagFamily, InternalActionContext ac, EventQueueBatch batch) {
-		TagFamilyDaoWrapper tagFamilyDao = tx.data().tagFamilyDao();
+		TagFamilyDaoWrapper tagFamilyDao = tx.tagFamilyDao();
 		return tagFamilyDao.update(tagFamily, ac, batch);
 	}
 
 	@Override
 	public HibTagFamily create(Tx tx, InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		TagFamilyDaoWrapper tagFamilyDao = tx.data().tagFamilyDao();
+		TagFamilyDaoWrapper tagFamilyDao = tx.tagFamilyDao();
 		return tagFamilyDao.create(tx.getProject(ac), ac, batch, uuid);
 	}
 
 	@Override
 	public void delete(Tx tx, HibTagFamily tagFamily, BulkActionContext bac) {
-		TagFamilyDaoWrapper tagFamilyDao = tx.data().tagFamilyDao();
+		TagFamilyDaoWrapper tagFamilyDao = tx.tagFamilyDao();
 		tagFamilyDao.delete(tagFamily, bac);
 	}
 
 	@Override
 	public TagFamilyResponse transformToRestSync(Tx tx, HibTagFamily element, InternalActionContext ac, int level, String... languageTags) {
-		TagFamilyDaoWrapper tagFamilyDao = tx.data().tagFamilyDao();
+		TagFamilyDaoWrapper tagFamilyDao = tx.tagFamilyDao();
 		return tagFamilyDao.transformToRestSync(element, ac, level, languageTags);
 	}
 
 	@Override
 	public String getAPIPath(Tx tx, InternalActionContext ac, HibTagFamily tagFamily) {
-		TagFamilyDaoWrapper tagFamilyDao = tx.data().tagFamilyDao();
+		TagFamilyDaoWrapper tagFamilyDao = tx.tagFamilyDao();
 		return tagFamilyDao.getAPIPath(tagFamily, ac);
 	}
 
 	@Override
 	public String getETag(Tx tx, InternalActionContext ac, HibTagFamily tagFamily) {
-		TagFamilyDaoWrapper tagFamilyDao = tx.data().tagFamilyDao();
+		TagFamilyDaoWrapper tagFamilyDao = tx.tagFamilyDao();
 		return tagFamilyDao.getETag(tagFamily, ac);
 	}
 

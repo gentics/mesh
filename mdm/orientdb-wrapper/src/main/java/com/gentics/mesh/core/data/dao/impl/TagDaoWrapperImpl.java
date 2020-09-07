@@ -281,7 +281,7 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements Tag
 			throw error(BAD_REQUEST, "tag_name_not_set");
 		}
 
-		UserDaoWrapper userDao = Tx.get().data().userDao();
+		UserDaoWrapper userDao = Tx.get().userDao();
 		MeshAuthUser requestUser = ac.getUser();
 		if (!userDao.hasPermission(requestUser, tagFamily, CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", tagFamily.getUuid(), CREATE_PERM.getRestPerm().getName());

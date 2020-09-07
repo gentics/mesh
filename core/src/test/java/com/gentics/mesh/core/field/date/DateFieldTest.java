@@ -106,7 +106,7 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 		HibNode node = folder("2015");
 		long date;
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.data().contentDao();
+			ContentDaoWrapper contentDao = tx.contentDao();
 
 			// Add html field schema to the schema
 			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();

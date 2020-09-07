@@ -41,7 +41,7 @@ public class SchemaFilter extends MainFilter<HibSchema> {
 
 	private GraphQLEnumType schemaEnum() {
 		Tx tx = Tx.get();
-		SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+		SchemaDaoWrapper schemaDao = tx.schemaDao();
 		HibProject project = tx.getProject(context);
 		List<GraphQLEnumValueDefinition> values = StreamSupport.stream(schemaDao.findAll(project).spliterator(), false)
 			.map(schema -> {

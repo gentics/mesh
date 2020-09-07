@@ -63,7 +63,7 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 
 	@Override
 	public HibMicroschema create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		UserDaoWrapper userRoot = Tx.get().data().userDao();
+		UserDaoWrapper userRoot = Tx.get().userDao();
 		MicroschemaRoot microschemaRoot = boot.get().microschemaContainerRoot();
 
 		MeshAuthUser requestUser = ac.getUser();
@@ -82,7 +82,7 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 	public HibMicroschema create(MicroschemaVersionModel microschema, HibUser user, String uuid, EventQueueBatch batch) {
 		microschema.validate();
 
-		SchemaDaoWrapper schemaDao = Tx.get().data().schemaDao();
+		SchemaDaoWrapper schemaDao = Tx.get().schemaDao();
 		MicroschemaRoot microschemaRoot = boot.get().microschemaContainerRoot();
 
 		String name = microschema.getName();

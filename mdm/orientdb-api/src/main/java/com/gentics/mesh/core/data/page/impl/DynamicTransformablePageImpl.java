@@ -150,7 +150,7 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 		AtomicLong pageCounter = new AtomicLong();
 		FramedGraph graph = Tx.get().getGraph();
 
-		UserDaoWrapper userDao = Tx.get().data().userDao();
+		UserDaoWrapper userDao = Tx.get().userDao();
 
 		// Only handle elements which are visible to the user
 		if (perm != null) {

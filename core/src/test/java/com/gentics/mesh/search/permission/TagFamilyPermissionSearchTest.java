@@ -28,8 +28,8 @@ public class TagFamilyPermissionSearchTest extends AbstractMeshTest {
 		String tagfamilyname = "testtagfamily42a";
 		TagFamilyResponse response = createTagFamily(PROJECT_NAME, tagfamilyname);
 		try (Tx tx = tx()) {
-			UserDaoWrapper userDao = tx.data().userDao();
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			UserDaoWrapper userDao = tx.userDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 
 			TagFamily tagFamily = project().getTagFamilyRoot().findByUuid(response.getUuid());
 			System.out.println("TagFamily Uuid:" + response.getUuid());
@@ -48,8 +48,8 @@ public class TagFamilyPermissionSearchTest extends AbstractMeshTest {
 
 		// Now add the perm
 		try (Tx tx = tx()) {
-			UserDaoWrapper userDao = tx.data().userDao();
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			UserDaoWrapper userDao = tx.userDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 
 			TagFamily tagFamily = project().getTagFamilyRoot().findByUuid(response.getUuid());
 			System.out.println("TagFamily Uuid:" + response.getUuid());

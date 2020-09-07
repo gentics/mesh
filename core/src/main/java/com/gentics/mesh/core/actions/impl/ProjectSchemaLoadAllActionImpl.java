@@ -18,6 +18,6 @@ public class ProjectSchemaLoadAllActionImpl implements LoadAllAction<HibSchema> 
 
 	@Override
 	public TransformablePage<? extends HibSchema> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
-		return ctx.tx().data().schemaDao().findAll(ctx.ac(), ctx.project(), pagingInfo);
+		return ctx.tx().schemaDao().findAll(ctx.ac(), ctx.project(), pagingInfo);
 	}
 }

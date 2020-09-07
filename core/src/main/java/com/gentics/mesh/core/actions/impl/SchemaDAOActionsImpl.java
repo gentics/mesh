@@ -31,7 +31,7 @@ public class SchemaDAOActionsImpl implements SchemaDAOActions {
 
 	@Override
 	public HibSchema loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
-		SchemaDaoWrapper schemaDao = ctx.tx().data().schemaDao();
+		SchemaDaoWrapper schemaDao = ctx.tx().schemaDao();
 		if (perm == null) {
 			return schemaDao.findByUuid(uuid);
 		} else {
@@ -41,7 +41,7 @@ public class SchemaDAOActionsImpl implements SchemaDAOActions {
 
 	@Override
 	public HibSchema loadByName(DAOActionContext ctx, String name, InternalPermission perm, boolean errorIfNotFound) {
-		SchemaDaoWrapper schemaDao = ctx.tx().data().schemaDao();
+		SchemaDaoWrapper schemaDao = ctx.tx().schemaDao();
 		if (perm == null) {
 			return schemaDao.findByName(name);
 		} else {
@@ -50,23 +50,24 @@ public class SchemaDAOActionsImpl implements SchemaDAOActions {
 	}
 
 	public TransformablePage<? extends HibSchema> loadAll(Tx tx, Project project, InternalActionContext ac, PagingParameters pagingInfo) {
-		SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+		SchemaDaoWrapper schemaDao = tx.schemaDao();
 		return schemaDao.findAll(ac, project, pagingInfo);
 	}
 
 	@Override
 	public TransformablePage<? extends HibSchema> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
-		SchemaDaoWrapper schemaDao = ctx.tx().data().schemaDao();
+		SchemaDaoWrapper schemaDao = ctx.tx().schemaDao();
 		return schemaDao.findAll(ctx.ac(), pagingInfo);
 	}
 
 	@Override
 	public Page<? extends HibSchema> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, Predicate<HibSchema> extraFilter) {
-		return ctx.project().getSchemaContainerRoot().findAll(ctx.ac(), pagingInfo, schema -> {
+		SchemaDaoWrapper schemaDao = ctx.tx().schemaDao();
+		return schemaDao.findAll(ctx.project(), ctx.ac(), pagingInfo, schema -> {
 			return extraFilter.test(schema);
 		});
 		// TODO scope to project
-		// return tx.data().schemaDao().findAll(ac, pagingInfo, extraFilter);
+		// return tx.schemaDao().findAll(ac, pagingInfo, extraFilter);
 	}
 
 	@Override
@@ -77,12 +78,12 @@ public class SchemaDAOActionsImpl implements SchemaDAOActions {
 
 	@Override
 	public HibSchema create(Tx tx, InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		return tx.data().schemaDao().create(ac, batch, uuid);
+		return tx.schemaDao().create(ac, batch, uuid);
 	}
 
 	@Override
 	public void delete(Tx tx, HibSchema schema, BulkActionContext bac) {
-		tx.data().schemaDao().delete(schema, bac);
+		tx.schemaDao().delete(schema, bac);
 	}
 
 	@Override

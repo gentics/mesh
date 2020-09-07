@@ -61,12 +61,12 @@ public class DemoDumpGeneratorTest {
 	public void testSetup() throws Exception {
 		generator.dump();
 		db.tx(tx -> {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
-			UserDaoWrapper userDao = tx.data().userDao();
-			GroupDaoWrapper groupDao = tx.data().groupDao();
-			ProjectDaoWrapper projectDao = tx.data().projectDao();
-			ContentDaoWrapper contentDao = tx.data().contentDao();
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
+			UserDaoWrapper userDao = tx.userDao();
+			GroupDaoWrapper groupDao = tx.groupDao();
+			ProjectDaoWrapper projectDao = tx.projectDao();
+			ContentDaoWrapper contentDao = tx.contentDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 
 			HibProject project = projectDao.findByName("demo");
 			assertTrue(project.getNodeRoot().computeCount() > 0);

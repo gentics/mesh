@@ -35,7 +35,7 @@ public class MultiMeshIntegrationTest {
 			System.out.println("Done");
 			MeshComponent meshInternal = mesh.internal();
 			meshInternal.database().tx(tx -> {
-				UserDaoWrapper userDao = tx.data().userDao();
+				UserDaoWrapper userDao = tx.userDao();
 				UserRoot userRoot = meshInternal.boot().userRoot();
 				System.out.println(userRoot.getUuid());
 				System.out.println("Admin: " + userDao.findByName("admin").getUuid());

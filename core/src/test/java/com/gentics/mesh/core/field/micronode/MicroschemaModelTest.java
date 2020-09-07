@@ -76,7 +76,7 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
-			MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
+			MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			int expectedMicroschemaContainers = microschemaContainers().size();
@@ -169,7 +169,7 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 	@Override
 	public void testDelete() throws MeshJsonException {
 		try (Tx tx = tx()) {
-			MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
+			MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
 			MicroschemaVersionModel schema = new MicroschemaModelImpl();
 			schema.setName("test");
 			HibMicroschema container = createMicroschema(schema);
@@ -256,8 +256,8 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 	@Override
 	public void testCRUDPermissions() throws MeshJsonException {
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
-			UserDaoWrapper userDao = tx.data().userDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
+			UserDaoWrapper userDao = tx.userDao();
 			MicroschemaVersionModel schema = new MicroschemaModelImpl();
 			schema.setName("someNewMicroschema");
 			HibMicroschema container = createMicroschema(schema);
@@ -277,7 +277,7 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 	@Test
 	public void testGetContainerUsingMicroschemaVersion() throws IOException {
 		try (Tx tx = tx()) {
-			MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
+			MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
 			HibMicroschemaVersion vcard = microschemaContainer("vcard").getLatestVersion();
 
 			MicroschemaModel microschemaModel = vcard.getSchema();

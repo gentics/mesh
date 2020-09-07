@@ -61,7 +61,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		String parentFolderUuid;
 		String subFolderUuid;
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 			InternalActionContext ac = mockActionContext("recursive=true");
 			HibNode subFolder = folder("2015");
 			HibNode parentFolder = folder("news");
@@ -155,7 +155,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		String schemaUuid = tx(() -> schemaContainer("folder").getUuid());
 		String branchUuid = tx(() -> project().getLatestBranch().getUuid());
 		String schemaContainerVersionUuid = tx(tx -> {
-			ContentDaoWrapper contentDao = tx.data().contentDao();
+			ContentDaoWrapper contentDao = tx.contentDao();
 			return contentDao.getLatestDraftFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
 		});
 
@@ -204,7 +204,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		String schemaUuid = tx(() -> schemaContainer("folder").getUuid());
 		String branchUuid = tx(() -> project().getLatestBranch().getUuid());
 		String schemaContainerVersionUuid = tx(tx -> {
-			ContentDaoWrapper contentDao = tx.data().contentDao();
+			ContentDaoWrapper contentDao = tx.contentDao();
 			return contentDao.getLatestDraftFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
 		});
 
@@ -309,7 +309,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 	public void testGetPublishStatusNoPermission() {
 		HibNode node = folder("news");
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), node, READ_PERM);
 			tx.success();
 		}
@@ -385,7 +385,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		HibNode node = folder("2015");
 
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), node, PUBLISH_PERM);
 			tx.success();
 		}
@@ -540,7 +540,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 	public void testPublishLanguageNoPermission() {
 		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), node, PUBLISH_PERM);
 			tx.success();
 		}

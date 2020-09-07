@@ -103,7 +103,7 @@ public class JobHandler extends AbstractCrudHandler<HibJob, JobResponse> {
 			if (!ac.getUser().isAdmin()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
-			JobDaoWrapper jobDao = tx.data().jobDao();
+			JobDaoWrapper jobDao = tx.jobDao();
 			HibJob job = jobDao.loadObjectByUuidNoPerm(uuid, true);
 			String etag = jobDao.getETag(job, ac);
 			ac.setEtag(etag, true);
