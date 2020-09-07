@@ -19,7 +19,6 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.navigation.NavigationElement;
@@ -44,7 +43,7 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testReadChildrenDepthZero() {
 		try (Tx tx = tx()) {
-			Node node = project().getBaseNode();
+			HibNode node = project().getBaseNode();
 			String uuid = node.getUuid();
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
@@ -80,7 +79,7 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testReadNavigationWithNoParameters() {
 		try (Tx tx = tx()) {
-			Node node = project().getBaseNode();
+			HibNode node = project().getBaseNode();
 			NavigationResponse response = call(() -> client().loadNavigation(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().draft()));
 			assertThat(response).hasDepth(3).isValid(7);
 		}
@@ -117,7 +116,7 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testReadChildrenDepthOne() {
 		try (Tx tx = tx()) {
-			Node node = project().getBaseNode();
+			HibNode node = project().getBaseNode();
 			String uuid = node.getUuid();
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
@@ -136,7 +135,7 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testReadChildrenDepthTwo() {
 		try (Tx tx = tx()) {
-			Node node = project().getBaseNode();
+			HibNode node = project().getBaseNode();
 			String uuid = node.getUuid();
 			assertNotNull(node);
 			assertNotNull(node.getUuid());

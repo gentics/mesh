@@ -27,6 +27,7 @@ import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
@@ -246,7 +247,7 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implem
 
 		// Add events for created basenode
 		batch.add(project.getBaseNode().onCreated());
-		project.getBaseNode().getDraftGraphFieldContainers().forEach(c -> {
+		toGraph(project.getBaseNode()).getDraftGraphFieldContainers().forEach(c -> {
 			batch.add(c.onCreated(branchUuid, DRAFT));
 		});
 
@@ -264,7 +265,7 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implem
 		Project graphProject = toGraph(project);
 
 		// Remove the nodes in the project hierarchy
-		Node base = graphProject.getBaseNode();
+		HibNode base = graphProject.getBaseNode();
 		nodeDao.delete(base, bac, true, true);
 
 		// Remove the tagfamilies from the index

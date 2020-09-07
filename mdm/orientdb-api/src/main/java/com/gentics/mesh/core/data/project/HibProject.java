@@ -3,7 +3,7 @@ package com.gentics.mesh.core.data.project;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.root.MicroschemaRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.SchemaRoot;
@@ -25,11 +25,11 @@ public interface HibProject extends HibCoreElement, HibUserTracking {
 	HibBranch findBranchOrLatest(String branchNameOrUuid);
 
 	@Deprecated
-	Result<? extends Node> findNodes();
+	Result<? extends HibNode> findNodes();
 
 	HibBranch getLatestBranch();
 
-	Node getBaseNode();
+	HibNode getBaseNode();
 
 	HibBranch getInitialBranch();
 
@@ -40,7 +40,7 @@ public interface HibProject extends HibCoreElement, HibUserTracking {
 	@Deprecated
 	NodeRoot getNodeRoot();
 
-	void setBaseNode(Node baseNode);
+	void setBaseNode(HibNode baseNode);
 
 	@Deprecated
 	SchemaRoot getSchemaContainerRoot();

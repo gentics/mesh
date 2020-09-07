@@ -22,7 +22,6 @@ import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
@@ -65,7 +64,7 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 				}
 			});
 
-			List<? extends Node> nodes = db.tx(() -> {
+			List<? extends HibNode> nodes = db.tx(tx -> {
 				HibProject project = oldBranch.getProject();
 				return project.findNodes().list();
 			});

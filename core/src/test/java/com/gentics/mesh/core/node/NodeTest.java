@@ -170,7 +170,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testRootNode() {
 		try (Tx tx = tx()) {
 			HibProject project = project();
-			Node root = project.getBaseNode();
+			HibNode root = project.getBaseNode();
 			assertNotNull(root);
 		}
 	}

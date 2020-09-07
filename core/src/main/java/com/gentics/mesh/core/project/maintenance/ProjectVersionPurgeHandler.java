@@ -10,7 +10,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -52,7 +52,7 @@ public class ProjectVersionPurgeHandler {
 	public Completable purgeVersions(HibProject project, ZonedDateTime maxAge) {
 		return Completable.fromAction(() -> {
 			db.tx(tx -> {
-				for (Node node : project.findNodes()) {
+				for (HibNode node : project.findNodes()) {
 					purgeNode(tx, node, maxAge);
 				}
 				return null;
@@ -60,7 +60,7 @@ public class ProjectVersionPurgeHandler {
 		});
 	}
 
-	private void purgeNode(Tx tx, Node node, ZonedDateTime maxAge) {
+	private void purgeNode(Tx tx, HibNode node, ZonedDateTime maxAge) {
 		Iterable<? extends NodeGraphFieldContainer> initials = tx.contentDao().getGraphFieldContainers(node, ContainerType.INITIAL);
 		for (NodeGraphFieldContainer initial : initials) {
 			Long counter = 0L;

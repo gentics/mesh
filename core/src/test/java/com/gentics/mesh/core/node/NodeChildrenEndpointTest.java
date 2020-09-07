@@ -24,7 +24,6 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -51,7 +50,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testNodeHierarchy() {
 		try (Tx tx = tx()) {
-			Node baseNode = project().getBaseNode();
+			HibNode baseNode = project().getBaseNode();
 			String parentNodeUuid = baseNode.getUuid();
 			NodeListResponse nodeList = call(() -> client().findNodeChildren(PROJECT_NAME, parentNodeUuid, new VersioningParametersImpl().draft()));
 			assertEquals(3, nodeList.getData().size());

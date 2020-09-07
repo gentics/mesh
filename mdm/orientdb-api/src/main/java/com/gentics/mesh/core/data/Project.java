@@ -9,6 +9,7 @@ import java.util.Objects;
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.BranchRoot;
@@ -82,14 +83,14 @@ public interface Project extends MeshCoreVertex<ProjectResponse>, ReferenceableE
 	 * 
 	 * @return
 	 */
-	Node getBaseNode();
+	HibNode getBaseNode();
 
 	/**
 	 * Set the base node for the project.
 	 * 
 	 * @param baseNode
 	 */
-	void setBaseNode(Node baseNode);
+	void setBaseNode(HibNode baseNode);
 
 	/**
 	 * Return the tagFamilyRoot for the project. This method will create a new tag family root when no one could be found.

@@ -282,7 +282,7 @@ public interface ContentDaoWrapper extends ContentDao {
 	 *
 	 * @return
 	 */
-	long getGraphFieldContainerCount(Node node);
+	long getGraphFieldContainerCount(HibNode node);
 
 	/**
 	 * Find a node field container that matches the nearest possible value for the language parameter. When a user requests a node using ?lang=de,en and there

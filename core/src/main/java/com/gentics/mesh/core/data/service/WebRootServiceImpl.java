@@ -16,7 +16,7 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -80,7 +80,7 @@ public class WebRootServiceImpl implements WebRootService {
 
 		// Locating did not yield a result. Lets try the regular segment path info.
 		Path nodePath = new Path();
-		Node baseNode = project.getBaseNode();
+		HibNode baseNode = project.getBaseNode();
 		nodePath.setTargetPath(strippedPath);
 		Stack<String> stack = new Stack<>();
 

@@ -353,7 +353,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		GraphQLContext gc = env.getContext();
 		HibProject project = tx.getProject(gc);
 		if (project != null) {
-			Node node = project.getBaseNode();
+			HibNode node = project.getBaseNode();
 			gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 			List<String> languageTags = getLanguageArgument(env);
 			ContainerType type = getNodeVersion(env);

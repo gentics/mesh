@@ -8,6 +8,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROO
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAGFAMILY_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.PROJECT_KEY_PROPERTY;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_MICROSCHEMA_ASSIGNED;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_MICROSCHEMA_UNASSIGNED;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_SCHEMA_ASSIGNED;
@@ -34,6 +35,7 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -157,8 +159,8 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 	}
 
 	@Override
-	public void setBaseNode(Node baseNode) {
-		linkOut(baseNode, HAS_ROOT_NODE);
+	public void setBaseNode(HibNode baseNode) {
+		linkOut(toGraph(baseNode), HAS_ROOT_NODE);
 	}
 
 	/**

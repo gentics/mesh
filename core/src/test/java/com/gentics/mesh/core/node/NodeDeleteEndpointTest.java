@@ -37,7 +37,6 @@ import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -319,7 +318,7 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testDeleteBaseNode() throws Exception {
 		try (Tx tx = tx()) {
-			Node node = project().getBaseNode();
+			HibNode node = project().getBaseNode();
 			String uuid = node.getUuid();
 
 			call(() -> client().deleteNode(PROJECT_NAME, uuid), METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
