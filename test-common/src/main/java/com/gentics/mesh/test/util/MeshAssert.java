@@ -11,6 +11,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
+import com.gentics.mesh.core.data.dao.DaoGlobal;
 import com.gentics.mesh.core.data.root.RootVertex;
 
 import io.vertx.core.logging.Logger;
@@ -26,6 +27,15 @@ public final class MeshAssert {
 
 	public static void assertElement(RootVertex<?> root, String uuid, boolean exists) throws Exception {
 		Object element = root.findByUuid(uuid);
+		if (exists) {
+			assertNotNull("The element should exist.", element);
+		} else {
+			assertNull("The element should not exist.", element);
+		}
+	}
+
+	public static void assertElement(DaoGlobal<?> dao, String uuid, boolean exists) throws Exception {
+		Object element = dao.findByUuidGlobal(uuid);
 		if (exists) {
 			assertNotNull("The element should exist.", element);
 		} else {
