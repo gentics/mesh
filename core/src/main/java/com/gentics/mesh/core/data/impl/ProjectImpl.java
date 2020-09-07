@@ -26,6 +26,7 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
@@ -317,6 +318,11 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 	@Override
 	public HibBranch findBranchOrLatest(String branchNameOrUuid) {
 		return findBranchOpt(branchNameOrUuid).orElseGet(this::getLatestBranch);
+	}
+
+	@Override
+	public HibBaseElement getBranchPermissionRoot() {
+		return getBranchRoot();
 	}
 
 	private Optional<HibBranch> findBranchOpt(String branchNameOrUuid) {

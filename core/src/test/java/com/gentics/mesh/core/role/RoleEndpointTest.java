@@ -90,7 +90,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			String roleUuid = restRole.getUuid();
 			restRole = call(() -> client().findRoleByUuid(roleUuid));
 			assertThat(restRole).matches(request);
-			assertElement(meshRoot().getRoleRoot(), restRole.getUuid(), true);
+			assertNotNull(tx.data().roleDao().findByUuid(restRole.getUuid()));
 		}
 	}
 
@@ -433,7 +433,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// Check that the role was updated
 		try (Tx tx = tx()) {
-			Role reloadedRole = boot().roleRoot().findByUuid(roleUuid());
+			HibRole reloadedRole = tx.data().roleDao().findByUuid(roleUuid());
 			assertEquals(restRole.getName(), reloadedRole.getName());
 		}
 
@@ -466,7 +466,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertThat(trackingSearchProvider()).hasEvents(0, 0, 1, 0, 0);
 
 		try (Tx tx = tx()) {
-			assertElement(meshRoot().getRoleRoot(), extraRoleUuid, false);
+			assertElement(tx.data().roleDao(), extraRoleUuid, false);
 		}
 
 	}
@@ -483,7 +483,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		try (Tx tx = tx()) {
 			String uuid = role().getUuid();
 			call(() -> client().deleteRole(uuid), FORBIDDEN, "error_missing_perm", uuid, DELETE_PERM.getRestPerm().getName());
-			assertElement(meshRoot().getRoleRoot(), uuid, true);
+			assertElement(tx.data().roleDao(), uuid, true);
 		}
 	}
 

@@ -137,4 +137,12 @@ public interface RoleDaoWrapper extends RoleDao, DaoWrapper<HibRole>, DaoTransfo
 	void applyPermissions(HibBaseElement element, EventQueueBatch batch, HibRole role, boolean recursive, Set<InternalPermission> permissionsToGrant,
 		Set<InternalPermission> permissionsToRevoke);
 
+	/**
+	 * Return set of role uuids for the given permission that were granted on the element.
+	 *
+	 * @param element
+	 * @param permission
+	 * @return
+	 */
+	Set<String> getRoleUuidsForPerm(HibBaseElement element, InternalPermission permission);
 }

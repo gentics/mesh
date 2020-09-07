@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.impl;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-
 import java.util.Objects;
 import java.util.Set;
 
@@ -325,11 +323,6 @@ public class MeshAuthUserImpl implements MeshAuthUser {
 	@Override
 	public Object getId() {
 		return delegate.getId();
-	}
-
-	@Override
-	public Set<String> getRoleUuidsForPerm(InternalPermission permission) {
-		return delegate.getRoleUuidsForPerm(permission);
 	}
 
 	@Override

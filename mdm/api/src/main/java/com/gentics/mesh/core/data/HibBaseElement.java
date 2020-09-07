@@ -21,14 +21,6 @@ public interface HibBaseElement extends HibElement {
 	Object getId();
 
 	/**
-	 * Return set of role uuids for the given permission that were granted on the element.
-	 * 
-	 * @param permission
-	 * @return
-	 */
-	Set<String> getRoleUuidsForPerm(InternalPermission permission);
-
-	/**
 	 * Set the role uuid for the given permission.
 	 * 
 	 * @param permission

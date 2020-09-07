@@ -146,4 +146,15 @@ public final class StreamUtil {
 			.limit(arr.length)
 			.mapToObj(i -> arr[i]);
 	}
+
+	/**
+	 * Creates an iterable that uses {@link Stream#iterator()}.
+	 *
+	 * @param stream
+	 * @param <T>
+	 * @return
+	 */
+	public static <T> Iterable<T> toIterable(Stream<? extends T> stream) {
+		return () -> ((Iterator<T>) stream.iterator());
+	}
 }
