@@ -471,7 +471,6 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			RoleDaoWrapper roleDao = tx.data().roleDao();
 			UserDaoWrapper userDao = tx.data().userDao();
 			GroupDaoWrapper groupDao = tx.data().groupDao();
-			UserRoot userRoot = boot().userRoot();
 
 			for (int i = 0; i < nUsers; i++) {
 				String username = "testuser_" + i;
@@ -487,7 +486,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			invisibleUser.setFirstname("should_not_be_listed");
 			invisibleUser.setEmailAddress("should_not_be_listed");
 			userDao.addGroup(invisibleUser, group());
-			foundUsers = userRoot.computeCount();
+			foundUsers = userDao.computeGlobalCount();
 			tx.success();
 		}
 
