@@ -425,8 +425,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			// TODO Maybe add project()
 			HibMicroschema microschemaContainer = microschemaDao.create(nodeMicroschema, getRequestUser(), createBatch());
 			microschemaContainers().put("noderef", microschemaContainer);
-			// TODO use dao instead
-			project().getMicroschemaContainerRoot().addMicroschema(user(), microschemaContainer, createBatch());
+			microschemaDao.addMicroschema(project(), user(), microschemaContainer, createBatch());
 
 			// 2. Update the folder schema and add a micronode field
 			SchemaVersionModel schema = schemaContainer("folder").getLatestVersion().getSchema();
@@ -489,8 +488,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			// TODO maybe add project()
 			HibMicroschema microschemaContainer = microschemaDao.create(fullMicroschema, getRequestUser(), createBatch());
 			microschemaContainers().put("full", microschemaContainer);
-			// TODO use DAO to add microschema
-			project().getMicroschemaContainerRoot().addMicroschema(user(), microschemaContainer, createBatch());
+			microschemaDao.addMicroschema(project(), user(), microschemaContainer, createBatch());
 
 			// 3. Update the folder schema and inject a micronode field which uses the full schema
 			SchemaVersionModel schema = schemaContainer("folder").getLatestVersion().getSchema();

@@ -21,7 +21,6 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.root.MicroschemaRoot;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparatorImpl;
@@ -207,19 +206,18 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<HibMicroschema, 
 			HibProject project = tx.getProject(ac);
 			UserDaoWrapper userDao = tx.userDao();
 			MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
-			
+
 			if (!userDao.hasPermission(ac.getUser(), project, UPDATE_PERM)) {
 				String projectUuid = project.getUuid();
 				throw error(FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
 			}
 			HibMicroschema microschema = tx.microschemaDao().loadObjectByUuid(ac, microschemaUuid, READ_PERM);
-			MicroschemaRoot root = project.getMicroschemaContainerRoot();
 
 			// Only assign if the microschema has not already been assigned.
-			if (!root.contains(microschema)) {
+			if (!microschemaDao.contains(project, microschema)) {
 				// Assign the microschema to the project
 				utils.eventAction(batch -> {
-					root.addMicroschema(ac.getUser(), microschema, batch);
+					microschemaDao.addMicroschema(project, ac.getUser(), microschema, batch);
 				});
 			}
 			return microschemaDao.transformToRestSync(microschema, ac, 0);

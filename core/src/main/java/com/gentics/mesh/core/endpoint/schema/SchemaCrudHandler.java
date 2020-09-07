@@ -19,6 +19,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.SchemaDAOActions;
 import com.gentics.mesh.core.actions.impl.ProjectSchemaLoadAllActionImpl;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.dao.impl.SchemaDaoWrapperImpl;
@@ -99,6 +100,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 			utils.syncTx(ac, tx1 -> {
 				UserDaoWrapper userDao = tx1.userDao();
 				SchemaDaoWrapper schemaDao = tx1.schemaDao();
+				MicroschemaDaoWrapper microschemaDao = tx1.microschemaDao();
 
 				// 1. Load the schema container with update permissions
 				HibSchema schemaContainer = schemaDao.loadObjectByUuid(ac, uuid, UPDATE_PERM);
@@ -147,7 +149,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 								// Locate the projects to which the schema was linked - We need to ensure that the microschema is also linked to those projects
 								for (HibProject project : schemaDao.findLinkedProjects(schemaContainer)) {
 									if (project != null) {
-										project.getMicroschemaContainerRoot().addMicroschema(user, microschema, batch);
+										microschemaDao.addMicroschema(project, user, microschema, batch);
 									}
 								}
 							}

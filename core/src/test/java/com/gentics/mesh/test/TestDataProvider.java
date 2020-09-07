@@ -512,7 +512,7 @@ public class TestDataProvider {
 		HibMicroschema vcardMicroschemaContainer = microschemaDao.create(vcardMicroschema, userInfo.getUser(),
 				createBatch());
 		microschemaContainers.put(vcardMicroschemaContainer.getName(), vcardMicroschemaContainer);
-		project.getMicroschemaContainerRoot().addMicroschema(user(), vcardMicroschemaContainer, createBatch());
+		microschemaDao.addMicroschema(project, user(), vcardMicroschemaContainer, createBatch());
 	}
 
 	/**
@@ -543,7 +543,7 @@ public class TestDataProvider {
 		HibMicroschema microschema = microschemaDao.create(captionedImageMicroschema, userInfo.getUser(),
 				createBatch());
 		microschemaContainers.put(captionedImageMicroschema.getName(), microschema);
-		project.getMicroschemaContainerRoot().addMicroschema(user(), microschema, createBatch());
+		microschemaDao.addMicroschema(project, user(), microschema, createBatch());
 	}
 
 	public HibNode addFolder(HibNode rootNode, String englishName, String germanName) {

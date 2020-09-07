@@ -30,14 +30,14 @@ public interface MicroschemaDaoWrapper extends MicroschemaDao, DaoWrapper<HibMic
 
 	HibMicroschema findByUuid(String uuid);
 
-	// boolean update(MicroschemaContainer microschema, InternalActionContext ac, EventQueueBatch batch);
+	// boolean update(MicroschemaContainer microschema, InternalActionContext ac,
+	// EventQueueBatch batch);
 
 	/**
 	 * Create a new microschema container.
 	 * 
 	 * @param microschema
-	 * @param user
-	 *            User that is used to set creator and editor references.
+	 * @param user        User that is used to set creator and editor references.
 	 * @param batch
 	 * @return
 	 */
@@ -49,10 +49,8 @@ public interface MicroschemaDaoWrapper extends MicroschemaDao, DaoWrapper<HibMic
 	 * Create a new microschema container.
 	 * 
 	 * @param microschema
-	 * @param user
-	 *            User that is used to set creator and editor references.
-	 * @param uuid
-	 *            optional uuid
+	 * @param user        User that is used to set creator and editor references.
+	 * @param uuid        optional uuid
 	 * @param batch
 	 * @return
 	 */
@@ -62,9 +60,11 @@ public interface MicroschemaDaoWrapper extends MicroschemaDao, DaoWrapper<HibMic
 
 	TransformablePage<? extends Microschema> findAll(InternalActionContext ac, PagingParameters pagingInfo);
 
-	Page<? extends Microschema> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Microschema> extraFilter);
+	Page<? extends Microschema> findAll(InternalActionContext ac, PagingParameters pagingInfo,
+			Predicate<Microschema> extraFilter);
 
-	HibMicroschema loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound);
+	HibMicroschema loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm,
+			boolean errorIfNotFound);
 
 	HibMicroschema findByName(String name);
 
@@ -77,8 +77,7 @@ public interface MicroschemaDaoWrapper extends MicroschemaDao, DaoWrapper<HibMic
 	/**
 	 * Get the microschema container version from the given reference.
 	 * 
-	 * @param reference
-	 *            reference
+	 * @param reference reference
 	 * @return
 	 */
 	default HibMicroschemaVersion fromReference(HibProject project, MicroschemaReference reference) {
@@ -86,14 +85,13 @@ public interface MicroschemaDaoWrapper extends MicroschemaDao, DaoWrapper<HibMic
 	}
 
 	/**
-	 * Get the microschema container version from the given reference. Ignore the version number from the reference, but take the version from the branch
+	 * Get the microschema container version from the given reference. Ignore the
+	 * version number from the reference, but take the version from the branch
 	 * instead.
 	 * 
 	 * @param project
-	 * @param reference
-	 *            reference
-	 * @param branch
-	 *            branch
+	 * @param reference reference
+	 * @param branch    branch
 	 * @return
 	 */
 	HibMicroschemaVersion fromReference(HibProject project, MicroschemaReference reference, HibBranch branch);
@@ -104,7 +102,8 @@ public interface MicroschemaDaoWrapper extends MicroschemaDao, DaoWrapper<HibMic
 
 	HibMicroschemaVersion applyChanges(HibMicroschemaVersion version, InternalActionContext ac, EventQueueBatch batch);
 
-	HibMicroschemaVersion applyChanges(HibMicroschemaVersion version, InternalActionContext ac, SchemaChangesListModel model, EventQueueBatch batch);
+	HibMicroschemaVersion applyChanges(HibMicroschemaVersion version, InternalActionContext ac,
+			SchemaChangesListModel model, EventQueueBatch batch);
 
 	SchemaChangesListModel diff(HibMicroschemaVersion version, InternalActionContext ac, MicroschemaModel requestModel);
 
@@ -112,11 +111,13 @@ public interface MicroschemaDaoWrapper extends MicroschemaDao, DaoWrapper<HibMic
 
 	Map<HibBranch, HibMicroschemaVersion> findReferencedBranches(HibMicroschema microschema);
 
-	Result<? extends NodeGraphFieldContainer> findDraftFieldContainers(HibMicroschemaVersion version, String branchUuid);
+	Result<? extends NodeGraphFieldContainer> findDraftFieldContainers(HibMicroschemaVersion version,
+			String branchUuid);
 
 	void unlink(HibMicroschema microschema, HibProject project, EventQueueBatch batch);
 
-	MicroschemaResponse transformToRestSync(HibMicroschema microschema, InternalActionContext ac, int level, String... languageTags);
+	MicroschemaResponse transformToRestSync(HibMicroschema microschema, InternalActionContext ac, int level,
+			String... languageTags);
 
 	String getETag(HibMicroschema schema, InternalActionContext ac);
 
@@ -125,5 +126,16 @@ public interface MicroschemaDaoWrapper extends MicroschemaDao, DaoWrapper<HibMic
 	Result<? extends HibMicroschema> findAll(HibProject project);
 
 	Result<HibMicroschemaVersion> findActiveMicroschemaVersions(HibBranch branch);
+
+	TransformablePage<? extends HibMicroschema> findAll(HibProject project, InternalActionContext ac,
+			PagingParameters pagingInfo);
+
+	HibMicroschema findByUuid(HibProject project, String uuid);
+
+	boolean contains(HibProject project, HibMicroschema microschema);
+
+	void addMicroschema(HibProject project, HibUser user, HibMicroschema microschemaContainer, EventQueueBatch batch);
+
+	void removeMicroschema(HibProject project, HibMicroschema microschema, EventQueueBatch batch);
 
 }

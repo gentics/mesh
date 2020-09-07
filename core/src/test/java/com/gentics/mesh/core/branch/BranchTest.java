@@ -3,8 +3,6 @@ package com.gentics.mesh.core.branch;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -21,6 +19,7 @@ import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.branch.HibBranchSchemaVersion;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
+import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -386,7 +385,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	public void testReadMicroschemaVersions() throws Exception {
 		try (Tx tx = tx()) {
 			HibProject project = project();
-			List<HibMicroschemaVersion> versions = project.getMicroschemaContainerRoot().findAll().stream()
+			List<HibMicroschemaVersion> versions = tx.microschemaDao().findAll(project).stream()
 				.map(HibMicroschema::getLatestVersion).collect(Collectors.toList());
 
 			List<HibMicroschemaVersion> found = new ArrayList<>();
@@ -423,7 +422,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			}
 
 			// assign the schema to the project
-			project.getMicroschemaContainerRoot().addMicroschema(user(), microschema, createBatch());
+			tx.microschemaDao().addMicroschema(project, user(), microschema, createBatch());
 
 			for (HibBranch branch : Arrays.asList(initialBranch, newBranch)) {
 				assertThat(branch).as(branch.getName()).hasMicroschema(microschema).hasMicroschemaVersion(latestVersion)
@@ -440,14 +439,15 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Test
 	public void testUnassignMicroschema() throws Exception {
 		try (Tx tx = tx()) {
+			MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
 			HibProject project = project();
-			List<? extends HibMicroschema> microschemas = project.getMicroschemaContainerRoot().findAll().list();
+			List<? extends HibMicroschema> microschemas = microschemaDao.findAll(project).list();
 			HibMicroschema microschema = microschemas.get(0);
 
 			HibBranch initialBranch = initialBranch();
 			HibBranch newBranch = createBranch("New Branch");
 
-			project.getMicroschemaContainerRoot().removeMicroschema(microschema, createBatch());
+			microschemaDao.removeMicroschema(project, microschema, createBatch());
 
 			for (HibBranch branch : Arrays.asList(initialBranch, newBranch)) {
 				assertThat(branch).as(branch.getName()).hasNotMicroschema(microschema)
@@ -465,7 +465,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			HibMicroschemaVersion firstVersion = microschema.getLatestVersion();
 
 			// assign the microschema to the project
-			project.getMicroschemaContainerRoot().addMicroschema(user(), microschema, createBatch());
+			tx.microschemaDao().addMicroschema(project ,user(), microschema, createBatch());
 
 			// update microschema
 			updateMicroschema(microschema, "newfield");

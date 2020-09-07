@@ -56,7 +56,8 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 	private final MicroschemaComparator comparator;
 
 	@Inject
-	public MicroschemaDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionProperties> permissions, MicroschemaComparator comparator) {
+	public MicroschemaDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionProperties> permissions,
+		MicroschemaComparator comparator) {
 		super(boot, permissions);
 		this.comparator = comparator;
 	}
@@ -70,7 +71,8 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 		MicroschemaVersionModel microschema = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModelImpl.class);
 		microschema.validate();
 		if (!userRoot.hasPermission(requestUser, microschemaRoot, InternalPermission.CREATE_PERM)) {
-			throw error(FORBIDDEN, "error_missing_perm", microschemaRoot.getUuid(), CREATE_PERM.getRestPerm().getName());
+			throw error(FORBIDDEN, "error_missing_perm", microschemaRoot.getUuid(),
+				CREATE_PERM.getRestPerm().getName());
 		}
 		HibMicroschema container = create(microschema, requestUser, uuid, batch);
 		userRoot.inheritRolePermissions(requestUser, microschemaRoot, container);
@@ -79,7 +81,8 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 	}
 
 	@Override
-	public HibMicroschema create(MicroschemaVersionModel microschema, HibUser user, String uuid, EventQueueBatch batch) {
+	public HibMicroschema create(MicroschemaVersionModel microschema, HibUser user, String uuid,
+		EventQueueBatch batch) {
 		microschema.validate();
 
 		SchemaDaoWrapper schemaDao = Tx.get().schemaDao();
@@ -122,21 +125,22 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 		HibMicroschema container = null;
 		if (!isEmpty(microschemaName)) {
 			if (project != null) {
-				container = project.getMicroschemaContainerRoot().findByName(microschemaName);
+				container = findByName(project, microschemaName);
 			} else {
 				container = findByName(microschemaName);
 			}
 		} else {
 			if (project != null) {
-				container = project.getMicroschemaContainerRoot().findByUuid(microschemaUuid);
+				container = findByUuid(project, microschemaUuid);
 			} else {
 				container = findByUuid(microschemaUuid);
 			}
 		}
 		// Return the specified version or fallback to latest version.
 		if (container == null) {
-			throw error(BAD_REQUEST, "error_microschema_reference_not_found", isEmpty(microschemaName) ? "-" : microschemaName,
-				isEmpty(microschemaUuid) ? "-" : microschemaUuid, version == null ? "-" : version.toString());
+			throw error(BAD_REQUEST, "error_microschema_reference_not_found",
+				isEmpty(microschemaName) ? "-" : microschemaName, isEmpty(microschemaUuid) ? "-" : microschemaUuid,
+				version == null ? "-" : version.toString());
 		}
 
 		HibMicroschemaVersion foundVersion = null;
@@ -150,10 +154,15 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 		}
 
 		if (foundVersion == null) {
-			throw error(BAD_REQUEST, "error_microschema_reference_not_found", isEmpty(microschemaName) ? "-" : microschemaName,
-				isEmpty(microschemaUuid) ? "-" : microschemaUuid, version == null ? "-" : version.toString());
+			throw error(BAD_REQUEST, "error_microschema_reference_not_found",
+				isEmpty(microschemaName) ? "-" : microschemaName, isEmpty(microschemaUuid) ? "-" : microschemaUuid,
+				version == null ? "-" : version.toString());
 		}
 		return foundVersion;
+	}
+
+	private HibMicroschema findByName(HibProject project, String microschemaName) {
+		return toGraph(project).getMicroschemaContainerRoot().findByName(microschemaName);
 	}
 
 	@Override
@@ -169,9 +178,21 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 	}
 
 	@Override
+	public HibMicroschema findByUuid(HibProject project, String uuid) {
+		return toGraph(project).getMicroschemaContainerRoot().findByUuid(uuid);
+	}
+
+	@Override
 	public Result<? extends Microschema> findAll() {
 		MicroschemaRoot microschemaRoot = boot.get().microschemaContainerRoot();
 		return microschemaRoot.findAll();
+	}
+
+	@Override
+	public TransformablePage<? extends HibMicroschema> findAll(HibProject project, InternalActionContext ac,
+		PagingParameters pagingInfo) {
+		Project graphProject = toGraph(project);
+		return graphProject.getMicroschemaContainerRoot().findAll(ac, pagingInfo);
 	}
 
 	@Override
@@ -195,7 +216,8 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 	}
 
 	@Override
-	public HibMicroschema loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
+	public HibMicroschema loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm,
+		boolean errorIfNotFound) {
 		// TODO check for project in context?
 		MicroschemaRoot microschemaRoot = boot.get().microschemaContainerRoot();
 		return microschemaRoot.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
@@ -223,20 +245,22 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 	}
 
 	@Override
-	public HibMicroschemaVersion applyChanges(HibMicroschemaVersion version, InternalActionContext ac, EventQueueBatch batch) {
+	public HibMicroschemaVersion applyChanges(HibMicroschemaVersion version, InternalActionContext ac,
+		EventQueueBatch batch) {
 		MicroschemaVersion graphMicroschemaVersion = toGraph(version);
 		return graphMicroschemaVersion.applyChanges(ac, batch);
 	}
 
 	@Override
-	public HibMicroschemaVersion applyChanges(HibMicroschemaVersion version, InternalActionContext ac, SchemaChangesListModel model,
-		EventQueueBatch batch) {
+	public HibMicroschemaVersion applyChanges(HibMicroschemaVersion version, InternalActionContext ac,
+		SchemaChangesListModel model, EventQueueBatch batch) {
 		MicroschemaVersion graphMicroschemaVersion = toGraph(version);
 		return graphMicroschemaVersion.applyChanges(ac, model, batch);
 	}
 
 	@Override
-	public SchemaChangesListModel diff(HibMicroschemaVersion version, InternalActionContext ac, MicroschemaModel requestModel) {
+	public SchemaChangesListModel diff(HibMicroschemaVersion version, InternalActionContext ac,
+		MicroschemaModel requestModel) {
 		MicroschemaVersion graphVersion = toGraph(version);
 		return graphVersion.diff(ac, comparator, requestModel);
 	}
@@ -253,12 +277,14 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 	}
 
 	@Override
-	public Result<? extends NodeGraphFieldContainer> findDraftFieldContainers(HibMicroschemaVersion version, String branchUuid) {
+	public Result<? extends NodeGraphFieldContainer> findDraftFieldContainers(HibMicroschemaVersion version,
+		String branchUuid) {
 		return toGraph(version).getDraftFieldContainers(branchUuid);
 	}
 
 	@Override
-	public MicroschemaResponse transformToRestSync(HibMicroschema microschema, InternalActionContext ac, int level, String... languageTags) {
+	public MicroschemaResponse transformToRestSync(HibMicroschema microschema, InternalActionContext ac, int level,
+		String... languageTags) {
 		return toGraph(microschema).transformToRestSync(ac, level, languageTags);
 	}
 
@@ -295,6 +321,23 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 	@Override
 	public Result<HibMicroschemaVersion> findActiveMicroschemaVersions(HibBranch branch) {
 		return toGraph(branch).findActiveMicroschemaVersions();
+	}
+
+	@Override
+	public boolean contains(HibProject project, HibMicroschema microschema) {
+		return toGraph(project).getMicroschemaContainerRoot().contains(microschema);
+	}
+
+	@Override
+	public void addMicroschema(HibProject project, HibUser user, HibMicroschema microschema,
+		EventQueueBatch batch) {
+		Project graphProject = toGraph(project);
+		graphProject.getMicroschemaContainerRoot().addMicroschema(user, microschema, batch);
+	}
+
+	@Override
+	public void removeMicroschema(HibProject project, HibMicroschema microschema, EventQueueBatch batch) {
+		toGraph(project).getMicroschemaContainerRoot().removeMicroschema(microschema, batch);
 	}
 
 }

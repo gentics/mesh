@@ -16,7 +16,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.ProjectRoot;
@@ -77,7 +77,7 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddMicroschemaToProjectWithPerm() throws Exception {
-		Project extraProject;
+		HibProject extraProject;
 		HibMicroschema microschema = microschemaContainer("vcard");
 
 		try (Tx tx = tx()) {
@@ -96,10 +96,11 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 		try (Tx tx = tx()) {
+			MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
 			MicroschemaResponse restMicroschema = call(() -> client().assignMicroschemaToProject(extraProject.getName(), microschema.getUuid()));
 			assertThat(restMicroschema.getUuid()).isEqualTo(microschema.getUuid());
 			assertNotNull("The microschema should be added to the extra project",
-				extraProject.getMicroschemaContainerRoot().findByUuid(microschema.getUuid()));
+				microschemaDao.findByUuid(extraProject, microschema.getUuid()));
 		}
 	}
 
@@ -107,7 +108,7 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 	public void testAddMicroschemaToProjectWithoutPerm() throws Exception {
 		String projectUuid;
 		String microschemaUuid;
-		Project extraProject;
+		HibProject extraProject;
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.roleDao();
 			HibMicroschema microschema = microschemaContainer("vcard");
@@ -128,11 +129,12 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 			UPDATE_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
+			MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
 			// Reload the microschema and check for expected changes
 			HibMicroschema microschema = microschemaContainer("vcard");
 
 			assertFalse("The microschema should not have been added to the extra project but it was",
-				extraProject.getMicroschemaContainerRoot().contains(microschema));
+				microschemaDao.contains(extraProject, microschema));
 		}
 	}
 
@@ -145,7 +147,7 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 		String microschemaName = "vcard";
 
 		try (Tx tx = tx()) {
-			assertTrue("The microschema should be assigned to the project.", project.getMicroschemaContainerRoot().contains(microschema));
+			assertTrue("The microschema should be assigned to the project.", tx.microschemaDao().contains(project, microschema));
 		}
 
 		expect(PROJECT_MICROSCHEMA_UNASSIGNED).match(1, ProjectMicroschemaEventModel.class, event -> {
@@ -167,7 +169,7 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 			assertEquals("The removed microschema should not be listed in the response", 0,
 				list.getData().stream().filter(s -> s.getUuid().equals(microschemaUuid)).count());
 			assertFalse("The microschema should no longer be assigned to the project.",
-				project().getMicroschemaContainerRoot().contains(microschema));
+				tx.microschemaDao().contains(project(), microschema));
 		}
 	}
 
@@ -178,7 +180,7 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.roleDao();
-			assertTrue("The microschema should be assigned to the project.", project.getMicroschemaContainerRoot().contains(microschema));
+			assertTrue("The microschema should be assigned to the project.", tx.microschemaDao().contains(project, microschema));
 			// Revoke update perms on the project
 			roleDao.revokePermissions(role(), project, UPDATE_PERM);
 			tx.success();
@@ -189,7 +191,7 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 				project.getUuid(), UPDATE_PERM.getRestPerm().getName());
 
 			// Reload the microschema and check for expected changes
-			assertTrue("The microschema should still be listed for the project.", project.getMicroschemaContainerRoot().contains(microschema));
+			assertTrue("The microschema should still be listed for the project.", tx.microschemaDao().contains(project, microschema));
 		}
 	}
 
