@@ -11,6 +11,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.generic.UserProperties;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
+import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.migration.BranchMigration;
@@ -82,6 +83,8 @@ public interface BaseMeshComponent {
 	WebRootLinkReplacer webRootLinkReplacer();
 
 	ProjectVersionPurgeHandler projectVersionPurgeHandler();
+
+	ServerSchemaStorage serverSchemaStorage();
 
 	// Search
 

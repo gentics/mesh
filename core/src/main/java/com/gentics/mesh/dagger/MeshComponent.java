@@ -31,8 +31,6 @@ public interface MeshComponent extends BaseMeshComponent {
 
 	EndpointRegistry endpointRegistry();
 
-	ServerSchemaStorage serverSchemaStorage();
-
 	Provider<EventQueueBatch> batchProvider();
 
 	RouterStorageRegistry routerStorageRegistry();

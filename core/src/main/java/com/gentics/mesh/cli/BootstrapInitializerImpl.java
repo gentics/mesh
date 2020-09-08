@@ -78,7 +78,7 @@ import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.search.IndexHandler;
-import com.gentics.mesh.core.data.service.ServerSchemaStorage;
+import com.gentics.mesh.core.data.service.ServerSchemaStorageImpl;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
@@ -145,7 +145,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	private static final String ADMIN_USERNAME = "admin";
 
 	@Inject
-	public ServerSchemaStorage schemaStorage;
+	public ServerSchemaStorageImpl schemaStorage;
 
 	@Inject
 	public Database db;

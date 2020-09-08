@@ -18,7 +18,6 @@ import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
-import com.gentics.mesh.core.rest.schema.SchemaStorage;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 
 import io.vertx.core.logging.Logger;
@@ -29,9 +28,9 @@ import io.vertx.core.logging.LoggerFactory;
  * since it is not required to load the schema from the graph everytime it is needed.
  */
 @Singleton
-public class ServerSchemaStorage implements SchemaStorage {
+public class ServerSchemaStorageImpl implements ServerSchemaStorage {
 
-	private static final Logger log = LoggerFactory.getLogger(ServerSchemaStorage.class);
+	private static final Logger log = LoggerFactory.getLogger(ServerSchemaStorageImpl.class);
 
 	/**
 	 * Map holding the schemas per name and version
@@ -41,7 +40,7 @@ public class ServerSchemaStorage implements SchemaStorage {
 	private Map<String, Map<String, MicroschemaVersionModel>> microschemas = Collections.synchronizedMap(new HashMap<>());
 
 	@Inject
-	public ServerSchemaStorage() {
+	public ServerSchemaStorageImpl() {
 	}
 
 	public void init() {
@@ -180,12 +179,7 @@ public class ServerSchemaStorage implements SchemaStorage {
 		}
 	}
 
-	/**
-	 * Remove the given container from the storage.
-	 * 
-	 * @param container
-	 *            Schema or microschema container which is used to identify the elements which should be removed from the storage
-	 */
+	@Override
 	public void remove(FieldSchemaContainer container) {
 		if (container instanceof SchemaVersionModel) {
 			SchemaVersionModel schemaModel = (SchemaVersionModel) container;

@@ -97,6 +97,8 @@ import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparatorImpl;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparatorImpl;
+import com.gentics.mesh.core.data.service.ServerSchemaStorage;
+import com.gentics.mesh.core.data.service.ServerSchemaStorageImpl;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.data.service.WebRootServiceImpl;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
@@ -412,6 +414,9 @@ public abstract class OrientDBModule {
 
 	@Binds
 	abstract ProjectVersionPurgeHandler projectVersionPurgeHandler(ProjectVersionPurgeHandlerImpl e);
+
+	@Binds
+	abstract ServerSchemaStorage serverSchemaStorage(ServerSchemaStorageImpl e);
 
 	@Provides
 	public static List<ConsistencyCheck> consistencyCheckList() {
