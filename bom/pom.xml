@@ -401,6 +401,11 @@
 			</dependency>
 			<dependency>
 				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-mdm-common</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
 				<artifactId>mesh-mdm-orientdb-api</artifactId>
 				<version>${project.version}</version>
 			</dependency>
