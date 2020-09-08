@@ -44,26 +44,6 @@ public interface BaseMeshComponent {
 
 	SchemaComparator schemaComparator();
 
-	// Index Handlers
-
-	UserIndexHandler userIndexHandler();
-
-	RoleIndexHandler roleIndexHandler();
-
-	GroupIndexHandler groupIndexHandler();
-
-	SchemaIndexHandler schemaContainerIndexHandler();
-
-	MicroschemaIndexHandler microschemaContainerIndexHandler();
-
-	TagIndexHandler tagIndexHandler();
-
-	TagFamilyIndexHandler tagFamilyIndexHandler();
-
-	ProjectIndexHandler projectIndexHandler();
-
-	NodeIndexHandler nodeContainerIndexHandler();
-
 	// Data
 
 	PermissionProperties permissionProperties();
@@ -99,12 +79,28 @@ public interface BaseMeshComponent {
 	WebRootLinkReplacer webRootLinkReplacer();
 
 	// Search
-	
+
 	SearchProvider searchProvider();
+
+	UserIndexHandler userIndexHandler();
+
+	RoleIndexHandler roleIndexHandler();
+
+	GroupIndexHandler groupIndexHandler();
+
+	SchemaIndexHandler schemaContainerIndexHandler();
+
+	MicroschemaIndexHandler microschemaContainerIndexHandler();
+
+	TagIndexHandler tagIndexHandler();
+
+	TagFamilyIndexHandler tagFamilyIndexHandler();
+
+	ProjectIndexHandler projectIndexHandler();
+
+	NodeIndexHandler nodeContainerIndexHandler();
 
 	// REST
 
 	WriteLock globalLock();
-
-	BinaryUploadHandler nodeFieldAPIHandler();
 }

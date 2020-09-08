@@ -6,8 +6,6 @@ import javax.annotation.Nullable;
 import javax.inject.Provider;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
-import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
@@ -21,8 +19,6 @@ import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.metric.MetricsService;
-import com.gentics.mesh.rest.RestAPIVerticle;
 import com.gentics.mesh.router.EndpointRegistry;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.router.RouterStorageRegistry;
@@ -46,8 +42,6 @@ public interface MeshComponent extends BaseMeshComponent {
 		return (TrackingSearchProvider) searchProvider();
 	}
 
-	MeshJWTAuthHandler authenticationHandler();
-
 	JobWorkerVerticle jobWorkerVerticle();
 
 	ServerSchemaStorage serverSchemaStorage();
@@ -61,12 +55,6 @@ public interface MeshComponent extends BaseMeshComponent {
 	ProjectVersionPurgeHandler projectVersionPurgeHandler();
 
 	IndexHandlerRegistry indexHandlerRegistry();
-
-	RestAPIVerticle restApiVerticle();
-
-	MeshJWTAuthProvider authProvider();
-
-	MetricsService metrics();
 
 	Provider<EventQueueBatch> batchProvider();
 
