@@ -3,6 +3,8 @@ package com.gentics.mesh.dagger;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.gentics.mesh.cache.PermissionCache;
+import com.gentics.mesh.cache.ProjectBranchNameCache;
+import com.gentics.mesh.cache.ProjectNameCache;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.generic.UserProperties;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
@@ -59,7 +61,13 @@ public interface BaseMeshComponent {
 
 	UserProperties userProperties();
 
+	// Caches
+
 	PermissionCache permissionCache();
+
+	ProjectBranchNameCache branchCache();
+
+	ProjectNameCache projectNameCache();
 
 	// Plugin
 

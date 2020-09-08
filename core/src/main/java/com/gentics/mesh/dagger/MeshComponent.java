@@ -23,7 +23,6 @@ import com.gentics.mesh.core.migration.BranchMigration;
 import com.gentics.mesh.core.migration.MicronodeMigration;
 import com.gentics.mesh.core.migration.NodeMigration;
 import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandler;
-import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -89,10 +88,6 @@ public interface MeshComponent extends BaseMeshComponent {
 	MeshJWTAuthProvider authProvider();
 
 	MetricsService metrics();
-
-	ProjectBranchNameCache branchCache();
-
-	ProjectNameCache projectNameCache();
 
 	Provider<EventQueueBatch> batchProvider();
 
