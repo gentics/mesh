@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.image.spi;
+package com.gentics.mesh.core.image;
 
 /**
  * Container object which holds image information.

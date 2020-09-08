@@ -8,7 +8,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.core.binary.AbstractBinaryProcessor;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
-import com.gentics.mesh.core.image.spi.ImageManipulator;
+import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.util.NodeUtil;
 
 import io.reactivex.Maybe;

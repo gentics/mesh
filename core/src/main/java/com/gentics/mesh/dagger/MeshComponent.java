@@ -15,7 +15,6 @@ import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.core.endpoint.role.RoleCrudHandler;
-import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.migration.BranchMigration;
 import com.gentics.mesh.core.migration.MicronodeMigration;
@@ -34,7 +33,6 @@ import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.storage.BinaryStorage;
-import com.gentics.mesh.storage.LocalBinaryStorage;
 
 /**
  * Central dagger mesh component which will expose dependencies.
@@ -75,11 +73,7 @@ public interface MeshComponent extends BaseMeshComponent {
 
 	IndexHandlerRegistry indexHandlerRegistry();
 
-	LocalBinaryStorage localBinaryStorage();
-
 	BinaryUploadHandler nodeFieldAPIHandler();
-
-	ImageManipulator imageManipulator();
 
 	RestAPIVerticle restApiVerticle();
 

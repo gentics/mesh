@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.image.spi;
+package com.gentics.mesh.core.image;
 
 public class CacheFileInfo {
 	public final String path;

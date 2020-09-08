@@ -5,7 +5,7 @@ import javax.inject.Singleton;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.image.spi.ImageManipulator;
+import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;

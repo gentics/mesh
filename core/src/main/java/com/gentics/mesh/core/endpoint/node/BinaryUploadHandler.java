@@ -33,7 +33,7 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
-import com.gentics.mesh.core.image.spi.ImageManipulator;
+import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.NodeVersionConflictException;
 import com.gentics.mesh.core.rest.node.NodeResponse;

@@ -30,7 +30,7 @@ import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.node.TransformationResult;
 import com.gentics.mesh.core.field.AbstractFieldTest;
-import com.gentics.mesh.core.image.spi.ImageInfo;
+import com.gentics.mesh.core.image.ImageInfo;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.Field;

@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.image.spi;
+package com.gentics.mesh.core.image;
 
 import java.awt.image.BufferedImage;
 import java.io.InputStream;
@@ -27,7 +27,7 @@ public interface ImageManipulator {
 	/**
 	 * Read the image information from image file.
 	 *
-	 * @param ins
+	 * @param file
 	 * @return
 	 */
 	Single<ImageInfo> readImageInfo(String file);

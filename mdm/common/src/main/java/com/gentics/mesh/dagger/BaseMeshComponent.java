@@ -8,6 +8,7 @@ import com.gentics.mesh.cache.ProjectNameCache;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.generic.UserProperties;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
+import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
@@ -22,6 +23,7 @@ import com.gentics.mesh.search.index.schema.SchemaIndexHandler;
 import com.gentics.mesh.search.index.tag.TagIndexHandler;
 import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
 import com.gentics.mesh.search.index.user.UserIndexHandler;
+import com.gentics.mesh.storage.LocalBinaryStorage;
 
 import io.vertx.core.Vertx;
 
@@ -78,6 +80,10 @@ public interface BaseMeshComponent {
 	MeshPluginManager pluginManager();
 
 	MeshLocalClient meshLocalClientImpl();
+
+	ImageManipulator imageManipulator();
+
+	LocalBinaryStorage localBinaryStorage();
 
 	// REST
 
