@@ -52,10 +52,9 @@ public class ProjectVersionPurgeHandler {
 	public Completable purgeVersions(HibProject project, ZonedDateTime maxAge) {
 		return Completable.fromAction(() -> {
 			db.tx(tx -> {
-				for (HibNode node : project.findNodes()) {
+				for (HibNode node : tx.nodeDao().findAll(project)) {
 					purgeNode(tx, node, maxAge);
 				}
-				return null;
 			});
 		});
 	}

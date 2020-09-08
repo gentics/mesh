@@ -61,7 +61,7 @@ public interface TestGraphHelper extends TestHelper {
 	 * @return
 	 */
 	default Stream<NodeGraphFieldContainer> getAllContents() {
-		return project().findNodes().stream()
+		return Tx.get().nodeDao().findAll(project()).stream()
 			.flatMap(node -> Stream.of(DRAFT, PUBLISHED)
 			.flatMap(type -> boot().contentDao().getGraphFieldContainers(node, type).stream()));
 	}

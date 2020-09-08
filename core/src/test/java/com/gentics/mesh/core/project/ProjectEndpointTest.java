@@ -559,7 +559,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			// All nodes + project + tags and tag families need to be reindex
 			// since the project name is part of the search document.
 			int expectedCount = 1;
-			for (HibNode node : project().findNodes()) {
+			for (HibNode node : tx.nodeDao().findAll(project())) {
 				expectedCount += tx.contentDao().getGraphFieldContainerCount(node);
 			}
 			expectedCount += meshRoot().getTagRoot().computeCount();

@@ -66,7 +66,7 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 
 			List<? extends HibNode> nodes = db.tx(tx -> {
 				HibProject project = oldBranch.getProject();
-				return project.findNodes().list();
+				return tx.nodeDao().findAll(project).list();
 			});
 
 			List<Exception> errorsDetected = new ArrayList<>();

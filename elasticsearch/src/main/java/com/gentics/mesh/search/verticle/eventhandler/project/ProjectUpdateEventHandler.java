@@ -19,6 +19,7 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -73,8 +74,9 @@ public class ProjectUpdateEventHandler implements EventHandler {
 		return Flowable.defer(() -> helper.getDb()
 				.transactional(tx -> entities.project.getElement(model).stream().flatMap(project -> {
 					BranchDaoWrapper branchDao = tx.branchDao();
+					NodeDaoWrapper nodeDao = tx.nodeDao();
 					List<Branch> branches = (List<Branch>) branchDao.findAll(project).list();
-					return project.findNodes().stream().flatMap(node -> Stream.of(DRAFT, PUBLISHED)
+					return nodeDao.findAll(project).stream().flatMap(node -> Stream.of(DRAFT, PUBLISHED)
 							.flatMap(type -> branches.stream().flatMap(branch -> tx.contentDao()
 									.getGraphFieldContainers(node, branch, type).stream()
 									.map(container -> helper.createDocumentRequest(

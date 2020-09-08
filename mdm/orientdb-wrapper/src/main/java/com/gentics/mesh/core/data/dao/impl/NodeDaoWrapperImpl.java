@@ -72,7 +72,8 @@ public class NodeDaoWrapperImpl extends AbstractDaoWrapper<HibNode> implements N
 
 	@Override
 	public Result<? extends HibNode> findAll(HibProject project) {
-		return toGraph(project).getNodeRoot().findAll();
+		return toGraph(project).findNodes();
+		//return toGraph(project).getNodeRoot().findAll();
 	}
 
 	@Override

@@ -6,7 +6,6 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.user.HibUserTracking;
 import com.gentics.mesh.core.rest.project.ProjectReference;
-import com.gentics.mesh.core.result.Result;
 
 public interface HibProject extends HibCoreElement, HibUserTracking {
 
@@ -20,10 +19,7 @@ public interface HibProject extends HibCoreElement, HibUserTracking {
 
 	HibBranch findBranchOrLatest(String branchNameOrUuid);
 
-	@Deprecated
-	Result<? extends HibNode> findNodes();
-
-	HibBranch getLatestBranch();	
+	HibBranch getLatestBranch();
 
 	HibNode getBaseNode();
 
