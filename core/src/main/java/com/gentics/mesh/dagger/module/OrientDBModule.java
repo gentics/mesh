@@ -133,8 +133,16 @@ import com.gentics.mesh.router.RouterStorageRegistry;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
 import com.gentics.mesh.search.index.common.DropIndexHandler;
 import com.gentics.mesh.search.index.common.DropIndexHandlerImpl;
+import com.gentics.mesh.search.index.group.GroupIndexHandler;
+import com.gentics.mesh.search.index.group.GroupIndexHandlerImpl;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.search.index.node.NodeIndexHandlerImpl;
+import com.gentics.mesh.search.index.project.ProjectIndexHandler;
+import com.gentics.mesh.search.index.project.ProjectIndexHandlerImpl;
+import com.gentics.mesh.search.index.role.RoleIndexHandler;
+import com.gentics.mesh.search.index.role.RoleIndexHandlerImpl;
+import com.gentics.mesh.search.index.user.UserIndexHandler;
+import com.gentics.mesh.search.index.user.UserIndexHandlerImpl;
 import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.storage.LocalBinaryStorage;
 import com.syncleus.ferma.ext.orientdb3.PermissionRootsImpl;
@@ -324,6 +332,18 @@ public abstract class OrientDBModule {
 
 	@Binds
 	abstract ContextDataRegistry contextDataRegistry(GraphContextDataRegistryImpl e);
+
+	@Binds
+	abstract RoleIndexHandler roleIndexHandler(RoleIndexHandlerImpl e);
+
+	@Binds
+	abstract UserIndexHandler userIndexHandler(UserIndexHandlerImpl e);
+
+	@Binds
+	abstract ProjectIndexHandler projectIndexHandler(ProjectIndexHandlerImpl e);
+
+	@Binds
+	abstract GroupIndexHandler groupIndexHandler(GroupIndexHandlerImpl e);
 
 	@Provides
 	public static List<ConsistencyCheck> consistencyCheckList() {

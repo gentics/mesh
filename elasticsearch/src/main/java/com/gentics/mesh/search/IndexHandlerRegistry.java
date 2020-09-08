@@ -2,15 +2,15 @@ package com.gentics.mesh.search;
 
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.graphdb.model.MeshElement;
-import com.gentics.mesh.search.index.group.GroupIndexHandler;
+import com.gentics.mesh.search.index.group.GroupIndexHandlerImpl;
 import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandler;
 import com.gentics.mesh.search.index.node.NodeIndexHandlerImpl;
-import com.gentics.mesh.search.index.project.ProjectIndexHandler;
-import com.gentics.mesh.search.index.role.RoleIndexHandler;
+import com.gentics.mesh.search.index.project.ProjectIndexHandlerImpl;
+import com.gentics.mesh.search.index.role.RoleIndexHandlerImpl;
 import com.gentics.mesh.search.index.schema.SchemaContainerIndexHandler;
 import com.gentics.mesh.search.index.tag.TagIndexHandler;
 import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
-import com.gentics.mesh.search.index.user.UserIndexHandler;
+import com.gentics.mesh.search.index.user.UserIndexHandlerImpl;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -27,16 +27,16 @@ public class IndexHandlerRegistry {
 	NodeIndexHandlerImpl nodeIndexHandler;
 
 	@Inject
-	UserIndexHandler userIndexHandler;
+	UserIndexHandlerImpl userIndexHandler;
 
 	@Inject
-	GroupIndexHandler groupIndexHandler;
+	GroupIndexHandlerImpl groupIndexHandler;
 
 	@Inject
-	RoleIndexHandler roleIndexHandler;
+	RoleIndexHandlerImpl roleIndexHandler;
 
 	@Inject
-	ProjectIndexHandler projectIndexHandler;
+	ProjectIndexHandlerImpl projectIndexHandler;
 
 	@Inject
 	TagFamilyIndexHandler tagFamilyIndexHandler;

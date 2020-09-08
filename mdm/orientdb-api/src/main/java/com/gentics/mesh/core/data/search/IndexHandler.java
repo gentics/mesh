@@ -169,4 +169,14 @@ public interface IndexHandler<T extends HibBaseElement> {
 	 */
 	Observable<UpdateBulkEntry> updatePermissionForBulk(UpdateDocumentEntry entry);
 
+	/**
+	 * Store the given object within the search index.
+	 * 
+	 * @param element
+	 * @param entry
+	 *            search queue entry
+	 * @return
+	 */
+	Completable store(T element, UpdateDocumentEntry entry);
+
 }

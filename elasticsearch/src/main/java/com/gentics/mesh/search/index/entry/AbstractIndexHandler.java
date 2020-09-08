@@ -115,14 +115,7 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 	 */
 	abstract protected String composeDocumentIdFromEntry(UpdateDocumentEntry entry);
 
-	/**
-	 * Store the given object within the search index.
-	 * 
-	 * @param element
-	 * @param entry
-	 *            search queue entry
-	 * @return
-	 */
+	@Override
 	public Completable store(T element, UpdateDocumentEntry entry) {
 		String indexName = composeIndexNameFromEntry(entry);
 		String documentId = composeDocumentIdFromEntry(entry);
