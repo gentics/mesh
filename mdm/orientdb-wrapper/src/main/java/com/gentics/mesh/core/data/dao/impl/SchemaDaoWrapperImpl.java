@@ -126,7 +126,7 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 
 	@Override
 	public TransformablePage<? extends HibSchema> findAll(InternalActionContext ac, HibProject project, PagingParameters pagingInfo) {
-		return project.getSchemaContainerRoot().findAll(ac, pagingInfo);
+		return toGraph(project).getSchemaContainerRoot().findAll(ac, pagingInfo);
 	}
 
 	@Override
@@ -203,13 +203,13 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 
 	@Override
 	public HibSchema findByUuid(HibProject project, String schemaUuid) {
-		return project.getSchemaContainerRoot().findByUuid(schemaUuid);
+		return toGraph(project).getSchemaContainerRoot().findByUuid(schemaUuid);
 
 	}
 
 	@Override
 	public HibSchema findByName(HibProject project, String schemaName) {
-		return project.getSchemaContainerRoot().findByName(schemaName);
+		return toGraph(project).getSchemaContainerRoot().findByName(schemaName);
 	}
 
 	@Override
@@ -288,6 +288,11 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 		// TODO check for project in context?
 		SchemaRoot schemaRoot = boot.get().schemaContainerRoot();
 		return schemaRoot.loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+	}
+
+	@Override
+	public HibSchema loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, InternalPermission perm) {
+		return toGraph(project).getSchemaContainerRoot().loadObjectByUuid(ac, uuid, perm);
 	}
 
 	@Override
@@ -439,6 +444,11 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 	public Stream<? extends NodeGraphFieldContainer> getFieldContainers(HibSchemaVersion version, String branchUuid) {
 		SchemaVersion graphVersion = toGraph(version);
 		return graphVersion.getFieldContainers(branchUuid);
+	}
+
+	@Override
+	public boolean contains(HibProject project, HibSchema schema) {
+		return toGraph(project).getSchemaContainerRoot().contains(schema);
 	}
 
 }

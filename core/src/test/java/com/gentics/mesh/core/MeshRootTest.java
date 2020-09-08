@@ -16,7 +16,6 @@ import com.gentics.mesh.BuildInfo;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.core.data.HibBaseElement;
-import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -30,11 +29,11 @@ public class MeshRootTest extends AbstractMeshTest {
 			// Valid paths
 			expectSuccess("projects", meshRoot().getProjectRoot());
 			expectSuccess("projects/" + project().getUuid(), project());
-			expectSuccess("projects/" + project().getUuid() + "/schemas", project().getSchemaContainerRoot());
+			expectSuccess("projects/" + project().getUuid() + "/schemas", toGraph(project()).getSchemaContainerRoot());
 			expectSuccess("projects/" + project().getUuid() + "/schemas/" + schemaContainer("folder").getUuid(), schemaContainer("folder"));
 			expectSuccess("projects/" + project().getUuid() + "/tagFamilies", toGraph(project()).getTagFamilyRoot());
 			expectSuccess("projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid(), tagFamily("colors"));
-			expectSuccess("projects/" + project().getUuid() + "/nodes", project().getNodeRoot());
+			expectSuccess("projects/" + project().getUuid() + "/nodes", toGraph(project()).getNodeRoot());
 			expectSuccess("projects/" + project().getUuid() + "/nodes/" + folder("2015").getUuid(), folder("2015"));
 			expectSuccess("projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid() + "/tags", tagFamily("colors"));
 			expectSuccess("projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid() + "/tags/" + tag("red").getUuid(),

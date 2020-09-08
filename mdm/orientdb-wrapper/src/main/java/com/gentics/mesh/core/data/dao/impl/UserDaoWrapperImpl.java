@@ -38,6 +38,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
@@ -102,6 +103,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 		UserRoot userRoot = boot.get().userRoot();
 		GroupDaoWrapper groupDao = boot.get().groupDao();
 		ProjectDaoWrapper projectDao = boot.get().projectDao();
+		NodeDaoWrapper nodeDao = boot.get().nodeDao();
 		MeshAuthUser requestUser = ac.getUser();
 
 		UserCreateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), UserCreateRequest.class);
@@ -169,7 +171,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 			if (project == null) {
 				throw error(BAD_REQUEST, "project_not_found", projectName);
 			}
-			Node node = project.getNodeRoot().loadObjectByUuid(ac, referencedNodeUuid, READ_PERM);
+			HibNode node = nodeDao.loadObjectByUuid(project, ac, referencedNodeUuid, READ_PERM);
 			user.setReferencedNode(node);
 		} else if (reference != null) {
 			// TODO handle user create using full node rest model.
@@ -282,8 +284,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 				if (project == null) {
 					throw error(BAD_REQUEST, "project_not_found", projectName);
 				}
-				NodeRoot nodeRoot = project.getNodeRoot();
-				Node node = nodeRoot.loadObjectByUuid(ac, referencedNodeUuid, READ_PERM);
+				HibNode node = Tx.get().nodeDao().loadObjectByUuid(project, ac, referencedNodeUuid, READ_PERM);
 				if (!dry) {
 					graphUser.setReferencedNode(node);
 				}

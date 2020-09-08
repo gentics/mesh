@@ -257,9 +257,10 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Test
 	public void testReadSchemaVersions() throws Exception {
 		try (Tx tx = tx()) {
+			SchemaDaoWrapper schemaDao = tx.schemaDao();
 			HibProject project = project();
 			HibBranch branch = latestBranch();
-			List<HibSchemaVersion> versions = project.getSchemaContainerRoot().findAll().stream().filter(v -> !v.getName().equals("content"))
+			List<HibSchemaVersion> versions = schemaDao.findAll(project).stream().filter(v -> !v.getName().equals("content"))
 				.map(HibSchema::getLatestVersion).collect(Collectors.toList());
 
 			SchemaContainerVersionImpl newVersion = tx.getGraph().addFramedVertexExplicit(SchemaContainerVersionImpl.class);
@@ -324,8 +325,8 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Test
 	public void testUnassignSchema() throws Exception {
 		try (Tx tx = tx()) {
-			HibProject project = project();
 			SchemaDaoWrapper schemaDao = tx.schemaDao();
+			HibProject project = project();
 			List<? extends HibSchema> schemas = schemaDao.findAll(project).list();
 			HibSchema schemaContainer = schemas.get(0);
 
@@ -333,7 +334,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			HibBranch newBranch = createBranch("New Branch");
 
 			EventQueueBatch batch = createBatch();
-			project.getSchemaContainerRoot().removeSchemaContainer(schemaContainer, batch);
+			schemaDao.removeSchema(schemaContainer, project, batch);
 			for (HibBranch branch : Arrays.asList(initialBranch, newBranch)) {
 				assertThat(branch).as(branch.getName()).hasNotSchema(schemaContainer).hasNotSchemaVersion(schemaContainer.getLatestVersion());
 			}
@@ -343,10 +344,11 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Test
 	public void testFindActiveSchemaVersions() {
 		try (Tx tx = tx()) {
+			SchemaDaoWrapper schemaDao = tx.schemaDao();
 
 			HibProject project = project();
 			HibBranch branch = latestBranch();
-			List<HibSchemaVersion> versions = project.getSchemaContainerRoot().findAll().stream().map(HibSchema::getLatestVersion)
+			List<HibSchemaVersion> versions = schemaDao.findAll(project).stream().map(HibSchema::getLatestVersion)
 				.collect(Collectors.toList());
 
 			List<HibSchemaVersion> activeVersions = TestUtils.toList(branch.findActiveSchemaVersions());
@@ -465,7 +467,7 @@ public class BranchTest extends AbstractMeshTest implements BasicObjectTestcases
 			HibMicroschemaVersion firstVersion = microschema.getLatestVersion();
 
 			// assign the microschema to the project
-			tx.microschemaDao().addMicroschema(project ,user(), microschema, createBatch());
+			tx.microschemaDao().addMicroschema(project, user(), microschema, createBatch());
 
 			// update microschema
 			updateMicroschema(microschema, "newfield");

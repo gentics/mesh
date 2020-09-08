@@ -609,7 +609,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			throw error(NOT_FOUND, "object_not_found_for_uuid", getUuid());
 		}
 
-		Node node = project.getNodeRoot().create(creator, schemaVersion, project, uuid);
+		Node node = toGraph(project).getNodeRoot().create(creator, schemaVersion, project, uuid);
 		node.setParentNode(branch.getUuid(), this);
 		node.setSchemaContainer(schemaVersion.getSchemaContainer());
 		// setCreated(creator);

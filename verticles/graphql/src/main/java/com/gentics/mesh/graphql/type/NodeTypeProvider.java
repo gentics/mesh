@@ -709,9 +709,11 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 	private List<GraphQLObjectType> generateSchemaFieldTypesV1(GraphQLContext context) {
 		Tx tx = Tx.get();
+		SchemaDaoWrapper schemaDao = tx.schemaDao();
+
 		HibProject project = tx.getProject(context);
 		List<GraphQLObjectType> schemaTypes = new ArrayList<>();
-		for (HibSchema container : project.getSchemaContainerRoot().findAll()) {
+		for (HibSchema container : schemaDao.findAll(project)) {
 			HibSchemaVersion version = container.getLatestVersion();
 			SchemaModel schema = version.getSchema();
 			GraphQLObjectType.Builder root = newObject();

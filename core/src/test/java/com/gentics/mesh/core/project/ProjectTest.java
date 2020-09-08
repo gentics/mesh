@@ -16,6 +16,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -178,11 +179,12 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testRead() {
 		try (Tx tx = tx()) {
+			SchemaDaoWrapper schemaDao = tx.schemaDao();
 			HibProject project = project();
 			assertNotNull(project.getName());
 			assertEquals("dummy", project.getName());
 			assertNotNull(project.getBaseNode());
-			assertEquals(3, project.getSchemaContainerRoot().findAll().count());
+			assertEquals(3, schemaDao.findAll(project).count());
 		}
 	}
 

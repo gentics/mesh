@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.SortOrder.UNSORTED;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.util.TestUtils.size;
@@ -32,7 +33,6 @@ import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -123,13 +123,15 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.nodeDao();
+
 			InternalActionContext ac = mockActionContext("version=draft");
-			Page<? extends Node> page = project().getNodeRoot().findAll(ac, new PagingParametersImpl(1, 10L));
+			Page<? extends HibNode> page = nodeDao.findAll(project(), ac, new PagingParametersImpl(1, 10L));
 
 			assertEquals(getNodeCount(), page.getTotalElements());
 			assertEquals(10, page.getSize());
 
-			page = project().getNodeRoot().findAll(ac, new PagingParametersImpl(1, 15L));
+			page = nodeDao.findAll(project(), ac, new PagingParametersImpl(1, 15L));
 			assertEquals(getNodeCount(), page.getTotalElements());
 			assertEquals(15, page.getSize());
 		}
@@ -311,7 +313,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 		HibNode node = folder("news");
 		try (Tx tx = tx()) {
 			String uuid = node.getUuid();
-			MeshAssert.assertElement(project().getNodeRoot(), uuid, true);
+			MeshAssert.assertElement(toGraph(project()).getNodeRoot(), uuid, true);
 			InternalActionContext ac = mockActionContext("");
 			ac.getDeleteParameters().setRecursive(true);
 			try (Tx tx2 = tx()) {
@@ -319,7 +321,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 				tx2.success();
 			}
 
-			MeshAssert.assertElement(project().getNodeRoot(), uuid, false);
+			MeshAssert.assertElement(toGraph(project()).getNodeRoot(), uuid, false);
 		}
 	}
 
@@ -406,7 +408,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			// 4. assert for initial branch
 			List<String> nodeUuids = new ArrayList<>();
-			project.getNodeRoot().findAll().forEach(node -> nodeUuids.add(node.getUuid()));
+			nodeDao.findAll(project).forEach(node -> nodeUuids.add(node.getUuid()));
 			assertThat(nodeUuids).as("All nodes").contains(folderUuid).doesNotContain(subFolderUuid, subSubFolderUuid);
 		}
 	}
@@ -473,7 +475,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			// 10. assert for initial branch
 			List<HibNode> nodes = new ArrayList<>();
-			project.getNodeRoot().findAll(mockActionContext("release=" + initialBranch.getName()), new PagingParametersImpl(1, 10000L, "name",
+			nodeDao.findAll(project, mockActionContext("release=" + initialBranch.getName()), new PagingParametersImpl(1, 10000L, "name",
 				SortOrder.ASCENDING)).forEach(node -> nodes.add(node));
 			assertThat(nodes).as("Nodes in initial branch").usingElementComparatorOnFields("uuid").doesNotContain(subFolder, subSubFolder);
 			assertThat(folder).as("folder").hasNoChildren(initialBranch);
@@ -505,32 +507,35 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			});
 
 			// 2. assert published and draft node
-			tx(() -> {
+			tx(tx2 -> {
+				NodeDaoWrapper nodeDao = tx2.nodeDao();
+
 				List<String> nodeUuids = new ArrayList<>();
-				project.getNodeRoot().findAll(mockActionContext("version=draft"), new PagingParametersImpl(1, 10000L, null, SortOrder.UNSORTED))
+				nodeDao.findAll(project, mockActionContext("version=draft"), new PagingParametersImpl(1, 10000L, null, SortOrder.UNSORTED))
 					.forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Draft nodes").contains(folderUuid);
 				nodeUuids.clear();
-				project.getNodeRoot().findAll(mockActionContext("version=published"), new PagingParametersImpl(1, 10000L, null, SortOrder.UNSORTED))
+				nodeDao.findAll(project, mockActionContext("version=published"), new PagingParametersImpl(1, 10000L, null, SortOrder.UNSORTED))
 					.forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Published nodes").contains(folderUuid);
 			});
 
 			// 3. delete
 			InternalActionContext ac = mockActionContext("");
-			tx(() -> {
-				boot().contentDao().deleteFromBranch(boot().nodeDao().findByUuid(project(), folderUuid), ac, initialBranch, bac, false);
+			tx(tx2 -> {
+				tx2.contentDao().deleteFromBranch(boot().nodeDao().findByUuid(project(), folderUuid), ac, initialBranch, bac, false);
 			});
 
 			// 4. assert published and draft gone
-			tx(() -> {
+			tx(tx2 -> {
+				NodeDaoWrapper nodeDao = tx2.nodeDao();
 				List<String> nodeUuids = new ArrayList<>();
-				project.getNodeRoot().findAll(mockActionContext("version=draft"), new PagingParametersImpl(1, 10000L, null, SortOrder.UNSORTED))
+				nodeDao.findAll(project, mockActionContext("version=draft"), new PagingParametersImpl(1, 10000L, null, SortOrder.UNSORTED))
 					.forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Draft nodes").doesNotContain(folderUuid);
 
 				nodeUuids.clear();
-				project.getNodeRoot().findAll(mockActionContext("version=published"), new PagingParametersImpl(1, 10000L, null, SortOrder.UNSORTED))
+				nodeDao.findAll(project, mockActionContext("version=published"), new PagingParametersImpl(1, 10000L, null, SortOrder.UNSORTED))
 					.forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Published nodes").doesNotContain(folderUuid);
 			});
@@ -573,27 +578,29 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			});
 
 			// 4. assert published and draft gone from initial branch
-			tx(() -> {
+			tx(tx2 -> {
+				NodeDaoWrapper nodeDao = tx2.nodeDao();
 				List<String> nodeUuids = new ArrayList<>();
-				project.getNodeRoot().findAll(mockActionContext("version=draft&branch=" + initialBranch.getUuid()), new PagingParametersImpl(1,
+				nodeDao.findAll(project, mockActionContext("version=draft&branch=" + initialBranch.getUuid()), new PagingParametersImpl(1,
 					10000L, null, UNSORTED)).forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Draft nodes").doesNotContain(folderUuid);
 
 				nodeUuids.clear();
-				project.getNodeRoot().findAll(mockActionContext("version=published&branch=" + initialBranch.getUuid()), new PagingParametersImpl(1,
+				nodeDao.findAll(project, mockActionContext("version=published&branch=" + initialBranch.getUuid()), new PagingParametersImpl(1,
 					10000L, null, UNSORTED)).forEach(node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Published nodes").doesNotContain(folderUuid);
 			});
 
 			// 5. assert published and draft still there for new branch
-			tx(() -> {
+			tx(tx2 -> {
+				NodeDaoWrapper nodeDao = tx2.nodeDao();
 				List<String> nodeUuids = new ArrayList<>();
-				project.getNodeRoot().findAll(mockActionContext("version=draft"), new PagingParametersImpl(1, 10000L, null, UNSORTED)).forEach(
+				nodeDao.findAll(project, mockActionContext("version=draft"), new PagingParametersImpl(1, 10000L, null, UNSORTED)).forEach(
 					node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Draft nodes").contains(folderUuid);
 
 				nodeUuids.clear();
-				project.getNodeRoot().findAll(mockActionContext("version=published"), new PagingParametersImpl(1, 10000L, null, UNSORTED)).forEach(
+				nodeDao.findAll(project, mockActionContext("version=published"), new PagingParametersImpl(1, 10000L, null, UNSORTED)).forEach(
 					node -> nodeUuids.add(node.getUuid()));
 				assertThat(nodeUuids).as("Published nodes").contains(folderUuid);
 			});

@@ -8,6 +8,7 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
@@ -1009,10 +1010,11 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String uuid;
 
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 			HibNode parentNode = folder("news");
 			uuid = parentNode.getUuid();
 
-			nNodesFound = project().getNodeRoot().computeCount();
+			nNodesFound = nodeDao.computeCount(project());
 		}
 
 		Function<Long, NodeCreateRequest> createRequest = nr -> {
@@ -1049,7 +1051,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			}).blockingAwait();
 
 		try (Tx tx = tx()) {
-			long nNodesFoundAfterRest = project().getNodeRoot().findAll().count();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
+			long nNodesFoundAfterRest = nodeDao.findAll(project()).count();
 			assertEquals("All created nodes should have been created.", nNodesFound, nNodesFoundAfterRest);
 		}
 	}
@@ -1946,7 +1949,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		waitForSearchIdleEvent();
 
 		try (Tx tx = tx()) {
-			assertElement(project().getNodeRoot(), uuid, false);
+			assertElement(toGraph(project()).getNodeRoot(), uuid, false);
 			// Delete Events after node delete. We expect 4 since both languages have draft and publish version.
 			int deletes = 4;
 			assertThat(trackingSearchProvider()).hasEvents(0, 0, deletes, 0, 0);

@@ -11,8 +11,9 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -59,7 +60,9 @@ public class NodeSearchPerformanceTest extends AbstractMeshTest {
 		// Revoke all but one permission
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.roleDao();
-			for (Node node : project().getNodeRoot().findAll()) {
+			NodeDaoWrapper nodeDao = tx.nodeDao();
+
+			for (HibNode node : nodeDao.findAll(project())) {
 				if (!node.getUuid().equals(lastNodeUuid)) {
 					roleDao.revokePermissions(role(), node, READ_PERM);
 				}

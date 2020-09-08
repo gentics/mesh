@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.actions.impl;
 
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
+
 import java.util.function.Predicate;
 
 import javax.inject.Inject;
@@ -30,18 +32,19 @@ public class NodeDAOActionsImpl implements NodeDAOActions {
 
 	@Override
 	public HibNode loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
+		NodeDaoWrapper nodeDao = ctx.tx().nodeDao();
 		if (perm == null) {
-			return ctx.tx().nodeDao().findByUuid(ctx.project(), uuid);
+			return nodeDao.findByUuid(ctx.project(), uuid);
 		} else {
-			return ctx.project().getNodeRoot().loadObjectByUuid(ctx.ac(), uuid, perm, errorIfNotFound);
+			return nodeDao.loadObjectByUuid(ctx.project(), ctx.ac(), uuid, perm, errorIfNotFound);
 		}
 	}
 
 	@Override
 	public HibNode loadByName(DAOActionContext ctx, String name, InternalPermission perm, boolean errorIfNotFound) {
-		// NodeDaoWrapper nodeDao = tx.nodeDao();
+		NodeDaoWrapper nodeDao = ctx.tx().nodeDao();
 		if (perm == null) {
-			return ctx.project().getNodeRoot().findByName(name);
+			return nodeDao.findByName(ctx.project(), name);
 		} else {
 			throw new RuntimeException("Not supported");
 		}
@@ -49,7 +52,10 @@ public class NodeDAOActionsImpl implements NodeDAOActions {
 
 	@Override
 	public TransformablePage<? extends HibNode> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
-		return ctx.project().getNodeRoot().findAll(ctx.ac(), pagingInfo);
+		// TODO MDM refactor TransformablePage
+		//NodeDaoWrapper nodeDao = ctx.tx().nodeDao();
+		//return nodeDao.findAll(ctx.project(), ctx.ac(), pagingInfo);
+		return toGraph(ctx.project()).getNodeRoot().findAll(ctx.ac(), pagingInfo);
 	}
 
 	@Override

@@ -4,9 +4,6 @@ import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.root.MicroschemaRoot;
-import com.gentics.mesh.core.data.root.NodeRoot;
-import com.gentics.mesh.core.data.root.SchemaRoot;
 import com.gentics.mesh.core.data.user.HibUserTracking;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.result.Result;
@@ -34,13 +31,7 @@ public interface HibProject extends HibCoreElement, HibUserTracking {
 
 	HibBranch findBranch(String branchNameOrUuid);
 
-	@Deprecated
-	NodeRoot getNodeRoot();
-
 	void setBaseNode(HibNode baseNode);
-
-	@Deprecated
-	SchemaRoot getSchemaContainerRoot();
 
 	HibBaseElement getBranchPermissionRoot();
 }

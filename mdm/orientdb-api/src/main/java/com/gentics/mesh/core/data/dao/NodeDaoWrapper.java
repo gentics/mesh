@@ -33,6 +33,8 @@ public interface NodeDaoWrapper extends NodeDao, DaoWrapper<HibNode>, DaoTransfo
 
 	HibNode loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, InternalPermission perm);
 
+	HibNode loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound);
+
 	/**
 	 * Finds a node in a project by its uuid.
 	 * 
@@ -41,6 +43,8 @@ public interface NodeDaoWrapper extends NodeDao, DaoWrapper<HibNode>, DaoTransfo
 	 * @return The found node. Null if the node could not be found in the project.
 	 */
 	HibNode findByUuid(HibProject project, String uuid);
+
+	HibNode findByName(HibProject project, String name);
 
 	/**
 	 * Create a child node in the latest branch of the project.
@@ -310,8 +314,16 @@ public interface NodeDaoWrapper extends NodeDao, DaoWrapper<HibNode>, DaoTransfo
 
 	HibNode create(HibProject project, InternalActionContext ac, EventQueueBatch batch, String uuid);
 
+	Result<? extends HibNode> findAll(HibProject project);
+
+	Page<? extends HibNode> findAll(HibProject project, InternalActionContext ac, PagingParameters pagingInfo);
+
 	Page<? extends HibNode> findAll(HibProject project, InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibNode> filter);
 
 	Stream<? extends HibNode> findAllStream(HibProject project, InternalActionContext ac, InternalPermission perm);
+
+	long computeCount(HibProject project);
+
+	HibNode create(HibProject project, HibUser user, HibSchemaVersion version);
 
 }

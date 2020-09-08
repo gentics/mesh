@@ -56,8 +56,28 @@ public class NodeDaoWrapperImpl extends AbstractDaoWrapper<HibNode> implements N
 	}
 
 	@Override
-	public Node findByUuid(HibProject project, String uuid) {
-		return project.getNodeRoot().findByUuid(uuid);
+	public HibNode loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
+		return toGraph(project).getNodeRoot().loadObjectByUuid(ac, uuid, perm, errorIfNotFound);
+	}
+
+	@Override
+	public HibNode findByUuid(HibProject project, String uuid) {
+		return toGraph(project).getNodeRoot().findByUuid(uuid);
+	}
+
+	@Override
+	public HibNode findByName(HibProject project, String name) {
+		return toGraph(project).getNodeRoot().findByName(name);
+	}
+
+	@Override
+	public Result<? extends HibNode> findAll(HibProject project) {
+		return toGraph(project).getNodeRoot().findAll();
+	}
+
+	@Override
+	public Page<? extends HibNode> findAll(HibProject project, InternalActionContext ac, PagingParameters pagingInfo) {
+		return toGraph(project).getNodeRoot().findAll(ac, pagingInfo);
 	}
 
 	@Override
@@ -81,6 +101,11 @@ public class NodeDaoWrapperImpl extends AbstractDaoWrapper<HibNode> implements N
 	}
 
 	@Override
+	public long computeCount(HibProject project) {
+		return toGraph(project).getNodeRoot().computeCount();
+	}
+
+	@Override
 	public NodeResponse transformToRestSync(HibNode node, InternalActionContext ac, int level, String... languageTags) {
 		return toGraph(node).transformToRestSync(ac, level, languageTags);
 	}
@@ -88,6 +113,11 @@ public class NodeDaoWrapperImpl extends AbstractDaoWrapper<HibNode> implements N
 	@Override
 	public HibNode create(HibNode parentNode, HibUser creator, HibSchemaVersion schemaVersion, HibProject project) {
 		return toGraph(parentNode).create(creator, schemaVersion, project);
+	}
+
+	@Override
+	public HibNode create(HibProject project, HibUser user, HibSchemaVersion version) {
+		return toGraph(project).getNodeRoot().create(user, version, project);
 	}
 
 	@Override

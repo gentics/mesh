@@ -7,6 +7,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.NodeMigrationActionContext;
 import com.gentics.mesh.core.context.ContextDataRegistry;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -22,6 +23,9 @@ public class GraphContextDataRegistryImpl implements ContextDataRegistry {
 
 	@Override
 	public HibProject getProject(InternalActionContext ac) {
+		if(ac instanceof NodeMigrationActionContext) {
+			return ((NodeMigrationActionContext)ac).getProject();
+		}
 		return ac.get(SharedKeys.PROJECT_CONTEXT_KEY);
 	}
 
@@ -32,6 +36,9 @@ public class GraphContextDataRegistryImpl implements ContextDataRegistry {
 
 	@Override
 	public HibBranch getBranch(InternalActionContext ac, HibProject project) {
+		if (ac instanceof NodeMigrationActionContext && project == null) {
+			return ((NodeMigrationActionContext) ac).getBranch();
+		}
 		if (project == null) {
 			project = getProject(ac);
 		}

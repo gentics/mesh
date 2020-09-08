@@ -29,7 +29,7 @@ import com.gentics.mesh.core.data.node.field.list.AbstractReferencingGraphFieldL
 import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.core.data.root.NodeRoot;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
@@ -43,7 +43,7 @@ import com.gentics.mesh.util.CompareUtils;
 public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<NodeGraphField, NodeFieldList, HibNode> implements NodeGraphFieldList {
 
 	public static FieldTransformer<NodeFieldList> NODE_LIST_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level,
-			parentNode) -> {
+		parentNode) -> {
 		NodeGraphFieldList nodeFieldList = container.getNodeList(fieldKey);
 		if (nodeFieldList == null) {
 			return null;
@@ -54,6 +54,8 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 
 	public static FieldUpdater NODE_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
 		Tx tx = Tx.get();
+		NodeDaoWrapper nodeDao = tx.nodeDao();
+
 		MeshComponent mesh = container.getGraphAttribute(GraphAttribute.MESH_COMPONENT);
 		NodeFieldList nodeList = fieldMap.getNodeFieldList(fieldKey);
 		NodeGraphFieldList graphNodeFieldList = container.getNodeList(fieldKey);
@@ -86,13 +88,13 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 		graphNodeFieldList.removeAll();
 
 		// Handle Update
-		NodeRoot nodeRoot = tx.getProject(ac).getNodeRoot();
+		HibProject project = tx.getProject(ac);
 		AtomicInteger integer = new AtomicInteger();
 		for (NodeFieldListItem item : nodeList.getItems()) {
 			if (item == null) {
 				throw error(BAD_REQUEST, "field_list_error_null_not_allowed", fieldKey);
 			}
-			Node node = nodeRoot.findByUuid(item.getUuid());
+			HibNode node = nodeDao.findByUuid(project, item.getUuid());
 			if (node == null) {
 				throw error(BAD_REQUEST, "node_list_item_not_found", item.getUuid());
 			}
@@ -100,9 +102,9 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 			String schemaName = node.getSchemaContainer().getName();
 
 			if (!ArrayUtils.isEmpty(listFieldSchema.getAllowedSchemas())
-					&& !Arrays.asList(listFieldSchema.getAllowedSchemas()).contains(schemaName)) {
+				&& !Arrays.asList(listFieldSchema.getAllowedSchemas()).contains(schemaName)) {
 				log.error("Node update not allowed since the schema {" + schemaName
-						+ "} is not allowed. Allowed schemas {" + Arrays.toString(listFieldSchema.getAllowedSchemas()) + "}");
+					+ "} is not allowed. Allowed schemas {" + Arrays.toString(listFieldSchema.getAllowedSchemas()) + "}");
 				throw error(BAD_REQUEST, "node_error_invalid_schema_field_value", fieldKey, schemaName);
 			}
 			int pos = integer.getAndIncrement();
@@ -167,7 +169,7 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 				if (!userDao.canReadNode(ac.getUser(), ac, node)) {
 					continue;
 				}
-				restModel.add(((NodeImpl)node).toListItem(ac, lTagsArray));
+				restModel.add(((NodeImpl) node).toListItem(ac, lTagsArray));
 			}
 			return restModel;
 
