@@ -16,6 +16,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.auth.util.KeycloakUtils;
 import com.gentics.mesh.core.rest.admin.localconfig.LocalConfigModel;
 import com.gentics.mesh.core.rest.group.GroupReference;
@@ -26,7 +27,6 @@ import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.plugin.auth.AuthServicePluginUtils;
@@ -87,7 +87,7 @@ public class OAuth2KeycloakPluginTest extends AbstractOAuthTest {
 		assertNotNull(tx(() -> boot().roleDao().findByName("role2")));
 
 		// Invoke request without token
-		JsonObject meJson = new JsonObject(get(VersionHandler.CURRENT_API_BASE_PATH + "/auth/me"));
+		JsonObject meJson = new JsonObject(get(MeshVersion.CURRENT_API_BASE_PATH + "/auth/me"));
 		assertEquals("anonymous", meJson.getString("username"));
 
 		setAdminToken();

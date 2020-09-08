@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.data.schema;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;

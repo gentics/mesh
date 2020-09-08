@@ -1,11 +1,8 @@
 package com.gentics.mesh.core.data.branch;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.HibCoreElement;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.job.HibJob;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
@@ -140,7 +137,7 @@ public interface HibBranch extends HibCoreElement, HibUserTracking {
 	 *            next Branch
 	 * @return Fluent API
 	 */
-	HibBranch setNextBranch(Branch branch);
+	HibBranch setNextBranch(HibBranch branch);
 
 	/**
 	 * Get the previous Branch.
@@ -353,7 +350,7 @@ public interface HibBranch extends HibCoreElement, HibUserTracking {
 	 * @param params
 	 * @return Page which contains the result
 	 */
-	TransformablePage<? extends HibTag> getTags(HibUser user, PagingParameters params);
+	TransformableInPage<? extends HibTag> getTags(HibUser user, PagingParameters params);
 
 	/**
 	 * Tests if the branch is tagged with the given tag.
@@ -370,7 +367,7 @@ public interface HibBranch extends HibCoreElement, HibUserTracking {
 	 * @param batch
 	 * @return Page which includes the new set of tags
 	 */
-	TransformablePage<? extends HibTag> updateTags(InternalActionContext ac, EventQueueBatch batch);
+	TransformableInPage<? extends HibTag> updateTags(InternalActionContext ac, EventQueueBatch batch);
 
 	/**
 	 * Generate event which is send when the branch is set to be the latest of the project.

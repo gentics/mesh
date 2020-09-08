@@ -3,13 +3,12 @@ package com.gentics.mesh.context;
 import java.util.Set;
 import java.util.function.BiConsumer;
 
-import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.handler.ActionContext;
-import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.parameter.ParameterProviderContext;
 import com.gentics.mesh.router.route.SecurityLoggingHandler;
+import com.gentics.mesh.shared.SharedKeys;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AsyncResult;
@@ -143,7 +142,7 @@ public interface InternalActionContext extends ActionContext, ParameterProviderC
 	 * @return
 	 */
 	default int getApiVersion() {
-		return get(VersionHandler.API_VERSION_CONTEXT_KEY);
+		return get(SharedKeys.API_VERSION_CONTEXT_KEY);
 	}
 
 	/**
@@ -153,10 +152,6 @@ public interface InternalActionContext extends ActionContext, ParameterProviderC
 	 */
 	default LogDelegate getSecurityLogger() {
 		return get(SecurityLoggingHandler.SECURITY_LOGGER_CONTEXT_KEY);
-	}
-
-	static Handler<RoutingContext> internalHandler(BiConsumer<RoutingContext, InternalActionContext> handler) {
-		return ctx -> handler.accept(ctx, new InternalRoutingActionContextImpl(ctx));
 	}
 
 	/**

@@ -1,16 +1,11 @@
 package com.gentics.mesh.parameter.impl;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import org.raml.model.ParamType;
 import org.raml.model.parameter.QueryParameter;
 
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.AbstractParameters;
 import com.gentics.mesh.parameter.NodeParameters;
@@ -27,16 +22,7 @@ public class NodeParametersImpl extends AbstractParameters implements NodeParame
 
 	@Override
 	public void validate() {
-		// Check whether all given language tags exists
-		String[] langs = getLanguages();
-		if (langs != null) {
-			for (String languageTag : langs) {
-				Iterator<?> it = Tx.get().getGraph().getVertices("LanguageImpl.languageTag", languageTag).iterator();
-				if (!it.hasNext()) {
-					throw error(BAD_REQUEST, "error_language_not_found", languageTag);
-				}
-			}
-		}
+
 	}
 
 	@Override

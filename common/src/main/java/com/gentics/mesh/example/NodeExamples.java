@@ -37,6 +37,7 @@ import java.util.Map;
 import org.raml.model.ParamType;
 import org.raml.model.parameter.FormParameter;
 
+import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -76,7 +77,7 @@ public class NodeExamples extends AbstractExamples {
 		nodeResponse.setEdited(createNewTimestamp());
 		nodeResponse.setCreator(createUserReference());
 		nodeResponse.setTags(Arrays.asList(new TagReference().setName("red").setUuid(TAG_RED_UUID).setTagFamily("colors")));
-		nodeResponse.setPath(VersionHandler.CURRENT_API_BASE_PATH + "/yourProject/webroot/Images");
+		nodeResponse.setPath(MeshVersion.CURRENT_API_BASE_PATH + "/yourProject/webroot/Images");
 		Map<String, PublishStatusModel> languageInfo = new HashMap<>();
 
 		languageInfo.put("de", new PublishStatusModel().setVersion("1.0").setPublished(true).setPublishDate(createOldTimestamp()).setPublisher(
@@ -86,8 +87,8 @@ public class NodeExamples extends AbstractExamples {
 
 		nodeResponse.setAvailableLanguages(languageInfo);
 		HashMap<String, String> languagePaths = new HashMap<>();
-		languagePaths.put("en", VersionHandler.CURRENT_API_BASE_PATH + "/yourProject/webroot/Images");
-		languagePaths.put("de", VersionHandler.CURRENT_API_BASE_PATH + "/yourProject/webroot/Bilder");
+		languagePaths.put("en", MeshVersion.CURRENT_API_BASE_PATH + "/yourProject/webroot/Images");
+		languagePaths.put("de", MeshVersion.CURRENT_API_BASE_PATH + "/yourProject/webroot/Bilder");
 		nodeResponse.setLanguagePaths(languagePaths);
 		nodeResponse.setChildrenInfo(new HashMap<>());
 		nodeResponse.getChildrenInfo().put("blogpost", new NodeChildrenInfo().setCount(1).setSchemaUuid(UUID_2));

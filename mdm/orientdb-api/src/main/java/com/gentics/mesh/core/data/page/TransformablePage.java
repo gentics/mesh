@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.TransformableElement;
+import com.gentics.mesh.core.data.branch.TransformableInPage;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.util.ETag;
@@ -19,7 +20,7 @@ import io.reactivex.Single;
  * @param <T>
  *            Type of the page element
  */
-public interface TransformablePage<T extends TransformableElement<? extends RestModel>> extends Page<T> {
+public interface TransformablePage<T extends TransformableElement<? extends RestModel>> extends Page<T>, TransformableInPage<T> {
 
 	/**
 	 * Transform the page into a list response.

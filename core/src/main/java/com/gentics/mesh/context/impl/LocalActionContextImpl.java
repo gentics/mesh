@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.context.AbstractInternalActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -252,6 +253,6 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 
 	@Override
 	public int getApiVersion() {
-		return VersionHandler.CURRENT_API_VERSION;
+		return MeshVersion.CURRENT_API_VERSION;
 	}
 }

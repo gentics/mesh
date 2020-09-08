@@ -1,8 +1,8 @@
 package com.gentics.mesh.mock;
 
+import static com.gentics.mesh.MeshVersion.CURRENT_API_VERSION;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-import static com.gentics.mesh.handler.VersionHandler.API_VERSION_CONTEXT_KEY;
-import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_VERSION;
+import static com.gentics.mesh.shared.SharedKeys.API_VERSION_CONTEXT_KEY;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -18,7 +18,6 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.shared.SharedKeys;
 import com.gentics.mesh.util.HttpQueryUtils;
 

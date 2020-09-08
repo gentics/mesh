@@ -3,7 +3,7 @@ package com.gentics.mesh.core.webroot;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
-import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
+import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.parameter.LinkType.MEDIUM;
 import static com.gentics.mesh.parameter.LinkType.SHORT;
 import static com.gentics.mesh.test.ClientHelper.call;

@@ -406,7 +406,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResp
 			HibProject project = tx.getProject(ac);
 			BranchDaoWrapper branchDao = tx.branchDao();
 			HibBranch branch = branchDao.loadObjectByUuid(project, ac, uuid, READ_PERM);
-			TransformablePage<? extends HibTag> tagPage = branch.getTags(ac.getUser(), ac.getPagingParameters());
+			TransformablePage<? extends HibTag> tagPage = (TransformablePage<? extends HibTag>) branch.getTags(ac.getUser(), ac.getPagingParameters());
 			return tagPage.transformToRestSync(ac, 0);
 		}, model -> ac.send(model, OK));
 	}
@@ -509,7 +509,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResp
 				HibProject project = tx.getProject(ac);
 
 				HibBranch branch = branchDao.loadObjectByUuid(project, ac, branchUuid, UPDATE_PERM);
-				TransformablePage<? extends HibTag> page = utils.eventAction(batch -> {
+				TransformablePage<? extends HibTag> page = (TransformablePage<? extends HibTag>) utils.eventAction(batch -> {
 					return branch.updateTags(ac, batch);
 				});
 

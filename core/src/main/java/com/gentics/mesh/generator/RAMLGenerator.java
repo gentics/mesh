@@ -1,6 +1,6 @@
 package com.gentics.mesh.generator;
 
-import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_VERSION;
+import static com.gentics.mesh.MeshVersion.CURRENT_API_VERSION;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.mockito.Mockito.mock;
 

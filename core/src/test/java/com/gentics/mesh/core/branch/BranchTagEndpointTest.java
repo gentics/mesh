@@ -20,7 +20,6 @@ import java.util.Arrays;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.tag.HibTag;

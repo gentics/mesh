@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.endpoint.utility;
 
 import static com.gentics.mesh.example.ExampleUuids.NODE_DELOREAN_UUID;
-import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
+import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.POST;
 

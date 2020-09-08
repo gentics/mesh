@@ -37,6 +37,7 @@ import com.gentics.mesh.core.data.branch.BranchMicroschemaEdge;
 import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
 import com.gentics.mesh.core.data.branch.BranchVersionEdge;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.branch.TransformableInPage;
 import com.gentics.mesh.core.data.branch.impl.BranchMicroschemaEdgeImpl;
 import com.gentics.mesh.core.data.branch.impl.BranchSchemaEdgeImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
@@ -44,7 +45,6 @@ import com.gentics.mesh.core.data.dao.JobDaoWrapper;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.job.HibJob;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.BranchRoot;
@@ -246,8 +246,8 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 	}
 
 	@Override
-	public Branch setNextBranch(Branch branch) {
-		setUniqueLinkOutTo(branch, HAS_NEXT_BRANCH);
+	public Branch setNextBranch(HibBranch branch) {
+		setUniqueLinkOutTo(toGraph(branch), HAS_NEXT_BRANCH);
 		return this;
 	}
 
@@ -631,7 +631,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 	}
 
 	@Override
-	public TransformablePage<? extends Tag> getTags(HibUser user, PagingParameters params) {
+	public TransformableInPage<? extends Tag> getTags(HibUser user, PagingParameters params) {
 		VertexTraversal<?, ?, ?> traversal = outE(HAS_BRANCH_TAG).inV();
 		return new DynamicTransformablePageImpl<Tag>(user, traversal, params, READ_PERM, TagImpl.class);
 	}
@@ -647,7 +647,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 	}
 
 	@Override
-	public TransformablePage<? extends HibTag> updateTags(InternalActionContext ac, EventQueueBatch batch) {
+	public TransformableInPage<? extends HibTag> updateTags(InternalActionContext ac, EventQueueBatch batch) {
 		List<HibTag> tags = getTagsToSet(ac, batch);
 		// TODO Rework this code. We should only add the needed tags and don't dispatch all events.
 		removeAllTags();
