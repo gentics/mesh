@@ -17,7 +17,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
-import com.gentics.mesh.core.data.generic.UserProperties;
+import com.gentics.mesh.core.data.generic.GraphUserPropertiesImpl;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
@@ -156,7 +156,7 @@ public interface MeshComponent extends BaseMeshComponent {
 
 	Binaries binaries();
 
-	UserProperties userProperties();
+	GraphUserPropertiesImpl userProperties();
 
 	PermissionProperties permissionProperties();
 

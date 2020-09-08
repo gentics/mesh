@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.HibInNode;
 import com.gentics.mesh.core.data.Project;
@@ -43,11 +44,16 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
+import com.gentics.mesh.graphdb.model.MeshElement;
 import com.syncleus.ferma.ElementFrame;
 
 public final class HibClassConverter {
 
 	private HibClassConverter() {
+	}
+
+	public static MeshElement toGraph(HibBaseElement element) {
+		return checkAndCast(element, MeshElement.class);
 	}
 
 	public static Tag toGraph(HibTag tag) {

@@ -89,6 +89,8 @@ import com.gentics.mesh.core.data.dao.impl.SchemaDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.TagDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.TagFamilyDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.UserDaoWrapperImpl;
+import com.gentics.mesh.core.data.generic.GraphUserPropertiesImpl;
+import com.gentics.mesh.core.data.generic.UserProperties;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparatorImpl;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
@@ -160,6 +162,58 @@ import dagger.Provides;
 @Module(includes = { OrientDBCoreModule.class })
 public abstract class OrientDBModule {
 
+	// Graph / ODB specific implementations
+
+	@Binds
+	abstract UserProperties userProperties(GraphUserPropertiesImpl e);
+
+	@Binds
+	abstract Database bindDatabase(OrientDBDatabase e);
+
+	@Binds
+	abstract UserDaoWrapper bindUserDao(UserDaoWrapperImpl e);
+
+	@Binds
+	abstract RoleDaoWrapper bindRoleDao(RoleDaoWrapperImpl e);
+
+	@Binds
+	abstract GroupDaoWrapper bindGroupDao(GroupDaoWrapperImpl e);
+
+	@Binds
+	abstract ProjectDaoWrapper bindProjectDao(ProjectDaoWrapperImpl e);
+
+	@Binds
+	abstract NodeDaoWrapper bindNodeDao(NodeDaoWrapperImpl e);
+
+	@Binds
+	abstract ContentDaoWrapper bindContentDao(ContentDaoWrapperImpl e);
+
+	@Binds
+	abstract JobDaoWrapper bindJobDao(JobDaoWrapperImpl e);
+
+	@Binds
+	abstract TagDaoWrapper bindTagDao(TagDaoWrapperImpl e);
+
+	@Binds
+	abstract TagFamilyDaoWrapper bindTagFamilyDao(TagFamilyDaoWrapperImpl e);
+
+	@Binds
+	abstract BinaryDaoWrapper bindBinaryDao(BinaryDaoWrapperImpl e);
+
+	@Binds
+	abstract BranchDaoWrapper bindBranchDao(BranchDaoWrapperImpl e);
+
+	@Binds
+	abstract SchemaDaoWrapper bindSchemaDao(SchemaDaoWrapperImpl e);
+
+	@Binds
+	abstract MicroschemaDaoWrapper bindMicroschemaDao(MicroschemaDaoWrapperImpl e);
+
+	@Binds
+	abstract LanguageDaoWrapper bindLanguageDao(LanguageDaoWrapperImpl e);
+
+	// END
+
 	@Binds
 	abstract DropIndexHandler bindCommonHandler(DropIndexHandlerImpl e);
 
@@ -177,9 +231,6 @@ public abstract class OrientDBModule {
 
 	@Binds
 	abstract MetricsService bindMetricsService(MetricsServiceImpl e);
-
-	@Binds
-	abstract Database bindDatabase(OrientDBDatabase e);
 
 	@Binds
 	abstract RangeRequestHandler bindRangeRequestHandler(RangeRequestHandlerImpl e);
@@ -231,50 +282,6 @@ public abstract class OrientDBModule {
 
 	@Binds
 	abstract HighLevelChangelogSystem bindHighLevelChangelogSystem(HighLevelChangelogSystemImpl e);
-
-	// Daos
-
-	@Binds
-	abstract UserDaoWrapper bindUserDao(UserDaoWrapperImpl e);
-
-	@Binds
-	abstract RoleDaoWrapper bindRoleDao(RoleDaoWrapperImpl e);
-
-	@Binds
-	abstract GroupDaoWrapper bindGroupDao(GroupDaoWrapperImpl e);
-
-	@Binds
-	abstract ProjectDaoWrapper bindProjectDao(ProjectDaoWrapperImpl e);
-
-	@Binds
-	abstract NodeDaoWrapper bindNodeDao(NodeDaoWrapperImpl e);
-
-	@Binds
-	abstract ContentDaoWrapper bindContentDao(ContentDaoWrapperImpl e);
-
-	@Binds
-	abstract JobDaoWrapper bindJobDao(JobDaoWrapperImpl e);
-
-	@Binds
-	abstract TagDaoWrapper bindTagDao(TagDaoWrapperImpl e);
-
-	@Binds
-	abstract TagFamilyDaoWrapper bindTagFamilyDao(TagFamilyDaoWrapperImpl e);
-
-	@Binds
-	abstract BinaryDaoWrapper bindBinaryDao(BinaryDaoWrapperImpl e);
-
-	@Binds
-	abstract BranchDaoWrapper bindBranchDao(BranchDaoWrapperImpl e);
-
-	@Binds
-	abstract SchemaDaoWrapper bindSchemaDao(SchemaDaoWrapperImpl e);
-
-	@Binds
-	abstract MicroschemaDaoWrapper bindMicroschemaDao(MicroschemaDaoWrapperImpl e);
-
-	@Binds
-	abstract LanguageDaoWrapper bindLanguageDao(LanguageDaoWrapperImpl e);
 
 	@Binds
 	abstract RouterStorageRegistry bindRouterStorageRegistry(RouterStorageRegistryImpl e);
