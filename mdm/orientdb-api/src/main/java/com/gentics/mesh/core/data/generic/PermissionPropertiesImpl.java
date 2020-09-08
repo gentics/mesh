@@ -22,15 +22,16 @@ import com.gentics.mesh.madl.traversal.TraversalResult;
 import dagger.Lazy;
 
 @Singleton
-public class PermissionProperties {
+public class PermissionPropertiesImpl implements PermissionProperties {
 
 	private final Lazy<RoleDaoWrapper> roleDaoLazy;
 
 	@Inject
-	public PermissionProperties(Lazy<RoleDaoWrapper> roleDaoLazy) {
+	public PermissionPropertiesImpl(Lazy<RoleDaoWrapper> roleDaoLazy) {
 		this.roleDaoLazy = roleDaoLazy;
 	}
 
+	@Override
 	public Result<? extends HibRole> getRolesWithPerm(HibBaseElement element, InternalPermission perm) {
 		RoleDaoWrapper roleDao = roleDaoLazy.get();
 		Set<String> roleUuids = roleDao.getRoleUuidsForPerm(element, perm);
@@ -42,6 +43,7 @@ public class PermissionProperties {
 			.filter(Objects::nonNull));
 	}
 
+	@Override
 	public PermissionInfo getRolePermissions(HibBaseElement element, InternalActionContext ac, String roleUuid) {
 		if (!isEmpty(roleUuid)) {
 			RoleDaoWrapper roleDao = roleDaoLazy.get();

@@ -90,6 +90,8 @@ import com.gentics.mesh.core.data.dao.impl.TagDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.TagFamilyDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.UserDaoWrapperImpl;
 import com.gentics.mesh.core.data.generic.GraphUserPropertiesImpl;
+import com.gentics.mesh.core.data.generic.PermissionProperties;
+import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.generic.UserProperties;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparatorImpl;
@@ -366,6 +368,9 @@ public abstract class OrientDBModule {
 
 	@Binds
 	abstract NodeMigration nodeMigration(NodeMigrationImpl e);
+
+	@Binds
+	abstract PermissionProperties permissionProperties(PermissionPropertiesImpl e);
 
 	@Provides
 	public static List<ConsistencyCheck> consistencyCheckList() {

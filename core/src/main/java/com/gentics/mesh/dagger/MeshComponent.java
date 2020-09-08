@@ -16,8 +16,8 @@ import com.gentics.mesh.cache.ProjectNameCache;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.binary.Binaries;
-import com.gentics.mesh.core.data.generic.PermissionProperties;
-import com.gentics.mesh.core.data.generic.GraphUserPropertiesImpl;
+import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
+import com.gentics.mesh.core.data.generic.UserProperties;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
@@ -56,8 +56,6 @@ import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
 import com.gentics.mesh.search.index.user.UserIndexHandler;
 import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.storage.LocalBinaryStorage;
-
-import io.vertx.core.Vertx;
 
 /**
  * Central dagger mesh component which will expose dependencies.
@@ -140,13 +138,9 @@ public interface MeshComponent extends BaseMeshComponent {
 
 	PermissionCache permissionCache();
 
-	Vertx vertx();
-
 	Provider<EventQueueBatch> batchProvider();
 
 	Provider<BulkActionContext> bulkProvider();
-
-	MeshOptions options();
 
 	PluginEnvironment pluginEnv();
 
@@ -156,9 +150,7 @@ public interface MeshComponent extends BaseMeshComponent {
 
 	Binaries binaries();
 
-	GraphUserPropertiesImpl userProperties();
-
-	PermissionProperties permissionProperties();
+	UserProperties userProperties();
 
 	WriteLock globalLock();
 
