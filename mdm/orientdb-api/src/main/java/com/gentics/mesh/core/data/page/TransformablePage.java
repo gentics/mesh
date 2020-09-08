@@ -10,9 +10,6 @@ import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.util.ETag;
 
-import io.reactivex.Observable;
-import io.reactivex.Single;
-
 /**
  * A transformable page is a page which contains {@link TransformableElement}. Thus it is possible to compute the etag for the page and transform the page into
  * a rest list model.
@@ -21,31 +18,6 @@ import io.reactivex.Single;
  *            Type of the page element
  */
 public interface TransformablePage<T extends TransformableElement<? extends RestModel>> extends Page<T>, TransformableInPage<T> {
-
-	/**
-	 * Transform the page into a list response.
-	 * 
-	 * @param ac
-	 * @param level
-	 *            Level of transformation
-	 */
-	default Single<? extends ListResponse<RestModel>> transformToRest(InternalActionContext ac, int level) {
-		List<Single<? extends RestModel>> obs = new ArrayList<>();
-		for (T element : getWrappedList()) {
-			obs.add(element.transformToRest(ac, level));
-		}
-		ListResponse<RestModel> listResponse = new ListResponse<>();
-		if (obs.size() == 0) {
-			setPaging(listResponse);
-			return Single.just(listResponse);
-		}
-
-		return Observable.fromIterable(obs).concatMapEager(s -> s.toObservable()).toList().map(list -> {
-			setPaging(listResponse);
-			listResponse.getData().addAll(list);
-			return listResponse;
-		});
-	}
 
 	default ListResponse<RestModel> transformToRestSync(InternalActionContext ac, int level) {
 		List<RestModel> responses = new ArrayList<>();
