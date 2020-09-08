@@ -11,6 +11,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.generic.UserProperties;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
+import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
@@ -18,6 +19,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
 import com.gentics.mesh.rest.MeshLocalClient;
+import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
 import com.gentics.mesh.search.index.microschema.MicroschemaIndexHandler;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
@@ -96,8 +98,13 @@ public interface BaseMeshComponent {
 
 	WebRootLinkReplacer webRootLinkReplacer();
 
+	// Search
+	
+	SearchProvider searchProvider();
+
 	// REST
 
 	WriteLock globalLock();
 
+	BinaryUploadHandler nodeFieldAPIHandler();
 }

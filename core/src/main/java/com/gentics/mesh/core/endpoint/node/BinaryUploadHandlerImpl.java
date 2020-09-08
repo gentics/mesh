@@ -66,9 +66,9 @@ import io.vertx.reactivex.core.file.FileSystem;
 /**
  * Handler which contains field API specific request handlers.
  */
-public class BinaryUploadHandler extends AbstractHandler {
+public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUploadHandler {
 
-	private static final Logger log = LoggerFactory.getLogger(BinaryUploadHandler.class);
+	private static final Logger log = LoggerFactory.getLogger(BinaryUploadHandlerImpl.class);
 
 	private final Database db;
 
@@ -89,7 +89,7 @@ public class BinaryUploadHandler extends AbstractHandler {
 	private final WriteLock writeLock;
 
 	@Inject
-	public BinaryUploadHandler(ImageManipulator imageManipulator,
+	public BinaryUploadHandlerImpl(ImageManipulator imageManipulator,
 		Database db,
 		Lazy<BootstrapInitializer> boot,
 		BinaryFieldResponseHandler binaryFieldResponseHandler,

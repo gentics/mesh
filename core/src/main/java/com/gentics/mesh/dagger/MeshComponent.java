@@ -12,9 +12,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
-import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.core.endpoint.role.RoleCrudHandler;
-import com.gentics.mesh.core.link.WebRootLinkReplacerImpl;
 import com.gentics.mesh.core.migration.BranchMigration;
 import com.gentics.mesh.core.migration.MicronodeMigration;
 import com.gentics.mesh.core.migration.NodeMigration;
@@ -29,7 +27,6 @@ import com.gentics.mesh.router.EndpointRegistry;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.router.RouterStorageRegistry;
 import com.gentics.mesh.search.IndexHandlerRegistry;
-import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
 
 /**
@@ -42,8 +39,6 @@ public interface MeshComponent extends BaseMeshComponent {
 	Database database();
 
 	EndpointRegistry endpointRegistry();
-
-	SearchProvider searchProvider();
 
 	Provider<RouterStorage> routerStorageProvider();
 
@@ -66,8 +61,6 @@ public interface MeshComponent extends BaseMeshComponent {
 	ProjectVersionPurgeHandler projectVersionPurgeHandler();
 
 	IndexHandlerRegistry indexHandlerRegistry();
-
-	BinaryUploadHandler nodeFieldAPIHandler();
 
 	RestAPIVerticle restApiVerticle();
 

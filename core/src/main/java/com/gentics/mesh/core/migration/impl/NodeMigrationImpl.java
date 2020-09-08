@@ -26,7 +26,7 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
-import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
+import com.gentics.mesh.core.endpoint.node.BinaryUploadHandlerImpl;
 import com.gentics.mesh.core.migration.AbstractMigrationHandler;
 import com.gentics.mesh.core.migration.NodeMigration;
 import com.gentics.mesh.core.rest.event.node.SchemaMigrationCause;
@@ -56,7 +56,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 	private final WriteLock writeLock;
 
 	@Inject
-	public NodeMigrationImpl(Database db, BinaryUploadHandler nodeFieldAPIHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider,
+	public NodeMigrationImpl(Database db, BinaryUploadHandlerImpl nodeFieldAPIHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider,
 		WriteLock writeLock) {
 		super(db, nodeFieldAPIHandler, metrics, batchProvider);
 		migrationGauge = metrics.longGauge(NODE_MIGRATION_PENDING);

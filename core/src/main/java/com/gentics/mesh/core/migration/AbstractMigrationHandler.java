@@ -24,7 +24,7 @@ import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.endpoint.migration.MigrationHandler;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.migration.TriConsumer;
-import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
+import com.gentics.mesh.core.endpoint.node.BinaryUploadHandlerImpl;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.event.EventCauseInfo;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -43,13 +43,13 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 
 	protected Database db;
 
-	protected BinaryUploadHandler binaryFieldHandler;
+	protected BinaryUploadHandlerImpl binaryFieldHandler;
 
 	protected MetricsService metrics;
 
 	protected final Provider<EventQueueBatch> batchProvider;
 
-	public AbstractMigrationHandler(Database db, BinaryUploadHandler binaryFieldHandler, MetricsService metrics,
+	public AbstractMigrationHandler(Database db, BinaryUploadHandlerImpl binaryFieldHandler, MetricsService metrics,
 		Provider<EventQueueBatch> batchProvider) {
 		this.db = db;
 		this.binaryFieldHandler = binaryFieldHandler;

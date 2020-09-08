@@ -24,7 +24,7 @@ import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
-import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
+import com.gentics.mesh.core.endpoint.node.BinaryUploadHandlerImpl;
 import com.gentics.mesh.core.migration.AbstractMigrationHandler;
 import com.gentics.mesh.core.migration.BranchMigration;
 import com.gentics.mesh.core.rest.event.node.BranchMigrationCause;
@@ -44,7 +44,7 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 	private static final Logger log = LoggerFactory.getLogger(BranchMigrationImpl.class);
 
 	@Inject
-	public BranchMigrationImpl(Database db, BinaryUploadHandler nodeFieldAPIHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider) {
+	public BranchMigrationImpl(Database db, BinaryUploadHandlerImpl nodeFieldAPIHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider) {
 		super(db, nodeFieldAPIHandler, metrics, batchProvider);
 	}
 

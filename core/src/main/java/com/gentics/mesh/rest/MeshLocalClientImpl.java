@@ -21,7 +21,7 @@ import com.gentics.mesh.core.endpoint.auth.AuthenticationRestHandler;
 import com.gentics.mesh.core.endpoint.branch.BranchCrudHandler;
 import com.gentics.mesh.core.endpoint.group.GroupCrudHandler;
 import com.gentics.mesh.core.endpoint.microschema.MicroschemaCrudHandler;
-import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
+import com.gentics.mesh.core.endpoint.node.BinaryUploadHandlerImpl;
 import com.gentics.mesh.core.endpoint.node.NodeCrudHandler;
 import com.gentics.mesh.core.endpoint.project.ProjectCrudHandler;
 import com.gentics.mesh.core.endpoint.role.RoleCrudHandler;
@@ -167,7 +167,7 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	public NodeCrudHandler nodeCrudHandler;
 
 	@Inject
-	public BinaryUploadHandler fieldAPIHandler;
+	public BinaryUploadHandlerImpl fieldAPIHandler;
 
 	@Inject
 	public WebRootHandler webrootHandler;

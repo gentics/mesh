@@ -114,6 +114,8 @@ import com.gentics.mesh.core.endpoint.admin.consistency.check.SchemaContainerChe
 import com.gentics.mesh.core.endpoint.admin.consistency.check.TagCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.TagFamilyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.UserCheck;
+import com.gentics.mesh.core.endpoint.node.BinaryUploadHandlerImpl;
+import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.link.WebRootLinkReplacerImpl;
 import com.gentics.mesh.core.migration.BranchMigration;
@@ -402,6 +404,9 @@ public abstract class OrientDBModule {
 
 	@Binds
 	abstract WebRootLinkReplacer WebRootLinkReplacer(WebRootLinkReplacerImpl e);
+
+	@Binds
+	abstract BinaryUploadHandler binaryUploadHandler(BinaryUploadHandlerImpl e);
 
 	@Provides
 	public static List<ConsistencyCheck> consistencyCheckList() {

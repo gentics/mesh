@@ -27,7 +27,7 @@ import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
-import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
+import com.gentics.mesh.core.endpoint.node.BinaryUploadHandlerImpl;
 import com.gentics.mesh.core.migration.AbstractMigrationHandler;
 import com.gentics.mesh.core.migration.MicronodeMigration;
 import com.gentics.mesh.core.rest.event.node.MicroschemaMigrationCause;
@@ -51,7 +51,7 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 	private final WriteLock writeLock;
 
 	@Inject
-	public MicronodeMigrationImpl(Database db, BinaryUploadHandler binaryFieldHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider, WriteLock writeLock) {
+	public MicronodeMigrationImpl(Database db, BinaryUploadHandlerImpl binaryFieldHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider, WriteLock writeLock) {
 		super(db, binaryFieldHandler, metrics, batchProvider);
 		this.writeLock = writeLock;
 	}
