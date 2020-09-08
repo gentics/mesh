@@ -8,6 +8,7 @@ import com.gentics.madl.traversal.RawTraversalResult;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.rest.node.field.image.Point;
@@ -213,8 +214,9 @@ public class BinaryWrapper implements Binary {
 		return delegate.options();
 	}
 
-	public Binary setSize(long sizeInBytes) {
-		return wrap(delegate.setSize(sizeInBytes));
+	public HibBinary setSize(long sizeInBytes) {
+		delegate.setSize(sizeInBytes);
+		return this;
 	}
 
 	public <T> T addFramedEdgeExplicit(String label, com.syncleus.ferma.VertexFrame inVertex, ClassInitializer<T> initializer) {
@@ -245,7 +247,7 @@ public class BinaryWrapper implements Binary {
 		delegate.setTypeResolution(type);
 	}
 
-	public Binary setImageHeight(Integer heigth) {
+	public HibBinary setImageHeight(Integer heigth) {
 		return delegate.setImageHeight(heigth);
 	}
 
@@ -257,7 +259,7 @@ public class BinaryWrapper implements Binary {
 		delegate.removeTypeResolution();
 	}
 
-	public Binary setImageWidth(Integer width) {
+	public HibBinary setImageWidth(Integer width) {
 		return delegate.setImageWidth(width);
 	}
 

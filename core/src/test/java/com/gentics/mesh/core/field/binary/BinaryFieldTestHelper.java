@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.field.binary;
 
-import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.DataProvider;
@@ -32,7 +32,7 @@ public interface BinaryFieldTestHelper {
 		MeshComponent mesh = container.getGraphAttribute(GraphAttribute.MESH_COMPONENT);
 		Buffer buffer = Buffer.buffer(FILECONTENTS);
 		String sha512Sum = FileUtils.hash(buffer).blockingGet();
-		Binary binary = mesh.binaries().create(sha512Sum, Long.valueOf(buffer.length())).runInExistingTx(Tx.get());
+		HibBinary binary = mesh.binaries().create(sha512Sum, Long.valueOf(buffer.length())).runInExistingTx(Tx.get());
 
 		String tmpId = UUIDUtil.randomUUID();
 		BinaryStorage storage = mesh.binaryStorage();

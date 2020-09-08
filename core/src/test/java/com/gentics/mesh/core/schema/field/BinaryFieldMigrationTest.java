@@ -22,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.binary.Binaries;
-import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.db.Tx;
@@ -51,7 +51,7 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 		Binaries binaries = mesh().binaries();
 
 		// Check whether the binary could already be found
-		Binary binary = binaries.findByHash(hash).runInExistingTx(Tx.get());
+		HibBinary binary = binaries.findByHash(hash).runInExistingTx(Tx.get());
 		boolean store = false;
 		if (binary == null) {
 			binary = binaries.create(hash, 1L).runInExistingTx(Tx.get());

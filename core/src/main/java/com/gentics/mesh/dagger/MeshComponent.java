@@ -102,8 +102,6 @@ public interface MeshComponent extends BaseMeshComponent {
 
 	Binaries binaries();
 
-	WriteLock globalLock();
-
 	RoleCrudHandler roleCrudHandler();
 
 	List<ConsistencyCheck> consistencyChecks();

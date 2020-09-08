@@ -18,6 +18,7 @@ import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
@@ -170,7 +171,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 		obsTransformation.flatMap(r -> {
 			db.tx(tx -> {
 				String hash = r.getHash();
-				Binary binary = binaries.findByHash(hash).runInExistingTx(tx);
+				HibBinary binary = binaries.findByHash(hash).runInExistingTx(tx);
 
 				// Set the info that the store operation is needed
 				if (binary == null) {
@@ -226,7 +227,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 
 			// Now that the binary data has been resized and inspected we can use this information to create a new binary and store it.
 			String hash = result.getHash();
-			Binary binary = binaries.findByHash(hash).runInExistingTx(tx);
+			HibBinary binary = binaries.findByHash(hash).runInExistingTx(tx);
 			// Check whether the binary was already stored.
 			if (binary == null) {
 				// Open the file again since we already read from it. We need to read it again in order to store it in the binary storage.

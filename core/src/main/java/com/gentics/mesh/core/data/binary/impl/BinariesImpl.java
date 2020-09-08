@@ -24,7 +24,7 @@ public class BinariesImpl implements Binaries {
 	}
 
 	@Override
-	public Transactional<Binary> create(String uuid, String sha512sum, Long size) {
+	public Transactional<HibBinary> create(String uuid, String sha512sum, Long size) {
 		return database.transactional(tx -> {
 			Binary binary = tx.getGraph().addFramedVertex(BinaryImpl.class);
 			binary.setSHA512Sum(sha512sum);
@@ -35,7 +35,7 @@ public class BinariesImpl implements Binaries {
 	}
 
 	@Override
-	public Transactional<Binary> findByHash(String hash) {
+	public Transactional<HibBinary> findByHash(String hash) {
 		return database.transactional(tx -> database.getVerticesTraversal(BinaryImpl.class, Binary.SHA512SUM_KEY, hash).nextOrNull());
 	}
 

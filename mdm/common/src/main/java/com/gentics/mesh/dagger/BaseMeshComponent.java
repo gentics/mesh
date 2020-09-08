@@ -6,6 +6,7 @@ import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.generic.UserProperties;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
+import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
@@ -67,7 +68,11 @@ public interface BaseMeshComponent {
 	// Other
 
 	MeshPluginManager pluginManager();
-	
+
 	MeshLocalClient meshLocalClientImpl();
+
+	// REST
+
+	WriteLock globalLock();
 
 }

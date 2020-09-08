@@ -23,7 +23,7 @@ import com.gentics.mesh.core.binary.BinaryProcessorRegistryImpl;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.binary.Binaries;
-import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
@@ -185,7 +185,7 @@ public class BinaryUploadHandler extends AbstractHandler {
 			ctx.setHash(hash);
 
 			// Check whether the binary with the given hashsum was already stored
-			Binary binary = binaries.findByHash(hash).runInNewTx();
+			HibBinary binary = binaries.findByHash(hash).runInNewTx();
 
 			// Create a new binary uuid if the data was not already stored
 			if (binary == null) {
@@ -267,7 +267,7 @@ public class BinaryUploadHandler extends AbstractHandler {
 			utils.eventAction(batch -> {
 
 				// We need to check whether someone else has stored the binary in the meanwhile
-				Binary binary = binaries.findByHash(hash).runInExistingTx(tx);
+				HibBinary binary = binaries.findByHash(hash).runInExistingTx(tx);
 				if (binary == null) {
 					binary = binaries.create(binaryUuid, hash, upload.size()).runInExistingTx(tx);
 				}

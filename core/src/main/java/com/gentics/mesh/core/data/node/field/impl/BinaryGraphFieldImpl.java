@@ -19,6 +19,7 @@ import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.binary.impl.BinaryImpl;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
@@ -89,7 +90,7 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 		// in fact initially being removed from the container.
 		String hash = binaryField.getSha512sum();
 		if (graphBinaryField == null && hash != null) {
-			Binary binary = mesh.binaries().findByHash(hash).runInExistingTx(Tx.get());
+			HibBinary binary = mesh.binaries().findByHash(hash).runInExistingTx(Tx.get());
 			if (binary != null) {
 				graphBinaryField = container.createBinary(fieldKey, binary);
 			} else {

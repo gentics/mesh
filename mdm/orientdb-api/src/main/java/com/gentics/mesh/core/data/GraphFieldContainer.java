@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
@@ -66,7 +66,7 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	 * @param binary
 	 * @return
 	 */
-	BinaryGraphField createBinary(String fieldKey, Binary binary);
+	BinaryGraphField createBinary(String fieldKey, HibBinary binary);
 
 	/**
 	 * Return the node graph field for the given key.
