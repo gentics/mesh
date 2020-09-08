@@ -67,14 +67,14 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 			nodeA.getSchemaContainer().getLatestVersion().setSchema(schema);
 
 			// image
-			HibBinary binaryA = mesh().binaries().create("someHashA", 200L).runInExistingTx(tx);
+			HibBinary binaryA = tx.binaries().create("someHashA", 200L).runInExistingTx(tx);
 			binaryA.setImageHeight(200);
 			binaryA.setImageWidth(400);
 			contentDao.getLatestDraftFieldContainer(nodeA, english()).createBinary("binary", binaryA).setFileName("somefile.jpg").setMimeType("image/jpeg")
 				.setImageDominantColor("#super");
 
 			// file
-			HibBinary binaryB = mesh().binaries().create("someHashB", 200L).runInExistingTx(tx);
+			HibBinary binaryB = tx.binaries().create("someHashB", 200L).runInExistingTx(tx);
 			byte[] bytes = Base64.getDecoder().decode("e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0=");
 			mesh().binaryStorage().store(Flowable.fromArray(Buffer.buffer(bytes)), binaryB.getUuid()).blockingAwait();
 
@@ -125,14 +125,14 @@ public class NodeBinaryDocumentSearchTest extends AbstractNodeSearchEndpointTest
 			nodeA.getSchemaContainer().getLatestVersion().setSchema(schema);
 
 			// image
-			HibBinary binaryA = mesh().binaries().create("someHashA", 200L).runInExistingTx(tx);
+			HibBinary binaryA = tx.binaries().create("someHashA", 200L).runInExistingTx(tx);
 			binaryA.setImageHeight(200);
 			binaryA.setImageWidth(400);
 			contentDao.getLatestDraftFieldContainer(nodeA, english()).createBinary("binary", binaryA).setFileName("somefile.jpg").setMimeType("image/jpeg")
 				.setImageDominantColor("#super");
 
 			// file
-			HibBinary binaryB = mesh().binaries().create("someHashB", 200L).runInExistingTx(tx);
+			HibBinary binaryB = tx.binaries().create("someHashB", 200L).runInExistingTx(tx);
 			BinaryGraphField binary = contentDao.getLatestDraftFieldContainer(nodeB, english()).createBinary("binary", binaryB).setFileName("somefile.dat")
 				.setMimeType("text/plain");
 			byte[] bytes = Base64.getDecoder().decode("e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0=");

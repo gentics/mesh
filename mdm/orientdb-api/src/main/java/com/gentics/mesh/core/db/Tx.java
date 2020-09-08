@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.db;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.DaoCollection;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -89,4 +90,6 @@ public interface Tx extends BaseTransaction, DaoCollection {
 	HibBranch getBranch(InternalActionContext ac, HibProject project);
 
 	HibProject getProject(InternalActionContext ac);
+
+	Binaries binaries();
 }

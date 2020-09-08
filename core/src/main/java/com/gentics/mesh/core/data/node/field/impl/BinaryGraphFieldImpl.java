@@ -28,14 +28,12 @@ import com.gentics.mesh.core.data.node.field.FieldTransformer;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
 import com.gentics.mesh.core.rest.node.field.binary.Location;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.node.field.image.Point;
 import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
-import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.util.NodeUtil;
 
@@ -64,7 +62,6 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 	};
 
 	public static FieldUpdater BINARY_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
-		MeshComponent mesh = container.getGraphAttribute(GraphAttribute.MESH_COMPONENT);
 		BinaryGraphField graphBinaryField = container.getBinary(fieldKey);
 		BinaryField binaryField = fieldMap.getBinaryField(fieldKey);
 		boolean isBinaryFieldSetToNull = fieldMap.hasField(fieldKey) && binaryField == null && graphBinaryField != null;
@@ -90,7 +87,7 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 		// in fact initially being removed from the container.
 		String hash = binaryField.getSha512sum();
 		if (graphBinaryField == null && hash != null) {
-			HibBinary binary = mesh.binaries().findByHash(hash).runInExistingTx(Tx.get());
+			HibBinary binary = Tx.get().binaries().findByHash(hash).runInExistingTx(Tx.get());
 			if (binary != null) {
 				graphBinaryField = container.createBinary(fieldKey, binary);
 			} else {
@@ -151,7 +148,7 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 				graphBinaryField.setLocation(loc);
 			}
 		}
-		
+
 		// Handle Update - Plain text
 		String text = binaryField.getPlainText();
 		if (text != null) {

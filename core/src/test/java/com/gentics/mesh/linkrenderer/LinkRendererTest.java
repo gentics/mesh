@@ -308,7 +308,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 			schema.addField(new BinaryFieldSchemaImpl().setName("binary").setLabel("Binary content"));
 			schema.setSegmentField("binary");
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
-			HibBinary binary = mesh().binaries().create("bogus", 1L).runInExistingTx(tx);
+			HibBinary binary = tx.binaries().create("bogus", 1L).runInExistingTx(tx);
 			contentDao.getLatestDraftFieldContainer(node, english()).createBinary("binary", binary).setFileName(fileName);
 
 			// Render the link

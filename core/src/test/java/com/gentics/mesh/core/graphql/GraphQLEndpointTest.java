@@ -357,7 +357,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			container.createBoolean("boolean").setBoolean(true);
 
 			// binary
-			HibBinary binary = mesh().binaries().create("hashsumvalue", 1L).runInExistingTx(tx);
+			HibBinary binary = tx.binaries().create("hashsumvalue", 1L).runInExistingTx(tx);
 			binary.setImageHeight(10).setImageWidth(20).setSize(2048);
 			container.createBinary("binary", binary).setImageDominantColor("00FF00")
 				.setMimeType("image/jpeg").setImageFocalPoint(new FocalPoint(0.2f, 0.3f));

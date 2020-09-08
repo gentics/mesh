@@ -32,6 +32,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -567,8 +568,12 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		}
 
 		call(() -> client().deleteNode(PROJECT_NAME, uuid, new DeleteParametersImpl().setRecursive(true)));
-		assertNull("The binary for the hash should have also been removed since only one node used the binary.", mesh().binaries()
-			.findByHash(hash).runInNewTx());
+
+		HibBinary binary = tx(tx -> {
+			return tx.binaries().findByHash(hash).runInExistingTx(tx);
+		});
+
+		assertNull("The binary for the hash should have also been removed since only one node used the binary.", binary);
 		assertFalse("The binary file should have been removed.", binaryFile.exists());
 		MeshCoreAssertion.assertThat(testContext).hasUploads(0, 1).hasTempFiles(0).hasTempUploads(0);
 
@@ -665,16 +670,22 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 
 		// Now delete nodeA
 		call(() -> client().deleteNode(PROJECT_NAME, uuidA, new DeleteParametersImpl().setRecursive(true)));
-		assertNotNull("The binary for the hash should not have been removed since it is still in use.", mesh().binaries().findByHash(
-			hashA).runInNewTx());
+
+		HibBinary binaryA = tx(tx -> {
+			return tx.binaries().findByHash(hashA).runInExistingTx(tx);
+		});
+
+		assertNotNull("The binary for the hash should not have been removed since it is still in use.", binaryA);
 		assertTrue("The binary file should not have been deleted since there is still one node which uses it.", binaryFileA.exists());
 		MeshCoreAssertion.assertThat(testContext).hasUploads(1, 1).hasTempFiles(0).hasTempUploads(0);
 
 		// Now delete nodeB
 		call(() -> client().deleteNode(PROJECT_NAME, uuidB, new DeleteParametersImpl().setRecursive(true)));
 
-		assertNull("The binary for the hash should have also been removed since only one node used the binary.", mesh().binaries()
-			.findByHash(hashA).runInNewTx());
+		binaryA = tx(tx -> {
+			return tx.binaries().findByHash(hashA).runInExistingTx(tx);
+		});
+		assertNull("The binary for the hash should have also been removed since only one node used the binary.", binaryA);
 		assertFalse("The binary file should have been removed.", binaryFileA.exists());
 
 		// The folder is not removed. Removing the parent folder of the upload would require us to lock uploads.

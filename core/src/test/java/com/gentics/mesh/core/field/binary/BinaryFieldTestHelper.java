@@ -32,7 +32,7 @@ public interface BinaryFieldTestHelper {
 		MeshComponent mesh = container.getGraphAttribute(GraphAttribute.MESH_COMPONENT);
 		Buffer buffer = Buffer.buffer(FILECONTENTS);
 		String sha512Sum = FileUtils.hash(buffer).blockingGet();
-		HibBinary binary = mesh.binaries().create(sha512Sum, Long.valueOf(buffer.length())).runInExistingTx(Tx.get());
+		HibBinary binary = Tx.get().binaries().create(sha512Sum, Long.valueOf(buffer.length())).runInExistingTx(Tx.get());
 
 		String tmpId = UUIDUtil.randomUUID();
 		BinaryStorage storage = mesh.binaryStorage();

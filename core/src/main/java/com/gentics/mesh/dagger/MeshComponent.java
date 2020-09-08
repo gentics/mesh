@@ -7,8 +7,6 @@ import javax.inject.Provider;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.binary.Binaries;
-import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.core.endpoint.role.RoleCrudHandler;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
@@ -34,8 +32,6 @@ public interface MeshComponent extends BaseMeshComponent {
 	Provider<EventQueueBatch> batchProvider();
 
 	RouterStorageRegistry routerStorageRegistry();
-
-	Binaries binaries();
 
 	// For tests
 

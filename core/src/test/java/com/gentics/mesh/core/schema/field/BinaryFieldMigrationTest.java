@@ -48,7 +48,7 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 	final DataProvider FILL = (container, name) -> {
 		Buffer buffer = Buffer.buffer(FILECONTENTS);
 		hash = FileUtils.hash(buffer).blockingGet();
-		Binaries binaries = mesh().binaries();
+		Binaries binaries = Tx.get().binaries();
 
 		// Check whether the binary could already be found
 		HibBinary binary = binaries.findByHash(hash).runInExistingTx(Tx.get());

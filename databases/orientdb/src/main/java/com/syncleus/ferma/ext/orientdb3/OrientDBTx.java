@@ -22,6 +22,7 @@ import com.gentics.mesh.core.action.TagDAOActions;
 import com.gentics.mesh.core.action.TagFamilyDAOActions;
 import com.gentics.mesh.core.action.UserDAOActions;
 import com.gentics.mesh.core.context.ContextDataRegistry;
+import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
@@ -74,12 +75,14 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	private final TxData txData;
 	private final ContextDataRegistry contextDataRegistry;
 	private final DaoCollection daos;
+	private final Binaries binaries;
 
 	private Timer commitTimer;
 
 	@Inject
 	public OrientDBTx(MeshOptions options, Database db, BootstrapInitializer boot, DaoCollection daos, OrientStorage provider,
-		TypeResolver typeResolver, MetricsService metrics, PermissionRoots permissionRoots, ContextDataRegistry contextDataRegistry) {
+		TypeResolver typeResolver, MetricsService metrics, PermissionRoots permissionRoots, ContextDataRegistry contextDataRegistry,
+		Binaries binaries) {
 		this.db = db;
 		this.boot = boot;
 		this.typeResolver = typeResolver;
@@ -98,6 +101,7 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 		this.txData = new TxDataImpl(options, boot, permissionRoots);
 		this.contextDataRegistry = contextDataRegistry;
 		this.daos = daos;
+		this.binaries = binaries;
 	}
 
 	@Override
@@ -309,6 +313,11 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	@Override
 	public ContentDaoWrapper contentDao() {
 		return daos.contentDao();
+	}
+
+	@Override
+	public Binaries binaries() {
+		return binaries;
 	}
 
 }
