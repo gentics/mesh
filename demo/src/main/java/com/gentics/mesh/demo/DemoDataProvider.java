@@ -51,7 +51,7 @@ import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
-import com.gentics.mesh.rest.MeshLocalClientImpl;
+import com.gentics.mesh.rest.MeshLocalClient;
 import com.gentics.mesh.rest.client.MeshRequest;
 
 import io.vertx.core.buffer.Buffer;
@@ -71,7 +71,7 @@ public class DemoDataProvider {
 
 	private Database db;
 
-	private MeshLocalClientImpl client;
+	private MeshLocalClient client;
 
 	private Map<String, ProjectResponse> projects = new HashMap<>();
 	private Map<String, SchemaResponse> schemas = new HashMap<>();
@@ -85,7 +85,7 @@ public class DemoDataProvider {
 	private BootstrapInitializer boot;
 
 	@Inject
-	public DemoDataProvider(Database database, MeshLocalClientImpl client, BootstrapInitializer boot) {
+	public DemoDataProvider(Database database, MeshLocalClient client, BootstrapInitializer boot) {
 		this.db = database;
 		this.client = client;
 		this.boot = boot;

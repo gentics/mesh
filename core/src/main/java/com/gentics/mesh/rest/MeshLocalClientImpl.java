@@ -135,7 +135,7 @@ import io.vertx.ext.web.FileUpload;
  * well tested and may lack a lot of endpoint implementations.
  */
 @Singleton
-public class MeshLocalClientImpl implements MeshRestClient {
+public class MeshLocalClientImpl implements MeshLocalClient {
 
 	public MeshAuthUser user;
 
@@ -200,11 +200,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	private Map<String, Project> projects = new HashMap<>();
 
-	/**
-	 * Set the user which is used for authentication.
-	 *
-	 * @param user
-	 */
+	@Override
 	public void setUser(MeshAuthUser user) {
 		this.user = user;
 	}
@@ -1123,6 +1119,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
+	@Override
 	public MeshRequest<NodeResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag, String version, String fieldKey,
 		byte[] fileData, String fileName, String contentType, ParameterProvider... parameters) {
 

@@ -5,8 +5,6 @@ import java.util.List;
 import javax.annotation.Nullable;
 import javax.inject.Provider;
 
-import org.springframework.security.crypto.password.PasswordEncoder;
-
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
@@ -16,8 +14,6 @@ import com.gentics.mesh.cache.ProjectNameCache;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.binary.Binaries;
-import com.gentics.mesh.core.data.generic.UserProperties;
-import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
@@ -36,7 +32,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
-import com.gentics.mesh.rest.MeshLocalClientImpl;
+import com.gentics.mesh.rest.MeshLocalClient;
 import com.gentics.mesh.rest.RestAPIVerticle;
 import com.gentics.mesh.router.EndpointRegistry;
 import com.gentics.mesh.router.RouterStorage;
@@ -44,15 +40,6 @@ import com.gentics.mesh.router.RouterStorageRegistry;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
-import com.gentics.mesh.search.index.group.GroupIndexHandler;
-import com.gentics.mesh.search.index.microschema.MicroschemaIndexHandler;
-import com.gentics.mesh.search.index.node.NodeIndexHandler;
-import com.gentics.mesh.search.index.project.ProjectIndexHandler;
-import com.gentics.mesh.search.index.role.RoleIndexHandler;
-import com.gentics.mesh.search.index.schema.SchemaIndexHandler;
-import com.gentics.mesh.search.index.tag.TagIndexHandler;
-import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
-import com.gentics.mesh.search.index.user.UserIndexHandler;
 import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.storage.LocalBinaryStorage;
 
@@ -68,8 +55,6 @@ public interface MeshComponent extends BaseMeshComponent {
 	EndpointRegistry endpointRegistry();
 
 	SearchProvider searchProvider();
-
-	PasswordEncoder passwordEncoder();
 
 	Provider<RouterStorage> routerStorageProvider();
 
@@ -93,8 +78,6 @@ public interface MeshComponent extends BaseMeshComponent {
 
 	ProjectVersionPurgeHandler projectVersionPurgeHandler();
 
-	MeshLocalClientImpl meshLocalClientImpl();
-
 	WebRootLinkReplacer webRootLinkReplacer();
 
 	IndexHandlerRegistry indexHandlerRegistry();
@@ -104,8 +87,6 @@ public interface MeshComponent extends BaseMeshComponent {
 	BinaryUploadHandler nodeFieldAPIHandler();
 
 	ImageManipulator imageManipulator();
-
-	SchemaComparator schemaComparator();
 
 	RestAPIVerticle restApiVerticle();
 

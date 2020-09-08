@@ -80,10 +80,6 @@
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-graphql</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-rest-client</artifactId>
-		</dependency>
 
 		<!-- Common Tools -->
 		<dependency>

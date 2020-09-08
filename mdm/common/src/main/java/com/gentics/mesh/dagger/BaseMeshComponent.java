@@ -1,8 +1,12 @@
 package com.gentics.mesh.dagger;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.generic.UserProperties;
+import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.rest.MeshLocalClient;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
 import com.gentics.mesh.search.index.microschema.MicroschemaIndexHandler;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
@@ -20,6 +24,10 @@ public interface BaseMeshComponent {
 	MeshOptions options();
 
 	Vertx vertx();
+
+	PasswordEncoder passwordEncoder();
+
+	SchemaComparator schemaComparator();
 
 	// Index Handlers
 
@@ -48,5 +56,7 @@ public interface BaseMeshComponent {
 	UserProperties userProperties();
 
 	// Other
+
+	MeshLocalClient meshLocalClientImpl();
 
 }

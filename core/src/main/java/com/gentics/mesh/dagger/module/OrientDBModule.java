@@ -139,6 +139,8 @@ import com.gentics.mesh.plugin.manager.MeshPluginManagerImpl;
 import com.gentics.mesh.plugin.pf4j.PluginEnvironmentImpl;
 import com.gentics.mesh.plugin.registry.DelegatingPluginRegistry;
 import com.gentics.mesh.plugin.registry.DelegatingPluginRegistryImpl;
+import com.gentics.mesh.rest.MeshLocalClient;
+import com.gentics.mesh.rest.MeshLocalClientImpl;
 import com.gentics.mesh.router.RouterStorageRegistry;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
 import com.gentics.mesh.search.index.common.DropIndexHandler;
@@ -410,4 +412,9 @@ public abstract class OrientDBModule {
 			new BinaryCheck(),
 			new FieldCheck());
 	}
+
+	// NON Graph Specific Bindings
+	// TODO Move into dedicated module
+	@Binds
+	abstract MeshLocalClient meshLocalClient(MeshLocalClientImpl e);
 }
