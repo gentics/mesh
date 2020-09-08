@@ -11,15 +11,11 @@ import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.core.endpoint.role.RoleCrudHandler;
-import com.gentics.mesh.core.migration.BranchMigration;
-import com.gentics.mesh.core.migration.MicronodeMigration;
-import com.gentics.mesh.core.migration.NodeMigration;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.router.EndpointRegistry;
-import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.router.RouterStorageRegistry;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.TrackingSearchProvider;
@@ -35,23 +31,7 @@ public interface MeshComponent extends BaseMeshComponent {
 
 	EndpointRegistry endpointRegistry();
 
-	Provider<RouterStorage> routerStorageProvider();
-
-	default TrackingSearchProvider trackingSearchProvider() {
-		return (TrackingSearchProvider) searchProvider();
-	}
-
-	JobWorkerVerticle jobWorkerVerticle();
-
 	ServerSchemaStorage serverSchemaStorage();
-
-	NodeMigration nodeMigrationHandler();
-
-	BranchMigration branchMigrationHandler();
-
-	MicronodeMigration micronodeMigrationHandler();
-
-	IndexHandlerRegistry indexHandlerRegistry();
 
 	Provider<EventQueueBatch> batchProvider();
 
@@ -59,9 +39,19 @@ public interface MeshComponent extends BaseMeshComponent {
 
 	Binaries binaries();
 
+	// For tests
+
+	default TrackingSearchProvider trackingSearchProvider() {
+		return (TrackingSearchProvider) searchProvider();
+	}
+
 	RoleCrudHandler roleCrudHandler();
 
+	IndexHandlerRegistry indexHandlerRegistry();
+
 	List<ConsistencyCheck> consistencyChecks();
+
+	JobWorkerVerticle jobWorkerVerticle();
 
 	interface Builder {
 		Builder configuration(MeshOptions options);

@@ -43,7 +43,7 @@ public class RunnerNodeB {
 		options.getClusterOptions().setClusterName("testcluster");
 
 		Mesh mesh = Mesh.create(options);
-		mesh.setCustomLoader((vertx) -> {
+		mesh.setCustomLoader(vertx -> {
 			JsonObject config = new JsonObject();
 			config.put("port", options.getHttpServerOptions().getPort());
 			MeshComponent meshInternal = mesh.internal();

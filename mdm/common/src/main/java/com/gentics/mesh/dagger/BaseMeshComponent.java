@@ -13,6 +13,9 @@ import com.gentics.mesh.core.data.generic.UserProperties;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
+import com.gentics.mesh.core.migration.BranchMigration;
+import com.gentics.mesh.core.migration.MicronodeMigration;
+import com.gentics.mesh.core.migration.NodeMigration;
 import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandler;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -101,6 +104,14 @@ public interface BaseMeshComponent {
 	ProjectIndexHandler projectIndexHandler();
 
 	NodeIndexHandler nodeContainerIndexHandler();
+
+	// Migration
+
+	NodeMigration nodeMigrationHandler();
+
+	BranchMigration branchMigrationHandler();
+
+	MicronodeMigration micronodeMigrationHandler();
 
 	// REST
 
