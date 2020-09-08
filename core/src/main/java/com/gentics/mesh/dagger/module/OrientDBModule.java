@@ -110,6 +110,12 @@ import com.gentics.mesh.core.endpoint.admin.consistency.check.SchemaContainerChe
 import com.gentics.mesh.core.endpoint.admin.consistency.check.TagCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.TagFamilyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.UserCheck;
+import com.gentics.mesh.core.migration.BranchMigration;
+import com.gentics.mesh.core.migration.MicronodeMigration;
+import com.gentics.mesh.core.migration.NodeMigration;
+import com.gentics.mesh.core.migration.impl.BranchMigrationImpl;
+import com.gentics.mesh.core.migration.impl.MicronodeMigrationImpl;
+import com.gentics.mesh.core.migration.impl.NodeMigrationImpl;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.core.verticle.handler.WriteLockImpl;
 import com.gentics.mesh.distributed.RequestDelegator;
@@ -344,6 +350,15 @@ public abstract class OrientDBModule {
 
 	@Binds
 	abstract GroupIndexHandler groupIndexHandler(GroupIndexHandlerImpl e);
+
+	@Binds
+	abstract BranchMigration branchMigration(BranchMigrationImpl e);
+
+	@Binds
+	abstract MicronodeMigration micronodeMigration(MicronodeMigrationImpl e);
+
+	@Binds
+	abstract NodeMigration nodeMigration(NodeMigrationImpl e);
 
 	@Provides
 	public static List<ConsistencyCheck> consistencyCheckList() {

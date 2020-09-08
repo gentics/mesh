@@ -45,8 +45,8 @@ import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.FieldFetcher;
 import com.gentics.mesh.core.field.FieldSchemaCreator;
 import com.gentics.mesh.core.field.FieldTestHelper;
-import com.gentics.mesh.core.migration.impl.MicronodeMigrationImpl;
-import com.gentics.mesh.core.migration.impl.NodeMigrationImpl;
+import com.gentics.mesh.core.migration.MicronodeMigration;
+import com.gentics.mesh.core.migration.NodeMigration;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -76,9 +76,9 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 	protected final static String KILLERSCRIPT = "function migrate(node, fieldname) {var System = Java.type('java.lang.System'); System.exit(0);}";
 
-	protected NodeMigrationImpl nodeMigrationHandler;
+	protected NodeMigration nodeMigrationHandler;
 
-	protected MicronodeMigrationImpl micronodeMigrationHandler;
+	protected MicronodeMigration micronodeMigrationHandler;
 
 	@Before
 	public void setupDeps() {

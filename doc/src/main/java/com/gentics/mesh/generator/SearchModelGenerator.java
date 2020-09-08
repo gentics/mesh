@@ -58,6 +58,7 @@ import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
 import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandler;
+import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.search.index.node.NodeIndexHandlerImpl;
 import com.gentics.mesh.search.index.project.ProjectIndexHandler;
 import com.gentics.mesh.search.index.role.RoleIndexHandler;
@@ -181,8 +182,8 @@ public class SearchModelGenerator extends AbstractGenerator {
 		HibNode parentNode = mockNodeBasic("folder", user);
 		HibNode node = mockNode(nodeDao, contentDao, tagDao, parentNode, project, user, language, tagA, tagB);
 
-		NodeIndexHandlerImpl nodeIndexHandler = meshDagger.nodeContainerIndexHandler();
-		nodeIndexHandler.storeContainer(contentDao.getLatestDraftFieldContainer(node, language), UUID_1, ContainerType.PUBLISHED)
+		NodeIndexHandler nodeIndexHandler = meshDagger.nodeContainerIndexHandler();
+		((NodeIndexHandlerImpl)nodeIndexHandler).storeContainer(contentDao.getLatestDraftFieldContainer(node, language), UUID_1, ContainerType.PUBLISHED)
 			.ignoreElement()
 			.blockingAwait();
 		writeStoreEvent("node.search");

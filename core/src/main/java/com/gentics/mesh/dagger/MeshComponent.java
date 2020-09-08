@@ -25,9 +25,9 @@ import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.core.endpoint.role.RoleCrudHandler;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
-import com.gentics.mesh.core.migration.impl.BranchMigrationImpl;
-import com.gentics.mesh.core.migration.impl.MicronodeMigrationImpl;
-import com.gentics.mesh.core.migration.impl.NodeMigrationImpl;
+import com.gentics.mesh.core.migration.BranchMigration;
+import com.gentics.mesh.core.migration.MicronodeMigration;
+import com.gentics.mesh.core.migration.NodeMigration;
 import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandler;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
@@ -47,7 +47,7 @@ import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
 import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandler;
-import com.gentics.mesh.search.index.node.NodeIndexHandlerImpl;
+import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.search.index.project.ProjectIndexHandler;
 import com.gentics.mesh.search.index.role.RoleIndexHandler;
 import com.gentics.mesh.search.index.schema.SchemaContainerIndexHandler;
@@ -88,13 +88,13 @@ public interface MeshComponent extends BaseMeshComponent {
 
 	ServerSchemaStorage serverSchemaStorage();
 
-	NodeIndexHandlerImpl nodeContainerIndexHandler();
+	NodeIndexHandler nodeContainerIndexHandler();
 
-	NodeMigrationImpl nodeMigrationHandler();
+	NodeMigration nodeMigrationHandler();
 
-	BranchMigrationImpl branchMigrationHandler();
+	BranchMigration branchMigrationHandler();
 
-	MicronodeMigrationImpl micronodeMigrationHandler();
+	MicronodeMigration micronodeMigrationHandler();
 
 	ProjectVersionPurgeHandler projectVersionPurgeHandler();
 
@@ -168,8 +168,11 @@ public interface MeshComponent extends BaseMeshComponent {
 
 	interface Builder {
 		Builder configuration(MeshOptions options);
+
 		Builder mesh(Mesh mesh);
+
 		Builder searchProviderType(@Nullable SearchProviderType type);
+
 		MeshComponent build();
 	}
 }

@@ -37,7 +37,7 @@ import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.migration.impl.BranchMigrationImpl;
+import com.gentics.mesh.core.migration.BranchMigration;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.error.InvalidArgumentException;
@@ -57,7 +57,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	public static final String ENGLISH_NAME = "test english name";
 
-	private BranchMigrationImpl branchMigrationHandler;
+	private BranchMigration branchMigrationHandler;
 
 	@Before
 	public void setupHandler() {
