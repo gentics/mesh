@@ -85,8 +85,6 @@ public interface MeshComponent extends BaseMeshComponent {
 
 	ServerSchemaStorage serverSchemaStorage();
 
-	NodeIndexHandler nodeContainerIndexHandler();
-
 	NodeMigration nodeMigrationHandler();
 
 	BranchMigration branchMigrationHandler();
@@ -102,22 +100,6 @@ public interface MeshComponent extends BaseMeshComponent {
 	IndexHandlerRegistry indexHandlerRegistry();
 
 	LocalBinaryStorage localBinaryStorage();
-
-	ProjectIndexHandler projectIndexHandler();
-
-	UserIndexHandler userIndexHandler();
-
-	RoleIndexHandler roleIndexHandler();
-
-	GroupIndexHandler groupIndexHandler();
-
-	SchemaIndexHandler schemaContainerIndexHandler();
-
-	MicroschemaIndexHandler microschemaContainerIndexHandler();
-
-	TagIndexHandler tagIndexHandler();
-
-	TagFamilyIndexHandler tagFamilyIndexHandler();
 
 	BinaryUploadHandler nodeFieldAPIHandler();
 
@@ -148,8 +130,6 @@ public interface MeshComponent extends BaseMeshComponent {
 	RouterStorageRegistry routerStorageRegistry();
 
 	Binaries binaries();
-
-	UserProperties userProperties();
 
 	WriteLock globalLock();
 
