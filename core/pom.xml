@@ -181,12 +181,6 @@
 			</exclusions>
 		</dependency>
 
-		<!-- Dagger -->
-		<dependency>
-			<groupId>com.google.dagger</groupId>
-			<artifactId>dagger</artifactId>
-		</dependency>
-
 		<!-- Test dependencies -->
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>

@@ -9,13 +9,12 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.core.endpoint.role.RoleCrudHandler;
-import com.gentics.mesh.core.link.WebRootLinkReplacer;
+import com.gentics.mesh.core.link.WebRootLinkReplacerImpl;
 import com.gentics.mesh.core.migration.BranchMigration;
 import com.gentics.mesh.core.migration.MicronodeMigration;
 import com.gentics.mesh.core.migration.NodeMigration;
@@ -32,7 +31,6 @@ import com.gentics.mesh.router.RouterStorageRegistry;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
-import com.gentics.mesh.storage.BinaryStorage;
 
 /**
  * Central dagger mesh component which will expose dependencies.
@@ -48,8 +46,6 @@ public interface MeshComponent extends BaseMeshComponent {
 	SearchProvider searchProvider();
 
 	Provider<RouterStorage> routerStorageProvider();
-
-	BinaryStorage binaryStorage();
 
 	default TrackingSearchProvider trackingSearchProvider() {
 		return (TrackingSearchProvider) searchProvider();
@@ -69,8 +65,6 @@ public interface MeshComponent extends BaseMeshComponent {
 
 	ProjectVersionPurgeHandler projectVersionPurgeHandler();
 
-	WebRootLinkReplacer webRootLinkReplacer();
-
 	IndexHandlerRegistry indexHandlerRegistry();
 
 	BinaryUploadHandler nodeFieldAPIHandler();
@@ -82,8 +76,6 @@ public interface MeshComponent extends BaseMeshComponent {
 	MetricsService metrics();
 
 	Provider<EventQueueBatch> batchProvider();
-
-	Provider<BulkActionContext> bulkProvider();
 
 	RouterStorageRegistry routerStorageRegistry();
 

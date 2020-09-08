@@ -18,6 +18,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Tx;
@@ -34,41 +35,24 @@ import io.vertx.core.logging.LoggerFactory;
  * This class will resolve mesh link placeholders.
  */
 @Singleton
-public class WebRootLinkReplacer {
+public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 
 	private static final String START_TAG = "{{mesh.link(";
 	private static final String END_TAG = ")}}";
 
-	private static final Logger log = LoggerFactory.getLogger(WebRootLinkReplacer.class);
+	private static final Logger log = LoggerFactory.getLogger(WebRootLinkReplacerImpl.class);
 
 	private final BootstrapInitializer boot;
 
 	private final MeshOptions options;
 
 	@Inject
-	public WebRootLinkReplacer(BootstrapInitializer boot, MeshOptions options) {
+	public WebRootLinkReplacerImpl(BootstrapInitializer boot, MeshOptions options) {
 		this.boot = boot;
 		this.options = options;
 	}
 
-	/**
-	 * Replace the links in the content.
-	 * 
-	 * @param ac
-	 * @param branch
-	 *            branch Uuid or name
-	 * @param edgeType
-	 *            edge type
-	 * @param content
-	 *            content containing links to replace
-	 * @param type
-	 *            replacing type
-	 * @param projectName
-	 *            project name (used for 404 links)
-	 * @param languageTags
-	 *            optional language tags
-	 * @return content with links (probably) replaced
-	 */
+	@Override
 	public String replace(InternalActionContext ac, String branch, ContainerType edgeType, String content, LinkType type, String projectName,
 		List<String> languageTags) {
 		if (isEmpty(content) || type == LinkType.OFF || type == null) {
@@ -135,49 +119,13 @@ public class WebRootLinkReplacer {
 		return renderedContent.toString();
 	}
 
-	/**
-	 * Resolve the link to the node with uuid (in the given language) into an observable
-	 * 
-	 * @param ac
-	 * @param branch
-	 *            branch Uuid or name
-	 * @param edgeType
-	 *            edge type
-	 * @param uuid
-	 *            target uuid
-	 * @param type
-	 *            link type
-	 * @param projectName
-	 *            project name (which is used for 404 links)
-	 * @param languageTags
-	 *            optional language tags
-	 * @return observable of the rendered link
-	 */
+	@Override
 	public String resolve(InternalActionContext ac, String branch, ContainerType edgeType, String uuid, LinkType type, String projectName,
 		String... languageTags) {
 		return resolve(ac, branch, edgeType, uuid, type, projectName, false, languageTags);
 	}
 
-	/**
-	 * Resolve the link to the node with uuid (in the given language) into an observable
-	 * 
-	 * @param ac
-	 * @param branch
-	 *            branch Uuid or name
-	 * @param edgeType
-	 *            edge type
-	 * @param uuid
-	 *            target uuid
-	 * @param type
-	 *            link type
-	 * @param projectName
-	 *            project name (which is used for 404 links)
-	 * @param forceAbsolute
-	 * 			  if true, the resolved link will always be absolute
-	 * @param languageTags
-	 *            optional language tags
-	 * @return observable of the rendered link
-	 */
+	@Override
 	public String resolve(InternalActionContext ac, String branch, ContainerType edgeType, String uuid, LinkType type, String projectName,
 		boolean forceAbsolute,
 		String... languageTags) {
@@ -204,48 +152,14 @@ public class WebRootLinkReplacer {
 		return resolve(ac, branch, edgeType, node, type, forceAbsolute, languageTags);
 	}
 
-	/**
-	 * Resolve the link to the given node.
-	 * 
-	 * @param ac
-	 * @param branchNameOrUuid
-	 *            Branch UUID or name which will be used to render the path to the linked node. If this is invalid, the default branch of the target node will
-	 *            be used.
-	 * @param edgeType
-	 *            edge type
-	 * @param node
-	 *            target node
-	 * @param type
-	 *            link type
-	 * @param languageTags
-	 *            target language
-	 * @return observable of the rendered link
-	 */
-	public String resolve(InternalActionContext ac, String branchNameOrUuid, ContainerType edgeType, Node node, LinkType type,
+	@Override
+	public String resolve(InternalActionContext ac, String branchNameOrUuid, ContainerType edgeType, HibNode node, LinkType type,
 		String... languageTags) {
 		return resolve(ac, branchNameOrUuid, edgeType, node, type, false, languageTags);
 	}
 
-	/**
-	 * Resolve the link to the given node.
-	 * 
-	 * @param ac
-	 * @param branchNameOrUuid
-	 *            Branch UUID or name which will be used to render the path to the linked node. If this is invalid, the default branch of the target node will
-	 *            be used.
-	 * @param edgeType
-	 *            edge type
-	 * @param node
-	 *            target node
-	 * @param type
-	 *            link type
-	 * @param forceAbsolute
-	 * 			  if true, the resolved link will always be absolute
-	 * @param languageTags
-	 *            target language
-	 * @return observable of the rendered link
-	 */
-	public String resolve(InternalActionContext ac, String branchNameOrUuid, ContainerType edgeType, Node node, LinkType type,
+	@Override
+	public String resolve(InternalActionContext ac, String branchNameOrUuid, ContainerType edgeType, HibNode node, LinkType type,
 		boolean forceAbsolute,
 		String... languageTags) {
 		Tx tx = Tx.get();
@@ -308,7 +222,7 @@ public class WebRootLinkReplacer {
 	 *            branch
 	 * @return scheme and authority or empty string if the branch of the node does not supply the needed information
 	 */
-	private String generateSchemeAuthorityForNode(Node node, HibBranch branch) {
+	private String generateSchemeAuthorityForNode(HibNode node, HibBranch branch) {
 		String hostname = branch.getHostname();
 		if (StringUtils.isEmpty(hostname)) {
 			// Fallback to urls without authority/scheme

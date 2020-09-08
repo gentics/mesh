@@ -47,7 +47,7 @@ import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.link.WebRootLinkReplacer;
+import com.gentics.mesh.core.link.WebRootLinkReplacerImpl;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -76,7 +76,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	public MicronodeFieldTypeProvider micronodeFieldTypeProvider;
 
 	@Inject
-	public WebRootLinkReplacer linkReplacer;
+	public WebRootLinkReplacerImpl linkReplacer;
 
 	@Inject
 	public FieldDefinitionProvider(MeshOptions options) {
