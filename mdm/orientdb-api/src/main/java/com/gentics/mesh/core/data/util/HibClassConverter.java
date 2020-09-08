@@ -6,7 +6,6 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibElement;
-import com.gentics.mesh.core.data.HibInNode;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
@@ -126,16 +125,6 @@ public final class HibClassConverter {
 
 	public static Binary toGraph(HibBinary binary) {
 		return checkAndCast(binary, Binary.class);
-	}
-
-	/**
-	 * @param node
-	 * @return
-	 * @deprecated Use {@link #toGraph(HibNode)} instead.
-	 */
-	@Deprecated
-	public static Node toGraph(HibInNode node) {
-		return checkAndCast(node, Node.class);
 	}
 
 	public static Node toGraph(HibNode node) {

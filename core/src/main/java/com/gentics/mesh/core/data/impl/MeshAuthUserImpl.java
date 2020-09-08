@@ -6,9 +6,9 @@ import java.util.Set;
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.core.TypeInfo;
-import com.gentics.mesh.core.data.HibInNode;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.group.HibGroup;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -81,7 +81,7 @@ public class MeshAuthUserImpl implements MeshAuthUser {
 				groupsArray.add(groupJson);
 			}
 
-			HibInNode reference = delegate.getReferencedNode();
+			HibNode reference = delegate.getReferencedNode();
 			if (reference != null) {
 				user.put("nodeReference", reference.getUuid());
 			}
@@ -271,12 +271,12 @@ public class MeshAuthUserImpl implements MeshAuthUser {
 	}
 
 	@Override
-	public HibInNode getReferencedNode() {
+	public HibNode getReferencedNode() {
 		return delegate.getReferencedNode();
 	}
 
 	@Override
-	public HibUser setReferencedNode(HibInNode node) {
+	public HibUser setReferencedNode(HibNode node) {
 		return delegate.setReferencedNode(node);
 	}
 

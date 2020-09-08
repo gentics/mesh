@@ -165,6 +165,7 @@ import com.gentics.mesh.search.index.user.UserIndexHandler;
 import com.gentics.mesh.search.index.user.UserIndexHandlerImpl;
 import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.storage.LocalBinaryStorage;
+import com.gentics.mesh.storage.LocalBinaryStorageImpl;
 import com.syncleus.ferma.ext.orientdb3.PermissionRootsImpl;
 
 import dagger.Binds;
@@ -239,7 +240,7 @@ public abstract class OrientDBModule {
 	abstract MeshOAuthService bindOAuthHandler(MeshOAuth2ServiceImpl e);
 
 	@Binds
-	abstract BinaryStorage bindBinaryStorage(LocalBinaryStorage e);
+	abstract BinaryStorage bindBinaryStorage(LocalBinaryStorageImpl e);
 
 	@Binds
 	abstract MetricsService bindMetricsService(MetricsServiceImpl e);
@@ -393,6 +394,9 @@ public abstract class OrientDBModule {
 
 	@Binds
 	abstract PermissionProperties permissionProperties(PermissionPropertiesImpl e);
+
+	@Binds
+	abstract LocalBinaryStorage localBinaryStorage(LocalBinaryStorageImpl e);
 
 	@Provides
 	public static List<ConsistencyCheck> consistencyCheckList() {

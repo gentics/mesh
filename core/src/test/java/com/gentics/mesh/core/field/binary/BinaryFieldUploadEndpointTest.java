@@ -35,7 +35,6 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -260,7 +259,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 						.updateNodeBinaryField(projectName(), node.getUuid(), "en", node.getVersion(), "image", ins, size, "blume.jpg", "image/jpeg")
 						.toSingle();
 				});
-		}).lastOrError().toCompletable().blockingAwait();
+		}).lastOrError().ignoreElement().blockingAwait();
 
 	}
 

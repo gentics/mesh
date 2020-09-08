@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.binary;
 
 import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.rest.node.field.image.Point;
 
 public interface HibBinary extends HibBaseElement {
 
@@ -9,5 +10,16 @@ public interface HibBinary extends HibBaseElement {
 	HibBinary setImageWidth(Integer width);
 
 	HibBinary setSize(long sizeInBytes);
+
+	String getSHA512Sum();
+
+	long getSize();
+
+	Integer getImageHeight();
+
+	Integer getImageWidth();
+
+	Point getImageSize();
+
 
 }

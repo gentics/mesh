@@ -245,7 +245,7 @@ public class NodeMigrationUser implements MeshAuthUser {
 	}
 
 	@Override
-	public HibUser setReferencedNode(HibInNode node) {
+	public HibUser setReferencedNode(HibNode node) {
 		return this;
 	}
 

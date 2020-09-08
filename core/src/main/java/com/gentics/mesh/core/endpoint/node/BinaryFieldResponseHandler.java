@@ -9,7 +9,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.db.Tx;
@@ -94,7 +94,7 @@ public class BinaryFieldResponseHandler {
 		BinaryDaoWrapper binaryDao = Tx.get().binaryDao();
 		HttpServerResponse response = rc.response();
 
-		Binary binary = binaryField.getBinary();
+		HibBinary binary = binaryField.getBinary();
 		String fileName = binaryField.getFileName();
 		String contentType = binaryField.getMimeType();
 		// Try to guess the contenttype via the filename

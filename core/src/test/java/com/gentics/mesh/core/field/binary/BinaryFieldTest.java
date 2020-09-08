@@ -145,7 +145,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 			field.getBinary().setImageWidth(7);
 
 			BinaryGraphField loadedField = container.getBinary(BINARY_FIELD);
-			Binary loadedBinary = loadedField.getBinary();
+			HibBinary loadedBinary = loadedField.getBinary();
 			assertNotNull("The previously created field could not be found.", loadedField);
 			assertEquals(220, loadedBinary.getSize());
 

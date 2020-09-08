@@ -14,7 +14,7 @@ import java.util.Objects;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.binary.HibBinaryField;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.util.RxUtil;
@@ -29,16 +29,16 @@ import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.file.FileSystem;
 
 @Singleton
-public class LocalBinaryStorage extends AbstractBinaryStorage {
+public class LocalBinaryStorageImpl extends AbstractBinaryStorage implements LocalBinaryStorage {
 
-	private static final Logger log = LoggerFactory.getLogger(LocalBinaryStorage.class);
+	private static final Logger log = LoggerFactory.getLogger(LocalBinaryStorageImpl.class);
 	private final Vertx rxVertx;
 	private final FileSystem fileSystem;
 
 	private MeshUploadOptions options;
 
 	@Inject
-	public LocalBinaryStorage(MeshOptions options, Vertx rxVertx) {
+	public LocalBinaryStorageImpl(MeshOptions options, Vertx rxVertx) {
 		this.options = options.getUploadOptions();
 		this.rxVertx = rxVertx;
 		this.fileSystem = rxVertx.fileSystem();
@@ -163,7 +163,7 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 	}
 
 	@Override
-	public boolean exists(BinaryGraphField field) {
+	public boolean exists(HibBinaryField field) {
 		String uuid = field.getBinary().getUuid();
 		return new File(getFilePath(uuid)).exists();
 	}

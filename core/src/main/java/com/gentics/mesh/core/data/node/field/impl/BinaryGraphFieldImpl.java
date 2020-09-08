@@ -111,7 +111,7 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 		// Handle Update - Focal point
 		FocalPoint newFocalPoint = binaryField.getFocalPoint();
 		if (newFocalPoint != null) {
-			Binary binary = graphBinaryField.getBinary();
+			HibBinary binary = graphBinaryField.getBinary();
 			Point imageSize = binary.getImageSize();
 			if (imageSize != null) {
 				if (!newFocalPoint.convertToAbsolutePoint(imageSize).isWithinBoundsOf(imageSize)) {
@@ -269,8 +269,8 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 			String mimeTypeB = binaryField.getMimeType();
 			boolean mimetype = Objects.equals(mimeTypeA, mimeTypeB);
 
-			Binary binaryA = getBinary();
-			Binary binaryB = binaryField.getBinary();
+			HibBinary binaryA = getBinary();
+			HibBinary binaryB = binaryField.getBinary();
 
 			String hashSumA = binaryA != null ? binaryA.getSHA512Sum() : null;
 			String hashSumB = binaryB != null ? binaryB.getSHA512Sum() : null;

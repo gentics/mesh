@@ -25,7 +25,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Micronode;
@@ -89,7 +89,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		// .binaryUuid
 		type.field(newFieldDefinition().name("binaryUuid").description("UUID of the binary data.").type(GraphQLString).dataFetcher(fetcher -> {
 			BinaryGraphField field = fetcher.getSource();
-			Binary binary = field.getBinary();
+			HibBinary binary = field.getBinary();
 			return binary == null ? 0 : binary.getUuid();
 		}));
 
@@ -99,14 +99,14 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		// .width
 		type.field(newFieldDefinition().name("width").description("Image width in pixel.").type(GraphQLInt).dataFetcher(fetcher -> {
 			BinaryGraphField field = fetcher.getSource();
-			Binary binary = field.getBinary();
+			HibBinary binary = field.getBinary();
 			return binary == null ? 0 : binary.getImageWidth();
 		}));
 
 		// .height
 		type.field(newFieldDefinition().name("height").description("Image height in pixel.").type(GraphQLInt).dataFetcher(fetcher -> {
 			BinaryGraphField field = fetcher.getSource();
-			Binary binary = field.getBinary();
+			HibBinary binary = field.getBinary();
 			return binary == null ? 0 : binary.getImageHeight();
 		}));
 

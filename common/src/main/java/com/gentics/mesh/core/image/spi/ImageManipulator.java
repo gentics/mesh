@@ -4,8 +4,9 @@ import java.awt.image.BufferedImage;
 import java.io.InputStream;
 import java.util.Map;
 
-import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
+
 import io.reactivex.Single;
 
 /**
@@ -19,7 +20,7 @@ public interface ImageManipulator {
 	 * @param parameters
 	 * @return The path to the resized file.
 	 */
-	Single<String> handleResize(Binary binary, ImageManipulationParameters parameters);
+	Single<String> handleResize(HibBinary binary, ImageManipulationParameters parameters);
 
 	Single<CacheFileInfo> getCacheFilePath(String sha512sum, ImageManipulationParameters parameters);
 

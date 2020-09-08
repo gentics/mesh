@@ -3,7 +3,7 @@ package com.gentics.mesh.storage;
 import java.io.IOException;
 import java.io.InputStream;
 
-import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.binary.HibBinaryField;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.reactivex.Completable;
@@ -64,7 +64,7 @@ public interface BinaryStorage {
 	 * @param binaryField
 	 * @return
 	 */
-	boolean exists(BinaryGraphField field);
+	boolean exists(HibBinaryField field);
 
 	/**
 	 * Read the binary data which is identified by the given binary uuid.

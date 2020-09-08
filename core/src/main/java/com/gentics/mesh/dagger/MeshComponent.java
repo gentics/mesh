@@ -8,8 +8,6 @@ import javax.inject.Provider;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
-import com.gentics.mesh.cache.ProjectBranchNameCache;
-import com.gentics.mesh.cache.ProjectNameCache;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.binary.Binaries;

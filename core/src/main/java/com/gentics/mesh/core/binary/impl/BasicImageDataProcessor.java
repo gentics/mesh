@@ -6,7 +6,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.binary.AbstractBinaryProcessor;
-import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.util.NodeUtil;
@@ -42,7 +42,7 @@ public class BasicImageDataProcessor extends AbstractBinaryProcessor {
 			Consumer<BinaryGraphField> consumer = field -> {
 				log.info("Setting info to binary field " + field.getUuid() + " - " + info);
 				field.setImageDominantColor(info.getDominantColor());
-				Binary binary = field.getBinary();
+				HibBinary binary = field.getBinary();
 				binary.setImageHeight(info.getHeight());
 				binary.setImageWidth(info.getWidth());
 			};

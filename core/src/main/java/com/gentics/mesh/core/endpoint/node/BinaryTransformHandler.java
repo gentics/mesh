@@ -17,7 +17,6 @@ import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.binary.Binaries;
-import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
@@ -135,7 +134,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 		}
 		UploadContext context = new UploadContext();
 		// Lookup the binary and set the focal point parameters
-		Binary binaryField = db.tx(() -> {
+		HibBinary binaryField = db.tx(() -> {
 			NodeGraphFieldContainer container = loadTargetedContent(node, languageTag, fieldName);
 			BinaryGraphField field = loadBinaryField(container, fieldName);
 			// Use the focal point which is stored along with the binary field if no custom point was included in the query parameters.
@@ -245,7 +244,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 				oldField.copyTo(field);
 				oldField.remove();
 			}
-			Binary currentBinary = field.getBinary();
+			HibBinary currentBinary = field.getBinary();
 			currentBinary.setSize(result.getSize());
 			field.setMimeType(result.getMimeType());
 			// TODO should we rename the image, if the extension is wrong?
