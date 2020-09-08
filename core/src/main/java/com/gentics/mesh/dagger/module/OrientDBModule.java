@@ -145,12 +145,20 @@ import com.gentics.mesh.search.index.common.DropIndexHandler;
 import com.gentics.mesh.search.index.common.DropIndexHandlerImpl;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
 import com.gentics.mesh.search.index.group.GroupIndexHandlerImpl;
+import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandlerImpl;
+import com.gentics.mesh.search.index.microschema.MicroschemaIndexHandler;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.search.index.node.NodeIndexHandlerImpl;
 import com.gentics.mesh.search.index.project.ProjectIndexHandler;
 import com.gentics.mesh.search.index.project.ProjectIndexHandlerImpl;
 import com.gentics.mesh.search.index.role.RoleIndexHandler;
 import com.gentics.mesh.search.index.role.RoleIndexHandlerImpl;
+import com.gentics.mesh.search.index.schema.SchemaContainerIndexHandlerImpl;
+import com.gentics.mesh.search.index.schema.SchemaIndexHandler;
+import com.gentics.mesh.search.index.tag.TagIndexHandler;
+import com.gentics.mesh.search.index.tag.TagIndexHandlerImpl;
+import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
+import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandlerImpl;
 import com.gentics.mesh.search.index.user.UserIndexHandler;
 import com.gentics.mesh.search.index.user.UserIndexHandlerImpl;
 import com.gentics.mesh.storage.BinaryStorage;
@@ -359,6 +367,18 @@ public abstract class OrientDBModule {
 
 	@Binds
 	abstract GroupIndexHandler groupIndexHandler(GroupIndexHandlerImpl e);
+
+	@Binds
+	abstract SchemaIndexHandler schemaIndexHandler(SchemaContainerIndexHandlerImpl e);
+
+	@Binds
+	abstract MicroschemaIndexHandler microschemaIndexHandler(MicroschemaContainerIndexHandlerImpl e);
+
+	@Binds
+	abstract TagIndexHandler tagIndexHandler(TagIndexHandlerImpl e);
+
+	@Binds
+	abstract TagFamilyIndexHandler tagFamilyIndexHandler(TagFamilyIndexHandlerImpl e);
 
 	@Binds
 	abstract BranchMigration branchMigration(BranchMigrationImpl e);

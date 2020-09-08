@@ -3,13 +3,13 @@ package com.gentics.mesh.search;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.search.index.group.GroupIndexHandlerImpl;
-import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandler;
+import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandlerImpl;
 import com.gentics.mesh.search.index.node.NodeIndexHandlerImpl;
 import com.gentics.mesh.search.index.project.ProjectIndexHandlerImpl;
 import com.gentics.mesh.search.index.role.RoleIndexHandlerImpl;
-import com.gentics.mesh.search.index.schema.SchemaContainerIndexHandler;
-import com.gentics.mesh.search.index.tag.TagIndexHandler;
-import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
+import com.gentics.mesh.search.index.schema.SchemaContainerIndexHandlerImpl;
+import com.gentics.mesh.search.index.tag.TagIndexHandlerImpl;
+import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandlerImpl;
 import com.gentics.mesh.search.index.user.UserIndexHandlerImpl;
 
 import javax.inject.Inject;
@@ -39,16 +39,16 @@ public class IndexHandlerRegistry {
 	ProjectIndexHandlerImpl projectIndexHandler;
 
 	@Inject
-	TagFamilyIndexHandler tagFamilyIndexHandler;
+	TagFamilyIndexHandlerImpl tagFamilyIndexHandler;
 
 	@Inject
-	TagIndexHandler tagIndexHandler;
+	TagIndexHandlerImpl tagIndexHandler;
 
 	@Inject
-	SchemaContainerIndexHandler schemaContainerIndexHandler;
+	SchemaContainerIndexHandlerImpl schemaContainerIndexHandler;
 
 	@Inject
-	MicroschemaContainerIndexHandler microschemaContainerIndexHandler;
+	MicroschemaContainerIndexHandlerImpl microschemaContainerIndexHandler;
 
 	@Inject
 	public IndexHandlerRegistry() {

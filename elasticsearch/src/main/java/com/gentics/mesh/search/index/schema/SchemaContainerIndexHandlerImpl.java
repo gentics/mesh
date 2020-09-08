@@ -31,7 +31,7 @@ import io.reactivex.Flowable;
  * Handler for schema container index.
  */
 @Singleton
-public class SchemaContainerIndexHandler extends AbstractIndexHandler<HibSchema> {
+public class SchemaContainerIndexHandlerImpl extends AbstractIndexHandler<HibSchema> implements SchemaIndexHandler {
 
 	@Inject
 	SchemaTransformer transformer;
@@ -40,7 +40,7 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<HibSchema>
 	SchemaMappingProvider mappingProvider;
 
 	@Inject
-	public SchemaContainerIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options,
+	public SchemaContainerIndexHandlerImpl(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options,
 		SyncMetersFactory syncMetricsFactory) {
 		super(searchProvider, db, boot, helper, options, syncMetricsFactory);
 	}

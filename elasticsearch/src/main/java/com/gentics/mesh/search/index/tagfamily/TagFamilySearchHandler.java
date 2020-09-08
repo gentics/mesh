@@ -15,7 +15,7 @@ import com.gentics.mesh.search.index.AbstractSearchHandler;
 public class TagFamilySearchHandler extends AbstractSearchHandler<HibTagFamily, TagFamilyResponse> {
 
 	@Inject
-	public TagFamilySearchHandler(Database db, SearchProvider searchProvider, TagFamilyIndexHandler indexHandler, MeshOptions options, TagFamilyDAOActions actions) {
+	public TagFamilySearchHandler(Database db, SearchProvider searchProvider, TagFamilyIndexHandlerImpl indexHandler, MeshOptions options, TagFamilyDAOActions actions) {
 		super(db, searchProvider, options, indexHandler, actions);
 	}
 

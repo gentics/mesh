@@ -57,12 +57,12 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
-import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandler;
+import com.gentics.mesh.search.index.microschema.MicroschemaIndexHandler;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.search.index.node.NodeIndexHandlerImpl;
 import com.gentics.mesh.search.index.project.ProjectIndexHandler;
 import com.gentics.mesh.search.index.role.RoleIndexHandler;
-import com.gentics.mesh.search.index.schema.SchemaContainerIndexHandler;
+import com.gentics.mesh.search.index.schema.SchemaIndexHandler;
 import com.gentics.mesh.search.index.tag.TagIndexHandler;
 import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
 import com.gentics.mesh.search.index.user.UserIndexHandler;
@@ -254,7 +254,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		HibUser user = mockUser("joe1", "Joe", "Doe");
 		HibSchema schemaContainer = mockSchemaContainer("content", user);
 
-		SchemaContainerIndexHandler searchIndexHandler = meshDagger.schemaContainerIndexHandler();
+		SchemaIndexHandler searchIndexHandler = meshDagger.schemaContainerIndexHandler();
 		searchIndexHandler.store(schemaContainer, mockUpdateDocumentEntry()).blockingAwait();
 		writeStoreEvent("schema.search");
 	}
@@ -263,7 +263,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		HibUser user = mockUser("joe1", "Joe", "Doe");
 		HibMicroschema microschema = mockMicroschemaContainer("geolocation", user);
 
-		MicroschemaContainerIndexHandler searchIndexHandler = meshDagger.microschemaContainerIndexHandler();
+		MicroschemaIndexHandler searchIndexHandler = meshDagger.microschemaContainerIndexHandler();
 		searchIndexHandler.store(microschema, mockUpdateDocumentEntry()).blockingAwait();
 		writeStoreEvent("microschema.search");
 	}

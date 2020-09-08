@@ -30,7 +30,7 @@ import io.reactivex.Flowable;
  * Handler for the elastic search microschema index.
  */
 @Singleton
-public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<HibMicroschema> {
+public class MicroschemaContainerIndexHandlerImpl extends AbstractIndexHandler<HibMicroschema> implements MicroschemaIndexHandler {
 
 	@Inject
 	MicroschemaTransformer transformer;
@@ -42,7 +42,7 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<HibMi
 	SyncMetersFactory syncMetersFactory;
 
 	@Inject
-	public MicroschemaContainerIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper,
+	public MicroschemaContainerIndexHandlerImpl(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper,
 		MeshOptions options, SyncMetersFactory syncMetricsFactory) {
 		super(searchProvider, db, boot, helper, options, syncMetricsFactory);
 	}
