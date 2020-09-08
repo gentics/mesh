@@ -98,8 +98,8 @@ public class MicroschemaContainerIndexHandlerImpl extends AbstractIndexHandler<H
 	}
 
 	@Override
-	public Stream<? extends HibMicroschema> loadAllElements(Tx tx) {
-		return tx.microschemaDao().findAll().stream();
+	public Stream<? extends HibMicroschema> loadAllElements() {
+		return Tx.get().microschemaDao().findAll().stream();
 	}
 
 	@Override

@@ -133,7 +133,6 @@ public class TagFamilyIndexHandlerImpl extends AbstractIndexHandler<HibTagFamily
 				.filter(i -> !activeIndices.contains(i))
 				.collect(Collectors.toSet());
 		});
-
 	}
 
 	@Override
@@ -154,8 +153,8 @@ public class TagFamilyIndexHandlerImpl extends AbstractIndexHandler<HibTagFamily
 	}
 
 	@Override
-	public Stream<? extends HibTagFamily> loadAllElements(Tx tx) {
-		return tx.tagFamilyDao().findAllGlobal().stream();
+	public Stream<? extends HibTagFamily> loadAllElements() {
+		return Tx.get().tagFamilyDao().findAllGlobal().stream();
 	}
 
 }

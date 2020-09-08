@@ -162,8 +162,8 @@ public class TagIndexHandlerImpl extends AbstractIndexHandler<HibTag> implements
 	}
 
 	@Override
-	public Stream<? extends HibTag> loadAllElements(Tx tx) {
-		return tx.tagDao().findAllGlobal().stream();
+	public Stream<? extends HibTag> loadAllElements() {
+		return Tx.get().tagDao().findAllGlobal().stream();
 	}
 
 }

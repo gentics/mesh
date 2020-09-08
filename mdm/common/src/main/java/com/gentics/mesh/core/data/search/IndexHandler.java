@@ -13,7 +13,6 @@ import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
 import com.gentics.mesh.core.data.search.bulk.UpdateBulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.search.EntityMetrics;
 
 import io.reactivex.Completable;
@@ -56,7 +55,7 @@ public interface IndexHandler<T extends HibBaseElement> {
 	 * 
 	 * @return
 	 */
-	Stream<? extends T> loadAllElements(Tx tx);
+	Stream<? extends T> loadAllElements();
 
 	/**
 	 * Return the class of elements which can be handled by this handler.

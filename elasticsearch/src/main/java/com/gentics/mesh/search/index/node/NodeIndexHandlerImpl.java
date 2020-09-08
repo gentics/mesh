@@ -748,7 +748,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	}
 
 	@Override
-	public Stream<? extends HibNode> loadAllElements(Tx tx) {
+	public Stream<? extends HibNode> loadAllElements() {
 		return db.type().findAll(Node.class);
 	}
 

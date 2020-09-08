@@ -91,12 +91,12 @@ public class UserIndexHandlerImpl extends AbstractIndexHandler<HibUser> implemen
 
 	@Override
 	public Function<String, HibUser> elementLoader() {
-		return (uuid) -> boot.meshRoot().getUserRoot().findByUuid(uuid);
+		return uuid -> boot.meshRoot().getUserRoot().findByUuid(uuid);
 	}
 
 	@Override
-	public Stream<? extends HibUser> loadAllElements(Tx tx) {
-		return tx.userDao().findAll().stream();
+	public Stream<? extends HibUser> loadAllElements() {
+		return Tx.get().userDao().findAll().stream();
 	}
 
 	@Override

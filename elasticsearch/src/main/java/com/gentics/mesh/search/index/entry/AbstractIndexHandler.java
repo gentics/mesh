@@ -236,7 +236,7 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 
 	private Map<String, String> loadVersionsFromGraph() {
 		return db.tx(tx -> {
-			return loadAllElements(tx)
+			return loadAllElements()
 				.collect(Collectors.toMap(
 					HibBaseElement::getUuid,
 					this::generateVersion));
