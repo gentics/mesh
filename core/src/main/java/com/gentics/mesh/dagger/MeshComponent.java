@@ -8,7 +8,6 @@ import javax.inject.Provider;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
-import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.cache.ProjectBranchNameCache;
 import com.gentics.mesh.cache.ProjectNameCache;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -30,9 +29,6 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.metric.MetricsService;
-import com.gentics.mesh.plugin.env.PluginEnvironment;
-import com.gentics.mesh.plugin.manager.MeshPluginManager;
-import com.gentics.mesh.rest.MeshLocalClient;
 import com.gentics.mesh.rest.RestAPIVerticle;
 import com.gentics.mesh.router.EndpointRegistry;
 import com.gentics.mesh.router.RouterStorage;
@@ -98,15 +94,9 @@ public interface MeshComponent extends BaseMeshComponent {
 
 	ProjectNameCache projectNameCache();
 
-	PermissionCache permissionCache();
-
 	Provider<EventQueueBatch> batchProvider();
 
 	Provider<BulkActionContext> bulkProvider();
-
-	PluginEnvironment pluginEnv();
-
-	MeshPluginManager pluginManager();
 
 	RouterStorageRegistry routerStorageRegistry();
 

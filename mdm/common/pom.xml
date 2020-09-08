@@ -24,6 +24,10 @@
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-rest-client</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-plugin-api</artifactId>
+		</dependency>
 	</dependencies>
 
 </project>
