@@ -114,8 +114,8 @@ import com.gentics.mesh.core.endpoint.admin.consistency.check.SchemaContainerChe
 import com.gentics.mesh.core.endpoint.admin.consistency.check.TagCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.TagFamilyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.UserCheck;
-import com.gentics.mesh.core.endpoint.node.BinaryUploadHandlerImpl;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
+import com.gentics.mesh.core.endpoint.node.BinaryUploadHandlerImpl;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.link.WebRootLinkReplacerImpl;
 import com.gentics.mesh.core.migration.BranchMigration;
@@ -124,6 +124,8 @@ import com.gentics.mesh.core.migration.NodeMigration;
 import com.gentics.mesh.core.migration.impl.BranchMigrationImpl;
 import com.gentics.mesh.core.migration.impl.MicronodeMigrationImpl;
 import com.gentics.mesh.core.migration.impl.NodeMigrationImpl;
+import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandler;
+import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandlerImpl;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.core.verticle.handler.WriteLockImpl;
 import com.gentics.mesh.distributed.RequestDelegator;
@@ -407,6 +409,9 @@ public abstract class OrientDBModule {
 
 	@Binds
 	abstract BinaryUploadHandler binaryUploadHandler(BinaryUploadHandlerImpl e);
+
+	@Binds
+	abstract ProjectVersionPurgeHandler projectVersionPurgeHandler(ProjectVersionPurgeHandlerImpl e);
 
 	@Provides
 	public static List<ConsistencyCheck> consistencyCheckList() {
