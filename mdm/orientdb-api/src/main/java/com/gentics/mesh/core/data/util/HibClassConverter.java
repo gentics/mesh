@@ -145,7 +145,9 @@ public final class HibClassConverter {
 
 	@SuppressWarnings("unchecked")
 	public static <T> T checkAndCast(HibElement element, Class<? extends ElementFrame> clazz) {
-		Objects.requireNonNull(element, "The provided element was null and thus can't be converted to " + clazz.getName());
+		if (element == null) {
+			return null;
+		}
 		if (clazz.isInstance(element)) {
 			return (T) clazz.cast(element);
 		} else {
