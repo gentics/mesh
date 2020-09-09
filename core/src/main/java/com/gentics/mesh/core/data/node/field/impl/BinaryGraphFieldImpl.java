@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.node.field.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
@@ -168,7 +169,7 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 		restModel.setFileName(getFileName());
 		restModel.setMimeType(getMimeType());
 
-		Binary binary = getBinary();
+		HibBinary binary = getBinary();
 		if (binary != null) {
 			restModel.setBinaryUuid(binary.getUuid());
 			restModel.setFileSize(binary.getSize());
@@ -226,17 +227,17 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 	 */
 	@Override
 	public void removeField(BulkActionContext bac, GraphFieldContainer container) {
-		Binary binary = getBinary();
+		Binary graphBinary = toGraph(getBinary());
 		remove();
 		// Only get rid of the binary as well if no other fields are using the binary.
-		if (!binary.findFields().hasNext()) {
-			binary.delete(bac);
+		if (!graphBinary.findFields().hasNext()) {
+			graphBinary.delete(bac);
 		}
 	}
 
 	@Override
 	public GraphField cloneTo(GraphFieldContainer container) {
-		BinaryGraphFieldImpl field = getGraph().addFramedEdge(container, getBinary(), HAS_FIELD, BinaryGraphFieldImpl.class);
+		BinaryGraphFieldImpl field = getGraph().addFramedEdge(container, toGraph(getBinary()), HAS_FIELD, BinaryGraphFieldImpl.class);
 		field.setFieldKey(getFieldKey());
 
 		// Clone all properties except the uuid and the type.
@@ -324,7 +325,7 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 	}
 
 	@Override
-	public Binary getBinary() {
+	public HibBinary getBinary() {
 		return inV().nextOrDefaultExplicit(BinaryImpl.class, null);
 	}
 

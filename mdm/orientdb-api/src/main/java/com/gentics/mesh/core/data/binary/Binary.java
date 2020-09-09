@@ -60,7 +60,7 @@ public interface Binary extends MeshVertex, HibBinary {
 	 * @param sha512sum
 	 * @return
 	 */
-	default Binary setSHA512Sum(String sha512sum) {
+	default HibBinary setSHA512Sum(String sha512sum) {
 		property(SHA512SUM_KEY, sha512sum);
 		return this;
 	}

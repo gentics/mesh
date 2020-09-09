@@ -24,12 +24,13 @@ import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 
 import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.binary.HibBinary;
 
 public final class ImageTestUtil {
 	private ImageTestUtil() {
 	}
 
-	public static Binary createMockedBinary(String filePath) {
+	public static HibBinary createMockedBinary(String filePath) {
 		Binary mock = mock(Binary.class);
 		when(mock.openBlockingStream()).thenReturn(() -> ImageTestUtil.class.getResourceAsStream(filePath));
 		when(mock.getSHA512Sum()).thenReturn(filePath);

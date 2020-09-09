@@ -26,7 +26,7 @@ public class BinariesImpl implements Binaries {
 	@Override
 	public Transactional<HibBinary> create(String uuid, String sha512sum, Long size) {
 		return database.transactional(tx -> {
-			Binary binary = tx.getGraph().addFramedVertex(BinaryImpl.class);
+			HibBinary binary = tx.getGraph().addFramedVertex(BinaryImpl.class);
 			binary.setSHA512Sum(sha512sum);
 			binary.setSize(size);
 			binary.setUuid(uuid);

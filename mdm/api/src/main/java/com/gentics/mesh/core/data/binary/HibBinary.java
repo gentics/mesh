@@ -21,5 +21,8 @@ public interface HibBinary extends HibBaseElement {
 
 	Point getImageSize();
 
+	HibBinary setSHA512Sum(String sha512sum);
+
+	void setUuid(String uuid);
 
 }
