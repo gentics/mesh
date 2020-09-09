@@ -9,12 +9,14 @@ import javax.inject.Inject;
 import javax.naming.InvalidNameException;
 
 import com.gentics.mesh.auth.MeshAuthChain;
+import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.distributed.RequestDelegator;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.VersionHandler;
+import com.gentics.mesh.handler.VersionHandlerImpl;
 
 import dagger.Lazy;
 import io.vertx.core.Vertx;
@@ -28,26 +30,13 @@ import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.impl.BodyHandlerImpl;
 
 /**
- * Central storage for all Vert.x web request routers.
- * 
- * Structure:
- * 
- * <pre>
- * {@code
- * ROOT_ROUTER(:coreRouter) -> customRouters
- *                          -> apiRouters -> apiSubRouter (eg: /users.., /roles..)
- *                          -> projectRouters (eg: /Dummy/nodes)
- * }
- * </pre>
- * 
- * Project routers are automatically bound to all projects. This way only a single node verticle is needed to handle all project requests.
- * 
+ * @see RouterStorage
  */
-public class RouterStorage {
+public class RouterStorageImpl implements RouterStorage {
 
-	private static final Logger log = LoggerFactory.getLogger(RouterStorage.class);
+	private static final Logger log = LoggerFactory.getLogger(RouterStorageImpl.class);
 
-	private final RootRouter rootRouter;
+	private final RootRouterImpl rootRouter;
 
 	private final Vertx vertx;
 
@@ -61,18 +50,18 @@ public class RouterStorage {
 
 	public BodyHandler bodyHandler;
 
-	public final VersionHandler versionHandler;
+	public final VersionHandlerImpl versionHandler;
 
-	private MeshAuthChain authChain;
+	private MeshAuthChainImpl authChain;
 
 	private final RouterStorageRegistryImpl routerStorageRegistry;
 
 	private final RequestDelegator delegator;
 
 	@Inject
-	public RouterStorage(Vertx vertx, MeshOptions options, MeshAuthChain authChain, CorsHandler corsHandler, BodyHandlerImpl bodyHandler,
+	public RouterStorageImpl(Vertx vertx, MeshOptions options, MeshAuthChainImpl authChain, CorsHandler corsHandler, BodyHandlerImpl bodyHandler,
 		Lazy<BootstrapInitializer> boot,
-		Lazy<Database> db, VersionHandler versionHandler,
+		Lazy<Database> db, VersionHandlerImpl versionHandler,
 		RouterStorageRegistryImpl routerStorageRegistry,
 		RequestDelegator delegator) {
 		this.vertx = vertx;
@@ -87,12 +76,13 @@ public class RouterStorage {
 		this.delegator = delegator;
 
 		// Initialize the router chain. The root router will create additional routers which will be mounted.
-		rootRouter = new RootRouter(vertx, this, options);
+		rootRouter = new RootRouterImpl(vertx, this, options);
 
 		// TODO move this to the place where the routerstorage is created
 		routerStorageRegistry.getInstances().add(this);
 	}
 
+	@Override
 	public void registerEventbusHandlers() {
 		ProjectsRouter projectsRouter = rootRouter.apiRouter().projectsRouter();
 		EventBus eb = vertx.eventBus();
@@ -155,19 +145,32 @@ public class RouterStorage {
 		return boot;
 	}
 
+	@Override
 	public MeshAuthChain getAuthChain() {
 		return authChain;
 	}
 
+	@Override
+	public VersionHandler getVersionHandler() {
+		return versionHandler;
+	}
+
+	@Override
+	public BodyHandler getBodyHandler() {
+		return bodyHandler;
+	}
+
+	@Override
 	public RootRouter root() {
 		return rootRouter;
 	}
 
-	/**
-	 * Return the injected request delegator handler.
-	 * 
-	 * @return
-	 */
+	@Override
+	public CorsHandler getCorsHandler() {
+		return corsHandler;
+	}
+
+	@Override
 	public RequestDelegator getDelegator() {
 		return delegator;
 	}

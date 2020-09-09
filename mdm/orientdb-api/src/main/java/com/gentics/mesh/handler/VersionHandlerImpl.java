@@ -24,14 +24,14 @@ import static com.gentics.mesh.shared.SharedKeys.API_VERSION_CONTEXT_KEY;
  * Puts the requested API version in the routing context with the key {@link #API_VERSION_CONTEXT_KEY}
  */
 @Singleton
-public class VersionHandler implements Handler<RoutingContext> {
+public class VersionHandlerImpl implements VersionHandler {
 
 	public static final String API_MOUNTPOINT = "/api/:apiversion/*";
 
 	private static final Pattern versionRegex = Pattern.compile("^v(\\d+)$");
 
 	@Inject
-	public VersionHandler() {
+	public VersionHandlerImpl() {
 	}
 
 	@Override
@@ -76,7 +76,7 @@ public class VersionHandler implements Handler<RoutingContext> {
 	 */
 	public static Stream<String> generateVersionMountpoints() {
 		return IntStream.rangeClosed(1, MeshVersion.CURRENT_API_VERSION)
-			.mapToObj(VersionHandler::baseRoute);
+			.mapToObj(VersionHandlerImpl::baseRoute);
 	}
 
 	/**

@@ -6,7 +6,7 @@ import java.util.Map;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.cluster.CoordinatorMode;
-import com.gentics.mesh.handler.VersionHandler;
+import com.gentics.mesh.handler.VersionHandlerImpl;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
@@ -14,12 +14,12 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.CookieHandler;
 
-public class APIRouter {
+public class APIRouterImpl implements APIRouter {
 
-	private static final Logger log = LoggerFactory.getLogger(APIRouter.class);
+	private static final Logger log = LoggerFactory.getLogger(APIRouterImpl.class);
 
-	private final ProjectsRouter projectsRouter;
-	private final PluginRouter pluginRouter;
+	private final ProjectsRouterImpl projectsRouter;
+	private final PluginRouterImpl pluginRouter;
 
 	/**
 	 * The api router is a core router which is being used to identify the api and rest api version.
@@ -37,19 +37,19 @@ public class APIRouter {
 
 	private final MeshOptions options;
 
-	public APIRouter(Vertx vertx, RootRouter root, MeshOptions options) {
+	public APIRouterImpl(Vertx vertx, RootRouter root, MeshOptions options) {
 		this.vertx = vertx;
 		this.root = root;
 		this.options = options;
 		this.router = Router.router(vertx);
 
-		VersionHandler.generateVersionMountpoints()
+		VersionHandlerImpl.generateVersionMountpoints()
 			.forEach(mountPoint -> root.getRouter().mountSubRouter(mountPoint, router));
 
 		initHandlers(root.getStorage());
 
-		this.projectsRouter = new ProjectsRouter(vertx, this);
-		this.pluginRouter = new PluginRouter(vertx, root.getStorage().getAuthChain(), root.getStorage().getDb().get(), getRouter());
+		this.projectsRouter = new ProjectsRouterImpl(vertx, this);
+		this.pluginRouter = new PluginRouterImpl(vertx, root.getStorage().getAuthChain(), root.getStorage().getDb().get(), getRouter());
 	}
 
 	private void initHandlers(RouterStorage storage) {
@@ -60,7 +60,7 @@ public class APIRouter {
 		}
 
 		if (options.getHttpServerOptions().isCorsEnabled()) {
-			router.route().handler(storage.corsHandler);
+			router.route().handler(storage.getCorsHandler());
 		}
 
 		router.route().handler(rh -> {
@@ -69,7 +69,7 @@ public class APIRouter {
 			if ("websocket".equalsIgnoreCase(rh.request().getHeader("Upgrade"))) {
 				rh.next();
 			} else {
-				storage.bodyHandler.handle(rh);
+				storage.getBodyHandler().handle(rh);
 			}
 		});
 
@@ -77,34 +77,22 @@ public class APIRouter {
 
 	}
 
-	/**
-	 * Returns the plugin router which can be used to create routers for plugins.
-	 * 
-	 * @return
-	 */
+	@Override
 	public PluginRouter pluginRouter() {
 		return pluginRouter;
 	}
 
-	/**
-	 * Return the router to which all projects will be mounted.
-	 * 
-	 * @return
-	 */
+	@Override
 	public ProjectsRouter projectsRouter() {
 		return projectsRouter;
 	}
 
+	@Override
 	public Router getRouter() {
 		return router;
 	}
 
-	/**
-	 * Get a core api subrouter. A new router will be created id no existing one could be found.
-	 * 
-	 * @param mountPoint
-	 * @return existing or new router
-	 */
+	@Override
 	public Router createSubRouter(String mountPoint) {
 
 		// TODO check for conflicting project routers

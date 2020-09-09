@@ -70,7 +70,7 @@ public class UserIndexHandlerImpl extends AbstractIndexHandler<HibUser> implemen
 	}
 
 	@Override
-	protected MappingProvider getMappingProvider() {
+	public MappingProvider getMappingProvider() {
 		return mappingProvider;
 	}
 

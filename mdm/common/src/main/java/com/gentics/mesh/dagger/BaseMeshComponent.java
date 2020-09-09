@@ -12,6 +12,7 @@ import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.generic.UserProperties;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
+import com.gentics.mesh.core.endpoint.role.RoleCrudHandler;
 import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.migration.BranchMigration;
@@ -23,6 +24,9 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
 import com.gentics.mesh.rest.MeshLocalClient;
+import com.gentics.mesh.router.EndpointRegistry;
+import com.gentics.mesh.router.RouterStorageRegistry;
+import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
 import com.gentics.mesh.search.index.microschema.MicroschemaIndexHandler;
@@ -108,6 +112,8 @@ public interface BaseMeshComponent {
 
 	NodeIndexHandler nodeContainerIndexHandler();
 
+	IndexHandlerRegistry indexHandlerRegistry();
+
 	// Migration
 
 	NodeMigration nodeMigrationHandler();
@@ -117,6 +123,12 @@ public interface BaseMeshComponent {
 	MicronodeMigration micronodeMigrationHandler();
 
 	// REST
+
+	RoleCrudHandler roleCrudHandler();
+
+	EndpointRegistry endpointRegistry();
+
+	RouterStorageRegistry routerStorageRegistry();
 
 	WriteLock globalLock();
 }

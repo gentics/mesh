@@ -13,7 +13,7 @@ import io.vertx.ext.web.Route;
  * Main location for the Gentics Mesh auth chain.
  */
 @Singleton
-public class MeshAuthChain {
+public class MeshAuthChainImpl implements MeshAuthChain {
 
 	private final MeshOAuthService oauthService;
 
@@ -22,18 +22,14 @@ public class MeshAuthChain {
 	private final MeshAnonymousAuthHandler anonHandler;
 
 	@Inject
-	public MeshAuthChain(MeshOAuthService oauthService, MeshJWTAuthHandler jwtAuthHandler,
+	public MeshAuthChainImpl(MeshOAuthService oauthService, MeshJWTAuthHandler jwtAuthHandler,
 		MeshAnonymousAuthHandler anonHandler, MeshOptions options) {
 		this.oauthService = oauthService;
 		this.jwtAuthHandler = jwtAuthHandler;
 		this.anonHandler = anonHandler;
 	}
 
-	/**
-	 * Secure the given route by adding auth handlers
-	 * 
-	 * @param route
-	 */
+	@Override
 	public void secure(Route route) {
 		// First try to authenticate the key using JWT
 		route.handler(rc -> {

@@ -9,11 +9,11 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
 
 /**
- * This class manages the project routers (e.g. routers for endpoints like :apibase:/:projectName/nodes)
+ * @see ProjectRouter
  */
-public class ProjectRouter {
+public class ProjectRouterImpl implements ProjectRouter {
 
-	private static final Logger log = LoggerFactory.getLogger(ProjectRouter.class);
+	private static final Logger log = LoggerFactory.getLogger(ProjectRouterImpl.class);
 
 	private final Vertx vertx;
 
@@ -26,18 +26,13 @@ public class ProjectRouter {
 	 */
 	private Map<String, Router> projectRouters = new HashMap<>();
 
-
-	public ProjectRouter(Vertx vertx, RouterStorage storage) {
+	public ProjectRouterImpl(Vertx vertx, RouterStorage storage) {
 		this.vertx = vertx;
 		this.router = Router.router(vertx);
-		this.pluginRouter = new PluginRouter(vertx, storage.getAuthChain(), storage.getDb().get(), router);
+		this.pluginRouter = new PluginRouterImpl(vertx, storage.getAuthChain(), storage.getDb().get(), router);
 	}
 
-	/**
-	 * Return the registered project subrouter.
-	 * 
-	 * @return the router or null if no router was found
-	 */
+	@Override
 	public Router getOrCreate(String name) {
 		Router projectRouter = projectRouters.get(name);
 		if (projectRouter == null) {
@@ -49,14 +44,17 @@ public class ProjectRouter {
 		return projectRouter;
 	}
 
+	@Override
 	public Router getRouter() {
 		return router;
 	}
 
+	@Override
 	public PluginRouter pluginRouter() {
 		return pluginRouter;
 	}
 
+	@Override
 	public Map<String, Router> getRouters() {
 		return projectRouters;
 	}

@@ -3,7 +3,7 @@ package com.gentics.mesh.router;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.gentics.mesh.auth.MeshAuthChain;
+import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.shared.SharedKeys;
@@ -17,11 +17,11 @@ import io.vertx.ext.web.Router;
 /**
  * Central router for plugin REST extensions.
  */
-public class PluginRouter {
+public class PluginRouterImpl implements PluginRouter {
 
 	public static final String PLUGINS_MOUNTPOINT = "/plugins";
 
-	private static final Logger log = LoggerFactory.getLogger(APIRouter.class);
+	private static final Logger log = LoggerFactory.getLogger(APIRouterImpl.class);
 
 	private Map<String, Router> pluginRouters = new HashMap<>();
 
@@ -37,7 +37,7 @@ public class PluginRouter {
 	 * @param db
 	 * @param parentRouter
 	 */
-	public PluginRouter(Vertx vertx, MeshAuthChain chain, Database db, Router parentRouter) {
+	public PluginRouterImpl(Vertx vertx, MeshAuthChainImpl chain, Database db, Router parentRouter) {
 		this.vertx = vertx;
 		this.router = Router.router(vertx);
 
@@ -60,12 +60,14 @@ public class PluginRouter {
 		parentRouter.mountSubRouter(PLUGINS_MOUNTPOINT, router);
 	}
 
+	@Override
 	public void addRouter(String name, Router pluginRouter) {
 		pluginRouters.put(name, pluginRouter);
 		router.mountSubRouter("/" + name, pluginRouter);
 		log.info("Added plugin subrouter {" + name + "}");
 	}
 
+	@Override
 	public void removeRouter(String name) {
 		Router pluginRouter = pluginRouters.get(name);
 		if (pluginRouter != null) {

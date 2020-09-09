@@ -92,12 +92,8 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 	 */
 	abstract protected Transformer getTransformer();
 
-	/**
-	 * Return the index specific mapping provider.
-	 * 
-	 * @return
-	 */
-	abstract protected MappingProvider getMappingProvider();
+	@Override
+	abstract public MappingProvider getMappingProvider();
 
 	/**
 	 * Compose the index name using the batch entry data.

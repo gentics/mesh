@@ -46,9 +46,9 @@ import com.gentics.mesh.core.endpoint.utility.UtilityEndpoint;
 import com.gentics.mesh.core.endpoint.webroot.WebRootEndpoint;
 import com.gentics.mesh.graphql.GraphQLEndpoint;
 import com.gentics.mesh.rest.InternalEndpointRoute;
-import com.gentics.mesh.router.APIRouter;
-import com.gentics.mesh.router.RootRouter;
-import com.gentics.mesh.router.RouterStorage;
+import com.gentics.mesh.router.APIRouterImpl;
+import com.gentics.mesh.router.RootRouterImpl;
+import com.gentics.mesh.router.RouterStorageImpl;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 import com.gentics.mesh.search.ProjectRawSearchEndpointImpl;
 import com.gentics.mesh.search.ProjectSearchEndpointImpl;
@@ -390,10 +390,10 @@ public class RAMLGenerator extends AbstractGenerator {
 		initEndpoint(eventbusEndpoint);
 		addEndpoints(coreBasePath, resources, eventbusEndpoint);
 
-		RouterStorage rs = Mockito.mock(RouterStorage.class);
-		RootRouter rootRouter = Mockito.mock(RootRouter.class);
+		RouterStorageImpl rs = Mockito.mock(RouterStorageImpl.class);
+		RootRouterImpl rootRouter = Mockito.mock(RootRouterImpl.class);
 		Mockito.when(rs.root()).thenReturn(rootRouter);
-		APIRouter apiRouter = Mockito.mock(APIRouter.class);
+		APIRouterImpl apiRouter = Mockito.mock(APIRouterImpl.class);
 		Mockito.when(rootRouter.apiRouter()).thenReturn(apiRouter);
 		RestInfoEndpoint infoEndpoint = Mockito.spy(new RestInfoEndpoint(""));
 		infoEndpoint.init(null, rs);

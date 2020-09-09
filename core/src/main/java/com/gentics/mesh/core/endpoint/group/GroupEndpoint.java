@@ -22,7 +22,7 @@ import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.auth.MeshAuthChain;
+import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -39,7 +39,7 @@ public class GroupEndpoint extends AbstractInternalEndpoint {
 	}
 
 	@Inject
-	public GroupEndpoint(MeshAuthChain chain, GroupCrudHandler crudHandler) {
+	public GroupEndpoint(MeshAuthChainImpl chain, GroupCrudHandler crudHandler) {
 		super("groups", chain);
 		this.crudHandler = crudHandler;
 	}

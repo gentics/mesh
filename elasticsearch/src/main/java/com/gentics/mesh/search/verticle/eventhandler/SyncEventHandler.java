@@ -18,7 +18,7 @@ import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.search.request.DropIndexRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
-import com.gentics.mesh.search.IndexHandlerRegistry;
+import com.gentics.mesh.search.IndexHandlerRegistryImpl;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.metric.SyncMetersFactory;
 import com.gentics.mesh.search.verticle.MessageEvent;
@@ -38,7 +38,7 @@ public class SyncEventHandler implements EventHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(SyncEventHandler.class);
 
-	private final Lazy<IndexHandlerRegistry> registry;
+	private final Lazy<IndexHandlerRegistryImpl> registry;
 
 	private final SearchProvider provider;
 
@@ -67,7 +67,7 @@ public class SyncEventHandler implements EventHandler {
 	}
 
 	@Inject
-	public SyncEventHandler(Lazy<IndexHandlerRegistry> registry, SearchProvider provider, Vertx vertx, SyncMetersFactory syncMetersFactory) {
+	public SyncEventHandler(Lazy<IndexHandlerRegistryImpl> registry, SearchProvider provider, Vertx vertx, SyncMetersFactory syncMetersFactory) {
 		this.registry = registry;
 		this.provider = provider;
 		this.vertx = vertx;

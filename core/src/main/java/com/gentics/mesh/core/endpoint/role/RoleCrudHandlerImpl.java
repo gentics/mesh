@@ -34,14 +34,14 @@ import com.gentics.mesh.graphdb.spi.Database;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-public class RoleCrudHandler extends AbstractCrudHandler<HibRole, RoleResponse> {
+public class RoleCrudHandlerImpl extends AbstractCrudHandler<HibRole, RoleResponse> implements RoleCrudHandler {
 
-	private static final Logger log = LoggerFactory.getLogger(RoleCrudHandler.class);
+	private static final Logger log = LoggerFactory.getLogger(RoleCrudHandlerImpl.class);
 
 	private BootstrapInitializer boot;
 
 	@Inject
-	public RoleCrudHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, WriteLock writeLock, RoleDAOActions roleActions) {
+	public RoleCrudHandlerImpl(Database db, BootstrapInitializer boot, HandlerUtilities utils, WriteLock writeLock, RoleDAOActions roleActions) {
 		super(db, utils, writeLock, roleActions);
 		this.boot = boot;
 	}

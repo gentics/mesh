@@ -8,9 +8,9 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
 
-public class CustomRouter {
+public class CustomRouterImpl implements CustomRouter {
 
-	private static final Logger log = LoggerFactory.getLogger(CustomRouter.class);
+	private static final Logger log = LoggerFactory.getLogger(CustomRouterImpl.class);
 
 	public static final String CUSTOM_MOUNTPOINT = "/custom";
 
@@ -23,7 +23,7 @@ public class CustomRouter {
 
 	private final Vertx vertx;
 
-	public CustomRouter(Vertx vertx, RootRouter root) {
+	public CustomRouterImpl(Vertx vertx, RootRouterImpl root) {
 		this.vertx = vertx;
 		Router rootRouter = root.getRouter();
 		router = Router.router(vertx);

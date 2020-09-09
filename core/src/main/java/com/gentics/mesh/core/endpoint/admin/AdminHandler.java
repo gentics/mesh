@@ -46,7 +46,7 @@ import com.gentics.mesh.distributed.coordinator.MasterServer;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.generator.RAMLGenerator;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.router.RouterStorage;
+import com.gentics.mesh.router.RouterStorageImpl;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
 import com.gentics.mesh.search.SearchProvider;
 
@@ -67,7 +67,7 @@ public class AdminHandler extends AbstractHandler {
 
 	private final Database db;
 
-	private final RouterStorage routerStorage;
+	private final RouterStorageImpl routerStorage;
 
 	private final BootstrapInitializer boot;
 
@@ -86,7 +86,7 @@ public class AdminHandler extends AbstractHandler {
 	private final WriteLock writeLock;
 
 	@Inject
-	public AdminHandler(Vertx vertx, Database db, RouterStorage routerStorage, BootstrapInitializer boot, SearchProvider searchProvider,
+	public AdminHandler(Vertx vertx, Database db, RouterStorageImpl routerStorage, BootstrapInitializer boot, SearchProvider searchProvider,
 		HandlerUtilities utils,
 		MeshOptions options, RouterStorageRegistryImpl routerStorageRegistry, Coordinator coordinator, WriteLock writeLock) {
 		this.vertx = vertx;

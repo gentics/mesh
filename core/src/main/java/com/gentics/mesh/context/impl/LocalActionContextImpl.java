@@ -18,7 +18,7 @@ import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.dagger.MeshComponent;
-import com.gentics.mesh.handler.VersionHandler;
+import com.gentics.mesh.handler.VersionHandlerImpl;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.router.route.SecurityLoggingHandler;

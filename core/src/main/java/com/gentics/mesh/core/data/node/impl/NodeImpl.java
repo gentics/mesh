@@ -131,7 +131,7 @@ import com.gentics.mesh.core.webroot.PathPrefixUtil;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.handler.ActionContext;
-import com.gentics.mesh.handler.VersionHandler;
+import com.gentics.mesh.handler.VersionHandlerImpl;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.DeleteParameters;
@@ -2116,7 +2116,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public String getAPIPath(InternalActionContext ac) {
-		return VersionHandler.baseRoute(ac) + "/" + encodeSegment(getProject().getName()) + "/nodes/" + getUuid();
+		return VersionHandlerImpl.baseRoute(ac) + "/" + encodeSegment(getProject().getName()) + "/nodes/" + getUuid();
 	}
 
 	@Override

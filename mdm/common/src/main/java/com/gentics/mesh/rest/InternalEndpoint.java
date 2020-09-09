@@ -19,7 +19,9 @@ import com.gentics.mesh.example.TagFamilyExamples;
 import com.gentics.mesh.example.UserExamples;
 import com.gentics.mesh.example.UtilityExamples;
 import com.gentics.mesh.example.VersioningExamples;
+import com.gentics.mesh.router.RouterStorage;
 
+import io.vertx.core.Vertx;
 import io.vertx.ext.web.RoutingContext;
 
 /**
@@ -61,4 +63,11 @@ public interface InternalEndpoint {
 	default InternalActionContext wrap(RoutingContext rc) {
 		return new InternalRoutingActionContextImpl(rc);
 	}
+
+	/**
+	 * Register all endpoints to the local router.
+	 */
+	void registerEndPoints();
+
+	void init(Vertx vertx, RouterStorage rs);
 }

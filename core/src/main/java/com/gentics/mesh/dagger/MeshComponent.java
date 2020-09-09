@@ -8,14 +8,10 @@ import javax.inject.Provider;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
-import com.gentics.mesh.core.endpoint.role.RoleCrudHandler;
-import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
+import com.gentics.mesh.core.verticle.job.JobWorkerVerticleImpl;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.router.EndpointRegistry;
-import com.gentics.mesh.router.RouterStorageRegistry;
-import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.TrackingSearchProvider;
 
 /**
@@ -27,11 +23,7 @@ public interface MeshComponent extends BaseMeshComponent {
 
 	Database database();
 
-	EndpointRegistry endpointRegistry();
-
 	Provider<EventQueueBatch> batchProvider();
-
-	RouterStorageRegistry routerStorageRegistry();
 
 	// For tests
 
@@ -39,13 +31,9 @@ public interface MeshComponent extends BaseMeshComponent {
 		return (TrackingSearchProvider) searchProvider();
 	}
 
-	RoleCrudHandler roleCrudHandler();
-
-	IndexHandlerRegistry indexHandlerRegistry();
-
 	List<ConsistencyCheck> consistencyChecks();
 
-	JobWorkerVerticle jobWorkerVerticle();
+	JobWorkerVerticleImpl jobWorkerVerticle();
 
 	interface Builder {
 		Builder configuration(MeshOptions options);

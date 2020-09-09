@@ -8,7 +8,7 @@ import java.util.function.Function;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.auth.MeshAuthChain;
+import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
@@ -50,7 +50,7 @@ public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implement
 	}
 
 	@Inject
-	public ProjectSearchEndpointImpl(MeshAuthChain chain, BootstrapInitializer boot, Database db, TagFamilySearchHandler tagFamilySearchHandler,
+	public ProjectSearchEndpointImpl(MeshAuthChainImpl chain, BootstrapInitializer boot, Database db, TagFamilySearchHandler tagFamilySearchHandler,
 		TagSearchHandler tagSearchHandler, NodeSearchHandler nodeSearchHandler) {
 		super("search", chain, boot);
 		this.db = db;

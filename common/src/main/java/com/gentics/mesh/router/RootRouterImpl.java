@@ -1,6 +1,6 @@
 package com.gentics.mesh.router;
 
-import static com.gentics.mesh.handler.VersionHandler.API_MOUNTPOINT;
+import static com.gentics.mesh.handler.VersionHandlerImpl.API_MOUNTPOINT;
 
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.router.route.DefaultNotFoundHandler;
@@ -14,9 +14,9 @@ import io.vertx.ext.web.handler.LoggerFormat;
 import io.vertx.ext.web.handler.LoggerHandler;
 
 /**
- * The root router is the top level router of the routing stack.
+ * @see RootRouter
  */
-public class RootRouter {
+public class RootRouterImpl implements RootRouter {
 
 	private final APIRouter apiRouter;
 
@@ -28,7 +28,7 @@ public class RootRouter {
 
 	private Vertx vertx;
 
-	public RootRouter(Vertx vertx, RouterStorage storage, MeshOptions options) {
+	public RootRouterImpl(Vertx vertx, RouterStorage storage, MeshOptions options) {
 		this.storage = storage;
 		this.vertx = vertx;
 		this.router = Router.router(vertx);
@@ -44,16 +44,18 @@ public class RootRouter {
 			router.route().handler(PoweredByHandler.create());
 		}
 		router.route().handler(SecurityLoggingHandler.create());
-		router.route(API_MOUNTPOINT).handler(storage.versionHandler);
+		router.route(API_MOUNTPOINT).handler(storage.getVersionHandler());
 
-		this.apiRouter = new APIRouter(vertx, this, options);
-		this.customRouter = new CustomRouter(vertx, this);
+		this.apiRouter = new APIRouterImpl(vertx, this, options);
+		this.customRouter = new CustomRouterImpl(vertx, this);
 	}
 
+	@Override
 	public Router getRouter() {
 		return router;
 	}
 
+	@Override
 	public APIRouter apiRouter() {
 		return apiRouter;
 	}
@@ -66,6 +68,7 @@ public class RootRouter {
 		return vertx;
 	}
 
+	@Override
 	public RouterStorage getStorage() {
 		return storage;
 	}

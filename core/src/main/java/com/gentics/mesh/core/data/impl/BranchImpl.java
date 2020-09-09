@@ -81,7 +81,7 @@ import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.VersionHandler;
+import com.gentics.mesh.handler.VersionHandlerImpl;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.VersionUtil;
@@ -513,7 +513,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 
 	@Override
 	public String getAPIPath(InternalActionContext ac) {
-		return VersionHandler.baseRoute(ac) + "/" + encodeSegment(getProject().getName()) + "/branches/" + getUuid();
+		return VersionHandlerImpl.baseRoute(ac) + "/" + encodeSegment(getProject().getName()) + "/branches/" + getUuid();
 	}
 
 	@Override

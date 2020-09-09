@@ -3,9 +3,9 @@ package com.gentics.mesh.core.data.schema;
 import java.util.stream.Stream;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.ReferenceableElement;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
@@ -195,7 +195,7 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 	 *
 	 * @return Found branches of this version
 	 */
-	Result<? extends Branch> getBranches();
+	Result<? extends HibBranch> getBranches();
 
 	/**
 	 * Load the stored schema JSON data.

@@ -20,14 +20,14 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
 
 /**
- * Router for all projects (e.g.: :apibase:/demo) The project router {@link ProjectRouter} will later contain the actual project specific endpoints. (e.g.:
+ * Router for all projects (e.g.: :apibase:/demo) The project router {@link ProjectRouterImpl} will later contain the actual project specific endpoints. (e.g.:
  * :apibase:/demo/nodes)
  */
-public class ProjectsRouter {
+public class ProjectsRouterImpl implements ProjectsRouter {
 
-	private static final Logger log = LoggerFactory.getLogger(ProjectsRouter.class);
+	private static final Logger log = LoggerFactory.getLogger(ProjectsRouterImpl.class);
 
-	private ProjectRouter projectRouter;
+	private ProjectRouterImpl projectRouter;
 
 	/**
 	 * Project routers are routers that handle project rest api endpoints. E.g: :apibase:/dummy, :apibase:/yourprojectname
@@ -36,25 +36,19 @@ public class ProjectsRouter {
 
 	private final Vertx vertx;
 
-	private APIRouter apiRouter;
+	private APIRouterImpl apiRouter;
 
 	private Router router;
 
-
-	public ProjectsRouter(Vertx vertx, APIRouter apiRouter) {
+	public ProjectsRouterImpl(Vertx vertx, APIRouterImpl apiRouter) {
 		this.vertx = vertx;
 		this.apiRouter = apiRouter;
 		this.router = Router.router(vertx);
-		this.projectRouter = new ProjectRouter(vertx, apiRouter.getRoot().getStorage());
+		this.projectRouter = new ProjectRouterImpl(vertx, apiRouter.getRoot().getStorage());
 		apiRouter.getRouter().mountSubRouter("/", router);
 	}
 
-	/**
-	 * Fail if the provided name is invalid or would cause a conflicts with an existing API router.
-	 * 
-	 * @param name
-	 *            Project name to be checked
-	 */
+	@Override
 	public void assertProjectNameValid(String name) {
 		String encodedName = encodeSegment(name);
 		Map<String, Router> apiRouters = apiRouter.getRouters();
@@ -63,14 +57,7 @@ public class ProjectsRouter {
 		}
 	}
 
-	/**
-	 * Add a new project router with the given name to the projects router. This method will return an existing router when one already has been setup.
-	 * 
-	 * @param name
-	 *            Name of the project router
-	 * @return Router for the given project name
-	 * @throws InvalidNameException
-	 */
+	@Override
 	public Router addProjectRouter(String name) throws InvalidNameException {
 		String encodedName = encodeSegment(name);
 		assertProjectNameValid(name);
@@ -117,25 +104,17 @@ public class ProjectsRouter {
 	// }
 	// }
 
-	/**
-	 * Check whether the project router for the given project name is already registered.
-	 * 
-	 * @param projectName
-	 * @return
-	 */
+	@Override
 	public boolean hasProjectRouter(String projectName) {
 		return projectRouters.containsKey(projectName);
 	}
 
+	@Override
 	public Map<String, Router> getProjectRouters() {
 		return projectRouters;
 	}
 
-	/**
-	 * Common router which holds project specific routes (e.g: /nodes /tagFamilies)
-	 * 
-	 * @return
-	 */
+	@Override
 	public ProjectRouter projectRouter() {
 		return projectRouter;
 	}

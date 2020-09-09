@@ -1,9 +1,16 @@
 package com.gentics.mesh.search;
 
+import java.util.Arrays;
+import java.util.List;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.search.index.group.GroupIndexHandlerImpl;
 import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandlerImpl;
+import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.search.index.node.NodeIndexHandlerImpl;
 import com.gentics.mesh.search.index.project.ProjectIndexHandlerImpl;
 import com.gentics.mesh.search.index.role.RoleIndexHandlerImpl;
@@ -12,16 +19,11 @@ import com.gentics.mesh.search.index.tag.TagIndexHandlerImpl;
 import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandlerImpl;
 import com.gentics.mesh.search.index.user.UserIndexHandlerImpl;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.util.Arrays;
-import java.util.List;
-
 /**
  * Central location for all search index handlers.
  */
 @Singleton
-public class IndexHandlerRegistry {
+public class IndexHandlerRegistryImpl implements IndexHandlerRegistry {
 
 	@Inject
 	NodeIndexHandlerImpl nodeIndexHandler;
@@ -51,15 +53,11 @@ public class IndexHandlerRegistry {
 	MicroschemaContainerIndexHandlerImpl microschemaContainerIndexHandler;
 
 	@Inject
-	public IndexHandlerRegistry() {
+	public IndexHandlerRegistryImpl() {
 
 	}
 
-	/**
-	 * Return a collection which contains all registered handlers.
-	 * 
-	 * @return
-	 */
+	@Override
 	public List<IndexHandler<?>> getHandlers() {
 		return Arrays.asList(
 			nodeIndexHandler,
@@ -70,8 +68,7 @@ public class IndexHandlerRegistry {
 			tagFamilyIndexHandler,
 			tagIndexHandler,
 			schemaContainerIndexHandler,
-			microschemaContainerIndexHandler
-		);
+			microschemaContainerIndexHandler);
 	}
 
 	/**
@@ -100,7 +97,8 @@ public class IndexHandlerRegistry {
 		return null;
 	}
 
-	public NodeIndexHandlerImpl getNodeIndexHandler() {
+	@Override
+	public NodeIndexHandler getNodeIndexHandler() {
 		return nodeIndexHandler;
 	}
 }

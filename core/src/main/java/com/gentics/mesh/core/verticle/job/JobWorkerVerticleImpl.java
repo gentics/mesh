@@ -18,7 +18,7 @@ import io.vertx.core.eventbus.Message;
  * Dedicated verticle which will process jobs.
  */
 @Singleton
-public class JobWorkerVerticle extends AbstractJobVerticle {
+public class JobWorkerVerticleImpl extends AbstractJobVerticle implements JobWorkerVerticle {
 
 	private static final String GLOBAL_JOB_LOCK_NAME = "mesh.internal.joblock";
 
@@ -37,7 +37,7 @@ public class JobWorkerVerticle extends AbstractJobVerticle {
 	private Database db;
 
 	@Inject
-	public JobWorkerVerticle(Database db, Lazy<BootstrapInitializer> boot) {
+	public JobWorkerVerticleImpl(Database db, Lazy<BootstrapInitializer> boot) {
 		this.db = db;
 		this.boot = boot;
 	}

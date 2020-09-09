@@ -91,7 +91,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	public NodeContainerTransformer transformer;
 
 	@Inject
-	public NodeContainerMappingProvider mappingProvider;
+	public NodeContainerMappingProviderImpl mappingProvider;
 
 	@Inject
 	public NodeIndexHandlerImpl(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options,

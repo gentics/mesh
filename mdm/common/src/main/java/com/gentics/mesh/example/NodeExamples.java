@@ -61,7 +61,6 @@ import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
-import com.gentics.mesh.handler.VersionHandler;
 import com.gentics.mesh.util.Tuple;
 
 public class NodeExamples extends AbstractExamples {

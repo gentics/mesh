@@ -25,7 +25,7 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.gentics.mesh.auth.MeshAuthChain;
+import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
@@ -45,7 +45,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 	}
 
 	@Inject
-	public BranchEndpoint(MeshAuthChain chain, BootstrapInitializer boot, BranchCrudHandler crudHandler) {
+	public BranchEndpoint(MeshAuthChainImpl chain, BootstrapInitializer boot, BranchCrudHandler crudHandler) {
 		super("branches", chain, boot);
 		this.crudHandler = crudHandler;
 	}

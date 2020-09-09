@@ -27,7 +27,7 @@ import java.util.function.BiConsumer;
 import javax.inject.Inject;
 
 import com.gentics.mesh.MeshStatus;
-import com.gentics.mesh.auth.MeshAuthChain;
+import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
@@ -62,7 +62,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 	private HandlerUtilities handlerUtilities;
 
 	@Inject
-	public AdminEndpoint(MeshAuthChain chain, AdminHandler adminHandler, JobHandler jobHandler, ConsistencyCheckHandler consistencyHandler,
+	public AdminEndpoint(MeshAuthChainImpl chain, AdminHandler adminHandler, JobHandler jobHandler, ConsistencyCheckHandler consistencyHandler,
 		PluginHandler pluginHandler, DebugInfoHandler debugInfoHandler, LocalConfigHandler localConfigHandler, ShutdownHandler shutdownHandler,
 		HandlerUtilities handlerUtilities) {
 		super("admin", chain);

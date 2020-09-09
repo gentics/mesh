@@ -14,6 +14,7 @@ import com.gentics.mesh.core.data.search.bulk.UpdateBulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.search.EntityMetrics;
+import com.gentics.mesh.search.index.MappingProvider;
 
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
@@ -51,7 +52,7 @@ public interface IndexHandler<T extends HibBaseElement> {
 	/**
 	 * Load all elements from the graph that are needed for the index handler.
 	 * 
-	 * @param tx 
+	 * @param tx
 	 * 
 	 * @return
 	 */
@@ -103,12 +104,11 @@ public interface IndexHandler<T extends HibBaseElement> {
 	Map<String, IndexInfo> getIndices();
 
 	/**
-	 * Get the names of all indices for searching purposes. The action context will be examined to determine the project scope and the branch scope.
-	 * If possible even the version type will be extracted from the action context in order to generate the set of indices which are selected.
+	 * Get the names of all indices for searching purposes. The action context will be examined to determine the project scope and the branch scope. If possible
+	 * even the version type will be extracted from the action context in order to generate the set of indices which are selected.
 	 *
-	 * This can also create
-	 * <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/multi-index.html">wildcard patterns</a>
-	 * catching multiple indices.
+	 * This can also create <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/multi-index.html">wildcard patterns</a> catching multiple
+	 * indices.
 	 * 
 	 * @param ac
 	 *            action context
@@ -177,5 +177,12 @@ public interface IndexHandler<T extends HibBaseElement> {
 	 * @return
 	 */
 	Completable store(T element, UpdateDocumentEntry entry);
+
+	/**
+	 * Return the index specific mapping provider.
+	 * 
+	 * @return
+	 */
+	MappingProvider getMappingProvider();
 
 }

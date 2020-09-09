@@ -62,7 +62,7 @@ import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.handler.VersionHandler;
+import com.gentics.mesh.handler.VersionHandlerImpl;
 import com.gentics.mesh.madl.field.FieldType;
 
 import io.vertx.core.logging.Logger;
@@ -242,7 +242,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 
 	@Override
 	public String getAPIPath(InternalActionContext ac) {
-		return VersionHandler.baseRoute(ac) + "/projects/" + getUuid();
+		return VersionHandlerImpl.baseRoute(ac) + "/projects/" + getUuid();
 	}
 
 	@Override

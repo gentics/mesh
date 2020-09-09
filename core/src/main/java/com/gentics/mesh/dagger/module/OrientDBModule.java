@@ -118,6 +118,8 @@ import com.gentics.mesh.core.endpoint.admin.consistency.check.TagFamilyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.UserCheck;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandlerImpl;
+import com.gentics.mesh.core.endpoint.role.RoleCrudHandler;
+import com.gentics.mesh.core.endpoint.role.RoleCrudHandlerImpl;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.link.WebRootLinkReplacerImpl;
 import com.gentics.mesh.core.migration.BranchMigration;
@@ -149,8 +151,12 @@ import com.gentics.mesh.plugin.registry.DelegatingPluginRegistry;
 import com.gentics.mesh.plugin.registry.DelegatingPluginRegistryImpl;
 import com.gentics.mesh.rest.MeshLocalClient;
 import com.gentics.mesh.rest.MeshLocalClientImpl;
+import com.gentics.mesh.router.EndpointRegistry;
+import com.gentics.mesh.router.EndpointRegistryImpl;
 import com.gentics.mesh.router.RouterStorageRegistry;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
+import com.gentics.mesh.search.IndexHandlerRegistry;
+import com.gentics.mesh.search.IndexHandlerRegistryImpl;
 import com.gentics.mesh.search.index.common.DropIndexHandler;
 import com.gentics.mesh.search.index.common.DropIndexHandlerImpl;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
@@ -417,6 +423,15 @@ public abstract class OrientDBModule {
 
 	@Binds
 	abstract ServerSchemaStorage serverSchemaStorage(ServerSchemaStorageImpl e);
+
+	@Binds
+	abstract RoleCrudHandler roleCrudHandler(RoleCrudHandlerImpl e);
+
+	@Binds
+	abstract EndpointRegistry endpointRegistry(EndpointRegistryImpl e);
+
+	@Binds
+	abstract IndexHandlerRegistry indexHandlerRegistry(IndexHandlerRegistryImpl e);
 
 	@Provides
 	public static List<ConsistencyCheck> consistencyCheckList() {

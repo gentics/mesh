@@ -45,14 +45,14 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 @Singleton
-public class NodeContainerMappingProvider extends AbstractMappingProvider {
+public class NodeContainerMappingProviderImpl extends AbstractMappingProvider implements NodeContainerMappingProvider {
 
-	private static final Logger log = LoggerFactory.getLogger(NodeContainerMappingProvider.class);
+	private static final Logger log = LoggerFactory.getLogger(NodeContainerMappingProviderImpl.class);
 
 	private final boolean isStrictMode;
 
 	@Inject
-	public NodeContainerMappingProvider(MeshOptions options) {
+	public NodeContainerMappingProviderImpl(MeshOptions options) {
 		super(options);
 		this.isStrictMode = MappingMode.STRICT == options.getSearchOptions().getMappingMode();
 	}
@@ -62,28 +62,12 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 		return new JsonObject();
 	}
 
-	/**
-	 * Return the type specific mapping which is constructed using the provided schema.
-	 * 
-	 * @param schema
-	 *            Schema from which the mapping should be constructed
-	 * @return An ES-Mapping for the given Schema
-	 */
+	@Override
 	public JsonObject getMapping(SchemaModel schema) {
 		return getMapping(schema, null, null);
 	}
 
-	/**
-	 * Return the type specific mapping which is constructed using the provided schema.
-	 * 
-	 * @param schema
-	 *            Schema from which the mapping should be constructed
-	 * @param branch
-	 *            The branch-version which should be used for the construction
-	 * @param language
-	 *            The language override to use
-	 * @return An ES-Mapping for the given Schema in the branch
-	 */
+	@Override
 	public JsonObject getMapping(SchemaModel schema, HibBranch branch, String language) {
 		// 1. Get the common type specific mapping
 		JsonObject mapping = getMapping();

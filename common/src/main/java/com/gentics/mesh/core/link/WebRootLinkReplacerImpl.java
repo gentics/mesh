@@ -24,7 +24,7 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.handler.VersionHandler;
+import com.gentics.mesh.handler.VersionHandlerImpl;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.VersioningParameters;
 
@@ -144,7 +144,7 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 			case MEDIUM:
 				return "/" + projectName + "/error/404";
 			case FULL:
-				return VersionHandler.baseRoute(ac.getApiVersion()) + "/" + projectName + "/webroot/error/404";
+				return VersionHandlerImpl.baseRoute(ac.getApiVersion()) + "/" + projectName + "/webroot/error/404";
 			default:
 				throw error(BAD_REQUEST, "Cannot render link with type " + type);
 			}
@@ -207,7 +207,7 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 		case MEDIUM:
 			return "/" + node.getProject().getName() + path;
 		case FULL:
-			return VersionHandler.baseRoute(ac.getApiVersion()) + "/" + node.getProject().getName() + "/webroot" + path
+			return VersionHandlerImpl.baseRoute(ac.getApiVersion()) + "/" + node.getProject().getName() + "/webroot" + path
 				+ branchQueryParameter(branch);
 		default:
 			throw error(BAD_REQUEST, "Cannot render link with type " + type);

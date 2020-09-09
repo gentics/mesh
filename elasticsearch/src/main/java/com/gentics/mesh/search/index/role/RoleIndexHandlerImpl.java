@@ -71,7 +71,7 @@ public class RoleIndexHandlerImpl extends AbstractIndexHandler<HibRole>  impleme
 	}
 
 	@Override
-	protected MappingProvider getMappingProvider() {
+	public MappingProvider getMappingProvider() {
 		return mappingProvider;
 	}
 

@@ -105,7 +105,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
 import com.gentics.mesh.search.DevNullSearchProvider;
-import com.gentics.mesh.search.IndexHandlerRegistry;
+import com.gentics.mesh.search.IndexHandlerRegistryImpl;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
@@ -160,7 +160,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	public DistributedEventManager eventManager;
 
 	@Inject
-	public Lazy<IndexHandlerRegistry> indexHandlerRegistry;
+	public Lazy<IndexHandlerRegistryImpl> indexHandlerRegistry;
 
 	@Inject
 	public Lazy<CoreVerticleLoader> loader;
@@ -750,7 +750,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Override
 	public void createSearchIndicesAndMappings() {
-		IndexHandlerRegistry registry = indexHandlerRegistry.get();
+		IndexHandlerRegistryImpl registry = indexHandlerRegistry.get();
 		for (IndexHandler<?> handler : registry.getHandlers()) {
 			handler.init().blockingAwait();
 		}
