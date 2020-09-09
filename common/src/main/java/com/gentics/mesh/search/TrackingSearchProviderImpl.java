@@ -30,9 +30,9 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * Search provider which just logs interacts with the search provider. This is useful when debugging or writing tests.
  */
-public class TrackingSearchProvider implements SearchProvider {
+public class TrackingSearchProviderImpl implements TrackingSearchProvider {
 
-	private static final Logger log = LoggerFactory.getLogger(TrackingSearchProvider.class);
+	private static final Logger log = LoggerFactory.getLogger(TrackingSearchProviderImpl.class);
 
 	public static final String TEST_PROPERTY_KEY = "mesh.test";
 
@@ -47,7 +47,7 @@ public class TrackingSearchProvider implements SearchProvider {
 
 	private MeshOptions options;
 
-	public TrackingSearchProvider(MeshOptions options) {
+	public TrackingSearchProviderImpl(MeshOptions options) {
 		this.options = options;
 	}
 
@@ -209,26 +209,32 @@ public class TrackingSearchProvider implements SearchProvider {
 		return "1.0";
 	}
 
+	@Override
 	public Map<String, JsonObject> getStoreEvents() {
 		return storeEvents;
 	}
 
+	@Override
 	public List<String> getDeleteEvents() {
 		return deleteEvents;
 	}
 
+	@Override
 	public Map<String, JsonObject> getUpdateEvents() {
 		return updateEvents;
 	}
 
+	@Override
 	public Map<String, JsonObject> getCreateIndexEvents() {
 		return createIndexEvents;
 	}
 
+	@Override
 	public List<String> getDropIndexEvents() {
 		return dropIndexEvents;
 	}
 
+	@Override
 	public List<Bulkable> getBulkRequests() {
 		return bulkRequests;
 	}

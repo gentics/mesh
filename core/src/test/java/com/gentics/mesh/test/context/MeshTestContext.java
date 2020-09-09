@@ -60,6 +60,7 @@ import com.gentics.mesh.rest.client.MeshRestClientConfig;
 import com.gentics.mesh.rest.monitoring.MonitoringClientConfig;
 import com.gentics.mesh.rest.monitoring.MonitoringRestClient;
 import com.gentics.mesh.search.TrackingSearchProvider;
+import com.gentics.mesh.search.TrackingSearchProviderImpl;
 import com.gentics.mesh.search.verticle.ElasticsearchProcessVerticle;
 import com.gentics.mesh.test.SSLTestMode;
 import com.gentics.mesh.test.TestDataProvider;
@@ -80,7 +81,7 @@ import okhttp3.OkHttpClient;
 public class MeshTestContext extends TestWatcher {
 
 	static {
-		System.setProperty(TrackingSearchProvider.TEST_PROPERTY_KEY, "true");
+		System.setProperty(TrackingSearchProviderImpl.TEST_PROPERTY_KEY, "true");
 	}
 
 	private static final Logger log = LoggerFactory.getLogger(MeshTestContext.class);
@@ -602,7 +603,7 @@ public class MeshTestContext extends TestWatcher {
 			searchOptions.setStartEmbedded(false);
 			break;
 		case TRACKING:
-			System.setProperty(TrackingSearchProvider.TEST_PROPERTY_KEY, "true");
+			System.setProperty(TrackingSearchProviderImpl.TEST_PROPERTY_KEY, "true");
 			searchOptions.setStartEmbedded(false);
 			break;
 		default:
@@ -681,7 +682,7 @@ public class MeshTestContext extends TestWatcher {
 				.mesh(mesh)
 				.build();
 			dataProvider = new TestDataProvider(settings.testSize(), meshDagger.boot(), meshDagger.database(), meshDagger.batchProvider());
-			if (meshDagger.searchProvider() instanceof TrackingSearchProvider) {
+			if (meshDagger.searchProvider() instanceof TrackingSearchProviderImpl) {
 				trackingSearchProvider = meshDagger.trackingSearchProvider();
 			}
 			mesh.setMeshInternal(meshDagger);

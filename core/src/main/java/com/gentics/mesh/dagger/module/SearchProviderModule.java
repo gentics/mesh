@@ -15,7 +15,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.search.DevNullSearchProvider;
 import com.gentics.mesh.search.SearchProvider;
-import com.gentics.mesh.search.TrackingSearchProvider;
+import com.gentics.mesh.search.TrackingSearchProviderImpl;
 import com.gentics.mesh.search.impl.ElasticSearchProvider;
 
 import dagger.Lazy;
@@ -40,7 +40,7 @@ public class SearchProviderModule {
 		case NULL:
 			return new DevNullSearchProvider(options);
 		case TRACKING:
-			return new TrackingSearchProvider(options);
+			return new TrackingSearchProviderImpl(options);
 		case ELASTICSEARCH:
 		default:
 			return elasticsearchProvider.get();

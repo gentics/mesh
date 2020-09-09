@@ -55,7 +55,7 @@ import com.gentics.mesh.dagger.DaggerOrientDBMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.madl.traversal.TraversalResult;
-import com.gentics.mesh.search.TrackingSearchProvider;
+import com.gentics.mesh.search.TrackingSearchProviderImpl;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
 import com.gentics.mesh.search.index.microschema.MicroschemaIndexHandler;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
@@ -80,7 +80,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 
 	private ObjectMapper mapper = new ObjectMapper();
 
-	private TrackingSearchProvider provider;
+	private TrackingSearchProviderImpl provider;
 
 	private static MeshComponent meshDagger;
 
@@ -133,7 +133,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 			.searchProviderType(TRACKING)
 			.mesh(mesh)
 			.build();
-		provider = (TrackingSearchProvider) meshDagger.searchProvider();
+		provider = (TrackingSearchProviderImpl) meshDagger.searchProvider();
 
 		try {
 			Tx tx = mockTx();

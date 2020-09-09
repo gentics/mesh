@@ -29,6 +29,7 @@ import com.gentics.mesh.router.EndpointRegistry;
 import com.gentics.mesh.router.RouterStorageRegistry;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
 import com.gentics.mesh.search.index.microschema.MicroschemaIndexHandler;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
@@ -114,6 +115,10 @@ public interface BaseMeshComponent {
 	NodeIndexHandler nodeContainerIndexHandler();
 
 	IndexHandlerRegistry indexHandlerRegistry();
+
+	default TrackingSearchProvider trackingSearchProvider() {
+		return (TrackingSearchProvider) searchProvider();
+	}
 
 	// Migration
 

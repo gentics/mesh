@@ -107,7 +107,7 @@ import com.gentics.mesh.router.RouterStorageRegistryImpl;
 import com.gentics.mesh.search.DevNullSearchProvider;
 import com.gentics.mesh.search.IndexHandlerRegistryImpl;
 import com.gentics.mesh.search.SearchProvider;
-import com.gentics.mesh.search.TrackingSearchProvider;
+import com.gentics.mesh.search.TrackingSearchProviderImpl;
 import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
 import com.gentics.mesh.util.MavenVersionNumber;
 import com.gentics.mesh.util.RequirementsCheck;
@@ -221,7 +221,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		// Init the classes / indices
 		DatabaseHelper.init(db);
 
-		if (searchProvider instanceof TrackingSearchProvider) {
+		if (searchProvider instanceof TrackingSearchProviderImpl) {
 			return;
 		}
 		if (searchProvider instanceof DevNullSearchProvider) {
