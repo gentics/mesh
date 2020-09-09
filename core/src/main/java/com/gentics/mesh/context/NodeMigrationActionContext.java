@@ -11,42 +11,42 @@ public interface NodeMigrationActionContext extends InternalActionContext {
 	/**
 	 * Return referenced project.
 	 * 
-	 * @return
+	 * @return current project
 	 */
 	Project getProject();
 
 	/**
 	 * Return referenced branch.
 	 * 
-	 * @return
+	 * @return branch
 	 */
 	Branch getBranch();
 
 	/**
 	 * Return the from schema version.
 	 * 
-	 * @return
+	 * @return version
 	 */
 	SchemaContainerVersion getFromVersion();
 
 	/**
 	 * Return the to schema version.
 	 * 
-	 * @return
+	 * @return version
 	 */
 	SchemaContainerVersion getToVersion();
 
 	/**
 	 * Return migration cause.
 	 * 
-	 * @return
+	 * @return cause
 	 */
 	SchemaMigrationCause getCause();
 
 	/**
 	 * Return the status handler.
 	 * 
-	 * @return
+	 * @return status
 	 */
 	MigrationStatusHandler getStatus();
 

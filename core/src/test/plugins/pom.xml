@@ -23,6 +23,7 @@
 		<module>extension-consumer</module>
 		<module>graphql</module>
 		<module>invalid-graphql</module>
+		<module>auth</module>
 	</modules>
 
 	<repositories>

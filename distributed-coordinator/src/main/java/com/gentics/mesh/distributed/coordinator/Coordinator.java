@@ -64,4 +64,11 @@ public class Coordinator {
 		return elector.isElectable();
 	}
 
+	/**
+	 * Check if the current node is the master.
+	 * @return
+	 */
+	public boolean isMaster() {
+		return getMasterMember().isSelf();
+	}
 }

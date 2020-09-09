@@ -203,6 +203,8 @@ NOTE: Only instances which provide a master database can be elected. Replica ser
 
 Delegation can be disabled for individual requests when adding the `X-Mesh-Direct: true` header to the request.
 
+If a request was delegated, the `X-Mesh-Forwarded-From` will be added to the response. The value of this header is the name of the node from which the request was forwarded from.
+
 == Transaction handling / Change propagation
 
 Transactions are directly being handled by link:https://orientdb.com/docs/3.0.x/internals/Transactions.html[OrientDB].

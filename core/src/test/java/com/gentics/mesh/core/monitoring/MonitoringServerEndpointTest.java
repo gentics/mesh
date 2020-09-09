@@ -5,6 +5,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
+import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Before;
@@ -15,6 +18,8 @@ import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
 import com.gentics.mesh.metric.SimpleMetric;
+import com.gentics.mesh.plugin.FailingInitializePlugin;
+import com.gentics.mesh.plugin.manager.MeshPluginManager;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -26,8 +31,7 @@ import io.vertx.core.impl.launcher.commands.VersionCommand;
 public class MonitoringServerEndpointTest extends AbstractMeshTest {
 
 	/**
-	 * Make sure that the status will be reset after the test so that 
-	 * the database setup and initial login will not fail.
+	 * Make sure that the status will be reset after the test so that the database setup and initial login will not fail.
 	 */
 	@Before
 	@After
@@ -49,7 +53,21 @@ public class MonitoringServerEndpointTest extends AbstractMeshTest {
 		meshApi().setStatus(MeshStatus.WAITING_FOR_CLUSTER);
 		MeshStatusResponse status = call(() -> monClient().status());
 		assertEquals(MeshStatus.WAITING_FOR_CLUSTER, status.getStatus());
+	}
 
+	@Test
+	public void testFailingPlugin() {
+		MeshPluginManager manager = pluginManager();
+		manager.deploy(FailingInitializePlugin.class, "failing").blockingAwait();
+		try {
+			call(() -> monClient().ready());
+			fail("The ready probe should fail");
+		} catch (Exception e) {
+			// NOOP
+		}
+		manager.undeploy("failing").blockingAwait(2, TimeUnit.SECONDS);
+		assertEquals(0, manager.getPluginIds().size());
+		call(() -> monClient().ready());
 	}
 
 	@Test

@@ -35,6 +35,8 @@ import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
+import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfig;
+import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorMasterResponse;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.localconfig.LocalConfigModel;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
@@ -113,6 +115,7 @@ import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.rest.client.MeshRestClientConfig;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import com.gentics.mesh.rest.client.MeshWebsocket;
 import com.gentics.mesh.rest.client.impl.EmptyResponse;
@@ -1651,6 +1654,11 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
+	public MeshRestClientConfig getConfig() {
+		return null;
+	}
+
+	@Override
 	public MeshRequest<JsonObject> delete(String path) {
 		// TODO Auto-generated method stub
 		return null;
@@ -1730,6 +1738,26 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Override
 	public MeshRequest<MeshBinaryResponse> debugInfo(String... params) {
+		return null;
+	}
+
+	@Override
+	public MeshRequest<CoordinatorMasterResponse> loadCoordinationMaster() {
+		return null;
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> setCoordinationMaster() {
+		return null;
+	}
+
+	@Override
+	public MeshRequest<CoordinatorConfig> loadCoordinationConfig() {
+		return null;
+	}
+
+	@Override
+	public MeshRequest<CoordinatorConfig> updateCoordinationConfig(CoordinatorConfig coordinatorConfig) {
 		return null;
 	}
 

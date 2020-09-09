@@ -233,6 +233,11 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
+			public boolean updateDry(InternalActionContext ac) {
+				return true;
+			}
+
+			@Override
 			public User setUsername(String string) {
 				return this;
 			}

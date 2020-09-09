@@ -34,6 +34,7 @@ import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.DummyEventQueueBatch;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.HasPermissions;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -299,7 +300,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public User setReferencedNode(Node node) {
-		setUniqueLinkOutTo(node, HAS_NODE_REFERENCE);
+		setSingleLinkOutTo(node, HAS_NODE_REFERENCE);
 		return this;
 	}
 
@@ -557,7 +558,15 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
+	public boolean updateDry(InternalActionContext ac) {
+		return update(ac, new DummyEventQueueBatch(), true);
+	}
+	@Override
 	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
+		return update(ac, batch, false);
+	}
+
+	public boolean update(InternalActionContext ac, EventQueueBatch batch, boolean dry) {
 		UserUpdateRequest requestModel = ac.fromJson(UserUpdateRequest.class);
 		boolean modified = false;
 		if (shouldUpdate(requestModel.getUsername(), getUsername())) {
@@ -565,7 +574,9 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 			if (conflictingUser != null && !conflictingUser.getUuid().equals(getUuid())) {
 				throw conflict(conflictingUser.getUuid(), requestModel.getUsername(), "user_conflicting_username");
 			}
-			setUsername(requestModel.getUsername());
+			if (!dry) {
+				setUsername(requestModel.getUsername());
+			}
 			modified = true;
 		}
 
@@ -581,28 +592,38 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		}
 
 		if (shouldUpdate(requestModel.getFirstname(), getFirstname())) {
-			setFirstname(requestModel.getFirstname());
+			if (!dry) {
+				setFirstname(requestModel.getFirstname());
+			}
 			modified = true;
 		}
 
 		if (shouldUpdate(requestModel.getLastname(), getLastname())) {
-			setLastname(requestModel.getLastname());
+			if (!dry) {
+				setLastname(requestModel.getLastname());
+			}
 			modified = true;
 		}
 
 		if (shouldUpdate(requestModel.getEmailAddress(), getEmailAddress())) {
-			setEmailAddress(requestModel.getEmailAddress());
+			if (!dry) {
+				setEmailAddress(requestModel.getEmailAddress());
+			}
 			modified = true;
 		}
 
 		if (shouldUpdate(requestModel.getForcedPasswordChange(), isForcedPasswordChange())) {
-			setForcedPasswordChange(requestModel.getForcedPasswordChange());
+			if (!dry) {
+				setForcedPasswordChange(requestModel.getForcedPasswordChange());
+			}
 			modified = true;
 		}
 
 		if (!isEmpty(requestModel.getPassword())) {
-			BCryptPasswordEncoder encoder = mesh().passwordEncoder();
-			setPasswordHash(encoder.encode(requestModel.getPassword()));
+			if (!dry) {
+				BCryptPasswordEncoder encoder = mesh().passwordEncoder();
+				setPasswordHash(encoder.encode(requestModel.getPassword()));
+			}
 			modified = true;
 		}
 
@@ -640,13 +661,15 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 				}
 				NodeRoot nodeRoot = project.getNodeRoot();
 				Node node = nodeRoot.loadObjectByUuid(ac, referencedNodeUuid, READ_PERM);
-				setReferencedNode(node);
+				if (!dry) {
+					setReferencedNode(node);
+				}
 				modified = true;
 			}
 
 		}
 
-		if (modified) {
+		if (modified && !dry) {
 			setEditor(ac.getUser());
 			setLastEditedTimestamp();
 			batch.add(onUpdated());

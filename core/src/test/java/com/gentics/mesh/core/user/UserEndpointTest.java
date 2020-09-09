@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.user;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-
 import static com.gentics.mesh.core.data.User.composeIndexName;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
@@ -649,6 +648,49 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		updateRequest.setNodeReference(userNodeReference);
 
 		UserResponse restUser = call(() -> client().updateUser(userUuid, updateRequest));
+		try (Tx tx = tx()) {
+			assertNotNull(user().getReferencedNode());
+			assertNotNull(restUser.getNodeReference());
+			assertEquals(PROJECT_NAME, ((NodeReference) restUser.getNodeReference()).getProjectName());
+			assertEquals(nodeUuid, restUser.getNodeReference().getUuid());
+			assertThat(restUser).matches(updateRequest);
+			assertNull("The user node should have been updated and thus no user should be found.", boot().userRoot().findByUsername(username));
+			User reloadedUser = boot().userRoot().findByUsername("dummy_user_changed");
+			assertNotNull(reloadedUser);
+			assertEquals("Epic Stark", reloadedUser.getLastname());
+			assertEquals("Tony Awesome", reloadedUser.getFirstname());
+			assertEquals("t.stark@stark-industries.com", reloadedUser.getEmailAddress());
+			assertEquals("dummy_user_changed", reloadedUser.getUsername());
+			assertEquals(nodeUuid, reloadedUser.getReferencedNode().getUuid());
+		}
+	}
+
+	@Test
+	public void testUpdateNodeReferenceTwice() throws Exception {
+		String nodeUuid = tx(() -> folder("news").getUuid());
+		String nodeUuid2 = tx(() -> folder("2015").getUuid());
+		String userUuid = userUuid();
+		User user = user();
+		UserUpdateRequest updateRequest = new UserUpdateRequest();
+		String username = tx(() -> user.getUsername());
+		try (Tx tx = tx()) {
+			updateRequest.setEmailAddress("t.stark@stark-industries.com");
+			updateRequest.setFirstname("Tony Awesome");
+			updateRequest.setLastname("Epic Stark");
+			updateRequest.setUsername("dummy_user_changed");
+		}
+
+		NodeReference userNodeReference = new NodeReference();
+		userNodeReference.setProjectName(PROJECT_NAME);
+		userNodeReference.setUuid(nodeUuid2);
+		updateRequest.setNodeReference(userNodeReference);
+
+		call(() -> client().updateUser(userUuid, updateRequest));
+
+		userNodeReference.setUuid(nodeUuid);
+
+		UserResponse restUser = call(() -> client().updateUser(userUuid, updateRequest));
+
 		try (Tx tx = tx()) {
 			assertNotNull(user().getReferencedNode());
 			assertNotNull(restUser.getNodeReference());

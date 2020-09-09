@@ -1,8 +1,9 @@
-package com.gentics.mesh.auth;
+package com.gentics.mesh.auth.oauth2;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.event.Assignment.ASSIGNED;
 import static com.gentics.mesh.event.Assignment.UNASSIGNED;
+import static com.google.common.base.Throwables.getRootCause;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 
 import java.util.HashSet;
@@ -17,6 +18,9 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.auth.AuthHandlerContainer;
+import com.gentics.mesh.auth.AuthServicePluginRegistry;
+import com.gentics.mesh.auth.MeshOAuthService;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
@@ -32,6 +36,7 @@ import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
+import com.gentics.mesh.distributed.RequestDelegator;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -46,6 +51,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.vertx.core.http.HttpHeaders;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -76,10 +82,12 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 	private final AuthHandlerContainer authHandlerContainer;
 	private final LocalConfigApi localConfigApi;
 
+	private final RequestDelegator delegator;
+
 	@Inject
 	public MeshOAuth2ServiceImpl(Database db, BootstrapInitializer boot, MeshOptions meshOptions,
-								 Provider<EventQueueBatch> batchProvider, AuthServicePluginRegistry authPluginRegistry,
-								 AuthHandlerContainer authHandlerContainer, LocalConfigApi localConfigApi) {
+		Provider<EventQueueBatch> batchProvider, AuthServicePluginRegistry authPluginRegistry,
+		AuthHandlerContainer authHandlerContainer, LocalConfigApi localConfigApi, RequestDelegator delegator) {
 		this.db = db;
 		this.boot = boot;
 		this.batchProvider = batchProvider;
@@ -87,6 +95,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		this.authOptions = meshOptions.getAuthenticationOptions();
 		this.authHandlerContainer = authHandlerContainer;
 		this.localConfigApi = localConfigApi;
+		this.delegator = delegator;
 	}
 
 	private JWTAuthHandler createJWTHandler() {
@@ -165,7 +174,13 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 				syncUser(rc, token.principal()).subscribe(syncedUser -> {
 					rc.setUser(syncedUser);
 					rc.next();
-				}, rc::fail);
+				}, error -> {
+					if (getRootCause(error) instanceof CannotWriteException) {
+						delegator.redirectToMaster(rc);
+					} else {
+						rc.fail(error);
+					}
+				});
 			} else {
 				rc.fail(401);
 				return;
@@ -206,28 +221,34 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 			// In that case a sync must be invoked.
 			String lastSeenTokenId = TOKEN_ID_LOG.getIfPresent(user.getUuid());
 			if (lastSeenTokenId == null || !lastSeenTokenId.equals(cachingId)) {
-				return assertReadOnlyDeactivated().andThen(db.asyncTx(() -> {
+				return assertReadOnlyDeactivated().andThen(db.singleTx(() -> {
 					com.gentics.mesh.core.data.User admin = boot.userRoot().findByUsername("admin");
-					runPlugins(rc, batch, admin, user, uuid, token);
-					TOKEN_ID_LOG.put(uuid, cachingId);
-				})).andThen(Single.just(user));
+						runPlugins(rc, batch, admin, user, uuid, token);
+						TOKEN_ID_LOG.put(uuid, cachingId);
+						return user;
+				}));
 			}
 			return Single.just(user);
 		}))
 		// Create the user if it can't be found.
-		.switchIfEmpty(assertReadOnlyDeactivated().andThen(db.singleTxWriteLock(tx -> {
-			UserRoot root = boot.userRoot();
-			com.gentics.mesh.core.data.User admin = root.findByUsername("admin");
-			com.gentics.mesh.core.data.User createdUser = root.create(username, admin);
-			admin.inheritRolePermissions(root, createdUser);
+		.switchIfEmpty(
+			assertReadOnlyDeactivated()
+			.andThen(requiresWriteCompletable())
+			.andThen(db.singleTxWriteLock(tx -> {
+				UserRoot root = boot.userRoot();
+				com.gentics.mesh.core.data.User admin = root.findByUsername("admin");
+				com.gentics.mesh.core.data.User createdUser = root.create(username, admin);
+				admin.inheritRolePermissions(root, createdUser);
 
-			MeshAuthUser user = root.findMeshAuthUserByUsername(username);
-			String uuid = user.getUuid();
-			// Not setting uuid since the user has not yet been committed.
-			runPlugins(rc, batch, admin, user, null, token);
-			TOKEN_ID_LOG.put(uuid, cachingId);
-			return user;
-		})))
+				MeshAuthUser user = root.findMeshAuthUserByUsername(username);
+				String uuid = user.getUuid();
+				batch.add(user.onCreated());
+				// Not setting uuid since the user has not yet been committed.
+				runPlugins(rc, batch, admin, user, null, token);
+				TOKEN_ID_LOG.put(uuid, cachingId);
+				return user;
+			}))
+		)
 		.doOnSuccess(ignore -> batch.dispatch());
 	}
 
@@ -254,7 +275,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		return Optional.ofNullable(token.getString(DEFAULT_JWT_USERNAME_PROP));
 	}
 
-	private void defaultUserMapper(EventQueueBatch batch, MeshAuthUser user, JsonObject token) {
+	private void defaultUserMapper(EventQueueBatch batch, MeshAuthUser user, JsonObject token) throws CannotWriteException {
 		boolean modified = false;
 		String givenName = token.getString("given_name");
 		if (givenName == null) {
@@ -262,6 +283,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		} else {
 			String currentFirstName = user.getFirstname();
 			if (!Objects.equals(currentFirstName, givenName)) {
+				requiresWrite();
 				user.setFirstname(givenName);
 				modified = true;
 			}
@@ -273,6 +295,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		} else {
 			String currentLastName = user.getLastname();
 			if (!Objects.equals(currentLastName, familyName)) {
+				requiresWrite();
 				user.setLastname(familyName);
 				modified = true;
 			}
@@ -284,6 +307,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		} else {
 			String currentEmail = user.getEmailAddress();
 			if (!Objects.equals(currentEmail, email)) {
+				requiresWrite();
 				user.setEmailAddress(email);
 				modified = true;
 			}
@@ -291,11 +315,22 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		if (modified) {
 			batch.add(user.onUpdated());
 		}
-
 	}
 
+	/**
+	 * Runs all {@link AuthServicePlugin} to detect and apply any changes that are returned from {@link AuthServicePlugin#mapToken(HttpServerRequest, String, JsonObject)}.
+	 *
+	 * @param rc
+	 * @param batch
+	 * @param admin
+	 * @param user
+	 * @param userUuid
+	 * @param token
+	 * @throws CannotWriteException If a change is required but this instance cannot be written to because of cluster coordination.
+	 * @return
+	 */
 	private void runPlugins(RoutingContext rc, EventQueueBatch batch, com.gentics.mesh.core.data.User admin, MeshAuthUser user, String userUuid,
-		JsonObject token) {
+		JsonObject token) throws CannotWriteException {
 		List<AuthServicePlugin> plugins = authPluginRegistry.getPlugins();
 		// Only load the needed data for plugins if there are any plugins
 		if (!plugins.isEmpty()) {
@@ -318,9 +353,13 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 						InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 						ac.setBody(mappedUser);
 						ac.setUser(admin.toAuthUser());
+						if (!delegator.canWrite() && user.updateDry(ac)) {
+							throw new CannotWriteException();
+						}
 						user.update(ac, batch);
 					} else {
 						defaultUserMapper(batch, user, token);
+						continue;
 					}
 
 					// 2. Map the roles
@@ -331,6 +370,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 							Role role = roleRoot.findByName(roleName);
 							// Role not found - Lets create it
 							if (role == null) {
+								requiresWrite();
 								role = roleRoot.create(roleName, admin);
 								admin.inheritRolePermissions(roleRoot, role);
 								batch.add(role.onCreated());
@@ -350,12 +390,14 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 							// Group not found - Lets create it
 							boolean created = false;
 							if (group == null) {
+								requiresWrite();
 								group = groupRoot.create(groupName, admin);
 								admin.inheritRolePermissions(groupRoot, group);
 								batch.add(group.onCreated());
 								created = true;
 							}
 							if (!group.hasUser(user)) {
+								requiresWrite();
 								// Ensure that the user is part of the group
 								group.addUser(user);
 								batch.add(group.createUserAssignmentEvent(user, ASSIGNED));
@@ -379,6 +421,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 								}
 								// Add the role if it is missing
 								if (role != null && !group.hasRole(role)) {
+									requiresWrite();
 									group.addRole(role);
 									group.setLastEditedTimestamp();
 									group.setEditor(admin);
@@ -391,6 +434,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 							if (roleFilter != null) {
 								for (Role role : group.getRoles()) {
 									if (roleFilter.filter(group.getName(), role.getName())) {
+										requiresWrite();
 										log.info("Unassigning role {" + role.getName() + "} from group {" + group.getName() + "}");
 										group.removeRole(role);
 										batch.add(group.createRoleAssignmentEvent(role, UNASSIGNED));
@@ -425,6 +469,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 								}
 								// Add the role if it is missing
 								if (group != null && !group.hasRole(role)) {
+									requiresWrite();
 									group.addRole(role);
 									batch.add(group.createRoleAssignmentEvent(role, ASSIGNED));
 								}
@@ -438,6 +483,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 					if (groupFilter != null) {
 						for (Group group : user.getGroups()) {
 							if (groupFilter.filter(group.getName())) {
+								requiresWrite();
 								log.info("Unassigning group {" + group.getName() + "} from user {" + user.getUsername() + "}");
 								group.removeUser(user);
 								batch.add(group.createUserAssignmentEvent(user, UNASSIGNED));
@@ -445,16 +491,30 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 						}
 					}
 
+				} catch (CannotWriteException e) {
+					throw e;
 				} catch (Exception e) {
 					log.error("Error while executing mapping plugin {" + plugin.id() + "}. Ignoring result.", e);
 					throw e;
 				}
 			}
-
 		} else {
 			defaultUserMapper(batch, user, token);
 		}
 
 	}
 
+	private void requiresWrite() throws CannotWriteException {
+		if (!delegator.canWrite()) {
+			throw new CannotWriteException();
+		}
+	}
+
+	private Completable requiresWriteCompletable() {
+		if (delegator.canWrite()) {
+			return Completable.complete();
+		} else {
+			return Completable.error(new CannotWriteException());
+		}
+	}
 }

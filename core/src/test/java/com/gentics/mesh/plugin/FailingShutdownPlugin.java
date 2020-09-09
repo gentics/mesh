@@ -7,7 +7,7 @@ import com.gentics.mesh.plugin.env.PluginEnvironment;
 import io.reactivex.Completable;
 
 /**
- * Plugin that will fail the start
+ * Plugin that will fail the stop
  */
 public class FailingShutdownPlugin extends AbstractPlugin {
 
