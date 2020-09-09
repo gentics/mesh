@@ -46,10 +46,13 @@ public class PageImpl<T> implements Page<T> {
 	}
 
 	private static long getTotalPages(PagingParameters pagingParameters, long totalElements) {
-		if (pagingParameters.getPerPage() == null) {
+		Long perPage = pagingParameters.getPerPage();
+		if (perPage == null) {
 			return 1;
+		} else if (perPage == 0) {
+			return 0;
 		} else {
-			return ceilDiv(totalElements, pagingParameters.getPerPage());
+			return ceilDiv(totalElements, perPage);
 		}
 	}
 
