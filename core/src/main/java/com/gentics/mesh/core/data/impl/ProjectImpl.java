@@ -327,6 +327,11 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 		return getBranchRoot();
 	}
 
+	@Override
+	public HibBaseElement getTagFamilyPermissionRoot() {
+		return getTagFamilyRoot();
+	}
+
 	private Optional<HibBranch> findBranchOpt(String branchNameOrUuid) {
 		return Optional.ofNullable(mesh().branchCache().get(id() + "-" + branchNameOrUuid, key -> {
 			HibBranch branch = null;

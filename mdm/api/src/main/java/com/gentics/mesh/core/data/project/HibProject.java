@@ -30,4 +30,6 @@ public interface HibProject extends HibCoreElement, HibUserTracking {
 	void setBaseNode(HibNode baseNode);
 
 	HibBaseElement getBranchPermissionRoot();
+
+	HibBaseElement getTagFamilyPermissionRoot();
 }
