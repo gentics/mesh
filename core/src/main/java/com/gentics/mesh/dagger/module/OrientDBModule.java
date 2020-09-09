@@ -3,6 +3,10 @@ package com.gentics.mesh.dagger.module;
 import java.util.Arrays;
 import java.util.List;
 
+import com.gentics.mesh.changelog.ChangelogSystem;
+import com.gentics.mesh.changelog.ChangelogSystemImpl;
+import com.gentics.mesh.changelog.highlevel.HighLevelChangelogSystem;
+import com.gentics.mesh.changelog.highlevel.HighLevelChangelogSystemImpl;
 import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
@@ -63,13 +67,19 @@ import dagger.Provides;
 @Module(includes = { OrientDBCoreModule.class })
 public abstract class OrientDBModule {
 
-	// Graph / ODB specific implementations
-
 	@Binds
 	abstract UserProperties userProperties(GraphUserPropertiesImpl e);
 
 	@Binds
 	abstract Database bindDatabase(OrientDBDatabase e);
+
+	@Binds
+	abstract ChangelogSystem bindChangelogSystem(ChangelogSystemImpl e);
+
+	@Binds
+	abstract HighLevelChangelogSystem bindHighLevelChangelogSystem(HighLevelChangelogSystemImpl e);
+
+	// DAOs
 
 	@Binds
 	abstract DaoCollection daoCollection(OrientDBDaoCollection daoCollection);
