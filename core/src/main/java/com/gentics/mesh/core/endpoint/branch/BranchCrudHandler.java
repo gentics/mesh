@@ -32,7 +32,6 @@ import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.PageTransformer;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
@@ -513,11 +512,11 @@ public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResp
 				HibProject project = tx.getProject(ac);
 
 				HibBranch branch = branchDao.loadObjectByUuid(project, ac, branchUuid, UPDATE_PERM);
-				TransformablePage<? extends HibTag> page = (TransformablePage<? extends HibTag>) utils.eventAction(batch -> {
+				Page<? extends HibTag> page = utils.eventAction(batch -> {
 					return branch.updateTags(ac, batch);
 				});
 
-				return page.transformToRestSync(ac, 0);
+				return pageTransformer.transformToRestSync(page, ac, 0);
 			}, model -> ac.send(model, OK));
 		}
 	}

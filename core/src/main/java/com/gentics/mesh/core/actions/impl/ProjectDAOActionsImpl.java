@@ -11,7 +11,6 @@ import com.gentics.mesh.core.action.DAOActionContext;
 import com.gentics.mesh.core.action.ProjectDAOActions;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Tx;
@@ -46,7 +45,7 @@ public class ProjectDAOActionsImpl implements ProjectDAOActions {
 	}
 
 	@Override
-	public TransformablePage<? extends HibProject> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
+	public Page<? extends HibProject> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
 		return ctx.tx().projectDao().findAll(ctx.ac(), pagingInfo);
 	}
 

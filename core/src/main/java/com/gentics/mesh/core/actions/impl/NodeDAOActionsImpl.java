@@ -13,9 +13,7 @@ import com.gentics.mesh.core.action.DAOActionContext;
 import com.gentics.mesh.core.action.NodeDAOActions;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Tx;
@@ -51,7 +49,7 @@ public class NodeDAOActionsImpl implements NodeDAOActions {
 	}
 
 	@Override
-	public TransformablePage<? extends HibNode> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
+	public Page<? extends HibNode> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
 		// TODO MDM refactor TransformablePage
 		//NodeDaoWrapper nodeDao = ctx.tx().nodeDao();
 		//return nodeDao.findAll(ctx.project(), ctx.ac(), pagingInfo);

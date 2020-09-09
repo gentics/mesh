@@ -12,7 +12,6 @@ import com.gentics.mesh.core.action.JobDAOActions;
 import com.gentics.mesh.core.data.dao.JobDaoWrapper;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.job.JobResponse;
@@ -47,7 +46,7 @@ public class JobDAOActionsImpl implements JobDAOActions {
 	}
 
 	@Override
-	public TransformablePage<? extends HibJob> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
+	public Page<? extends HibJob> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
 		return ctx.tx().jobDao().findAll(ctx.ac(), pagingInfo);
 	}
 

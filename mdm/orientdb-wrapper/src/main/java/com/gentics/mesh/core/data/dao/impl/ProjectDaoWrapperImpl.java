@@ -30,7 +30,6 @@ import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.ProjectRoot;
@@ -103,7 +102,7 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implem
 	}
 
 	@Override
-	public TransformablePage<? extends Project> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
+	public Page<? extends Project> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 		return boot.get().projectRoot().findAll(ac, pagingInfo);
 	}
 

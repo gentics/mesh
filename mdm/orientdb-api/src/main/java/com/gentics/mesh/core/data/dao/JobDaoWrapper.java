@@ -7,7 +7,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
@@ -21,7 +20,7 @@ public interface JobDaoWrapper extends JobDao {
 
 	Result<? extends HibJob> findAll();
 
-	TransformablePage<? extends HibJob> findAll(InternalActionContext ac, PagingParameters pagingInfo);
+	Page<? extends HibJob> findAll(InternalActionContext ac, PagingParameters pagingInfo);
 
 	Page<? extends HibJob> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibJob> extraFilter);
 

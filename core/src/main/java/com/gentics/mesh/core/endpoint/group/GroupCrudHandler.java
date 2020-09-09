@@ -15,7 +15,8 @@ import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.group.HibGroup;
-import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.PageTransformer;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
@@ -36,9 +37,12 @@ public class GroupCrudHandler extends AbstractCrudHandler<HibGroup, GroupRespons
 
 	private static final Logger log = LoggerFactory.getLogger(GroupCrudHandler.class);
 
+	private final PageTransformer pageTransformer;
+
 	@Inject
-	public GroupCrudHandler(Database db, HandlerUtilities utils, WriteLock writeLock, GroupDAOActions groupActions) {
+	public GroupCrudHandler(Database db, HandlerUtilities utils, WriteLock writeLock, GroupDAOActions groupActions, PageTransformer pageTransformer) {
 		super(db, utils, writeLock, groupActions);
+		this.pageTransformer = pageTransformer;
 	}
 
 	/**
@@ -53,8 +57,8 @@ public class GroupCrudHandler extends AbstractCrudHandler<HibGroup, GroupRespons
 			GroupDaoWrapper groupDao = tx.groupDao();
 			HibGroup group = groupDao.loadObjectByUuid(ac, groupUuid, READ_PERM);
 			PagingParametersImpl pagingInfo = new PagingParametersImpl(ac);
-			TransformablePage<? extends HibRole> rolePage = groupDao.getRoles(group, ac.getUser(), pagingInfo);
-			return rolePage.transformToRestSync(ac, 0);
+			Page<? extends HibRole> rolePage = groupDao.getRoles(group, ac.getUser(), pagingInfo);
+			return pageTransformer.transformToRestSync(rolePage, ac, 0);
 		}, model -> ac.send(model, OK));
 	}
 
@@ -148,8 +152,8 @@ public class GroupCrudHandler extends AbstractCrudHandler<HibGroup, GroupRespons
 			MeshAuthUser requestUser = ac.getUser();
 			PagingParametersImpl pagingInfo = new PagingParametersImpl(ac);
 			HibGroup group = groupDao.loadObjectByUuid(ac, groupUuid, READ_PERM);
-			TransformablePage<? extends HibUser> userPage = groupDao.getVisibleUsers(group, requestUser, pagingInfo);
-			return userPage.transformToRestSync(ac, 0);
+			Page<? extends HibUser> userPage = groupDao.getVisibleUsers(group, requestUser, pagingInfo);
+			return pageTransformer.transformToRestSync(userPage, ac, 0);
 		}, model -> ac.send(model, OK));
 	}
 

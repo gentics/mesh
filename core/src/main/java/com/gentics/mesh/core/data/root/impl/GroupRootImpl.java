@@ -22,7 +22,7 @@ import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.impl.GroupImpl;
 import com.gentics.mesh.core.data.impl.RoleImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
-import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -65,13 +65,13 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 	}
 
 	@Override
-	public TransformablePage<? extends User> getVisibleUsers(Group group, MeshAuthUser user, PagingParameters pagingInfo) {
+	public Page<? extends User> getVisibleUsers(Group group, MeshAuthUser user, PagingParameters pagingInfo) {
 		VertexTraversal<?, ?, ?> traversal = group.in(HAS_USER);
 		return new DynamicTransformablePageImpl<User>(user, traversal, pagingInfo, READ_PERM, UserImpl.class);
 	}
 
 	@Override
-	public TransformablePage<? extends Role> getRoles(Group group, HibUser user, PagingParameters pagingInfo) {
+	public Page<? extends Role> getRoles(Group group, HibUser user, PagingParameters pagingInfo) {
 		VertexTraversal<?, ?, ?> traversal = group.in(HAS_ROLE);
 		return new DynamicTransformablePageImpl<Role>(user, traversal, pagingInfo, READ_PERM, RoleImpl.class);
 	}

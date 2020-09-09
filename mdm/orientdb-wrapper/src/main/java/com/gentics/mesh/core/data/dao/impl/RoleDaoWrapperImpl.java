@@ -31,7 +31,6 @@ import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.RoleRoot;
@@ -260,7 +259,7 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 	}
 
 	@Override
-	public TransformablePage<? extends HibRole> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
+	public Page<? extends HibRole> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 		RoleRoot roleRoot = boot.get().roleRoot();
 		return roleRoot.findAll(ac, pagingInfo);
 	}

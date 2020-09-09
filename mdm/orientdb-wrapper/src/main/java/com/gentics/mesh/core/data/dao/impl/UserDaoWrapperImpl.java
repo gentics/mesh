@@ -47,11 +47,9 @@ import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
@@ -467,7 +465,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 	}
 
 	@Override
-	public TransformablePage<? extends User> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
+	public Page<? extends User> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 		UserRoot userRoot = boot.get().userRoot();
 		return userRoot.findAll(ac, pagingInfo);
 	}

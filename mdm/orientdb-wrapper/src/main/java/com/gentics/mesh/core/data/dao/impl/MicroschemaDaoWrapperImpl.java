@@ -25,7 +25,6 @@ import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.MicroschemaRoot;
@@ -189,14 +188,14 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 	}
 
 	@Override
-	public TransformablePage<? extends HibMicroschema> findAll(HibProject project, InternalActionContext ac,
+	public Page<? extends HibMicroschema> findAll(HibProject project, InternalActionContext ac,
 		PagingParameters pagingInfo) {
 		Project graphProject = toGraph(project);
 		return graphProject.getMicroschemaContainerRoot().findAll(ac, pagingInfo);
 	}
 
 	@Override
-	public TransformablePage<? extends Microschema> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
+	public Page<? extends Microschema> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 		MicroschemaRoot microschemaRoot = boot.get().microschemaContainerRoot();
 		return microschemaRoot.findAll(ac, pagingInfo);
 	}

@@ -13,7 +13,6 @@ import com.gentics.mesh.core.action.TagDAOActions;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
@@ -65,7 +64,7 @@ public class TagDAOActionsImpl implements TagDAOActions {
 	}
 
 	@Override
-	public TransformablePage<? extends HibTag> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
+	public Page<? extends HibTag> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
 		// TagDaoWrapper tagDao = tx.tagDao();
 		HibTagFamily hibTagFamily = ctx.parent();
 		if (hibTagFamily != null) {

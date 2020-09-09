@@ -7,7 +7,7 @@ import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
@@ -86,7 +86,7 @@ public interface TagRoot extends RootVertex<Tag>, TransformableElementRoot<Tag, 
 	 * @param pagingInfo
 	 * @return
 	 */
-	TransformablePage<? extends Node> findTaggedNodes(Tag tag, HibUser requestUser, Branch branch, List<String> languageTags, ContainerType type,
+	Page<? extends Node> findTaggedNodes(Tag tag, HibUser requestUser, Branch branch, List<String> languageTags, ContainerType type,
 		PagingParameters pagingInfo);
 
 	Result<? extends Node> findTaggedNodes(HibTag tag, InternalActionContext ac);

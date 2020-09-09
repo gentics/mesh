@@ -12,7 +12,6 @@ import com.gentics.mesh.core.action.GroupDAOActions;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -47,7 +46,7 @@ public class GroupDAOActionsImpl implements GroupDAOActions {
 	}
 
 	@Override
-	public TransformablePage<? extends HibGroup> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
+	public Page<? extends HibGroup> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
 		return ctx.tx().groupDao().findAll(ctx.ac(), pagingInfo);
 	}
 

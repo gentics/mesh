@@ -8,7 +8,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
@@ -58,7 +57,7 @@ public interface MicroschemaDaoWrapper extends MicroschemaDao, DaoWrapper<HibMic
 
 	HibMicroschema create(InternalActionContext ac, EventQueueBatch batch, String uuid);
 
-	TransformablePage<? extends Microschema> findAll(InternalActionContext ac, PagingParameters pagingInfo);
+	Page<? extends Microschema> findAll(InternalActionContext ac, PagingParameters pagingInfo);
 
 	Page<? extends Microschema> findAll(InternalActionContext ac, PagingParameters pagingInfo,
 			Predicate<Microschema> extraFilter);
@@ -127,7 +126,7 @@ public interface MicroschemaDaoWrapper extends MicroschemaDao, DaoWrapper<HibMic
 
 	Result<HibMicroschemaVersion> findActiveMicroschemaVersions(HibBranch branch);
 
-	TransformablePage<? extends HibMicroschema> findAll(HibProject project, InternalActionContext ac,
+	Page<? extends HibMicroschema> findAll(HibProject project, InternalActionContext ac,
 			PagingParameters pagingInfo);
 
 	HibMicroschema findByUuid(HibProject project, String uuid);

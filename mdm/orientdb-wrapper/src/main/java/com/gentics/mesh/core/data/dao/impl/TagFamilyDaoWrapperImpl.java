@@ -24,7 +24,6 @@ import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
@@ -239,7 +238,7 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper<HibTagFamily> im
 	}
 
 	@Override
-	public TransformablePage<? extends TagFamily> findAll(HibProject project, InternalActionContext ac,
+	public Page<? extends TagFamily> findAll(HibProject project, InternalActionContext ac,
 			PagingParameters pagingInfo) {
 		Project graphProject = toGraph(project);
 		return graphProject.getTagFamilyRoot().findAll(ac, pagingInfo);

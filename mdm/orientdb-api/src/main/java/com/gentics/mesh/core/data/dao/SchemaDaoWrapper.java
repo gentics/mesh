@@ -12,7 +12,6 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.SchemaRoot;
@@ -46,9 +45,9 @@ public interface SchemaDaoWrapper extends SchemaDao, DaoWrapper<HibSchema> {
 
 	Result<HibSchema> findAll();
 
-	TransformablePage<? extends HibSchema> findAll(InternalActionContext ac, PagingParameters pagingInfo);
+	Page<? extends HibSchema> findAll(InternalActionContext ac, PagingParameters pagingInfo);
 
-	TransformablePage<? extends HibSchema> findAll(InternalActionContext ac, HibProject project, PagingParameters pagingInfo);
+	Page<? extends HibSchema> findAll(InternalActionContext ac, HibProject project, PagingParameters pagingInfo);
 
 	HibSchema create(InternalActionContext ac, EventQueueBatch batch, String uuid);
 

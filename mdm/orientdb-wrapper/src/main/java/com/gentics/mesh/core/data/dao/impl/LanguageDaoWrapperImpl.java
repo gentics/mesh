@@ -15,7 +15,6 @@ import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -55,7 +54,7 @@ public class LanguageDaoWrapperImpl extends AbstractDaoWrapper<HibLanguage> impl
 		return boot.get().languageRoot().findAllStream(ac, permission);
 	}
 
-	public TransformablePage<? extends Language> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
+	public Page<? extends Language> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 		return boot.get().languageRoot().findAll(ac, pagingInfo);
 	}
 
@@ -63,7 +62,7 @@ public class LanguageDaoWrapperImpl extends AbstractDaoWrapper<HibLanguage> impl
 		return boot.get().languageRoot().findAll(ac, pagingInfo, extraFilter);
 	}
 
-	public TransformablePage<? extends Language> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo) {
+	public Page<? extends Language> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo) {
 		return boot.get().languageRoot().findAllNoPerm(ac, pagingInfo);
 	}
 

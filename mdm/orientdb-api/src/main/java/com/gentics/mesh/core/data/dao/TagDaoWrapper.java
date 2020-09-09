@@ -8,7 +8,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.tag.HibTag;
@@ -103,7 +102,7 @@ public interface TagDaoWrapper extends TagDao, DaoWrapper<HibTag>, DaoTransforma
 	 * @param pagingInfo
 	 * @return
 	 */
-	TransformablePage<? extends HibNode> findTaggedNodes(HibTag tag, HibUser requestUser, HibBranch branch, List<String> languageTags,
+	Page<? extends HibNode> findTaggedNodes(HibTag tag, HibUser requestUser, HibBranch branch, List<String> languageTags,
 		ContainerType type,
 		PagingParameters pagingInfo);
 
@@ -165,7 +164,7 @@ public interface TagDaoWrapper extends TagDao, DaoWrapper<HibTag>, DaoTransforma
 	 * @param branch
 	 * @return Page which contains the result
 	 */
-	TransformablePage<? extends HibTag> getTags(HibNode node, HibUser user, PagingParameters params, HibBranch branch);
+	Page<? extends HibTag> getTags(HibNode node, HibUser user, PagingParameters params, HibBranch branch);
 
 	/**
 	 * Tests if the node is tagged with the given tag.

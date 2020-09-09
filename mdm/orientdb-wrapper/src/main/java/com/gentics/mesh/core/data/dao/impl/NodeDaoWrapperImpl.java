@@ -22,7 +22,6 @@ import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
@@ -157,7 +156,7 @@ public class NodeDaoWrapperImpl extends AbstractDaoWrapper<HibNode> implements N
 	}
 
 	@Override
-	public TransformablePage<? extends HibNode> getChildren(HibNode node, InternalActionContext ac, List<String> languageTags, String branchUuid,
+	public Page<? extends HibNode> getChildren(HibNode node, InternalActionContext ac, List<String> languageTags, String branchUuid,
 		ContainerType type, PagingParameters pagingParameter) {
 		return toGraph(node).getChildren(ac, languageTags, branchUuid, type, pagingParameter);
 	}
@@ -269,7 +268,7 @@ public class NodeDaoWrapperImpl extends AbstractDaoWrapper<HibNode> implements N
 	}
 
 	@Override
-	public TransformablePage<? extends HibTag> updateTags(HibNode node, InternalActionContext ac, EventQueueBatch batch) {
+	public Page<? extends HibTag> updateTags(HibNode node, InternalActionContext ac, EventQueueBatch batch) {
 		Node graphNode = toGraph(node);
 		return graphNode.updateTags(ac, batch);
 	}

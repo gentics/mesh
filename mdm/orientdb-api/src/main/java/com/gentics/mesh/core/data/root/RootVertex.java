@@ -20,7 +20,6 @@ import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicNonTransformablePageImpl;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -99,7 +98,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	 * 
 	 * @return
 	 */
-	default TransformablePage<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
+	default Page<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 		return new DynamicTransformablePageImpl<>(ac.getUser(), this, pagingInfo, READ_PERM, null, true);
 	}
 
@@ -128,7 +127,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	 *            Paging information object that contains page options
 	 * @return
 	 */
-	default TransformablePage<? extends T> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo) {
+	default Page<? extends T> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo) {
 		return new DynamicTransformablePageImpl<>(ac.getUser(), this, pagingInfo, null, null, true);
 	}
 

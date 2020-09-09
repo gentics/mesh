@@ -6,7 +6,6 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -26,7 +25,7 @@ public interface GroupDaoWrapper extends GroupDao, DaoWrapper<HibGroup>, DaoTran
 
 	Result<? extends HibGroup> findAll();
 
-	TransformablePage<? extends HibGroup> findAll(InternalActionContext ac, PagingParameters pagingInfo);
+	Page<? extends HibGroup> findAll(InternalActionContext ac, PagingParameters pagingInfo);
 
 	Page<? extends HibGroup> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibGroup> extraFilter);
 
@@ -173,7 +172,7 @@ public interface GroupDaoWrapper extends GroupDao, DaoWrapper<HibGroup>, DaoTran
 	 *            Paging information
 	 * @return Page which contains the retrieved items
 	 */
-	TransformablePage<? extends HibRole> getRoles(HibGroup group, HibUser user, PagingParameters pagingInfo);
+	Page<? extends HibRole> getRoles(HibGroup group, HibUser user, PagingParameters pagingInfo);
 
 	/**
 	 * Return a page with all users that the given user can see.
@@ -183,7 +182,7 @@ public interface GroupDaoWrapper extends GroupDao, DaoWrapper<HibGroup>, DaoTran
 	 * @param pagingInfo
 	 * @return Page with found users, an empty page is returned when no users could be found
 	 */
-	TransformablePage<? extends HibUser> getVisibleUsers(HibGroup group, MeshAuthUser requestUser, PagingParameters pagingInfo);
+	Page<? extends HibUser> getVisibleUsers(HibGroup group, MeshAuthUser requestUser, PagingParameters pagingInfo);
 
 	long computeCount();
 

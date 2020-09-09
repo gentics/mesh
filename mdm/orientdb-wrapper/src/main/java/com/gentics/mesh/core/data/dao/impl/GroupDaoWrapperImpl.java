@@ -37,7 +37,6 @@ import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.GroupRoot;
@@ -198,14 +197,14 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 	}
 
 	@Override
-	public TransformablePage<? extends HibUser> getVisibleUsers(HibGroup group, MeshAuthUser user, PagingParameters pagingInfo) {
+	public Page<? extends HibUser> getVisibleUsers(HibGroup group, MeshAuthUser user, PagingParameters pagingInfo) {
 		GroupRoot groupRoot = boot.get().groupRoot();
 		Group graphGroup = toGraph(group);
 		return groupRoot.getVisibleUsers(graphGroup, user, pagingInfo);
 	}
 
 	@Override
-	public TransformablePage<? extends Role> getRoles(HibGroup group, HibUser user, PagingParameters pagingInfo) {
+	public Page<? extends Role> getRoles(HibGroup group, HibUser user, PagingParameters pagingInfo) {
 		GroupRoot groupRoot = boot.get().groupRoot();
 		Group graphGroup = toGraph(group);
 		return groupRoot.getRoles(graphGroup, user, pagingInfo);
@@ -357,7 +356,7 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 	}
 
 	@Override
-	public TransformablePage<? extends HibGroup> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
+	public Page<? extends HibGroup> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 		GroupRoot groupRoot = boot.get().groupRoot();
 		return groupRoot.findAll(ac, pagingInfo);
 	}

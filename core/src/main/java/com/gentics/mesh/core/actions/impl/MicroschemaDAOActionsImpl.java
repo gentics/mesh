@@ -13,7 +13,6 @@ import com.gentics.mesh.core.action.DAOActionContext;
 import com.gentics.mesh.core.action.MicroschemaDAOActions;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.Microschema;
@@ -50,7 +49,7 @@ public class MicroschemaDAOActionsImpl implements MicroschemaDAOActions {
 	}
 
 	@Override
-	public TransformablePage<? extends Microschema> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
+	public Page<? extends Microschema> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
 		return ctx.tx().microschemaDao().findAll(ctx.ac(), pagingInfo);
 		// return ac.getProject().getMicroschemaContainerRoot().findAll(ac2, pagingInfo);
 	}

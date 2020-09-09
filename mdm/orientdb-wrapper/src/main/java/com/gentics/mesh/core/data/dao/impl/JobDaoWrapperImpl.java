@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.data.dao.impl;
 
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
 import java.util.Set;
 import java.util.function.Predicate;
@@ -19,7 +18,6 @@ import com.gentics.mesh.core.data.dao.JobDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
@@ -50,7 +48,7 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper<HibJob> implements Job
 	}
 
 	@Override
-	public TransformablePage<? extends HibJob> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
+	public Page<? extends HibJob> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 		return boot.get().jobRoot().findAll(ac, pagingInfo);
 	}
 

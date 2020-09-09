@@ -12,7 +12,6 @@ import com.gentics.mesh.core.action.DAOActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
@@ -48,7 +47,7 @@ public class BranchDAOActionsImpl implements BranchDAOActions {
 	}
 
 	@Override
-	public TransformablePage<? extends HibBranch> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
+	public Page<? extends HibBranch> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
 		BranchDaoWrapper branchDao = ctx.tx().branchDao();
 		return branchDao.findAll(ctx.project(), ctx.ac(), pagingInfo);
 	}

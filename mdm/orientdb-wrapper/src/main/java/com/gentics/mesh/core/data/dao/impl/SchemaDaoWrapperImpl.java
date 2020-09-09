@@ -35,7 +35,6 @@ import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.SchemaRoot;
@@ -119,13 +118,13 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 	}
 
 	@Override
-	public TransformablePage<? extends HibSchema> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
+	public Page<? extends HibSchema> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 		SchemaRoot schemaRoot = boot.get().schemaContainerRoot();
 		return schemaRoot.findAll(ac, pagingInfo);
 	}
 
 	@Override
-	public TransformablePage<? extends HibSchema> findAll(InternalActionContext ac, HibProject project, PagingParameters pagingInfo) {
+	public Page<? extends HibSchema> findAll(InternalActionContext ac, HibProject project, PagingParameters pagingInfo) {
 		return toGraph(project).getSchemaContainerRoot().findAll(ac, pagingInfo);
 	}
 

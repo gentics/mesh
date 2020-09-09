@@ -28,7 +28,7 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.job.JobRoot;
-import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.impl.AbstractRootVertex;
@@ -198,7 +198,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	 * 
 	 * @return
 	 */
-	public TransformablePage<? extends Job> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
+	public Page<? extends Job> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 		return new DynamicTransformablePageImpl<>(ac.getUser(), this, pagingInfo, READ_PERM, null, false);
 	}
 
@@ -212,7 +212,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	 * 
 	 * @return
 	 */
-	public TransformablePage<? extends Job> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo) {
+	public Page<? extends Job> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo) {
 		return new DynamicTransformablePageImpl<>(ac.getUser(), this, pagingInfo, null, null, false);
 	}
 

@@ -11,7 +11,6 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
@@ -114,14 +113,6 @@ public interface NodeDaoWrapper extends NodeDao, DaoWrapper<HibNode>, DaoTransfo
 	HibNode getParentNode(HibNode node, String branchUuid);
 
 	/**
-	 * Set the parent node of this node.
-	 *
-	 * @param branchUuid
-	 * @param parentNode
-	 */
-	void setParentNode(HibNode node, String branchUuid, HibNode parentNode);
-
-	/**
 	 * Return a page with child nodes that are visible to the given user.
 	 *
 	 * @param ac
@@ -134,9 +125,17 @@ public interface NodeDaoWrapper extends NodeDao, DaoWrapper<HibNode>, DaoTransfo
 	 * @param pagingParameter
 	 * @return
 	 */
-	TransformablePage<? extends HibNode> getChildren(HibNode node, InternalActionContext ac, List<String> languageTags, String branchUuid,
+	Page<? extends HibNode> getChildren(HibNode node, InternalActionContext ac, List<String> languageTags, String branchUuid,
 		ContainerType type,
 		PagingParameters pagingParameter);
+
+	/**
+	 * Set the parent node of this node.
+	 *
+	 * @param branchUuid
+	 * @param parentNode
+	 */
+	void setParentNode(HibNode node, String branchUuid, HibNode parentNode);
 
 	/**
 	 * Return a list of language names for draft versions in the latest branch
@@ -310,7 +309,7 @@ public interface NodeDaoWrapper extends NodeDao, DaoWrapper<HibNode>, DaoTransfo
 
 	String getAPIPath(HibNode node, InternalActionContext ac);
 
-	TransformablePage<? extends HibTag> updateTags(HibNode node, InternalActionContext ac, EventQueueBatch batch);
+	Page<? extends HibTag> updateTags(HibNode node, InternalActionContext ac, EventQueueBatch batch);
 
 	HibNode create(HibProject project, InternalActionContext ac, EventQueueBatch batch, String uuid);
 

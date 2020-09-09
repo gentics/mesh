@@ -43,7 +43,7 @@ import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformableStreamPageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -89,7 +89,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public TransformablePage<? extends Node> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
+	public Page<? extends Node> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 		ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
 		return new DynamicTransformableStreamPageImpl<>(findAllStream(ac, type), pagingInfo);
 	}

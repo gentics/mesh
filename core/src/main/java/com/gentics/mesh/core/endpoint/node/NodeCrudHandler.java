@@ -29,7 +29,8 @@ import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.PageTransformer;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -59,14 +60,17 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 
 	private final MeshOptions options;
 
+	private final PageTransformer pageTransformer;
+
 	private static final Logger log = LoggerFactory.getLogger(NodeCrudHandler.class);
 
 	@Inject
 	public NodeCrudHandler(Database db, HandlerUtilities utils, MeshOptions options, BootstrapInitializer boot, WriteLock writeLock,
-		NodeDAOActions nodeActions) {
+		NodeDAOActions nodeActions, PageTransformer pageTransformer) {
 		super(db, utils, writeLock, nodeActions);
 		this.options = options;
 		this.boot = boot;
+		this.pageTransformer = pageTransformer;
 	}
 
 	@Override
@@ -191,18 +195,18 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 			NodeDaoWrapper nodeDao = tx.nodeDao();
 			HibNode node = nodeDao.loadObjectByUuid(tx.getProject(ac), ac, uuid, requiredPermission);
 
-			TransformablePage<? extends HibNode> page = nodeDao.getChildren(node, ac, nodeParams.getLanguageList(options),
+			Page<? extends HibNode> page = nodeDao.getChildren(node, ac, nodeParams.getLanguageList(options),
 				tx.getBranch(ac, node.getProject()).getUuid(), ContainerType.forVersion(versionParams.getVersion()), pagingParams);
 
 			// Handle etag
 			if (ac.getGenericParameters().getETag()) {
-				String etag = page.getETag(ac);
+				String etag = pageTransformer.getETag(page, ac);
 				ac.setEtag(etag, true);
 				if (ac.matches(etag, true)) {
 					throw new NotModifiedException();
 				}
 			}
-			return page.transformToRestSync(ac, 0);
+			return pageTransformer.transformToRestSync(page, ac, 0);
 		}, model -> ac.send(model, OK));
 
 	}
@@ -229,16 +233,16 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 			NodeDaoWrapper nodeDao = tx.nodeDao();
 
 			HibNode node = nodeDao.loadObjectByUuid(tx.getProject(ac), ac, uuid, READ_PERM);
-			TransformablePage<? extends HibTag> tagPage = tagDao.getTags(node, ac.getUser(), ac.getPagingParameters(), tx.getBranch(ac));
+			Page<? extends HibTag> tagPage = tagDao.getTags(node, ac.getUser(), ac.getPagingParameters(), tx.getBranch(ac));
 			// Handle etag
 			if (ac.getGenericParameters().getETag()) {
-				String etag = tagPage.getETag(ac);
+				String etag = pageTransformer.getETag(tagPage, ac);
 				ac.setEtag(etag, true);
 				if (ac.matches(etag, true)) {
 					throw new NotModifiedException();
 				}
 			}
-			return tagPage.transformToRestSync(ac, 0);
+			return pageTransformer.transformToRestSync(tagPage, ac, 0);
 		}, model -> ac.send(model, OK));
 	}
 
@@ -510,11 +514,11 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 
 				HibProject project = tx.getProject(ac);
 				HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, UPDATE_PERM);
-				TransformablePage<? extends HibTag> page = utils.eventAction(batch -> {
+				Page<? extends HibTag> page = utils.eventAction(batch -> {
 					return nodeDao.updateTags(node, ac, batch);
 				});
 
-				return page.transformToRestSync(ac, 0);
+				return pageTransformer.transformToRestSync(page, ac, 0);
 			}, model -> {
 				ac.send(model, OK);
 			});

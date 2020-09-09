@@ -6,7 +6,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.core.action.DAOActionContext;
 import com.gentics.mesh.core.action.LoadAllAction;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
-import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.parameter.PagingParameters;
 
@@ -17,7 +17,7 @@ public class ProjectMicroschemaLoadAllActionImpl implements LoadAllAction<HibMic
 	}
 
 	@Override
-	public TransformablePage<? extends HibMicroschema> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
+	public Page<? extends HibMicroschema> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
 		MicroschemaDaoWrapper microschemaDao = ctx.tx().microschemaDao();
 		return microschemaDao.findAll(ctx.project(), ctx.ac(), pagingInfo);
 	}

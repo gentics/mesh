@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.actions.impl;
 
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
+
 import java.util.function.Predicate;
 
 import javax.inject.Inject;
@@ -13,7 +14,6 @@ import com.gentics.mesh.core.action.SchemaDAOActions;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.Schema;
@@ -49,13 +49,13 @@ public class SchemaDAOActionsImpl implements SchemaDAOActions {
 		}
 	}
 
-	public TransformablePage<? extends HibSchema> loadAll(Tx tx, Project project, InternalActionContext ac, PagingParameters pagingInfo) {
+	public Page<? extends HibSchema> loadAll(Tx tx, Project project, InternalActionContext ac, PagingParameters pagingInfo) {
 		SchemaDaoWrapper schemaDao = tx.schemaDao();
 		return schemaDao.findAll(ac, project, pagingInfo);
 	}
 
 	@Override
-	public TransformablePage<? extends HibSchema> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
+	public Page<? extends HibSchema> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
 		SchemaDaoWrapper schemaDao = ctx.tx().schemaDao();
 		return schemaDao.findAll(ctx.ac(), pagingInfo);
 	}

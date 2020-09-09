@@ -3,10 +3,6 @@ package com.gentics.mesh.core.data.dao.impl;
 import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.event.Assignment.UNASSIGNED;
@@ -34,7 +30,6 @@ import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.TagRoot;
@@ -245,7 +240,7 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements Tag
 	}
 
 	@Override
-	public TransformablePage<? extends Node> findTaggedNodes(HibTag tag, HibUser requestUser, HibBranch branch, List<String> languageTags,
+	public Page<? extends Node> findTaggedNodes(HibTag tag, HibUser requestUser, HibBranch branch, List<String> languageTags,
 		ContainerType type, PagingParameters pagingInfo) {
 		return boot.get().tagRoot().findTaggedNodes(toGraph(tag), requestUser, toGraph(branch), languageTags, type, pagingInfo);
 	}
@@ -344,7 +339,7 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements Tag
 	}
 
 	@Override
-	public TransformablePage<? extends HibTag> getTags(HibNode node, HibUser user, PagingParameters params, HibBranch branch) {
+	public Page<? extends HibTag> getTags(HibNode node, HibUser user, PagingParameters params, HibBranch branch) {
 		return toGraph(node).getTags(user, params, branch);
 	}
 

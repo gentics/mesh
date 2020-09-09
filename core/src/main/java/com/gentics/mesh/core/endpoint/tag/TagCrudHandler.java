@@ -14,7 +14,8 @@ import com.gentics.mesh.core.action.TagDAOActions;
 import com.gentics.mesh.core.action.TagFamilyDAOActions;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.PageTransformer;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.Tx;
@@ -38,15 +39,17 @@ public class TagCrudHandler extends AbstractHandler {
 	private final WriteLock globalLock;
 	private final TagDAOActions tagActions;
 	private final TagFamilyDAOActions tagFamilyActions;
+	private final PageTransformer pageTransformer;
 
 	@Inject
 	public TagCrudHandler(MeshOptions options, HandlerUtilities utils, WriteLock writeLock, TagDAOActions tagActions,
-		TagFamilyDAOActions tagFamilyActions) {
+		TagFamilyDAOActions tagFamilyActions, PageTransformer pageTransformer) {
 		this.options = options;
 		this.utils = utils;
 		this.globalLock = writeLock;
 		this.tagActions = tagActions;
 		this.tagFamilyActions = tagFamilyActions;
+		this.pageTransformer = pageTransformer;
 	}
 
 	/**
@@ -70,10 +73,10 @@ public class TagCrudHandler extends AbstractHandler {
 				NodeParameters nodeParams = ac.getNodeParameters();
 				HibTagFamily tagFamily = tagFamilyActions.loadByUuid(context(tx, ac), tagFamilyUuid, READ_PERM, true);
 				HibTag tag = tagActions.loadByUuid(context(tx, ac, tagFamily), tagUuid, READ_PERM, true);
-				TransformablePage<? extends HibNode> page = tagDao.findTaggedNodes(tag, ac.getUser(), tx.getBranch(ac),
+				Page<? extends HibNode> page = tagDao.findTaggedNodes(tag, ac.getUser(), tx.getBranch(ac),
 					nodeParams.getLanguageList(options),
 					ContainerType.forVersion(ac.getVersioningParameters().getVersion()), pagingParams);
-				return page.transformToRestSync(ac, 0);
+				return pageTransformer.transformToRestSync(page, ac, 0);
 			}, model -> ac.send(model, OK));
 		}
 	}
