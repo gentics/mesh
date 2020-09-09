@@ -15,6 +15,8 @@ import io.vertx.core.Vertx;
  */
 public interface MeshElement extends ElementFrame {
 
+	String BUCKET_ID_KEY = "bucketId";
+
 	/**
 	 * Set the uuid of the element.
 	 * 
@@ -44,13 +46,19 @@ public interface MeshElement extends ElementFrame {
 	 */
 	String getElementVersion();
 
-
 	/**
 	 * Return the bucketId for the element.
 	 * 
 	 * @return
 	 */
 	Integer getBucketId();
+
+	/**
+	 * Set the bucketId for the element.
+	 * 
+	 * @param bucketId
+	 */
+	void setBucketId(Integer bucketId);
 
 	/**
 	 * Provide TP 3.x compliant method.

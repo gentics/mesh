@@ -438,4 +438,8 @@ public class ElasticSearchOptions implements Option {
 	public int getSyncBatchSize() {
 		return batchSize;
 	}
+
+	public void setSyncBatchSize(int batchSize) {
+		this.batchSize = batchSize;
+	}
 }

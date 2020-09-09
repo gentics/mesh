@@ -19,6 +19,7 @@ import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.error.Errors.nodeConflict;
+import static com.gentics.mesh.madl.field.FieldType.INTEGER;
 import static com.gentics.mesh.madl.field.FieldType.STRING;
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 import static com.gentics.mesh.madl.type.VertexTypeDefinition.vertexType;
@@ -81,6 +82,7 @@ import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.madl.field.FieldType;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
@@ -116,6 +118,10 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			.withField(SCHEMA_CONTAINER_VERSION_KEY_PROPERTY, STRING));
 
 		index.createIndex(vertexIndex(NodeGraphFieldContainerImpl.class)
+			.withField(SCHEMA_CONTAINER_VERSION_KEY_PROPERTY, STRING));
+
+		index.createIndex(vertexIndex(NodeGraphFieldContainerImpl.class)
+			.withField(BUCKET_ID_KEY, INTEGER)
 			.withField(SCHEMA_CONTAINER_VERSION_KEY_PROPERTY, STRING));
 	}
 

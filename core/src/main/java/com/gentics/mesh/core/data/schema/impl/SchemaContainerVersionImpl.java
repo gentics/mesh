@@ -90,6 +90,17 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
+	public Stream<NodeGraphFieldContainerImpl> getFieldContainers(int bucketId, String branchUuid) {
+		return toStream(mesh().database().getVertices(
+			NodeGraphFieldContainerImpl.class,
+			new String[] { BUCKET_ID_KEY, SCHEMA_CONTAINER_VERSION_KEY_PROPERTY },
+			new Object[] { bucketId, getUuid() })).filter(
+				v -> toStream(v.getEdges(Direction.IN, HAS_FIELD_CONTAINER))
+					.anyMatch(e -> e.getProperty(BRANCH_UUID_KEY).equals(branchUuid)))
+				.map(v -> graph.frameElementExplicit(v, NodeGraphFieldContainerImpl.class));
+	}
+
+	@Override
 	public Stream<NodeGraphFieldContainerImpl> getFieldContainers(String branchUuid) {
 		return toStream(mesh().database().getVertices(
 			NodeGraphFieldContainerImpl.class,

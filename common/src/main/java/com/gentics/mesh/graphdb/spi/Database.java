@@ -502,4 +502,12 @@ public interface Database extends TxFactory {
 	 */
 	WriteLock writeLock();
 
+	/**
+	 * Return the vertex count for the given class.
+	 * 
+	 * @param clazz
+	 * @return
+	 */
+	long count(Class<? extends MeshVertex> clazz);
+
 }

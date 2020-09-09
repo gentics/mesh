@@ -56,6 +56,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	protected void init() {
 		super.init();
 		property("uuid", UUIDUtil.randomUUID());
+		mesh().bucketManager().store(this);
 	}
 
 	/**
@@ -134,6 +135,11 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	@Override
 	public Integer getBucketId() {
 		return getProperty(BUCKET_ID_KEY);
+	}
+
+	@Override
+	public void setBucketId(Integer bucketId) {
+		setProperty(BUCKET_ID_KEY, bucketId);
 	}
 
 	@Override

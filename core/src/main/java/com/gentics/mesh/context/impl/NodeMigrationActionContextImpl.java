@@ -719,6 +719,11 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
+			public void setBucketId(Integer bucketId) {
+
+			}
+
+			@Override
 			public MeshElementEventModel onCreated() {
 				return null;
 			}

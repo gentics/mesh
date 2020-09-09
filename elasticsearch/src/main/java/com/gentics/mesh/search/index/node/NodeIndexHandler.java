@@ -245,6 +245,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 * @param branch
 	 * @param version
 	 * @param type
+	 * @param bucketId
 	 * @return indexName -> documentName -> NodeGraphFieldContainer
 	 */
 	private Map<String, Map<String, NodeGraphFieldContainer>> loadVersionsFromGraph(Branch branch, SchemaContainerVersion version, ContainerType type, int bucketId) {
@@ -252,7 +253,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			String branchUuid = branch.getUuid();
 			List<String> indexLanguages = version.getSchema().findOverriddenSearchLanguages().collect(Collectors.toList());
 
-			return version.getFieldContainers(branchUuid)
+			return version.getFieldContainers(bucketId, branchUuid)
 				.filter(c -> bucketId == c.getBucketId())
 				.filter(c -> c.isType(type, branchUuid))
 				.collect(Collectors.groupingBy(content -> {
@@ -299,7 +300,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		return Flowable.defer(() -> {
 			Map<String, Map<String, NodeGraphFieldContainer>> sourceNodesPerIndex = loadVersionsFromGraph(branch, version, type, bucketId);
 			return Flowable.fromIterable(getIndexNames(project, branch, version, type))
-				.flatMap(indexName -> loadVersionsFromIndex(indexName).flatMapPublisher(sinkVersions -> {
+				.flatMap(indexName -> loadVersionsFromIndex(indexName, bucketId).flatMapPublisher(sinkVersions -> {
 				log.info("Handling index sync on handler {" + getClass().getName() + "}");
 				Map<String, NodeGraphFieldContainer> sourceNodes = sourceNodesPerIndex.getOrDefault(indexName, Collections.emptyMap());
 				String branchUuid = branch.getUuid();

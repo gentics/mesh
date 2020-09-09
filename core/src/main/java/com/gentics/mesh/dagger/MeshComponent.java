@@ -49,6 +49,7 @@ import com.gentics.mesh.router.RouterStorageRegistry;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
+import com.gentics.mesh.search.index.BucketManager;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
 import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandler;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
@@ -172,6 +173,8 @@ public interface MeshComponent {
 
 	RoleCrudHandler roleCrudHandler();
 
+	BucketManager bucketManager();
+
 	@Component.Builder
 	interface Builder {
 		@BindsInstance
@@ -185,6 +188,7 @@ public interface MeshComponent {
 
 		MeshComponent build();
 	}
+
 
 
 }

@@ -75,6 +75,7 @@ import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientElement;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
+import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 import com.tinkerpop.pipes.util.FastNoSuchElementException;
 
@@ -333,6 +334,13 @@ public class OrientDBDatabase extends AbstractDatabase {
 			return graph.frameNewElementExplicit(it.next(), clazz);
 		}
 		return null;
+	}
+
+	@Override
+	public long count(Class<? extends MeshVertex> clazz) {
+		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
+		OrientVertexType type = orientBaseGraph.getVertexType(clazz.getSimpleName());
+		return type.count();
 	}
 
 	@Override

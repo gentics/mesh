@@ -196,7 +196,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	 */
 	protected Flowable<SearchRequest> diffAndSync(String indexName, String projectUuid) {
 		return Single.zip(
-			loadVersionsFromIndex(indexName),
+			loadVersionsFromIndex(indexName, 0),
 			Single.fromCallable(this::loadVersionsFromGraph),
 			(sinkVersions, sourceVersions) -> {
 				log.info("Handling index sync on handler {" + getClass().getName() + "}");
@@ -248,7 +248,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	}
 
 	// TODO Async
-	public Single<Map<String, String>> loadVersionsFromIndex(String indexName) {
+	public Single<Map<String, String>> loadVersionsFromIndex(String indexName, int bucketId) {
 		return Single.fromCallable(() -> {
 			String fullIndexName = searchProvider.installationPrefix() + indexName;
 			Map<String, String> versions = new HashMap<>();
@@ -257,6 +257,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 			JsonObject query = new JsonObject();
 			query.put("size", ES_SYNC_FETCH_BATCH_SIZE);
 			query.put("_source", new JsonArray().add("uuid").add("version"));
+			// TODO use range 
 			query.put("query", new JsonObject().put("match_all", new JsonObject()));
 			query.put("sort", new JsonArray().add("_doc"));
 

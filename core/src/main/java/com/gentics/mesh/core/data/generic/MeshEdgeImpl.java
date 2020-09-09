@@ -4,7 +4,6 @@ import com.gentics.madl.annotations.GraphElement;
 import com.gentics.madl.frame.AbstractEdgeFrame;
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.data.MeshEdge;
-import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -79,7 +78,12 @@ public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 
 	@Override
 	public Integer getBucketId() {
-		return getProperty(MeshVertex.BUCKET_ID_KEY);
+		return getProperty(BUCKET_ID_KEY);
+	}
+
+	@Override
+	public void setBucketId(Integer bucketId) {
+		setProperty(BUCKET_ID_KEY, bucketId);
 	}
 
 	public MeshComponent mesh() {
