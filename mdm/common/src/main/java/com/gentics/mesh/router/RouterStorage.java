@@ -1,6 +1,7 @@
 package com.gentics.mesh.router;
 
 import com.gentics.mesh.auth.MeshAuthChain;
+import com.gentics.mesh.core.db.GlueDatabase;
 import com.gentics.mesh.distributed.RequestDelegator;
 import com.gentics.mesh.handler.VersionHandler;
 
@@ -43,5 +44,7 @@ public interface RouterStorage {
 	BodyHandler getBodyHandler();
 
 	CorsHandler getCorsHandler();
+
+	GlueDatabase getDb();
 
 }

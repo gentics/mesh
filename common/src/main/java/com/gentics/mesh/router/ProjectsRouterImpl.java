@@ -69,7 +69,7 @@ public class ProjectsRouterImpl implements ProjectsRouter {
 			log.info("Added project router {" + name + "}");
 
 			projectRouter.route().handler(ctx -> {
-				Database db = apiRouter.getRoot().getStorage().getDb().get();
+				Database db = (Database) apiRouter.getRoot().getStorage().getDb();
 				HibProject project = db.tx(tx -> {
 					return tx.projectDao().findByName(name);
 				});

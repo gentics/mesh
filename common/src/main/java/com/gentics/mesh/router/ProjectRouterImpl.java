@@ -3,6 +3,8 @@ package com.gentics.mesh.router;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.gentics.mesh.graphdb.spi.Database;
+
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -29,7 +31,7 @@ public class ProjectRouterImpl implements ProjectRouter {
 	public ProjectRouterImpl(Vertx vertx, RouterStorage storage) {
 		this.vertx = vertx;
 		this.router = Router.router(vertx);
-		this.pluginRouter = new PluginRouterImpl(vertx, storage.getAuthChain(), storage.getDb().get(), router);
+		this.pluginRouter = new PluginRouterImpl(vertx, storage.getAuthChain(), (Database) storage.getDb(), router);
 	}
 
 	@Override

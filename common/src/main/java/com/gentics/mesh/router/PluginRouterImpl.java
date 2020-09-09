@@ -3,7 +3,7 @@ package com.gentics.mesh.router;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.gentics.mesh.auth.MeshAuthChainImpl;
+import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.shared.SharedKeys;
@@ -27,18 +27,14 @@ public class PluginRouterImpl implements PluginRouter {
 
 	private Router router;
 
-	private final Vertx vertx;
-
 	/**
 	 * Create a new plugin router.
 	 * 
-	 * @param vertx
 	 * @param chain
 	 * @param db
 	 * @param parentRouter
 	 */
-	public PluginRouterImpl(Vertx vertx, MeshAuthChainImpl chain, Database db, Router parentRouter) {
-		this.vertx = vertx;
+	public PluginRouterImpl(Vertx vertx, MeshAuthChain chain, Database db, Router parentRouter) {
 		this.router = Router.router(vertx);
 
 		// Ensure that all plugin requests are authenticated

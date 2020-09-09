@@ -12,6 +12,7 @@ import com.gentics.mesh.auth.MeshAuthChain;
 import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.db.GlueDatabase;
 import com.gentics.mesh.distributed.RequestDelegator;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -137,8 +138,9 @@ public class RouterStorageImpl implements RouterStorage {
 
 	}
 
-	public Lazy<Database> getDb() {
-		return db;
+	@Override
+	public GlueDatabase getDb() {
+		return db.get();
 	}
 
 	public Lazy<BootstrapInitializer> getBoot() {
