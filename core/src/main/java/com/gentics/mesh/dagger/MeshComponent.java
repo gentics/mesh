@@ -8,7 +8,7 @@ import javax.inject.Provider;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
-import com.gentics.mesh.core.verticle.job.JobWorkerVerticleImpl;
+import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -32,8 +32,6 @@ public interface MeshComponent extends BaseMeshComponent {
 	}
 
 	List<ConsistencyCheck> consistencyChecks();
-
-	JobWorkerVerticleImpl jobWorkerVerticle();
 
 	interface Builder {
 		Builder configuration(MeshOptions options);

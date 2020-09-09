@@ -132,6 +132,8 @@ import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandler;
 import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandlerImpl;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.core.verticle.handler.WriteLockImpl;
+import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
+import com.gentics.mesh.core.verticle.job.JobWorkerVerticleImpl;
 import com.gentics.mesh.distributed.RequestDelegator;
 import com.gentics.mesh.distributed.coordinator.proxy.RequestDelegatorImpl;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -432,6 +434,9 @@ public abstract class OrientDBModule {
 
 	@Binds
 	abstract IndexHandlerRegistry indexHandlerRegistry(IndexHandlerRegistryImpl e);
+
+	@Binds
+	abstract JobWorkerVerticle jobWorkerVerticle(JobWorkerVerticleImpl e);
 
 	@Provides
 	public static List<ConsistencyCheck> consistencyCheckList() {
