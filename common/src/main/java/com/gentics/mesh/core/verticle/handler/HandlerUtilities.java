@@ -40,6 +40,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.UUIDUtil;
+import com.gentics.mesh.util.ValidationUtil;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -244,9 +245,10 @@ public class HandlerUtilities {
 	 */
 	public <T extends HibCoreElement, RM extends RestModel> void readElementList(InternalActionContext ac, Function<Tx, Object> parentLoader,
 		LoadAllAction<T> actions) {
+		PagingParameters pagingInfo = ac.getPagingParameters();
+		ValidationUtil.validate(pagingInfo);
 
 		syncTx(ac, tx -> {
-			PagingParameters pagingInfo = ac.getPagingParameters();
 			Object parent = null;
 			if (parentLoader != null) {
 				parent = parentLoader.apply(tx);
