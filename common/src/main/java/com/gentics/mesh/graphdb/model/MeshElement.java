@@ -44,6 +44,14 @@ public interface MeshElement extends ElementFrame {
 	 */
 	String getElementVersion();
 
+
+	/**
+	 * Return the bucketId for the element.
+	 * 
+	 * @return
+	 */
+	Integer getBucketId();
+
 	/**
 	 * Provide TP 3.x compliant method.
 	 * 

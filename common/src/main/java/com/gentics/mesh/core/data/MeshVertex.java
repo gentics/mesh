@@ -16,6 +16,8 @@ import com.tinkerpop.blueprints.Vertex;
  */
 public interface MeshVertex extends MeshElement, VertexFrame {
 
+	String BUCKET_ID_KEY = "bucketId";
+
 	String UUID_KEY = "uuid";
 
 	/**

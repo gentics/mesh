@@ -22,6 +22,8 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.reactivestreams.Publisher;
+
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
@@ -48,6 +50,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.Transactional;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.search.index.BucketManager;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 import com.gentics.mesh.search.index.metric.SyncMetersFactory;
 import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
@@ -85,10 +88,13 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	@Inject
 	public NodeContainerMappingProvider mappingProvider;
 
+	private final BucketManager bucketManager;
+
 	@Inject
 	public NodeIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options,
-		SyncMetersFactory syncMetersFactory) {
+		SyncMetersFactory syncMetersFactory, BucketManager bucketManager) {
 		super(searchProvider, db, boot, helper, options, syncMetersFactory);
+		this.bucketManager = bucketManager;
 	}
 
 	@Override
@@ -241,12 +247,13 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 * @param type
 	 * @return indexName -> documentName -> NodeGraphFieldContainer
 	 */
-	private Map<String, Map<String, NodeGraphFieldContainer>> loadVersionsFromGraph(Branch branch, SchemaContainerVersion version, ContainerType type) {
+	private Map<String, Map<String, NodeGraphFieldContainer>> loadVersionsFromGraph(Branch branch, SchemaContainerVersion version, ContainerType type, int bucketId) {
 		return db.tx(() -> {
 			String branchUuid = branch.getUuid();
 			List<String> indexLanguages = version.getSchema().findOverriddenSearchLanguages().collect(Collectors.toList());
 
 			return version.getFieldContainers(branchUuid)
+				.filter(c -> bucketId == c.getBucketId())
 				.filter(c -> c.isType(type, branchUuid))
 				.collect(Collectors.groupingBy(content -> {
 					String languageTag = content.getLanguageTag();
@@ -281,8 +288,16 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	private Flowable<SearchRequest> diffAndSync(Project project, Branch branch, SchemaContainerVersion version, ContainerType type) {
+		// Sync each bucket individually
+		return Flowable.range(0, bucketManager.getBucketSize(10000)).flatMap(bucketId -> {
+			return diffAndSync(project, branch, version,type, bucketId);
+		});
+	}
+
+	private Publisher<? extends SearchRequest> diffAndSync(Project project, Branch branch, SchemaContainerVersion version, ContainerType type,
+		Integer bucketId) {
 		return Flowable.defer(() -> {
-			Map<String, Map<String, NodeGraphFieldContainer>> sourceNodesPerIndex = loadVersionsFromGraph(branch, version, type);
+			Map<String, Map<String, NodeGraphFieldContainer>> sourceNodesPerIndex = loadVersionsFromGraph(branch, version, type, bucketId);
 			return Flowable.fromIterable(getIndexNames(project, branch, version, type))
 				.flatMap(indexName -> loadVersionsFromIndex(indexName).flatMapPublisher(sinkVersions -> {
 				log.info("Handling index sync on handler {" + getClass().getName() + "}");
