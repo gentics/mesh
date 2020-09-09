@@ -300,7 +300,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public User setReferencedNode(Node node) {
-		setUniqueLinkOutTo(node, HAS_NODE_REFERENCE);
+		setSingleLinkOutTo(node, HAS_NODE_REFERENCE);
 		return this;
 	}
 

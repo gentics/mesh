@@ -448,6 +448,9 @@ ul.doc-toc h2 {
                         </ul>
                     </li>
 
+                   <li class="section">
+                        <h2><a href="devops">DevOps</a></h2>
+                    </li>
 
                     <li class="section">
                         <h2><a href="clustering">Clustering</a></h2>
