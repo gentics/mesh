@@ -11,7 +11,6 @@ import com.gentics.mesh.core.action.DAOActionContext;
 import com.gentics.mesh.core.action.RoleDAOActions;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.db.Tx;
@@ -47,7 +46,7 @@ public class RoleDAOActionsImpl implements RoleDAOActions {
 	}
 
 	@Override
-	public TransformablePage<? extends HibRole> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
+	public Page<? extends HibRole> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
 		return ctx.tx().roleDao().findAll(ctx.ac(), pagingInfo);
 	}
 

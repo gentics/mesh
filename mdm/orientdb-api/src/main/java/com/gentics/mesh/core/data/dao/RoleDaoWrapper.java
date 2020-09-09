@@ -8,7 +8,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -126,7 +125,7 @@ public interface RoleDaoWrapper extends RoleDao, DaoWrapper<HibRole>, DaoTransfo
 
 	Result<? extends HibRole> findAll();
 
-	TransformablePage<? extends HibRole> findAll(InternalActionContext ac, PagingParameters pagingInfo);
+	Page<? extends HibRole> findAll(InternalActionContext ac, PagingParameters pagingInfo);
 
 	Page<? extends HibRole> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibRole> extraFilter);
 

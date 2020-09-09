@@ -10,8 +10,8 @@ import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.branch.BranchMicroschemaEdge;
 import com.gentics.mesh.core.data.branch.BranchSchemaEdge;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.branch.TransformableInPage;
 import com.gentics.mesh.core.data.job.HibJob;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.BranchRoot;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
@@ -395,7 +395,7 @@ public interface Branch
 	 * @param params
 	 * @return Page which contains the result
 	 */
-	TransformableInPage<? extends Tag> getTags(HibUser user, PagingParameters params);
+	Page<? extends Tag> getTags(HibUser user, PagingParameters params);
 
 	/**
 	 * Tests if the branch is tagged with the given tag.
@@ -412,7 +412,7 @@ public interface Branch
 	 * @param batch
 	 * @return Page which includes the new set of tags
 	 */
-	TransformableInPage<? extends HibTag> updateTags(InternalActionContext ac, EventQueueBatch batch);
+	Page<? extends HibTag> updateTags(InternalActionContext ac, EventQueueBatch batch);
 
 	/**
 	 * Generate event which is send when the branch is set to be the latest of the project.

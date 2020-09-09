@@ -30,6 +30,8 @@ import com.gentics.mesh.core.data.dao.JobDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
+import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.PageTransformer;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -62,11 +64,13 @@ public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResp
 	private static final Logger log = LoggerFactory.getLogger(BranchCrudHandler.class);
 
 	private BootstrapInitializer boot;
+	private final PageTransformer pageTransformer;
 
 	@Inject
-	public BranchCrudHandler(Database db, HandlerUtilities utils, BootstrapInitializer boot, WriteLock writeLock, BranchDAOActions branchActions) {
+	public BranchCrudHandler(Database db, HandlerUtilities utils, BootstrapInitializer boot, WriteLock writeLock, BranchDAOActions branchActions, PageTransformer pageTransformer) {
 		super(db, utils, writeLock, branchActions);
 		this.boot = boot;
+		this.pageTransformer = pageTransformer;
 	}
 
 	@Override
@@ -406,8 +410,8 @@ public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResp
 			HibProject project = tx.getProject(ac);
 			BranchDaoWrapper branchDao = tx.branchDao();
 			HibBranch branch = branchDao.loadObjectByUuid(project, ac, uuid, READ_PERM);
-			TransformablePage<? extends HibTag> tagPage = (TransformablePage<? extends HibTag>) branch.getTags(ac.getUser(), ac.getPagingParameters());
-			return tagPage.transformToRestSync(ac, 0);
+			Page<? extends HibTag> tagPage = branch.getTags(ac.getUser(), ac.getPagingParameters());
+			return pageTransformer.transformToRestSync(tagPage, ac, 0);
 		}, model -> ac.send(model, OK));
 	}
 

@@ -25,7 +25,8 @@ import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.action.DAOActions;
 import com.gentics.mesh.core.action.LoadAllAction;
 import com.gentics.mesh.core.data.HibCoreElement;
-import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.PageTransformer;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.db.TxAction;
@@ -60,22 +61,23 @@ public class HandlerUtilities {
 
 	private final WriteLock writeLock;
 
+	private final PageTransformer pageTransformer;
+
 	@Inject
 	public HandlerUtilities(Database database, MeshOptions meshOptions, Provider<EventQueueBatch> queueProvider,
-		Provider<BulkActionContext> bulkProvider, WriteLock writeLock) {
+		Provider<BulkActionContext> bulkProvider, WriteLock writeLock, PageTransformer pageTransformer) {
 		this.database = database;
 		this.queueProvider = queueProvider;
 		this.bulkProvider = bulkProvider;
 		this.writeLock = writeLock;
+		this.pageTransformer = pageTransformer;
 	}
 
 	/**
 	 * Create an object using the given aggregation node and respond with a transformed object.
 	 * 
 	 * @param ac
-	 * @param loadAction
-	 * @param createAction
-	 * @param updateAction
+	 * @param actions
 	 */
 	public <T extends HibCoreElement, RM extends RestModel> void createElement(InternalActionContext ac, DAOActions<T, RM> actions) {
 		createOrUpdateElement(ac, null, actions);
@@ -127,7 +129,6 @@ public class HandlerUtilities {
 	 *            Uuid of the element which should be updated
 	 * @param actions
 	 *            Handler which provides the root vertex which should be used when loading the element
-	 * @param createAction
 	 */
 	public <T extends HibCoreElement, RM extends RestModel> void updateElement(InternalActionContext ac, String uuid,
 		DAOActions<T, RM> actions) {
@@ -202,7 +203,7 @@ public class HandlerUtilities {
 	 *            Loader for the parent element
 	 * @param uuid
 	 *            Uuid of the element which should be loaded
-	 * @param action
+	 * @param actions
 	 *            Handler which provides the root vertex which should be used when loading the element
 	 * @param perm
 	 *            Permission to check against when loading the element
@@ -250,17 +251,17 @@ public class HandlerUtilities {
 			if (parentLoader != null) {
 				parent = parentLoader.apply(tx);
 			}
-			TransformablePage<? extends T> page = actions.loadAll(context(tx, ac, parent), pagingInfo);
+			Page<? extends T> page = actions.loadAll(context(tx, ac, parent), pagingInfo);
 
 			// Handle etag
 			if (ac.getGenericParameters().getETag()) {
-				String etag = page.getETag(ac);
+				String etag = pageTransformer.getETag(page, ac);
 				ac.setEtag(etag, true);
 				if (ac.matches(etag, true)) {
 					throw new NotModifiedException();
 				}
 			}
-			return page.transformToRestSync(ac, 0);
+			return pageTransformer.transformToRestSync(page, ac, 0);
 		}, m -> ac.send(m, OK));
 	}
 

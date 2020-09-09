@@ -188,6 +188,7 @@ public class TestDataProvider {
 			addPermissions(microschemaContainers.values());
 			addPermissions(project);
 			addPermissions(project.getBaseNode());
+			// TODO HIB probably not necessary. Remove if tests are positive
 //			addPermissions(toGraph(project).getMicroschemaContainerRoot());
 //			addPermissions(toGraph(project).getSchemaContainerRoot());
 			addPermissions(project.getBranchPermissionRoot());

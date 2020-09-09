@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.branch;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.job.HibJob;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
@@ -350,7 +351,7 @@ public interface HibBranch extends HibCoreElement, HibUserTracking {
 	 * @param params
 	 * @return Page which contains the result
 	 */
-	TransformableInPage<? extends HibTag> getTags(HibUser user, PagingParameters params);
+	Page<? extends HibTag> getTags(HibUser user, PagingParameters params);
 
 	/**
 	 * Tests if the branch is tagged with the given tag.
@@ -367,7 +368,7 @@ public interface HibBranch extends HibCoreElement, HibUserTracking {
 	 * @param batch
 	 * @return Page which includes the new set of tags
 	 */
-	TransformableInPage<? extends HibTag> updateTags(InternalActionContext ac, EventQueueBatch batch);
+	Page<? extends HibTag> updateTags(InternalActionContext ac, EventQueueBatch batch);
 
 	/**
 	 * Generate event which is send when the branch is set to be the latest of the project.
