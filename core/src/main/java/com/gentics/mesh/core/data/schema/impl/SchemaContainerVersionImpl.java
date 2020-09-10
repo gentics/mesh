@@ -44,7 +44,6 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
-import com.gentics.mesh.search.index.BucketPartition;
 import com.tinkerpop.blueprints.Direction;
 
 import io.vertx.core.logging.Logger;

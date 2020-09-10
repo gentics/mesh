@@ -2,6 +2,11 @@ package com.gentics.mesh.search;
 
 import com.gentics.mesh.core.data.MeshVertex;
 
+/**
+ * Bucketable elements are elements which will be indexed in elasticsearch. The bucket Id is used to partition the elasticsearch sync tasks. This reduces the
+ * amount of memory that is needed when running the differential sync.
+ *
+ */
 public interface BucketableElement extends MeshVertex {
 
 	String BUCKET_ID_KEY = "bucketId";

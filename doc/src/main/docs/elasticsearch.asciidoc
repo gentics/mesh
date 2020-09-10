@@ -415,7 +415,7 @@ You can also recreate all indices if needed via the ```POST {apiLatest}/search/c
 
 NOTE: This operation will remove all indices which have been created by Mesh and rebuild them one at a time.
 
-The index sync is a memory intensive operation. The `search.syncBatchSize` setting can be used to control how much memory will be utilized during the synchronization. With 250 MB of the Heap memory is sufficient to index `250_000` elements.
+NOTE: The index sync is a memory intensive operation. The `search.syncBatchSize` setting can be used to control how much memory will be utilized during the synchronization. 250 MB of the Heap memory is sufficient to index `250_000` elements using the differential sync mechanism.
 
 == Binary Search
 

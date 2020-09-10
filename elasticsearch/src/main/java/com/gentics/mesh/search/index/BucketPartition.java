@@ -53,7 +53,6 @@ public class BucketPartition {
 		JsonObject rangeQueryParams = new JsonObject();
 		rangeQueryParams.put("gte", start());
 		rangeQueryParams.put("lte", end());
-		//rangeQueryParams.put("relation", "WITHIN");
 		rangeQuery.put(BUCKET_ID_KEY, rangeQueryParams);
 		return new JsonObject().put("range", rangeQuery);
 	}
