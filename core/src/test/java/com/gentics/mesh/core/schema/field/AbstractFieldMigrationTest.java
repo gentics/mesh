@@ -128,6 +128,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// create version 1 of the schema
 		SchemaContainer container = Tx.getActive().getGraph().addFramedVertex(SchemaContainerImpl.class);
+		mesh().bucketManager().store(container);
 		container.setName(UUIDUtil.randomUUID());
 		container.setCreated(user());
 		boot().schemaContainerRoot().addItem(container);
@@ -198,9 +199,9 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// create version 1 of the microschema
 		MicroschemaContainer container = Tx.getActive().getGraph().addFramedVertex(MicroschemaContainerImpl.class);
+		mesh().bucketManager().store(container);
 		container.setName(microschemaName);
 		container.setCreated(user());
-		mesh().bucketManager().store(container);
 		MicroschemaContainerVersion versionA = createMicroschemaVersion(container, microschemaName, "1.0", creator.create(persistentFieldName),
 			creator.create(removedFieldName));
 
@@ -297,6 +298,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// create version 1 of the schema
 		SchemaContainer container = Tx.getActive().getGraph().addFramedVertex(SchemaContainerImpl.class);
+		mesh().bucketManager().store(container);
 		container.setName(UUIDUtil.randomUUID());
 		container.setCreated(user());
 		boot().schemaContainerRoot().addItem(container);
@@ -375,6 +377,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// create version 1 of the microschema
 		MicroschemaContainer container = Tx.getActive().getGraph().addFramedVertex(MicroschemaContainerImpl.class);
+		mesh().bucketManager().store(container);
 		container.setName(microschemaName);
 		container.setCreated(user());
 		MicroschemaContainerVersion versionA = createMicroschemaVersion(container, microschemaName, "1.0", creator.create(oldFieldName));
@@ -481,6 +484,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// create version 1 of the schema
 		FieldSchema oldFieldSchema = oldField.create(fieldName);
 		SchemaContainer container = Tx.getActive().getGraph().addFramedVertex(SchemaContainerImpl.class);
+		mesh().bucketManager().store(container);
 		container.setName(schemaName);
 		container.setCreated(user());
 		boot().schemaContainerRoot().addItem(container);
@@ -690,6 +694,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// create version 1 of the schema
 		FieldSchema oldField = creator.create(fieldName);
 		SchemaContainer container = Tx.getActive().getGraph().addFramedVertex(SchemaContainerImpl.class);
+		mesh().bucketManager().store(container);
 		container.setName(UUIDUtil.randomUUID());
 		container.setCreated(user());
 		boot().schemaContainerRoot().addItem(container);
@@ -762,6 +767,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// create version 1 of the microschema
 		FieldSchema oldField = creator.create(fieldName);
 		MicroschemaContainer container = Tx.get().getGraph().addFramedVertex(MicroschemaContainerImpl.class);
+		mesh().bucketManager().store(container);
 		container.setName(microschemaName);
 		container.setCreated(user());
 		MicroschemaContainerVersion versionA = createMicroschemaVersion(container, microschemaName, "1.0", oldField);
@@ -860,6 +866,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// create version 1 of the schema
 		FieldSchema oldField = creator.create(fieldName);
 		SchemaContainer container = Tx.getActive().getGraph().addFramedVertex(SchemaContainerImpl.class);
+		mesh().bucketManager().store(container);
 		container.setName(UUIDUtil.randomUUID());
 		container.setCreated(user());
 		boot().schemaContainerRoot().addItem(container);
@@ -922,6 +929,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// create version 1 of the microschema
 		FieldSchema oldField = creator.create(fieldName);
 		MicroschemaContainer container = Tx.getActive().getGraph().addFramedVertex(MicroschemaContainerImpl.class);
+		mesh().bucketManager().store(container);
 		container.setName(microschemaName);
 		container.setCreated(user());
 		MicroschemaContainerVersion versionA = createMicroschemaVersion(container, microschemaName, "1.0", oldField);
