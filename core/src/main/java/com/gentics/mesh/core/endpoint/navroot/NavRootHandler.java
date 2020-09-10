@@ -16,7 +16,7 @@ import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.service.WebRootServiceImpl;
-import com.gentics.mesh.core.data.user.MeshAuthUser;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.path.Path;
@@ -44,7 +44,7 @@ public class NavRootHandler {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 		String path = rc.request().path().substring(
 			rc.mountPoint().length());
-		MeshAuthUser requestUser = ac.getUser();
+		HibUser requestUser = ac.getUser();
 
 		utils.syncTx(ac, tx -> {
 			ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());

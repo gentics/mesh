@@ -28,7 +28,7 @@ import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.service.WebRootServiceImpl;
-import com.gentics.mesh.core.data.user.MeshAuthUser;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.node.BinaryFieldResponseHandler;
 import com.gentics.mesh.core.endpoint.node.NodeCrudHandler;
@@ -102,7 +102,7 @@ public class WebRootHandler {
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				MeshAuthUser requestUser = ac.getUser();
+				HibUser requestUser = ac.getUser();
 				UserDaoWrapper userDao = tx.userDao();
 				NodeDaoWrapper nodeDao = tx.nodeDao();
 

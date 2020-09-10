@@ -6,7 +6,6 @@ import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -22,7 +21,7 @@ public interface GroupRoot extends RootVertex<Group>, TransformableElementRoot<G
 
 	Result<? extends HibRole> getRoles(HibGroup group);
 
-	Page<? extends HibUser> getVisibleUsers(Group group, MeshAuthUser user, PagingParameters pagingInfo);
+	Page<? extends HibUser> getVisibleUsers(Group group, HibUser user, PagingParameters pagingInfo);
 
 	Page<? extends Role> getRoles(Group group, HibUser user, PagingParameters pagingInfo);
 

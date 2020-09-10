@@ -45,7 +45,6 @@ import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -139,7 +138,7 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 
 	@Override
 	public HibSchema create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		MeshAuthUser requestUser = ac.getUser();
+		HibUser requestUser = ac.getUser();
 		UserDaoWrapper userDao = Tx.get().userDao();
 		SchemaRoot schemaRoot = boot.get().schemaContainerRoot();
 
@@ -419,7 +418,7 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 	}
 
 	@Override
-	public Result<? extends HibNode> findNodes(HibSchemaVersion version, String branchUuid, MeshAuthUser user, ContainerType type) {
+	public Result<? extends HibNode> findNodes(HibSchemaVersion version, String branchUuid, HibUser user, ContainerType type) {
 		return toGraph(version).getNodes(branchUuid, user, type);
 	}
 

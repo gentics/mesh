@@ -24,7 +24,7 @@ import com.gentics.mesh.core.data.page.impl.DynamicNonTransformablePageImpl;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.user.MeshAuthUser;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -66,7 +66,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	 *            Needed permission
 	 */
 	default Stream<? extends T> findAllStream(InternalActionContext ac, InternalPermission permission) {
-		MeshAuthUser user = ac.getUser();
+		HibUser user = ac.getUser();
 		FramedTransactionalGraph graph = Tx.get().getGraph();
 		UserDaoWrapper userDao = Tx.get().userDao();
 
@@ -158,7 +158,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 			throw error(NOT_FOUND, "object_not_found_for_name", name);
 		}
 
-		MeshAuthUser requestUser = ac.getUser();
+		HibUser requestUser = ac.getUser();
 		String elementUuid = element.getUuid();
 		UserDaoWrapper userDao = Tx.get().userDao();
 		if (requestUser != null && userDao.hasPermission(requestUser, element, perm)) {
@@ -233,7 +233,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 			}
 		}
 
-		MeshAuthUser requestUser = ac.getUser();
+		HibUser requestUser = ac.getUser();
 		String elementUuid = element.getUuid();
 		UserDaoWrapper userDao = Tx.get().userDao();
 		if (userDao.hasPermission(requestUser, element, perm)) {

@@ -1,11 +1,6 @@
 package com.gentics.mesh.context;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-
-import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.user.MeshAuthUser;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 
@@ -66,7 +61,7 @@ public abstract class AbstractInternalActionContext extends AbstractActionContex
 
 	@Override
 	public boolean isAdmin() {
-		MeshAuthUser user = getUser();
+		HibUser user = getUser();
 		if (user == null) {
 			return false;
 		}

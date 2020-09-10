@@ -14,11 +14,11 @@ import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.context.AbstractInternalActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.dagger.MeshComponent;
-import com.gentics.mesh.handler.VersionHandlerImpl;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.router.route.SecurityLoggingHandler;
@@ -109,7 +109,12 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	}
 
 	@Override
-	public MeshAuthUser getUser() {
+	public HibUser getUser() {
+		return user.getDelegate();
+	}
+
+	@Override
+	public MeshAuthUser getMeshAuthUser() {
 		return user;
 	}
 

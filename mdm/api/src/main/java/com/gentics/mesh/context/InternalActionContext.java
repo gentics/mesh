@@ -1,8 +1,8 @@
 package com.gentics.mesh.context;
 
 import java.util.Set;
-import java.util.function.BiConsumer;
 
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.handler.ActionContext;
@@ -17,7 +17,6 @@ import io.vertx.core.MultiMap;
 import io.vertx.core.spi.logging.LogDelegate;
 import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.FileUpload;
-import io.vertx.ext.web.RoutingContext;
 
 /**
  * A internal action context exposes various internal method which an API action context would normally not dare to expose.
@@ -32,11 +31,18 @@ public interface InternalActionContext extends ActionContext, ParameterProviderC
 	void setUser(MeshAuthUser user);
 
 	/**
-	 * Return the mesh auth user.
+	 * Return the mesh user.
 	 * 
 	 * @return
 	 */
-	MeshAuthUser getUser();
+	HibUser getUser();
+
+	/**
+	 * Return the mesh auth user.
+	 *
+	 * @return
+	 */
+	MeshAuthUser getMeshAuthUser();
 
 	/**
 	 * Return an error handler which is able to fail the call chain.

@@ -13,6 +13,7 @@ import com.gentics.mesh.core.data.NodeMigrationUser;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.rest.event.node.SchemaMigrationCause;
@@ -115,8 +116,13 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 	}
 
 	@Override
-	public MeshAuthUser getUser() {
+	public HibUser getUser() {
 		return new NodeMigrationUser();
+	}
+
+	@Override
+	public MeshAuthUser getMeshAuthUser() {
+		return null;
 	}
 
 	@Override

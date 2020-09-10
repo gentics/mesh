@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.gentics.mesh.context.AbstractInternalActionContext;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.http.MeshHeaders;
@@ -172,7 +173,12 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 	}
 
 	@Override
-	public MeshAuthUser getUser() {
+	public HibUser getUser() {
+		return getMeshAuthUser().getDelegate();
+	}
+
+	@Override
+	public MeshAuthUser getMeshAuthUser() {
 		if (user == null && rc.user() != null) {
 			if (rc.user() instanceof MeshAuthUser) {
 				user = (MeshAuthUser) rc.user();

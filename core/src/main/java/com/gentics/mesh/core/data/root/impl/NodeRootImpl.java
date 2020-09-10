@@ -51,7 +51,6 @@ import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -107,7 +106,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	@Override
 	public Stream<? extends Node> findAllStream(InternalActionContext ac, InternalPermission perm) {
 		Tx tx = Tx.get();
-		MeshAuthUser user = ac.getUser();
+		HibUser user = ac.getUser();
 		String branchUuid = tx.getBranch(ac).getUuid();
 		UserDaoWrapper userDao = mesh().boot().userDao();
 
@@ -142,7 +141,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	private Stream<? extends Node> findAllStream(InternalActionContext ac, ContainerType type) {
-		MeshAuthUser user = ac.getUser();
+		HibUser user = ac.getUser();
 		FramedTransactionalGraph graph = Tx.get().getGraph();
 
 		HibBranch branch = Tx.get().getBranch(ac);
@@ -187,7 +186,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 			throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);
 		}
 
-		MeshAuthUser requestUser = ac.getUser();
+		HibUser requestUser = ac.getUser();
 		if (perm == READ_PUBLISHED_PERM) {
 			HibBranch branch = tx.getBranch(ac, element.getProject());
 
@@ -253,7 +252,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		String uuid) {
 		Tx tx = Tx.get();
 		HibProject project = tx.getProject(ac);
-		MeshAuthUser requestUser = ac.getUser();
+		HibUser requestUser = ac.getUser();
 		BootstrapInitializer boot = mesh().boot();
 		UserDaoWrapper userRoot = boot.userDao();
 		NodeDaoWrapper nodeDao = boot.nodeDao();
@@ -315,7 +314,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		ac.getVersioningParameters().setVersion("draft");
 
 		HibProject project = tx.getProject(ac);
-		MeshAuthUser requestUser = ac.getUser();
+		HibUser requestUser = ac.getUser();
 
 		String body = ac.getBodyAsString();
 

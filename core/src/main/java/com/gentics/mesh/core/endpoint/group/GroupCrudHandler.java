@@ -19,7 +19,6 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.PageTransformer;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
@@ -149,7 +148,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<HibGroup, GroupRespons
 
 		utils.syncTx(ac, tx -> {
 			GroupDaoWrapper groupDao = tx.groupDao();
-			MeshAuthUser requestUser = ac.getUser();
+			HibUser requestUser = ac.getUser();
 			PagingParametersImpl pagingInfo = new PagingParametersImpl(ac);
 			HibGroup group = groupDao.loadObjectByUuid(ac, groupUuid, READ_PERM);
 			Page<? extends HibUser> userPage = groupDao.getVisibleUsers(group, requestUser, pagingInfo);

@@ -199,7 +199,7 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 		if (user instanceof MeshAuthUser) {
 			AuthenticationOptions options = meshOptions.getAuthenticationOptions();
 			JsonObject tokenData = new JsonObject();
-			String uuid = db.tx(((MeshAuthUser) user)::getUuid);
+			String uuid = db.tx(((MeshAuthUser) user).getDelegate()::getUuid);
 			tokenData.put(USERID_FIELD_NAME, uuid);
 			JWTOptions jwtOptions = new JWTOptions().setAlgorithm(options.getAlgorithm())
 				.setExpiresInSeconds(options.getTokenExpirationTime());
@@ -261,7 +261,7 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 				String apiKeyToken = jwt.getString(API_KEY_TOKEN_CODE_FIELD_NAME);
 				// TODO: All tokens without exp must have a token code - See https://github.com/gentics/mesh/issues/412
 				if (apiKeyToken != null) {
-					String storedApiKey = user.getAPIKeyTokenCode();
+					String storedApiKey = user.getDelegate().getAPIKeyTokenCode();
 					// Verify that the API token is invalid.
 					if (apiKeyToken != null && !apiKeyToken.equals(storedApiKey)) {
 						throw new Exception("API key token is invalid.");

@@ -107,7 +107,7 @@ public class GraphQLContextImpl extends InternalRoutingActionContextImpl impleme
 
 	@Override
 	public JsonObject principal() {
-		return getUser().principal();
+		return getMeshAuthUser().principal();
 	}
 
 }

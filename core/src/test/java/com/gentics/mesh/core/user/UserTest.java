@@ -79,15 +79,15 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
 	public void testLoadPrincipalWithoutTx() {
-		MeshAuthUser user = tx(() -> getRequestUser());
+		MeshAuthUser user = tx(() -> getRequestMeshAuthUser());
 
 		JsonObject json = user.principal();
 		assertNotNull(json);
 		assertEquals(userUuid(), json.getString("uuid"));
-		assertEquals(tx(() -> user.getEmailAddress()), json.getString("emailAddress"));
-		assertEquals(tx(() -> user.getLastname()), json.getString("lastname"));
-		assertEquals(tx(() -> user.getFirstname()), json.getString("firstname"));
-		assertEquals(tx(() -> user.getUsername()), json.getString("username"));
+		assertEquals(tx(() -> user.getDelegate().getEmailAddress()), json.getString("emailAddress"));
+		assertEquals(tx(() -> user.getDelegate().getLastname()), json.getString("lastname"));
+		assertEquals(tx(() -> user.getDelegate().getFirstname()), json.getString("firstname"));
+		assertEquals(tx(() -> user.getDelegate().getUsername()), json.getString("username"));
 
 		JsonArray roles = json.getJsonArray("roles");
 		for (int i = 0; i < roles.size(); i++) {
@@ -227,7 +227,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			roleDao.grantPermissions(role(), extraUser, InternalPermission.READ_PERM);
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			MeshAuthUser requestUser = ac.getUser();
+			HibUser requestUser = ac.getUser();
 			Page<? extends HibUser> userPage = groupDao.getVisibleUsers(group(), requestUser, new PagingParametersImpl(1, 10L));
 
 			assertEquals(2, userPage.getTotalElements());

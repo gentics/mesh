@@ -220,10 +220,10 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 
 		EventQueueBatch batch = batchProvider.get();
 		return db.maybeTx(tx -> boot.userDao().findMeshAuthUserByUsername(username))
-			.flatMapSingleElement(user -> db.singleTx(user::getUuid).flatMap(uuid -> {
+			.flatMapSingleElement(user -> db.singleTx(user.getDelegate()::getUuid).flatMap(uuid -> {
 				// Compare the stored and current token id to see whether the current token is different.
 				// In that case a sync must be invoked.
-				String lastSeenTokenId = TOKEN_ID_LOG.getIfPresent(user.getUuid());
+				String lastSeenTokenId = TOKEN_ID_LOG.getIfPresent(user.getDelegate().getUuid());
 				if (lastSeenTokenId == null || !lastSeenTokenId.equals(cachingId)) {
 					return assertReadOnlyDeactivated().andThen(db.singleTx(() -> {
 						HibUser admin = boot.userDao().findByUsername("admin");
@@ -246,8 +246,8 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 						userDao.inheritRolePermissions(admin, userRoot, createdUser);
 
 						MeshAuthUser user = userDao.findMeshAuthUserByUsername(username);
-						String uuid = user.getUuid();
-						batch.add(user.onCreated());
+						String uuid = user.getDelegate().getUuid();
+						batch.add(user.getDelegate().onCreated());
 						// Not setting uuid since the user has not yet been committed.
 						runPlugins(rc, batch, admin, user, null, token);
 						TOKEN_ID_LOG.put(uuid, cachingId);
@@ -285,10 +285,10 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		if (givenName == null) {
 			log.warn("Did not find given_name property in OAuth2 principle.");
 		} else {
-			String currentFirstName = user.getFirstname();
+			String currentFirstName = user.getDelegate().getFirstname();
 			if (!Objects.equals(currentFirstName, givenName)) {
 				requiresWrite();
-				user.setFirstname(givenName);
+				user.getDelegate().setFirstname(givenName);
 				modified = true;
 			}
 		}
@@ -297,10 +297,10 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		if (familyName == null) {
 			log.warn("Did not find family_name property in OAuth2 principle.");
 		} else {
-			String currentLastName = user.getLastname();
+			String currentLastName = user.getDelegate().getLastname();
 			if (!Objects.equals(currentLastName, familyName)) {
 				requiresWrite();
-				user.setLastname(familyName);
+				user.getDelegate().setLastname(familyName);
 				modified = true;
 			}
 		}
@@ -309,15 +309,15 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		if (email == null) {
 			log.warn("Did not find email property in OAuth2 principle");
 		} else {
-			String currentEmail = user.getEmailAddress();
+			String currentEmail = user.getDelegate().getEmailAddress();
 			if (!Objects.equals(currentEmail, email)) {
 				requiresWrite();
-				user.setEmailAddress(email);
+				user.getDelegate().setEmailAddress(email);
 				modified = true;
 			}
 		}
 		if (modified) {
-			batch.add(user.onUpdated());
+			batch.add(user.getDelegate().onUpdated());
 		}
 	}
 
@@ -362,10 +362,10 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 						InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 						ac.setBody(mappedUser);
 						ac.setUser(admin.toAuthUser());
-						if (!delegator.canWrite() && userDao.updateDry(user, ac)) {
+						if (!delegator.canWrite() && userDao.updateDry(user.getDelegate(), ac)) {
 							throw new CannotWriteException();
 						}
-						userDao.update(user, ac, batch);
+						userDao.update(user.getDelegate(), ac, batch);
 					} else {
 						defaultUserMapper(batch, user, token);
 						continue;
@@ -405,11 +405,11 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 								batch.add(group.onCreated());
 								created = true;
 							}
-							if (!groupDao.hasUser(group, user)) {
+							if (!groupDao.hasUser(group, user.getDelegate())) {
 								requiresWrite();
 								// Ensure that the user is part of the group
-								groupDao.addUser(group, user);
-								batch.add(groupDao.createUserAssignmentEvent(group, user, ASSIGNED));
+								groupDao.addUser(group, user.getDelegate());
+								batch.add(groupDao.createUserAssignmentEvent(group, user.getDelegate(), ASSIGNED));
 								// We only need one event
 								if (!created) {
 									batch.add(group.onUpdated());
@@ -490,12 +490,12 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 					// 7. Check if the plugin wants to remove the user user from any of its current groups.
 					GroupFilter groupFilter = result.getGroupFilter();
 					if (groupFilter != null) {
-						for (HibGroup group : userDao.getGroups(user)) {
+						for (HibGroup group : userDao.getGroups(user.getDelegate())) {
 							if (groupFilter.filter(group.getName())) {
 								requiresWrite();
-								log.info("Unassigning group {" + group.getName() + "} from user {" + user.getUsername() + "}");
-								groupDao.removeUser(group, user);
-								batch.add(groupDao.createUserAssignmentEvent(group, user, UNASSIGNED));
+								log.info("Unassigning group {" + group.getName() + "} from user {" + user.getDelegate().getUsername() + "}");
+								groupDao.removeUser(group, user.getDelegate());
+								batch.add(groupDao.createUserAssignmentEvent(group, user.getDelegate(), UNASSIGNED));
 							}
 						}
 					}

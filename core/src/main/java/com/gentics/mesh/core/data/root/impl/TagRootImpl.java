@@ -35,7 +35,6 @@ import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.tag.TagResponse;
@@ -157,7 +156,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 
 	@Override
 	public Result<? extends Node> findTaggedNodes(HibTag tag, InternalActionContext ac) {
-		MeshAuthUser user = ac.getUser();
+		HibUser user = ac.getUser();
 		Tx tx = Tx.get();
 		HibBranch branch = tx.getBranch(ac);
 		String branchUuid = branch.getUuid();

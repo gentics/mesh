@@ -9,7 +9,6 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -47,7 +46,7 @@ public interface TagFamilyDaoWrapper
 
 	String getAPIPath(HibTagFamily tagFamily, InternalActionContext ac);
 
-	Page<? extends HibTag> getTags(HibTagFamily tagFamily, MeshAuthUser user, PagingParameters pagingInfo);
+	Page<? extends HibTag> getTags(HibTagFamily tagFamily, HibUser user, PagingParameters pagingInfo);
 
 	HibTagFamily create(HibProject project, String name, HibUser user);
 

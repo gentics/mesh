@@ -20,14 +20,11 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
-import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
@@ -35,7 +32,6 @@ import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
@@ -194,7 +190,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			NodeDaoWrapper nodeDao = tx.nodeDao();
 			RoleDaoWrapper roleDao = tx.roleDao();
 			UserDaoWrapper userDao = tx.userDao();
-			MeshAuthUser requestUser = MeshAuthUserImpl.create(db(), user());
+			HibUser requestUser = user();
 			// userRoot.findMeshAuthUserByUsername(requestUser.getUsername())
 			HibNode parentNode = folder("news");
 			assertNotNull(parentNode);
@@ -246,7 +242,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			roleDao.grantPermissions(role(), extraRole, READ_PERM);
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			MeshAuthUser requestUser = ac.getUser();
+			HibUser requestUser = ac.getUser();
 			Page<? extends HibRole> roles = groupDao.getRoles(group(), requestUser, new PagingParametersImpl(1, 10L));
 			assertEquals(2, roles.getSize());
 			

@@ -13,7 +13,7 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
-import com.gentics.mesh.core.data.user.MeshAuthUser;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -81,7 +81,7 @@ public interface TagFamily extends MeshCoreVertex<TagFamilyResponse>, Referencea
 	 * @param pagingInfo
 	 * @return
 	 */
-	Page<? extends Tag> getTags(MeshAuthUser requestUser, PagingParameters pagingInfo);
+	Page<? extends Tag> getTags(HibUser requestUser, PagingParameters pagingInfo);
 
 	/**
 	 * Return the tag family to which this tag belongs.
