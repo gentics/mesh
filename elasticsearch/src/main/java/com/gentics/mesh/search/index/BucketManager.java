@@ -1,6 +1,8 @@
 package com.gentics.mesh.search.index;
 
-import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.search.BucketableElement;
+
+import io.reactivex.Flowable;
 
 public interface BucketManager {
 
@@ -10,13 +12,21 @@ public interface BucketManager {
 	 * @param elementCount
 	 * @return
 	 */
-	int getBucketSize(long elementCount);
+	int getBucketPartitionCount(long elementCount);
 
 	/**
 	 * Store the computed bucketId in the given vertex.
 	 * 
-	 * @param vertex
+	 * @param element
 	 */
-	void store(MeshVertex vertex);
+	void store(BucketableElement element);
+
+	/**
+	 * Return the bucket partitions for the given class.
+	 * 
+	 * @param clazz
+	 * @return
+	 */
+	Flowable<BucketPartition> getBucketPartitions(Class<? extends BucketableElement> clazz);
 
 }

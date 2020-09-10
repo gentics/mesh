@@ -16,11 +16,12 @@ import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.search.BucketableElement;
 
 /**
  * Graph domain model interface for groups.
  */
-public interface Group extends MeshCoreVertex<GroupResponse, Group>, ReferenceableElement<GroupReference>, UserTrackingVertex {
+public interface Group extends MeshCoreVertex<GroupResponse, Group>, ReferenceableElement<GroupReference>, UserTrackingVertex, BucketableElement {
 
 	TypeInfo TYPE_INFO = new TypeInfo(ElementType.GROUP, GROUP_CREATED, GROUP_UPDATED, GROUP_DELETED);
 

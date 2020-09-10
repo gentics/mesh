@@ -33,14 +33,6 @@ public interface SchemaContainerVersion
 	}
 
 	/**
-	 * Return a stream for {@link NodeGraphFieldContainer}'s that use this schema version and are versions for the given branch. Only return element which belong to the specified bucketId.
-	 * @param bucketId
-	 * @param branchUuid
-	 * @return
-	 */
-	Stream<? extends NodeGraphFieldContainer> getFieldContainers(int bucketId, String branchUuid);
-
-	/**
 	 * Return a stream for {@link NodeGraphFieldContainer}'s that use this schema version and are versions for the given branch.
 	 *
 	 * @param branchUuid

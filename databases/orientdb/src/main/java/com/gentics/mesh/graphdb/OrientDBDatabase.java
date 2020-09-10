@@ -340,6 +340,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 	public long count(Class<? extends MeshVertex> clazz) {
 		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
 		OrientVertexType type = orientBaseGraph.getVertexType(clazz.getSimpleName());
+		if (type == null) {
+			type = orientBaseGraph.getVertexType(clazz.getSimpleName() + "Impl");
+		}
 		return type.count();
 	}
 

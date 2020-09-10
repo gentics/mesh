@@ -14,6 +14,7 @@ import com.gentics.mesh.core.data.search.bulk.UpdateBulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.search.EntityMetrics;
+import com.gentics.mesh.search.BucketableElement;
 
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
@@ -60,7 +61,7 @@ public interface IndexHandler<T extends MeshCoreVertex<?, T>> {
 	 * 
 	 * @return
 	 */
-	Class<?> getElementClass();
+	Class<? extends BucketableElement> getElementClass();
 
 	/**
 	 * Process the entry and generate bulk entries.

@@ -45,9 +45,10 @@ import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
+import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.traversals.VertexTraversal;
+import com.tinkerpop.blueprints.Element;
 
-import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -64,6 +65,12 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 		index.createIndex(edgeIndex(HAS_TAG));
 		index.createIndex(edgeIndex(HAS_TAG));
 		index.createIndex(edgeIndex(HAS_TAG).withInOut().withOut());
+	}
+
+	@Override
+	protected void init(FramedGraph graph, Element element, Object id) {
+		super.init(graph, element, id);
+		mesh().bucketManager().store(this);
 	}
 
 	@Override

@@ -44,6 +44,7 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
+import com.gentics.mesh.search.index.BucketPartition;
 import com.tinkerpop.blueprints.Direction;
 
 import io.vertx.core.logging.Logger;
@@ -87,17 +88,6 @@ public class SchemaContainerVersionImpl extends
 	public TraversalResult<? extends Node> getNodes(String branchUuid, User user, ContainerType type) {
 		return new TraversalResult<>(getSchemaContainer().getNodes().stream()
 			.filter(node -> GraphFieldContainerEdgeImpl.matchesBranchAndType(node.getId(), branchUuid, type) && user.hasPermissionForId(node.getId(), READ_PUBLISHED_PERM)));
-	}
-
-	@Override
-	public Stream<NodeGraphFieldContainerImpl> getFieldContainers(int bucketId, String branchUuid) {
-		return toStream(mesh().database().getVertices(
-			NodeGraphFieldContainerImpl.class,
-			new String[] { BUCKET_ID_KEY, SCHEMA_CONTAINER_VERSION_KEY_PROPERTY },
-			new Object[] { bucketId, getUuid() })).filter(
-				v -> toStream(v.getEdges(Direction.IN, HAS_FIELD_CONTAINER))
-					.anyMatch(e -> e.getProperty(BRANCH_UUID_KEY).equals(branchUuid)))
-				.map(v -> graph.frameElementExplicit(v, NodeGraphFieldContainerImpl.class));
 	}
 
 	@Override

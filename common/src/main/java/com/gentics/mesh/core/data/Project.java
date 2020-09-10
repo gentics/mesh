@@ -24,6 +24,7 @@ import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.madl.traversal.TraversalResult;
+import com.gentics.mesh.search.BucketableElement;
 
 /**
  * The Project Domain Model interface.
@@ -32,7 +33,7 @@ import com.gentics.mesh.madl.traversal.TraversalResult;
  * (called basenode). Additionally languages and schemas can be assigned to projects to make them available for node creation. Various root vertices (eg.:
  * {@link NodeRoot}, {@link TagRoot}, {@link TagFamilyRoot} ) are linked to the project to store references to basic building blocks.
  */
-public interface Project extends MeshCoreVertex<ProjectResponse, Project>, ReferenceableElement<ProjectReference>, UserTrackingVertex {
+public interface Project extends MeshCoreVertex<ProjectResponse, Project>, ReferenceableElement<ProjectReference>, UserTrackingVertex, BucketableElement {
 
 	TypeInfo TYPE_INFO = new TypeInfo(ElementType.PROJECT, PROJECT_CREATED, PROJECT_UPDATED, PROJECT_DELETED);
 

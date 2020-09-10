@@ -76,16 +76,6 @@ public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 		return db().getElementVersion(edge);
 	}
 
-	@Override
-	public Integer getBucketId() {
-		return getProperty(BUCKET_ID_KEY);
-	}
-
-	@Override
-	public void setBucketId(Integer bucketId) {
-		setProperty(BUCKET_ID_KEY, bucketId);
-	}
-
 	public MeshComponent mesh() {
 		return getGraphAttribute(GraphAttribute.MESH_COMPONENT);
 	}

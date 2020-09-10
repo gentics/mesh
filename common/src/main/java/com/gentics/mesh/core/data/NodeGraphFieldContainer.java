@@ -25,13 +25,14 @@ import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.path.Path;
+import com.gentics.mesh.search.BucketableElement;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.VersionNumber;
 
 /**
  * A node field container is an aggregation node that holds localized fields (e.g.: StringField, NodeField...)
  */
-public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrackingVertex {
+public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrackingVertex, BucketableElement {
 
 	/**
 	 * Type Value: {@value #TYPE}

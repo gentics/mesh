@@ -14,6 +14,7 @@ import com.gentics.elasticsearch.client.okhttp.RequestBuilder;
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshCoreVertex;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.search.CreateIndexEntry;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
@@ -30,6 +31,9 @@ import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.search.index.BucketManager;
+import com.gentics.mesh.search.index.BucketPartition;
+import com.gentics.mesh.search.index.MappingHelper;
 import com.gentics.mesh.search.index.MappingProvider;
 import com.gentics.mesh.search.index.Transformer;
 import com.gentics.mesh.search.index.metric.SyncMeters;
@@ -76,7 +80,10 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 	protected final SyncMeters meters;
 
-	public AbstractIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options, SyncMetersFactory syncMetersFactory) {
+	protected final BucketManager bucketManager;
+
+	public AbstractIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options,
+		SyncMetersFactory syncMetersFactory, BucketManager bucketManager) {
 		this.searchProvider = searchProvider;
 		this.db = db;
 		this.boot = boot;
@@ -84,6 +91,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		this.options = options;
 		this.complianceMode = options.getSearchOptions().getComplianceMode();
 		this.meters = syncMetersFactory.createSyncMetric(getType());
+		this.bucketManager = bucketManager;
 	}
 
 	/**
@@ -187,16 +195,26 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		return searchProvider != null;
 	}
 
+	protected Flowable<SearchRequest> diffAndSync(String indexName, String projectUuid) {
+		// Sync each bucket partition individually
+		Flowable<BucketPartition> partions = bucketManager.getBucketPartitions(getElementClass());
+		return partions.flatMap(bucketPartion-> {
+			return diffAndSync(indexName, projectUuid, bucketPartion);
+		});
+
+	}
+
 	/**
 	 * Diff the source (graph) with the sink (ES index) and create {@link EventQueueBatch} objects add, delete or update entries.
 	 * 
 	 * @param indexName
 	 * @param projectUuid
+	 * @param partition
 	 * @return
 	 */
-	protected Flowable<SearchRequest> diffAndSync(String indexName, String projectUuid) {
+	protected Flowable<SearchRequest> diffAndSync(String indexName, String projectUuid, BucketPartition partition) {
 		return Single.zip(
-			loadVersionsFromIndex(indexName, 0),
+			loadVersionsFromIndex(indexName, partition),
 			Single.fromCallable(this::loadVersionsFromGraph),
 			(sinkVersions, sourceVersions) -> {
 				log.info("Handling index sync on handler {" + getClass().getName() + "}");
@@ -248,7 +266,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	}
 
 	// TODO Async
-	public Single<Map<String, String>> loadVersionsFromIndex(String indexName, int bucketId) {
+	public Single<Map<String, String>> loadVersionsFromIndex(String indexName, BucketPartition partition) {
 		return Single.fromCallable(() -> {
 			String fullIndexName = searchProvider.installationPrefix() + indexName;
 			Map<String, String> versions = new HashMap<>();
@@ -257,8 +275,12 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 			JsonObject query = new JsonObject();
 			query.put("size", ES_SYNC_FETCH_BATCH_SIZE);
 			query.put("_source", new JsonArray().add("uuid").add("version"));
-			// TODO use range 
-			query.put("query", new JsonObject().put("match_all", new JsonObject()));
+			JsonObject rangeQuery = new JsonObject();
+			JsonObject rangeQueryParams = new JsonObject();
+			rangeQueryParams.put("gte", partition.start());
+			rangeQueryParams.put("lte", partition.end());
+			rangeQuery.put(MappingHelper.BUCKET_ID_KEY, rangeQueryParams);
+			query.put("query", new JsonObject().put("range", rangeQuery));
 			query.put("sort", new JsonArray().add("_doc"));
 
 			RequestBuilder<JsonObject> builder = client.searchScroll(query, "1m", fullIndexName);

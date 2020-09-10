@@ -1,14 +1,22 @@
 package com.gentics.mesh.search.index;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.search.BucketableElement;
+
+import io.reactivex.Flowable;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 @Singleton
 public class BucketManagerImpl implements BucketManager {
+
+	private static final Logger log = LoggerFactory.getLogger(BucketManagerImpl.class);
 
 	private final MeshOptions options;
 
@@ -21,27 +29,45 @@ public class BucketManagerImpl implements BucketManager {
 	}
 
 	@Override
-	public int getBucketSize(long elementCount) {
-		int batchSize = options.getSearchOptions().getSyncBatchSize();
+	public int getBucketPartitionCount(long elementCount) {
+		long batchSize = batchSize();
 		if (batchSize <= 0) {
 			return 1;
 		}
 		long size = elementCount / batchSize;
+		// Cap to 1 partition
+		if (size == 0) {
+			size = 1;
+		}
 		return (int) size;
 	}
 
-	public int randomBucketId(long count) {
-		double rnd = Math.random() * getBucketSize(count);
-		return (int) rnd;
+	private int batchSize() {
+		return options.getSearchOptions().getSyncBatchSize();
 	}
 
 	@Override
-	public void store(MeshVertex vertex) {
-		long elementCount = database.count(vertex.getClass());
-		int bucketId = randomBucketId(elementCount);
-		System.out.println("Stored bucketId {" + bucketId + "} for type {" + vertex.getClass().getSimpleName() + "} with count {" + elementCount
-			+ "}. Max Bucket is " + getBucketSize(elementCount));
-		vertex.setBucketId(bucketId);
+	public void store(BucketableElement element) {
+		int bucketId = ThreadLocalRandom.current().nextInt(0, Integer.MAX_VALUE);
+		log.info("Stored bucketId {" + bucketId + "} for type {" + element.getClass().getSimpleName() + "}");
+		element.setBucketId(bucketId);
+	}
+
+	@Override
+	public Flowable<BucketPartition> getBucketPartitions(Class<? extends BucketableElement> clazz) {
+		long count = database.count(clazz);
+		int partitionCount = getBucketPartitionCount(count);
+		int partitionSize = Integer.MAX_VALUE / partitionCount;
+		log.info("Calculated {" + partitionCount + "} partitions are needed for {" + count + "} elements and batch size of {" + batchSize() + "}");
+		return Flowable.range(0, partitionCount).map(partition -> {
+			long start = partitionSize * partition.intValue();
+			long end = start - 1 + partitionSize;
+			// Cap to end to prevent issues with loss of precision during division
+			if (partitionCount - 1 == partition) {
+				end = Integer.MAX_VALUE;
+			}
+			return new BucketPartition(start, end);
+		});
 	}
 
 }

@@ -44,9 +44,9 @@ import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
+import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.traversals.VertexTraversal;
-
-import io.reactivex.Single;
+import com.tinkerpop.blueprints.Element;
 
 /**
  * @see Group
@@ -58,6 +58,12 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 		index.createIndex(vertexIndex(GroupImpl.class)
 			.withField("name", FieldType.STRING)
 			.unique());
+	}
+
+	@Override
+	protected void init(FramedGraph graph, Element element, Object id) {
+		super.init(graph, element, id);
+		mesh().bucketManager().store(this);
 	}
 
 	@Override

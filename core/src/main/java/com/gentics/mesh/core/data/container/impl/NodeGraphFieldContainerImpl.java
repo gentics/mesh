@@ -82,7 +82,6 @@ import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
-import com.gentics.mesh.madl.field.FieldType;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
@@ -94,7 +93,9 @@ import com.gentics.mesh.util.VersionNumber;
 import com.google.common.base.Equivalence;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
+import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.traversals.EdgeTraversal;
+import com.tinkerpop.blueprints.Element;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -123,6 +124,12 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		index.createIndex(vertexIndex(NodeGraphFieldContainerImpl.class)
 			.withField(BUCKET_ID_KEY, INTEGER)
 			.withField(SCHEMA_CONTAINER_VERSION_KEY_PROPERTY, STRING));
+	}
+
+	@Override
+	protected void init(FramedGraph graph, Element element, Object id) {
+		super.init(graph, element, id);
+		mesh().bucketManager().store(this);
 	}
 
 	@Override

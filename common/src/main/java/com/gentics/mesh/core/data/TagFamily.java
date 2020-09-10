@@ -16,6 +16,7 @@ import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.search.BucketableElement;
 
 /**
  * The TagFamily domain model interface.
@@ -24,7 +25,7 @@ import com.gentics.mesh.parameter.PagingParameters;
  * projects via the {@link TagFamilyRootImpl} class.
  */
 public interface TagFamily extends MeshCoreVertex<TagFamilyResponse, TagFamily>, ReferenceableElement<TagFamilyReference>, UserTrackingVertex,
-	RootVertex<Tag>, ProjectElement {
+	RootVertex<Tag>, ProjectElement, BucketableElement {
 
 	TypeInfo TYPE_INFO = new TypeInfo(ElementType.TAGFAMILY, TAG_FAMILY_CREATED, TAG_FAMILY_UPDATED, TAG_FAMILY_DELETED);
 

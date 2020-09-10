@@ -50,8 +50,10 @@ import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
+import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
+import com.tinkerpop.blueprints.Element;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -67,6 +69,12 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(TagImpl.class, MeshVertexImpl.class);
+	}
+
+	@Override
+	protected void init(FramedGraph graph, Element element, Object id) {
+		super.init(graph, element, id);
+		mesh().bucketManager().store(this);
 	}
 
 	@Override

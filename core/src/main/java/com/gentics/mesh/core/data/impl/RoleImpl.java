@@ -41,6 +41,7 @@ import com.gentics.mesh.parameter.value.FieldsSet;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Element;
 
 import io.reactivex.Single;
 
@@ -54,6 +55,12 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 		index.createIndex(vertexIndex(RoleImpl.class)
 			.withField("name", FieldType.STRING)
 			.unique());
+	}
+
+	@Override
+	protected void init(FramedGraph graph, Element element, Object id) {
+		super.init(graph, element, id);
+		mesh().bucketManager().store(this);
 	}
 
 	@Override

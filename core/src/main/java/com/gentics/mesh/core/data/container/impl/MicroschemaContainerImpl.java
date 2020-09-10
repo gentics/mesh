@@ -18,6 +18,8 @@ import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
+import com.syncleus.ferma.FramedGraph;
+import com.tinkerpop.blueprints.Element;
 
 /**
  * See {@link MicroschemaContainer}
@@ -38,6 +40,12 @@ public class MicroschemaContainerImpl extends
 
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(MicroschemaContainerImpl.class, MeshVertexImpl.class);
+	}
+
+	@Override
+	protected void init(FramedGraph graph, Element element, Object id) {
+		super.init(graph, element, id);
+		mesh().bucketManager().store(this);
 	}
 
 	@Override

@@ -29,6 +29,8 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.madl.traversal.TraversalResult;
+import com.syncleus.ferma.FramedGraph;
+import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
 
 /**
@@ -50,6 +52,12 @@ public class SchemaContainerImpl extends
 
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(SchemaContainerImpl.class, MeshVertexImpl.class);
+	}
+
+	@Override
+	protected void init(FramedGraph graph, Element element, Object id) {
+		super.init(graph, element, id);
+		mesh().bucketManager().store(this);
 	}
 
 	@Override

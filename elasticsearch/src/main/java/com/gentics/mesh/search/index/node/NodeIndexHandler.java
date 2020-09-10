@@ -49,8 +49,10 @@ import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.Transactional;
+import com.gentics.mesh.search.BucketableElement;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.BucketManager;
+import com.gentics.mesh.search.index.BucketPartition;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 import com.gentics.mesh.search.index.metric.SyncMetersFactory;
 import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
@@ -88,17 +90,14 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	@Inject
 	public NodeContainerMappingProvider mappingProvider;
 
-	private final BucketManager bucketManager;
-
 	@Inject
 	public NodeIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options,
 		SyncMetersFactory syncMetersFactory, BucketManager bucketManager) {
-		super(searchProvider, db, boot, helper, options, syncMetersFactory);
-		this.bucketManager = bucketManager;
+		super(searchProvider, db, boot, helper, options, syncMetersFactory, bucketManager);
 	}
 
 	@Override
-	public Class<Node> getElementClass() {
+	public Class<? extends BucketableElement> getElementClass() {
 		return Node.class;
 	}
 
@@ -248,13 +247,14 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 * @param bucketId
 	 * @return indexName -> documentName -> NodeGraphFieldContainer
 	 */
-	private Map<String, Map<String, NodeGraphFieldContainer>> loadVersionsFromGraph(Branch branch, SchemaContainerVersion version, ContainerType type, int bucketId) {
+	private Map<String, Map<String, NodeGraphFieldContainer>> loadVersionsFromGraph(Branch branch, SchemaContainerVersion version, ContainerType type, BucketPartition
+		bucketPartion) {
 		return db.tx(() -> {
 			String branchUuid = branch.getUuid();
 			List<String> indexLanguages = version.getSchema().findOverriddenSearchLanguages().collect(Collectors.toList());
 
-			return version.getFieldContainers(bucketId, branchUuid)
-				.filter(c -> bucketId == c.getBucketId())
+			return version.getFieldContainers(branchUuid)
+				.filter(bucketPartion.filter())
 				.filter(c -> c.isType(type, branchUuid))
 				.collect(Collectors.groupingBy(content -> {
 					String languageTag = content.getLanguageTag();
@@ -289,18 +289,19 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	private Flowable<SearchRequest> diffAndSync(Project project, Branch branch, SchemaContainerVersion version, ContainerType type) {
-		// Sync each bucket individually
-		return Flowable.range(0, bucketManager.getBucketSize(10000)).flatMap(bucketId -> {
-			return diffAndSync(project, branch, version,type, bucketId);
+		// Sync each bucket partition individually
+		Flowable<BucketPartition> partions = bucketManager.getBucketPartitions(NodeGraphFieldContainer.class);
+		return partions.flatMap(bucketPartion-> {
+			return diffAndSync(project, branch, version,type, bucketPartion);
 		});
 	}
 
 	private Publisher<? extends SearchRequest> diffAndSync(Project project, Branch branch, SchemaContainerVersion version, ContainerType type,
-		Integer bucketId) {
+		BucketPartition partition) {
 		return Flowable.defer(() -> {
-			Map<String, Map<String, NodeGraphFieldContainer>> sourceNodesPerIndex = loadVersionsFromGraph(branch, version, type, bucketId);
+			Map<String, Map<String, NodeGraphFieldContainer>> sourceNodesPerIndex = loadVersionsFromGraph(branch, version, type, partition);
 			return Flowable.fromIterable(getIndexNames(project, branch, version, type))
-				.flatMap(indexName -> loadVersionsFromIndex(indexName, bucketId).flatMapPublisher(sinkVersions -> {
+				.flatMap(indexName -> loadVersionsFromIndex(indexName, partition).flatMapPublisher(sinkVersions -> {
 				log.info("Handling index sync on handler {" + getClass().getName() + "}");
 				Map<String, NodeGraphFieldContainer> sourceNodes = sourceNodesPerIndex.getOrDefault(indexName, Collections.emptyMap());
 				String branchUuid = branch.getUuid();
