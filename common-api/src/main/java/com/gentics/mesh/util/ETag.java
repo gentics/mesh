@@ -40,6 +40,17 @@ public class ETag {
 	}
 
 	/**
+	 * Hash the given long in order to generate a uniform etag hash.
+	 *
+	 * @param key
+	 *            Key which should be hashed
+	 * @return Computed hash
+	 */
+	public static String hash(long key) {
+		return Hashing.crc32c().hashLong(key).toString();
+	}
+
+	/**
 	 * Wrap the given etag with the needed quotes and add the weak flag if needed.
 	 * 
 	 * @param entityTag
