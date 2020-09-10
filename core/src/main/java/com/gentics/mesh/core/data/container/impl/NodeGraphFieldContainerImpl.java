@@ -127,12 +127,6 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	protected void init(FramedGraph graph, Element element, Object id) {
-		super.init(graph, element, id);
-		mesh().bucketManager().store(this);
-	}
-
-	@Override
 	public void setSchemaContainerVersion(GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> version) {
 		property(SCHEMA_CONTAINER_VERSION_KEY_PROPERTY, version.getUuid());
 	}

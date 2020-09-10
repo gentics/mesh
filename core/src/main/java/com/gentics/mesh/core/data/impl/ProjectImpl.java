@@ -63,8 +63,6 @@ import com.gentics.mesh.madl.field.FieldType;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
-import com.syncleus.ferma.FramedGraph;
-import com.tinkerpop.blueprints.Element;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -82,12 +80,6 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		index.createIndex(vertexIndex(ProjectImpl.class)
 			.withField("name", FieldType.STRING)
 			.unique());
-	}
-
-	@Override
-	protected void init(FramedGraph graph, Element element, Object id) {
-		super.init(graph, element, id);
-		mesh().bucketManager().store(this);
 	}
 
 	@Override

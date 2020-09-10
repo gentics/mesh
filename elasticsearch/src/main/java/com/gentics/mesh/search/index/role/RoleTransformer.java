@@ -1,5 +1,6 @@
 package com.gentics.mesh.search.index.role;
 
+import static com.gentics.mesh.search.index.MappingHelper.BUCKET_ID_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 
 import javax.inject.Inject;
@@ -39,6 +40,7 @@ public class RoleTransformer extends AbstractTransformer<Role> {
 		addBasicReferences(document, role);
 		addPermissionInfo(document, role);
 		document.put(VERSION_KEY, generateVersion(role));
+		document.put(BUCKET_ID_KEY, role.getBucketId());
 		return document;
 	}
 

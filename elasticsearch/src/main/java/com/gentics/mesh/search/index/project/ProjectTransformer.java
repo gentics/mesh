@@ -1,5 +1,6 @@
 package com.gentics.mesh.search.index.project;
 
+import static com.gentics.mesh.search.index.MappingHelper.BUCKET_ID_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 
 import javax.inject.Inject;
@@ -33,6 +34,7 @@ public class ProjectTransformer extends AbstractTransformer<Project> {
 		addBasicReferences(document, project);
 		addPermissionInfo(document, project);
 		document.put(VERSION_KEY, generateVersion(project));
+		document.put(BUCKET_ID_KEY, project.getBucketId());
 		return document;
 	}
 

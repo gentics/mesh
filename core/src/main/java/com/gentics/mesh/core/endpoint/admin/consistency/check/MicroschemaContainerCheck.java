@@ -38,6 +38,10 @@ public class MicroschemaContainerCheck extends AbstractConsistencyCheck {
 		if (microschemaContainer.getLastEditedTimestamp() == null) {
 			result.addInconsistency("The microschemaContainer edit timestamp is not set", uuid, MEDIUM);
 		}
+		if (microschemaContainer.getBucketId() == null) {
+			result.addInconsistency("The microschemaContainer bucket id is not set", uuid, MEDIUM);
+		}
+
 
 	}
 

@@ -24,7 +24,7 @@ public class ElasticSearchOptions implements Option {
 
 	public static final int DEFAULT_BULK_LIMIT = 100;
 	public static final int DEFAULT_BULK_LENGTH_LIMIT = 5_000_000;
-	public static final int DEFAULT_SYNC_BATCH_SIZE= 10_000;
+	public static final int DEFAULT_SYNC_BATCH_SIZE= 50_000;
 
 	public static final int DEFAULT_EVENT_BUFFER_SIZE = 1000;
 	public static final int DEFAULT_BULK_DEBOUNCE_TIME = 2000;
@@ -184,11 +184,11 @@ public class ElasticSearchOptions implements Option {
 	@EnvironmentVariable(name = MESH_ELASTICSEARCH_COMPLIANCE_MODE_ENV, description = "Override the search compliance mode.")
 	private ComplianceMode complianceMode = DEFAULT_COMPLIANCE_MODE;
 
-	@JsonProperty(required=false)
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("Configure the index sync batch size. Default: " + DEFAULT_SYNC_BATCH_SIZE)
-	@EnvironmentVariable(name = MESH_ELASTICSEARCH_SYNC_BATCH_SIZE_ENV, description ="Override the search sync batch size")
-	private int batchSize = DEFAULT_SYNC_BATCH_SIZE;
-	
+	@EnvironmentVariable(name = MESH_ELASTICSEARCH_SYNC_BATCH_SIZE_ENV, description = "Override the search sync batch size")
+	private int syncBatchSize = DEFAULT_SYNC_BATCH_SIZE;
+
 	public ElasticSearchOptions() {
 
 	}
@@ -436,10 +436,10 @@ public class ElasticSearchOptions implements Option {
 	}
 
 	public int getSyncBatchSize() {
-		return batchSize;
+		return syncBatchSize;
 	}
 
 	public void setSyncBatchSize(int batchSize) {
-		this.batchSize = batchSize;
+		this.syncBatchSize = batchSize;
 	}
 }

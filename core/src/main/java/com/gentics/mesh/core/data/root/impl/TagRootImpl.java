@@ -96,6 +96,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 
 		// Set the tag family for the tag
 		tag.setTagFamily(tagFamily);
+		mesh().bucketManager().store(tag);
 		return tag;
 	}
 

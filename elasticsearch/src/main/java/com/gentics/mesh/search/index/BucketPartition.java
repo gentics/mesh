@@ -1,8 +1,12 @@
 package com.gentics.mesh.search.index;
 
+import static com.gentics.mesh.search.index.MappingHelper.BUCKET_ID_KEY;
+
 import java.util.function.Predicate;
 
 import com.gentics.mesh.search.BucketableElement;
+
+import io.vertx.core.json.JsonObject;
 
 public class BucketPartition {
 
@@ -44,6 +48,16 @@ public class BucketPartition {
 		};
 	}
 
+	public JsonObject rangeQuery() {
+		JsonObject rangeQuery = new JsonObject();
+		JsonObject rangeQueryParams = new JsonObject();
+		rangeQueryParams.put("gte", start());
+		rangeQueryParams.put("lte", end());
+		//rangeQueryParams.put("relation", "WITHIN");
+		rangeQuery.put(BUCKET_ID_KEY, rangeQueryParams);
+		return new JsonObject().put("range", rangeQuery);
+	}
+
 	/**
 	 * Test whether the given bucketId is within the bounds of the partition
 	 * 
@@ -54,8 +68,13 @@ public class BucketPartition {
 		return bucketId <= end && bucketId >= start;
 	}
 
+	public long size() {
+		return end - start;
+	}
+
 	@Override
 	public String toString() {
 		return "Partition: [" + start + "/" + end + "]";
 	}
+
 }

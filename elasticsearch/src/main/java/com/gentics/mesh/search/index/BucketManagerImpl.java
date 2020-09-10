@@ -34,12 +34,14 @@ public class BucketManagerImpl implements BucketManager {
 		if (batchSize <= 0) {
 			return 1;
 		}
-		long size = elementCount / batchSize;
+		double sizeP = (double) elementCount / (double) batchSize;
+		sizeP = Math.ceil(sizeP);
+		int size = (int) sizeP;
 		// Cap to 1 partition
 		if (size == 0) {
 			size = 1;
 		}
-		return (int) size;
+		return size;
 	}
 
 	private int batchSize() {
@@ -48,6 +50,10 @@ public class BucketManagerImpl implements BucketManager {
 
 	@Override
 	public void store(BucketableElement element) {
+		if (element.getBucketId() != null) {
+			//TODO remove me
+			throw new RuntimeException("BucketId already generated");
+		}
 		int bucketId = ThreadLocalRandom.current().nextInt(0, Integer.MAX_VALUE);
 		log.info("Stored bucketId {" + bucketId + "} for type {" + element.getClass().getSimpleName() + "}");
 		element.setBucketId(bucketId);
@@ -55,7 +61,7 @@ public class BucketManagerImpl implements BucketManager {
 
 	@Override
 	public Flowable<BucketPartition> getBucketPartitions(Class<? extends BucketableElement> clazz) {
-		long count = database.count(clazz);
+		long count = database.tx(() -> database.count(clazz));
 		int partitionCount = getBucketPartitionCount(count);
 		int partitionSize = Integer.MAX_VALUE / partitionCount;
 		log.info("Calculated {" + partitionCount + "} partitions are needed for {" + count + "} elements and batch size of {" + batchSize() + "}");

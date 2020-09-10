@@ -415,6 +415,8 @@ You can also recreate all indices if needed via the ```POST {apiLatest}/search/c
 
 NOTE: This operation will remove all indices which have been created by Mesh and rebuild them one at a time.
 
+The index sync is a memory intensive operation. The `search.syncBatchSize` setting can be used to control how much memory will be utilized during the synchronization. With 250 MB of the Heap memory is sufficient to index `250_000` elements.
+
 == Binary Search
 
 Document uploads to Gentics Mesh will automatically be parsed and the containing text will be extracted. This information will also be added to the search index and thus it is possible to search for text within uploaded documents.

@@ -47,6 +47,9 @@ public class GroupCheck extends AbstractConsistencyCheck {
 		if (group.getLastEditedTimestamp() == null) {
 			result.addInconsistency("The group edit timestamp is not set", uuid, MEDIUM);
 		}
+		if (group.getBucketId() == null) {
+			result.addInconsistency("The group bucket id is not set", uuid, MEDIUM);
+		}
 
 	}
 

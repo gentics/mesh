@@ -11,10 +11,9 @@ import java.util.stream.Collectors;
 import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.elasticsearch.client.okhttp.RequestBuilder;
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.search.CreateIndexEntry;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
@@ -30,10 +29,10 @@ import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.search.BucketableElement;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.BucketManager;
 import com.gentics.mesh.search.index.BucketPartition;
-import com.gentics.mesh.search.index.MappingHelper;
 import com.gentics.mesh.search.index.MappingProvider;
 import com.gentics.mesh.search.index.Transformer;
 import com.gentics.mesh.search.index.metric.SyncMeters;
@@ -198,10 +197,10 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	protected Flowable<SearchRequest> diffAndSync(String indexName, String projectUuid) {
 		// Sync each bucket partition individually
 		Flowable<BucketPartition> partions = bucketManager.getBucketPartitions(getElementClass());
-		return partions.flatMap(bucketPartion-> {
+		log.info("Handling index sync on handler {" + getClass().getName() + "}");
+		return partions.flatMap(bucketPartion -> {
 			return diffAndSync(indexName, projectUuid, bucketPartion);
 		});
-
 	}
 
 	/**
@@ -215,9 +214,11 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	protected Flowable<SearchRequest> diffAndSync(String indexName, String projectUuid, BucketPartition partition) {
 		return Single.zip(
 			loadVersionsFromIndex(indexName, partition),
-			Single.fromCallable(this::loadVersionsFromGraph),
+			Single.fromCallable(() -> loadVersionsFromGraph(partition)),
 			(sinkVersions, sourceVersions) -> {
-				log.info("Handling index sync on handler {" + getClass().getName() + "}");
+				log.info("Handling index sync on handler {" + getClass().getName() + "} for partition {" + partition + "}");
+				log.debug("Found {" + sourceVersions.size() + "} elements in graph partition");
+				log.debug("Found {" + sinkVersions.size() + "} elements in search index partition");
 
 				MapDifference<String, String> diff = Maps.difference(sourceVersions, sinkVersions);
 				if (diff.areEqual()) {
@@ -229,8 +230,8 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 				Set<String> needUpdateInEs = diff.entriesDiffering().keySet();
 				Set<String> needRemovalInES = diff.entriesOnlyOnRight().keySet();
 
-				log.info("Pending insertions on {" + indexName + "}:" + needInsertionInES.size());
-				log.info("Pending removals on {" + indexName + "}:" + needRemovalInES.size());
+				log.info("Pending insertions on {" + indexName + "}: " + needInsertionInES.size());
+				log.info("Pending removals on {" + indexName + "}: " + needRemovalInES.size());
 
 				meters.getInsertMeter().addPending(needInsertionInES.size());
 				meters.getUpdateMeter().addPending((needUpdateInEs.size()));
@@ -258,11 +259,15 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		return elementLoader().apply(elementUuid);
 	}
 
-	private Map<String, String> loadVersionsFromGraph() {
-		return db.tx(() -> loadAllElements()
-			.collect(Collectors.toMap(
-				MeshElement::getUuid,
-				this::generateVersion)));
+	private Map<String, String> loadVersionsFromGraph(BucketPartition partition) {
+		return db.tx(() -> {
+			return loadAllElements()
+				.filter(element -> {
+					return partition.filter().test((BucketableElement)element);
+				}).collect(Collectors.toMap(
+					MeshElement::getUuid,
+					this::generateVersion));
+		});
 	}
 
 	// TODO Async
@@ -270,19 +275,15 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		return Single.fromCallable(() -> {
 			String fullIndexName = searchProvider.installationPrefix() + indexName;
 			Map<String, String> versions = new HashMap<>();
-			log.debug("Loading document info from index {" + fullIndexName + "}");
+			log.debug("Loading document info from index {" + fullIndexName + "} in partition {" + partition + "}");
 			ElasticsearchClient<JsonObject> client = searchProvider.getClient();
 			JsonObject query = new JsonObject();
 			query.put("size", ES_SYNC_FETCH_BATCH_SIZE);
 			query.put("_source", new JsonArray().add("uuid").add("version"));
-			JsonObject rangeQuery = new JsonObject();
-			JsonObject rangeQueryParams = new JsonObject();
-			rangeQueryParams.put("gte", partition.start());
-			rangeQueryParams.put("lte", partition.end());
-			rangeQuery.put(MappingHelper.BUCKET_ID_KEY, rangeQueryParams);
-			query.put("query", new JsonObject().put("range", rangeQuery));
+			query.put("query", partition.rangeQuery());
 			query.put("sort", new JsonArray().add("_doc"));
 
+			log.info("Using query {\n" + query.encodePrettily() + "\n");
 			RequestBuilder<JsonObject> builder = client.searchScroll(query, "1m", fullIndexName);
 			JsonObject result = new JsonObject();
 			try {

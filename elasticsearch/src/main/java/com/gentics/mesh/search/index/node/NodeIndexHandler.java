@@ -247,8 +247,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 * @param bucketId
 	 * @return indexName -> documentName -> NodeGraphFieldContainer
 	 */
-	private Map<String, Map<String, NodeGraphFieldContainer>> loadVersionsFromGraph(Branch branch, SchemaContainerVersion version, ContainerType type, BucketPartition
-		bucketPartion) {
+	private Map<String, Map<String, NodeGraphFieldContainer>> loadVersionsFromGraph(Branch branch, SchemaContainerVersion version, ContainerType type, BucketPartition bucketPartion) {
 		return db.tx(() -> {
 			String branchUuid = branch.getUuid();
 			List<String> indexLanguages = version.getSchema().findOverriddenSearchLanguages().collect(Collectors.toList());
@@ -259,17 +258,15 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				.collect(Collectors.groupingBy(content -> {
 					String languageTag = content.getLanguageTag();
 					return NodeGraphFieldContainer.composeIndexName(
-							branch.getProject().getUuid(),
-							branchUuid,
-							version.getUuid(),
-							type,
-							indexLanguages.contains(languageTag)
-								? languageTag
-								: null
-						);
-					},
-					Collectors.toMap(c -> c.getParentNode().getUuid() + "-" + c.getLanguageTag(), Function.identity())
-				));
+						branch.getProject().getUuid(),
+						branchUuid,
+						version.getUuid(),
+						type,
+						indexLanguages.contains(languageTag)
+							? languageTag
+							: null);
+				},
+					Collectors.toMap(c -> c.getParentNode().getUuid() + "-" + c.getLanguageTag(), Function.identity())));
 		});
 	}
 
@@ -289,10 +286,11 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	private Flowable<SearchRequest> diffAndSync(Project project, Branch branch, SchemaContainerVersion version, ContainerType type) {
+		log.info("Handling index sync on handler {" + getClass().getName() + "}");
 		// Sync each bucket partition individually
 		Flowable<BucketPartition> partions = bucketManager.getBucketPartitions(NodeGraphFieldContainer.class);
-		return partions.flatMap(bucketPartion-> {
-			return diffAndSync(project, branch, version,type, bucketPartion);
+		return partions.flatMap(bucketPartion -> {
+			return diffAndSync(project, branch, version, type, bucketPartion);
 		});
 	}
 
@@ -302,46 +300,46 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			Map<String, Map<String, NodeGraphFieldContainer>> sourceNodesPerIndex = loadVersionsFromGraph(branch, version, type, partition);
 			return Flowable.fromIterable(getIndexNames(project, branch, version, type))
 				.flatMap(indexName -> loadVersionsFromIndex(indexName, partition).flatMapPublisher(sinkVersions -> {
-				log.info("Handling index sync on handler {" + getClass().getName() + "}");
-				Map<String, NodeGraphFieldContainer> sourceNodes = sourceNodesPerIndex.getOrDefault(indexName, Collections.emptyMap());
-				String branchUuid = branch.getUuid();
+					log.debug("Handling index sync on handler {" + getClass().getName() + "} for partition {" + partition + "}");
+					Map<String, NodeGraphFieldContainer> sourceNodes = sourceNodesPerIndex.getOrDefault(indexName, Collections.emptyMap());
+					String branchUuid = branch.getUuid();
 
-				Map<String, String> sourceVersions = db.tx(() -> sourceNodes.entrySet().stream()
-					.collect(Collectors.toMap(Map.Entry::getKey, x -> generateVersion(x.getValue(), branchUuid, type))));
+					Map<String, String> sourceVersions = db.tx(() -> sourceNodes.entrySet().stream()
+						.collect(Collectors.toMap(Map.Entry::getKey, x -> generateVersion(x.getValue(), branchUuid, type))));
 
-				// 3. Diff the maps
-				MapDifference<String, String> diff = Maps.difference(sourceVersions, sinkVersions);
-				if (diff.areEqual()) {
-					return Flowable.empty();
-				}
-				Set<String> needInsertionInES = diff.entriesOnlyOnLeft().keySet();
-				Set<String> needRemovalInES = diff.entriesOnlyOnRight().keySet();
-				Set<String> needUpdateInEs = diff.entriesDiffering().keySet();
+					// 3. Diff the maps
+					MapDifference<String, String> diff = Maps.difference(sourceVersions, sinkVersions);
+					if (diff.areEqual()) {
+						return Flowable.empty();
+					}
+					Set<String> needInsertionInES = diff.entriesOnlyOnLeft().keySet();
+					Set<String> needRemovalInES = diff.entriesOnlyOnRight().keySet();
+					Set<String> needUpdateInEs = diff.entriesDiffering().keySet();
 
-				log.info("Pending insertions on {" + indexName + "}:" + needInsertionInES.size());
-				log.info("Pending removals on {" + indexName + "}:" + needRemovalInES.size());
-				log.info("Pending updates on {" + indexName + "}:" + needUpdateInEs.size());
+					log.info("Pending insertions on {" + indexName + "}:" + needInsertionInES.size());
+					log.info("Pending removals on {" + indexName + "}:" + needRemovalInES.size());
+					log.info("Pending updates on {" + indexName + "}:" + needUpdateInEs.size());
 
-				meters.getInsertMeter().addPending(needInsertionInES.size());
-				meters.getDeleteMeter().addPending(needRemovalInES.size());
-				meters.getUpdateMeter().addPending(needUpdateInEs.size());
+					meters.getInsertMeter().addPending(needInsertionInES.size());
+					meters.getDeleteMeter().addPending(needRemovalInES.size());
+					meters.getUpdateMeter().addPending(needUpdateInEs.size());
 
-				io.reactivex.functions.Function<Action, io.reactivex.functions.Function<String, CreateDocumentRequest>> toCreateRequest = action -> uuid -> {
-					JsonObject doc = db.tx(() -> getTransformer().toDocument(sourceNodes.get(uuid), branchUuid, type));
-					return helper.createDocumentRequest(indexName, uuid, doc, complianceMode, action);
-				};
+					io.reactivex.functions.Function<Action, io.reactivex.functions.Function<String, CreateDocumentRequest>> toCreateRequest = action -> uuid -> {
+						JsonObject doc = db.tx(() -> getTransformer().toDocument(sourceNodes.get(uuid), branchUuid, type));
+						return helper.createDocumentRequest(indexName, uuid, doc, complianceMode, action);
+					};
 
-				Flowable<SearchRequest> toInsert = Flowable.fromIterable(needInsertionInES)
-					.map(toCreateRequest.apply(meters.getInsertMeter()::synced));
+					Flowable<SearchRequest> toInsert = Flowable.fromIterable(needInsertionInES)
+						.map(toCreateRequest.apply(meters.getInsertMeter()::synced));
 
-				Flowable<SearchRequest> toUpdate = Flowable.fromIterable(needUpdateInEs)
-					.map(toCreateRequest.apply(meters.getUpdateMeter()::synced));
+					Flowable<SearchRequest> toUpdate = Flowable.fromIterable(needUpdateInEs)
+						.map(toCreateRequest.apply(meters.getUpdateMeter()::synced));
 
-				Flowable<SearchRequest> toDelete = Flowable.fromIterable(needRemovalInES)
-					.map(uuid -> helper.deleteDocumentRequest(indexName, uuid, complianceMode, meters.getDeleteMeter()::synced));
+					Flowable<SearchRequest> toDelete = Flowable.fromIterable(needRemovalInES)
+						.map(uuid -> helper.deleteDocumentRequest(indexName, uuid, complianceMode, meters.getDeleteMeter()::synced));
 
-				return Flowable.merge(toInsert, toUpdate, toDelete);
-			}));
+					return Flowable.merge(toInsert, toUpdate, toDelete);
+				}));
 		});
 	}
 
@@ -353,14 +351,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 					branch.getUuid(),
 					version.getUuid(),
 					type,
-					lang
-				));
+					lang));
 			Stream<String> defaultIndex = Stream.of(NodeGraphFieldContainer.composeIndexName(
 				project.getUuid(),
 				branch.getUuid(),
 				version.getUuid(),
-				type
-			));
+				type));
 			return Stream.concat(languageIndices, defaultIndex)
 				.collect(Collectors.toList());
 		});
@@ -374,8 +370,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				return Collections.singleton(NodeGraphFieldContainer.composeIndexPattern(
 					project.getUuid(),
 					branch.getUuid(),
-					type
-				));
+					type));
 			} else {
 				return Collections.singleton(NodeGraphFieldContainer.composeIndexPattern(type));
 			}

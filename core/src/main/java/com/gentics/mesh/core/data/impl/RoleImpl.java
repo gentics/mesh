@@ -1,20 +1,15 @@
 package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import com.gentics.madl.index.IndexHandler;
-import com.gentics.madl.tx.Tx;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
@@ -38,12 +33,7 @@ import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
-import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.traversals.VertexTraversal;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Element;
-
-import io.reactivex.Single;
 
 /**
  * @see Role
@@ -55,12 +45,6 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 		index.createIndex(vertexIndex(RoleImpl.class)
 			.withField("name", FieldType.STRING)
 			.unique());
-	}
-
-	@Override
-	protected void init(FramedGraph graph, Element element, Object id) {
-		super.init(graph, element, id);
-		mesh().bucketManager().store(this);
 	}
 
 	@Override

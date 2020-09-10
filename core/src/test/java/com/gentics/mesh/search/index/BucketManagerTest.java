@@ -19,6 +19,28 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 public class BucketManagerTest extends AbstractMeshTest {
 
 	/**
+	 * Assert that two partitions will be generated when batch size is 10 and only 15 elements exist.
+	 */
+	@Test
+	public void testSmallerBatchSizeVsElementCount() {
+		int syncBatchSize = 10;
+		options().getSearchOptions().setSyncBatchSize(syncBatchSize);
+		try (Tx tx = tx()) {
+			int nUsers = 11;
+			long userCount = createUsers(nUsers);
+
+			// Test bulk manager
+			BucketManager bulkManager = mesh().bucketManager();
+			List<BucketPartition> partitions = bulkManager.getBucketPartitions(UserImpl.class).toList().blockingGet();
+			assertPartitions(partitions, syncBatchSize);
+			int expectedPartitionCount = 2;
+			assertEquals(expectedPartitionCount, bulkManager.getBucketPartitionCount(userCount));
+			assertEquals(expectedPartitionCount, partitions.size());
+		}
+
+	}
+
+	/**
 	 * Assert that a batch size of 0 automatically results in the use of a single partition.
 	 */
 	@Test
@@ -32,7 +54,7 @@ public class BucketManagerTest extends AbstractMeshTest {
 			// Test bulk manager
 			BucketManager bulkManager = mesh().bucketManager();
 			List<BucketPartition> partitions = bulkManager.getBucketPartitions(UserImpl.class).toList().blockingGet();
-			assertPartitions(partitions);
+			assertPartitions(partitions, syncBatchSize);
 			int expectedPartitionCount = 1;
 			assertEquals(expectedPartitionCount, bulkManager.getBucketPartitionCount(userCount));
 			assertEquals(expectedPartitionCount, partitions.size());
@@ -56,7 +78,7 @@ public class BucketManagerTest extends AbstractMeshTest {
 			// Test bulk manager
 			BucketManager bulkManager = mesh().bucketManager();
 			List<BucketPartition> partitions = bulkManager.getBucketPartitions(UserImpl.class).toList().blockingGet();
-			assertPartitions(partitions);
+			assertPartitions(partitions, syncBatchSize);
 			int expectedPartitionCount = 1;
 			assertEquals(expectedPartitionCount, bulkManager.getBucketPartitionCount(userCount));
 			assertEquals(expectedPartitionCount, partitions.size());
@@ -75,16 +97,17 @@ public class BucketManagerTest extends AbstractMeshTest {
 			// Test bulk manager
 			BucketManager bulkManager = mesh().bucketManager();
 			List<BucketPartition> partitions = bulkManager.getBucketPartitions(UserImpl.class).toList().blockingGet();
-			assertPartitions(partitions);
-			int expectedPartitionCount = nUsers / syncBatchSize;
+			assertPartitions(partitions, syncBatchSize);
+			int expectedPartitionCount = (nUsers / syncBatchSize) + 1;
 			assertEquals(expectedPartitionCount, bulkManager.getBucketPartitionCount(userCount));
 			assertEquals(expectedPartitionCount, partitions.size());
 		}
 	}
 
-	private void assertPartitions(List<BucketPartition> partitions) {
+	private void assertPartitions(List<BucketPartition> partitions, int batchSize) {
 		BucketPartition prev = null;
 		for (BucketPartition partition : partitions) {
+			System.out.println(partition);
 			if (prev == null) {
 				assertEquals("The first partition did not start at 0", 0, partition.start());
 			} else {

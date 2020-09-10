@@ -1,8 +1,10 @@
 package com.gentics.mesh.search.index;
 
 import static com.gentics.mesh.search.SearchProvider.DEFAULT_TYPE;
+
 import static com.gentics.mesh.search.index.MappingHelper.BUCKET_ID_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.DATE;
+import static com.gentics.mesh.search.index.MappingHelper.INTEGER;
 import static com.gentics.mesh.search.index.MappingHelper.KEYWORD;
 import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.VERSION_KEY;
@@ -33,7 +35,7 @@ public abstract class AbstractMappingProvider implements MappingProvider {
 		JsonObject mappingProperties = getMappingProperties();
 		mappingProperties.put(UUID_KEY, notAnalyzedType(KEYWORD));
 		mappingProperties.put(VERSION_KEY, notAnalyzedType(KEYWORD));
-		mappingProperties.put(BUCKET_ID_KEY, notAnalyzedType(KEYWORD));
+		mappingProperties.put(BUCKET_ID_KEY, notAnalyzedType(INTEGER));
 		mappingProperties.put("created", notAnalyzedType(DATE));
 		mappingProperties.put("edited", notAnalyzedType(DATE));
 		mappingProperties.put("editor", getUserReferenceMapping());
