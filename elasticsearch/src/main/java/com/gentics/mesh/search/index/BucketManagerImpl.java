@@ -28,8 +28,7 @@ public class BucketManagerImpl implements BucketManager {
 		this.database = database;
 	}
 
-	@Override
-	public int getBucketPartitionCount(long elementCount) {
+	private int getBucketCount(long elementCount) {
 		long batchSize = batchSize();
 		if (batchSize <= 0) {
 			return 1;
@@ -49,30 +48,19 @@ public class BucketManagerImpl implements BucketManager {
 	}
 
 	@Override
-	public void store(BucketableElement element) {
-		if (element.getBucketId() != null) {
-			//TODO remove me
-			throw new RuntimeException("BucketId already generated");
-		}
-		int bucketId = ThreadLocalRandom.current().nextInt(0, Integer.MAX_VALUE);
-		log.info("Stored bucketId {" + bucketId + "} for type {" + element.getClass().getSimpleName() + "}");
-		element.setBucketId(bucketId);
-	}
-
-	@Override
-	public Flowable<BucketPartition> getBucketPartitions(Class<? extends BucketableElement> clazz) {
+	public Flowable<Bucket> getBuckets(Class<? extends BucketableElement> clazz) {
 		long count = database.tx(() -> database.count(clazz));
-		int partitionCount = getBucketPartitionCount(count);
-		int partitionSize = Integer.MAX_VALUE / partitionCount;
-		log.info("Calculated {" + partitionCount + "} partitions are needed for {" + count + "} elements and batch size of {" + batchSize() + "}");
-		return Flowable.range(0, partitionCount).map(partition -> {
-			long start = partitionSize * partition.intValue();
-			long end = start - 1 + partitionSize;
+		int bucketCount = getBucketCount(count);
+		int bucketSize = Integer.MAX_VALUE / bucketCount;
+		log.info("Calculated {" + bucketCount + "} buckets are needed for {" + count + "} elements and batch size of {" + batchSize() + "}");
+		return Flowable.range(0, bucketCount).map(bucket -> {
+			long start = bucketSize * bucket.intValue();
+			long end = start - 1 + bucketSize;
 			// Cap to end to prevent issues with loss of precision during division
-			if (partitionCount - 1 == partition) {
+			if (bucketCount - 1 == bucket) {
 				end = Integer.MAX_VALUE;
 			}
-			return new BucketPartition(start, end);
+			return new Bucket(start, end);
 		});
 	}
 

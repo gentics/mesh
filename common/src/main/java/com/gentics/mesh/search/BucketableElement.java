@@ -1,5 +1,7 @@
 package com.gentics.mesh.search;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 import com.gentics.mesh.core.data.MeshVertex;
 
 /**
@@ -28,4 +30,13 @@ public interface BucketableElement extends MeshVertex {
 	default void setBucketId(Integer bucketId) {
 		property(BUCKET_ID_KEY, bucketId);
 	}
+
+	/**
+	 * Generate a new random bucketId.
+	 */
+	default void generateBucketId() {
+		int bucketId = ThreadLocalRandom.current().nextInt(0, Integer.MAX_VALUE);
+		setBucketId(bucketId);
+	}
+
 }

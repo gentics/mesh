@@ -279,7 +279,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 		tag.setName(name);
 		tag.setCreated(creator);
 		tag.setProject(project);
-		mesh().bucketManager().store(tag);
+		tag.generateBucketId();
 
 		// Add the tag to the global tag root
 		mesh().boot().meshRoot().getTagRoot().addTag(tag);

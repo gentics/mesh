@@ -73,7 +73,7 @@ public class PrepareBucketableElements extends AbstractHighLevelChange {
 		long count = 0;
 		while (it.hasNext()) {
 			T element = it.next();
-			manager.store(element);
+			element.generateBucketId();
 			if (count % 10_000 == 0) {
 				log.info("Migrated {" + count + "} of type {" + clazz.getSimpleName() + "}");
 				Tx.get().commit();

@@ -13,7 +13,6 @@ import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.elasticsearch.client.okhttp.RequestBuilder;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.search.CreateIndexEntry;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
@@ -32,7 +31,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.BucketableElement;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.BucketManager;
-import com.gentics.mesh.search.index.BucketPartition;
+import com.gentics.mesh.search.index.Bucket;
 import com.gentics.mesh.search.index.MappingProvider;
 import com.gentics.mesh.search.index.Transformer;
 import com.gentics.mesh.search.index.metric.SyncMeters;
@@ -196,11 +195,11 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 	protected Flowable<SearchRequest> diffAndSync(String indexName, String projectUuid) {
 		// Sync each bucket partition individually
-		Flowable<BucketPartition> partions = bucketManager.getBucketPartitions(getElementClass());
+		Flowable<Bucket> partions = bucketManager.getBuckets(getElementClass());
 		log.info("Handling index sync on handler {" + getClass().getName() + "}");
 		return partions.flatMap(bucketPartion -> {
 			return diffAndSync(indexName, projectUuid, bucketPartion);
-		});
+		}, 1);
 	}
 
 	/**
@@ -211,7 +210,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	 * @param partition
 	 * @return
 	 */
-	protected Flowable<SearchRequest> diffAndSync(String indexName, String projectUuid, BucketPartition partition) {
+	protected Flowable<SearchRequest> diffAndSync(String indexName, String projectUuid, Bucket partition) {
 		return Single.zip(
 			loadVersionsFromIndex(indexName, partition),
 			Single.fromCallable(() -> loadVersionsFromGraph(partition)),
@@ -259,7 +258,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		return elementLoader().apply(elementUuid);
 	}
 
-	private Map<String, String> loadVersionsFromGraph(BucketPartition partition) {
+	private Map<String, String> loadVersionsFromGraph(Bucket partition) {
 		return db.tx(() -> {
 			return loadAllElements()
 				.filter(element -> {
@@ -271,7 +270,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	}
 
 	// TODO Async
-	public Single<Map<String, String>> loadVersionsFromIndex(String indexName, BucketPartition partition) {
+	public Single<Map<String, String>> loadVersionsFromIndex(String indexName, Bucket partition) {
 		return Single.fromCallable(() -> {
 			String fullIndexName = searchProvider.installationPrefix() + indexName;
 			Map<String, String> versions = new HashMap<>();

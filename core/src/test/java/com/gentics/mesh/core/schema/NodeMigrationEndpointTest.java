@@ -906,6 +906,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			User user = user();
 			// create version 1 of the microschema
 			container = tx.getGraph().addFramedVertex(MicroschemaContainerImpl.class);
+			container.generateBucketId();
 			container.setCreated(user());
 			versionA = tx.getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
 			container.setLatestVersion(versionA);
@@ -1225,6 +1226,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 	private SchemaContainer createDummySchemaWithChanges(String oldFieldName, String newFieldName, boolean setAddRaw) {
 
 		SchemaContainer container = Tx.get().getGraph().addFramedVertex(SchemaContainerImpl.class);
+		container.generateBucketId();
 		container.setName(UUID.randomUUID().toString());
 		container.setCreated(user());
 		EventQueueBatch batch = createBatch();

@@ -19,7 +19,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 public class BucketManagerTest extends AbstractMeshTest {
 
 	/**
-	 * Assert that two partitions will be generated when batch size is 10 and only 15 elements exist.
+	 * Assert that two buckets will be generated when batch size is 10 and only 15 elements exist.
 	 */
 	@Test
 	public void testSmallerBatchSizeVsElementCount() {
@@ -27,21 +27,20 @@ public class BucketManagerTest extends AbstractMeshTest {
 		options().getSearchOptions().setSyncBatchSize(syncBatchSize);
 		try (Tx tx = tx()) {
 			int nUsers = 11;
-			long userCount = createUsers(nUsers);
+			createUsers(nUsers);
 
 			// Test bulk manager
 			BucketManager bulkManager = mesh().bucketManager();
-			List<BucketPartition> partitions = bulkManager.getBucketPartitions(UserImpl.class).toList().blockingGet();
-			assertPartitions(partitions, syncBatchSize);
-			int expectedPartitionCount = 2;
-			assertEquals(expectedPartitionCount, bulkManager.getBucketPartitionCount(userCount));
-			assertEquals(expectedPartitionCount, partitions.size());
+			List<Bucket> buckets = bulkManager.getBuckets(UserImpl.class).toList().blockingGet();
+			assertBuckets(buckets, syncBatchSize);
+			int expectedBucketCount = 2;
+			assertEquals(expectedBucketCount, buckets.size());
 		}
 
 	}
 
 	/**
-	 * Assert that a batch size of 0 automatically results in the use of a single partition.
+	 * Assert that a batch size of 0 automatically results in the use of a single bucket.
 	 */
 	@Test
 	public void testBatchSizeZero() {
@@ -49,15 +48,14 @@ public class BucketManagerTest extends AbstractMeshTest {
 		options().getSearchOptions().setSyncBatchSize(syncBatchSize);
 		try (Tx tx = tx()) {
 			int nUsers = 500;
-			long userCount = createUsers(nUsers);
+			createUsers(nUsers);
 
 			// Test bulk manager
 			BucketManager bulkManager = mesh().bucketManager();
-			List<BucketPartition> partitions = bulkManager.getBucketPartitions(UserImpl.class).toList().blockingGet();
-			assertPartitions(partitions, syncBatchSize);
-			int expectedPartitionCount = 1;
-			assertEquals(expectedPartitionCount, bulkManager.getBucketPartitionCount(userCount));
-			assertEquals(expectedPartitionCount, partitions.size());
+			List<Bucket> buckets = bulkManager.getBuckets(UserImpl.class).toList().blockingGet();
+			assertBuckets(buckets, syncBatchSize);
+			int expectedBucketCount = 1;
+			assertEquals(expectedBucketCount, buckets.size());
 		}
 	}
 
@@ -77,11 +75,10 @@ public class BucketManagerTest extends AbstractMeshTest {
 
 			// Test bulk manager
 			BucketManager bulkManager = mesh().bucketManager();
-			List<BucketPartition> partitions = bulkManager.getBucketPartitions(UserImpl.class).toList().blockingGet();
-			assertPartitions(partitions, syncBatchSize);
-			int expectedPartitionCount = 1;
-			assertEquals(expectedPartitionCount, bulkManager.getBucketPartitionCount(userCount));
-			assertEquals(expectedPartitionCount, partitions.size());
+			List<Bucket> buckets = bulkManager.getBuckets(UserImpl.class).toList().blockingGet();
+			assertBuckets(buckets, syncBatchSize);
+			int expectedBucketsCount = 1;
+			assertEquals(expectedBucketsCount, buckets.size());
 		}
 	}
 
@@ -92,30 +89,29 @@ public class BucketManagerTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			// Create extra users
 			int nUsers = 500;
-			long userCount = createUsers(nUsers);
+			createUsers(nUsers);
 
 			// Test bulk manager
 			BucketManager bulkManager = mesh().bucketManager();
-			List<BucketPartition> partitions = bulkManager.getBucketPartitions(UserImpl.class).toList().blockingGet();
-			assertPartitions(partitions, syncBatchSize);
-			int expectedPartitionCount = (nUsers / syncBatchSize) + 1;
-			assertEquals(expectedPartitionCount, bulkManager.getBucketPartitionCount(userCount));
-			assertEquals(expectedPartitionCount, partitions.size());
+			List<Bucket> buckets = bulkManager.getBuckets(UserImpl.class).toList().blockingGet();
+			assertBuckets(buckets, syncBatchSize);
+			int expectedBucketsCount = (nUsers / syncBatchSize) + 1;
+			assertEquals(expectedBucketsCount, buckets.size());
 		}
 	}
 
-	private void assertPartitions(List<BucketPartition> partitions, int batchSize) {
-		BucketPartition prev = null;
-		for (BucketPartition partition : partitions) {
-			System.out.println(partition);
+	private void assertBuckets(List<Bucket> buckets, int batchSize) {
+		Bucket prev = null;
+		for (Bucket bucket : buckets) {
+			System.out.println(bucket);
 			if (prev == null) {
-				assertEquals("The first partition did not start at 0", 0, partition.start());
+				assertEquals("The first bucket did not start at 0", 0, bucket.start());
 			} else {
-				assertEquals("The partions did not connect as expected", prev.end(), partition.start() - 1);
+				assertEquals("The buckets did not connect as expected", prev.end(), bucket.start() - 1);
 			}
-			prev = partition;
+			prev = bucket;
 		}
-		assertEquals("The last partition did not end with maxInt.", Integer.MAX_VALUE, prev.end());
+		assertEquals("The last bucket did not end with maxInt.", Integer.MAX_VALUE, prev.end());
 	}
 
 	private long createUsers(int nUsers) {

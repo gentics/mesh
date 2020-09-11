@@ -52,7 +52,7 @@ import com.gentics.mesh.graphdb.spi.Transactional;
 import com.gentics.mesh.search.BucketableElement;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.BucketManager;
-import com.gentics.mesh.search.index.BucketPartition;
+import com.gentics.mesh.search.index.Bucket;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 import com.gentics.mesh.search.index.metric.SyncMetersFactory;
 import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
@@ -247,7 +247,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 * @param bucketId
 	 * @return indexName -> documentName -> NodeGraphFieldContainer
 	 */
-	private Map<String, Map<String, NodeGraphFieldContainer>> loadVersionsFromGraph(Branch branch, SchemaContainerVersion version, ContainerType type, BucketPartition bucketPartion) {
+	private Map<String, Map<String, NodeGraphFieldContainer>> loadVersionsFromGraph(Branch branch, SchemaContainerVersion version, ContainerType type, Bucket bucketPartion) {
 		return db.tx(() -> {
 			String branchUuid = branch.getUuid();
 			List<String> indexLanguages = version.getSchema().findOverriddenSearchLanguages().collect(Collectors.toList());
@@ -288,14 +288,14 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	private Flowable<SearchRequest> diffAndSync(Project project, Branch branch, SchemaContainerVersion version, ContainerType type) {
 		log.info("Handling index sync on handler {" + getClass().getName() + "}");
 		// Sync each bucket partition individually
-		Flowable<BucketPartition> partions = bucketManager.getBucketPartitions(NodeGraphFieldContainer.class);
+		Flowable<Bucket> partions = bucketManager.getBuckets(NodeGraphFieldContainer.class);
 		return partions.flatMap(bucketPartion -> {
 			return diffAndSync(project, branch, version, type, bucketPartion);
-		});
+		}, 1);
 	}
 
 	private Publisher<? extends SearchRequest> diffAndSync(Project project, Branch branch, SchemaContainerVersion version, ContainerType type,
-		BucketPartition partition) {
+		Bucket partition) {
 		return Flowable.defer(() -> {
 			Map<String, Map<String, NodeGraphFieldContainer>> sourceNodesPerIndex = loadVersionsFromGraph(branch, version, type, partition);
 			return Flowable.fromIterable(getIndexNames(project, branch, version, type))

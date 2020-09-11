@@ -8,18 +8,18 @@ import com.gentics.mesh.search.BucketableElement;
 
 import io.vertx.core.json.JsonObject;
 
-public class BucketPartition {
+public class Bucket {
 
 	private long start;
 	private long end;
 
-	public BucketPartition(long start, long end) {
+	public Bucket(long start, long end) {
 		this.start = start;
 		this.end = end;
 	}
 
 	/**
-	 * Start of partiton.
+	 * Start of bucket.
 	 * 
 	 * @return
 	 */
@@ -28,7 +28,7 @@ public class BucketPartition {
 	}
 
 	/**
-	 * End of partition.
+	 * End of bucket.
 	 * 
 	 * @return
 	 */
@@ -37,7 +37,7 @@ public class BucketPartition {
 	}
 
 	/**
-	 * Filter all vertices which are within the partition.
+	 * Filter all elements which are within the bucket.
 	 * 
 	 * @return
 	 */
@@ -48,6 +48,11 @@ public class BucketPartition {
 		};
 	}
 
+	/**
+	 * Generate the Elasticsearch range query for this bucket.
+	 * 
+	 * @return
+	 */
 	public JsonObject rangeQuery() {
 		JsonObject rangeQuery = new JsonObject();
 		JsonObject rangeQueryParams = new JsonObject();
@@ -58,7 +63,7 @@ public class BucketPartition {
 	}
 
 	/**
-	 * Test whether the given bucketId is within the bounds of the partition
+	 * Test whether the given bucketId is within the bounds of the bucket
 	 * 
 	 * @param bucketId
 	 * @return
@@ -67,13 +72,17 @@ public class BucketPartition {
 		return bucketId <= end && bucketId >= start;
 	}
 
+	/**
+	 * Return the size of the bucket.
+	 * @return
+	 */
 	public long size() {
 		return end - start;
 	}
 
 	@Override
 	public String toString() {
-		return "Partition: [" + start + "/" + end + "]";
+		return "Bucket: [" + start + "/" + end + "]";
 	}
 
 }

@@ -79,7 +79,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 		if (root != null && !root.equals(this)) {
 			root.addTagFamily(tagFamily);
 		}
-		mesh().bucketManager().store(tagFamily);
+		tagFamily.generateBucketId();
 
 		return tagFamily;
 	}
