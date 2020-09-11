@@ -52,7 +52,7 @@ public class BucketManagerImpl implements BucketManager {
 		long count = database.tx(() -> database.count(clazz));
 		int bucketCount = getBucketCount(count);
 		int bucketSize = Integer.MAX_VALUE / bucketCount;
-		log.info("Calculated {" + bucketCount + "} buckets are needed for {" + count + "} elements and batch size of {" + batchSize() + "}");
+		log.debug("Calculated {" + bucketCount + "} buckets are needed for {" + count + "} elements and batch size of {" + batchSize() + "}");
 		return Flowable.range(0, bucketCount).map(bucket -> {
 			long start = bucketSize * bucket.intValue();
 			long end = start - 1 + bucketSize;

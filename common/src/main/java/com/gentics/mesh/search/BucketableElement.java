@@ -35,7 +35,7 @@ public interface BucketableElement extends MeshVertex {
 	 * Generate a new random bucketId.
 	 */
 	default void generateBucketId() {
-		int bucketId = ThreadLocalRandom.current().nextInt(0, Integer.MAX_VALUE);
+		int bucketId = ThreadLocalRandom.current().nextInt();
 		setBucketId(bucketId);
 	}
 

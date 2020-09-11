@@ -103,7 +103,7 @@ public class BucketManagerTest extends AbstractMeshTest {
 	private void assertBuckets(List<Bucket> buckets, int batchSize) {
 		Bucket prev = null;
 		for (Bucket bucket : buckets) {
-			System.out.println(bucket);
+			//System.out.println(bucket);
 			if (prev == null) {
 				assertEquals("The first bucket did not start at 0", 0, bucket.start());
 			} else {
