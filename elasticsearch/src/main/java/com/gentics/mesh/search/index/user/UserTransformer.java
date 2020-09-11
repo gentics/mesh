@@ -1,6 +1,6 @@
 package com.gentics.mesh.search.index.user;
 
-import static com.gentics.mesh.search.index.MappingHelper.BUCKET_ID_KEY;
+import static com.gentics.mesh.search.index.Bucket.BUCKET_ID_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
 
@@ -17,7 +17,6 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.search.index.AbstractTransformer;
-import com.gentics.mesh.search.index.MappingHelper;
 import com.gentics.mesh.util.ETag;
 
 import io.vertx.core.json.JsonObject;

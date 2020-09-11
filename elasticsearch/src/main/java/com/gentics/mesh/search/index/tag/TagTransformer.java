@@ -1,6 +1,6 @@
 package com.gentics.mesh.search.index.tag;
 
-import static com.gentics.mesh.search.index.MappingHelper.BUCKET_ID_KEY;
+import static com.gentics.mesh.search.index.Bucket.BUCKET_ID_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
 

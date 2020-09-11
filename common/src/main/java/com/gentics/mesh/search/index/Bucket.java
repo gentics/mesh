@@ -1,7 +1,5 @@
 package com.gentics.mesh.search.index;
 
-import static com.gentics.mesh.search.index.MappingHelper.BUCKET_ID_KEY;
-
 import java.util.function.Predicate;
 
 import com.gentics.mesh.search.BucketableElement;
@@ -10,10 +8,12 @@ import io.vertx.core.json.JsonObject;
 
 public class Bucket {
 
-	private long start;
-	private long end;
+	public static final String BUCKET_ID_KEY = "bucket_id";
 
-	public Bucket(long start, long end) {
+	private int start;
+	private int end;
+
+	public Bucket(int start, int end) {
 		this.start = start;
 		this.end = end;
 	}
@@ -23,7 +23,7 @@ public class Bucket {
 	 * 
 	 * @return
 	 */
-	public long start() {
+	public int start() {
 		return start;
 	}
 
@@ -32,7 +32,7 @@ public class Bucket {
 	 * 
 	 * @return
 	 */
-	public long end() {
+	public int end() {
 		return end;
 	}
 

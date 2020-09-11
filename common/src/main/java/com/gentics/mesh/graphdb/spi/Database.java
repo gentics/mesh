@@ -289,6 +289,21 @@ public interface Database extends TxFactory {
 	Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues);
 
 	/**
+	 * Utilize the index and locate the matching vertices for the given parameters and the given range.
+	 * 
+	 * @param classOfVertex
+	 * @param postfix
+	 * @param fieldNames
+	 * @param fieldValues
+	 * @param rangeKey
+	 * @param start
+	 * @param end
+	 * @return
+	 */
+	Iterable<Vertex> getVerticesForRange(Class<?> classOfVertex, String postfix, String[] fieldNames, Object[] fieldValues, String rangeKey, long start,
+		long end);
+
+	/**
 	 * Utilize the index and locate the matching vertices.
 	 *
 	 * @param <T>

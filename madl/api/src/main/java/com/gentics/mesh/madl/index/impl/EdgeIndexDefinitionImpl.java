@@ -36,6 +36,7 @@ public class EdgeIndexDefinitionImpl extends AbstractIndexDefinition implements 
 			def.includeIn = includeIn;
 			def.includeOut = includeOut;
 			def.includeInOut = includeInOut;
+			def.type = type;
 			return def;
 		}
 

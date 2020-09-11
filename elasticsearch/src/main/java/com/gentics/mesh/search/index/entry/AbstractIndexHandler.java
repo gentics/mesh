@@ -62,7 +62,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractIndexHandler.class);
 
-	public static final int ES_SYNC_FETCH_BATCH_SIZE = 1000;
+	public static final int ES_SYNC_FETCH_BATCH_SIZE = 10_000;
 
 	protected final SearchProvider searchProvider;
 
@@ -282,7 +282,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 			query.put("query", partition.rangeQuery());
 			query.put("sort", new JsonArray().add("_doc"));
 
-			log.info("Using query {\n" + query.encodePrettily() + "\n");
+			log.trace("Using query {\n" + query.encodePrettily() + "\n");
 			RequestBuilder<JsonObject> builder = client.searchScroll(query, "1m", fullIndexName);
 			JsonObject result = new JsonObject();
 			try {

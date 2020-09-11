@@ -19,7 +19,12 @@ public interface BucketableElement extends MeshVertex {
 	 * @return
 	 */
 	default Integer getBucketId() {
-		return property(BUCKET_ID_KEY);
+		Long bucketId = property(BUCKET_ID_KEY);
+		if (bucketId == null) {
+			return null;
+		} else {
+			return bucketId.intValue();
+		}
 	}
 
 	/**
@@ -28,7 +33,11 @@ public interface BucketableElement extends MeshVertex {
 	 * @param bucketId
 	 */
 	default void setBucketId(Integer bucketId) {
-		property(BUCKET_ID_KEY, bucketId);
+		if (bucketId == null) {
+			removeProperty(BUCKET_ID_KEY);
+		} else {
+			property(BUCKET_ID_KEY, Long.valueOf(bucketId));
+		}
 	}
 
 	/**

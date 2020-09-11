@@ -247,13 +247,14 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 * @param bucketId
 	 * @return indexName -> documentName -> NodeGraphFieldContainer
 	 */
-	private Map<String, Map<String, NodeGraphFieldContainer>> loadVersionsFromGraph(Branch branch, SchemaContainerVersion version, ContainerType type, Bucket bucketPartion) {
+	private Map<String, Map<String, NodeGraphFieldContainer>> loadVersionsFromGraph(Branch branch, SchemaContainerVersion version, ContainerType type,
+		Bucket bucket) {
 		return db.tx(() -> {
 			String branchUuid = branch.getUuid();
 			List<String> indexLanguages = version.getSchema().findOverriddenSearchLanguages().collect(Collectors.toList());
 
-			return version.getFieldContainers(branchUuid)
-				.filter(bucketPartion.filter())
+			long start = System.currentTimeMillis();
+			Map<String, Map<String, NodeGraphFieldContainer>> map = version.getFieldContainers(branchUuid, bucket)
 				.filter(c -> c.isType(type, branchUuid))
 				.collect(Collectors.groupingBy(content -> {
 					String languageTag = content.getLanguageTag();
@@ -267,6 +268,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 							: null);
 				},
 					Collectors.toMap(c -> c.getParentNode().getUuid() + "-" + c.getLanguageTag(), Function.identity())));
+			long took = System.currentTimeMillis() - start;
+			System.out.println("Scan of NGFC took: " + took + "ms");
+			return map;
 		});
 	}
 

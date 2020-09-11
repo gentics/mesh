@@ -1,8 +1,7 @@
 package com.gentics.mesh.search.index;
 
 import static com.gentics.mesh.search.SearchProvider.DEFAULT_TYPE;
-
-import static com.gentics.mesh.search.index.MappingHelper.BUCKET_ID_KEY;
+import static com.gentics.mesh.search.index.Bucket.BUCKET_ID_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.DATE;
 import static com.gentics.mesh.search.index.MappingHelper.INTEGER;
 import static com.gentics.mesh.search.index.MappingHelper.KEYWORD;

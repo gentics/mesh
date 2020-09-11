@@ -32,4 +32,11 @@ public interface ElementIndexDefinition {
 	 */
 	String getPostfix();
 
+	/**
+	 * Return the index type for the index.
+	 * 
+	 * @return
+	 */
+	IndexType getType();
+
 }
