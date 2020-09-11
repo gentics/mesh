@@ -1,13 +1,12 @@
 package com.gentics.mesh.search.index;
 
-import java.util.concurrent.ThreadLocalRandom;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.BucketableElement;
+import com.gentics.mesh.util.MathUtil;
 
 import io.reactivex.Flowable;
 import io.vertx.core.logging.Logger;
@@ -33,9 +32,7 @@ public class BucketManagerImpl implements BucketManager {
 		if (batchSize <= 0) {
 			return 1;
 		}
-		double sizeP = (double) elementCount / (double) batchSize;
-		sizeP = Math.ceil(sizeP);
-		int size = (int) sizeP;
+		int size = (int) MathUtil.ceilDiv(elementCount, batchSize);
 		// Cap to 1 partition
 		if (size == 0) {
 			size = 1;

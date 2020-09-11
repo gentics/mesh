@@ -72,14 +72,6 @@ public class Bucket {
 		return bucketId <= end && bucketId >= start;
 	}
 
-	/**
-	 * Return the size of the bucket.
-	 * @return
-	 */
-	public long size() {
-		return end - start;
-	}
-
 	@Override
 	public String toString() {
 		return "Bucket: [" + start + "/" + end + "]";

@@ -14,6 +14,7 @@ import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.util.MathUtil;
 
 @MeshTestSetting(testSize = FULL, startServer = false)
 public class BucketManagerTest extends AbstractMeshTest {
@@ -95,7 +96,8 @@ public class BucketManagerTest extends AbstractMeshTest {
 			BucketManager bulkManager = mesh().bucketManager();
 			List<Bucket> buckets = bulkManager.getBuckets(UserImpl.class).toList().blockingGet();
 			assertBuckets(buckets, syncBatchSize);
-			int expectedBucketsCount = (nUsers / syncBatchSize) + 1;
+			// The bucket count is computed by dividing the element count by the batch size 
+			long expectedBucketsCount = MathUtil.ceilDiv(nUsers + 4, syncBatchSize);
 			assertEquals(expectedBucketsCount, buckets.size());
 		}
 	}
@@ -103,7 +105,7 @@ public class BucketManagerTest extends AbstractMeshTest {
 	private void assertBuckets(List<Bucket> buckets, int batchSize) {
 		Bucket prev = null;
 		for (Bucket bucket : buckets) {
-			//System.out.println(bucket);
+			// System.out.println(bucket);
 			if (prev == null) {
 				assertEquals("The first bucket did not start at 0", 0, bucket.start());
 			} else {
