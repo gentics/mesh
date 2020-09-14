@@ -47,6 +47,7 @@ public class UploadNoParserTest extends AbstractMeshTest {
 
 	}
 
+	@Test
 	public void testUploadExif() throws IOException {
 		String parentNodeUuid = tx(() -> project().getBaseNode().getUuid());
 		Buffer buffer = getBuffer("/pictures/android-gps.jpg");
@@ -55,7 +56,6 @@ public class UploadNoParserTest extends AbstractMeshTest {
 			buffer.length(), "test.jpg", "image/jpeg"));
 
 		NodeResponse node2 = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid()));
-		System.out.println(node2.toJson());
 		BinaryField binaryField = node2.getFields().getBinaryField("binary");
 		BinaryMetadata metadata2 = binaryField.getMetadata();
 		assertTrue("No metadata should be extracted", metadata2.getMap().isEmpty());

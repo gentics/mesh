@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.rest.schema;
 
+import com.gentics.mesh.etc.config.MeshUploadOptions;
+import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
+
 public interface BinaryFieldSchema extends FieldSchema {
 
 	/**
@@ -21,4 +24,16 @@ public interface BinaryFieldSchema extends FieldSchema {
 	default boolean isDisplayField() {
 		return true;
 	}
+
+	/**
+	 * The parsing behaviour for this field.
+	 * Setting this to something other than null or {@link BinaryFieldParserOption#DEFAULT} will override the global configuration.
+	 *
+	 * @see BinaryFieldParserOption
+	 * @see MeshUploadOptions#isParser()
+	 * @see ElasticSearchOptions#isIncludeBinaryFields()
+	 *
+	 * @return
+	 */
+	BinaryFieldParserOption getParserOption();
 }

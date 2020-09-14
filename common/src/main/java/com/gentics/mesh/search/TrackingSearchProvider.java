@@ -1,5 +1,15 @@
 package com.gentics.mesh.search;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
 import com.gentics.mesh.core.data.search.bulk.BulkEntry;
 import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
 import com.gentics.mesh.core.data.search.bulk.UpdateBulkEntry;
@@ -11,21 +21,13 @@ import com.gentics.mesh.core.data.search.request.DeleteDocumentRequest;
 import com.gentics.mesh.core.data.search.request.UpdateDocumentRequest;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.util.VersionNumber;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 /**
  * Search provider which just logs interacts with the search provider. This is useful when debugging or writing tests.
@@ -211,6 +213,14 @@ public class TrackingSearchProvider implements SearchProvider {
 
 	public Map<String, JsonObject> getStoreEvents() {
 		return storeEvents;
+	}
+
+	public JsonObject getLatestStoreEvent(String uuid) {
+		Map<String, JsonObject> storeEvents = getStoreEvents();
+		return storeEvents.values().stream()
+			.filter(json -> json.getString("uuid").equals(uuid))
+			.max(Comparator.comparing(json -> new VersionNumber(json.getString("version"))))
+			.orElse(null);
 	}
 
 	public List<String> getDeleteEvents() {

@@ -27,7 +27,6 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Role;
@@ -45,7 +44,6 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
-import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
@@ -544,6 +542,14 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		SchemaUpdateRequest schema = new SchemaUpdateRequest();
 		schema.setName(schemaName);
 		return call(() -> client().updateSchema(uuid, schema, updateParameters));
+	}
+
+	default void updateAndMigrateSchema(SchemaResponse originalSchema, SchemaUpdateRequest request) {
+		updateAndMigrateSchema(originalSchema.getUuid(), request);
+	}
+
+	default void updateAndMigrateSchema(String uuid, SchemaUpdateRequest request) {
+		waitForJob(() -> client().updateSchema(uuid, request));
 	}
 
 	default public void deleteSchema(String uuid) {
