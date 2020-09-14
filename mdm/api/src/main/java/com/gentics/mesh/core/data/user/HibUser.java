@@ -1,11 +1,24 @@
 package com.gentics.mesh.core.data.user;
 
 
+import static com.gentics.mesh.core.rest.MeshEvent.USER_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.USER_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.USER_UPDATED;
+
+import com.gentics.mesh.ElementType;
+import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.rest.user.UserReference;
 
 public interface HibUser extends HibCoreElement, HibUserTracking {
+
+	TypeInfo TYPE_INFO = new TypeInfo(ElementType.USER, USER_CREATED, USER_UPDATED, USER_DELETED);
+
+	@Override
+	default TypeInfo getTypeInfo() {
+		return TYPE_INFO;
+	}
 
 	/**
 	 * Return the username.

@@ -94,12 +94,12 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName("test12345");
 		String groupRootUuid = db().tx(tx -> {
-			return boot().groupRoot().getUuid();
+			return tx.data().permissionRoots().group().getUuid();
 		});
 
 		try (Tx tx = tx()) {
 			RoleDaoWrapper roleDao = tx.roleDao();
-			roleDao.revokePermissions(role(), boot().groupRoot(), CREATE_PERM);
+			roleDao.revokePermissions(role(), tx.data().permissionRoots().group(), CREATE_PERM);
 			tx.success();
 		}
 
