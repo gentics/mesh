@@ -1057,7 +1057,10 @@ For more information on available settings have a look at the link:{{< relref "a
 
 === Metadata handling
 
-Metadata information of uploads will automatically be extracted and added the `metadata` object of the binary field. 
+Metadata information of uploads will automatically be extracted and added the `metadata` object of the binary field.
+
+You can disable this feature in the global options by setting link:{{< relref "administration-guide.asciidoc" >}}#_upload_options[`upload.parser`] to false.
+You can also disable this feature per field. See link:{{< relref "building-blocks.asciidoc" >}}#_schema_field_types[schema field types documentation] for more information.
 
 Currently the following __mime-types__ are supported:
 
