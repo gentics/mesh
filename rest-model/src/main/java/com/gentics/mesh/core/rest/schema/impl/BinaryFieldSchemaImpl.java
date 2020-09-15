@@ -2,6 +2,7 @@ package com.gentics.mesh.core.rest.schema.impl;
 
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.FieldTypes;
@@ -14,8 +15,9 @@ public class BinaryFieldSchemaImpl extends AbstractFieldSchema implements Binary
 	@JsonPropertyDescription("Array of allowed mimetypes")
 	private String[] allowedMimeTypes;
 
+	@JsonProperty
 	@JsonPropertyDescription("The parsing behaviour for this field.")
-	private BinaryFieldParserOption parser;
+	private BinaryFieldParserOption parser = BinaryFieldParserOption.DEFAULT;
 
 	@Override
 	public String[] getAllowedMimeTypes() {
@@ -52,6 +54,7 @@ public class BinaryFieldSchemaImpl extends AbstractFieldSchema implements Binary
 		}
 	}
 
+	@JsonIgnore
 	@Override
 	public BinaryFieldParserOption getParserOption() {
 		return parser;
