@@ -39,12 +39,15 @@ public class BinaryFieldParserOptionTest extends AbstractMeshTest {
 		assertThat(BinaryFieldParserOption.values())
 			.containsExactlyInAnyOrder(DEFAULT, NONE, PARSE_ONLY, PARSE_AND_SEARCH);
 
-		SchemaResponse oldSchema = getSchemaByName("binary_content");
-		SchemaUpdateRequest binarySchema = oldSchema.toUpdateRequest();
-		binarySchema.getField("binary", BinaryFieldSchemaImpl.class)
-			.setParserOption(parserOption);
-		updateAndMigrateSchema(oldSchema, binarySchema);
-		
+		// DEFAULT is the default setting for binary fields. No changes are made in this case.
+		if (parserOption != DEFAULT) {
+			SchemaResponse oldSchema = getSchemaByName("binary_content");
+			SchemaUpdateRequest binarySchema = oldSchema.toUpdateRequest();
+			binarySchema.getField("binary", BinaryFieldSchemaImpl.class)
+				.setParserOption(parserOption);
+			updateAndMigrateSchema(oldSchema, binarySchema);
+		}
+
 		// UPLOAD
 		String parentNodeUuid = tx(() -> project().getBaseNode().getUuid());
 
