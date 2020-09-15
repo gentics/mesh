@@ -49,6 +49,8 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
 import com.gentics.mesh.core.rest.node.field.binary.Location;
+import com.gentics.mesh.core.rest.schema.BinaryFieldParserOption;
+import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -208,7 +210,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 						binaryFieldInfo.put("height", binary.getImageHeight());
 					}
 
-					if (options.getSearchOptions().isIncludeBinaryFields()) {
+					if (isIncludeBinaryFields(((BinaryFieldSchema) fieldSchema))) {
 						// Add the metadata
 						BinaryMetadata metadata = binaryField.getMetadata();
 						if (metadata != null) {
@@ -396,9 +398,24 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	}
 
 	/**
+	 * Determines if the binary data of the field has to be stored in Elasticsearch.
+	 *
+	 * @param fieldSchema
+	 * @return
+	 */
+	private boolean isIncludeBinaryFields(BinaryFieldSchema fieldSchema) {
+		BinaryFieldParserOption parserOption = fieldSchema.getParserOption();
+		if (parserOption == null || parserOption == BinaryFieldParserOption.DEFAULT) {
+			return options.getSearchOptions().isIncludeBinaryFields();
+		} else {
+			return parserOption == BinaryFieldParserOption.PARSE_AND_SEARCH;
+		}
+	}
+
+	/**
 	 * Transform the given microschema container and add it to the source map.
 	 * 
-	 * @param map
+	 * @param document
 	 * @param microschemaContainerVersion
 	 */
 	private void addMicroschema(JsonObject document, MicroschemaContainerVersion microschemaContainerVersion) {

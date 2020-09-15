@@ -549,7 +549,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	}
 
 	default void updateAndMigrateSchema(String uuid, SchemaUpdateRequest request) {
-		waitForJob(() -> client().updateSchema(uuid, request));
+		waitForJob(() -> client().updateSchema(uuid, request).blockingAwait());
 	}
 
 	default public void deleteSchema(String uuid) {

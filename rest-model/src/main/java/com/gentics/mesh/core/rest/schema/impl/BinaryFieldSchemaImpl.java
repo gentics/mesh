@@ -37,6 +37,7 @@ public class BinaryFieldSchemaImpl extends AbstractFieldSchema implements Binary
 	public Map<String, Object> getAllChangeProperties() {
 		Map<String, Object> properties = super.getAllChangeProperties();
 		properties.put("allow", getAllowedMimeTypes());
+		properties.put("parser", getParserOption());
 		return properties;
 	}
 
@@ -45,6 +46,9 @@ public class BinaryFieldSchemaImpl extends AbstractFieldSchema implements Binary
 		super.apply(fieldProperties);
 		if (fieldProperties.get("allowedMimeTypes") != null) {
 			setAllowedMimeTypes((String[]) fieldProperties.get("allowedMimeTypes"));
+		}
+		if (fieldProperties.get("parser") != null) {
+			setParserOption(BinaryFieldParserOption.valueOf((String) fieldProperties.get("parser")));
 		}
 	}
 

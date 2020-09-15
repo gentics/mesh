@@ -43,7 +43,7 @@ public class BinaryFieldParserOptionTest extends AbstractMeshTest {
 		SchemaUpdateRequest binarySchema = oldSchema.toUpdateRequest();
 		binarySchema.getField("binary", BinaryFieldSchemaImpl.class)
 			.setParserOption(parserOption);
-//		updateAndMigrateSchema(oldSchema, binarySchema);
+		updateAndMigrateSchema(oldSchema, binarySchema);
 		
 		// UPLOAD
 		String parentNodeUuid = tx(() -> project().getBaseNode().getUuid());
