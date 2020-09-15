@@ -1,5 +1,9 @@
 package com.gentics.mesh.core.binary.impl;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -17,14 +21,26 @@ import org.apache.commons.collections4.map.HashedMap;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.binary.AbstractBinaryProcessor;
+import com.gentics.mesh.core.binary.BinaryDataProcessorContext;
 import com.gentics.mesh.core.binary.DocumentTikaParser;
+import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.field.binary.Location;
+import com.gentics.mesh.core.rest.schema.BinaryFieldParserOption;
+import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.graphdb.spi.Database;
 
 import dagger.Lazy;
 import io.reactivex.Maybe;
+import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
@@ -45,15 +61,18 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 
 	private final MeshOptions options;
 
+	private final Database db;
+
 	/**
 	 * Default limit for non-document binaries
 	 */
 	private static final int DEFAULT_NON_DOC_TIKA_PARSE_LIMIT = 0;
 
 	@Inject
-	public TikaBinaryProcessor(Lazy<Vertx> vertx, MeshOptions options) {
+	public TikaBinaryProcessor(Lazy<Vertx> vertx, MeshOptions options, Database db) {
 		this.vertx = vertx;
 		this.options = options;
+		this.db = db;
 
 		// document
 		acceptedDocumentTypes.add("text/plain");
@@ -107,7 +126,55 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 	}
 
 	@Override
-	public Maybe<Consumer<BinaryGraphField>> process(FileUpload upload, String hash) {
+	public Maybe<Consumer<BinaryGraphField>> process(BinaryDataProcessorContext ctx) {
+		FileUpload upload = ctx.getUpload();
+		return isParsing(ctx.getActionContext(), ctx.getNodeUuid(), ctx.getFieldName()).flatMapMaybe(isParsing -> {
+			if (isParsing) {
+				return process(upload);
+			} else {
+				return Maybe.empty();
+			}
+		});
+	}
+
+	/**
+	 * Determines if the binary data will be processed for the node.
+	 * @param ac
+	 * @param nodeUuid
+	 * @param fieldName
+	 * @return
+	 */
+	private Single<Boolean> isParsing(InternalActionContext ac, String nodeUuid, String fieldName) {
+		return db.singleTxWriteLock(tx -> {
+			Project project = ac.getProject();
+			Branch branch = ac.getBranch();
+			Node node = project.getNodeRoot().loadObjectByUuid(ac, nodeUuid, UPDATE_PERM);
+
+			// TODO REVIEW Is it possible for different languages to have different schema versions in the same branch?
+			// Load the current latest draft
+			NodeGraphFieldContainer latestDraftVersion = node.getGraphFieldContainers(branch, ContainerType.DRAFT).next();
+
+			FieldSchema fieldSchema = latestDraftVersion.getSchemaContainerVersion()
+				.getSchema()
+				.getField(fieldName);
+
+			if (fieldSchema == null) {
+				throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
+			}
+			if (!(fieldSchema instanceof BinaryFieldSchema)) {
+				throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
+			}
+
+			BinaryFieldParserOption parserOption = ((BinaryFieldSchema) fieldSchema).getParserOption();
+			if (parserOption == null || parserOption == BinaryFieldParserOption.DEFAULT) {
+				return options.getUploadOptions().isParser();
+			} else {
+				return parserOption != BinaryFieldParserOption.NONE;
+			}
+		});
+	}
+
+	private Maybe<Consumer<BinaryGraphField>> process(FileUpload upload) {
 		return vertx.get().rxExecuteBlocking(promise -> {
 			File uploadFile = new File(upload.uploadedFileName());
 			if (log.isDebugEnabled()) {

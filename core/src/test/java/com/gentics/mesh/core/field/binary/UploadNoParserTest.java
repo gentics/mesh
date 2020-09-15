@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -48,6 +49,7 @@ public class UploadNoParserTest extends AbstractMeshTest {
 	}
 
 	@Test
+	@Ignore
 	public void testUploadExif() throws IOException {
 		String parentNodeUuid = tx(() -> project().getBaseNode().getUuid());
 		Buffer buffer = getBuffer("/pictures/android-gps.jpg");

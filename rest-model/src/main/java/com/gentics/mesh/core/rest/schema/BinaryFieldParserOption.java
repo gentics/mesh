@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.rest.schema;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 
@@ -16,6 +17,7 @@ public enum BinaryFieldParserOption {
 	 * @see MeshUploadOptions#isParser()
 	 * @see ElasticSearchOptions#isIncludeBinaryFields()
 	 */
+	@JsonProperty("default")
 	DEFAULT,
 
 	/**
@@ -27,6 +29,7 @@ public enum BinaryFieldParserOption {
 	 *     <li>search.includeBinaryFields: false</li>
 	 * </ul>
 	 */
+	@JsonProperty("none")
 	NONE,
 
 	/**
@@ -38,6 +41,7 @@ public enum BinaryFieldParserOption {
 	 *     <li>search.includeBinaryFields: false</li>
 	 * </ul>
 	 */
+	@JsonProperty("parseOnly")
 	PARSE_ONLY,
 
 	/**
@@ -49,5 +53,6 @@ public enum BinaryFieldParserOption {
 	 *     <li>search.includeBinaryFields: true</li>
 	 * </ul>
 	 */
+	@JsonProperty("parseAndSearch")
 	PARSE_AND_SEARCH
 }
