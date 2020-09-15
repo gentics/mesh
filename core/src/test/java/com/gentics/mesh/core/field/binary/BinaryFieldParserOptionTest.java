@@ -62,7 +62,7 @@ public class BinaryFieldParserOptionTest extends AbstractMeshTest {
 
 	@Test
 	public void testDefault() throws Exception {
-		// Same as PARSE_AND_SEARCh
+		// Same as PARSE_AND_SEARCH
 		setUp(DEFAULT);
 
 		assertThat(metadata.get("subject")).isEqualTo("TestSubject");
@@ -74,7 +74,7 @@ public class BinaryFieldParserOptionTest extends AbstractMeshTest {
 	public void testNone() throws Exception {
 		setUp(NONE);
 
-		assertThat(metadata).isNull();
+		assertThat(metadata).isEmpty();
 		assertThat(document.getJsonObject("fields").getJsonObject("binary").getJsonObject("metadata")).isNull();
 		assertThat(document.getJsonObject("fields").getJsonObject("binary").getJsonObject("file")).isNull();
 	}

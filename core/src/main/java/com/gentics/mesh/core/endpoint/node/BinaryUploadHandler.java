@@ -9,6 +9,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -35,6 +36,7 @@ import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.NodeVersionConflictException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.schema.BinaryFieldParserOption;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
@@ -172,12 +174,15 @@ public class BinaryUploadHandler extends AbstractHandler {
 		ctx.setUpload(ul);
 
 		// First process the upload data
-		hashUpload(ul).flatMap(hash -> {
-			Single<List<Consumer<BinaryGraphField>>> modifierOp = postProcessUpload(ul, hash).toList();
-			return modifierOp.map(list -> {
-				return Tuple.tuple(hash, list);
-			});
-		}).flatMap(modifierListAndHash -> {
+		hashUpload(ul).flatMap(hash -> isPostProcessing(ac, nodeUuid, fieldName).flatMap(isPostProcessing -> {
+			if (!isPostProcessing) {
+				return Single.just(Tuple.tuple(hash, Collections.<Consumer<BinaryGraphField>>emptyList()));
+			} else {
+				return postProcessUpload(ul, hash)
+					.toList()
+					.map(list -> Tuple.tuple(hash, list));
+			}
+		})).flatMap(modifierListAndHash -> {
 			String hash = modifierListAndHash.v1();
 			List<Consumer<BinaryGraphField>> modifierList = modifierListAndHash.v2();
 			ctx.setHash(hash);
@@ -218,6 +223,39 @@ public class BinaryUploadHandler extends AbstractHandler {
 			}
 		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
 
+	}
+
+	/**
+	 * Determines if the binary data will be processed for the node.
+	 * @param ac
+	 * @param nodeUuid
+	 * @param fieldName
+	 * @return
+	 */
+	private Single<Boolean> isPostProcessing(InternalActionContext ac, String nodeUuid, String fieldName) {
+		return db.singleTxWriteLock(tx -> {
+			Project project = ac.getProject();
+			Branch branch = ac.getBranch();
+			Node node = project.getNodeRoot().loadObjectByUuid(ac, nodeUuid, UPDATE_PERM);
+
+			// TODO Review Is it possible for different languages to have different schema versions in the same branch?
+			// Load the current latest draft
+			NodeGraphFieldContainer latestDraftVersion = node.getGraphFieldContainers(branch, ContainerType.DRAFT).next();
+
+			FieldSchema fieldSchema = latestDraftVersion.getSchemaContainerVersion()
+				.getSchema()
+				.getField(fieldName);
+
+			if (fieldSchema == null) {
+				throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
+			}
+			if (!(fieldSchema instanceof BinaryFieldSchema)) {
+				throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
+			}
+
+			BinaryFieldParserOption parserOption = ((BinaryFieldSchema) fieldSchema).getParserOption();
+			return parserOption != BinaryFieldParserOption.NONE;
+		});
 	}
 
 	private Completable storeUploadInTemp(UploadContext ctx, FileUpload ul, String hash) {
