@@ -50,14 +50,14 @@ public class BucketManagerImpl implements BucketManager {
 		int bucketCount = getBucketCount(count);
 		int bucketSize = Integer.MAX_VALUE / bucketCount;
 		log.debug("Calculated {" + bucketCount + "} buckets are needed for {" + count + "} elements and batch size of {" + batchSize() + "}");
-		return Flowable.range(0, bucketCount).map(bucket -> {
-			int start = bucketSize * bucket.intValue();
+		return Flowable.range(0, bucketCount).map(bucketNo -> {
+			int start = bucketSize * bucketNo.intValue();
 			int end = start - 1 + bucketSize;
 			// Cap to end to prevent issues with loss of precision during division
-			if (bucketCount - 1 == bucket) {
+			if (bucketCount - 1 == bucketNo) {
 				end = Integer.MAX_VALUE;
 			}
-			return new Bucket(start, end);
+			return new Bucket(start, end, bucketNo, bucketCount);
 		});
 	}
 

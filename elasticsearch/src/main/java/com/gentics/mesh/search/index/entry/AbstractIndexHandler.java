@@ -194,11 +194,12 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	}
 
 	protected Flowable<SearchRequest> diffAndSync(String indexName, String projectUuid) {
-		// Sync each bucket partition individually
-		Flowable<Bucket> partions = bucketManager.getBuckets(getElementClass());
+		// Sync each bucket individually
+		Flowable<Bucket> buckets = bucketManager.getBuckets(getElementClass());
 		log.info("Handling index sync on handler {" + getClass().getName() + "}");
-		return partions.flatMap(bucketPartion -> {
-			return diffAndSync(indexName, projectUuid, bucketPartion);
+		return buckets.flatMap(bucket -> {
+			log.info("Handling sync of {" + bucket + "}");
+			return diffAndSync(indexName, projectUuid, bucket);
 		}, 1);
 	}
 
@@ -207,21 +208,21 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	 * 
 	 * @param indexName
 	 * @param projectUuid
-	 * @param partition
+	 * @param bucket
 	 * @return
 	 */
-	protected Flowable<SearchRequest> diffAndSync(String indexName, String projectUuid, Bucket partition) {
+	protected Flowable<SearchRequest> diffAndSync(String indexName, String projectUuid, Bucket bucket) {
 		return Single.zip(
-			loadVersionsFromIndex(indexName, partition),
-			Single.fromCallable(() -> loadVersionsFromGraph(partition)),
+			loadVersionsFromIndex(indexName, bucket),
+			Single.fromCallable(() -> loadVersionsFromGraph(bucket)),
 			(sinkVersions, sourceVersions) -> {
-				log.info("Handling index sync on handler {" + getClass().getName() + "} for partition {" + partition + "}");
-				log.debug("Found {" + sourceVersions.size() + "} elements in graph partition");
-				log.debug("Found {" + sinkVersions.size() + "} elements in search index partition");
+				log.debug("Handling index sync on handler {" + getClass().getName() + "} for {" + bucket + "}");
+				log.debug("Found {" + sourceVersions.size() + "} elements in graph bucket");
+				log.debug("Found {" + sinkVersions.size() + "} elements in search index bucket");
 
 				MapDifference<String, String> diff = Maps.difference(sourceVersions, sinkVersions);
 				if (diff.areEqual()) {
-					log.info("No diff detected. Index {" + indexName + "} is in sync.");
+					log.debug("No diff detected. Index {" + indexName + "} is in sync.");
 					return Flowable.<SearchRequest>empty();
 				}
 
@@ -258,11 +259,11 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		return elementLoader().apply(elementUuid);
 	}
 
-	private Map<String, String> loadVersionsFromGraph(Bucket partition) {
+	private Map<String, String> loadVersionsFromGraph(Bucket bucket) {
 		return db.tx(() -> {
 			return loadAllElements()
 				.filter(element -> {
-					return partition.filter().test((BucketableElement)element);
+					return bucket.filter().test((BucketableElement)element);
 				}).collect(Collectors.toMap(
 					MeshElement::getUuid,
 					this::generateVersion));
@@ -270,16 +271,16 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	}
 
 	// TODO Async
-	public Single<Map<String, String>> loadVersionsFromIndex(String indexName, Bucket partition) {
+	public Single<Map<String, String>> loadVersionsFromIndex(String indexName, Bucket bucket) {
 		return Single.fromCallable(() -> {
 			String fullIndexName = searchProvider.installationPrefix() + indexName;
 			Map<String, String> versions = new HashMap<>();
-			log.debug("Loading document info from index {" + fullIndexName + "} in partition {" + partition + "}");
+			log.debug("Loading document info from index {" + fullIndexName + "} in bucket {" + bucket + "}");
 			ElasticsearchClient<JsonObject> client = searchProvider.getClient();
 			JsonObject query = new JsonObject();
 			query.put("size", ES_SYNC_FETCH_BATCH_SIZE);
 			query.put("_source", new JsonArray().add("uuid").add("version"));
-			query.put("query", partition.rangeQuery());
+			query.put("query", bucket.rangeQuery());
 			query.put("sort", new JsonArray().add("_doc"));
 
 			log.trace("Using query {\n" + query.encodePrettily() + "\n");

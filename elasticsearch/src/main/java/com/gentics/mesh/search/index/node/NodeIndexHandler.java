@@ -253,7 +253,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			String branchUuid = branch.getUuid();
 			List<String> indexLanguages = version.getSchema().findOverriddenSearchLanguages().collect(Collectors.toList());
 
-			long start = System.currentTimeMillis();
 			Map<String, Map<String, NodeGraphFieldContainer>> map = version.getFieldContainers(branchUuid, bucket)
 				.filter(c -> c.isType(type, branchUuid))
 				.collect(Collectors.groupingBy(content -> {
@@ -268,8 +267,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 							: null);
 				},
 					Collectors.toMap(c -> c.getParentNode().getUuid() + "-" + c.getLanguageTag(), Function.identity())));
-			long took = System.currentTimeMillis() - start;
-			System.out.println("Scan of NGFC took: " + took + "ms");
 			return map;
 		});
 	}
@@ -291,20 +288,21 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	private Flowable<SearchRequest> diffAndSync(Project project, Branch branch, SchemaContainerVersion version, ContainerType type) {
 		log.info("Handling index sync on handler {" + getClass().getName() + "}");
-		// Sync each bucket partition individually
-		Flowable<Bucket> partions = bucketManager.getBuckets(NodeGraphFieldContainer.class);
-		return partions.flatMap(bucketPartion -> {
-			return diffAndSync(project, branch, version, type, bucketPartion);
+		// Sync each bucket individually
+		Flowable<Bucket> buckets = bucketManager.getBuckets(NodeGraphFieldContainer.class);
+		return buckets.flatMap(bucket -> {
+			log.info("Handling sync of {" + bucket + "}");
+			return diffAndSync(project, branch, version, type, bucket);
 		}, 1);
 	}
 
 	private Publisher<? extends SearchRequest> diffAndSync(Project project, Branch branch, SchemaContainerVersion version, ContainerType type,
-		Bucket partition) {
+		Bucket bucket) {
 		return Flowable.defer(() -> {
-			Map<String, Map<String, NodeGraphFieldContainer>> sourceNodesPerIndex = loadVersionsFromGraph(branch, version, type, partition);
+			Map<String, Map<String, NodeGraphFieldContainer>> sourceNodesPerIndex = loadVersionsFromGraph(branch, version, type, bucket);
 			return Flowable.fromIterable(getIndexNames(project, branch, version, type))
-				.flatMap(indexName -> loadVersionsFromIndex(indexName, partition).flatMapPublisher(sinkVersions -> {
-					log.debug("Handling index sync on handler {" + getClass().getName() + "} for partition {" + partition + "}");
+				.flatMap(indexName -> loadVersionsFromIndex(indexName, bucket).flatMapPublisher(sinkVersions -> {
+					log.debug("Handling index sync on handler {" + getClass().getName() + "} for bucket {" + bucket + "}");
 					Map<String, NodeGraphFieldContainer> sourceNodes = sourceNodesPerIndex.getOrDefault(indexName, Collections.emptyMap());
 					String branchUuid = branch.getUuid();
 
@@ -320,9 +318,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 					Set<String> needRemovalInES = diff.entriesOnlyOnRight().keySet();
 					Set<String> needUpdateInEs = diff.entriesDiffering().keySet();
 
-					log.info("Pending insertions on {" + indexName + "}:" + needInsertionInES.size());
-					log.info("Pending removals on {" + indexName + "}:" + needRemovalInES.size());
-					log.info("Pending updates on {" + indexName + "}:" + needUpdateInEs.size());
+					log.debug("Pending insertions on {" + indexName + "}:" + needInsertionInES.size());
+					log.debug("Pending removals on {" + indexName + "}:" + needRemovalInES.size());
+					log.debug("Pending updates on {" + indexName + "}:" + needUpdateInEs.size());
 
 					meters.getInsertMeter().addPending(needInsertionInES.size());
 					meters.getDeleteMeter().addPending(needRemovalInES.size());

@@ -13,9 +13,14 @@ public class Bucket {
 	private int start;
 	private int end;
 
-	public Bucket(int start, int end) {
+	private int bucketNo;
+	private int totalBuckets;
+
+	public Bucket(int start, int end, int bucketNo, int totalBuckets) {
 		this.start = start;
 		this.end = end;
+		this.bucketNo = bucketNo;
+		this.totalBuckets = totalBuckets;
 	}
 
 	/**
@@ -72,9 +77,17 @@ public class Bucket {
 		return bucketId <= end && bucketId >= start;
 	}
 
+	public int bucketNo() {
+		return bucketNo;
+	}
+
+	public int total() {
+		return totalBuckets;
+	}
+
 	@Override
 	public String toString() {
-		return "Bucket: [" + start + "/" + end + "]";
+		return "Bucket [" + bucketNo() + "/" + total() + "] for elements [" + start() + "/" + end() + "]";
 	}
 
 }

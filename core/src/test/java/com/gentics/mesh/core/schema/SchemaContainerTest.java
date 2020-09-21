@@ -54,7 +54,7 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 
 	@Test
 	public void testGetContentFromSchemaVersion() {
-		Bucket bucket = new Bucket(0, Integer.MAX_VALUE / 2);
+		Bucket bucket = new Bucket(0, Integer.MAX_VALUE / 2, 0, 1);
 		NodeGraphFieldContainer content = tx(() -> content().getLatestDraftFieldContainer("en"));
 		SchemaContainerVersion version = tx(() -> schemaContainer("content").getLatestVersion());
 
