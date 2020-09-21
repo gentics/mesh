@@ -102,6 +102,42 @@ public class ResolveUrlFieldsTest extends AbstractMeshTest {
 		assertThat(referencedNode.getUuid()).isEqualTo(resultUuid);
 	}
 
+	/**
+	 * Tests a node that has a segment field set, but one of its ascendants misses a segment field.
+	 * In that case, a fallback to url fields is expected.
+	 */
+	@Test
+	public void testWithMissingParentSegment() {
+		// Create Schema
+		SchemaCreateRequest request = new SchemaCreateRequest();
+		request.setName(SCHEMA_NAME);
+		request.setFields(Arrays.asList(
+			new StringFieldSchemaImpl().setName("url"),
+			new StringFieldSchemaImpl().setName("slug")
+		));
+		request.setUrlFields("url");
+		request.setSegmentField("slug");
+		SchemaResponse schemaResponse = client().createSchema(request).blockingGet();
+		client().assignSchemaToProject(PROJECT_NAME, schemaResponse.getUuid()).blockingAwait();
+
+		// Create parent
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		nodeCreateRequest.setLanguage("en");
+		nodeCreateRequest.setParentNodeUuid(parentNodeUuid);
+		nodeCreateRequest.setSchemaName("folder");
+		NodeResponse parentNode = client().createNode(PROJECT_NAME, nodeCreateRequest).blockingGet();
+
+		NodeResponse referencedNode = addNode(parentNode.getUuid(), FieldMap.of(
+			"url", StringField.of("/some/test/url"),
+			"slug", StringField.of("testSlug")
+		));
+
+		String result = resolveLink(referencedNode);
+		assertThat(result).isEqualTo("/some/test/url");
+		String resultUuid = client().webroot(PROJECT_NAME, result).blockingGet().getNodeUuid();
+		assertThat(referencedNode.getUuid()).isEqualTo(resultUuid);
+	}
+
 	private String resolveLink(NodeResponse referencedNode) {
 		return client().resolveLinks(
 			createLink(referencedNode.getUuid()),
@@ -130,13 +166,17 @@ public class ResolveUrlFieldsTest extends AbstractMeshTest {
 		return client().createNode(PROJECT_NAME, request).blockingGet();
 	}
 
-	private NodeResponse addNode(FieldMap fields) {
+	private NodeResponse addNode(String parentNodeUuid, FieldMap fields) {
 		NodeCreateRequest request = new NodeCreateRequest();
 		request.setParentNodeUuid(parentNodeUuid);
 		request.setSchema(new SchemaReferenceImpl().setName(SCHEMA_NAME));
 		request.setLanguage("en");
 		request.setFields(fields);
 		return client().createNode(PROJECT_NAME, request).blockingGet();
+	}
+
+	private NodeResponse addNode(FieldMap fields) {
+		return addNode(parentNodeUuid, fields);
 	}
 
 	private String createLink(String uuid) {
