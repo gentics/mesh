@@ -20,6 +20,8 @@ All fixes and changes in LTS releases will be released the next minor release. C
 [[TBD]]
 == TBD (TBD)
 
+icon:plus[] Monitoring: The readiness probe will now no longer fail when a plugin is not registered. Instead it will only fail when a plugin deployment has failed.
+
 icon:plus[] Monitoring: The liveness probe will now check for plugin status. Failed plugin deployments will let the liveness probe fail.
 
 [[v1.4.14]]
