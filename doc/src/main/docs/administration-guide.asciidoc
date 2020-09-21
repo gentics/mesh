@@ -307,22 +307,40 @@ Memory settings can be defined using the `JAVA_TOOL_OPTIONS` environment variabl
 | Setting                           | Description
 | `-Xmx`                            | Maximum heap size of the Gentics Mesh Java process
 | `-Xms`                            | Initial heap size of the Gentics Mesh Java process
+| `-Xss`                            | Stack size. A larger stack size may be required when deleting large datasets.
 | `-XX:MaxDirectMemorySize`         | Maximum direct memory limit. Direct memory is mostly used to buffer transactions of the Graph database
-| `-Dstorage.diskCache.bufferSize`  | Disk buffer size in megabytes used for the Graph database
+| `-Dstorage.diskCache.bufferSize`  | Disk buffer size in megabytes used for the Graph database. The diskCache will make use of direct memory.
 |======
 
-==== Recommendations
+The total amount of required memory is the roughly sum of `heap memory` + `direct memory` + `stack size` + `64 MB (JVM base memory)`.
 
-The following numbers serve the purpose to roughly estimate the memory requirements for different sized projects.
+
+==== Recommendations (Single Node)
+
+The following numbers serve the purpose to roughly estimate the memory requirements for different sized projects in a **non-clustered** setup.
 
 [options="header"]
 |======
 | Node Count           | Memory Setting
-| 0 to 100             | `-Xms128m  -Xmx128m  -XX:MaxDirectMemorySize=128m  -Dstorage.diskCache.bufferSize=128`
-| 100 to 1_000         | `-Xms512m  -Xmx512m  -XX:MaxDirectMemorySize=256m  -Dstorage.diskCache.bufferSize=256`
-| 1_000 to 10_000      | `-Xms786m  -Xmx786m  -XX:MaxDirectMemorySize=384m  -Dstorage.diskCache.bufferSize=384`
-| 10_000 to 100_000    | `-Xms1250m -Xmx1250m -XX:MaxDirectMemorySize=512m  -Dstorage.diskCache.bufferSize=512`
-| 100_000 to 1_000_000 | `-Xms2500m -Xmx2500m -XX:MaxDirectMemorySize=1024m -Dstorage.diskCache.bufferSize=1024`
+| 0 to 100             | `-Xms128m -Xmx128m -Xss1m -XX:MaxDirectMemorySize=128m  -Dstorage.diskCache.bufferSize=128`
+| 100 to 1_000         | `-Xms512m -Xmx512m -Xss2m -XX:MaxDirectMemorySize=256m  -Dstorage.diskCache.bufferSize=256`
+| 1_000 to 10_000      | `-Xms786m -Xmx786m -Xss16m -XX:MaxDirectMemorySize=384m  -Dstorage.diskCache.bufferSize=384`
+| 10_000 to 100_000    | `-Xms1250m -Xmx1250m -Xss32m -XX:MaxDirectMemorySize=512m  -Dstorage.diskCache.bufferSize=512`
+| 100_000 to 1_000_000 | `-Xms2500m -Xmx2500m -Xss64m -XX:MaxDirectMemorySize=1024m -Dstorage.diskCache.bufferSize=1024`
+|======
+
+==== Recommendations (Clustered Node)
+
+The following numbers serve the purpose to roughly estimate the memory requirements for different sized projects in a *clustered* setup.
+
+[options="header"]
+|======
+| Node Count           | Memory Setting
+| 0 to 100             | `-Xms1124m -Xmx1124m -Xss2m -XX:MaxDirectMemorySize=628m  -Dstorage.diskCache.bufferSize=628`
+| 100 to 1_000         | `-Xms1512m -Xmx1512m -Xss4m -XX:MaxDirectMemorySize=856m  -Dstorage.diskCache.bufferSize=856`
+| 1_000 to 10_000      | `-Xms1786m -Xmx1786m -Xss32m -XX:MaxDirectMemorySize=984m  -Dstorage.diskCache.bufferSize=984`
+| 10_000 to 100_000    | `-Xms2250m -Xmx2250m -Xss64m -XX:MaxDirectMemorySize=1024m  -Dstorage.diskCache.bufferSize=1024`
+| 100_000 to 1_000_000 | `-Xms3500m -Xmx3500m -Xss128m -XX:MaxDirectMemorySize=2048m -Dstorage.diskCache.bufferSize=2048`
 |======
 
 == Admin Access
