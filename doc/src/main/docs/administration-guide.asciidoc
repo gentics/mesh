@@ -236,17 +236,17 @@ See link:{{< relref "references.asciidoc" >}}#_https[HTTPs configuration].
 
 === Server Options
 
-include::content/docs/snippets/config/server.inc[]
+include::content/docs/generated/tables/HttpServerConfig.adoc-include[]
 
 === Cluster Options
 
-include::content/docs/snippets/config/cluster.inc[]
+include::content/docs/generated/tables/ClusterOptions.adoc-include[]
 
 === Storage Options
 
 By default all specified directories are relative to the installation directory.
 
-include::content/docs/snippets/config/storage.inc[]
+include::content/docs/generated/tables/GraphStorageOptions.adoc-include[]
 
 ==== OrientDB parameters
 
@@ -256,18 +256,17 @@ include::content/docs/snippets/config/storage.inc[]
 | ```ridBag.embeddedToSbtreeBonsaiThreshold```    | Number  | 2147483647     | Configures the ridbag threshold for OrientDB. This setting controls how OrientDB manages the internal ridbag data structure. This setting will be ignored when run in clustered mode. See OrientDB documentation for more details.
 |======
 
-
 === Search Options
 
-include::content/docs/snippets/config/search.inc[]
+include::content/docs/generated/tables/ElasticSearchOptions.adoc-include[]
 
 === Upload Options
 
-include::content/docs/snippets/config/upload.inc[]
+include::content/docs/generated/tables/MeshUploadOptions.adoc-include[]
 
 === Security Options
 
-include::content/docs/snippets/config/security.inc[]
+include::content/docs/generated/tables/AuthenticationOptions.adoc-include[]
 
 ==== Public Keys
 
@@ -282,21 +281,21 @@ include::content/docs/examples/example-public-keys.json[]
 
 === Monitoring Options
 
-include::content/docs/snippets/config/monitoring.inc[]
+include::content/docs/generated/tables/MonitoringConfig.adoc-include[]
 
 === Image Options
 
-include::content/docs/snippets/config/image.inc[]
+include::content/docs/generated/tables/ImageManipulatorOptions.adoc-include[]
 
 === Cache Options
 
-include::content/docs/snippets/config/cache.inc[]
+include::content/docs/generated/tables/CacheConfig.adoc-include[]
 
 Additionally it is possible to tweak the underlying OrientDB cache settings.
 
 === Debug Information Options
 
-include::content/docs/snippets/config/debuginfo.inc[]
+include::content/docs/generated/tables/DebugInfoOptions.adoc-include[]
 
 === Memory Settings
 
