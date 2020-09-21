@@ -23,6 +23,10 @@ include::content/docs/variables.adoc-include[]
 
 * The support for the *embedded* version of Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+== TBD
+
+icon:plus[] Core: The link renderer now tries to use url fields to render the link if it cannot be constructed using segment fields.
+
 [[v1.7.1]]
 == 1.7.1 (05.09.2020)
 
