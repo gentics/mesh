@@ -15,7 +15,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.PARENTS
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.PROJECT_KEY_PROPERTY;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.SCHEMA_CONTAINER_KEY_PROPERTY;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_MOVED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_REFERENCE_UPDATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_TAGGED;
@@ -257,7 +256,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			List<String> segments = new ArrayList<>();
 			String segment = getPathSegment(branchUuid, type, languageTag);
 			if (segment == null) {
-				return null;
+				// Fall back to url fields
+				return getUrlFieldPath(branchUuid, type, languageTag);
 			}
 			segments.add(segment);
 
@@ -272,10 +272,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				// For the path segments of the container, we allow ANY language (of the project)
 				segment = toGraph(current).getPathSegment(branchUuid, type, true, languageTag);
 
-				// Abort early if one of the path segments could not be resolved. We
-				// need to return a 404 in those cases.
+				// Abort early if one of the path segments could not be resolved.
+				// We need to fall back to url fields in those cases.
 				if (segment == null) {
-					return null;
+					return getUrlFieldPath(branchUuid, type, languageTag);
 				}
 				segments.add(segment);
 			}
@@ -309,6 +309,21 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			return builder.toString();
 		});
 
+	}
+
+	/**
+	 * Return the first url field path found.
+	 *
+	 * @param branchUuid
+	 * @param type
+	 * @param languages  The order of languages will be used to search for the url field values.
+	 * @return null if no url field could be found.
+	 */
+	private String getUrlFieldPath(String branchUuid, ContainerType type, String... languages) {
+		return Stream.of(languages)
+			.flatMap(language -> getGraphFieldContainer(language, branchUuid, type).getUrlFieldValues())
+			.findFirst()
+			.orElse(null);
 	}
 
 	private void assertPublishConsistency(InternalActionContext ac, HibBranch branch) {

@@ -249,7 +249,7 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	}
 
 	@Override
-	public Set<String> getUrlFieldValues(NodeGraphFieldContainer content) {
+	public Stream<String> getUrlFieldValues(NodeGraphFieldContainer content) {
 		return content.getUrlFieldValues();
 	}
 

@@ -647,7 +647,7 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		delegate.postfixSegmentFieldValue();
 	}
 
-	public Set<String> getUrlFieldValues() {
+	public Stream<String> getUrlFieldValues() {
 		return delegate.getUrlFieldValues();
 	}
 
