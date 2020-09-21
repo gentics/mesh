@@ -22,7 +22,7 @@ All fixes and changes in LTS releases will be released the next minor release. C
 [[v1.6.1]]
 == 1.6.1 (TBD)
 
-icon:plus[] Search: The memory footprint of the differential sync mechanism has been reduced. The sync will now utilize partitions. The size of the partitions can be influenced via the `search.syncBatchSize` setting.
+icon:plus[] Search: The memory footprint of the differential sync mechanism has been reduced. The sync operations will now be split into buckets. The size of the buckets can be influenced via the `search.syncBatchSize` setting.
 
 icon:check[] Core: Fixed a bug that which prevented to update a node reference of a user if the user already had one set. link:https://github.com/gentics/mesh/issues/1114[#1114]
 
