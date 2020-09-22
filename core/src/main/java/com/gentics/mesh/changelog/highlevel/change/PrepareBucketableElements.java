@@ -16,11 +16,15 @@ import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.BucketableElement;
+import com.gentics.mesh.search.IndexHandlerRegistry;
+import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
 
 import dagger.Lazy;
+import io.reactivex.Observable;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -30,14 +34,24 @@ public class PrepareBucketableElements extends AbstractHighLevelChange {
 
 	private static final Logger log = LoggerFactory.getLogger(PrepareBucketableElements.class);
 
-	private Lazy<Database> db;
+	private final Lazy<Database> db;
 
-	private Lazy<Vertx> vertx;
+	private final Lazy<Vertx> vertx;
+
+	private final Lazy<SearchProvider> searchProvider;
+
+	private final Lazy<IndexHandlerRegistry> registry;
+
+	private MeshOptions options;
 
 	@Inject
-	public PrepareBucketableElements(Lazy<Database> db, Lazy<Vertx> vertx) {
+	public PrepareBucketableElements(MeshOptions options, Lazy<Database> db, Lazy<Vertx> vertx, Lazy<SearchProvider> searchProvider,
+		Lazy<IndexHandlerRegistry> registry) {
+		this.options = options;
 		this.db = db;
 		this.vertx = vertx;
+		this.searchProvider = searchProvider;
+		this.registry = registry;
 	}
 
 	@Override
@@ -47,7 +61,7 @@ public class PrepareBucketableElements extends AbstractHighLevelChange {
 
 	@Override
 	public String getUuid() {
-		return "038F1F8BFF534956AF4CC056DE7B2166";
+		return "038F1F8BFF534956AF4CC056DE7B2165";
 	}
 
 	@Override
@@ -68,11 +82,19 @@ public class PrepareBucketableElements extends AbstractHighLevelChange {
 		migrate(MicroschemaContainerImpl.class);
 		migrate(NodeGraphFieldContainerImpl.class);
 
-		// Now reindex the elements since the bucketId 
-		// needs to be in the elasticsearch documents.
-		SyncEventHandler.invokeClearCompletable(vertx.get())
-			.andThen(SyncEventHandler.invokeSyncCompletable(vertx.get()))
-			.blockingAwait();
+		if (options.getSearchOptions().getUrl() != null) {
+			// Now reindex the elements since the bucketId
+			// needs to be in the elasticsearch documents.
+			searchProvider.get().clear()
+				.andThen(Observable.fromIterable(registry.get().getHandlers())
+					.flatMapCompletable(handler -> handler.init()))
+				.blockingAwait();
+
+			vertx.get().setTimer(6000, id -> {
+				SyncEventHandler.invokeSync(vertx.get());
+			});
+		}
+
 	}
 
 	private <T extends BucketableElement> void migrate(Class<T> clazz) {
