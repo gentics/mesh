@@ -24,6 +24,8 @@ icon:plus[] Monitoring: The liveness probe will now check for plugin status. Fai
 
 icon:check[] Clustering: The webroot handler no longer uses the cluster-wide write lock.
 
+icon:check[] Logging: Failing readiness checks are now logged using the `WARN` level.
+
 [[v1.4.14]]
 == 1.4.14 (02.09.2020)
 
