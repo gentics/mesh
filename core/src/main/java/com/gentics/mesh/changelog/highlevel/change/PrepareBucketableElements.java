@@ -18,9 +18,10 @@ import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.BucketableElement;
-import com.gentics.mesh.search.index.BucketManager;
+import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
 
 import dagger.Lazy;
+import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -29,14 +30,14 @@ public class PrepareBucketableElements extends AbstractHighLevelChange {
 
 	private static final Logger log = LoggerFactory.getLogger(PrepareBucketableElements.class);
 
-	private BucketManager manager;
-
 	private Lazy<Database> db;
 
+	private Lazy<Vertx> vertx;
+
 	@Inject
-	public PrepareBucketableElements(Lazy<Database> db, BucketManager manager) {
+	public PrepareBucketableElements(Lazy<Database> db, Lazy<Vertx> vertx) {
 		this.db = db;
-		this.manager = manager;
+		this.vertx = vertx;
 	}
 
 	@Override
@@ -46,7 +47,7 @@ public class PrepareBucketableElements extends AbstractHighLevelChange {
 
 	@Override
 	public String getUuid() {
-		return "038F1F8BFF534956AF4CC056DE7B2162";
+		return "038F1F8BFF534956AF4CC056DE7B2166";
 	}
 
 	@Override
@@ -66,6 +67,12 @@ public class PrepareBucketableElements extends AbstractHighLevelChange {
 		migrate(SchemaContainerImpl.class);
 		migrate(MicroschemaContainerImpl.class);
 		migrate(NodeGraphFieldContainerImpl.class);
+
+		// Now reindex the elements since the bucketId 
+		// needs to be in the elasticsearch documents.
+		SyncEventHandler.invokeClearCompletable(vertx.get())
+			.andThen(SyncEventHandler.invokeSyncCompletable(vertx.get()))
+			.blockingAwait();
 	}
 
 	private <T extends BucketableElement> void migrate(Class<T> clazz) {
@@ -80,6 +87,5 @@ public class PrepareBucketableElements extends AbstractHighLevelChange {
 			}
 			count++;
 		}
-
 	}
 }

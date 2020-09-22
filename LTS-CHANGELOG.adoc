@@ -24,6 +24,8 @@ All fixes and changes in LTS releases will be released the next minor release. C
 
 icon:plus[] Search: The memory footprint of the differential sync mechanism has been reduced. The sync operations will now be split into buckets. The size of the buckets can be influenced via the `search.syncBatchSize` setting.
 
+CAUTION: The new sync mechanism requires a reindex of all documents. The Elasticsearch indices will be automatically cleared and re-synced during the first startup of this version.
+
 icon:check[] Core: Fixed a bug that which prevented to update a node reference of a user if the user already had one set. link:https://github.com/gentics/mesh/issues/1114[#1114]
 
 icon:plus[] Plugins: The default plugin timeout has been increased from 15 seconds to two minutes.
