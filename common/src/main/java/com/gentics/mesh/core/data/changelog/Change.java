@@ -33,4 +33,12 @@ public interface Change {
 	 */
 	String getDescription();
 
+	/**
+	 * Return a flag which informs the changelog system whether the change requires a reindex.
+	 * 
+	 * @return
+	 */
+	default boolean requiresReindex() {
+		return false;
+	}
 }

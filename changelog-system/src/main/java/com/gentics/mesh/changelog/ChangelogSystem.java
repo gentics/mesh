@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.changelog.changes.ChangesList;
+import com.gentics.mesh.cli.PostProcessFlags;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.tinkerpop.blueprints.TransactionalGraph;
@@ -37,12 +38,11 @@ public class ChangelogSystem {
 	/**
 	 * Apply all listed changes.
 	 * 
-	 * @param reindexAction
+	 * @param flags 
 	 * @param list
-	 * @return Flag which indicates whether all changes were applied successfully
+	 * @return Flag which indicates whether reindex should be invoked
 	 */
-	public boolean applyChanges(ReindexAction reindexAction, List<Change> list) {
-		boolean reindex = false;
+	public boolean applyChanges(PostProcessFlags flags, List<Change> list) {
 		for (Change change : list) {
 			// Execute each change in a new transaction
 			change.setDb(db);
@@ -59,7 +59,9 @@ public class ChangelogSystem {
 						throw new Exception("Validation for change {" + change.getUuid() + "/" + change.getName() + "} failed.");
 					}
 					change.markAsComplete();
-					reindex |= change.requiresReindex();
+					if (flags != null && change.requiresReindex()) {
+						flags.isReindex();
+					}
 				} else {
 					log.debug("Change {" + change.getUuid() + "} is already applied.");
 				}
@@ -67,9 +69,6 @@ public class ChangelogSystem {
 				log.error("Error while handling change {" + change.getUuid() + "/" + change.getName() + "}.", e);
 				return false;
 			}
-		}
-		if (reindex) {
-			reindexAction.invoke();
 		}
 		return true;
 	}
@@ -94,11 +93,11 @@ public class ChangelogSystem {
 	/**
 	 * Apply all changes from the {@link ChangesList}.
 	 * 
-	 * @param reindexAction
+	 * @param flags
 	 * @return
 	 */
-	public boolean applyChanges(ReindexAction reindexAction) {
-		return applyChanges(reindexAction, ChangesList.getList(options));
+	public boolean applyChanges(PostProcessFlags flags) {
+		return applyChanges(flags, ChangesList.getList(options));
 	}
 
 	/**
