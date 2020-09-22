@@ -707,7 +707,7 @@ public interface ContentDaoWrapper extends ContentDao {
 	 *
 	 * @return
 	 */
-	Set<String> getUrlFieldValues(NodeGraphFieldContainer content);
+	Stream<String> getUrlFieldValues(NodeGraphFieldContainer content);
 
 	/**
 	 * Traverse to the base node and build up the path to this container.
