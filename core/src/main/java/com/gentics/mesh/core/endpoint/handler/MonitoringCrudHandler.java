@@ -30,7 +30,13 @@ public class MonitoringCrudHandler {
 	}
 
 	public void handleLive(RoutingContext rc) {
-		// We currently don't have a situation which would justify to let the service being restarted automatically.
+		for (String id : pluginManager.getPluginIds()) {
+			PluginStatus status = pluginManager.getStatus(id);
+			if (status == PluginStatus.FAILED) {
+				log.warn("Plugin {" + id + "} is in status failed.");
+				throw error(SERVICE_UNAVAILABLE, "error_internal");
+			}
+		}
 		rc.response().setStatusCode(200).end();
 	}
 
@@ -38,9 +44,7 @@ public class MonitoringCrudHandler {
 		for (String id : pluginManager.getPluginIds()) {
 			PluginStatus status = pluginManager.getStatus(id);
 			if (status != PluginStatus.REGISTERED) {
-				if (log.isDebugEnabled()) {
-					log.debug("Plugin {" + id + "} is not ready. Got status {" + status + "}");
-				}
+				log.warn("Plugin {" + id + "} is not ready. Got status {" + status + "}");
 				throw error(SERVICE_UNAVAILABLE, "error_internal");
 			}
 		}
@@ -49,9 +53,7 @@ public class MonitoringCrudHandler {
 		if (status.equals(MeshStatus.READY)) {
 			rc.response().end();
 		} else {
-			if (log.isDebugEnabled()) {
-				log.debug("Status is {" + status.name() + "} - Failing readiness probe");
-			}
+			log.warn("Status is {" + status.name() + "} - Failing readiness probe");
 			throw error(SERVICE_UNAVAILABLE, "error_internal");
 		}
 	}
