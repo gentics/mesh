@@ -321,7 +321,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 */
 	private String getUrlFieldPath(String branchUuid, ContainerType type, String... languages) {
 		return Stream.of(languages)
-			.flatMap(language -> getGraphFieldContainer(language, branchUuid, type).getUrlFieldValues())
+			.flatMap(language -> Stream.ofNullable(getGraphFieldContainer(language, branchUuid, type)))
+			.flatMap(NodeGraphFieldContainer::getUrlFieldValues)
 			.findFirst()
 			.orElse(null);
 	}
