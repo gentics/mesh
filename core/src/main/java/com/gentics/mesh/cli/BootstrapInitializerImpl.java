@@ -246,7 +246,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 			// Mark all changelog entries as applied for new installations
 			markChangelogApplied();
-			flags.requireReindex();
+			if (!(searchProvider instanceof TrackingSearchProvider)) {
+				flags.requireReindex();
+			}
 		} else {
 			handleMeshVersion();
 			if (!isJoiningCluster) {
@@ -577,12 +579,14 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			verticleLoader.apply(vertx);
 		}
 
+		boolean isSearchEnabled = configuration.getSearchOptions().getUrl() != null;
+
 		// Invoke reindex as requested
-		if (flags.isReindex()) {
+		if (isSearchEnabled && flags.isReindex()) {
 			createSearchIndicesAndMappings();
 		}
 
-		if (flags.isReindex() || flags.isResync()) {
+		if (isSearchEnabled && (flags.isReindex() || flags.isResync())) {
 			SyncEventHandler.invokeSync(vertx);
 		}
 
