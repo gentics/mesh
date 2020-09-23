@@ -10,6 +10,15 @@
 
 = Mesh Search Plugin Changelog
 
+[[v1.5.8]]
+== 1.5.8 (2020-09-23)
+
+icon:plus[] SearchHandler: Add detection of global aggregations.
+
+icon:check[] Custom queries: Add page parameter `p` for custom queries.
+
+icon:check[] QueryBuilder: The tags parameter `t` is now injected in all query types.
+
 [[v1.5.7]]
 == 1.5.7 (2020-08-24)
 
@@ -29,6 +38,15 @@ icon:check[] SearchHandler: Fix branch UUID detection for language specific indi
 == 1.5.1 (2020-06-05)
 
 icon:check[] Added JSON Content-type headers to the search response in the Custom search handler
+
+[[v1.4.13]]
+== 1.4.13 (2020-09-23)
+
+icon:plus[] SearchHandler: Add detection of global aggregations.
+
+icon:check[] Custom queries: Add page parameter `p` for custom queries.
+
+icon:check[] QueryBuilder: The tags parameter `t` is now injected in all query types.
 
 [[v1.4.12]]
 == 1.4.12 (2020-08-24)

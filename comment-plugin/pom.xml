@@ -39,10 +39,12 @@
 		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-web-templ-handlebars</artifactId>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-mail-client</artifactId>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh.plugin.commercial</groupId>
