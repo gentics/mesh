@@ -56,12 +56,27 @@ public class MonitoringServerEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testFailingPlugin() {
+	public void testReadinessFailingPlugin() {
 		MeshPluginManager manager = pluginManager();
 		manager.deploy(FailingInitializePlugin.class, "failing").blockingAwait();
 		try {
 			call(() -> monClient().ready());
 			fail("The ready probe should fail");
+		} catch (Exception e) {
+			// NOOP
+		}
+		manager.undeploy("failing").blockingAwait(2, TimeUnit.SECONDS);
+		assertEquals(0, manager.getPluginIds().size());
+		call(() -> monClient().ready());
+	}
+
+	@Test
+	public void testLivenessFailingPlugin() {
+		MeshPluginManager manager = pluginManager();
+		manager.deploy(FailingInitializePlugin.class, "failing").blockingAwait();
+		try {
+			call(() -> monClient().live());
+			fail("The liveness probe should fail");
 		} catch (Exception e) {
 			// NOOP
 		}
