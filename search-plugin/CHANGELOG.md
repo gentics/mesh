@@ -15,7 +15,9 @@
 
 icon:plus[] SearchHandler: Add detection of global aggregations.
 
-icon:check[] Custom queries: Add page parameter `p` for custom queries
+icon:check[] Custom queries: Add page parameter `p` for custom queries.
+
+icon:check[] QueryBuilder: The tags parameter `t` is now injected in all query types.
 
 [[v1.4.12]]
 == 1.4.12 (2020-08-24)

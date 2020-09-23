@@ -76,28 +76,7 @@ public class BasicSearchQueryBuilder implements SearchQueryBuilder {
 	 */
 	@Override
 	public JsonObject buildQuery(PluginContext context, String name, String rawQuery) {
-		JsonObject query = new JsonObject(rawQuery);
-		JsonObject params = extractParams(query);
-
-		setCommonFields(query, params, config.getSearchedProjects(context.projectName()), context);
-
-		if (name.equals("search")) {
-			HttpServerRequest request = context.request();
-
-			setParam(
-				query,
-				params,
-				"tags",
-				String.join(" ", QueryBuilderUtils.getTags(request)));
-
-			int page = NumberUtils.toInt(request.getParam("p"), 0);
-			int pageSize = config.getPageSize();
-
-			query.put("size", pageSize);
-			query.put("from", page * pageSize);
-		}
-
-		return query;
+		return buildQuery(context, rawQuery, true);
 	}
 
 	/**
@@ -107,7 +86,7 @@ public class BasicSearchQueryBuilder implements SearchQueryBuilder {
 	 *
 	 * @param context The current plugin context
 	 * @param rawQuery Initially loaded search query which can be modified. May be null if you want to create your query from scratch
-	 * @return
+	 * @return The loaded and postprocessed search query
 	 */
 	@Override
 	public JsonObject buildSearchQuery(PluginContext context, String rawQuery) {
@@ -121,11 +100,11 @@ public class BasicSearchQueryBuilder implements SearchQueryBuilder {
 	 *
 	 * @param context The current plugin context
 	 * @param rawQuery Initially loaded search query which can be modified. May be null if you want to create your query from scratch
-	 * @return
+	 * @return The loaded and postprocessed autocomplete query
 	 */
 	@Override
 	public JsonObject buildAutocompleteQuery(PluginContext context, String rawQuery) {
-		return buildQuery(context, "auto", rawQuery);
+		return buildQuery(context, rawQuery, false);
 	}
 
 	/**
@@ -136,11 +115,11 @@ public class BasicSearchQueryBuilder implements SearchQueryBuilder {
 	 * @param context The current plugin context
 	 * @param rawQuery Initially loaded search query which can be modified. May be null if you want to create your query from scratch
 	 * @param binary Whether to construct a did-you-mean query for binaries
-	 * @return
+	 * @return The loaded and postprocessed did-you-mean query
 	 */
 	@Override
 	public JsonObject buildDidYouMeanQuery(PluginContext context, String rawQuery, boolean binary) {
-		return buildQuery(context, "dym", rawQuery);
+		return buildQuery(context, rawQuery, false);
 	}
 
 	/**
@@ -211,5 +190,40 @@ public class BasicSearchQueryBuilder implements SearchQueryBuilder {
 			.filter(Objects::nonNull)
 			.map(Object::toString)
 			.forEach(path -> JsonUtils.setValue(query, path, value));
+	}
+
+	/**
+	 * Sets the common parameters "query", "language" and "projects" for all names, as well as
+	 * "tags", "size" and "from" when {@code addPaging} is {@code true}.
+	 *
+	 * @see #setCommonFields(JsonObject, JsonObject, Set, PluginContext)
+	 *
+	 * @param context The current plugin context
+	 * @param rawQuery Initially loaded search query which can be modified. May be null if you want to create your query from scratch
+	 * @return The final query
+	 */
+	private JsonObject buildQuery(PluginContext context, String rawQuery, boolean addPaging) {
+		JsonObject query = new JsonObject(rawQuery);
+		JsonObject params = extractParams(query);
+
+		setCommonFields(query, params, config.getSearchedProjects(context.projectName()), context);
+
+		HttpServerRequest request = context.request();
+
+		setParam(
+			query,
+			params,
+			"tags",
+			String.join(" ", QueryBuilderUtils.getTags(request)));
+
+		if (addPaging) {
+			int page = NumberUtils.toInt(request.getParam("p"), 0);
+			int pageSize = config.getPageSize();
+
+			query.put("size", pageSize);
+			query.put("from", page * pageSize);
+		}
+
+		return query;
 	}
 }
