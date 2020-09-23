@@ -100,17 +100,7 @@ public class TemplateSearchQueryBuilder implements CachingSearchQueryBuilder {
 
 	@Override
 	public JsonObject buildSearchQuery(PluginContext context, String rawQuery) {
-		JsonObject query = buildQuery(context, "search", rawQuery);
-
-		if (query != null) {
-			int page = NumberUtils.toInt(context.request().getParam("p"), 0);
-			int pageSize = config.getPageSize();
-
-			query.put("size", pageSize)
-				.put("from", page * pageSize);
-		}
-
-		return query;
+		return buildQuery(context, "search", rawQuery);
 	}
 
 	@Override
@@ -150,9 +140,11 @@ public class TemplateSearchQueryBuilder implements CachingSearchQueryBuilder {
 	 *     When template generation failed, <code>template</code> will be a {@link RuntimeException} which is
 	 *     just thrown immediately.
 	 * </p>
-	 *
+	 * <p>
+	 *     Page and size parameters are added automatically
+	 * </p>
 	 * @param context The current plugin context
-	 * @param isSearchQuery Whether the build query is a search query which needs the "from" and "size" parameters
+	 * @param isSearchQuery Whether the build query is a search query
 	 * @param template The Handlebars template for the query
 	 * @return The final query
 	 * @throws RuntimeException When the template could not be generated or applied to the search parameters
@@ -163,12 +155,20 @@ public class TemplateSearchQueryBuilder implements CachingSearchQueryBuilder {
 		if (template instanceof RuntimeException) {
 			throw (RuntimeException) template;
 		}
+		JsonObject query;
 
 		try {
-			return new JsonObject(((Template) template).apply(params));
+			 query = new JsonObject(((Template) template).apply(params));
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+		int page = NumberUtils.toInt(context.request().getParam("p"), 0);
+		int pageSize = config.getPageSize();
+
+		query.put("size", pageSize)
+			.put("from", page * pageSize);
+
+		return query;
 	}
 
 	/**
