@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.FieldTypes;
-import com.gentics.mesh.core.rest.schema.BinaryFieldParserOption;
+import com.gentics.mesh.core.rest.schema.BinaryExtractOptions;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 
 public class BinaryFieldSchemaImpl extends AbstractFieldSchema implements BinaryFieldSchema {
@@ -15,9 +15,9 @@ public class BinaryFieldSchemaImpl extends AbstractFieldSchema implements Binary
 	@JsonPropertyDescription("Array of allowed mimetypes")
 	private String[] allowedMimeTypes;
 
-	@JsonProperty
-	@JsonPropertyDescription("The parsing behaviour for this field.")
-	private BinaryFieldParserOption parser = BinaryFieldParserOption.DEFAULT;
+	@JsonProperty("extract")
+	@JsonPropertyDescription("The extracting behaviour for this field.")
+	private BinaryExtractOptions binaryExtractOptions;
 
 	@Override
 	public String[] getAllowedMimeTypes() {
@@ -39,7 +39,13 @@ public class BinaryFieldSchemaImpl extends AbstractFieldSchema implements Binary
 	public Map<String, Object> getAllChangeProperties() {
 		Map<String, Object> properties = super.getAllChangeProperties();
 		properties.put("allow", getAllowedMimeTypes());
-		properties.put("parser", getParserOption());
+		if (binaryExtractOptions == null) {
+			properties.put("extractContent", null);
+			properties.put("extractMetadata", null);
+		} else {
+			properties.put("extractContent", binaryExtractOptions.getContent());
+			properties.put("extractMetadata", binaryExtractOptions.getMetadata());
+		}
 		return properties;
 	}
 
@@ -49,19 +55,28 @@ public class BinaryFieldSchemaImpl extends AbstractFieldSchema implements Binary
 		if (fieldProperties.get("allowedMimeTypes") != null) {
 			setAllowedMimeTypes((String[]) fieldProperties.get("allowedMimeTypes"));
 		}
-		if (fieldProperties.get("parser") != null) {
-			setParserOption(BinaryFieldParserOption.valueOf((String) fieldProperties.get("parser")));
+		if (fieldProperties.get("extractContent") != null) {
+			createOrGetBinaryExtractOptions().setContent((Boolean)fieldProperties.get("extractContent"));
+		}
+		if (fieldProperties.get("extractMetadata") != null) {
+			createOrGetBinaryExtractOptions().setMetadata((Boolean)fieldProperties.get("extractMetadata"));
 		}
 	}
 
-	@JsonIgnore
-	@Override
-	public BinaryFieldParserOption getParserOption() {
-		return parser;
+	private BinaryExtractOptions createOrGetBinaryExtractOptions() {
+		if (binaryExtractOptions == null) {
+			binaryExtractOptions = new BinaryExtractOptions();
+		}
+		return binaryExtractOptions;
 	}
 
-	public BinaryFieldSchemaImpl setParserOption(BinaryFieldParserOption parser) {
-		this.parser = parser;
+	@JsonIgnore
+	public BinaryExtractOptions getBinaryExtractOptions() {
+		return binaryExtractOptions;
+	}
+
+	public BinaryFieldSchemaImpl setBinaryExtractOptions(BinaryExtractOptions extract) {
+		this.binaryExtractOptions = extract;
 		return this;
 	}
 }

@@ -1,6 +1,7 @@
 package com.gentics.mesh.etc.config;
 
 import java.io.File;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -23,6 +24,7 @@ public class MeshUploadOptions implements Option {
 	public static final String MESH_BINARY_UPLOAD_LIMIT_ENV = "MESH_BINARY_UPLOAD_LIMIT";
 	public static final String MESH_BINARY_DOCUMENT_PARSER_LIMIT_ENV = "MESH_BINARY_DOCUMENT_PARSER_LIMIT";
 	public static final String MESH_BINARY_DOCUMENT_PARSER_ENV = "MESH_BINARY_DOCUMENT_PARSER";
+	public static final String MESH_BINARY_METADATA_WHITELIST = "MESH_BINARY_METADATA_WHITELIST";
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("The upload size limit in bytes. Default: " + DEFAULT_FILEUPLOAD_MB_LIMIT)
@@ -49,6 +51,11 @@ public class MeshUploadOptions implements Option {
 		+ DEFAULT_UPLOAD_PARSER_FLAG)
 	@EnvironmentVariable(name = MESH_BINARY_DOCUMENT_PARSER_ENV, description = "Override the document parser enabled flag.")
 	private boolean parser = DEFAULT_UPLOAD_PARSER_FLAG;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("If set, the parser will only extract metadata with the keys specified in the list.")
+	@EnvironmentVariable(name = MESH_BINARY_METADATA_WHITELIST, description = "Override the metadata whilelist")
+	private Set<String> metadataWhitelist;
 
 	/**
 	 * Return the upload limit in bytes.
@@ -153,4 +160,23 @@ public class MeshUploadOptions implements Option {
 		return this;
 	}
 
+	/**
+	 * Set the metadata whitelist.
+	 *
+	 * @return
+	 */
+	public Set<String> getMetadataWhitelist() {
+		return metadataWhitelist;
+	}
+
+	/**
+	 * Get the metadata whitelist.
+	 *
+	 * @param metadataWhitelist
+	 * @return Fluent API
+	 */
+	public MeshUploadOptions setMetadataWhitelist(Set<String> metadataWhitelist) {
+		this.metadataWhitelist = metadataWhitelist;
+		return this;
+	}
 }

@@ -26,14 +26,13 @@ public interface BinaryFieldSchema extends FieldSchema {
 	}
 
 	/**
-	 * The parsing behaviour for this field.
-	 * Setting this to something other than null or {@link BinaryFieldParserOption#DEFAULT} will override the global configuration.
+	 * The behaviour for extracting content or metadata from the binary data of this field.
+	 * Setting this to something other than null will override the global configuration.
 	 *
-	 * @see BinaryFieldParserOption
 	 * @see MeshUploadOptions#isParser()
 	 * @see ElasticSearchOptions#isIncludeBinaryFields()
 	 *
 	 * @return
 	 */
-	BinaryFieldParserOption getParserOption();
+	BinaryExtractOptions getBinaryExtractOptions();
 }

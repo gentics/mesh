@@ -1,51 +1,53 @@
 package com.gentics.mesh.core.field.binary;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.rest.schema.BinaryFieldParserOption.DEFAULT;
-import static com.gentics.mesh.core.rest.schema.BinaryFieldParserOption.NONE;
-import static com.gentics.mesh.core.rest.schema.BinaryFieldParserOption.PARSE_AND_SEARCH;
-import static com.gentics.mesh.core.rest.schema.BinaryFieldParserOption.PARSE_ONLY;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 
 import java.io.ByteArrayInputStream;
+import java.util.Set;
 
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
-import com.gentics.mesh.core.rest.schema.BinaryFieldParserOption;
+import com.gentics.mesh.core.rest.schema.BinaryExtractOptions;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.ElasticsearchTestMode;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.util.CollectionUtil;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 
 @MeshTestSetting(testSize = FULL, startServer = true, elasticsearch = ElasticsearchTestMode.TRACKING)
-public class BinaryFieldParserOptionTest extends AbstractMeshTest {
+public class BinaryFieldExtractOptionTest extends AbstractMeshTest {
 	private NodeResponse nodeResponse;
 	private BinaryField binaryField;
 	private BinaryMetadata metadata;
 	private JsonObject document;
+	private String plainText;
 
-	private void setUp(BinaryFieldParserOption parserOption) throws Exception {
-		// Make sure all options are tested in case more gets added in the future
-		assertThat(BinaryFieldParserOption.values())
-			.containsExactlyInAnyOrder(DEFAULT, NONE, PARSE_ONLY, PARSE_AND_SEARCH);
+	private void setUp(BinaryExtractOptions extract) throws Exception {
+		setUp(extract, null);
+	}
 
-		// DEFAULT is the default setting for binary fields. No changes are made in this case.
-		if (parserOption != DEFAULT) {
+	private void setUp(BinaryExtractOptions extract, Set<String> whitelist) throws Exception {
+		if (extract != null) {
 			SchemaResponse oldSchema = getSchemaByName("binary_content");
 			SchemaUpdateRequest binarySchema = oldSchema.toUpdateRequest();
 			binarySchema.getField("binary", BinaryFieldSchemaImpl.class)
-				.setParserOption(parserOption);
+				.setBinaryExtractOptions(extract);
 			updateAndMigrateSchema(oldSchema, binarySchema);
+		}
+
+		if (whitelist != null) {
+			mesh().options().getUploadOptions().setMetadataWhitelist(whitelist);
 		}
 
 		// UPLOAD
@@ -60,42 +62,73 @@ public class BinaryFieldParserOptionTest extends AbstractMeshTest {
 		waitForSearchIdleEvent();
 
 		metadata = binaryField.getMetadata();
+		plainText = binaryField.getPlainText();
 		document = trackingSearchProvider().getLatestStoreEvent(nodeResponse.getUuid());
 	}
 
 	@Test
 	public void testDefault() throws Exception {
-		// Same as PARSE_AND_SEARCH
-		setUp(DEFAULT);
+		// Same as both
+		setUp(null);
 
 		assertThat(metadata.get("subject")).isEqualTo("TestSubject");
+		assertThat(metadata.getMap()).hasSize(11);
+		assertThat(plainText).isEqualTo("Das ist ein Word Dokument für den Johannes");
 		assertThat(document.getJsonObject("fields").getJsonObject("binary").getJsonObject("metadata").getString("subject")).isEqualTo("TestSubject");
 		assertThat(document.getJsonObject("fields").getJsonObject("binary").getJsonObject("file").getString("content")).isEqualTo("Das ist ein Word Dokument für den Johannes");
 	}
 
 	@Test
 	public void testNone() throws Exception {
-		setUp(NONE);
+		setUp(new BinaryExtractOptions(false, false));
 
 		assertThat(metadata).isEmpty();
+		assertThat(plainText).isNull();
 		assertThat(document.getJsonObject("fields").getJsonObject("binary").getJsonObject("metadata")).isNull();
 		assertThat(document.getJsonObject("fields").getJsonObject("binary").getJsonObject("file")).isNull();
 	}
 
 	@Test
-	public void testParseOnly() throws Exception {
-		setUp(PARSE_ONLY);
+	public void testMetadata() throws Exception {
+		setUp(new BinaryExtractOptions(false, true));
 
 		assertThat(metadata.get("subject")).isEqualTo("TestSubject");
-		assertThat(document.getJsonObject("fields").getJsonObject("binary").getJsonObject("metadata")).isNull();
+		assertThat(metadata.getMap()).hasSize(11);
+		assertThat(plainText).isNull();
+		assertThat(document.getJsonObject("fields").getJsonObject("binary").getJsonObject("metadata").getString("subject")).isEqualTo("TestSubject");
 		assertThat(document.getJsonObject("fields").getJsonObject("binary").getJsonObject("file")).isNull();
 	}
 
 	@Test
-	public void testParseAndSearch() throws Exception {
-		setUp(PARSE_AND_SEARCH);
+	public void testContent() throws Exception {
+		setUp(new BinaryExtractOptions(true, false));
+
+		assertThat(metadata).isEmpty();
+		assertThat(plainText).isEqualTo("Das ist ein Word Dokument für den Johannes");
+		assertThat(document.getJsonObject("fields").getJsonObject("binary").getJsonObject("metadata")).isNull();
+		assertThat(document.getJsonObject("fields").getJsonObject("binary").getJsonObject("file").getString("content")).isEqualTo("Das ist ein Word Dokument für den Johannes");
+	}
+
+	@Test
+	public void testBoth() throws Exception {
+		setUp(new BinaryExtractOptions(true, true));
 
 		assertThat(metadata.get("subject")).isEqualTo("TestSubject");
+		assertThat(metadata.getMap()).hasSize(11);
+		assertThat(plainText).isEqualTo("Das ist ein Word Dokument für den Johannes");
+		assertThat(document.getJsonObject("fields").getJsonObject("binary").getJsonObject("metadata").getString("subject")).isEqualTo("TestSubject");
+		assertThat(document.getJsonObject("fields").getJsonObject("binary").getJsonObject("file").getString("content")).isEqualTo("Das ist ein Word Dokument für den Johannes");
+	}
+
+	@Test
+	public void testWhitelist() throws Exception {
+		setUp(new BinaryExtractOptions(false, true), CollectionUtil.setOf("subject"));
+
+		assertThat(metadata.get("subject")).isEqualTo("TestSubject");
+		assertThat(plainText).isNull();
+		assertThat(metadata.getLocation()).isNull();
+		assertThat(metadata.getMap()).hasSize(1);
+
 		assertThat(document.getJsonObject("fields").getJsonObject("binary").getJsonObject("metadata").getString("subject")).isEqualTo("TestSubject");
 		assertThat(document.getJsonObject("fields").getJsonObject("binary").getJsonObject("file").getString("content")).isEqualTo("Das ist ein Word Dokument für den Johannes");
 	}
