@@ -49,7 +49,7 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
 import com.gentics.mesh.core.rest.node.field.binary.Location;
-import com.gentics.mesh.core.rest.schema.BinaryFieldParserOption;
+import com.gentics.mesh.core.rest.schema.BinaryExtractOptions;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
@@ -210,7 +210,9 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 						binaryFieldInfo.put("height", binary.getImageHeight());
 					}
 
-					if (isIncludeBinaryFields(((BinaryFieldSchema) fieldSchema))) {
+					BinaryExtractOptions extractOptions = ((BinaryFieldSchema) fieldSchema).getBinaryExtractOptions();
+					if ((extractOptions != null && extractOptions.getMetadata()) ||
+						(extractOptions == null && options.getSearchOptions().isIncludeBinaryFields())) {
 						// Add the metadata
 						BinaryMetadata metadata = binaryField.getMetadata();
 						if (metadata != null) {
@@ -231,7 +233,10 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 								binaryFieldMetadataInfo.put("location-z", loc.getAlt());
 							}
 						}
+					}
 
+					if ((extractOptions != null && extractOptions.getContent()) ||
+						(extractOptions == null && options.getSearchOptions().isIncludeBinaryFields())) {
 						// Plain text
 						String plainText = binaryField.getPlainText();
 						if (plainText != null) {
@@ -240,7 +245,6 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 							file.put("content", plainText);
 						}
 					}
-
 				}
 				break;
 			case BOOLEAN:
@@ -404,12 +408,8 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	 * @return
 	 */
 	private boolean isIncludeBinaryFields(BinaryFieldSchema fieldSchema) {
-		BinaryFieldParserOption parserOption = fieldSchema.getParserOption();
-		if (parserOption == null || parserOption == BinaryFieldParserOption.DEFAULT) {
-			return options.getSearchOptions().isIncludeBinaryFields();
-		} else {
-			return parserOption == BinaryFieldParserOption.PARSE_AND_SEARCH;
-		}
+		BinaryExtractOptions extractOptions = fieldSchema.getBinaryExtractOptions();
+		return options.getSearchOptions().isIncludeBinaryFields() || extractOptions != null;
 	}
 
 	/**
