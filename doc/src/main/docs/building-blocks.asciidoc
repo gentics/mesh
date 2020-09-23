@@ -318,30 +318,31 @@ See the link:{{< relref "features.asciidoc" >}}#_metadata_handling[file upload d
 
 The ```required``` property indicates if the field is mandatory or not.
 
-The ```parser``` property controls how Gentics Mesh will parse binary data and store the resulting metadata. Possible values:
+The ```extract``` property controls how Gentics Mesh will extract data from the uploaded binary.
 
-default:: *The default value.* If this is set, the global options link:{{< relref "administration-guide.asciidoc" >}}#_upload_options[```upload.parser```] and link:{{< relref "administration-guide.asciidoc" >}}#_search_options[```search.includeBinaryFields```] is used.
-none::
-Does not parse or store any data of the binary field.
-This is equivalent to this global configuration:
+`extract.content` (boolean):: Extracts and sends plain text content to Elasticsearch if available.
 
-* ```upload.parser: false```
-* ```search.includeBinaryFields: false```
+`extract.metadata` (boolean):: Extracts and sends metadata to Elasticsearch. An example for metadata is exif data from JPGs.
 
-parseOnly::
-Parses the binary data and stores meta information in Gentics Mesh. The data will not be available in Elasticsearch.
-This is equivalent to this global configuration:
+Example of a complete binary field schema:
 
-* ```upload.parser: true```
-* ```search.includeBinaryFields: false```
+[source,json]
+----
+{
+    "name" : "binary_content",
+    "label" : "Binary Content",
+    "required" : false,
+    "type" : "binary",
+    "extract": {
+        "content": true,
+        "metadata": false
+    }
+}
+----
 
-parseAndSearch::
-Parses the binary data and stores meta information in Gentics Mesh and Elasticsearch.
-This is equivalent to this global configuration:
+Setting the extract object will override the global configurations for parsing ({{< relref "administration-guide.asciidoc" >}}#_upload_options[```upload.parser```]) and indexing (link:{{< relref "administration-guide.asciidoc" >}}#_search_options[```search.includeBinaryFields```]) uploads for this field.
 
-* ```upload.parser: true```
-* ```search.includeBinaryFields: true```
-
+Setting the global metadata whitelist ({{< relref "administration-guide.asciidoc" >}}#_upload_options[```upload.metadataWhitelist```]) will filter the parsed metadata accordingly.
 
 [[micronode]]
 == Micronode & Microschema
