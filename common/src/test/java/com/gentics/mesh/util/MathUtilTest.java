@@ -7,16 +7,6 @@ import org.junit.Test;
 public class MathUtilTest {
 
 	@Test
-	public void testFloorDiv() {
-		assertFloorDiv(1, 1, 1);
-		assertFloorDiv(1, 2, 0);
-		assertFloorDiv(2, 1, 2);
-		assertFloorDiv(3, 1, 3);
-		assertFloorDiv(1, 3, 0);
-		assertFloorDiv(2, 3, 0);
-	}
-
-	@Test
 	public void testCeilDiv() {
 		assertCeilDiv(1, 1, 1);
 		assertCeilDiv(1, 2, 1);
@@ -24,10 +14,6 @@ public class MathUtilTest {
 		assertCeilDiv(3, 1, 3);
 		assertCeilDiv(1, 3, 1);
 		assertCeilDiv(2, 3, 1);
-	}
-
-	private void assertFloorDiv(int i, int j, int expected) {
-		assertEquals(expected, MathUtil.floorDiv(i, j));
 	}
 
 	private void assertCeilDiv(int i, int j, int expected) {
