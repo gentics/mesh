@@ -238,9 +238,23 @@ public class SearchHandler extends AbstractQueryHandler {
 			log.trace("Search result did not contain aggregations");
 		} else {
 			aggregations.forEach(agg -> {
-				JsonArray tags = transformTags((JsonObject) agg.getValue(), activeTags);
+				JsonObject tmp = (JsonObject) agg.getValue();
+				// if json array has doc_count then treat this as a global aggregation
+				if (tmp.containsKey("doc_count")) {
+					tmp.stream().forEach(entry -> {
+						String key = entry.getKey();
+						if (!key.equals("doc_count")) {
+							JsonObject val = (JsonObject) entry.getValue();
+							JsonArray t = transformTags(val, activeTags);
+							output.put(key, t);
+						}
+					});
+				} else {
+					JsonArray tags = transformTags((JsonObject) agg.getValue(), activeTags);
 
-				output.put(agg.getKey(), tags);
+					output.put(agg.getKey(), tags);
+				}
+
 			});
 		}
 
