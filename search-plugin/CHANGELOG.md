@@ -10,6 +10,13 @@
 
 = Mesh Search Plugin Changelog
 
+[[v1.4.13]]
+== 1.4.13 (2020-09-23)
+
+icon:plus[] SearchHandler: Add detection of global aggregations.
+
+icon:check[] Custom queries: Add page parameter `p` for custom queries
+
 [[v1.4.12]]
 == 1.4.12 (2020-08-24)
 
