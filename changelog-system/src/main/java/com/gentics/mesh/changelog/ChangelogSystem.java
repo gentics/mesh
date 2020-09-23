@@ -60,7 +60,7 @@ public class ChangelogSystem {
 					}
 					change.markAsComplete();
 					if (flags != null && change.requiresReindex()) {
-						flags.isReindex();
+						flags.requireReindex();
 					}
 				} else {
 					log.debug("Change {" + change.getUuid() + "} is already applied.");
