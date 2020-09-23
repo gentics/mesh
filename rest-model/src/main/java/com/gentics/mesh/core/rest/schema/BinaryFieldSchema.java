@@ -35,4 +35,12 @@ public interface BinaryFieldSchema extends FieldSchema {
 	 * @return
 	 */
 	BinaryExtractOptions getBinaryExtractOptions();
+
+	/**
+	 * Set the binary extract options.
+	 * 
+	 * @param extract
+	 * @return
+	 */
+	BinaryFieldSchema setBinaryExtractOptions(BinaryExtractOptions extract);
 }

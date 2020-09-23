@@ -8,8 +8,13 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.BinaryExtractOptions;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 
 public class BinaryFieldSchemaImpl extends AbstractFieldSchema implements BinaryFieldSchema {
+
+	public static String CHANGE_EXTRACT_CONTENT_KEY = "extractContent";
+
+	public static String CHANGE_EXTRACT_METADATA_KEY = "extractMetadata";
 
 	@JsonProperty("allow")
 	@JsonPropertyDescription("Array of allowed mimetypes")
@@ -38,13 +43,13 @@ public class BinaryFieldSchemaImpl extends AbstractFieldSchema implements Binary
 	@Override
 	public Map<String, Object> getAllChangeProperties() {
 		Map<String, Object> properties = super.getAllChangeProperties();
-		properties.put("allow", getAllowedMimeTypes());
+		properties.put(SchemaChangeModel.ALLOW_KEY, getAllowedMimeTypes());
 		if (binaryExtractOptions == null) {
-			properties.put("extractContent", null);
-			properties.put("extractMetadata", null);
+			properties.put(CHANGE_EXTRACT_CONTENT_KEY, null);
+			properties.put(CHANGE_EXTRACT_METADATA_KEY, null);
 		} else {
-			properties.put("extractContent", binaryExtractOptions.getContent());
-			properties.put("extractMetadata", binaryExtractOptions.getMetadata());
+			properties.put(CHANGE_EXTRACT_CONTENT_KEY, binaryExtractOptions.getContent());
+			properties.put(CHANGE_EXTRACT_METADATA_KEY, binaryExtractOptions.getMetadata());
 		}
 		return properties;
 	}
@@ -55,11 +60,16 @@ public class BinaryFieldSchemaImpl extends AbstractFieldSchema implements Binary
 		if (fieldProperties.get("allowedMimeTypes") != null) {
 			setAllowedMimeTypes((String[]) fieldProperties.get("allowedMimeTypes"));
 		}
-		if (fieldProperties.get("extractContent") != null) {
-			createOrGetBinaryExtractOptions().setContent((Boolean)fieldProperties.get("extractContent"));
+		boolean hasExtractContent = fieldProperties.get(CHANGE_EXTRACT_CONTENT_KEY) != null;
+		if (hasExtractContent) {
+			createOrGetBinaryExtractOptions().setContent((Boolean) fieldProperties.get(CHANGE_EXTRACT_CONTENT_KEY));
 		}
-		if (fieldProperties.get("extractMetadata") != null) {
-			createOrGetBinaryExtractOptions().setMetadata((Boolean)fieldProperties.get("extractMetadata"));
+		boolean hasExtractMetadata = fieldProperties.get(CHANGE_EXTRACT_METADATA_KEY) != null;
+		if (hasExtractMetadata) {
+			createOrGetBinaryExtractOptions().setMetadata((Boolean) fieldProperties.get(CHANGE_EXTRACT_METADATA_KEY));
+		}
+		if (!hasExtractContent && !hasExtractMetadata) {
+			setBinaryExtractOptions(null);
 		}
 	}
 
@@ -71,11 +81,13 @@ public class BinaryFieldSchemaImpl extends AbstractFieldSchema implements Binary
 	}
 
 	@JsonIgnore
+	@Override
 	public BinaryExtractOptions getBinaryExtractOptions() {
 		return binaryExtractOptions;
 	}
 
-	public BinaryFieldSchemaImpl setBinaryExtractOptions(BinaryExtractOptions extract) {
+	@Override
+	public BinaryFieldSchema setBinaryExtractOptions(BinaryExtractOptions extract) {
 		this.binaryExtractOptions = extract;
 		return this;
 	}
