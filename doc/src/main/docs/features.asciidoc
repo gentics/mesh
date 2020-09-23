@@ -1061,9 +1061,9 @@ Metadata information of uploads will automatically be extracted and added the `m
 
 You can disable this feature in the global options by setting link:{{< relref "administration-guide.asciidoc" >}}#_upload_options[`upload.parser`] to false.
 
-You can also disable this feature per field. See link:{{< relref "building-blocks.asciidoc" >}}#_schema_field_types[schema field types documentation] for more information.
+You can also disable this feature per field. See link:{{< relref "building-blocks.asciidoc" >}}#_binary[binary schema field documentation] for more information.
 
-You can set a whitelist of allowed metadata (({{< relref "administration-guide.asciidoc" >}}#_upload_options[```upload.metadataWhitelist```])). Setting that list will only save metadata with keys specified in that list.
+You can set a whitelist of allowed metadata (link:{{< relref "administration-guide.asciidoc" >}}#_upload_options[```upload.metadataWhitelist```]). Setting that list will only save metadata with keys specified in that list.
 
 Currently the following __mime-types__ are supported:
 

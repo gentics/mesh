@@ -25,10 +25,6 @@ include::content/docs/variables.adoc-include[]
 
 * The Mesh Server will require Java 11 with the release of 2.0.0. The runtime support for Java 8 will be dropped. The Mesh Java REST client will still be usable with Java 8.
 
-== TBD
-
-icon:plus[] Core: It is now possible to disable extracting of metadata or content from binaries for metadata on a per-field basis. See link:{{< relref "building-blocks.asciidoc" >}}#_schema_field_types[schema field types documentation] for more information.
-
 [[v1.5.3]]
 == 1.5.3 (16.07.2020)
 

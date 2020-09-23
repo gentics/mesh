@@ -340,9 +340,9 @@ Example of a complete binary field schema:
 }
 ----
 
-Setting the extract object will override the global configurations for parsing ({{< relref "administration-guide.asciidoc" >}}#_upload_options[```upload.parser```]) and indexing (link:{{< relref "administration-guide.asciidoc" >}}#_search_options[```search.includeBinaryFields```]) uploads for this field.
+Setting the extract object will override the global configurations for parsing (link:{{< relref "administration-guide.asciidoc" >}}#_upload_options[```upload.parser```]) and indexing (link:{{< relref "administration-guide.asciidoc" >}}#_search_options[```search.includeBinaryFields```]) uploads for this field.
 
-Setting the global metadata whitelist ({{< relref "administration-guide.asciidoc" >}}#_upload_options[```upload.metadataWhitelist```]) will filter the parsed metadata accordingly.
+Setting the global metadata whitelist (link:{{< relref "administration-guide.asciidoc" >}}#_upload_options[```upload.metadataWhitelist```]) will filter the parsed metadata accordingly.
 
 [[micronode]]
 == Micronode & Microschema

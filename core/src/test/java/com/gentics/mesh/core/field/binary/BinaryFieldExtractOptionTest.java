@@ -86,7 +86,10 @@ public class BinaryFieldExtractOptionTest extends AbstractMeshTest {
 
 	@Test
 	public void testNone() throws Exception {
-		setUp(new BinaryExtractOptions(false, false));
+		setUp(new BinaryExtractOptions()
+			.setMetadata(false)
+			.setContent(false)
+		);
 
 		assertThat(metadata).isEmpty();
 		assertThat(plainText).isNull();
@@ -96,7 +99,10 @@ public class BinaryFieldExtractOptionTest extends AbstractMeshTest {
 
 	@Test
 	public void testMetadata() throws Exception {
-		setUp(new BinaryExtractOptions(false, true));
+		setUp(new BinaryExtractOptions()
+			.setMetadata(true)
+			.setContent(false)
+		);
 
 		assertThat(metadata.get("subject")).isEqualTo("TestSubject");
 		assertThat(metadata.getMap()).hasSize(48);
@@ -107,7 +113,10 @@ public class BinaryFieldExtractOptionTest extends AbstractMeshTest {
 
 	@Test
 	public void testContent() throws Exception {
-		setUp(new BinaryExtractOptions(true, false));
+		setUp(new BinaryExtractOptions()
+			.setMetadata(false)
+			.setContent(true)
+		);
 
 		assertThat(metadata).isEmpty();
 		assertThat(plainText).isEqualTo("Das ist ein Word Dokument für den Johannes");
@@ -117,7 +126,10 @@ public class BinaryFieldExtractOptionTest extends AbstractMeshTest {
 
 	@Test
 	public void testBoth() throws Exception {
-		setUp(new BinaryExtractOptions(true, true));
+		setUp(new BinaryExtractOptions()
+			.setMetadata(true)
+			.setContent(true)
+		);
 
 		assertThat(metadata.get("subject")).isEqualTo("TestSubject");
 		assertThat(metadata.getMap()).hasSize(48);
@@ -128,7 +140,10 @@ public class BinaryFieldExtractOptionTest extends AbstractMeshTest {
 
 	@Test
 	public void testWhitelist() throws Exception {
-		setUp(new BinaryExtractOptions(false, true), CollectionUtil.setOf("subject"));
+		setUp(new BinaryExtractOptions()
+			.setMetadata(true)
+			.setContent(false)
+		, CollectionUtil.setOf("subject"));
 
 		assertThat(metadata.get("subject")).isEqualTo("TestSubject");
 		assertThat(plainText).isNull();

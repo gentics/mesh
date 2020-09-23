@@ -24,7 +24,7 @@ public class MeshUploadOptions implements Option {
 	public static final String MESH_BINARY_UPLOAD_LIMIT_ENV = "MESH_BINARY_UPLOAD_LIMIT";
 	public static final String MESH_BINARY_DOCUMENT_PARSER_LIMIT_ENV = "MESH_BINARY_DOCUMENT_PARSER_LIMIT";
 	public static final String MESH_BINARY_DOCUMENT_PARSER_ENV = "MESH_BINARY_DOCUMENT_PARSER";
-	public static final String MESH_BINARY_METADATA_WHITELIST = "MESH_BINARY_METADATA_WHITELIST";
+	public static final String MESH_BINARY_METADATA_WHITELIST_ENV = "MESH_BINARY_METADATA_WHITELIST";
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("The upload size limit in bytes. Default: " + DEFAULT_FILEUPLOAD_MB_LIMIT)
@@ -54,7 +54,7 @@ public class MeshUploadOptions implements Option {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("If set, the parser will only extract metadata with the keys specified in the list.")
-	@EnvironmentVariable(name = MESH_BINARY_METADATA_WHITELIST, description = "Override the metadata whilelist")
+	@EnvironmentVariable(name = MESH_BINARY_METADATA_WHITELIST_ENV, description = "Override the metadata whitelist")
 	private Set<String> metadataWhitelist;
 
 	/**

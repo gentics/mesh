@@ -6,17 +6,16 @@ import io.vertx.ext.web.FileUpload;
 
 /**
  * Information required by binary processors.
- * TODO REVIEW Maybe this should contain the binary schema field?
  */
 public class BinaryDataProcessorContext {
-	private final InternalActionContext actionContext;
+	private final InternalActionContext ac;
 	private final String nodeUuid;
 	private final String fieldName;
 	private final FileUpload upload;
 	private final String hash;
 
 	public BinaryDataProcessorContext(InternalActionContext actionContext, String nodeUuid, String fieldName, FileUpload upload, String hash) {
-		this.actionContext = actionContext;
+		this.ac = actionContext;
 		this.nodeUuid = nodeUuid;
 		this.fieldName = fieldName;
 		this.upload = upload;
@@ -24,7 +23,7 @@ public class BinaryDataProcessorContext {
 	}
 
 	public InternalActionContext getActionContext() {
-		return actionContext;
+		return ac;
 	}
 
 	public String getNodeUuid() {

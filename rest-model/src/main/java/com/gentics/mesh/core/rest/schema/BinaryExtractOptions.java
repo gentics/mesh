@@ -7,14 +7,6 @@ public class BinaryExtractOptions {
 	private boolean content;
 	private boolean metadata;
 
-	public BinaryExtractOptions() {
-	}
-
-	public BinaryExtractOptions(boolean content, boolean metadata) {
-		this.content = content;
-		this.metadata = metadata;
-	}
-
 	/**
 	 * If true, text content (e.g. in PDFs, word documents, etc.) will be extracted from the binary data.
 	 * @return

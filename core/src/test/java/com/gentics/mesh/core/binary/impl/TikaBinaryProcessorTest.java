@@ -21,7 +21,6 @@ import com.gentics.mesh.graphdb.spi.Database;
 
 import dagger.Lazy;
 import io.reactivex.Maybe;
-import io.reactivex.Single;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.reactivex.core.Vertx;
 
@@ -44,7 +43,7 @@ public class TikaBinaryProcessorTest {
 	private Database mockDb() {
 		Database mock = mock(Database.class);
 		// This is to shortcut the check if the field needs to be parsed.
-		when(mock.singleTxWriteLock(any())).thenReturn(Single.just(true));
+		when(mock.maybeTx(any())).thenReturn(Maybe.empty());
 		return mock;
 	}
 

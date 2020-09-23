@@ -148,7 +148,6 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 			Branch branch = ac.getBranch();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, nodeUuid, UPDATE_PERM);
 
-			// TODO REVIEW Is it possible for different languages to have different schema versions in the same branch?
 			// Load the current latest draft
 			NodeGraphFieldContainer latestDraftVersion = node.getGraphFieldContainers(branch, ContainerType.DRAFT).next();
 
@@ -159,11 +158,13 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 			if (fieldSchema == null) {
 				throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
 			}
-			if (!(fieldSchema instanceof BinaryFieldSchema)) {
+
+			if (fieldSchema instanceof BinaryFieldSchema) {
+				return ((BinaryFieldSchema) fieldSchema).getBinaryExtractOptions();
+			} else {
 				throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
 			}
 
-			return ((BinaryFieldSchema) fieldSchema).getBinaryExtractOptions();
 		});
 	}
 

@@ -402,17 +402,6 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	}
 
 	/**
-	 * Determines if the binary data of the field has to be stored in Elasticsearch.
-	 *
-	 * @param fieldSchema
-	 * @return
-	 */
-	private boolean isIncludeBinaryFields(BinaryFieldSchema fieldSchema) {
-		BinaryExtractOptions extractOptions = fieldSchema.getBinaryExtractOptions();
-		return options.getSearchOptions().isIncludeBinaryFields() || extractOptions != null;
-	}
-
-	/**
 	 * Transform the given microschema container and add it to the source map.
 	 * 
 	 * @param document
