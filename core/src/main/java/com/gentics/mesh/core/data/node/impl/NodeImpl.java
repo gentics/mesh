@@ -93,6 +93,7 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
+import com.gentics.mesh.core.data.search.BucketableElementHelper;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
@@ -316,7 +317,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 *
 	 * @param branchUuid
 	 * @param type
-	 * @param languages  The order of languages will be used to search for the url field values.
+	 * @param languages
+	 *            The order of languages will be used to search for the url field values.
 	 * @return null if no url field could be found.
 	 */
 	private String getUrlFieldPath(String branchUuid, ContainerType type, String... languages) {
@@ -442,6 +444,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// Create the new container
 		NodeGraphFieldContainerImpl newContainer = getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		newContainer.generateBucketId();
 		if (original != null) {
 			newContainer.setEditor(editor);
 			newContainer.setLastEditedTimestamp();
@@ -2219,5 +2222,20 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public void removeElement() {
 		remove();
+	}
+
+	@Override
+	public Integer getBucketId() {
+		return BucketableElementHelper.getBucketId(this);
+	}
+
+	@Override
+	public void setBucketId(Integer bucketId) {
+		BucketableElementHelper.setBucketId(this, bucketId);
+	}
+
+	@Override
+	public void generateBucketId() {
+		BucketableElementHelper.generateBucketId(this);
 	}
 }

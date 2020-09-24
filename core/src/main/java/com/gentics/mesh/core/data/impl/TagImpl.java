@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.search.BucketableElementHelper;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
@@ -109,7 +110,8 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse> implements Tag 
 
 	@Override
 	public String getAPIPath(InternalActionContext ac) {
-		return VersionHandler.baseRoute(ac) + "/" + encodeSegment(getProject().getName()) + "/tagFamilies/" + getTagFamily().getUuid() + "/tags/" + getUuid();
+		return VersionHandler.baseRoute(ac) + "/" + encodeSegment(getProject().getName()) + "/tagFamilies/" + getTagFamily().getUuid() + "/tags/"
+			+ getUuid();
 	}
 
 	@Override
@@ -153,4 +155,18 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse> implements Tag 
 		getElement().remove();
 	}
 
+	@Override
+	public Integer getBucketId() {
+		return BucketableElementHelper.getBucketId(this);
+	}
+
+	@Override
+	public void setBucketId(Integer bucketId) {
+		BucketableElementHelper.setBucketId(this, bucketId);
+	}
+
+	@Override
+	public void generateBucketId() {
+		BucketableElementHelper.generateBucketId(this);
+	}
 }

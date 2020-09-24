@@ -63,7 +63,7 @@ public interface IndexHandler<T extends HibBaseElement> {
 	 * 
 	 * @return
 	 */
-	Class<?> getElementClass();
+	Class<? extends BucketableElement> getElementClass();
 
 	/**
 	 * Process the entry and generate bulk entries.

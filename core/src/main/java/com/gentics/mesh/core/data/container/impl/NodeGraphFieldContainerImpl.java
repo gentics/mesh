@@ -19,7 +19,10 @@ import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.error.Errors.nodeConflict;
+import static com.gentics.mesh.madl.field.FieldType.INTEGER;
+import static com.gentics.mesh.madl.field.FieldType.LONG;
 import static com.gentics.mesh.madl.field.FieldType.STRING;
+import static com.gentics.mesh.madl.index.IndexType.NOTUNIQUE;
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 import static com.gentics.mesh.madl.type.VertexTypeDefinition.vertexType;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
@@ -74,6 +77,7 @@ import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
+import com.gentics.mesh.core.data.search.BucketableElementHelper;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -124,6 +128,12 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 		index.createIndex(vertexIndex(NodeGraphFieldContainerImpl.class)
 			.withField(SCHEMA_CONTAINER_VERSION_KEY_PROPERTY, STRING));
+
+		index.createIndex(vertexIndex(NodeGraphFieldContainerImpl.class)
+			.withField(SCHEMA_CONTAINER_VERSION_KEY_PROPERTY, STRING)
+			.withField(BucketableElementHelper.BUCKET_ID_KEY, LONG)
+			.withType(NOTUNIQUE)
+			.withPostfix("bucket"));
 	}
 
 	@Override
@@ -845,5 +855,20 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	@Override
 	public Stream<NodeGraphFieldContainer> getContents() {
 		return Stream.of(this);
+	}
+
+	@Override
+	public Integer getBucketId() {
+		return BucketableElementHelper.getBucketId(this);
+	}
+
+	@Override
+	public void setBucketId(Integer bucketId) {
+		BucketableElementHelper.setBucketId(this, bucketId);
+	}
+
+	@Override
+	public void generateBucketId() {
+		BucketableElementHelper.generateBucketId(this);
 	}
 }

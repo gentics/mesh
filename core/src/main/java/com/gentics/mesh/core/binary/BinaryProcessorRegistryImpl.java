@@ -27,9 +27,7 @@ public class BinaryProcessorRegistryImpl implements BinaryProcessorRegistry {
 
 		// Add built-in processors
 		addProcessor(imageProcessor);
-		if (uploadOptions.isParser()) {
-			addProcessor(tikaProcessor);
-		}
+		addProcessor(tikaProcessor);
 	}
 
 	/**

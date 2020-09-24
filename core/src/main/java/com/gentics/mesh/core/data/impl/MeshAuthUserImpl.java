@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.impl;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-
 import java.util.Objects;
 import java.util.Set;
 
@@ -405,6 +403,21 @@ public class MeshAuthUserImpl implements MeshAuthUser {
 	@Override
 	public Long getCreationTimestamp() {
 		return delegate.getCreationTimestamp();
+	}
+
+	@Override
+	public Integer getBucketId() {
+		return delegate.getBucketId();
+	}
+
+	@Override
+	public void setBucketId(Integer bucketId) {
+		delegate.setBucketId(bucketId);
+	}
+
+	@Override
+	public void generateBucketId() {
+		delegate.generateBucketId();
 	}
 
 	public HibUser getDelegate() {

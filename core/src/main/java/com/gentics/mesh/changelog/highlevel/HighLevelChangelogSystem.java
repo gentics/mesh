@@ -1,5 +1,17 @@
 package com.gentics.mesh.changelog.highlevel;
 
+import java.util.List;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+
+import java.util.List;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import com.gentics.mesh.cli.PostProcessFlags;
 import com.gentics.mesh.core.data.changelog.HighLevelChange;
 import com.gentics.mesh.core.data.root.MeshRoot;
 
@@ -8,8 +20,9 @@ public interface HighLevelChangelogSystem {
 	 * Apply the changes which were not yet applied.
 	 *
 	 * @param meshRoot
+	 * @return 
 	 */
-	void apply(MeshRoot meshRoot);
+	void apply(PostProcessFlags flags, MeshRoot meshRoot);
 
 	/**
 	 * Check whether the change has already been applied.

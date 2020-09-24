@@ -25,6 +25,7 @@ import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.search.BucketableElement;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -52,7 +53,7 @@ import com.syncleus.ferma.EdgeFrame;
  * this node and to the created nodes in order to create a project data structure. Each node may be linked to one or more {@link NodeGraphFieldContainer}
  * vertices which contain the language specific data.
  */
-public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVertex, Taggable, ProjectElement, HibNode {
+public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVertex, Taggable, ProjectElement, HibNode, BucketableElement {
 
 	String BRANCH_UUID_KEY = "branchUuid";
 

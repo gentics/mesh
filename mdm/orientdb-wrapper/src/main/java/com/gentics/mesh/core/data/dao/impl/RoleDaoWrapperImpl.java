@@ -207,6 +207,7 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 		}
 		role.setName(name);
 		role.setCreated(creator);
+		role.generateBucketId();
 		addRole(role);
 		return role;
 	}

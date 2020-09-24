@@ -327,6 +327,11 @@
 | compliancemode
 | This setting controls the compliance mode for Elasticsearch. When set to ES_7 it will support Elasticsearch 7.x - In PRE_ES_7 mode it will support Elasticsearch 6.x - Default: PRE_ES_7
 
+| searchOptions.syncBatchSize
+| false
+| int
+| Configure the index sync batch size. Default: 50000
+
 | uploadOptions.byteLimit
 | false
 | long
@@ -351,6 +356,11 @@
 | false
 | boolean
 | If true, the document parser will process uploads and extract metadata and contents. Default: true
+
+| uploadOptions.metadataWhitelist
+| false
+| set
+| If set, the parser will only extract metadata with the keys specified in the list.
 
 | authenticationOptions.tokenExpirationTime
 | true

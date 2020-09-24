@@ -6,6 +6,7 @@ import java.util.stream.Stream;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -192,5 +193,7 @@ public interface SchemaDaoWrapper extends SchemaDao, DaoWrapper<HibSchema> {
 	 * @return
 	 */
 	Stream<? extends NodeGraphFieldContainer> getFieldContainers(HibSchemaVersion version, String branchUuid);
+
+	Stream<? extends NodeGraphFieldContainer> getFieldContainers(HibSchemaVersion version, String branchUuid, Bucket bucket);
 
 }

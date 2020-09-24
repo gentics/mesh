@@ -6,6 +6,8 @@ public enum FieldType {
 
 	INTEGER,
 
+	LONG,
+
 	BOOLEAN,
 
 	STRING_LIST,

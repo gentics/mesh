@@ -186,6 +186,7 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implem
 		project.setEditor(creator);
 		project.getSchemaContainerRoot();
 		project.getTagFamilyRoot();
+		project.generateBucketId();
 
 		root.addItem(project);
 

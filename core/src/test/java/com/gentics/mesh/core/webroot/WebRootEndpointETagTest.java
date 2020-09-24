@@ -31,31 +31,34 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 
 	@Test
 	public void testResizeImage() throws IOException {
+		String path = "/News/2015/blume.jpg";
+		HibNode node;
 		try (Tx tx = tx()) {
 			ContentDaoWrapper contentDao = tx.data().contentDao();
-			String path = "/News/2015/blume.jpg";
-			HibNode node = content("news_2015");
+			node = content("news_2015");
 
 			// 1. Transform the node into a binary content
 			HibSchema container = schemaContainer("binary_content");
 			node.setSchemaContainer(container);
 			contentDao.getLatestDraftFieldContainer(node, english()).setSchemaContainerVersion(container.getLatestVersion());
+			contentDao.getLatestDraftFieldContainer(node, german()).setSchemaContainerVersion(container.getLatestVersion());
 			prepareSchema(node, "image/*", "binary");
-
-			// 2. Upload image
-			uploadImage(node, "en", "binary");
-
-			// 3. Resize image
-			ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(100).setHeight(102);
-			String etag = callETag(() -> client().webroot(PROJECT_NAME, path, params, new VersioningParametersImpl().setVersion("draft")));
-			callETag(() -> client().webroot(PROJECT_NAME, path, params, new VersioningParametersImpl().setVersion("draft")), etag, false, 304);
-
-			params.setHeight(103);
-			String newETag = callETag(() -> client().webroot(PROJECT_NAME, path, params, new VersioningParametersImpl().setVersion("draft")), etag,
-				false, 200);
-			callETag(() -> client().webroot(PROJECT_NAME, path, params, new VersioningParametersImpl().setVersion("draft")), newETag, false, 304);
-
+			tx.success();
 		}
+
+		// 2. Upload image
+		uploadImage(node, "en", "binary");
+
+		// 3. Resize image
+		ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(100).setHeight(102);
+		String etag = callETag(() -> client().webroot(PROJECT_NAME, path, params, new VersioningParametersImpl().setVersion("draft")));
+		callETag(() -> client().webroot(PROJECT_NAME, path, params, new VersioningParametersImpl().setVersion("draft")), etag, false, 304);
+
+		params.setHeight(103);
+		String newETag = callETag(() -> client().webroot(PROJECT_NAME, path, params, new VersioningParametersImpl().setVersion("draft")), etag,
+			false, 200);
+		callETag(() -> client().webroot(PROJECT_NAME, path, params, new VersioningParametersImpl().setVersion("draft")), newETag, false, 304);
+
 	}
 
 	@Test

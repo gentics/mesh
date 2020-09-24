@@ -17,5 +17,6 @@
     "uuid" : [ "df81c23d9ff1450081c23d9ff195005e", "df81c23d9ff1450081c23d9ff195005e" ]
   },
   "_roleUuids" : [ ],
-  "version" : "ab7d5eb7"
+  "version" : "ab7d5eb7",
+  "bucket_id" : 0
 }

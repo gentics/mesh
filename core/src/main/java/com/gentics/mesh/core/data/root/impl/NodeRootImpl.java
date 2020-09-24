@@ -226,6 +226,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		node.setProject(project);
 		node.setCreator(creator);
 		node.setCreationTimestamp();
+		node.generateBucketId();
 
 		return node;
 	}

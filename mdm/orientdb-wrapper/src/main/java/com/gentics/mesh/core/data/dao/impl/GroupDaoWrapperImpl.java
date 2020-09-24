@@ -317,6 +317,7 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 		}
 		group.setName(name);
 		group.setCreated(creator);
+		group.generateBucketId();
 		addGroup(group);
 
 		return group;

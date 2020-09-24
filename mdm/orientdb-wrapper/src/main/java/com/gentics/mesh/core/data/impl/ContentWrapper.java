@@ -711,4 +711,19 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		delegate.setRoleUuidForPerm(permission, allowedRoles);
 	}
 
+	@Override
+	public void setBucketId(Integer bucketId) {
+		delegate.setBucketId(bucketId);
+	}
+
+	@Override
+	public Integer getBucketId() {
+		return delegate.getBucketId();
+	}
+
+	@Override
+	public void generateBucketId() {
+		delegate.generateBucketId();
+	}
+
 }

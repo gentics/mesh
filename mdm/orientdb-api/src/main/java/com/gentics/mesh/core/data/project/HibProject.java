@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.project;
 
+import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.HibCoreElement;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.MicroschemaRoot;
@@ -12,7 +12,7 @@ import com.gentics.mesh.core.data.user.HibUserTracking;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.result.Result;
 
-public interface HibProject extends HibCoreElement, HibUserTracking {
+public interface HibProject extends HibCoreElement, HibUserTracking, HibBucketableElement {
 
 	void setUuid(String uuid);
 

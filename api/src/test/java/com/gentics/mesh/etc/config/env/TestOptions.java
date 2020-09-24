@@ -1,10 +1,12 @@
 package com.gentics.mesh.etc.config.env;
 
-import io.vertx.core.json.JsonObject;
-
 import java.lang.reflect.Field;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import io.vertx.core.json.JsonObject;
 
 public class TestOptions implements Option {
 	public static final String STRING_VALUE_ENV = "STRING_VALUE_ENV";
@@ -19,7 +21,8 @@ public class TestOptions implements Option {
 	public static final String BOOLEAN_VALUE_ENV = "BOOLEAN_VALUE_ENV";
 	public static final String BOOLEAN_VALUE_PRIMITIVE_ENV = "BOOLEAN_VALUE_PRIMITIVE_ENV";
 	public static final String JSON_OBJECT_ENV = "JSON_OBJECT_ENV";
-
+	public static final String STRING_SET_ENV = "STRING_SET_ENV";
+	public static final String STRING_LIST_ENV = "STRING_LIST_ENV";
 
 	@EnvironmentVariable(name = STRING_VALUE_ENV, description = "")
 	String stringValue;
@@ -45,6 +48,10 @@ public class TestOptions implements Option {
 	Long longValue;
 	@EnvironmentVariable(name = JSON_OBJECT_ENV, description = "")
 	JsonObject jsonObject;
+	@EnvironmentVariable(name = STRING_SET_ENV, description = "")
+	Set<String> stringSet;
+	@EnvironmentVariable(name = STRING_LIST_ENV, description = "")
+	List<String> stringList;
 
 	Map<String, Object> getValues() throws Exception {
 		Map<String, Object> values = new HashMap<>();

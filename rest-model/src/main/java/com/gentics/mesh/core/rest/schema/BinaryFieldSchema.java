@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.rest.schema;
 
+import com.gentics.mesh.etc.config.MeshUploadOptions;
+import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
+
 public interface BinaryFieldSchema extends FieldSchema {
 
 	/**
@@ -21,4 +24,23 @@ public interface BinaryFieldSchema extends FieldSchema {
 	default boolean isDisplayField() {
 		return true;
 	}
+
+	/**
+	 * The behaviour for extracting content or metadata from the binary data of this field.
+	 * Setting this to something other than null will override the global configuration.
+	 *
+	 * @see MeshUploadOptions#isParser()
+	 * @see ElasticSearchOptions#isIncludeBinaryFields()
+	 *
+	 * @return
+	 */
+	BinaryExtractOptions getBinaryExtractOptions();
+
+	/**
+	 * Set the binary extract options.
+	 * 
+	 * @param extract
+	 * @return
+	 */
+	BinaryFieldSchema setBinaryExtractOptions(BinaryExtractOptions extract);
 }

@@ -1,11 +1,12 @@
 package com.gentics.mesh.core.data.user;
 
 
+import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibInNode;
 import com.gentics.mesh.core.rest.user.UserReference;
 
-public interface HibUser extends HibCoreElement, HibUserTracking {
+public interface HibUser extends HibCoreElement, HibUserTracking, HibBucketableElement {
 
 	/**
 	 * Return the username.

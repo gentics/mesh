@@ -1,5 +1,6 @@
 package com.gentics.mesh.search.index.schema;
 
+import static com.gentics.mesh.core.data.Bucket.BUCKET_ID_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.DESCRIPTION_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 
@@ -39,6 +40,7 @@ public class SchemaTransformer extends AbstractTransformer<HibSchema> {
 		addBasicReferences(document, container);
 		addPermissionInfo(document, container);
 		document.put(VERSION_KEY, generateVersion(container));
+		document.put(BUCKET_ID_KEY, container.getBucketId());
 		return document;
 	}
 

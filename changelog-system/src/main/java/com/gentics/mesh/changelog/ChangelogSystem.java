@@ -3,16 +3,17 @@ package com.gentics.mesh.changelog;
 import java.util.List;
 
 import com.gentics.mesh.changelog.changes.ChangesList;
+import com.gentics.mesh.cli.PostProcessFlags;
 
 public interface ChangelogSystem {
 	/**
 	 * Apply all listed changes.
 	 *
-	 * @param reindexAction
+	 * @param flags
 	 * @param list
 	 * @return Flag which indicates whether all changes were applied successfully
 	 */
-	boolean applyChanges(ReindexAction reindexAction, List<Change> list);
+	boolean applyChanges(PostProcessFlags flags, List<Change> list);
 
 	/**
 	 * Mark all changelog entries as applied. This is useful if you resolved issues manually or if you want to create a fresh mesh database dump.
@@ -22,10 +23,10 @@ public interface ChangelogSystem {
 	/**
 	 * Apply all changes from the {@link ChangesList}.
 	 *
-	 * @param reindexAction
+	 * @param flags
 	 * @return
 	 */
-	boolean applyChanges(ReindexAction reindexAction);
+	boolean applyChanges(PostProcessFlags flags);
 
 	/**
 	 * Mark all changes from the {@link ChangesList} as applied.

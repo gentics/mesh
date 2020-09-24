@@ -5,7 +5,6 @@ import java.util.function.Consumer;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 
 import io.reactivex.Maybe;
-import io.vertx.ext.web.FileUpload;
 
 /**
  * A binary data processor accepts a fileupload in order to extract specific information from the data. The found data can later be stored in the binary field
@@ -28,6 +27,6 @@ public interface BinaryDataProcessor {
 	 * @param hash SHA512 sum of the upload
 	 * @return Modifier for the binary graph field.
 	 */
-	Maybe<Consumer<BinaryGraphField>> process(FileUpload upload, String hash);
+	Maybe<Consumer<BinaryGraphField>> process(BinaryDataProcessorContext context);
 
 }

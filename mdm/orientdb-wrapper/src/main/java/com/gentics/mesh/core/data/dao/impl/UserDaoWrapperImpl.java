@@ -550,6 +550,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 		}
 		user.setUsername(username);
 		user.enable();
+		user.generateBucketId();
 
 		if (creator != null) {
 			user.setCreator(creator);

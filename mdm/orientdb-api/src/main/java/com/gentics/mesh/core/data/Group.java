@@ -9,13 +9,14 @@ import java.util.Objects;
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.group.HibGroup;
+import com.gentics.mesh.core.data.search.BucketableElement;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 
 /**
  * Graph domain model interface for groups.
  */
-public interface Group extends MeshCoreVertex<GroupResponse>, ReferenceableElement<GroupReference>, UserTrackingVertex, HibGroup {
+public interface Group extends MeshCoreVertex<GroupResponse>, ReferenceableElement<GroupReference>, UserTrackingVertex, HibGroup, BucketableElement {
 
 	TypeInfo TYPE_INFO = new TypeInfo(ElementType.GROUP, GROUP_CREATED, GROUP_UPDATED, GROUP_DELETED);
 

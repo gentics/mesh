@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.search.BucketableElement;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.Errors;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
@@ -32,7 +33,7 @@ import com.gentics.mesh.util.VersionNumber;
 /**
  * A node field container is an aggregation node that holds localized fields (e.g.: StringField, NodeField...)
  */
-public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrackingVertex {
+public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrackingVertex, BucketableElement {
 
 	/**
 	 * Return the index name for the given parameters.

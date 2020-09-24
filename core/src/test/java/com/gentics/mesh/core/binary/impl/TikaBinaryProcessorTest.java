@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.binary.impl;
 
-import static com.gentics.mesh.test.context.ElasticsearchTestMode.NONE;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -14,32 +14,37 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.gentics.mesh.core.binary.BinaryDataProcessorContext;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.test.TestSize;
-import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.graphdb.spi.Database;
 
 import dagger.Lazy;
 import io.reactivex.Maybe;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.reactivex.core.Vertx;
 
-@MeshTestSetting(elasticsearch = NONE, testSize = TestSize.EMPTY, startServer = false)
-public class TikaBinaryProcessorTest extends AbstractMeshTest {
+public class TikaBinaryProcessorTest {
 
 	@Test
 	public void tikaCachingTest() throws FileNotFoundException, IOException {
 		Lazy<Vertx> lazy = Mockito.mock(Lazy.class);
 		when(lazy.get()).thenReturn(Vertx.vertx());
-		TikaBinaryProcessor processor = new TikaBinaryProcessor(lazy, new MeshOptions());
+		TikaBinaryProcessor processor = new TikaBinaryProcessor(lazy, new MeshOptions(), mockDb());
 		FileUpload ul = mockUpload("test.pdf", "application/pdf");
 
-		Maybe<Consumer<BinaryGraphField>> result = processor.process(ul, "HASHSUM");
+		Maybe<Consumer<BinaryGraphField>> result = processor.process(new BinaryDataProcessorContext(null, null, null, ul, "HASHSUM"));
 
 		Consumer<BinaryGraphField> consumer = result.blockingGet();
 		BinaryGraphField field = Mockito.mock(BinaryGraphField.class);
 		consumer.accept(field);
+	}
+
+	private Database mockDb() {
+		Database mock = mock(Database.class);
+		// This is to shortcut the check if the field needs to be parsed.
+		when(mock.maybeTx(any())).thenReturn(Maybe.empty());
+		return mock;
 	}
 
 	private FileUpload mockUpload(String name, String contentType) throws FileNotFoundException, IOException {

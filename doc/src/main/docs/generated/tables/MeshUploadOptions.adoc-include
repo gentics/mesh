@@ -17,6 +17,11 @@
 | string
 | Path binary data storage directory. Fileuploads will be placed here.
 
+| metadataWhitelist
+| false
+| array
+| If set, the parser will only extract metadata with the keys specified in the list.
+
 | parser
 | false
 | boolean
