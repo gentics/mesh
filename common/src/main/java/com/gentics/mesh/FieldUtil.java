@@ -5,6 +5,7 @@ import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
+import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -12,6 +13,7 @@ import com.gentics.mesh.core.rest.node.field.HtmlField;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.node.field.NumberField;
 import com.gentics.mesh.core.rest.node.field.StringField;
+import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
@@ -150,6 +152,14 @@ public final class FieldUtil {
 	public static HtmlField createHtmlField(String htmlValue) {
 		HtmlField field = new HtmlFieldImpl();
 		field.setHTML(htmlValue);
+		return field;
+	}
+
+	public static BinaryField createBinaryField(String uuid, String fileName, String hashSum) {
+		BinaryField field = new BinaryFieldImpl();
+		field.setBinaryUuid(uuid);
+		field.setFileName(fileName);
+		field.setSha512sum(hashSum);
 		return field;
 	}
 

@@ -1,9 +1,9 @@
 package com.gentics.mesh.core.webroot;
 
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.callETag;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -29,30 +29,33 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 
 	@Test
 	public void testResizeImage() throws IOException {
+		String path = "/News/2015/blume.jpg";
+		Node node;
 		try (Tx tx = tx()) {
-			String path = "/News/2015/blume.jpg";
-			Node node = content("news_2015");
+			node = content("news_2015");
 
 			// 1. Transform the node into a binary content
 			SchemaContainer container = schemaContainer("binary_content");
 			node.setSchemaContainer(container);
 			node.getLatestDraftFieldContainer(english()).setSchemaContainerVersion(container.getLatestVersion());
+			node.getLatestDraftFieldContainer(german()).setSchemaContainerVersion(container.getLatestVersion());
 			prepareSchema(node, "image/*", "binary");
-
-			// 2. Upload image
-			uploadImage(node, "en", "binary");
-
-			// 3. Resize image
-			ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(100).setHeight(102);
-			String etag = callETag(() -> client().webroot(PROJECT_NAME, path, params, new VersioningParametersImpl().setVersion("draft")));
-			callETag(() -> client().webroot(PROJECT_NAME, path, params, new VersioningParametersImpl().setVersion("draft")), etag, false, 304);
-
-			params.setHeight(103);
-			String newETag = callETag(() -> client().webroot(PROJECT_NAME, path, params, new VersioningParametersImpl().setVersion("draft")), etag,
-				false, 200);
-			callETag(() -> client().webroot(PROJECT_NAME, path, params, new VersioningParametersImpl().setVersion("draft")), newETag, false, 304);
-
+			tx.success();
 		}
+
+		// 2. Upload image
+		uploadImage(node, "en", "binary");
+
+		// 3. Resize image
+		ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(100).setHeight(102);
+		String etag = callETag(() -> client().webroot(PROJECT_NAME, path, params, new VersioningParametersImpl().setVersion("draft")));
+		callETag(() -> client().webroot(PROJECT_NAME, path, params, new VersioningParametersImpl().setVersion("draft")), etag, false, 304);
+
+		params.setHeight(103);
+		String newETag = callETag(() -> client().webroot(PROJECT_NAME, path, params, new VersioningParametersImpl().setVersion("draft")), etag,
+			false, 200);
+		callETag(() -> client().webroot(PROJECT_NAME, path, params, new VersioningParametersImpl().setVersion("draft")), newETag, false, 304);
+
 	}
 
 	@Test

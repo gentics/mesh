@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 
 import org.assertj.core.api.Assertions;
 
+import com.gentics.mesh.assertj.impl.BinaryMetadataAssert;
 import com.gentics.mesh.assertj.impl.BranchAssert;
 import com.gentics.mesh.assertj.impl.BranchResponseAssert;
 import com.gentics.mesh.assertj.impl.BufferedImageAssert;
@@ -71,6 +72,7 @@ import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
+import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
@@ -257,5 +259,9 @@ public class MeshAssertions extends Assertions {
 
 	public static GroupListResponseAssert assertThat(GroupListResponse actual) {
 		return new GroupListResponseAssert(actual);
+	}
+
+	public static BinaryMetadataAssert assertThat(BinaryMetadata actual) {
+		return new BinaryMetadataAssert(actual);
 	}
 }

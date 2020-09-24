@@ -49,6 +49,8 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
 import com.gentics.mesh.core.rest.node.field.binary.Location;
+import com.gentics.mesh.core.rest.schema.BinaryExtractOptions;
+import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -208,7 +210,9 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 						binaryFieldInfo.put("height", binary.getImageHeight());
 					}
 
-					if (options.getSearchOptions().isIncludeBinaryFields()) {
+					BinaryExtractOptions extractOptions = ((BinaryFieldSchema) fieldSchema).getBinaryExtractOptions();
+					if ((extractOptions != null && extractOptions.getMetadata()) ||
+						(extractOptions == null && options.getSearchOptions().isIncludeBinaryFields())) {
 						// Add the metadata
 						BinaryMetadata metadata = binaryField.getMetadata();
 						if (metadata != null) {
@@ -229,7 +233,10 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 								binaryFieldMetadataInfo.put("location-z", loc.getAlt());
 							}
 						}
+					}
 
+					if ((extractOptions != null && extractOptions.getContent()) ||
+						(extractOptions == null && options.getSearchOptions().isIncludeBinaryFields())) {
 						// Plain text
 						String plainText = binaryField.getPlainText();
 						if (plainText != null) {
@@ -238,7 +245,6 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 							file.put("content", plainText);
 						}
 					}
-
 				}
 				break;
 			case BOOLEAN:
@@ -398,7 +404,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	/**
 	 * Transform the given microschema container and add it to the source map.
 	 * 
-	 * @param map
+	 * @param document
 	 * @param microschemaContainerVersion
 	 */
 	private void addMicroschema(JsonObject document, MicroschemaContainerVersion microschemaContainerVersion) {
