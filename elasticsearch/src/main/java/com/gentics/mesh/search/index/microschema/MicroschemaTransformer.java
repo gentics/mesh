@@ -1,5 +1,6 @@
 package com.gentics.mesh.search.index.microschema;
 
+import static com.gentics.mesh.search.index.Bucket.BUCKET_ID_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 
 import javax.inject.Inject;
@@ -34,6 +35,7 @@ public class MicroschemaTransformer extends AbstractTransformer<MicroschemaConta
 		addPermissionInfo(document, microschema);
 		// map.put(DESCRIPTION_KEY, microschema.getSchema().getDescription());
 		document.put(VERSION_KEY, generateVersion(microschema));
+		document.put(BUCKET_ID_KEY, microschema.getBucketId());
 		return document;
 	}
 

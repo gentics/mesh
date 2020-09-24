@@ -13,11 +13,12 @@ import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.madl.traversal.TraversalResult;
+import com.gentics.mesh.search.BucketableElement;
 
 /**
  * A schema container is a graph element which stores the JSON schema data.
  */
-public interface SchemaContainer extends GraphFieldSchemaContainer<SchemaResponse, SchemaReference, SchemaContainer, SchemaContainerVersion> {
+public interface SchemaContainer extends GraphFieldSchemaContainer<SchemaResponse, SchemaReference, SchemaContainer, SchemaContainerVersion>, BucketableElement {
 
 	TypeInfo TYPE_INFO = new TypeInfo(SCHEMA, SCHEMA_CREATED, SCHEMA_UPDATED, SCHEMA_DELETED);
 

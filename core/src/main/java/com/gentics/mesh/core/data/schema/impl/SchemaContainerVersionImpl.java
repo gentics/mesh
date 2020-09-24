@@ -10,6 +10,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TO_
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.SCHEMA_CONTAINER_VERSION_KEY_PROPERTY;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.event.Assignment.UNASSIGNED;
+import static com.gentics.mesh.search.index.Bucket.BUCKET_ID_KEY;
 import static com.gentics.mesh.util.StreamUtil.toStream;
 
 import java.util.Iterator;
@@ -44,6 +45,7 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
+import com.gentics.mesh.search.index.Bucket;
 import com.tinkerpop.blueprints.Direction;
 
 import io.vertx.core.logging.Logger;
@@ -76,28 +78,42 @@ public class SchemaContainerVersionImpl extends
 	public Iterator<? extends NodeGraphFieldContainer> getDraftFieldContainers(String branchUuid) {
 		return toStream(mesh().database().getVertices(
 			NodeGraphFieldContainerImpl.class,
-			new String[]{SCHEMA_CONTAINER_VERSION_KEY_PROPERTY},
-			new Object[]{getUuid()}
-		)).filter(v -> toStream(v.getEdges(Direction.IN, HAS_FIELD_CONTAINER))
-		.anyMatch(e -> e.getProperty(BRANCH_UUID_KEY).equals(branchUuid) && ContainerType.get(e.getProperty(EDGE_TYPE_KEY)).equals(DRAFT)))
-		.map(v -> graph.frameElementExplicit(v, NodeGraphFieldContainerImpl.class)).iterator();
+			new String[] { SCHEMA_CONTAINER_VERSION_KEY_PROPERTY },
+			new Object[] { getUuid() })).filter(
+				v -> toStream(v.getEdges(Direction.IN, HAS_FIELD_CONTAINER))
+					.anyMatch(
+						e -> e.getProperty(BRANCH_UUID_KEY).equals(branchUuid) && ContainerType.get(e.getProperty(EDGE_TYPE_KEY)).equals(DRAFT)))
+				.map(v -> graph.frameElementExplicit(v, NodeGraphFieldContainerImpl.class)).iterator();
 	}
 
 	@Override
 	public TraversalResult<? extends Node> getNodes(String branchUuid, User user, ContainerType type) {
 		return new TraversalResult<>(getSchemaContainer().getNodes().stream()
-			.filter(node -> GraphFieldContainerEdgeImpl.matchesBranchAndType(node.getId(), branchUuid, type) && user.hasPermissionForId(node.getId(), READ_PUBLISHED_PERM)));
+			.filter(node -> GraphFieldContainerEdgeImpl.matchesBranchAndType(node.getId(), branchUuid, type)
+				&& user.hasPermissionForId(node.getId(), READ_PUBLISHED_PERM)));
 	}
 
 	@Override
 	public Stream<NodeGraphFieldContainerImpl> getFieldContainers(String branchUuid) {
 		return toStream(mesh().database().getVertices(
 			NodeGraphFieldContainerImpl.class,
-			new String[]{SCHEMA_CONTAINER_VERSION_KEY_PROPERTY},
-			new Object[]{getUuid()}
-		)).filter(v -> toStream(v.getEdges(Direction.IN, HAS_FIELD_CONTAINER))
-		.anyMatch(e -> e.getProperty(BRANCH_UUID_KEY).equals(branchUuid)))
-		.map(v -> graph.frameElementExplicit(v, NodeGraphFieldContainerImpl.class));
+			new String[] { SCHEMA_CONTAINER_VERSION_KEY_PROPERTY },
+			new Object[] { getUuid() })).filter(
+				v -> toStream(v.getEdges(Direction.IN, HAS_FIELD_CONTAINER))
+					.anyMatch(e -> e.getProperty(BRANCH_UUID_KEY).equals(branchUuid)))
+				.map(v -> graph.frameElementExplicit(v, NodeGraphFieldContainerImpl.class));
+	}
+
+	@Override
+	public Stream<NodeGraphFieldContainerImpl> getFieldContainers(String branchUuid, Bucket bucket) {
+		return toStream(mesh().database().getVerticesForRange(
+			NodeGraphFieldContainerImpl.class,
+			"bucket",
+			new String[] { SCHEMA_CONTAINER_VERSION_KEY_PROPERTY },
+			new Object[] { getUuid() }, BUCKET_ID_KEY, (long) bucket.start(), (long) bucket.end())).filter(
+				v -> toStream(v.getEdges(Direction.IN, HAS_FIELD_CONTAINER))
+					.anyMatch(e -> e.getProperty(BRANCH_UUID_KEY).equals(branchUuid)))
+				.map(v -> graph.frameElementExplicit(v, NodeGraphFieldContainerImpl.class));
 	}
 
 	@Override

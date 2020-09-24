@@ -17,7 +17,9 @@ import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.search.BucketableElement;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.search.index.BucketManager;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 import com.gentics.mesh.search.index.metric.SyncMetersFactory;
 import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
@@ -41,8 +43,8 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 
 	@Inject
 	public MicroschemaContainerIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper,
-		MeshOptions options, SyncMetersFactory syncMetricsFactory) {
-		super(searchProvider, db, boot, helper, options, syncMetricsFactory);
+		MeshOptions options, SyncMetersFactory syncMetricsFactory, BucketManager bucketManager) {
+		super(searchProvider, db, boot, helper, options, syncMetricsFactory, bucketManager);
 	}
 
 	@Override
@@ -61,7 +63,7 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 	}
 
 	@Override
-	public Class<?> getElementClass() {
+	public Class<? extends BucketableElement> getElementClass() {
 		return MicroschemaContainer.class;
 	}
 

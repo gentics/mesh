@@ -46,8 +46,6 @@ import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
-import io.reactivex.Single;
-
 /**
  * @see Group
  */

@@ -83,6 +83,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 			user.setEditor(creator);
 			user.setLastEditedTimestamp();
 		}
+		user.generateBucketId();
 		addItem(user);
 		return user;
 	}

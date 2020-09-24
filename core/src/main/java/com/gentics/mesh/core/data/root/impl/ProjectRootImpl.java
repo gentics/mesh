@@ -113,6 +113,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		project.setEditor(creator);
 		project.getSchemaContainerRoot();
 		project.getTagFamilyRoot();
+		project.generateBucketId();
 
 		addItem(project);
 

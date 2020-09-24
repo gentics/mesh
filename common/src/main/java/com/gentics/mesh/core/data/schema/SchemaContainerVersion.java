@@ -17,6 +17,7 @@ import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.madl.traversal.TraversalResult;
+import com.gentics.mesh.search.index.Bucket;
 
 /**
  * Each schema update is stored within a dedicated schema container version in order to be able to keep track of changes in between different schema container
@@ -40,6 +41,14 @@ public interface SchemaContainerVersion
 	 * @return
 	 */
 	Stream<? extends NodeGraphFieldContainer> getFieldContainers(String branchUuid);
+
+	/**
+	 * Return a stream for {@link NodeGraphFieldContainer}'s that use this schema version, are versions of the given branch and are listed within the given bucket.
+	 * @param branchUuid
+	 * @param bucket
+	 * @return
+	 */
+	Stream<? extends NodeGraphFieldContainer> getFieldContainers(String branchUuid, Bucket bucket);
 
 	/**
 	 * Returns an iterator for those {@link NodeGraphFieldContainer}'s which can be edited by users. Those are draft and publish versions.

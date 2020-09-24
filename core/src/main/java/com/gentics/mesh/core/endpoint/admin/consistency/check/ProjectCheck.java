@@ -66,6 +66,9 @@ public class ProjectCheck extends AbstractConsistencyCheck {
 		if (project.getLastEditedTimestamp() == null) {
 			result.addInconsistency("The project edit timestamp is not set", uuid, MEDIUM);
 		}
+		if (project.getBucketId() == null) {
+			result.addInconsistency("The project bucket id is not set", uuid, MEDIUM);
+		}
 	}
 
 }

@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_FAMILY;
+import static com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity.MEDIUM;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
@@ -47,7 +48,6 @@ import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
-import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -279,9 +279,11 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 		tag.setName(name);
 		tag.setCreated(creator);
 		tag.setProject(project);
+		tag.generateBucketId();
 
 		// Add the tag to the global tag root
 		mesh().boot().meshRoot().getTagRoot().addTag(tag);
+
 		// And to the tag family
 		addTag(tag);
 

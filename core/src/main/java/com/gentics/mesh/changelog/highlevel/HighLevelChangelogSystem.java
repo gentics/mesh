@@ -5,6 +5,7 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.cli.PostProcessFlags;
 import com.gentics.mesh.core.data.changelog.HighLevelChange;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -34,8 +35,9 @@ public class HighLevelChangelogSystem {
 	 * Apply the changes which were not yet applied.
 	 * 
 	 * @param meshRoot
+	 * @return 
 	 */
-	public void apply(MeshRoot meshRoot) {
+	public void apply(PostProcessFlags flags, MeshRoot meshRoot) {
 		List<HighLevelChange> changes = highLevelChangesList.getList();
 		for (HighLevelChange change : changes) {
 			db.tx(tx2 -> {
@@ -55,6 +57,9 @@ public class HighLevelChangelogSystem {
 							meshRoot.getChangelogRoot().add(change, duration);
 							tx.success();
 						});
+						if (change.requiresReindex()) {
+							flags.requireReindex();
+						}
 					} catch (Exception e) {
 						log.error("Error while executing change {" + change.getName() + "}/{" + change.getUuid() + "}", e);
 						throw new RuntimeException("Error while executing high level changelog.");

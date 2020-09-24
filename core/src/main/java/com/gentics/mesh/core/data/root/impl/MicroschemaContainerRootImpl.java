@@ -92,6 +92,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 		version.setSchemaContainer(container);
 		container.setCreated(user);
 		container.setName(microschema.getName());
+		container.generateBucketId();
 		addMicroschema(user, container, batch);
 
 		return container;

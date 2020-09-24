@@ -72,6 +72,7 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 		}
 		role.setName(name);
 		role.setCreated(creator);
+		role.generateBucketId();
 		addRole(role);
 		return role;
 	}

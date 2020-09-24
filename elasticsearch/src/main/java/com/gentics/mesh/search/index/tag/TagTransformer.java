@@ -1,5 +1,6 @@
 package com.gentics.mesh.search.index.tag;
 
+import static com.gentics.mesh.search.index.Bucket.BUCKET_ID_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
 
@@ -56,6 +57,7 @@ public class TagTransformer extends AbstractTransformer<Tag> {
 		addTagFamily(document, tag.getTagFamily());
 		addProject(document, tag.getProject());
 		document.put(MappingHelper.VERSION_KEY, generateVersion(tag));
+		document.put(BUCKET_ID_KEY, tag.getBucketId());
 		return document;
 	}
 

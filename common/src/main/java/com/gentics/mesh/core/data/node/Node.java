@@ -50,6 +50,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.PublishParameters;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
+import com.gentics.mesh.search.BucketableElement;
 import com.syncleus.ferma.EdgeFrame;
 
 import io.reactivex.Single;
@@ -61,7 +62,7 @@ import io.reactivex.Single;
  * this node and to the created nodes in order to create a project data structure. Each node may be linked to one or more {@link NodeGraphFieldContainer}
  * vertices which contain the language specific data.
  */
-public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackingVertex, Taggable, ProjectElement {
+public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackingVertex, Taggable, ProjectElement, BucketableElement {
 
 	String BRANCH_UUID_KEY = "branchUuid";
 

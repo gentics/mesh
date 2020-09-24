@@ -65,6 +65,7 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 		}
 		group.setName(name);
 		group.setCreated(creator);
+		group.generateBucketId();
 		addGroup(group);
 
 		return group;

@@ -14,6 +14,7 @@ import org.junit.Test;
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.BulkActionContext;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -30,6 +31,7 @@ import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.search.index.Bucket;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.google.common.collect.Iterables;
@@ -48,6 +50,53 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 			assertEquals(schema.getLatestVersion().getName(), reference.getName());
 			assertEquals(schema.getLatestVersion().getVersion(), reference.getVersion());
 		}
+	}
+
+	@Test
+	public void testGetContentFromSchemaVersion() {
+		Bucket bucket = new Bucket(0, Integer.MAX_VALUE / 2, 0, 1);
+		NodeGraphFieldContainer content = tx(() -> content().getLatestDraftFieldContainer("en"));
+		SchemaContainerVersion version = tx(() -> schemaContainer("content").getLatestVersion());
+
+		long before = tx(tx -> {
+			content.setBucketId(Integer.MAX_VALUE);
+			// Count contents in bucket 0 to MaxInt/2
+			return version.getFieldContainers(initialBranchUuid(), bucket).count();
+		});
+
+		// Now alter the bucketId
+		tx(tx -> {
+			content.setBucketId(100);
+		});
+
+		tx(tx -> {
+			// Now set the bucketId so that the content is within the bounds of the bucket / range query
+			long after = version.getFieldContainers(initialBranchUuid(), bucket).count();
+			assertEquals("We should find one more content.", before + 1, after);
+		});
+
+		// Now set the bucketId on the end of the bucket to ensure we include the last element in the range
+		tx(tx -> {
+			content.setBucketId(bucket.end());
+		});
+
+		tx(tx -> {
+			// Now set the bucketId so that the content is within the bounds of the bucket / range query
+			long after = version.getFieldContainers(initialBranchUuid(), bucket).count();
+			assertEquals("We should still find the altered element ", before + 1, after);
+		});
+
+		// Now exceed the bucket
+		tx(tx -> {
+			content.setBucketId(bucket.end() + 1);
+		});
+
+		tx(tx -> {
+			// Now set the bucketId so that the content is within the bounds of the bucket / range query
+			long after = version.getFieldContainers(initialBranchUuid(), bucket).count();
+			assertEquals("We should still find the altered element ", before, after);
+		});
+
 	}
 
 	@Test

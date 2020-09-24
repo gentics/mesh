@@ -59,6 +59,9 @@ public class SchemaContainerCheck extends AbstractConsistencyCheck {
 		if (schemaContainer.getLastEditedTimestamp() == null) {
 			result.addInconsistency("The schemaContainer edit timestamp is not set", uuid, MEDIUM);
 		}
+		if (schemaContainer.getBucketId() == null) {
+			result.addInconsistency("The schemaContainer bucket id is not set", uuid, MEDIUM);
+		}
 	}
 
 	private void checkSchemaContainerVersion(SchemaContainerVersion schemaContainerVersion, ConsistencyCheckResult result) {

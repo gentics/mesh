@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.elasticsearch.client.okhttp.RequestBuilder;
-import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.search.CreateIndexEntry;
@@ -29,7 +28,10 @@ import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.search.BucketableElement;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.search.index.BucketManager;
+import com.gentics.mesh.search.index.Bucket;
 import com.gentics.mesh.search.index.MappingProvider;
 import com.gentics.mesh.search.index.Transformer;
 import com.gentics.mesh.search.index.metric.SyncMeters;
@@ -60,7 +62,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractIndexHandler.class);
 
-	public static final int ES_SYNC_FETCH_BATCH_SIZE = 1000;
+	public static final int ES_SYNC_FETCH_BATCH_SIZE = 10_000;
 
 	protected final SearchProvider searchProvider;
 
@@ -76,7 +78,10 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 	protected final SyncMeters meters;
 
-	public AbstractIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options, SyncMetersFactory syncMetersFactory) {
+	protected final BucketManager bucketManager;
+
+	public AbstractIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options,
+		SyncMetersFactory syncMetersFactory, BucketManager bucketManager) {
 		this.searchProvider = searchProvider;
 		this.db = db;
 		this.boot = boot;
@@ -84,6 +89,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		this.options = options;
 		this.complianceMode = options.getSearchOptions().getComplianceMode();
 		this.meters = syncMetersFactory.createSyncMetric(getType());
+		this.bucketManager = bucketManager;
 	}
 
 	/**
@@ -187,23 +193,36 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		return searchProvider != null;
 	}
 
+	protected Flowable<SearchRequest> diffAndSync(String indexName, String projectUuid) {
+		// Sync each bucket individually
+		Flowable<Bucket> buckets = bucketManager.getBuckets(getElementClass());
+		log.info("Handling index sync on handler {" + getClass().getName() + "}");
+		return buckets.flatMap(bucket -> {
+			log.info("Handling sync of {" + bucket + "}");
+			return diffAndSync(indexName, projectUuid, bucket);
+		}, 1);
+	}
+
 	/**
 	 * Diff the source (graph) with the sink (ES index) and create {@link EventQueueBatch} objects add, delete or update entries.
 	 * 
 	 * @param indexName
 	 * @param projectUuid
+	 * @param bucket
 	 * @return
 	 */
-	protected Flowable<SearchRequest> diffAndSync(String indexName, String projectUuid) {
+	protected Flowable<SearchRequest> diffAndSync(String indexName, String projectUuid, Bucket bucket) {
 		return Single.zip(
-			loadVersionsFromIndex(indexName),
-			Single.fromCallable(this::loadVersionsFromGraph),
+			loadVersionsFromIndex(indexName, bucket),
+			Single.fromCallable(() -> loadVersionsFromGraph(bucket)),
 			(sinkVersions, sourceVersions) -> {
-				log.info("Handling index sync on handler {" + getClass().getName() + "}");
+				log.debug("Handling index sync on handler {" + getClass().getName() + "} for {" + bucket + "}");
+				log.debug("Found {" + sourceVersions.size() + "} elements in graph bucket");
+				log.debug("Found {" + sinkVersions.size() + "} elements in search index bucket");
 
 				MapDifference<String, String> diff = Maps.difference(sourceVersions, sinkVersions);
 				if (diff.areEqual()) {
-					log.info("No diff detected. Index {" + indexName + "} is in sync.");
+					log.debug("No diff detected. Index {" + indexName + "} is in sync.");
 					return Flowable.<SearchRequest>empty();
 				}
 
@@ -211,8 +230,8 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 				Set<String> needUpdateInEs = diff.entriesDiffering().keySet();
 				Set<String> needRemovalInES = diff.entriesOnlyOnRight().keySet();
 
-				log.info("Pending insertions on {" + indexName + "}:" + needInsertionInES.size());
-				log.info("Pending removals on {" + indexName + "}:" + needRemovalInES.size());
+				log.info("Pending insertions on {" + indexName + "}: " + needInsertionInES.size());
+				log.info("Pending removals on {" + indexName + "}: " + needRemovalInES.size());
 
 				meters.getInsertMeter().addPending(needInsertionInES.size());
 				meters.getUpdateMeter().addPending((needUpdateInEs.size()));
@@ -240,26 +259,31 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		return elementLoader().apply(elementUuid);
 	}
 
-	private Map<String, String> loadVersionsFromGraph() {
-		return db.tx(() -> loadAllElements()
-			.collect(Collectors.toMap(
-				MeshElement::getUuid,
-				this::generateVersion)));
+	private Map<String, String> loadVersionsFromGraph(Bucket bucket) {
+		return db.tx(() -> {
+			return loadAllElements()
+				.filter(element -> {
+					return bucket.filter().test((BucketableElement)element);
+				}).collect(Collectors.toMap(
+					MeshElement::getUuid,
+					this::generateVersion));
+		});
 	}
 
 	// TODO Async
-	public Single<Map<String, String>> loadVersionsFromIndex(String indexName) {
+	public Single<Map<String, String>> loadVersionsFromIndex(String indexName, Bucket bucket) {
 		return Single.fromCallable(() -> {
 			String fullIndexName = searchProvider.installationPrefix() + indexName;
 			Map<String, String> versions = new HashMap<>();
-			log.debug("Loading document info from index {" + fullIndexName + "}");
+			log.debug("Loading document info from index {" + fullIndexName + "} in bucket {" + bucket + "}");
 			ElasticsearchClient<JsonObject> client = searchProvider.getClient();
 			JsonObject query = new JsonObject();
 			query.put("size", ES_SYNC_FETCH_BATCH_SIZE);
 			query.put("_source", new JsonArray().add("uuid").add("version"));
-			query.put("query", new JsonObject().put("match_all", new JsonObject()));
+			query.put("query", bucket.rangeQuery());
 			query.put("sort", new JsonArray().add("_doc"));
 
+			log.trace("Using query {\n" + query.encodePrettily() + "\n");
 			RequestBuilder<JsonObject> builder = client.searchScroll(query, "1m", fullIndexName);
 			JsonObject result = new JsonObject();
 			try {

@@ -112,6 +112,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 		version.setSchemaContainer(container);
 		container.setCreated(creator);
 		container.setName(schema.getName());
+		container.generateBucketId();
 
 		EventQueueBatch batch = createBatch();
 		addSchemaContainer(creator, container, null);

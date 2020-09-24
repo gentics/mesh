@@ -23,6 +23,7 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.search.BucketableElement;
 import com.gentics.mesh.util.DateUtils;
 
 /**
@@ -40,7 +41,7 @@ import com.gentics.mesh.util.DateUtils;
  * <img src= "http://getmesh.io/docs/javadoc/cypher/com.gentics.mesh.core.data.impl.UserImpl.jpg" alt="">
  * </p>
  */
-public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableElement<UserReference>, UserTrackingVertex {
+public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableElement<UserReference>, UserTrackingVertex, BucketableElement {
 
 	/**
 	 * API token id property name {@value #API_TOKEN_ID}
