@@ -1,9 +1,11 @@
 package com.gentics.mesh.etc.config.env;
 
-import io.vertx.core.json.JsonObject;
-
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import io.vertx.core.json.JsonObject;
 
 public class TestMethodSetOption implements Option {
 
@@ -68,5 +70,15 @@ public class TestMethodSetOption implements Option {
 	@EnvironmentVariable(name = TestOptions.JSON_OBJECT_ENV, description = "")
 	public void setJsonObject(JsonObject jsonObj) {
 		values.put(TestOptions.JSON_OBJECT_ENV, jsonObj);
+	}
+
+	@EnvironmentVariable(name = TestOptions.STRING_LIST_ENV, description = "")
+	public void setStringList(List<String> stringList) {
+		values.put(TestOptions.STRING_LIST_ENV, stringList);
+	}
+
+	@EnvironmentVariable(name = TestOptions.STRING_SET_ENV, description = "")
+	public void setStringSet(Set<String> stringSet) {
+		values.put(TestOptions.STRING_SET_ENV, stringSet);
 	}
 }
