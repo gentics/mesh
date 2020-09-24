@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.TRACKING;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
@@ -32,41 +33,64 @@ public class BinaryFieldEndpointTest extends AbstractMeshTest {
 		grantAdmin();
 		final String schemaUuid = tx(() -> schemaContainer("content").getUuid());
 		final String nodeUuid = tx(() -> contentUuid());
-		Buffer buffer = TestUtils.randomBuffer(1000);
-
-		// 1. Update schema and set allowed property
 		Schema schema = tx(() -> schemaContainer("content").getLatestVersion().getSchema());
 		SchemaUpdateRequest request = JsonUtil.readValue(schema.toJson(), SchemaUpdateRequest.class);
-		BinaryExtractOptions extractOptions = new BinaryExtractOptions();
-		extractOptions.setContent(true);
-		extractOptions.setMetadata(true);
-		request.addField(new BinaryFieldSchemaImpl().setBinaryExtractOptions(extractOptions).setName("binaryField"));
 
-		waitForJobs(() -> {
-			call(() -> client().updateSchema(schemaUuid, request));
-		}, COMPLETED, 1);
+		// 1. Update schema and add field
+		{
+			BinaryExtractOptions extractOptions = new BinaryExtractOptions();
+			extractOptions.setContent(true);
+			extractOptions.setMetadata(true);
+			request.addField(new BinaryFieldSchemaImpl().setBinaryExtractOptions(extractOptions).setName("binaryField"));
 
-		SchemaResponse schema2 = call(() -> client().findSchemaByUuid(schemaUuid));
-		System.out.println(schema2.toJson());
-		BinaryFieldSchema binaryField2 = schema2.getField("binaryField", BinaryFieldSchema.class);
-		assertNotNull("The options should be set", binaryField2.getBinaryExtractOptions());
+			waitForJobs(() -> {
+				call(() -> client().updateSchema(schemaUuid, request));
+			}, COMPLETED, 1);
 
-		// 2. Update the node binary field
+			SchemaResponse loadedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
+			BinaryFieldSchema loadedField = loadedSchema.getField("binaryField", BinaryFieldSchema.class);
+			assertNotNull("The options should be set", loadedField.getBinaryExtractOptions());
+		}
+
+		// 3. Update the node binary field
+		Buffer buffer = TestUtils.randomBuffer(1000);
 		call(() -> client().updateNodeBinaryField(projectName(), nodeUuid, "en", "draft", "binaryField",
 			new ByteArrayInputStream(buffer.getBytes()), buffer.length(),
 			"filename.txt", "application/binary"));
 
-		// 3. Update the schema again and remove the extract options. Assert that the schema has been updated
-		request.removeField("binaryField");
-		request.addField(new BinaryFieldSchemaImpl().setBinaryExtractOptions(null).setName("binaryField"));
+		// 2. Update schema and update field (change extract options)
+		{
+			request.removeField("binaryField");
+			BinaryExtractOptions extractOptions = new BinaryExtractOptions();
+			extractOptions.setContent(false);
+			extractOptions.setMetadata(false);
+			request.addField(new BinaryFieldSchemaImpl().setBinaryExtractOptions(extractOptions).setName("binaryField"));
 
-		waitForJobs(() -> {
-			call(() -> client().updateSchema(schemaUuid, request));
-		}, COMPLETED, 1);
+			waitForJobs(() -> {
+				call(() -> client().updateSchema(schemaUuid, request));
+			}, COMPLETED, 1);
 
-		SchemaResponse schema3 = call(() -> client().findSchemaByUuid(schemaUuid));
-		BinaryFieldSchema binaryField3 = schema3.getField("binaryField", BinaryFieldSchema.class);
-		assertNull("The options should be set to null", binaryField3.getBinaryExtractOptions());
+			SchemaResponse loadedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
+			BinaryFieldSchema loadedField = loadedSchema.getField("binaryField", BinaryFieldSchema.class);
+			BinaryExtractOptions loadedOptions = loadedField.getBinaryExtractOptions();
+			assertNotNull("The options should be set", loadedOptions);
+			assertFalse(loadedOptions.getContent());
+			assertFalse(loadedOptions.getMetadata());
+		}
+
+		// 4. Update the schema and update field (remove the extract options). Assert that the schema has been updated
+		{
+			request.removeField("binaryField");
+			request.addField(new BinaryFieldSchemaImpl().setBinaryExtractOptions(null).setName("binaryField"));
+
+			waitForJobs(() -> {
+				call(() -> client().updateSchema(schemaUuid, request));
+			}, COMPLETED, 1);
+
+			SchemaResponse loadedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
+			BinaryFieldSchema loadedField = loadedSchema.getField("binaryField", BinaryFieldSchema.class);
+			assertNull("The options should be set to null", loadedField.getBinaryExtractOptions());
+		}
 	}
 
 }
