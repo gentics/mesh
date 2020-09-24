@@ -63,6 +63,11 @@
                 }
               }
             }
+          },
+          "path" : {
+            "type" : "string",
+            "required" : true,
+            "description" : "Path of the error."
           }
         }
       }

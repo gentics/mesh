@@ -65,14 +65,14 @@
 | *MESH_ELASTICSEARCH_MAPPING_MODE*
 | Override the search mapping mode. 
 
-| *MESH_ELASTICSEARCH_WAIT_FOR_IDLE*
-| Override the search idle wait flag.
-
 | *MESH_DEBUGINFO_LOG_FOLDER*
 | Override the path to the debug info log folder
 
 | *MESH_ELASTICSEARCH_HOSTNAME_VERIFICATION*
 | Override the configured hostname verification flag.
+
+| *MESH_ELASTICSEARCH_WAIT_FOR_IDLE*
+| Override the search idle wait flag.
 
 | *MESH_CLUSTER_VERTX_PORT*
 | Override the vert.x eventbus server port.
@@ -107,14 +107,17 @@
 | *MESH_HTTP_PORT*
 | Override the configured server http port.
 
-| *MESH_AUTH_KEYSTORE_PASS*
-| Override the configured keystore password.
+| *MESH_ELASTICSEARCH_SYNC_BATCH_SIZE*
+| Override the search sync batch size
 
 | *MESH_BINARY_DOCUMENT_PARSER*
 | Override the document parser enabled flag.
 
 | *MESH_CLUSTER_TOPOLOGY_LOCK_DELAY*
 | Override the cluster topology lock delay in ms.
+
+| *MESH_AUTH_KEYSTORE_PASS*
+| Override the configured keystore password.
 
 | *MESH_MONITORING_JVM_METRICS_ENABLED*
 | Override the configured JVM metrics enabled flag.
@@ -179,14 +182,14 @@
 | *MESH_GRAPH_TX_RETRY_DELAY*
 | Override the transaction retry delay. Default: 10
 
-| *MESH_BINARY_DIR*
-| Override the configured binary data directory.
-
 | *MESH_DEBUGINFO_LOG_FILE_SIZE*
 | Override the log file size
 
 | *MESH_UPDATECHECK*
 | Override the configured updatecheck flag.
+
+| *MESH_BINARY_DIR*
+| Override the configured binary data directory.
 
 | *MESH_ELASTICSEARCH_START_EMBEDDED*
 | Override the start embedded elasticsearch server flag.
@@ -200,11 +203,11 @@
 | *MESH_ELASTICSEARCH_RETRY_INTERVAL*
 | Override the retry interval.
 
-| *MESH_ELASTICSEARCH_USERNAME*
-| Override the configured Elasticsearch connection username.
-
 | *MESH_ELASTICSEARCH_EVENT_BUFFER_SIZE*
 | Override the configured event buffer size.
+
+| *MESH_ELASTICSEARCH_USERNAME*
+| Override the configured Elasticsearch connection username.
 
 | *MESH_CLUSTER_TOPOLOGY_LOCK_TIMEOUT*
 | Override the cluster topology lock timeout in ms.
@@ -260,11 +263,11 @@
 | *MESH_BINARY_UPLOAD_TEMP_DIR*
 | Override the configured upload temporary directory.
 
-| *MESH_HTTP_SERVER_TOKENS*
-| Override the http server tokens flag.
-
 | *MESH_GRAPH_DB_DIRECTORY*
 | Override the graph database storage directory.
+
+| *MESH_HTTP_SERVER_TOKENS*
+| Override the http server tokens flag.
 
 | *MESH_NODE_NAME*
 | Override the configured node name.
