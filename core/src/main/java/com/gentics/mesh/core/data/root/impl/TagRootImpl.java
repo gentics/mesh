@@ -229,6 +229,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 		tag.setName(name);
 		tag.setCreated(creator);
 		tag.setProject(project);
+		tag.generateBucketId();
 
 		// Add the tag to the global tag root
 		mesh().boot().meshRoot().getTagRoot().addTag(tag);
