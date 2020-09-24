@@ -40,7 +40,7 @@
 | metadata
 | false
 | object
-| Metadata of the upload. This object may contain exif data of images or metadata from PDF files.
+| Metadata of the upload. This object may contain exif data of images or meta data from PDF files.
 
 | mimeType
 | true

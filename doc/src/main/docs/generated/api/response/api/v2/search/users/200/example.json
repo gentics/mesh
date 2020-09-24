@@ -79,6 +79,7 @@
       "name" : "editors",
       "uuid" : "589319933be24ec79319933be24ec7fe"
     } ],
+    "admin" : true,
     "permissions" : {
       "create" : true,
       "read" : true,

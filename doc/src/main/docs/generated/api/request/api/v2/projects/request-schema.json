@@ -19,14 +19,14 @@
         "versionUuid" : {
           "type" : "string"
         },
-        "uuid" : {
-          "type" : "string"
-        },
         "name" : {
           "type" : "string"
         },
         "set" : {
           "type" : "boolean"
+        },
+        "uuid" : {
+          "type" : "string"
         }
       }
     },

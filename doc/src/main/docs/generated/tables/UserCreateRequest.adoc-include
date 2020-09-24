@@ -7,6 +7,11 @@
 | Description
 
 
+| admin
+| false
+| boolean
+| Flag which indicates whether the user is an admin.
+
 | emailAddress
 | false
 | string

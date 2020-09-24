@@ -17,4 +17,6 @@ usage: mesh.jar
  -nodeName <name>                 Override the configured node name.
  -resetAdminPassword <password>   Reset the admin password. It is advised
                                   to change the password once again after
-                                  the reset has been performed.
+                                  the reset has been performed. The
+                                  command will also recreate the admin
+                                  user if it can't be found in the system.

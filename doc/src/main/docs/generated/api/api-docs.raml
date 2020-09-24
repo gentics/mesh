@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "1.5.2"
+version: "1.5.4"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -15,6 +15,7 @@ mediaType: application/json
                     schema: |
                         | Property | Mandatory | Type | Description |
                         |----------|-----------|------|-------------|
+                        | admin | false | boolean | Flag which indicates whether the user is an admin. |
                         | emailAddress | false | string | Email address of the user. |
                         | firstname | false | string | Firstname of the user. |
                         | forcedPasswordChange | false | boolean | When true, the user needs to change their password on the next login. |
@@ -50,6 +51,7 @@ mediaType: application/json
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
+                                | admin | false | boolean | Flag which indicates whether the user is an admin. |
                                 | created | true | string | ISO8601 formatted created date string. |
                                 | creator | true | object | User reference of the creator of the element. |
                                 | edited | true | string | ISO8601 formatted edited date string. |
@@ -262,6 +264,7 @@ mediaType: application/json
                                       "name" : "editors",
                                       "uuid" : "589319933be24ec79319933be24ec7fe"
                                     } ],
+                                    "admin" : true,
                                     "permissions" : {
                                       "create" : true,
                                       "read" : true,
@@ -301,6 +304,7 @@ mediaType: application/json
                     schema: |
                         | Property | Mandatory | Type | Description |
                         |----------|-----------|------|-------------|
+                        | admin | false | boolean | Flag which indicates whether the user is an admin. |
                         | emailAddress | false | string | New email address of the user |
                         | firstname | false | string | New firstname of the user |
                         | forcedPasswordChange | false | boolean | When true, the user needs to change their password on the next login. |
@@ -334,6 +338,7 @@ mediaType: application/json
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
+                                | admin | false | boolean | Flag which indicates whether the user is an admin. |
                                 | created | true | string | ISO8601 formatted created date string. |
                                 | creator | true | object | User reference of the creator of the element. |
                                 | edited | true | string | ISO8601 formatted edited date string. |
@@ -449,6 +454,7 @@ mediaType: application/json
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
+                                | admin | false | boolean | Flag which indicates whether the user is an admin. |
                                 | created | true | string | ISO8601 formatted created date string. |
                                 | creator | true | object | User reference of the creator of the element. |
                                 | edited | true | string | ISO8601 formatted edited date string. |
@@ -1597,6 +1603,7 @@ mediaType: application/json
                                       "name" : "editors",
                                       "uuid" : "589319933be24ec79319933be24ec7fe"
                                     } ],
+                                    "admin" : true,
                                     "permissions" : {
                                       "create" : true,
                                       "read" : true,
@@ -3376,10 +3383,10 @@ mediaType: application/json
                                 }
     /coordinator/config: 
         get: 
-            description: Returns the currently active configuration.
+            description: Returns the currently active coordination configuration.
             responses: 
                 "200": 
-                    description: The currently active config on this instance.
+                    description: The currently active coordination config on this instance.
                     body: 
                         application/json: 
                             schema: |
@@ -3391,7 +3398,7 @@ mediaType: application/json
                                   "mode" : "CUD"
                                 }
         post: 
-            description: Update the coordinator configuration of this instance. Note that the update config will not be persisted.
+            description: Update the coordinator configuration of this instance. Note that the updated config will not be persisted.
             body: 
                 application/json: 
                     schema: |
@@ -5135,6 +5142,7 @@ mediaType: application/json
                                       "name" : "editors",
                                       "uuid" : "589319933be24ec79319933be24ec7fe"
                                     } ],
+                                    "admin" : true,
                                     "permissions" : {
                                       "create" : true,
                                       "read" : true,
@@ -5913,6 +5921,7 @@ mediaType: application/json
                             schema: |
                                 | Property | Mandatory | Type | Description |
                                 |----------|-----------|------|-------------|
+                                | admin | false | boolean | Flag which indicates whether the user is an admin. |
                                 | created | true | string | ISO8601 formatted created date string. |
                                 | creator | true | object | User reference of the creator of the element. |
                                 | edited | true | string | ISO8601 formatted edited date string. |
@@ -6005,7 +6014,7 @@ mediaType: application/json
                                 | vertxVersion | false | string | Used Vert.x version. |
                             example: |
                                 {
-                                  "meshVersion" : "1.5.2",
+                                  "meshVersion" : "1.5.4",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",

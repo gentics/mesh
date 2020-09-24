@@ -113,6 +113,10 @@
             "required" : true,
             "description" : "When true, the user needs to change their password on the next login."
           },
+          "admin" : {
+            "type" : "boolean",
+            "description" : "Flag which indicates whether the user is an admin."
+          },
           "permissions" : {
             "type" : "object",
             "id" : "urn:jsonschema:com:gentics:mesh:core:rest:common:PermissionInfo",
