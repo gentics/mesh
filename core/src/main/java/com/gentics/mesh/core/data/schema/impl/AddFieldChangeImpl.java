@@ -11,6 +11,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.BooleanUtils;
+
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
@@ -18,6 +20,8 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.AddFieldChange;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.schema.BinaryExtractOptions;
+import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
@@ -126,7 +130,16 @@ public class AddFieldChangeImpl extends AbstractSchemaFieldChange implements Add
 			field = new NumberFieldSchemaImpl();
 			break;
 		case "binary":
-			field = new BinaryFieldSchemaImpl();
+			BinaryFieldSchema binaryField = new BinaryFieldSchemaImpl();
+			Boolean content = getRestProperty(BinaryFieldSchemaImpl.CHANGE_EXTRACT_CONTENT_KEY);
+			Boolean metadata = getRestProperty(BinaryFieldSchemaImpl.CHANGE_EXTRACT_METADATA_KEY);
+			if (metadata != null || content != null) {
+				BinaryExtractOptions options = new BinaryExtractOptions();
+				options.setContent(BooleanUtils.toBoolean(content));
+				options.setMetadata(BooleanUtils.toBoolean(metadata));
+				binaryField.setBinaryExtractOptions(options);
+			}
+			field = binaryField;
 			break;
 		case "node":
 			NodeFieldSchema nodeField = new NodeFieldSchemaImpl();
@@ -157,8 +170,7 @@ public class AddFieldChangeImpl extends AbstractSchemaFieldChange implements Add
 			break;
 		default:
 			throw error(BAD_REQUEST, "Unknown type");
-		}
-		field.setName(getFieldName());
+		}field.setName(getFieldName());
 		field.setLabel(getLabel());
 		Boolean required = getRequired();
 		if (required != null) {

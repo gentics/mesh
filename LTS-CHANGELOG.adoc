@@ -28,13 +28,47 @@ CAUTION: The new sync mechanism requires a reindex of all documents. The Elastic
 
 icon:check[] Core: Fixed a bug that which prevented to update a node reference of a user if the user already had one set. link:https://github.com/gentics/mesh/issues/1114[#1114]
 
+icon:plus[] Core: It is now possible to disable extracting of metadata or content from binaries on a per-field basis. See link:{{< relref "building-blocks.asciidoc" >}}#_schema_field_types[schema field types documentation] for more information.
+
 icon:plus[] Plugins: The default plugin timeout has been increased from 15 seconds to two minutes.
 
 icon:check[] Monitoring: The readiness probe will now also check for plugin status. Failed plugin deployments will let the readiness probe fail.
 
+icon:plus[] Monitoring: The readiness probe will now no longer fail when a plugin is not registered. Instead it will only fail when a plugin deployment has failed.
+
+icon:plus[] Monitoring: The liveness probe will now check for plugin status. Failed plugin deployments will let the liveness probe fail.
+
+icon:check[] Clustering: The webroot handler no longer uses the cluster-wide write lock.
+
+icon:check[] Logging: Failing readiness checks are now logged using the `WARN` level.
+
 = 1.5
 
+[[v1.5.4]]
+== 1.5.4 (24.09.2020)
+
+icon:plus[] Core: It is now possible to disable extracting of metadata or content from binaries on a per-field basis. See link:{{< relref "building-blocks.asciidoc" >}}#_schema_field_types[schema field types documentation] for more information.
+
+icon:plus[] Monitoring: The readiness probe will now no longer fail when a plugin is not registered. Instead it will only fail when a plugin deployment has failed.
+
+icon:plus[] Monitoring: The liveness probe will now check for plugin status. Failed plugin deployments will let the liveness probe fail.
+
+icon:check[] Clustering: The webroot handler no longer uses the cluster-wide write lock.
+
+icon:check[] Logging: Failing readiness checks are now logged using the `WARN` level.
+
 = 1.4
+
+[[v1.4.15]]
+== 1.4.15 (23.09.2020)
+
+icon:plus[] Monitoring: The readiness probe will now no longer fail when a plugin is not registered. Instead it will only fail when a plugin deployment has failed.
+
+icon:plus[] Monitoring: The liveness probe will now check for plugin status. Failed plugin deployments will let the liveness probe fail.
+
+icon:check[] Clustering: The webroot handler no longer uses the cluster-wide write lock.
+
+icon:check[] Logging: Failing readiness checks are now logged using the `WARN` level.
 
 [[v1.4.14]]
 == 1.4.14 (02.09.2020)

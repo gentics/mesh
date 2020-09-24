@@ -284,6 +284,9 @@
 | *MESH_ELASTICSEARCH_IDLE_DEBOUNCE_TIME*
 | Override the idle debounce time.
 
+| *MESH_BINARY_METADATA_WHITELIST*
+| Override the metadata whitelist
+
 | *MESH_AUTH_KEYSTORE_PATH*
 | Override the configured keystore path.
 

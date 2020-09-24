@@ -31,8 +31,8 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -92,77 +92,73 @@ public class WebRootHandler {
 	 */
 	public void handleGetPath(RoutingContext rc) {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-		String path = rc.request().path().substring(
-			rc.mountPoint().length());
+		String path = rc.request().path().substring(rc.mountPoint().length());
 
-		try (WriteLock lock = writeLock.lock(ac)) {
-			utils.syncTx(ac, tx -> {
-				MeshAuthUser requestUser = ac.getUser();
+		utils.syncTx(ac, tx -> {
+			MeshAuthUser requestUser = ac.getUser();
 
-				String branchUuid = ac.getBranch().getUuid();
-				// Load all nodes for the given path
-				ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
-				Path nodePath = webrootService.findByProjectPath(ac, path, type);
-				if (!nodePath.isFullyResolved()) {
-					throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(nodePath.getTargetPath()));
+			String branchUuid = ac.getBranch().getUuid();
+			// Load all nodes for the given path
+			ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
+			Path nodePath = webrootService.findByProjectPath(ac, path, type);
+			if (!nodePath.isFullyResolved()) {
+				throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(nodePath.getTargetPath()));
+			}
+			PathSegment lastSegment = nodePath.getLast();
+
+			// Check whether the path actually points to a valid node
+			if (lastSegment == null) {
+				throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(path));
+			}
+			NodeGraphFieldContainer container = lastSegment.getContainer();
+			if (container == null) {
+				throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(path));
+			}
+
+			String version = ac.getVersioningParameters().getVersion();
+			Node node = container.getParentNode();
+			addCacheControl(rc, node, version);
+			requestUser.failOnNoReadPermission(container, branchUuid, version);
+
+			rc.response().putHeader(MeshHeaders.WEBROOT_NODE_UUID, node.getUuid());
+			// TODO decide whether we want to add also lang, version
+
+			GraphField field = lastSegment.getPathField();
+			if (field instanceof BinaryGraphField) {
+				BinaryGraphField binaryField = (BinaryGraphField) field;
+				String sha512sum = binaryField.getBinary().getSHA512Sum();
+
+				// Check the etag
+				String etagKey = sha512sum;
+				if (binaryField.hasProcessableImage()) {
+					etagKey += ac.getImageParameters().getQueryParameters();
 				}
-				PathSegment lastSegment = nodePath.getLast();
-
-				// Check whether the path actually points to a valid node
-				if (lastSegment == null) {
-					throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(path));
+				String etag = ETag.hash(etagKey);
+				ac.setEtag(etag, false);
+				if (ac.matches(etag, false)) {
+					throw new NotModifiedException();
 				}
-				NodeGraphFieldContainer container = lastSegment.getContainer();
-				if (container == null) {
-					throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(path));
+				binaryFieldResponseHandler.handle(rc, binaryField);
+				return null;
+			} else {
+				String etag = node.getETag(ac);
+				ac.setEtag(etag, true);
+				if (ac.matches(etag, true)) {
+					throw new NotModifiedException();
 				}
-
-				String version = ac.getVersioningParameters().getVersion();
-				Node node = container.getParentNode();
-				addCacheControl(rc, node, version);
-				requestUser.failOnNoReadPermission(container, branchUuid, version);
-
-				rc.response().putHeader(MeshHeaders.WEBROOT_NODE_UUID, node.getUuid());
-				// TODO decide whether we want to add also lang, version
-
-				GraphField field = lastSegment.getPathField();
-				if (field instanceof BinaryGraphField) {
-					BinaryGraphField binaryField = (BinaryGraphField) field;
-					String sha512sum = binaryField.getBinary().getSHA512Sum();
-
-					// Check the etag
-					String etagKey = sha512sum;
-					if (binaryField.hasProcessableImage()) {
-						etagKey += ac.getImageParameters().getQueryParameters();
-					}
-					String etag = ETag.hash(etagKey);
-					ac.setEtag(etag, false);
-					if (ac.matches(etag, false)) {
-						throw new NotModifiedException();
-					}
-					binaryFieldResponseHandler.handle(rc, binaryField);
-					return null;
-				} else {
-					String etag = node.getETag(ac);
-					ac.setEtag(etag, true);
-					if (ac.matches(etag, true)) {
-						throw new NotModifiedException();
-					}
-					// Use the language for which the node was resolved
-					List<String> languageTags = new ArrayList<>();
-					languageTags.add(lastSegment.getLanguageTag());
-					languageTags.addAll(ac.getNodeParameters().getLanguageList(options));
-					ac.setWebrootResponseType("node");
-					return node.transformToRestSync(ac, 0, languageTags.toArray(new String[0]));
-				}
-			}, model -> {
-				if (model != null) {
-					ac.send(JsonUtil.toJson(model),
-						HttpResponseStatus.valueOf(NumberUtils.toInt(rc.data().getOrDefault("statuscode", "").toString(), OK.code())));
-				}
-			});
-		}
-
+				// Use the language for which the node was resolved
+				List<String> languageTags = new ArrayList<>();
+				languageTags.add(lastSegment.getLanguageTag());
+				languageTags.addAll(ac.getNodeParameters().getLanguageList(options));
+				ac.setWebrootResponseType("node");
+				return node.transformToRestSync(ac, 0, languageTags.toArray(new String[0]));
+			}
+		}, model -> {
+			if (model != null) {
+				ac.send(JsonUtil.toJson(model),
+					HttpResponseStatus.valueOf(NumberUtils.toInt(rc.data().getOrDefault("statuscode", "").toString(), OK.code())));
+			}
+		});
 	}
 
 	/**

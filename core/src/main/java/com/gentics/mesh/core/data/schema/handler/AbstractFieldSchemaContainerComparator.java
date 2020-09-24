@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
+import com.gentics.mesh.core.rest.schema.BinaryExtractOptions;
+import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
@@ -19,6 +22,7 @@ import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
+import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.util.CompareUtils;
 
 import io.vertx.core.json.JsonObject;
@@ -91,6 +95,15 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 				if (fieldInB instanceof StringFieldSchema) {
 					change.setProperty(SchemaChangeModel.ALLOW_KEY, ((StringFieldSchema)fieldInB).getAllowedValues());
 				}
+				if (fieldInB instanceof BinaryFieldSchema) {
+					BinaryFieldSchema field = (BinaryFieldSchema) fieldInB;
+					BinaryExtractOptions options = field.getBinaryExtractOptions();
+					if (options != null) {
+						change.setProperty(BinaryFieldSchemaImpl.CHANGE_EXTRACT_CONTENT_KEY, options.getContent());
+						change.setProperty(BinaryFieldSchemaImpl.CHANGE_EXTRACT_METADATA_KEY, options.getMetadata());
+					}
+				}
+
 				change.setProperty(SchemaChangeModel.REQUIRED_KEY, fieldInB.isRequired());
 
 				if (i - 1 >= 0) {

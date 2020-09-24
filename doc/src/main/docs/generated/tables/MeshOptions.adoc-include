@@ -352,6 +352,11 @@
 | boolean
 | If true, the document parser will process uploads and extract metadata and contents. Default: true
 
+| uploadOptions.metadataWhitelist
+| false
+| set
+| If set, the parser will only extract metadata with the keys specified in the list.
+
 | authenticationOptions.tokenExpirationTime
 | true
 | int

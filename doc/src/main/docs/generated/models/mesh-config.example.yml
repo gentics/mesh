@@ -86,6 +86,7 @@ upload:
   tempDirectory: "/opt/mesh/data/tmp/temp-uploads"
   parserLimit: 40000
   parser: true
+  metadataWhitelist: null
 security:
   tokenExpirationTime: 3600
   keystorePassword: "<Your Password>"

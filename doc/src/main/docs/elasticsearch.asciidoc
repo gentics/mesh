@@ -421,6 +421,8 @@ NOTE: The index sync is a memory intensive operation. The `search.syncBatchSize`
 
 Document uploads to Gentics Mesh will automatically be parsed and the containing text will be extracted. This information will also be added to the search index and thus it is possible to search for text within uploaded documents.
 
+You can disable this feature in the global options or per binary field. See the link:{{< relref "features.asciidoc" >}}#_metadata_handling[file upload documentation] for more information.
+
 Currently uploads which have one of these mimetypes will be processed:
 
 * application/pdf
