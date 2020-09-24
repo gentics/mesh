@@ -20,7 +20,7 @@ All fixes and changes in LTS releases will be released the next minor release. C
 = 1.6
 
 [[v1.6.1]]
-== 1.6.1 (TBD)
+== 1.6.1 (24.09.2020)
 
 icon:plus[] Search: The memory footprint of the differential sync mechanism has been reduced. The sync operations will now be split into buckets. The size of the buckets can be influenced via the `search.syncBatchSize` setting.
 
