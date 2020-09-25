@@ -434,6 +434,17 @@ public class InternalEndpointRouteImpl implements InternalEndpointRoute {
 	}
 
 	@Override
+	public InternalEndpointRoute addQueryParameter(String name, String description, String example) {
+		QueryParameter param = new QueryParameter();
+		param.setDescription(description);
+		if (example != null) {
+			param.setExample(example);
+		}
+		parameters.put(name, param);
+		return this;
+	}
+
+	@Override
 	public InternalEndpointRoute setRAMLPath(String path) {
 		this.ramlPath = path;
 		return this;
