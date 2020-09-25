@@ -19,6 +19,7 @@ import javax.inject.Inject;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.binary.BinaryDataProcessor;
+import com.gentics.mesh.core.binary.BinaryDataProcessorContext;
 import com.gentics.mesh.core.binary.BinaryProcessorRegistryImpl;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -174,10 +175,9 @@ public class BinaryUploadHandler extends AbstractHandler {
 
 		// First process the upload data
 		hashUpload(ul).flatMap(hash -> {
-			Single<List<Consumer<BinaryGraphField>>> modifierOp = postProcessUpload(ul, hash).toList();
-			return modifierOp.map(list -> {
-				return Tuple.tuple(hash, list);
-			});
+			return postProcessUpload(new BinaryDataProcessorContext(ac, nodeUuid, fieldName, ul, hash))
+				.toList()
+				.map(list -> Tuple.tuple(hash, list));
 		}).flatMap(modifierListAndHash -> {
 			String hash = modifierListAndHash.v1();
 			List<Consumer<BinaryGraphField>> modifierList = modifierListAndHash.v2();
@@ -378,17 +378,15 @@ public class BinaryUploadHandler extends AbstractHandler {
 	 * Processes the upload and set the binary information (e.g.: image dimensions) within the provided field. The binary data will be stored in the
 	 * {@link BinaryStorage} if desired.
 	 * 
-	 * @param upload
-	 *            Upload to process
-	 * @param hash
-	 *            SHA512 sum of the upload
+	 * @param ctx
 	 * @return Consumers which modify the graph field
 	 */
-	private Observable<Consumer<BinaryGraphField>> postProcessUpload(FileUpload upload, String hash) {
+	private Observable<Consumer<BinaryGraphField>> postProcessUpload(BinaryDataProcessorContext ctx) {
+		FileUpload upload = ctx.getUpload();
 		String contentType = upload.contentType();
 		List<BinaryDataProcessor> processors = binaryProcessorRegistry.getProcessors(contentType);
 
-		return Observable.fromIterable(processors).flatMapMaybe(p -> p.process(upload, hash)
+		return Observable.fromIterable(processors).flatMapMaybe(p -> p.process(ctx)
 			.doOnSuccess(s -> {
 				log.info(
 					"Processing of upload {" + upload.fileName() + "/" + upload.uploadedFileName() + "} in handler {" + p.getClass()

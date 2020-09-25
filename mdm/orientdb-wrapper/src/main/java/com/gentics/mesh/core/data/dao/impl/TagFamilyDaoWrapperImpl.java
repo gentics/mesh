@@ -56,8 +56,8 @@ public class TagFamilyDaoWrapperImpl extends AbstractDaoWrapper<HibTagFamily> im
 	}
 
 	@Override
-	public long computeGlobalCount() {
-		return boot.get().tagFamilyRoot().computeCount();
+	public long globalCount() {
+		return boot.get().tagFamilyRoot().globalCount();
 	}
 
 	@Override

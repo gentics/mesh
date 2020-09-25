@@ -26,7 +26,6 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -544,6 +543,14 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		SchemaUpdateRequest schema = new SchemaUpdateRequest();
 		schema.setName(schemaName);
 		return call(() -> client().updateSchema(uuid, schema, updateParameters));
+	}
+
+	default void updateAndMigrateSchema(SchemaResponse originalSchema, SchemaUpdateRequest request) {
+		updateAndMigrateSchema(originalSchema.getUuid(), request);
+	}
+
+	default void updateAndMigrateSchema(String uuid, SchemaUpdateRequest request) {
+		waitForJob(() -> client().updateSchema(uuid, request).blockingAwait());
 	}
 
 	default public void deleteSchema(String uuid) {

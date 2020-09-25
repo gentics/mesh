@@ -7,6 +7,7 @@ import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -19,6 +20,7 @@ import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.search.BucketableElement;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.Errors;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
@@ -31,7 +33,7 @@ import com.gentics.mesh.util.VersionNumber;
 /**
  * A node field container is an aggregation node that holds localized fields (e.g.: StringField, NodeField...)
  */
-public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrackingVertex {
+public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrackingVertex, BucketableElement {
 
 	/**
 	 * Return the index name for the given parameters.
@@ -321,11 +323,11 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	void postfixSegmentFieldValue();
 
 	/**
-	 * Return the URL field values for the container.
+	 * Return the URL field values for the container. The order of fields returned is the same order defined in the schema.
 	 * 
 	 * @return
 	 */
-	Set<String> getUrlFieldValues();
+	Stream<String> getUrlFieldValues();
 
 	/**
 	 * Traverse to the base node and build up the path to this container.

@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.stream.Stream;
 
 import com.gentics.mesh.core.TypeInfo;
+import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -40,6 +41,14 @@ public interface SchemaVersion
 	 * @return
 	 */
 	Stream<? extends NodeGraphFieldContainer> getFieldContainers(String branchUuid);
+
+	/**
+	 * Return a stream for {@link NodeGraphFieldContainer}'s that use this schema version, are versions of the given branch and are listed within the given bucket.
+	 * @param branchUuid
+	 * @param bucket
+	 * @return
+	 */
+	Stream<? extends NodeGraphFieldContainer> getFieldContainers(String branchUuid, Bucket bucket);
 
 	/**
 	 * Returns an iterator for those {@link NodeGraphFieldContainer}'s which can be edited by users. Those are draft and publish versions.

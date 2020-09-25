@@ -131,7 +131,8 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		String schemaName = "migratedSchema";
 
 		// create version 1 of the schema
-		Schema container = Tx.get().getGraph().addFramedVertex(SchemaContainerImpl.class);
+		Schema container = Tx.getActive().getGraph().addFramedVertex(SchemaContainerImpl.class);
+		container.generateBucketId();
 		container.setName(UUIDUtil.randomUUID());
 		container.setCreated(user());
 		boot().schemaContainerRoot().addItem(container);
@@ -203,7 +204,8 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		String micronodeFieldName = "micronodefield";
 
 		// create version 1 of the microschema
-		HibMicroschema container = createMicroschema(Tx.get());
+		HibMicroschema container = Tx.getActive().getGraph().addFramedVertex(MicroschemaContainerImpl.class);
+		container.generateBucketId();
 		container.setName(microschemaName);
 		container.setCreated(user());
 		HibMicroschemaVersion versionA = createMicroschemaVersion(container, microschemaName, "1.0", creator.create(persistentFieldName),
@@ -304,6 +306,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// create version 1 of the schema
 		Schema container = Tx.get().getGraph().addFramedVertex(SchemaContainerImpl.class);
+		container.generateBucketId();
 		container.setName(UUIDUtil.randomUUID());
 		container.setCreated(user());
 		boot().schemaContainerRoot().addItem(container);
@@ -383,6 +386,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// create version 1 of the microschema
 		HibMicroschema container = Tx.getActive().getGraph().addFramedVertex(MicroschemaContainerImpl.class);
+		container.generateBucketId();
 		container.setName(microschemaName);
 		container.setCreated(user());
 		HibMicroschemaVersion versionA = createMicroschemaVersion(container, microschemaName, "1.0", creator.create(oldFieldName));
@@ -492,6 +496,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// create version 1 of the schema
 		FieldSchema oldFieldSchema = oldField.create(fieldName);
 		HibSchema container = Tx.get().getGraph().addFramedVertex(SchemaContainerImpl.class);
+		container.generateBucketId();
 		container.setName(schemaName);
 		container.setCreated(user());
 		schemaDao.addSchema(container);
@@ -704,6 +709,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// create version 1 of the schema
 		FieldSchema oldField = creator.create(fieldName);
 		Schema container = Tx.get().getGraph().addFramedVertex(SchemaContainerImpl.class);
+		container.generateBucketId();
 		container.setName(UUIDUtil.randomUUID());
 		container.setCreated(user());
 		boot().schemaContainerRoot().addItem(container);
@@ -778,6 +784,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// create version 1 of the microschema
 		FieldSchema oldField = creator.create(fieldName);
 		Microschema container = Tx.get().getGraph().addFramedVertex(MicroschemaContainerImpl.class);
+		container.generateBucketId();
 		container.setName(microschemaName);
 		container.setCreated(user());
 		HibMicroschemaVersion versionA = createMicroschemaVersion(container, microschemaName, "1.0", oldField);

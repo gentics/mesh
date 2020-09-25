@@ -20,6 +20,7 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.search.index.BucketManager;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 import com.gentics.mesh.search.index.metric.SyncMetersFactory;
 import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
@@ -40,8 +41,8 @@ public class GroupIndexHandler extends AbstractIndexHandler<HibGroup> {
 
 	@Inject
 	public GroupIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options,
-		SyncMetersFactory syncMetersFactory) {
-		super(searchProvider, db, boot, helper, options, syncMetersFactory);
+		SyncMetersFactory syncMetersFactory, BucketManager bucketManager) {
+		super(searchProvider, db, boot, helper, options, syncMetersFactory, bucketManager);
 	}
 
 	@Override
@@ -52,6 +53,13 @@ public class GroupIndexHandler extends AbstractIndexHandler<HibGroup> {
 	@Override
 	public Class<Group> getElementClass() {
 		return Group.class;
+	}
+
+	@Override
+	public long getTotalCountFromGraph() {
+		return db.tx(tx -> {
+			return tx.data().groupDao().globalCount();
+		});
 	}
 
 	@Override

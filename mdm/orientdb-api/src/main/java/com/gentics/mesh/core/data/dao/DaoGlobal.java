@@ -9,6 +9,6 @@ public interface DaoGlobal<T> {
 
 	T findByUuidGlobal(String uuid);
 
-	long computeGlobalCount();
+	long globalCount();
 
 }

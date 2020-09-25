@@ -12,6 +12,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.search.BucketableElementHelper;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
@@ -93,6 +94,21 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse> implements Ro
 	@Override
 	public void removeElement() {
 		getElement().remove();
+	}
+
+	@Override
+	public Integer getBucketId() {
+		return BucketableElementHelper.getBucketId(this);
+	}
+
+	@Override
+	public void setBucketId(Integer bucketId) {
+		BucketableElementHelper.setBucketId(this, bucketId);
+	}
+
+	@Override
+	public void generateBucketId() {
+		BucketableElementHelper.generateBucketId(this);
 	}
 
 }

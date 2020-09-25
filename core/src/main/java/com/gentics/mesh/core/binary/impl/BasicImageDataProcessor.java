@@ -6,6 +6,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.binary.AbstractBinaryProcessor;
+import com.gentics.mesh.core.binary.BinaryDataProcessorContext;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
@@ -37,7 +38,8 @@ public class BasicImageDataProcessor extends AbstractBinaryProcessor {
 	}
 
 	@Override
-	public Maybe<Consumer<BinaryGraphField>> process(FileUpload upload, String hash) {
+	public Maybe<Consumer<BinaryGraphField>> process(BinaryDataProcessorContext ctx) {
+		FileUpload upload = ctx.getUpload();
 		return imageManipulator.readImageInfo(upload.uploadedFileName()).map(info -> {
 			Consumer<BinaryGraphField> consumer = field -> {
 				log.info("Setting info to binary field " + field.getUuid() + " - " + info);

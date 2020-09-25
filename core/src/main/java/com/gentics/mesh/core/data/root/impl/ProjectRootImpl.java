@@ -61,6 +61,11 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 	}
 
 	@Override
+	public long globalCount() {
+		return db().count(ProjectImpl.class);
+	}
+
+	@Override
 	public Project findByName(String name) {
 		return mesh().projectNameCache().get(name, n -> {
 			return super.findByName(n);
@@ -140,7 +145,9 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 
 	@Override
 	public Project create() {
-		return getGraph().addFramedVertex(ProjectImpl.class);
+		Project project = getGraph().addFramedVertex(ProjectImpl.class);
+		project.generateBucketId();
+		return project;
 	}
 
 }

@@ -65,6 +65,11 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 	}
 
 	@Override
+	public long globalCount() {
+		return db().count(RoleImpl.class);
+	}
+
+	@Override
 	public void delete(BulkActionContext bac) {
 		throw error(INTERNAL_SERVER_ERROR, "The global role root can't be deleted.");
 	}

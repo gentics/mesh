@@ -13,7 +13,9 @@ import com.gentics.mesh.core.db.Tx;
 public interface WrapperHelper {
 
 	default Schema createSchema(Tx tx) {
-		return tx.getGraph().addFramedVertex(SchemaContainerImpl.class);
+		Schema schema = tx.getGraph().addFramedVertex(SchemaContainerImpl.class);
+		schema.generateBucketId();
+		return schema;
 	}
 
 	default HibSchemaVersion createSchemaVersion(Tx tx) {
@@ -22,7 +24,9 @@ public interface WrapperHelper {
 	}
 
 	default HibMicroschema createMicroschema(Tx tx) {
-		return tx.getGraph().addFramedVertex(MicroschemaContainerImpl.class);
+		HibMicroschema schema = tx.getGraph().addFramedVertex(MicroschemaContainerImpl.class);
+		schema.generateBucketId();
+		return schema;
 	}
 
 	default HibMicroschemaVersion createMicroschemaVersion(Tx tx) {

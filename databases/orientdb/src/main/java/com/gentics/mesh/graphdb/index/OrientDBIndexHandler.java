@@ -20,6 +20,7 @@ import com.gentics.mesh.madl.field.FieldMap;
 import com.gentics.mesh.madl.field.FieldType;
 import com.gentics.mesh.madl.index.EdgeIndexDefinition;
 import com.gentics.mesh.madl.index.ElementIndexDefinition;
+import com.gentics.mesh.madl.index.IndexType;
 import com.gentics.mesh.madl.index.VertexIndexDefinition;
 import com.orientechnologies.orient.core.db.record.OIdentifiable;
 import com.orientechnologies.orient.core.index.OCompositeKey;
@@ -344,6 +345,7 @@ public class OrientDBIndexHandler implements IndexHandler {
 		String name = def.getClazz().getSimpleName();
 		String indexName = def.getName();
 		FieldMap fields = def.getFields();
+		IndexType type = def.getType();
 		boolean unique = def.isUnique();
 
 		if (!StringUtils.isEmpty(def.getPostfix())) {
@@ -364,20 +366,25 @@ public class OrientDBIndexHandler implements IndexHandler {
 				for (String key : fields.keySet()) {
 					if (v.getProperty(key) == null) {
 						FieldType fieldType = fields.get(key);
-						OType type = toType(fieldType);
+						OType oType = toType(fieldType);
 						OType subType = toSubType(fieldType);
 						if (subType != null) {
-							v.createProperty(key, type, subType);
+							v.createProperty(key, oType, subType);
 						} else {
-							v.createProperty(key, type);
+							v.createProperty(key, oType);
 						}
 					}
 				}
 			}
+			String typeName = unique ? OClass.INDEX_TYPE.UNIQUE_HASH_INDEX.toString() : OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX.toString();
 
+			// Override if requested
+			if (type != null) {
+				typeName = type.toString();
+			}
 			if (fields != null && fields.size() != 0 && v.getClassIndex(indexName) == null) {
 				String[] fieldArray = fields.keySet().stream().toArray(String[]::new);
-				v.createIndex(indexName, unique ? OClass.INDEX_TYPE.UNIQUE_HASH_INDEX.toString() : OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX.toString(),
+				v.createIndex(indexName, typeName,
 					null, new ODocument().fields("ignoreNullValues", true), fieldArray);
 			}
 		} finally {

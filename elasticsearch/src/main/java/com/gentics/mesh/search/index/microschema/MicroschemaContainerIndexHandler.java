@@ -13,6 +13,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.search.BucketableElement;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
@@ -20,6 +21,7 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.search.index.BucketManager;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 import com.gentics.mesh.search.index.metric.SyncMetersFactory;
 import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
@@ -43,8 +45,8 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<HibMi
 
 	@Inject
 	public MicroschemaContainerIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper,
-		MeshOptions options, SyncMetersFactory syncMetricsFactory) {
-		super(searchProvider, db, boot, helper, options, syncMetricsFactory);
+		MeshOptions options, SyncMetersFactory syncMetricsFactory, BucketManager bucketManager) {
+		super(searchProvider, db, boot, helper, options, syncMetricsFactory, bucketManager);
 	}
 
 	@Override
@@ -63,8 +65,15 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<HibMi
 	}
 
 	@Override
-	public Class<?> getElementClass() {
+	public Class<? extends BucketableElement> getElementClass() {
 		return Microschema.class;
+	}
+
+	@Override
+	public long getTotalCountFromGraph() {
+		return db.tx(tx -> {
+			return tx.data().microschemaDao().globalCount();
+		});
 	}
 
 	@Override

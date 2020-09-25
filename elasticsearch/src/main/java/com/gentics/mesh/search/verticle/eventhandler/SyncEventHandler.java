@@ -54,8 +54,12 @@ public class SyncEventHandler implements EventHandler {
 		vertx.eventBus().publish(INDEX_SYNC_REQUEST.address, null);
 	}
 
+	public static Completable invokeSyncCompletable(Vertx vertx) {
+		return MeshEvent.doAndWaitForEvent(vertx, INDEX_SYNC_FINISHED, () -> SyncEventHandler.invokeSync(vertx));
+	}
+
 	public static Completable invokeSyncCompletable(Mesh mesh) {
-		return MeshEvent.doAndWaitForEvent(mesh, INDEX_SYNC_FINISHED, () -> SyncEventHandler.invokeSync(mesh.getVertx()));
+		return invokeSyncCompletable(mesh.getVertx());
 	}
 
 	public static void invokeClear(Vertx vertx) {
@@ -64,6 +68,10 @@ public class SyncEventHandler implements EventHandler {
 
 	public static Completable invokeClearCompletable(Mesh mesh) {
 		return MeshEvent.doAndWaitForEvent(mesh, INDEX_CLEAR_FINISHED, () -> SyncEventHandler.invokeClear(mesh.getVertx()));
+	}
+
+	public static Completable invokeClearCompletable(Vertx vertx) {
+		return MeshEvent.doAndWaitForEvent(vertx, INDEX_CLEAR_FINISHED, () -> SyncEventHandler.invokeClear(vertx));
 	}
 
 	@Inject

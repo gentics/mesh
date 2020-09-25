@@ -23,6 +23,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
@@ -107,13 +108,8 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 	}
 
 	@Override
-	public long computeCount() {
-		return boot.get().schemaContainerRoot().computeCount();
-	}
-
-	@Override
-	public long computeGlobalCount() {
-		return computeCount();
+	public long globalCount() {
+		return boot.get().schemaContainerRoot().globalCount();
 	}
 
 	@Override
@@ -247,6 +243,7 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 		version.setSchemaContainer(container);
 		container.setCreated(creator);
 		container.setName(schema.getName());
+		container.generateBucketId();
 
 		schemaRoot.addSchemaContainer(creator, container, null);
 		return container;
@@ -428,6 +425,12 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 	public Stream<? extends NodeGraphFieldContainer> getFieldContainers(HibSchemaVersion version, String branchUuid) {
 		SchemaVersion graphVersion = toGraph(version);
 		return graphVersion.getFieldContainers(branchUuid);
+	}
+
+	@Override
+	public Stream<? extends NodeGraphFieldContainer> getFieldContainers(HibSchemaVersion version, String branchUuid, Bucket bucket) {
+		SchemaVersion graphVersion = toGraph(version);
+		return graphVersion.getFieldContainers(branchUuid, bucket);
 	}
 
 }

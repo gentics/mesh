@@ -43,6 +43,9 @@ public class RoleCheck extends AbstractConsistencyCheck {
 		if (role.getLastEditedTimestamp() == null) {
 			result.addInconsistency("The role edit timestamp is not set", uuid, MEDIUM);
 		}
+		if (role.getBucketId() == null) {
+			result.addInconsistency("The role bucket id is not set", uuid, MEDIUM);
+		}
 	}
 
 }

@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.data.dao.impl;
 
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
 import java.util.Set;
 import java.util.function.Predicate;
@@ -144,7 +143,7 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper<HibJob> implements Job
 	}
 
 	@Override
-	public long computeGlobalCount() {
+	public long globalCount() {
 		return boot.get().jobRoot().computeCount();
 	}
 

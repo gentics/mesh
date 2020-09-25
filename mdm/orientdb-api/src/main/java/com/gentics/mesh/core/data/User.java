@@ -11,6 +11,7 @@ import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.search.BucketableElement;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.user.UserReference;
@@ -34,7 +35,7 @@ import com.gentics.mesh.util.DateUtils;
  * <img src= "http://getmesh.io/docs/javadoc/cypher/com.gentics.mesh.core.data.impl.UserImpl.jpg" alt="">
  * </p>
  */
-public interface User extends MeshCoreVertex<UserResponse>, ReferenceableElement<UserReference>, UserTrackingVertex, HibUser {
+public interface User extends MeshCoreVertex<UserResponse>, ReferenceableElement<UserReference>, UserTrackingVertex, HibUser, BucketableElement {
 
 	/**
 	 * API token id property name {@value #API_TOKEN_ID}

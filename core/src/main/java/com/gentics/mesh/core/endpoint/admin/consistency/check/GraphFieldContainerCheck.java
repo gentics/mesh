@@ -49,6 +49,9 @@ public class GraphFieldContainerCheck extends AbstractConsistencyCheck {
 		if (version == null) {
 			result.addInconsistency("The GraphFieldContainer has no version number", uuid, HIGH);
 		}
+		if (container.getBucketId() == null) {
+			result.addInconsistency("The GraphFieldContainer bucket id is not set", uuid, MEDIUM);
+		}
 
 		// GFC must either have a previous GFC, or must be the initial GFC for a Node
 		NodeGraphFieldContainer previous = container.getPreviousVersion();

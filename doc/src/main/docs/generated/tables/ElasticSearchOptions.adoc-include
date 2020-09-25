@@ -97,6 +97,11 @@
 | integer
 | Timeout for Elasticsearch startup. Default: 45sec
 
+| syncBatchSize
+| false
+| integer
+| Configure the index sync batch size. Default: 50000
+
 | timeout
 | false
 | integer

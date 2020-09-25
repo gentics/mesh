@@ -128,6 +128,8 @@ import com.gentics.mesh.plugin.registry.DelegatingPluginRegistry;
 import com.gentics.mesh.plugin.registry.DelegatingPluginRegistryImpl;
 import com.gentics.mesh.router.RouterStorageRegistry;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
+import com.gentics.mesh.search.index.BucketManager;
+import com.gentics.mesh.search.index.BucketManagerImpl;
 import com.gentics.mesh.search.index.common.DropIndexHandler;
 import com.gentics.mesh.search.index.common.DropIndexHandlerImpl;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
@@ -318,6 +320,9 @@ public abstract class OrientDBModule {
 
 	@Binds
 	abstract SchemaComparator schemaComparator(SchemaComparatorImpl e);
+
+	@Binds 
+	abstract BucketManager bucketManager(BucketManagerImpl e);
 
 	@Provides
 	public static List<ConsistencyCheck> consistencyCheckList() {

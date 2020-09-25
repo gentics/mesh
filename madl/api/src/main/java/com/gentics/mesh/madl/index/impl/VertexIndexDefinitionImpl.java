@@ -28,6 +28,7 @@ public class VertexIndexDefinitionImpl extends AbstractIndexDefinition implement
 			def.unique = unique;
 			def.postfix = postfix;
 			def.fields = fields;
+			def.type = type;
 			return def;
 		}
 

@@ -63,7 +63,7 @@ public interface IndexHandler<T extends HibBaseElement> {
 	 * 
 	 * @return
 	 */
-	Class<?> getElementClass();
+	Class<? extends BucketableElement> getElementClass();
 
 	/**
 	 * Process the entry and generate bulk entries.
@@ -168,5 +168,12 @@ public interface IndexHandler<T extends HibBaseElement> {
 	 * @return
 	 */
 	Observable<UpdateBulkEntry> updatePermissionForBulk(UpdateDocumentEntry entry);
+
+	/**
+	 * Return the amount of items that are stored in the graph.
+	 * 
+	 * @return
+	 */
+	long getTotalCountFromGraph();
 
 }

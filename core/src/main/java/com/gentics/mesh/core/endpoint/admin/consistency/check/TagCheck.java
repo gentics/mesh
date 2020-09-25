@@ -46,6 +46,10 @@ public class TagCheck extends AbstractConsistencyCheck {
 		if (tag.getLastEditedTimestamp() == null) {
 			result.addInconsistency("The tag edit timestamp is not set", uuid, MEDIUM);
 		}
+		if (tag.getBucketId() == null) {
+			result.addInconsistency("The tag bucket id is not set", uuid, MEDIUM);
+		}
+
 
 	}
 

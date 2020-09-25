@@ -258,23 +258,14 @@ Typical example for a string schema field:
     }
 }
 ----
-
-[options="header",cols="3*"]
-|======
-
-| Type Key
-| Description
-| Validations
-
-| ```string```
-| A ```string``` field type is used for textual content, like title, names or paragraphs of text.
-| The ```required``` property indicates if the field is mandatory or not.
-
+===== String
+A ```string``` field type is used for textual content, like title, names or paragraphs of text.
+The ```required``` property indicates if the field is mandatory or not.
 The optional ```allow``` property acts as a whitelist for allowed field values.
 
-| ```number```
-| The ```number``` field type is used for whole and decimal numbers.
-| The ```required``` property indicates if the field is mandatory or not.
+===== Number
+The ```number``` field type is used for whole and decimal numbers.
+The ```required``` property indicates if the field is mandatory or not.
 
 The optional ```min``` property specifies the lowest permitted value.
 
@@ -282,49 +273,76 @@ The optional ```max``` property represents the greatest permitted value.
 
 The optional ```step``` property allows specifying the size of the permitted increment in value.
 
-| ```date```
-| The ```date``` field type stores a date as ISO8601 formatted date string.
-| The ```required``` property indicates if the field is mandatory or not.
+===== Date
+The ```date``` field type stores a date as ISO8601 formatted date string.
+The ```required``` property indicates if the field is mandatory or not.
+
+===== Boolean
+The ```boolean``` field type doesn’t have any specific configuration settings.
+The ```required``` property indicates if the field is mandatory or not.
 
 
-| ```boolean```
-| The ```boolean``` field type doesn’t have any specific configuration settings.
-| The ```required``` property indicates if the field is mandatory or not.
+===== HTML
+The ```html``` field type stores HTML data.
+The ```required``` property indicates if the field is mandatory or not.
 
-| ```html```
-| The ```html``` field type stores HTML data.
-| The ```required``` property indicates if the field is mandatory or not.
 
-| ```micronode```
-| A ```micronode``` field type stores a single micronode. A micronode is similar to a node. Typically they do not exist on their own but are tied to their (parent) node, e.g. an image with caption to be used in a blog post node. For a detailed description see our definition of <<micronode>>.
-| The ```required``` property indicates if the field is mandatory or not.
+===== Micronode
+A ```micronode``` field type stores a single micronode. A micronode is similar to a node. Typically they do not exist on their own but are tied to their (parent) node, e.g. an image with caption to be used in a blog post node. For a detailed description see our definition of <<micronode>>.
+The ```required``` property indicates if the field is mandatory or not.
 
 A ```micronode``` field type must have an ```allow``` property that acts as a whitelist for allowed microschemas.  If allow is an empty array, any type of micronode may be used.
 
-| ```node```
-| A ```node``` field type is used to specify a structural relationship between nodes. This kind of reference represents a 1:1 relationship.
-| The ```required``` property indicates if the field is mandatory or not.
+===== Node
+A ```node``` field type is used to specify a structural relationship between nodes. This kind of reference represents a 1:1 relationship.
+The ```required``` property indicates if the field is mandatory or not.
 
 A ```node``` field type must have an ```allow``` property, which acts as a whitelist for schemas which may be used. If allow is an empty array, any type of node may be used.
 
-| ```list```
-| A ```list``` field type allows for specifying a list with elements on the basis of other field types and thus represents a powerful mechanism for building your content model:
+===== List
+A ```list``` field type allows for specifying a list with elements on the basis of other field types and thus represents a powerful mechanism for building your content model:
 
 (1) Within a node you can have simple lists of arbitrary length. The ```listType``` property then has to be of type ```string```, ```number```, ```date```, ```boolean```, or ```HTML```. E.g. handling your recipe nodes of your food blog will be a breeze with string-typed lists for ingredients.
 
 (2) You can unleash the power of micronodes, by specifying a list with the ```listType``` property set to ```micronode```, and the ```allow``` property set to the allowed microschemas. For example, besides having title, teaser, date and author fields, your blog post schema could define a content field of type list allowing to insert any of your microschemas (e.g. YouTube Video, Image, Text, Galleries, Google Maps, etc.).
 
 (3) Furthermore, a ```list``` field type can be used to specify a structural relationship between nodes. In this case, the ```listType``` property has to be of type ```node```. This kind of reference represents a 1:n relationship. E.g., in your movie database app, you might want to list all actors of a movie.
-| The ```required``` property indicates if the field is mandatory or not.
+The ```required``` property indicates if the field is mandatory or not.
 
-A ```micronode```/```node``` listType must have an ```allow property```, which acts as a whitelist for microschemas/schemas which may be used. If allow is an empty array, any type of node may be used.
+A ```micronode```/```node``` listType must have an ```allow``` property, which acts as a whitelist for microschemas/schemas which may be used. If allow is an empty array, any type of node may be used.
 
-| ```binary```
-| The binary field type is used to store binary data, e.g., image, video, audio and documents.
-Depending on the actual data, Gentics Mesh will store related meta data e.g., ```fileName```, ```fileSize```, ```mimeType```, ```sha512sum``` and for images specifically ```width```, ```height```, and ```dominantColor```. Gentics Mesh will set values for all meta data properties automatically when uploading an image. The meta data properties ```mimeType```, ```dominantColor``` and ```fileName``` can be changed on subsequent update requests.
-| The ```required``` property indicates if the field is mandatory or not.
+===== Binary
+The binary field type is used to store binary data, e.g., image, video, audio and documents.
+Depending on the actual data and configuration, Gentics Mesh will store related metadata e.g., ```fileName```, ```fileSize```, ```mimeType```, ```sha512sum``` and for images specifically ```width```, ```height```, and ```dominantColor```. Gentics Mesh will set values for all metadata properties automatically when uploading an image. The meta data properties ```mimeType```, ```dominantColor``` and ```fileName``` can be changed on subsequent update requests.
+See the link:{{< relref "features.asciidoc" >}}#_metadata_handling[file upload documentation] for more information.
 
-|======
+The ```required``` property indicates if the field is mandatory or not.
+
+The ```extract``` property controls how Gentics Mesh will extract data from the uploaded binary.
+
+`extract.content` (boolean):: Extracts and sends plain text content to Elasticsearch if available.
+
+`extract.metadata` (boolean):: Extracts and sends metadata to Elasticsearch. An example for metadata is exif data from JPGs.
+
+Example of a complete binary field schema:
+
+[source,json]
+----
+{
+    "name" : "binary_content",
+    "label" : "Binary Content",
+    "required" : false,
+    "type" : "binary",
+    "extract": {
+        "content": true,
+        "metadata": false
+    }
+}
+----
+
+Setting the extract object will override the global configurations for parsing (link:{{< relref "administration-guide.asciidoc" >}}#_upload_options[```upload.parser```]) and indexing (link:{{< relref "administration-guide.asciidoc" >}}#_search_options[```search.includeBinaryFields```]) uploads for this field.
+
+Setting the global metadata whitelist (link:{{< relref "administration-guide.asciidoc" >}}#_upload_options[```upload.metadataWhitelist```]) will filter the parsed metadata accordingly.
 
 [[micronode]]
 == Micronode & Microschema

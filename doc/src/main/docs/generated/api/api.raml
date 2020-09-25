@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "1.7.1"
+version: "1.7.2"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -8323,8 +8323,16 @@ mediaType: application/json
                                   "message" : "I18n message"
                                 }
     /debuginfo: 
+        uriParameters: 
+            include: 
+                displayName: include
+                description: Information to include. See the [documentation](/docs/administration-guide/#debuginfo) for possible values.
+                type: string
+                required: true
+                repeat: false
+                example: "-backup,consistencyCheck"
         get: 
-            description: Downloads a zip file of various debug information files.
+            description: Downloads a zip file of various [debug information](/docs/administration-guide/#debuginfo) files.
     /graphdb/backup: 
         post: 
             description: Invoke a graph database backup and dump the data to the configured backup location. Note that this operation will block all current operation.
@@ -13678,7 +13686,7 @@ mediaType: application/json
                                 }
                             example: |
                                 {
-                                  "meshVersion" : "1.7.1",
+                                  "meshVersion" : "1.7.2",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",

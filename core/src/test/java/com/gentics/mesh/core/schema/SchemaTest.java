@@ -14,6 +14,8 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.BulkActionContext;
+import com.gentics.mesh.core.data.Bucket;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
@@ -56,6 +58,59 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 	}
 
 	@Test
+	public void testGetContentFromSchemaVersion() {
+		Bucket bucket = new Bucket(0, Integer.MAX_VALUE / 2, 0, 1);
+		NodeGraphFieldContainer content = tx(tx -> {
+			return toGraph(content()).getLatestDraftFieldContainer("en");
+		});
+		HibSchemaVersion version = tx(() -> schemaContainer("content").getLatestVersion());
+
+		long before = tx(tx -> {
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			content.setBucketId(Integer.MAX_VALUE);
+			// Count contents in bucket 0 to MaxInt/2
+			return schemaDao.getFieldContainers(version, initialBranchUuid(), bucket).count();
+		});
+
+		// Now alter the bucketId
+		tx(tx -> {
+			content.setBucketId(100);
+		});
+
+		tx(tx -> {
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			// Now set the bucketId so that the content is within the bounds of the bucket / range query
+			long after = schemaDao.getFieldContainers(version, initialBranchUuid(), bucket).count();
+			assertEquals("We should find one more content.", before + 1, after);
+		});
+
+		// Now set the bucketId on the end of the bucket to ensure we include the last element in the range
+		tx(tx -> {
+			content.setBucketId(bucket.end());
+		});
+
+		tx(tx -> {
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			// Now set the bucketId so that the content is within the bounds of the bucket / range query
+			long after = schemaDao.getFieldContainers(version, initialBranchUuid(), bucket).count();
+			assertEquals("We should still find the altered element ", before + 1, after);
+		});
+
+		// Now exceed the bucket
+		tx(tx -> {
+			content.setBucketId(bucket.end() + 1);
+		});
+
+		tx(tx -> {
+			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			// Now set the bucketId so that the content is within the bounds of the bucket / range query
+			long after = schemaDao.getFieldContainers(version, initialBranchUuid(), bucket).count();
+			assertEquals("We should still find the altered element ", before, after);
+		});
+
+	}
+
+	@Test
 	public void testGetRoot() {
 		try (Tx tx = tx()) {
 			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
@@ -83,10 +138,10 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 		try (Tx tx = tx()) {
 			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 
-			long nSchemasBefore = schemaDao.computeCount();
+			long nSchemasBefore = schemaDao.globalCount();
 			SchemaVersionModel schema = FieldUtil.createMinimalValidSchema();
 			assertNotNull(schemaDao.create(schema, user()));
-			long nSchemasAfter = schemaDao.computeCount();
+			long nSchemasAfter = schemaDao.globalCount();
 			assertEquals(nSchemasBefore + 1, nSchemasAfter);
 		}
 	}

@@ -2,14 +2,17 @@ package com.gentics.mesh.etc.config.env;
 
 import static org.junit.Assert.assertEquals;
 
-import io.vertx.core.json.JsonObject;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
 
-import java.util.HashMap;
-import java.util.Map;
+import io.vertx.core.json.JsonObject;
 
 public class EnvironmentOverrideTest {
 
@@ -28,6 +31,8 @@ public class EnvironmentOverrideTest {
 		valuesMap.put(TestOptions.FLOAT_VALUE_ENV, new ValueEntry("0.123", Float.valueOf("0.123")));
 		valuesMap.put(TestOptions.FLOAT_VALUE_PRIMITIVE_ENV, new ValueEntry("0.123", 0.123F));
 		valuesMap.put(TestOptions.JSON_OBJECT_ENV, new ValueEntry(JSON_TEST_DATA, new JsonObject(JSON_TEST_DATA)));
+		valuesMap.put(TestOptions.STRING_LIST_ENV, new ValueEntry("a,b,c", Arrays.asList("a", "b", "c")));
+		valuesMap.put(TestOptions.STRING_SET_ENV, new ValueEntry("a,b,c", new HashSet<>(Arrays.asList("a", "b", "c"))));
 	}
 
 	@Rule

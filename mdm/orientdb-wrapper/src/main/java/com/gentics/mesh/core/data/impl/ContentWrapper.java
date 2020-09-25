@@ -647,7 +647,7 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 		delegate.postfixSegmentFieldValue();
 	}
 
-	public Set<String> getUrlFieldValues() {
+	public Stream<String> getUrlFieldValues() {
 		return delegate.getUrlFieldValues();
 	}
 
@@ -709,6 +709,21 @@ public class ContentWrapper implements NodeGraphFieldContainer, HibContent {
 
 	public void setRoleUuidForPerm(InternalPermission permission, Set<String> allowedRoles) {
 		delegate.setRoleUuidForPerm(permission, allowedRoles);
+	}
+
+	@Override
+	public void setBucketId(Integer bucketId) {
+		delegate.setBucketId(bucketId);
+	}
+
+	@Override
+	public Integer getBucketId() {
+		return delegate.getBucketId();
+	}
+
+	@Override
+	public void generateBucketId() {
+		delegate.generateBucketId();
 	}
 
 }

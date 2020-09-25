@@ -87,7 +87,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Override
 	public void testFindAll() {
 		try (Tx tx = tx()) {
-			long size = tx.data().groupDao().computeCount();
+			long size = tx.data().groupDao().globalCount();
 			assertEquals(groups().size(), size);
 		}
 	}
@@ -97,10 +97,10 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	public void testRootNode() {
 		try (Tx tx = tx()) {
 			GroupDaoWrapper groupDao = tx.data().groupDao();
-			long nGroupsBefore = groupDao.computeCount();
+			long nGroupsBefore = groupDao.globalCount();
 			assertNotNull(groupDao.create("test group2", user()));
 
-			long nGroupsAfter = groupDao.computeCount();
+			long nGroupsAfter = groupDao.globalCount();
 			assertEquals(nGroupsBefore + 1, nGroupsAfter);
 		}
 	}

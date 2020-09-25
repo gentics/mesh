@@ -59,12 +59,15 @@ import com.orientechnologies.orient.core.OConstants;
 import com.orientechnologies.orient.core.Orient;
 import com.orientechnologies.orient.core.config.OGlobalConfiguration;
 import com.orientechnologies.orient.core.exception.OSchemaException;
+import com.orientechnologies.orient.core.index.OIndex;
+import com.orientechnologies.orient.core.index.OIndexCursor;
 import com.orientechnologies.orient.core.intent.OIntentMassiveInsert;
 import com.orientechnologies.orient.core.storage.ORecordDuplicatedException;
 import com.orientechnologies.orient.server.distributed.ODistributedConfiguration;
 import com.orientechnologies.orient.server.distributed.ODistributedConfiguration.ROLES;
 import com.orientechnologies.orient.server.distributed.OModifiableDistributedConfiguration;
 import com.orientechnologies.orient.server.hazelcast.OHazelcastPlugin;
+import com.sun.xml.bind.v2.model.core.Ref;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
@@ -78,6 +81,8 @@ import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientElement;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
+import com.tinkerpop.blueprints.impls.orient.OrientVertex;
+import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 import com.tinkerpop.pipes.util.FastNoSuchElementException;
 
@@ -98,7 +103,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private static final String RIDBAG_PARAM_KEY = "ridBag.embeddedToSbtreeBonsaiThreshold";
 
-	private TypeResolver resolver;
+	private MeshTypeResolver resolver;
 
 	private OrientStorage txProvider;
 
@@ -299,6 +304,22 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
+	public Iterable<Vertex> getVerticesForRange(Class<?> classOfVertex, String indexPostfix, String[] fieldNames, Object[] fieldValues, String rangeKey, long start,
+		long end) {
+		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
+		OrientVertexType elementType = orientBaseGraph.getVertexType(classOfVertex.getSimpleName());
+		String indexName = classOfVertex.getSimpleName() + "_" + indexPostfix;
+		OIndex<?> index = elementType.getClassIndex(indexName);
+		Object startKey = index().createComposedIndexKey(fieldValues[0], start);
+		Object endKey = index().createComposedIndexKey(fieldValues[0], end); 
+		OIndexCursor entries = index.getInternal().iterateEntriesBetween(startKey, true, endKey, true, false);
+		return () -> entries.toEntries().stream().map( entry -> {
+			Vertex vertex = new OrientVertex(orientBaseGraph, entry.getValue());
+			return vertex;
+		}).iterator();
+	}
+
+	@Override
 	public <T extends VertexFrame> Result<T> getVerticesTraversal(Class<T> classOfVertex, String[] fieldNames, Object[] fieldValues) {
 		Stream<Vertex> stream = toStream(getVertices(classOfVertex, fieldNames, fieldValues));
 		FramedGraph graph = Tx.get().getGraph();
@@ -344,6 +365,19 @@ public class OrientDBDatabase extends AbstractDatabase {
 			return graph.frameNewElementExplicit(it.next(), clazz);
 		}
 		return null;
+	}
+
+	@Override
+	public long count(Class<? extends MeshVertex> clazz) {
+		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
+		OrientVertexType type = orientBaseGraph.getVertexType(clazz.getSimpleName());
+		if (type == null) {
+			type = orientBaseGraph.getVertexType(clazz.getSimpleName() + "Impl");
+		}
+		if (type == null) {
+			throw new RuntimeException("Count for class " + clazz.getName() + " could not be determined.");
+		}
+		return type.count();
 	}
 
 	@Override
