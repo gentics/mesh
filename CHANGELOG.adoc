@@ -23,9 +23,30 @@ include::content/docs/variables.adoc-include[]
 
 * The support for the *embedded* version of Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
-== TBD
+[[v1.7.2]]
+== 1.7.2 (25.09.2020)
 
 icon:plus[] Core: The link renderer now tries to use url fields to render the link if it cannot be constructed using segment fields.
+
+icon:plus[] Search: The memory footprint of the differential sync mechanism has been reduced. The sync operations will now be split into buckets. The size of the buckets can be influenced via the `search.syncBatchSize` setting.
+
+CAUTION: The new sync mechanism requires a reindex of all documents. The Elasticsearch indices will be automatically cleared and re-synced during the first startup of this version.
+
+icon:check[] Core: Fixed a bug that which prevented to update a node reference of a user if the user already had one set. link:https://github.com/gentics/mesh/issues/1114[#1114]
+
+icon:plus[] Core: It is now possible to disable extracting of metadata or content from binaries on a per-field basis. See link:{{< relref "building-blocks.asciidoc" >}}#_schema_field_types[schema field types documentation] for more information.
+
+icon:plus[] Plugins: The default plugin timeout has been increased from 15 seconds to two minutes.
+
+icon:check[] Monitoring: The readiness probe will now also check for plugin status. Failed plugin deployments will let the readiness probe fail.
+
+icon:plus[] Monitoring: The readiness probe will now no longer fail when a plugin is not registered. Instead it will only fail when a plugin deployment has failed.
+
+icon:plus[] Monitoring: The liveness probe will now check for plugin status. Failed plugin deployments will let the liveness probe fail.
+
+icon:check[] Clustering: The webroot handler no longer uses the cluster-wide write lock.
+
+icon:check[] Logging: Failing readiness checks are now logged using the `WARN` level.
 
 [[v1.7.1]]
 == 1.7.1 (05.09.2020)
