@@ -10,6 +10,15 @@
 
 = Mesh Commercial Plugin Commons Changelog
 
+[[v1.4.14]
+== 1.4.14 (2020-00-14)
+
+CAUTION: The method `Miscutils.loadResource()` method is deprecated. Use
+`MiscUtils.loadResourceString()` instead.
+
+icon:plus[] Common: Add methods `loadResourceString()`, `loadResourceBytes()`
+and `loadResourceStream()` to load resources to `MiscUtils`.
+
 [[v1.4.10]
 == 1.4.10 (2020-07-14)
 
