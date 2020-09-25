@@ -10,6 +10,15 @@
 
 = Mesh Commercial Plugin Commons Changelog
 
+[[v1.5.9]
+== 1.5.9 (2020-00-14)
+
+CAUTION: The method `Miscutils.loadResource()` method is deprecated. Use
+`MiscUtils.loadResourceString()` instead.
+
+icon:plus[] Common: Add methods `loadResourceString()`, `loadResourceBytes()`
+and `loadResourceStream()` to load resources to `MiscUtils`.
+
 [[v1.5.3]]
 == 1.5.3 (2020-07-14)
 
@@ -21,6 +30,15 @@ icon:check[] Common: Error handling in handlers created by `HandlerUtil` will no
 icon:check[] MeshPluginService: Make sure project initialization via `prepareProjects()` does not initialize multiple projects in parallel.
 
 icon:check[] MeshPluginService: Fix Vert.x event bus usage which caused problems during initialization in clustered setups.
+
+[[v1.4.14]
+== 1.4.14 (2020-00-14)
+
+CAUTION: The method `Miscutils.loadResource()` method is deprecated. Use
+`MiscUtils.loadResourceString()` instead.
+
+icon:plus[] Common: Add methods `loadResourceString()`, `loadResourceBytes()`
+and `loadResourceStream()` to load resources to `MiscUtils`.
 
 [[v1.4.10]
 == 1.4.10 (2020-07-14)
