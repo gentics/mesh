@@ -138,10 +138,10 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 		try (Tx tx = tx()) {
 			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
 
-			long nSchemasBefore = schemaDao.computeCount();
+			long nSchemasBefore = schemaDao.globalCount();
 			SchemaVersionModel schema = FieldUtil.createMinimalValidSchema();
 			assertNotNull(schemaDao.create(schema, user()));
-			long nSchemasAfter = schemaDao.computeCount();
+			long nSchemasAfter = schemaDao.globalCount();
 			assertEquals(nSchemasBefore + 1, nSchemasAfter);
 		}
 	}

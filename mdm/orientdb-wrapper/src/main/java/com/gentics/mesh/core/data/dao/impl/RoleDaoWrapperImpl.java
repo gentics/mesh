@@ -57,7 +57,8 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 	private final CommonDaoHelper commonDaoHelper;
 
 	@Inject
-	public RoleDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionProperties> permissions, Lazy<PermissionCache> permissionCache, CommonDaoHelper commonDaoHelper) {
+	public RoleDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionProperties> permissions, Lazy<PermissionCache> permissionCache,
+		CommonDaoHelper commonDaoHelper) {
 		super(boot, permissions);
 		this.permissionCache = permissionCache;
 		this.commonDaoHelper = commonDaoHelper;
@@ -287,9 +288,9 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 	}
 
 	@Override
-	public long computeGlobalCount() {
+	public long globalCount() {
 		RoleRoot roleRoot = boot.get().roleRoot();
-		return roleRoot.computeCount();
+		return roleRoot.globalCount();
 	}
 
 	@Override

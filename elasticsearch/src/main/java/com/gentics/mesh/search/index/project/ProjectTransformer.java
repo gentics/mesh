@@ -1,5 +1,6 @@
 package com.gentics.mesh.search.index.project;
 
+import static com.gentics.mesh.core.data.Bucket.BUCKET_ID_KEY;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 
@@ -7,7 +8,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.search.BucketableElementHelper;
 import com.gentics.mesh.search.index.AbstractTransformer;
 import com.gentics.mesh.util.ETag;
 
@@ -35,7 +35,7 @@ public class ProjectTransformer extends AbstractTransformer<HibProject> {
 		addBasicReferences(document, project);
 		addPermissionInfo(document, project);
 		document.put(VERSION_KEY, generateVersion(project));
-		document.put(BucketableElementHelper.BUCKET_ID_KEY, project.getBucketId());
+		document.put(BUCKET_ID_KEY, project.getBucketId());
 		return document;
 	}
 

@@ -109,8 +109,8 @@ public class LanguageDaoWrapperImpl extends AbstractDaoWrapper<HibLanguage> impl
 	}
 
 	@Override
-	public long computeGlobalCount() {
-		return boot.get().languageRoot().computeCount();
+	public long globalCount() {
+		return boot.get().languageRoot().globalCount();
 	}
 
 }

@@ -57,6 +57,13 @@ public class RoleIndexHandler extends AbstractIndexHandler<HibRole> {
 	}
 
 	@Override
+	public long getTotalCountFromGraph() {
+		return db.tx(tx -> {
+			return tx.data().roleDao().globalCount();
+		});
+	}
+
+	@Override
 	protected String composeDocumentIdFromEntry(UpdateDocumentEntry entry) {
 		return Role.composeDocumentId(entry.getElementUuid());
 	}

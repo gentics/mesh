@@ -70,6 +70,13 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<HibMi
 	}
 
 	@Override
+	public long getTotalCountFromGraph() {
+		return db.tx(tx -> {
+			return tx.data().microschemaDao().globalCount();
+		});
+	}
+
+	@Override
 	public MicroschemaTransformer getTransformer() {
 		return transformer;
 	}

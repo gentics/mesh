@@ -31,11 +31,11 @@ public class BucketManagerTest extends AbstractMeshTest {
 		options().getSearchOptions().setSyncBatchSize(syncBatchSize);
 		try (Tx tx = tx()) {
 			int nUsers = 11;
-			createUsers(nUsers);
+			long total = createUsers(nUsers);
 
 			// Test bulk manager
 			BucketManager bulkManager = mesh().bucketManager();
-			List<Bucket> buckets = bulkManager.getBuckets(UserImpl.class).toList().blockingGet();
+			List<Bucket> buckets = bulkManager.getBuckets(total).toList().blockingGet();
 			assertBuckets(buckets, syncBatchSize);
 			int expectedBucketCount = 2;
 			assertEquals(expectedBucketCount, buckets.size());
@@ -52,11 +52,11 @@ public class BucketManagerTest extends AbstractMeshTest {
 		options().getSearchOptions().setSyncBatchSize(syncBatchSize);
 		try (Tx tx = tx()) {
 			int nUsers = 500;
-			createUsers(nUsers);
+			long total = createUsers(nUsers);
 
 			// Test bulk manager
 			BucketManager bulkManager = mesh().bucketManager();
-			List<Bucket> buckets = bulkManager.getBuckets(UserImpl.class).toList().blockingGet();
+			List<Bucket> buckets = bulkManager.getBuckets(total).toList().blockingGet();
 			assertBuckets(buckets, syncBatchSize);
 			int expectedBucketCount = 1;
 			assertEquals(expectedBucketCount, buckets.size());
@@ -79,7 +79,7 @@ public class BucketManagerTest extends AbstractMeshTest {
 
 			// Test bulk manager
 			BucketManager bulkManager = mesh().bucketManager();
-			List<Bucket> buckets = bulkManager.getBuckets(UserImpl.class).toList().blockingGet();
+			List<Bucket> buckets = bulkManager.getBuckets(userCount).toList().blockingGet();
 			assertBuckets(buckets, syncBatchSize);
 			int expectedBucketsCount = 1;
 			assertEquals(expectedBucketsCount, buckets.size());
@@ -93,13 +93,13 @@ public class BucketManagerTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			// Create extra users
 			int nUsers = 500;
-			createUsers(nUsers);
+			long total = createUsers(nUsers);
 
 			// Test bulk manager
 			BucketManager bulkManager = mesh().bucketManager();
-			List<Bucket> buckets = bulkManager.getBuckets(UserImpl.class).toList().blockingGet();
+			List<Bucket> buckets = bulkManager.getBuckets(total).toList().blockingGet();
 			assertBuckets(buckets, syncBatchSize);
-			// The bucket count is computed by dividing the element count by the batch size 
+			// The bucket count is computed by dividing the element count by the batch size
 			long expectedBucketsCount = MathUtil.ceilDiv(nUsers + 4, syncBatchSize);
 			assertEquals(expectedBucketsCount, buckets.size());
 		}

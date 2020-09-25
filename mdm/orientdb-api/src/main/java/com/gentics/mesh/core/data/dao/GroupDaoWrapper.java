@@ -185,8 +185,6 @@ public interface GroupDaoWrapper extends GroupDao, DaoWrapper<HibGroup>, DaoTran
 	 */
 	TransformablePage<? extends HibUser> getVisibleUsers(HibGroup group, MeshAuthUser requestUser, PagingParameters pagingInfo);
 
-	long computeCount();
-
 	void delete(HibGroup group, BulkActionContext bac);
 
 	boolean update(HibGroup group, InternalActionContext ac, EventQueueBatch batch);

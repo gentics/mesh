@@ -40,7 +40,8 @@ public class UserIndexHandler extends AbstractIndexHandler<HibUser> {
 	UserMappingProvider mappingProvider;
 
 	@Inject
-	public UserIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options, SyncMetersFactory syncMetricsFactory, BucketManager bucketManager) {
+	public UserIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options,
+		SyncMetersFactory syncMetricsFactory, BucketManager bucketManager) {
 		super(searchProvider, db, boot, helper, options, syncMetricsFactory, bucketManager);
 	}
 
@@ -52,6 +53,13 @@ public class UserIndexHandler extends AbstractIndexHandler<HibUser> {
 	@Override
 	public Class<User> getElementClass() {
 		return User.class;
+	}
+
+	@Override
+	public long getTotalCountFromGraph() {
+		return db.tx(tx -> {
+			return tx.data().userDao().globalCount();
+		});
 	}
 
 	@Override

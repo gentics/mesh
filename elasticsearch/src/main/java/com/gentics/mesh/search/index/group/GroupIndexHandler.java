@@ -56,6 +56,13 @@ public class GroupIndexHandler extends AbstractIndexHandler<HibGroup> {
 	}
 
 	@Override
+	public long getTotalCountFromGraph() {
+		return db.tx(tx -> {
+			return tx.data().groupDao().globalCount();
+		});
+	}
+
+	@Override
 	public GroupTransformer getTransformer() {
 		return transformer;
 	}

@@ -29,13 +29,17 @@ import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.util.VersionNumber;
 
 public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 
+	private final Database db;
+
 	@Inject
-	public ContentDaoWrapperImpl() {
+	public ContentDaoWrapperImpl(Database db) {
+		this.db = db;
 	}
 
 	@Override
@@ -64,7 +68,8 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	}
 
 	@Override
-	public NodeGraphFieldContainer createGraphFieldContainer(HibNode node, String languageTag, HibBranch branch, HibUser editor, NodeGraphFieldContainer original, boolean handleDraftEdge) {
+	public NodeGraphFieldContainer createGraphFieldContainer(HibNode node, String languageTag, HibBranch branch, HibUser editor,
+		NodeGraphFieldContainer original, boolean handleDraftEdge) {
 		return toGraph(node).createGraphFieldContainer(languageTag, branch, editor, original, handleDraftEdge);
 	}
 
@@ -94,7 +99,8 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	}
 
 	@Override
-	public void deleteLanguageContainer(HibNode node, InternalActionContext ac, HibBranch branch, String languageTag, BulkActionContext bac, boolean failForLastContainer) {
+	public void deleteLanguageContainer(HibNode node, InternalActionContext ac, HibBranch branch, String languageTag, BulkActionContext bac,
+		boolean failForLastContainer) {
 		toGraph(node).deleteLanguageContainer(ac, branch, languageTag, bac, failForLastContainer);
 	}
 
@@ -321,5 +327,10 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	@Override
 	public void setLanguageTag(NodeGraphFieldContainer content, String languageTag) {
 		content.setLanguageTag(languageTag);
+	}
+
+	@Override
+	public long globalCount() {
+		return db.count(NodeGraphFieldContainer.class);
 	}
 }

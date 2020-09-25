@@ -67,6 +67,13 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<HibSchema>
 	}
 
 	@Override
+	public long getTotalCountFromGraph() {
+		return db.tx(tx -> {
+			return tx.data().schemaDao().globalCount();
+		});
+	}
+
+	@Override
 	public SchemaTransformer getTransformer() {
 		return transformer;
 	}

@@ -62,6 +62,13 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<HibTagFamily> {
 	}
 
 	@Override
+	public long getTotalCountFromGraph() {
+		return db.tx(tx -> {
+			return tx.data().tagFamilyDao().globalCount();
+		});
+	}
+
+	@Override
 	public TagFamilyTransformer getTransformer() {
 		return transformer;
 	}

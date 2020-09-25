@@ -67,6 +67,7 @@ import com.orientechnologies.orient.server.distributed.ODistributedConfiguration
 import com.orientechnologies.orient.server.distributed.ODistributedConfiguration.ROLES;
 import com.orientechnologies.orient.server.distributed.OModifiableDistributedConfiguration;
 import com.orientechnologies.orient.server.hazelcast.OHazelcastPlugin;
+import com.sun.xml.bind.v2.model.core.Ref;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
@@ -102,7 +103,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private static final String RIDBAG_PARAM_KEY = "ridBag.embeddedToSbtreeBonsaiThreshold";
 
-	private TypeResolver resolver;
+	private MeshTypeResolver resolver;
 
 	private OrientStorage txProvider;
 
@@ -372,6 +373,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 		OrientVertexType type = orientBaseGraph.getVertexType(clazz.getSimpleName());
 		if (type == null) {
 			type = orientBaseGraph.getVertexType(clazz.getSimpleName() + "Impl");
+		}
+		if (type == null) {
+			throw new RuntimeException("Count for class " + clazz.getName() + " could not be determined.");
 		}
 		return type.count();
 	}

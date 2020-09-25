@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.data.dao.impl;
 
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
 import java.util.Objects;
 import java.util.function.Predicate;
@@ -27,6 +26,7 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
 
 import dagger.Lazy;
@@ -34,9 +34,12 @@ import dagger.Lazy;
 @Singleton
 public class BranchDaoWrapperImpl extends AbstractDaoWrapper<HibBranch> implements BranchDaoWrapper {
 
+	private Database db;
+
 	@Inject
-	public BranchDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionProperties> permissions) {
+	public BranchDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionProperties> permissions, Database db) {
 		super(boot, permissions);
+		this.db = db;
 	}
 
 	// New methods
@@ -140,8 +143,8 @@ public class BranchDaoWrapperImpl extends AbstractDaoWrapper<HibBranch> implemen
 	}
 
 	@Override
-	public long computeGlobalCount() {
-		throw new NotImplementedException("Not supported");
+	public long globalCount() {
+		return db.count(Branch.class);
 	}
 
 }

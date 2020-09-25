@@ -4,7 +4,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.Bucket;
-import com.gentics.mesh.core.data.search.BucketableElement;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.MathUtil;
@@ -46,11 +45,10 @@ public class BucketManagerImpl implements BucketManager {
 	}
 
 	@Override
-	public Flowable<Bucket> getBuckets(Class<? extends BucketableElement> clazz) {
-		long count = database.tx(() -> database.count(clazz));
-		int bucketCount = getBucketCount(count);
+	public Flowable<Bucket> getBuckets(long totalCount) {
+		int bucketCount = getBucketCount(totalCount);
 		int bucketSize = Integer.MAX_VALUE / bucketCount;
-		log.debug("Calculated {" + bucketCount + "} buckets are needed for {" + count + "} elements and batch size of {" + batchSize() + "}");
+		log.debug("Calculated {" + bucketCount + "} buckets are needed for {" + totalCount + "} elements and batch size of {" + batchSize() + "}");
 		return Flowable.range(0, bucketCount).map(bucketNo -> {
 			int start = bucketSize * bucketNo.intValue();
 			int end = start - 1 + bucketSize;

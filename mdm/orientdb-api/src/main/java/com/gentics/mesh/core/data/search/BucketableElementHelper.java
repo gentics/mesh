@@ -2,8 +2,6 @@ package com.gentics.mesh.core.data.search;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-import com.gentics.mesh.core.data.MeshCoreVertex;
-
 public final class BucketableElementHelper {
 
 	public static String BUCKET_ID_KEY = "bucketId";

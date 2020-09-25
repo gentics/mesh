@@ -138,6 +138,13 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	}
 
 	@Override
+	public long getTotalCountFromGraph() {
+		return db.tx(tx -> {
+			return tx.data().contentDao().globalCount();
+		});
+	}
+
+	@Override
 	public Map<String, IndexInfo> getIndices() {
 		return db.tx(tx -> {
 			Map<String, IndexInfo> indexInfo = new HashMap<>();
@@ -260,7 +267,8 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	 * @param bucket
 	 * @return indexName -> documentName -> NodeGraphFieldContainer
 	 */
-	private Map<String, Map<String, NodeGraphFieldContainer>> loadVersionsFromGraph(HibBranch branch, HibSchemaVersion version, ContainerType type, Bucket bucket) {
+	private Map<String, Map<String, NodeGraphFieldContainer>> loadVersionsFromGraph(HibBranch branch, HibSchemaVersion version, ContainerType type,
+		Bucket bucket) {
 		return db.tx(tx -> {
 			ContentDaoWrapper contentDao = tx.data().contentDao();
 			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
@@ -271,19 +279,17 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 				.filter(c -> c.isType(type, branchUuid))
 				.map(NodeGraphFieldContainer.class::cast)
 				.collect(Collectors.groupingBy(content -> {
-						String languageTag = content.getLanguageTag();
-						return ContentDaoWrapper.composeIndexName(
-							branch.getProject().getUuid(),
-							branchUuid,
-							version.getUuid(),
-							type,
-							indexLanguages.contains(languageTag)
-								? languageTag
-								: null
-						);
-					},
-					Collectors.toMap(c -> contentDao.getNode(c).getUuid() + "-" + c.getLanguageTag(), Function.identity())
-				));
+					String languageTag = content.getLanguageTag();
+					return ContentDaoWrapper.composeIndexName(
+						branch.getProject().getUuid(),
+						branchUuid,
+						version.getUuid(),
+						type,
+						indexLanguages.contains(languageTag)
+							? languageTag
+							: null);
+				},
+					Collectors.toMap(c -> contentDao.getNode(c).getUuid() + "-" + c.getLanguageTag(), Function.identity())));
 		});
 	}
 
@@ -305,7 +311,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	private Flowable<SearchRequest> diffAndSync(HibProject project, HibBranch branch, HibSchemaVersion version, ContainerType type) {
 		log.info("Handling index sync on handler {" + getClass().getName() + "}");
 		// Sync each bucket individually
-		Flowable<Bucket> buckets = bucketManager.getBuckets(NodeGraphFieldContainer.class);
+		Flowable<Bucket> buckets = bucketManager.getBuckets(getTotalCountFromGraph());
 		return buckets.flatMap(bucket -> {
 			log.info("Handling sync of {" + bucket + "}");
 			return diffAndSync(project, branch, version, type, bucket);
@@ -368,8 +374,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 					branch.getUuid(),
 					version.getUuid(),
 					type,
-					lang
-				));
+					lang));
 			Stream<String> defaultIndex = Stream.of(ContentDaoWrapper.composeIndexName(
 				project.getUuid(),
 				branch.getUuid(),

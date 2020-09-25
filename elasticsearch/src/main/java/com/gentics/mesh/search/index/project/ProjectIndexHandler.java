@@ -57,6 +57,13 @@ public class ProjectIndexHandler extends AbstractIndexHandler<HibProject> {
 	}
 
 	@Override
+	public long getTotalCountFromGraph() {
+		return db.tx(tx -> {
+			return tx.data().projectDao().globalCount();
+		});
+	}
+
+	@Override
 	protected String composeDocumentIdFromEntry(UpdateDocumentEntry entry) {
 		return Project.composeDocumentId(entry.getElementUuid());
 	}

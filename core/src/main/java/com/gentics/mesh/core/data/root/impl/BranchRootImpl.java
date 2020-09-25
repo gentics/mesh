@@ -107,6 +107,11 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 	}
 
 	@Override
+	public long globalCount() {
+		return db().count(BranchImpl.class);
+	}
+
+	@Override
 	public Branch getInitialBranch() {
 		return out(HAS_INITIAL_BRANCH, BranchImpl.class).nextOrNull();
 	}

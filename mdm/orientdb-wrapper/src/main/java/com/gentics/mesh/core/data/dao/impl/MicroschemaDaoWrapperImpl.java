@@ -279,8 +279,8 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 	}
 
 	@Override
-	public long computeGlobalCount() {
-		return boot.get().microschemaContainerRoot().computeCount();
+	public long globalCount() {
+		return boot.get().microschemaContainerRoot().globalCount();
 	}
 
 	@Override

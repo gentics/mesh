@@ -63,6 +63,11 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 	}
 
 	@Override
+	public long globalCount() {
+		return db().count(GroupImpl.class);
+	}
+
+	@Override
 	public TransformablePage<? extends User> getVisibleUsers(Group group, MeshAuthUser user, PagingParameters pagingInfo) {
 		VertexTraversal<?, ?, ?> traversal = group.in(HAS_USER);
 		return new DynamicTransformablePageImpl<User>(user, traversal, pagingInfo, READ_PERM, UserImpl.class);

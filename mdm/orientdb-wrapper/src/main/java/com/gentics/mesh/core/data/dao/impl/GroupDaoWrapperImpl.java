@@ -347,14 +347,9 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 	}
 
 	@Override
-	public long computeCount() {
+	public long globalCount() {
 		GroupRoot groupRoot = boot.get().groupRoot();
-		return groupRoot.computeCount();
-	}
-
-	@Override
-	public long computeGlobalCount() {
-		return computeCount();
+		return groupRoot.globalCount();
 	}
 
 	@Override

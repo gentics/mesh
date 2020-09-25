@@ -105,6 +105,11 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
+	public long globalCount() {
+		return db().count(NodeImpl.class);
+	}
+
+	@Override
 	public Stream<? extends Node> findAllStream(InternalActionContext ac, InternalPermission perm) {
 		MeshAuthUser user = ac.getUser();
 		String branchUuid = ac.getBranch().getUuid();

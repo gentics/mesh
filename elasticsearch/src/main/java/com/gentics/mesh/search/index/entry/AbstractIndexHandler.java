@@ -194,7 +194,7 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 
 	protected Flowable<SearchRequest> diffAndSync(String indexName, String projectUuid) {
 		// Sync each bucket individually
-		Flowable<Bucket> buckets = bucketManager.getBuckets(getElementClass());
+		Flowable<Bucket> buckets = bucketManager.getBuckets(getTotalCountFromGraph());
 		log.info("Handling index sync on handler {" + getClass().getName() + "}");
 		return buckets.flatMap(bucket -> {
 			log.info("Handling sync of {" + bucket + "}");
@@ -284,6 +284,7 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 			query.put("query", bucket.rangeQuery());
 			query.put("sort", new JsonArray().add("_doc"));
 
+			System.out.println(query.encodePrettily());
 			log.trace("Using query {\n" + query.encodePrettily() + "\n");
 			RequestBuilder<JsonObject> builder = client.searchScroll(query, "1m", fullIndexName);
 			JsonObject result = new JsonObject();

@@ -108,8 +108,6 @@ public interface SchemaDaoWrapper extends SchemaDao, DaoWrapper<HibSchema> {
 
 	HibSchema findByUuid(HibProject project, String schemaUuid);
 
-	long computeCount();
-
 	void delete(HibSchema schema, BulkActionContext bac);
 
 	/**
@@ -195,5 +193,7 @@ public interface SchemaDaoWrapper extends SchemaDao, DaoWrapper<HibSchema> {
 	Stream<? extends NodeGraphFieldContainer> getFieldContainers(HibSchemaVersion version, String branchUuid);
 
 	Stream<? extends NodeGraphFieldContainer> getFieldContainers(HibSchemaVersion version, String branchUuid, Bucket bucket);
+
+	long globalCount();
 
 }

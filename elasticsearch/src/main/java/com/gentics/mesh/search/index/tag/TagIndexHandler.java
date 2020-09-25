@@ -71,6 +71,13 @@ public class TagIndexHandler extends AbstractIndexHandler<HibTag> {
 	}
 
 	@Override
+	public long getTotalCountFromGraph() {
+		return db.tx(tx -> {
+			return tx.data().tagDao().globalCount();
+		});
+	}
+
+	@Override
 	protected TagTransformer getTransformer() {
 		return transforer;
 	}

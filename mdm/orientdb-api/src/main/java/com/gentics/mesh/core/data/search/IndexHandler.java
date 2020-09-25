@@ -169,4 +169,11 @@ public interface IndexHandler<T extends HibBaseElement> {
 	 */
 	Observable<UpdateBulkEntry> updatePermissionForBulk(UpdateDocumentEntry entry);
 
+	/**
+	 * Return the amount of items that are stored in the graph.
+	 * 
+	 * @return
+	 */
+	long getTotalCountFromGraph();
+
 }

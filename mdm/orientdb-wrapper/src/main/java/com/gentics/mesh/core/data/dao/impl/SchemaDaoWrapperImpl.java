@@ -108,13 +108,8 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 	}
 
 	@Override
-	public long computeCount() {
-		return boot.get().schemaContainerRoot().computeCount();
-	}
-
-	@Override
-	public long computeGlobalCount() {
-		return computeCount();
+	public long globalCount() {
+		return boot.get().schemaContainerRoot().globalCount();
 	}
 
 	@Override

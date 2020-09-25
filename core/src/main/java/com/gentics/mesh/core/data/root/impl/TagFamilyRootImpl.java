@@ -87,6 +87,11 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 	}
 
 	@Override
+	public long globalCount() {
+		return db().count(TagFamilyImpl.class);
+	}
+
+	@Override
 	public void delete(BulkActionContext bac) {
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting tagFamilyRoot {" + getUuid() + "}");

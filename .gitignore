@@ -54,3 +54,4 @@ elasticsearch-6.1.2
 build.sh
 debuginfo.log
 /.run
+/core/debuginfo

@@ -70,6 +70,11 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 	}
 
 	@Override
+	public long globalCount() {
+		return db().count(TagFamilyImpl.class);
+	}
+
+	@Override
 	public String getName() {
 		return property("name");
 	}
