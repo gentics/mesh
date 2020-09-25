@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.node;
 import java.util.List;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchema;
@@ -11,7 +12,7 @@ import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.event.EventQueueBatch;
 
-public interface HibNode extends HibCoreElement, HibCreatorTracking {
+public interface HibNode extends HibCoreElement, HibCreatorTracking, HibBucketableElement {
 
 	String getElementVersion();
 

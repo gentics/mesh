@@ -71,6 +71,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 		if (root != null && !root.equals(this)) {
 			root.addTagFamily(tagFamily);
 		}
+		tagFamily.generateBucketId();
 
 		return tagFamily;
 	}
@@ -83,6 +84,11 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 	@Override
 	public void addTagFamily(TagFamily tagFamily) {
 		addItem(tagFamily);
+	}
+
+	@Override
+	public long globalCount() {
+		return db().count(TagFamilyImpl.class);
 	}
 
 	@Override

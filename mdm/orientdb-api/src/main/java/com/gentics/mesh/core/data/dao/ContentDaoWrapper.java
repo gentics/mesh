@@ -227,7 +227,8 @@ public interface ContentDaoWrapper extends ContentDao {
 	NodeGraphFieldContainer createGraphFieldContainer(HibNode node, String languageTag, HibBranch branch, HibUser user);
 
 	/**
-	 * Like {@link #createGraphFieldContainer(Node, String, HibBranch, HibUser)}, but let the new graph field container be a clone of the given original (if not null).
+	 * Like {@link #createGraphFieldContainer(Node, String, HibBranch, HibUser)}, but let the new graph field container be a clone of the given original (if not
+	 * null).
 	 *
 	 * @param languageTag
 	 * @param branch
@@ -239,7 +240,8 @@ public interface ContentDaoWrapper extends ContentDao {
 	 *            Whether to move the existing draft edge or create a new draft edge to the new container
 	 * @return Created container
 	 */
-	NodeGraphFieldContainer createGraphFieldContainer(HibNode node, String languageTag, HibBranch branch, HibUser editor, NodeGraphFieldContainer original,
+	NodeGraphFieldContainer createGraphFieldContainer(HibNode node, String languageTag, HibBranch branch, HibUser editor,
+		NodeGraphFieldContainer original,
 		boolean handleDraftEdge);
 
 	/**
@@ -345,16 +347,15 @@ public interface ContentDaoWrapper extends ContentDao {
 	 * @param failForLastContainer
 	 *            Whether to execute the last container check and fail or not.
 	 */
-	void deleteLanguageContainer(HibNode node, InternalActionContext ac, HibBranch branch, String languageTag, BulkActionContext bac, boolean failForLastContainer);
+	void deleteLanguageContainer(HibNode node, InternalActionContext ac, HibBranch branch, String languageTag, BulkActionContext bac,
+		boolean failForLastContainer);
 
 	/**
 	 * Return the path segment value of this node preferable in the given language.
 	 *
-	 * If more than one language is given, the path will lead to the first available language
-	 * of the node.
+	 * If more than one language is given, the path will lead to the first available language of the node.
 	 *
-	 * When no language matches and <code>anyLanguage</code> is <code>true</code> the results language
-	 * is nondeterministic.
+	 * When no language matches and <code>anyLanguage</code> is <code>true</code> the results language is nondeterministic.
 	 *
 	 * @param branchUuid
 	 *            branch Uuid
@@ -413,6 +414,7 @@ public interface ContentDaoWrapper extends ContentDao {
 
 	/**
 	 * Gets all NodeGraphField edges that reference this node.
+	 * 
 	 * @return
 	 */
 	Stream<NodeGraphField> getInboundReferences(HibNode node);
@@ -709,7 +711,7 @@ public interface ContentDaoWrapper extends ContentDao {
 	 *
 	 * @return
 	 */
-	Set<String> getUrlFieldValues(NodeGraphFieldContainer content);
+	Stream<String> getUrlFieldValues(NodeGraphFieldContainer content);
 
 	/**
 	 * Traverse to the base node and build up the path to this container.
@@ -828,4 +830,11 @@ public interface ContentDaoWrapper extends ContentDao {
 	 * @param languageTag
 	 */
 	void setLanguageTag(NodeGraphFieldContainer content, String languageTag);
+
+	/**
+	 * Return the mount of elements.
+	 * 
+	 * @return
+	 */
+	long globalCount();
 }

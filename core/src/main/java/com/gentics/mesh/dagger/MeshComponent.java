@@ -9,6 +9,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.search.index.BucketManager;
 
 /**
  * Central dagger mesh component which will expose dependencies.
@@ -20,6 +21,8 @@ public interface MeshComponent extends BaseMeshComponent {
 	Database database();
 
 	List<ConsistencyCheck> consistencyChecks();
+
+	BucketManager bucketManager();
 
 	interface Builder {
 		Builder configuration(MeshOptions options);

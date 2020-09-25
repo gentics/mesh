@@ -289,4 +289,17 @@ public class NodeMigrationUser implements HibUser {
 		return null;
 	}
 
+	@Override
+	public void setBucketId(Integer bucketId) {
+	}
+
+	@Override
+	public Integer getBucketId() {
+		return null;
+	}
+
+	@Override
+	public void generateBucketId() {
+	}
+
 }

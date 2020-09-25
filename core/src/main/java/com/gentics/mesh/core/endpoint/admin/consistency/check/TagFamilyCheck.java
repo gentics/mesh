@@ -42,6 +42,10 @@ public class TagFamilyCheck extends AbstractConsistencyCheck {
 		if (tagFamily.getLastEditedTimestamp() == null) {
 			result.addInconsistency("The tagFamily edit timestamp is not set", uuid, MEDIUM);
 		}
+		if (tagFamily.getBucketId() == null) {
+			result.addInconsistency("The tagFamily bucket id is not set", uuid, MEDIUM);
+		}
+
 	}
 
 }

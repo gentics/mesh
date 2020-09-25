@@ -142,7 +142,7 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper<HibJob> implements Job
 	}
 
 	@Override
-	public long computeGlobalCount() {
+	public long globalCount() {
 		return boot.get().jobRoot().computeCount();
 	}
 

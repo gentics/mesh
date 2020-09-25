@@ -18,5 +18,6 @@
     "name" : "dummyProject",
     "uuid" : "d3b1840b01464b54b1840b0146cb54f5"
   },
-  "version" : "7df128ce"
+  "version" : "7df128ce",
+  "bucket_id" : 0
 }

@@ -937,6 +937,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			HibUser user = user();
 			// create version 1 of the microschema
 			container = tx.getGraph().addFramedVertex(MicroschemaContainerImpl.class);
+			container.generateBucketId();
 			container.setCreated(user());
 			versionA = createMicroschemaVersion(tx);
 			container.setLatestVersion(versionA);
@@ -1046,6 +1047,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			ContentDaoWrapper contentDao = tx.contentDao();
 			// create version 1 of the microschema
 			container = tx.getGraph().addFramedVertex(MicroschemaContainerImpl.class);
+			container.generateBucketId();
 			container.setCreated(user());
 			versionA = createMicroschemaVersion(tx);
 			container.setLatestVersion(versionA);
@@ -1183,6 +1185,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			ContentDaoWrapper contentDao = tx.contentDao();
 			// create version 1 of the microschema
 			container = tx.getGraph().addFramedVertex(MicroschemaContainerImpl.class);
+			container.generateBucketId();
 			container.setCreated(user());
 			versionA = createMicroschemaVersion(tx);
 			container.setLatestVersion(versionA);
@@ -1287,6 +1290,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 	private HibSchema createDummySchemaWithChanges(String oldFieldName, String newFieldName, boolean setAddRaw) {
 
 		Schema container = Tx.get().getGraph().addFramedVertex(SchemaContainerImpl.class);
+		container.generateBucketId();
 		container.setName(UUID.randomUUID().toString());
 		container.setCreated(user());
 		EventQueueBatch batch = createBatch();

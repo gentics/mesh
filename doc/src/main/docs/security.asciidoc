@@ -13,6 +13,12 @@ These tokens should not be publicly exposed since they they are equivalent to us
 Tokens can be reset via the `{apiLatest}/users/:uuid/reset_token` endpoint.
 This will invalidate any previously generated API token.
 
+== Server Tokens
+
+The `httpServer.serverTokens` configuration flag or `MESH_HTTP_SERVER_TOKENS` environment variable can be used to control whether server version information gets exposed via REST (/api/v1, /api/v2), GraphQL or HTTP headers. By default server tokens are enabled.
+
+Please note that server tokens are still visible to admin users even when `httpServer.serverTokens` is set to `false`.
+
 == Network Security
 
 Gentics Mesh can provide various internal services which each utilize dedicated ports.

@@ -110,6 +110,7 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 		version.setSchemaContainer(container);
 		container.setCreated(user);
 		container.setName(microschema.getName());
+		container.generateBucketId();
 		microschemaRoot.addMicroschema(user, container, batch);
 
 		return container;
@@ -302,8 +303,8 @@ public class MicroschemaDaoWrapperImpl extends AbstractDaoWrapper<HibMicroschema
 	}
 
 	@Override
-	public long computeGlobalCount() {
-		return boot.get().microschemaContainerRoot().computeCount();
+	public long globalCount() {
+		return boot.get().microschemaContainerRoot().globalCount();
 	}
 
 	@Override

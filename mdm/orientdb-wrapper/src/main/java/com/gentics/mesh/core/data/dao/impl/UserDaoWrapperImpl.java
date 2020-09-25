@@ -549,6 +549,7 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 		}
 		user.setUsername(username);
 		user.enable();
+		user.generateBucketId();
 
 		if (creator != null) {
 			user.setCreator(creator);
@@ -679,8 +680,8 @@ public class UserDaoWrapperImpl extends AbstractDaoWrapper<HibUser> implements U
 		return user;
 	}
 
-	public long computeGlobalCount() {
-		return boot.get().userRoot().computeCount();
+	public long globalCount() {
+		return boot.get().userRoot().globalCount();
 	}
 
 	@Override

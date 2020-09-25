@@ -1,5 +1,6 @@
 package com.gentics.mesh.search.index.tagfamily;
 
+import static com.gentics.mesh.core.data.Bucket.BUCKET_ID_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 
 import javax.inject.Inject;
@@ -53,6 +54,7 @@ public class TagFamilyTransformer extends AbstractTransformer<HibTagFamily> {
 		addProject(document, tagFamily.getProject());
 		addPermissionInfo(document, tagFamily);
 		document.put(MappingHelper.VERSION_KEY, generateVersion(tagFamily));
+		document.put(BUCKET_ID_KEY, tagFamily.getBucketId());
 		return document;
 	}
 

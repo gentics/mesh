@@ -53,6 +53,7 @@ import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.search.BucketableElementHelper;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
@@ -169,7 +170,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 	@Override
 	@Deprecated
 	public ProjectResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		ProjectDaoWrapper projectDao= mesh().boot().projectDao();
+		ProjectDaoWrapper projectDao = mesh().boot().projectDao();
 		return projectDao.transformToRestSync(this, ac, level, languageTags);
 	}
 
@@ -350,5 +351,20 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 
 			return branch;
 		}));
+	}
+
+	@Override
+	public Integer getBucketId() {
+		return BucketableElementHelper.getBucketId(this);
+	}
+
+	@Override
+	public void setBucketId(Integer bucketId) {
+		BucketableElementHelper.setBucketId(this, bucketId);
+	}
+
+	@Override
+	public void generateBucketId() {
+		BucketableElementHelper.generateBucketId(this);
 	}
 }

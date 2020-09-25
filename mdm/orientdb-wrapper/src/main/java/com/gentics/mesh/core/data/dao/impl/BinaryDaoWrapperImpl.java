@@ -77,7 +77,7 @@ public class BinaryDaoWrapperImpl extends AbstractDaoWrapper<HibBinary> implemen
 	}
 
 	@Override
-	public long computeGlobalCount() {
+	public long globalCount() {
 		throw new NotImplementedException("Not supported");
 	}
 }

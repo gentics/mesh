@@ -4,6 +4,8 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIE
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 
+import java.util.stream.Collectors;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -72,7 +74,7 @@ public class RestructureWebrootIndex extends AbstractHighLevelChange {
 				if (container == null) {
 					continue;
 				}
-				edge.setUrlFieldInfo(contentDao.getUrlFieldValues(container));
+				edge.setUrlFieldInfo(contentDao.getUrlFieldValues(container).collect(Collectors.toSet()));
 				String segment = contentDao.getSegmentFieldValue(container);
 				if (segment != null && !segment.trim().isEmpty()) {
 					HibNode node = contentDao.getNode(container);

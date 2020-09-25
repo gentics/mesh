@@ -46,6 +46,11 @@ public class LanguageRootImpl extends AbstractRootVertex<Language> implements La
 	}
 
 	@Override
+	public long globalCount() {
+		return db().count(LanguageImpl.class);
+	}
+
+	@Override
 	public void addLanguage(Language language) {
 		addItem(language);
 	}

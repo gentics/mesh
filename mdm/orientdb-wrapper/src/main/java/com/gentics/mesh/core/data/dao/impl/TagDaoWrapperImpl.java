@@ -307,8 +307,8 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements Tag
 	}
 
 	@Override
-	public long computeGlobalCount() {
-		return boot.get().tagRoot().computeCount();
+	public long globalCount() {
+		return boot.get().tagRoot().globalCount();
 	}
 
 	@Override

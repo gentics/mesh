@@ -89,6 +89,11 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	}
 
 	@Override
+	public long globalCount() {
+		return db().count(TagImpl.class);
+	}
+
+	@Override
 	public Tag findByName(String name) {
 		return out(getRootLabel()).mark().has(TagImpl.TAG_VALUE_KEY, name).back().nextOrDefaultExplicit(TagImpl.class, null);
 	}
@@ -124,6 +129,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 
 		// Set the tag family for the tag
 		tag.setTagFamily(tagFamily);
+		tag.generateBucketId();
 		return tag;
 	}
 
@@ -227,6 +233,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 		tag.setName(name);
 		tag.setCreated(creator);
 		tag.setProject(project);
+		tag.generateBucketId();
 
 		// Add the tag to the global tag root
 		mesh().boot().meshRoot().getTagRoot().addTag(tag);

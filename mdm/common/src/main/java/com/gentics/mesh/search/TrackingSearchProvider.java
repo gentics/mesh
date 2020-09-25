@@ -21,4 +21,6 @@ public interface TrackingSearchProvider extends SearchProvider {
 
 	Map<String, JsonObject> getStoreEvents();
 
+	JsonObject getLatestStoreEvent(String uuid);
+
 }

@@ -39,6 +39,7 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.cache.CacheRegistryImpl;
 import com.gentics.mesh.changelog.ChangelogSystem;
+import com.gentics.mesh.changelog.ChangelogSystemImpl;
 import com.gentics.mesh.changelog.ReindexAction;
 import com.gentics.mesh.changelog.highlevel.HighLevelChangelogSystem;
 import com.gentics.mesh.core.data.HibMeshVersion;
@@ -107,6 +108,7 @@ import com.gentics.mesh.router.RouterStorageRegistryImpl;
 import com.gentics.mesh.search.DevNullSearchProvider;
 import com.gentics.mesh.search.IndexHandlerRegistryImpl;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.TrackingSearchProviderImpl;
 import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
 import com.gentics.mesh.util.MavenVersionNumber;
@@ -123,6 +125,7 @@ import ch.qos.logback.core.rolling.RollingFileAppender;
 import ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy;
 import ch.qos.logback.core.util.FileSize;
 import dagger.Lazy;
+import io.reactivex.Observable;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.eventbus.EventBus;
@@ -244,6 +247,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	/**
 	 * Initialize the local data or create the initial dataset if no local data could be found.
 	 *
+	 * @param flags
 	 * @param configuration
 	 *            Mesh configuration
 	 * @param isJoiningCluster
@@ -251,7 +255,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	 * @return True if an empty installation was detected, false if existing data was found
 	 * @throws Exception
 	 */
-	private boolean initLocalData(MeshOptions configuration, boolean isJoiningCluster) throws Exception {
+	private void initLocalData(PostProcessFlags flags, MeshOptions configuration, boolean isJoiningCluster) throws Exception {
 		boolean isEmptyInstallation = isEmptyInstallation();
 		if (isEmptyInstallation) {
 			if (db.requiresTypeInit()) {
@@ -270,21 +274,24 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 			// Mark all changelog entries as applied for new installations
 			markChangelogApplied();
-			return true;
+			if (!(searchProvider instanceof TrackingSearchProvider)) {
+				flags.requireReindex();
+			}
 		} else {
 			handleMeshVersion();
 			if (!isJoiningCluster) {
 				initOptionalLanguages(configuration);
 				// Only execute the changelog if there are any elements in the graph
-				invokeChangelog();
+				invokeChangelog(flags);
 			}
-			return false;
 		}
 	}
 
 	@Override
-	public void init(Mesh mesh, boolean forceIndexSync, MeshOptions options, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
+	public void init(Mesh mesh, boolean forceResync, MeshOptions options, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
 		this.mesh = (MeshImpl) mesh;
+		PostProcessFlags flags = new PostProcessFlags(forceResync, false);
+
 		GraphStorageOptions storageOptions = options.getStorageOptions();
 		boolean isClustered = options.getClusterOptions().isEnabled();
 		boolean isInitMode = options.isInitClusterMode();
@@ -319,7 +326,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				// We need to init the graph db before starting the OrientDB Server. Otherwise the database will not get picked up by the orientdb server which
 				// handles the clustering.
 				db.setupConnectionPool();
-				boolean setupData = initLocalData(options, false);
+				initLocalData(flags, options, false);
 				db.closeConnectionPool();
 				db.shutdown();
 
@@ -328,9 +335,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				db.setupConnectionPool();
 				searchProvider.init();
 				searchProvider.start();
-				if (setupData) {
-					createSearchIndicesAndMappings();
-				}
 			} else {
 				// We need to wait for other nodes and receive the graphdb
 				db.clusterManager().start();
@@ -339,7 +343,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				db.setupConnectionPool();
 				searchProvider.init();
 				searchProvider.start();
-				initLocalData(options, true);
+				initLocalData(flags, options, true);
 			}
 
 			boolean active = false;
@@ -358,7 +362,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			searchProvider.start();
 			// No cluster mode - Just setup the connection pool and load or setup the local data
 			db.setupConnectionPool();
-			initLocalData(options, false);
+			initLocalData(flags, options, false);
 			if (startOrientServer) {
 				db.closeConnectionPool();
 				db.clusterManager().start();
@@ -367,7 +371,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		}
 
 		eventManager.registerHandlers();
-		handleLocalData(forceIndexSync, options, verticleLoader);
+		handleLocalData(flags, options, verticleLoader);
 
 		// Load existing plugins
 		pluginManager.start();
@@ -583,12 +587,12 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	/**
 	 * Handle local data and prepare mesh API.
 	 *
-	 * @param forceIndexSync
+	 * @param flags
 	 * @param configuration
 	 * @param verticleLoader
 	 * @throws Exception
 	 */
-	private void handleLocalData(boolean forceIndexSync, MeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
+	private void handleLocalData(PostProcessFlags flags, MeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
 		// Load the verticles
 		List<String> initialProjects = db.tx(tx -> {
 			return tx.projectDao().findAll().stream()
@@ -605,8 +609,14 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			verticleLoader.apply(vertx);
 		}
 
+		boolean isSearchEnabled = configuration.getSearchOptions().getUrl() != null;
+
 		// Invoke reindex as requested
-		if (forceIndexSync) {
+		if (isSearchEnabled && flags.isReindex()) {
+			createSearchIndicesAndMappings();
+		}
+
+		if (isSearchEnabled && (flags.isReindex() || flags.isResync())) {
 			SyncEventHandler.invokeSync(vertx);
 		}
 
@@ -724,9 +734,11 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
-	public void invokeChangelog() {
+	public void invokeChangelog(PostProcessFlags flags) {
+
 		log.info("Invoking database changelog check...");
-		if (!changelogSystem.applyChanges(SYNC_INDEX_ACTION)) {
+		ChangelogSystem cls = new ChangelogSystemImpl(db, options);
+		if (!cls.applyChanges(flags)) {
 			throw new RuntimeException("The changelog could not be applied successfully. See log above.");
 		}
 
@@ -734,10 +746,10 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		DatabaseHelper.init(db);
 
 		// Now run the high level changelog entries
-		highlevelChangelogSystem.apply(meshRoot);
+		highlevelChangelogSystem.apply(flags, meshRoot);
 
 		log.info("Changelog completed.");
-		changelogSystem.setCurrentVersionAndRev();
+		cls.setCurrentVersionAndRev();
 	}
 
 	@Override
@@ -750,9 +762,12 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Override
 	public void createSearchIndicesAndMappings() {
-		IndexHandlerRegistryImpl registry = indexHandlerRegistry.get();
-		for (IndexHandler<?> handler : registry.getHandlers()) {
-			handler.init().blockingAwait();
+		if (options.getSearchOptions().getUrl() != null) {
+			// Clear the old indices and recreate them
+			searchProvider.clear()
+				.andThen(Observable.fromIterable(indexHandlerRegistry.get().getHandlers())
+					.flatMapCompletable(IndexHandler::init))
+				.blockingAwait();
 		}
 	}
 

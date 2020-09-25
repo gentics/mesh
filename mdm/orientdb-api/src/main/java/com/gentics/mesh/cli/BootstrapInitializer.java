@@ -254,8 +254,10 @@ public interface BootstrapInitializer {
 
 	/**
 	 * Invoke the changelog system to execute database changes.
+	 * 
+	 * @param flags Flags which will be used to control the post process actions
 	 */
-	void invokeChangelog();
+	void invokeChangelog(PostProcessFlags flags);
 
 	/**
 	 * Return the list of all language tags.

@@ -80,12 +80,14 @@ search:
   includeBinaryFields: true
   mappingMode: "DYNAMIC"
   complianceMode: "ES_6"
+  syncBatchSize: 50000
 upload:
   byteLimit: 262144000
   directory: "data/binaryFiles"
   tempDirectory: "/opt/mesh/data/tmp/temp-uploads"
   parserLimit: 40000
   parser: true
+  metadataWhitelist: null
 security:
   tokenExpirationTime: 3600
   keystorePassword: "<Your Password>"

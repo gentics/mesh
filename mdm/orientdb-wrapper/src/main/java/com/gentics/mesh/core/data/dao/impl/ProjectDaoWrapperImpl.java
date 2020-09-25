@@ -322,9 +322,9 @@ public class ProjectDaoWrapperImpl extends AbstractDaoWrapper<HibProject> implem
 	}
 
 	@Override
-	public long computeGlobalCount() {
+	public long globalCount() {
 		ProjectRoot projectRoot = boot.get().projectRoot();
-		return projectRoot.computeCount();
+		return projectRoot.globalCount();
 	}
 
 	@Override

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.schema.impl;
 
+import static com.gentics.mesh.core.data.Bucket.BUCKET_ID_KEY;
 import static com.gentics.mesh.core.data.GraphFieldContainerEdge.BRANCH_UUID_KEY;
 import static com.gentics.mesh.core.data.GraphFieldContainerEdge.EDGE_TYPE_KEY;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
@@ -21,6 +22,7 @@ import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
+import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
@@ -107,6 +109,19 @@ public class SchemaContainerVersionImpl extends
 			NodeGraphFieldContainerImpl.class,
 			new String[] { SCHEMA_CONTAINER_VERSION_KEY_PROPERTY },
 			new Object[] { getUuid() })).filter(
+				v -> toStream(v.getEdges(Direction.IN, HAS_FIELD_CONTAINER))
+					.anyMatch(e -> e.getProperty(BRANCH_UUID_KEY).equals(branchUuid)))
+				.map(v -> graph.frameElementExplicit(v, NodeGraphFieldContainerImpl.class));
+	}
+
+
+	@Override
+	public Stream<NodeGraphFieldContainerImpl> getFieldContainers(String branchUuid, Bucket bucket) {
+		return toStream(mesh().database().getVerticesForRange(
+			NodeGraphFieldContainerImpl.class,
+			"bucket",
+			new String[] { SCHEMA_CONTAINER_VERSION_KEY_PROPERTY },
+			new Object[] { getUuid() }, BUCKET_ID_KEY, (long) bucket.start(), (long) bucket.end())).filter(
 				v -> toStream(v.getEdges(Direction.IN, HAS_FIELD_CONTAINER))
 					.anyMatch(e -> e.getProperty(BRANCH_UUID_KEY).equals(branchUuid)))
 				.map(v -> graph.frameElementExplicit(v, NodeGraphFieldContainerImpl.class));

@@ -1,6 +1,7 @@
 package com.gentics.mesh.search;
 
 import static com.gentics.mesh.search.index.AbstractSearchHandler.DEFAULT_SEARCH_PER_PAGE;
+
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleWildCardQuery;

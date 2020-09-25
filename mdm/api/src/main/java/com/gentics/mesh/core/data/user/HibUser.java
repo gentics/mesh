@@ -7,11 +7,12 @@ import static com.gentics.mesh.core.rest.MeshEvent.USER_UPDATED;
 
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.TypeInfo;
+import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.rest.user.UserReference;
 
-public interface HibUser extends HibCoreElement, HibUserTracking {
+public interface HibUser extends HibCoreElement, HibUserTracking, HibBucketableElement {
 
 	TypeInfo TYPE_INFO = new TypeInfo(ElementType.USER, USER_CREATED, USER_UPDATED, USER_DELETED);
 

@@ -95,7 +95,7 @@ public class NodeDaoWrapperImpl extends AbstractDaoWrapper<HibNode> implements N
 	}
 
 	@Override
-	public long computeGlobalCount() {
+	public long globalCount() {
 		// TODO Probably wrong interface hierarchy. There is no need for this method
 		throw new RuntimeException("Not implemented");
 	}

@@ -1,5 +1,6 @@
 package com.gentics.mesh.search.index.user;
 
+import static com.gentics.mesh.core.data.Bucket.BUCKET_ID_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
 
@@ -81,6 +82,8 @@ public class UserTransformer extends AbstractTransformer<HibUser> {
 			document.put(NODEREFERECE_KEY, referencedNode.getUuid());
 		}
 		document.put(VERSION_KEY, generateVersion(user));
+		document.put(BUCKET_ID_KEY, user.getBucketId());
+
 		return document;
 	}
 

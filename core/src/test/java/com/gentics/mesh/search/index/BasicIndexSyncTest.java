@@ -40,6 +40,7 @@ import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+
 /**
  * Test differential sync of elasticsearch.
  */
@@ -107,7 +108,8 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 		// Assert deletion
 		tx(() -> {
-			boot().userDao().findByName("user_3").remove();;
+			boot().userDao().findByName("user_3").remove();
+			;
 		});
 		syncIndex();
 		assertMetrics("user", 0, 0, 1);
@@ -237,6 +239,10 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		syncIndex();
 		assertMetrics("project", 4, 0, 0);
 
+		// Check that a succeeding sync will not find any delta
+		syncIndex();
+		assertMetrics("project", 0, 0, 0);
+
 		// Assert update
 		tx(() -> {
 			project().setName("updated");
@@ -356,13 +362,16 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 	private void assertMetrics(String type, long inserted, long updated, long deleted) {
 		EntityMetrics entityMetrics = call(() -> client().searchStatus()).getMetrics().get(type);
-		assertEquals(inserted, entityMetrics.getInsert().getSynced().longValue());
-		assertEquals(updated, entityMetrics.getUpdate().getSynced().longValue());
-		assertEquals(deleted, entityMetrics.getDelete().getSynced().longValue());
+		assertEquals("We expected " + inserted + " elements to be inserted during the sync", inserted,
+			entityMetrics.getInsert().getSynced().longValue());
+		assertEquals("We expected " + updated + " elements to be updated during the sync", updated,
+			entityMetrics.getUpdate().getSynced().longValue());
+		assertEquals("We expected " + deleted + " elements to be deleted during the sync", deleted,
+			entityMetrics.getDelete().getSynced().longValue());
 
-		assertEquals(0, entityMetrics.getInsert().getPending().longValue());
-		assertEquals(0, entityMetrics.getUpdate().getPending().longValue());
-		assertEquals(0, entityMetrics.getDelete().getPending().longValue());
+		assertEquals("Pending inserts should be zero after the sync.", 0, entityMetrics.getInsert().getPending().longValue());
+		assertEquals("Pending updates should be zero after the sync.", 0, entityMetrics.getUpdate().getPending().longValue());
+		assertEquals("Pending deletes should be zero after the sync.", 0, entityMetrics.getDelete().getPending().longValue());
 	}
 
 	private void syncIndex() {

@@ -6,12 +6,13 @@ import static com.gentics.mesh.core.rest.MeshEvent.GROUP_UPDATED;
 
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.TypeInfo;
+import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibNamedElement;
 import com.gentics.mesh.core.data.user.HibUserTracking;
 import com.gentics.mesh.core.rest.group.GroupReference;
 
-public interface HibGroup extends HibCoreElement, HibUserTracking, HibNamedElement {
+public interface HibGroup extends HibCoreElement, HibUserTracking, HibNamedElement, HibBucketableElement {
 
 	TypeInfo TYPE_INFO = new TypeInfo(ElementType.GROUP, GROUP_CREATED, GROUP_UPDATED, GROUP_DELETED);
 

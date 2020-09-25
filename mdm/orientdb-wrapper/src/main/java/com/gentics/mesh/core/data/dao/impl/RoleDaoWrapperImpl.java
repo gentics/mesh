@@ -205,6 +205,7 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 		}
 		role.setName(name);
 		role.setCreated(creator);
+		role.generateBucketId();
 		addRole(role);
 		return role;
 	}
@@ -284,9 +285,9 @@ public class RoleDaoWrapperImpl extends AbstractDaoWrapper<HibRole> implements R
 	}
 
 	@Override
-	public long computeGlobalCount() {
+	public long globalCount() {
 		RoleRoot roleRoot = boot.get().roleRoot();
-		return roleRoot.computeCount();
+		return roleRoot.globalCount();
 	}
 
 	@Override

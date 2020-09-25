@@ -104,6 +104,11 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
+	public long globalCount() {
+		return db().count(NodeImpl.class);
+	}
+
+	@Override
 	public Stream<? extends Node> findAllStream(InternalActionContext ac, InternalPermission perm) {
 		Tx tx = Tx.get();
 		HibUser user = ac.getUser();
@@ -229,6 +234,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		node.setProject(project);
 		node.setCreator(creator);
 		node.setCreationTimestamp();
+		node.generateBucketId();
 
 		return node;
 	}

@@ -1,5 +1,6 @@
 package com.gentics.mesh.search.index.group;
 
+import static com.gentics.mesh.core.data.Bucket.BUCKET_ID_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 
 import javax.inject.Inject;
@@ -35,6 +36,7 @@ public class GroupTransformer extends AbstractTransformer<HibGroup> {
 		addPermissionInfo(document, group);
 		if (withVersion) {
 			document.put(MappingHelper.VERSION_KEY, generateVersion(group));
+			document.put(BUCKET_ID_KEY, group.getBucketId());
 		}
 		return document;
 	}

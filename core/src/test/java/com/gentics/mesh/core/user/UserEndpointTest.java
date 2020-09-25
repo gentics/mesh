@@ -486,7 +486,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			invisibleUser.setFirstname("should_not_be_listed");
 			invisibleUser.setEmailAddress("should_not_be_listed");
 			userDao.addGroup(invisibleUser, group());
-			foundUsers = userDao.computeGlobalCount();
+			foundUsers = userDao.globalCount();
 			tx.success();
 		}
 

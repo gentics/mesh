@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.search.bulk.DeleteBulkEntry;
 import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
@@ -63,7 +64,7 @@ public interface IndexHandler<T extends HibBaseElement> {
 	 * 
 	 * @return
 	 */
-	Class<?> getElementClass();
+	Class<? extends HibBucketableElement> getElementClass();
 
 	/**
 	 * Process the entry and generate bulk entries.
@@ -167,6 +168,13 @@ public interface IndexHandler<T extends HibBaseElement> {
 	 * @return
 	 */
 	Observable<UpdateBulkEntry> updatePermissionForBulk(UpdateDocumentEntry entry);
+
+	/**
+	 * Return the amount of items that are stored in the graph.
+	 * 
+	 * @return
+	 */
+	long getTotalCountFromGraph();
 
 	/**
 	 * Store the given object within the search index.

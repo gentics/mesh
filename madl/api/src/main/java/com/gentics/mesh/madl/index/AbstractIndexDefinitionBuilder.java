@@ -14,6 +14,8 @@ public abstract class AbstractIndexDefinitionBuilder<T extends AbstractIndexDefi
 
 	protected String name;
 
+	protected IndexType type;
+
 	/**
 	 * Set the index postfix.
 	 * 
@@ -75,6 +77,17 @@ public abstract class AbstractIndexDefinitionBuilder<T extends AbstractIndexDefi
 	 */
 	public T withName(String name) {
 		this.name = name;
+		return (T) this;
+	}
+
+	/**
+	 * Override the set index type.
+	 * 
+	 * @param type
+	 * @return
+	 */
+	public T withType(IndexType type) {
+		this.type = type;
 		return (T) this;
 	}
 

@@ -20,6 +20,7 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.search.index.BucketManager;
 import com.gentics.mesh.search.index.MappingProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 import com.gentics.mesh.search.index.metric.SyncMetersFactory;
@@ -40,8 +41,8 @@ public class UserIndexHandlerImpl extends AbstractIndexHandler<HibUser> implemen
 
 	@Inject
 	public UserIndexHandlerImpl(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options,
-		SyncMetersFactory syncMetricsFactory) {
-		super(searchProvider, db, boot, helper, options, syncMetricsFactory);
+		SyncMetersFactory syncMetricsFactory, BucketManager bucketManager) {
+		super(searchProvider, db, boot, helper, options, syncMetricsFactory, bucketManager);
 	}
 
 	@Override
@@ -52,6 +53,13 @@ public class UserIndexHandlerImpl extends AbstractIndexHandler<HibUser> implemen
 	@Override
 	public Class<User> getElementClass() {
 		return User.class;
+	}
+
+	@Override
+	public long getTotalCountFromGraph() {
+		return db.tx(tx -> {
+			return tx.userDao().globalCount();
+		});
 	}
 
 	@Override

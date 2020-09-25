@@ -19,6 +19,8 @@ public final class FieldTypeMapper {
 			return OType.STRING;
 		case INTEGER:
 			return OType.INTEGER;
+		case LONG:
+			return OType.LONG;
 		case BOOLEAN:
 			return OType.BOOLEAN;
 		case STRING_SET:

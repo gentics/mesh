@@ -53,6 +53,9 @@ public class UserCheck extends AbstractConsistencyCheck {
 		if (user.getLastEditedTimestamp() == null) {
 			result.addInconsistency("The user edit timestamp is not set", uuid, MEDIUM);
 		}
+		if (user.getBucketId() == null) {
+			result.addInconsistency("The user bucket id is not set", uuid, MEDIUM);
+		}
 
 		assertShortcutRoleEdges(user, result);
 	}

@@ -12,6 +12,7 @@ import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.search.BucketableElementHelper;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
@@ -22,7 +23,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
  * @see Schema
  */
 public class SchemaContainerImpl extends
-		AbstractGraphFieldSchemaContainer<SchemaResponse, SchemaVersionModel, SchemaReference, HibSchema, HibSchemaVersion> implements
+	AbstractGraphFieldSchemaContainer<SchemaResponse, SchemaVersionModel, SchemaReference, HibSchema, HibSchemaVersion> implements
 	Schema {
 
 	@Override
@@ -74,5 +75,18 @@ public class SchemaContainerImpl extends
 		remove();
 	}
 
+	@Override
+	public Integer getBucketId() {
+		return BucketableElementHelper.getBucketId(this);
+	}
 
+	@Override
+	public void setBucketId(Integer bucketId) {
+		BucketableElementHelper.setBucketId(this, bucketId);
+	}
+
+	@Override
+	public void generateBucketId() {
+		BucketableElementHelper.generateBucketId(this);
+	}
 }

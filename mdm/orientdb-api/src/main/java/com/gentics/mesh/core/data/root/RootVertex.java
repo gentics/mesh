@@ -358,6 +358,14 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	}
 
 	/**
+	 * Return the global count for all elements of the type that are managed by the root vertex. 
+	 * The count will include all vertices in the graph of the specific type.
+	 * 
+	 * @return
+	 */
+	long globalCount();
+
+	/**
 	 * Get the permissions of a role for this element.
 	 *
 	 * @param element

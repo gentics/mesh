@@ -236,17 +236,17 @@ See link:{{< relref "references.asciidoc" >}}#_https[HTTPs configuration].
 
 === Server Options
 
-include::content/docs/snippets/config/server.inc[]
+include::content/docs/generated/tables/HttpServerConfig.adoc-include[]
 
 === Cluster Options
 
-include::content/docs/snippets/config/cluster.inc[]
+include::content/docs/generated/tables/ClusterOptions.adoc-include[]
 
 === Storage Options
 
 By default all specified directories are relative to the installation directory.
 
-include::content/docs/snippets/config/storage.inc[]
+include::content/docs/generated/tables/GraphStorageOptions.adoc-include[]
 
 ==== OrientDB parameters
 
@@ -256,18 +256,17 @@ include::content/docs/snippets/config/storage.inc[]
 | ```ridBag.embeddedToSbtreeBonsaiThreshold```    | Number  | 2147483647     | Configures the ridbag threshold for OrientDB. This setting controls how OrientDB manages the internal ridbag data structure. This setting will be ignored when run in clustered mode. See OrientDB documentation for more details.
 |======
 
-
 === Search Options
 
-include::content/docs/snippets/config/search.inc[]
+include::content/docs/generated/tables/ElasticSearchOptions.adoc-include[]
 
 === Upload Options
 
-include::content/docs/snippets/config/upload.inc[]
+include::content/docs/generated/tables/MeshUploadOptions.adoc-include[]
 
 === Security Options
 
-include::content/docs/snippets/config/security.inc[]
+include::content/docs/generated/tables/AuthenticationOptions.adoc-include[]
 
 ==== Public Keys
 
@@ -282,21 +281,21 @@ include::content/docs/examples/example-public-keys.json[]
 
 === Monitoring Options
 
-include::content/docs/snippets/config/monitoring.inc[]
+include::content/docs/generated/tables/MonitoringConfig.adoc-include[]
 
 === Image Options
 
-include::content/docs/snippets/config/image.inc[]
+include::content/docs/generated/tables/ImageManipulatorOptions.adoc-include[]
 
 === Cache Options
 
-include::content/docs/snippets/config/cache.inc[]
+include::content/docs/generated/tables/CacheConfig.adoc-include[]
 
 Additionally it is possible to tweak the underlying OrientDB cache settings.
 
 === Debug Information Options
 
-include::content/docs/snippets/config/debuginfo.inc[]
+include::content/docs/generated/tables/DebugInfoOptions.adoc-include[]
 
 === Memory Settings
 
@@ -307,22 +306,40 @@ Memory settings can be defined using the `JAVA_TOOL_OPTIONS` environment variabl
 | Setting                           | Description
 | `-Xmx`                            | Maximum heap size of the Gentics Mesh Java process
 | `-Xms`                            | Initial heap size of the Gentics Mesh Java process
+| `-Xss`                            | Stack size. A larger stack size may be required when deleting large datasets.
 | `-XX:MaxDirectMemorySize`         | Maximum direct memory limit. Direct memory is mostly used to buffer transactions of the Graph database
-| `-Dstorage.diskCache.bufferSize`  | Disk buffer size in megabytes used for the Graph database
+| `-Dstorage.diskCache.bufferSize`  | Disk buffer size in megabytes used for the Graph database. The diskCache will make use of direct memory.
 |======
 
-==== Recommendations
+The total amount of required memory is the roughly sum of `heap memory` + `direct memory` + (`stack size` * `thread count`) + `64 MB (JVM base memory)`.
 
-The following numbers serve the purpose to roughly estimate the memory requirements for different sized projects.
+
+==== Recommendations (Single Node)
+
+The following numbers serve the purpose to roughly estimate the memory requirements for different sized projects in a **non-clustered** setup.
 
 [options="header"]
 |======
 | Node Count           | Memory Setting
-| 0 to 100             | `-Xms128m  -Xmx128m  -XX:MaxDirectMemorySize=128m  -Dstorage.diskCache.bufferSize=128`
-| 100 to 1_000         | `-Xms512m  -Xmx512m  -XX:MaxDirectMemorySize=256m  -Dstorage.diskCache.bufferSize=256`
-| 1_000 to 10_000      | `-Xms786m  -Xmx786m  -XX:MaxDirectMemorySize=384m  -Dstorage.diskCache.bufferSize=384`
-| 10_000 to 100_000    | `-Xms1250m -Xmx1250m -XX:MaxDirectMemorySize=512m  -Dstorage.diskCache.bufferSize=512`
-| 100_000 to 1_000_000 | `-Xms2500m -Xmx2500m -XX:MaxDirectMemorySize=1024m -Dstorage.diskCache.bufferSize=1024`
+| 0 to 100             | `-Xms128m -Xmx128m -Xss1m -XX:MaxDirectMemorySize=128m  -Dstorage.diskCache.bufferSize=128`
+| 100 to 1_000         | `-Xms512m -Xmx512m -Xss2m -XX:MaxDirectMemorySize=256m  -Dstorage.diskCache.bufferSize=256`
+| 1_000 to 10_000      | `-Xms786m -Xmx786m -Xss2m -XX:MaxDirectMemorySize=384m  -Dstorage.diskCache.bufferSize=384`
+| 10_000 to 100_000    | `-Xms1250m -Xmx1250m -Xss2m -XX:MaxDirectMemorySize=512m  -Dstorage.diskCache.bufferSize=512`
+| 100_000 to 1_000_000 | `-Xms2500m -Xmx2500m -Xss4m -XX:MaxDirectMemorySize=1024m -Dstorage.diskCache.bufferSize=1024`
+|======
+
+==== Recommendations (Clustered Node)
+
+The following numbers serve the purpose to roughly estimate the memory requirements for different sized projects in a *clustered* setup.
+
+[options="header"]
+|======
+| Node Count           | Memory Setting
+| 0 to 100             | `-Xms1124m -Xmx1124m -Xss1m -XX:MaxDirectMemorySize=628m  -Dstorage.diskCache.bufferSize=628`
+| 100 to 1_000         | `-Xms1512m -Xmx1512m -Xss2m -XX:MaxDirectMemorySize=856m  -Dstorage.diskCache.bufferSize=856`
+| 1_000 to 10_000      | `-Xms1786m -Xmx1786m -Xss2m -XX:MaxDirectMemorySize=984m  -Dstorage.diskCache.bufferSize=984`
+| 10_000 to 100_000    | `-Xms2250m -Xmx2250m -Xss2m -XX:MaxDirectMemorySize=1024m  -Dstorage.diskCache.bufferSize=1024`
+| 100_000 to 1_000_000 | `-Xms3500m -Xmx3500m -Xss4m -XX:MaxDirectMemorySize=2048m -Dstorage.diskCache.bufferSize=2048`
 |======
 
 == Admin Access

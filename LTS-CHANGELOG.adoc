@@ -17,6 +17,53 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.6.1]]
+== 1.6.1 (24.09.2020)
+
+icon:plus[] Search: The memory footprint of the differential sync mechanism has been reduced. The sync operations will now be split into buckets. The size of the buckets can be influenced via the `search.syncBatchSize` setting.
+
+CAUTION: The new sync mechanism requires a reindex of all documents. The Elasticsearch indices will be automatically cleared and re-synced during the first startup of this version.
+
+icon:check[] Core: Fixed a bug that which prevented to update a node reference of a user if the user already had one set. link:https://github.com/gentics/mesh/issues/1114[#1114]
+
+icon:plus[] Core: It is now possible to disable extracting of metadata or content from binaries on a per-field basis. See link:{{< relref "building-blocks.asciidoc" >}}#_schema_field_types[schema field types documentation] for more information.
+
+icon:plus[] Plugins: The default plugin timeout has been increased from 15 seconds to two minutes.
+
+icon:check[] Monitoring: The readiness probe will now also check for plugin status. Failed plugin deployments will let the readiness probe fail.
+
+icon:plus[] Monitoring: The readiness probe will now no longer fail when a plugin is not registered. Instead it will only fail when a plugin deployment has failed.
+
+icon:plus[] Monitoring: The liveness probe will now check for plugin status. Failed plugin deployments will let the liveness probe fail.
+
+icon:check[] Clustering: The webroot handler no longer uses the cluster-wide write lock.
+
+icon:check[] Logging: Failing readiness checks are now logged using the `WARN` level.
+
+[[v1.5.4]]
+== 1.5.4 (24.09.2020)
+
+icon:plus[] Core: It is now possible to disable extracting of metadata or content from binaries on a per-field basis. See link:{{< relref "building-blocks.asciidoc" >}}#_schema_field_types[schema field types documentation] for more information.
+
+icon:plus[] Monitoring: The readiness probe will now no longer fail when a plugin is not registered. Instead it will only fail when a plugin deployment has failed.
+
+icon:plus[] Monitoring: The liveness probe will now check for plugin status. Failed plugin deployments will let the liveness probe fail.
+
+icon:check[] Clustering: The webroot handler no longer uses the cluster-wide write lock.
+
+icon:check[] Logging: Failing readiness checks are now logged using the `WARN` level.
+
+[[v1.4.15]]
+== 1.4.15 (23.09.2020)
+
+icon:plus[] Monitoring: The readiness probe will now no longer fail when a plugin is not registered. Instead it will only fail when a plugin deployment has failed.
+
+icon:plus[] Monitoring: The liveness probe will now check for plugin status. Failed plugin deployments will let the liveness probe fail.
+
+icon:check[] Clustering: The webroot handler no longer uses the cluster-wide write lock.
+
+icon:check[] Logging: Failing readiness checks are now logged using the `WARN` level.
+
 [[v1.4.14]]
 == 1.4.14 (02.09.2020)
 
@@ -58,5 +105,5 @@ icon:check[] Clustering: The write lock was removed from the `DELETE /api/v2/adm
 [[v1.3.4]]
 == 1.3.4 (11.05.2020)
 
-CAUTION: Microschema migrations since version 1.2.0 are very likely to cause a loss of data in nodes that contain micronodes of the migrated schema. This bug has been fixed in this version. At the first start with this version or higher, Gentics Mesh will try to restore affected nodes in projects with a single branch. However, because some data cannot be restored, we advise to restore a backup of a moment before the microschemaModel migration, if possible. We apologize for the inconvenience.
+CAUTION: Microschema migrations since version 1.2.0 are very likely to cause a loss of data in nodes that contain micronodes of the migrated schema. This bug has been fixed in this version. At the first start with this version or higher, Gentics Mesh will try to restore affected nodes in projects with a single branch. However, because some data cannot be restored, we advise to restore a backup of a moment before the microschema migration, if possible. We apologize for the inconvenience.
 

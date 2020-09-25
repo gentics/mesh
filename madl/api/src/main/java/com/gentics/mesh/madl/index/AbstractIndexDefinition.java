@@ -12,6 +12,8 @@ public abstract class AbstractIndexDefinition implements ElementIndexDefinition 
 
 	protected FieldMap fields;
 
+	protected IndexType type;
+
 	@Override
 	public boolean isUnique() {
 		return unique;
@@ -32,4 +34,8 @@ public abstract class AbstractIndexDefinition implements ElementIndexDefinition 
 		return postfix;
 	}
 
+	@Override
+	public IndexType getType() {
+		return type;
+	}
 }

@@ -3,9 +3,11 @@ package com.gentics.mesh.etc.config.env;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -13,6 +15,7 @@ import io.vertx.core.logging.LoggerFactory;
 
 public class OptionUtils {
 	static final Logger log = LoggerFactory.getLogger(Option.class);
+	private static final Pattern SPLIT_PATTERN = Pattern.compile(",");
 
 	/**
 	 * Convert a string value to a type. Throws an runtime exception when the type is not supported
@@ -51,9 +54,14 @@ public class OptionUtils {
 			if (value == null || value.trim().length() == 0) {
 				return (T) Collections.emptyList();
 			}
-			List<String> list = Arrays.asList(value.split(","));
-			return (T) list;
-		} else {
+			return (T) SPLIT_PATTERN.splitAsStream(value).collect(Collectors.toList());
+		} else if (clazz.equals(Set.class)) {
+			if (value == null || value.trim().length() == 0) {
+				return (T) Collections.emptySet();
+			}
+			return (T) SPLIT_PATTERN.splitAsStream(value).collect(Collectors.toSet());
+		}
+		else {
 			throw new RuntimeException("Could no convert environment variable for type " + clazz.getName());
 		}
 	}

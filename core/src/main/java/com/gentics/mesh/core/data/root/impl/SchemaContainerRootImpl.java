@@ -71,6 +71,11 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<Schema> implemen
 	}
 
 	@Override
+	public long globalCount() {
+		return db().count(SchemaContainerImpl.class);
+	}
+
+	@Override
 	public boolean contains(HibSchema schema) {
 		if (findByUuid(schema.getUuid()) == null) {
 			return false;

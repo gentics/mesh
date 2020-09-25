@@ -1,5 +1,15 @@
 package com.gentics.mesh.core.rest;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.core.rest.event.branch.BranchMeshEventModel;
@@ -22,20 +32,12 @@ import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModel;
 import com.gentics.mesh.core.rest.event.tag.TagMeshEventModel;
 import com.gentics.mesh.core.rest.event.tagfamily.TagFamilyMeshEventModel;
+
 import io.reactivex.Completable;
 import io.reactivex.functions.Action;
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.MessageConsumer;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Central list of used eventbus addresses.
@@ -581,7 +583,7 @@ public enum MeshEvent {
 	PLUGIN_PRE_REGISTERED("mesh.plugin.pre-registered",
 		null,
 		"Emitted once a plugin has been pre-registered."),
-	
+
 	PLUGIN_REGISTERED("mesh.plugin.registered",
 		null,
 		"Emitted once a plugin has been registered."),
@@ -646,8 +648,20 @@ public enum MeshEvent {
 	 * @return
 	 */
 	public static Completable doAndWaitForEvent(Mesh mesh, MeshEvent event, Action runnable) {
+		return doAndWaitForEvent(mesh.getVertx(), event, runnable);
+	}
+
+	/**
+	 * Invoke the given runnable and wait for the event.
+	 * 
+	 * @param vertx
+	 * @param event
+	 * @param runnable
+	 * @return
+	 */
+	public static Completable doAndWaitForEvent(Vertx vertx, MeshEvent event, Action runnable) {
 		return Completable.create(sub -> {
-			EventBus eventbus = mesh.getVertx().eventBus();
+			EventBus eventbus = vertx.eventBus();
 			MessageConsumer<Object> consumer = eventbus.consumer(event.address)
 				.handler(ev -> sub.onComplete())
 				.exceptionHandler(sub::onError);

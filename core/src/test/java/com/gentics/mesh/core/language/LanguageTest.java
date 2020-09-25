@@ -45,13 +45,13 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 		try (Tx tx = tx()) {
 			LanguageDaoWrapper languageDao = tx.languageDao();
 
-			long nLanguagesBefore = languageDao.computeGlobalCount();
+			long nLanguagesBefore = languageDao.globalCount();
 
 			final String languageName = "klingon";
 			final String languageTag = "tlh";
 			assertNotNull(languageDao.create(languageName, languageTag));
 
-			long nLanguagesAfter = languageDao.computeGlobalCount();
+			long nLanguagesAfter = languageDao.globalCount();
 			assertEquals(nLanguagesBefore + 1, nLanguagesAfter);
 		}
 	}

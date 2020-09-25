@@ -3,6 +3,7 @@ package com.gentics.mesh.search;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +21,7 @@ import com.gentics.mesh.core.data.search.request.DeleteDocumentRequest;
 import com.gentics.mesh.core.data.search.request.UpdateDocumentRequest;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.util.VersionNumber;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
@@ -42,7 +44,6 @@ public class TrackingSearchProviderImpl implements TrackingSearchProvider {
 	private List<String> getEvents = new ArrayList<>();
 	private List<String> dropIndexEvents = new ArrayList<>();
 	private Map<String, JsonObject> createIndexEvents = new HashMap<>();
-	private Map<String, JsonObject> pipelineEvents = new HashMap<>();
 	private List<Bulkable> bulkRequests = new ArrayList<>();
 
 	private MeshOptions options;
@@ -213,6 +214,16 @@ public class TrackingSearchProviderImpl implements TrackingSearchProvider {
 	public Map<String, JsonObject> getStoreEvents() {
 		return storeEvents;
 	}
+
+	@Override
+	public JsonObject getLatestStoreEvent(String uuid) {
+		Map<String, JsonObject> storeEvents = getStoreEvents();
+		return storeEvents.values().stream()
+			.filter(json -> json.getString("uuid").equals(uuid))
+			.max(Comparator.comparing(json -> new VersionNumber(json.getString("version"))))
+			.orElse(null);
+	}
+
 
 	@Override
 	public List<String> getDeleteEvents() {

@@ -1,5 +1,6 @@
 package com.gentics.mesh.search.index.project;
 
+import static com.gentics.mesh.core.data.Bucket.BUCKET_ID_KEY;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 
@@ -34,6 +35,7 @@ public class ProjectTransformer extends AbstractTransformer<HibProject> {
 		addBasicReferences(document, project);
 		addPermissionInfo(document, project);
 		document.put(VERSION_KEY, generateVersion(project));
+		document.put(BUCKET_ID_KEY, project.getBucketId());
 		return document;
 	}
 
