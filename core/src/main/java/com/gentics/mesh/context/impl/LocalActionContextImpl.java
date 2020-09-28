@@ -22,6 +22,7 @@ import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.router.route.SecurityLoggingHandler;
+import com.gentics.mesh.shared.SharedKeys;
 import com.gentics.mesh.util.HttpQueryUtils;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -45,7 +46,6 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	private Map<String, Object> data = new HashMap<>();
 	private MultiMap parameters = MultiMap.caseInsensitiveMultiMap();
 	private String query;
-	private HibProject project;
 	private String responseBody;
 	private HttpResponseStatus responseStatus;
 	private Promise<T> promise = Promise.promise();
@@ -196,9 +196,10 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	 */
 	public void setProject(String projectName) {
 		MeshComponent mesh = toGraph(user).getGraphAttribute(GraphAttribute.MESH_COMPONENT);
-		this.project = mesh.database().tx(tx -> {
+		HibProject project = mesh.database().tx(tx -> {
 			return tx.projectDao().findByName(projectName);
 		});
+		data().put(SharedKeys.PROJECT_CONTEXT_KEY, project);
 	}
 
 	@Override

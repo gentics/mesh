@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
+import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
@@ -23,7 +24,7 @@ import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
-public interface MicroschemaDaoWrapper extends MicroschemaDao, DaoWrapper<HibMicroschema> {
+public interface MicroschemaDaoWrapper extends MicroschemaDao, DaoWrapper<HibMicroschema>, DaoTransformable<HibMicroschema, MicroschemaResponse>  {
 
 	HibMicroschema loadObjectByUuid(InternalActionContext ac, String schemaUuid, InternalPermission perm);
 

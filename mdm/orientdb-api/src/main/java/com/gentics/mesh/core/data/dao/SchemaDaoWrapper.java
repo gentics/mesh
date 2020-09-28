@@ -31,7 +31,7 @@ import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
-public interface SchemaDaoWrapper extends SchemaDao, DaoWrapper<HibSchema> {
+public interface SchemaDaoWrapper extends SchemaDao, DaoWrapper<HibSchema>, DaoTransformable<HibSchema, SchemaResponse> {
 
 	HibSchema findByUuid(String uuid);
 
@@ -159,8 +159,6 @@ public interface SchemaDaoWrapper extends SchemaDao, DaoWrapper<HibSchema> {
 	HibSchemaVersion findVersionByRev(HibSchema schema, String version);
 
 	boolean isLinkedToProject(HibSchema schema, HibProject project);
-
-	SchemaResponse transformToRestSync(HibSchema schema, InternalActionContext ac, int level);
 
 	void removeSchema(HibSchema schema, HibProject project, EventQueueBatch batch);
 

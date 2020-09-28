@@ -371,9 +371,9 @@ public class SchemaDaoWrapperImpl extends AbstractDaoWrapper<HibSchema> implemen
 	}
 
 	@Override
-	public SchemaResponse transformToRestSync(HibSchema schema, InternalActionContext ac, int level) {
+	public SchemaResponse transformToRestSync(HibSchema schema, InternalActionContext ac, int level, String... languageTags) {
 		Schema graphSchema = toGraph(schema);
-		return graphSchema.transformToRestSync(ac, level);
+		return graphSchema.transformToRestSync(ac, level, languageTags);
 	}
 
 	@Override
