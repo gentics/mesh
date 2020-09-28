@@ -4,6 +4,9 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BRA
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FROM_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TO_VERSION;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
+import static com.gentics.mesh.core.rest.MeshEvent.USER_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.USER_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.USER_UPDATED;
 import static com.gentics.mesh.core.rest.job.JobStatus.STARTING;
 import static com.gentics.mesh.core.rest.job.JobStatus.UNKNOWN;
 
@@ -12,6 +15,7 @@ import java.util.Map;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
+import com.gentics.mesh.ElementType;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
@@ -54,7 +58,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse> implem
 
 	@Override
 	public TypeInfo getTypeInfo() {
-		return null;
+		return TYPE_INFO;
 	}
 
 	@Override

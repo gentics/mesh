@@ -19,6 +19,7 @@ import com.gentics.mesh.core.rest.event.branch.BranchTaggedEventModel;
 import com.gentics.mesh.core.rest.event.group.GroupRoleAssignModel;
 import com.gentics.mesh.core.rest.event.group.GroupUserAssignModel;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
+import com.gentics.mesh.core.rest.event.job.JobEventModel;
 import com.gentics.mesh.core.rest.event.job.ProjectVersionPurgeEventModel;
 import com.gentics.mesh.core.rest.event.migration.BranchMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.migration.MicroschemaMigrationMeshEventModel;
@@ -462,6 +463,24 @@ public enum MeshEvent {
 		"Emitted when a branch was untagged.",
 		Examples::branchTaggingEvent),
 
+	/* Job */
+
+	JOB_CREATED("mesh.jobn.created",
+		JobEventModel.class,
+		"Emitted when a job was created.",
+		Examples::jobEvent),
+
+	JOB_UPDATED("mesh.job.updated",
+		JobEventModel.class,
+		"Emitted when a job was updated.",
+		Examples::jobEvent),
+
+	JOB_DELETED("mesh.job.deleted",
+		JobEventModel.class,
+		"Emitted when a job was deleted.",
+		Examples::jobEvent),
+
+	
 	/* Search index related (SYNC) */
 
 	/**
