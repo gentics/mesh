@@ -28,12 +28,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.dao.impl.ContentDaoWrapperImpl;
+import com.gentics.mesh.core.data.dao.impl.GroupDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.NodeDaoWrapperImpl;
+import com.gentics.mesh.core.data.dao.impl.RoleDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.TagDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.TagFamilyDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.UserDaoWrapperImpl;
@@ -140,6 +144,8 @@ public class SearchModelGenerator extends AbstractGenerator {
 			NodeDaoWrapper nodeDao = mock(NodeDaoWrapperImpl.class);
 			ContentDaoWrapper contentDao = mock(ContentDaoWrapperImpl.class);
 			UserDaoWrapper userDao = mock(UserDaoWrapperImpl.class);
+			RoleDaoWrapper roleDao = mock(RoleDaoWrapperImpl.class);
+			GroupDaoWrapper  groupDao = mock(GroupDaoWrapperImpl.class);
 			TagDaoWrapper tagDao = mock(TagDaoWrapperImpl.class);
 			TagFamilyDaoWrapper tagFamilyDao = mock(TagFamilyDaoWrapperImpl.class);
 
@@ -148,6 +154,8 @@ public class SearchModelGenerator extends AbstractGenerator {
 			when(tx.userDao()).thenReturn(userDao);
 			when(tx.tagDao()).thenReturn(tagDao);
 			when(tx.tagFamilyDao()).thenReturn(tagFamilyDao);
+			when(tx.roleDao()).thenReturn(roleDao);
+			when(tx.groupDao()).thenReturn(groupDao);
 
 			writeNodeDocumentExample(nodeDao, contentDao, tagDao);
 			writeTagDocumentExample();
