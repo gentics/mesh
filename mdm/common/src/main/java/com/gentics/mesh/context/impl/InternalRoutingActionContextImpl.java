@@ -174,7 +174,12 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 
 	@Override
 	public HibUser getUser() {
-		return getMeshAuthUser().getDelegate();
+		MeshAuthUser authUser = getMeshAuthUser();
+		if (authUser == null) {
+			return null;
+		} else {
+			return authUser.getDelegate();
+		}
 	}
 
 	@Override
