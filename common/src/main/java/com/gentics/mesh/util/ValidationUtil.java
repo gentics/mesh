@@ -6,6 +6,7 @@ import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.parameter.PagingParameters;
 
 public final class ValidationUtil {
+
 	private ValidationUtil() {
 	}
 

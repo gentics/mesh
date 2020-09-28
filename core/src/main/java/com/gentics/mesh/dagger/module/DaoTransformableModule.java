@@ -4,9 +4,12 @@ import java.util.Map;
 
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
 import com.gentics.mesh.core.data.dao.DaoTransformable;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
+import com.gentics.mesh.core.data.dao.JobDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
@@ -67,6 +70,16 @@ public abstract class DaoTransformableModule {
 
 	@Binds
 	@IntoMap
+	@ElementTypeKey(ElementType.BRANCH)
+	abstract DaoTransformable<? extends HibCoreElement, ? extends RestModel> branch(BranchDaoWrapper dao);
+
+	@Binds
+	@IntoMap
+	@ElementTypeKey(ElementType.NODE)
+	abstract DaoTransformable<? extends HibCoreElement, ? extends RestModel> node(NodeDaoWrapper dao);
+
+	@Binds
+	@IntoMap
 	@ElementTypeKey(ElementType.TAG)
 	abstract DaoTransformable<? extends HibCoreElement, ? extends RestModel> tag(TagDaoWrapper dao);
 
@@ -74,4 +87,10 @@ public abstract class DaoTransformableModule {
 	@IntoMap
 	@ElementTypeKey(ElementType.TAGFAMILY)
 	abstract DaoTransformable<? extends HibCoreElement, ? extends RestModel> tagFamily(TagFamilyDaoWrapper dao);
+
+	@Binds
+	@IntoMap
+	@ElementTypeKey(ElementType.JOB)
+	abstract DaoTransformable<? extends HibCoreElement, ? extends RestModel> job(JobDaoWrapper dao);
+
 }

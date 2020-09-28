@@ -16,7 +16,7 @@ import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
-public interface JobDaoWrapper extends JobDao {
+public interface JobDaoWrapper extends JobDao, DaoTransformable<HibJob, JobResponse>{
 
 	Result<? extends HibJob> findAll();
 
