@@ -751,14 +751,15 @@ public class MeshTestContext extends TestWatcher {
 	 * Waits until all requests have been sent successfully.
 	 */
 	public void waitForSearchIdleEvent() {
+		int MAX_WAIT_TIME = 35;
 		Objects.requireNonNull(idleConsumer, "Call #listenToSearchIdleEvent first");
 		ElasticsearchProcessVerticle verticle = getElasticSearchVerticle();
 		try {
-			verticle.flush().blockingAwait();
 			idleLatch = new CountDownLatch(1);
-			boolean success = idleLatch.await(30, TimeUnit.SECONDS);
+			verticle.flush().blockingAwait();
+			boolean success = idleLatch.await(MAX_WAIT_TIME, TimeUnit.SECONDS);
 			if (!success) {
-				throw new RuntimeException("Timed out while waiting for search idle event");
+				throw new RuntimeException("Timed out after " + MAX_WAIT_TIME + " seconds waiting for search idle event.");
 			}
 			verticle.refresh().blockingAwait();
 		} catch (InterruptedException e) {
