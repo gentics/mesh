@@ -753,6 +753,16 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		VersioningParameters versioiningParameters = ac.getVersioningParameters();
 		NodeParameters nodeParameters = ac.getNodeParameters();
 
+		String[] langs = nodeParameters.getLanguages();
+		if (langs != null) {
+			for (String languageTag : langs) {
+				Iterator<?> it = Tx.get().getGraph().getVertices("LanguageImpl.languageTag", languageTag).iterator();
+				if (!it.hasNext()) {
+					throw error(BAD_REQUEST, "error_language_not_found", languageTag);
+				}
+			}
+		}
+
 		List<String> requestedLanguageTags = null;
 		if (languageTags != null && languageTags.length > 0) {
 			requestedLanguageTags = Arrays.asList(languageTags);
