@@ -10,7 +10,6 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -176,7 +175,9 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 	}
 
 	@Test
-	public void testCustomAnalyzerAndQuery() throws IOException {
+	public void testCustomAnalyzerAndQuery() throws Exception {
+		grantAdmin();
+		recreateIndices();
 
 		// 1. Create schema
 		SchemaCreateRequest schema = new SchemaCreateRequest();
