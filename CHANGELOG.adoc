@@ -23,6 +23,11 @@ include::content/docs/variables.adoc-include[]
 
 * The support for the *embedded* version of Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v1.7.3]]
+== 1.7.3 (TBD)
+
+icon:check[] Clustering: A check for invalid cluster options has been added. The networkHost value can't be set to `0.0.0.0` since this IP can't be used for announcing nodes in a cluster.
+
 [[v1.7.2]]
 == 1.7.2 (25.09.2020)
 
