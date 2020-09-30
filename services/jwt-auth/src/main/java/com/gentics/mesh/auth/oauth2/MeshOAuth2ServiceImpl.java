@@ -129,6 +129,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 
 	@Override
 	public void secure(Route route) {
+		// Add handler to decode and authenticate external JWT's
 		route.handler(rc -> {
 			if (rc.user() != null) {
 				rc.next();
@@ -145,6 +146,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 			if (keyHandler != null) {
 				keyHandler.handle(rc);
 			} else {
+				log.warn("No key handler was created. This may happen when neither the plugin or the mesh configuration provides custom public keys.");
 				rc.next();
 			}
 		});
@@ -167,6 +169,9 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 				JsonObject decodedToken = token.principal();
 				for (AuthServicePlugin plugin : plugins) {
 					if (!plugin.acceptToken(rc.request(), decodedToken)) {
+						if (log.isDebugEnabled()) {
+							log.debug("The plugin {} rejected the token.", plugin.getManifest().getName());
+						}
 						rc.fail(401);
 						return;
 					}
@@ -227,6 +232,8 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 						TOKEN_ID_LOG.put(uuid, cachingId);
 						return user;
 				}));
+			} else {
+				log.debug("The request does not need mapping since we have already processed the token before.");
 			}
 			return Single.just(user);
 		}))
@@ -338,6 +345,9 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 			GroupRoot groupRoot = boot.groupRoot();
 
 			for (AuthServicePlugin plugin : plugins) {
+				if (log.isDebugEnabled()) {
+					log.debug("Handling mapping via auth plugin {}", plugin.getManifest().getName());
+				}
 				try {
 					MappingResult result = plugin.mapToken(rc.request(), userUuid, token);
 					// Just invoke the default mapper if the plugin provides no mapping
@@ -366,14 +376,26 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 					List<RoleResponse> mappedRoles = result.getRoles();
 					if (mappedRoles != null) {
 						for (RoleResponse mappedRole : mappedRoles) {
+							String roleUuid = mappedRole.getUuid();
 							String roleName = mappedRole.getName();
-							Role role = roleRoot.findByName(roleName);
+							Role role = null;
+							if (roleUuid != null) {
+								role = roleRoot.findByUuid(roleUuid);
+							} else if (roleName != null) {
+								role = roleRoot.findByName(roleName);
+							}
+
 							// Role not found - Lets create it
 							if (role == null) {
-								requiresWrite();
-								role = roleRoot.create(roleName, admin);
-								admin.inheritRolePermissions(roleRoot, role);
-								batch.add(role.onCreated());
+								if (roleName != null) {
+									requiresWrite();
+									log.debug("Creating new role {} via mapping request.", roleName);
+									role = roleRoot.create(roleName, admin);
+									admin.inheritRolePermissions(roleRoot, role);
+									batch.add(role.onCreated());
+								} else {
+									log.error("Unable to create role. No role name was specified.");
+								}
 							}
 						}
 					}
@@ -385,19 +407,34 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 						// Now create the groups and assign the user to the listed groups
 						for (GroupResponse mappedGroup : mappedGroups) {
 							String groupName = mappedGroup.getName();
-							Group group = groupRoot.findByName(groupName);
+							String groupUuid = mappedGroup.getUuid();
+							Group group = null;
+
+							if (groupUuid != null) {
+								group = groupRoot.findByUuid(groupUuid);
+							} else if (groupName != null) {
+								group = groupRoot.findByName(groupName);
+							}
 
 							// Group not found - Lets create it
 							boolean created = false;
 							if (group == null) {
-								requiresWrite();
-								group = groupRoot.create(groupName, admin);
-								admin.inheritRolePermissions(groupRoot, group);
-								batch.add(group.onCreated());
-								created = true;
+								if (groupName != null) {
+									requiresWrite();
+									log.debug("Creating group {} via mapping request.", groupName);
+									group = groupRoot.create(groupName, admin);
+									admin.inheritRolePermissions(groupRoot, group);
+									batch.add(group.onCreated());
+									created = true;
+								} else {
+									log.error("Unable to create group. No group name was specified.");
+									// We can't continue with this mapped group.
+									break;
+								}
 							}
 							if (!group.hasUser(user)) {
 								requiresWrite();
+								log.debug("Adding user {} to group {} via mapping request.", user.getUsername(), group.getName());
 								// Ensure that the user is part of the group
 								group.addUser(user);
 								batch.add(group.createUserAssignmentEvent(user, ASSIGNED));
@@ -411,21 +448,23 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 								String roleName = assignedRole.getName();
 								String roleUuid = assignedRole.getUuid();
 								Role role = null;
-								// Try name
+
 								if (roleName != null) {
 									role = roleRoot.findByName(roleName);
-								}
-								// Try uuid
-								if (role == null) {
+								} else if (roleUuid != null) {
 									role = roleRoot.findByUuid(roleUuid);
 								}
+
 								// Add the role if it is missing
 								if (role != null && !group.hasRole(role)) {
 									requiresWrite();
+									log.debug("Adding role {} to group {} via mapping request.", role.getName(), group.getName());
 									group.addRole(role);
 									group.setLastEditedTimestamp();
 									group.setEditor(admin);
 									batch.add(group.createRoleAssignmentEvent(role, ASSIGNED));
+								} else {
+									log.warn("Unable to map role to group. The role with name {} / uuid {} could not be found", roleName, roleUuid);
 								}
 							}
 
@@ -459,19 +498,20 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 								String groupName = assignedGroup.getName();
 								String groupUuid = assignedGroup.getUuid();
 								Group group = null;
-								// Try name
+
 								if (groupName != null) {
 									group = groupRoot.findByName(groupName);
-								}
-								// Try uuid
-								if (group == null) {
+								} else if (groupUuid != null) {
 									group = groupRoot.findByUuid(groupUuid);
 								}
+
 								// Add the role if it is missing
 								if (group != null && !group.hasRole(role)) {
 									requiresWrite();
 									group.addRole(role);
 									batch.add(group.createRoleAssignmentEvent(role, ASSIGNED));
+								} else {
+									log.error("Could not find group in role->group mapping of role {}", role.getName());
 								}
 							}
 
@@ -499,6 +539,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 				}
 			}
 		} else {
+			log.debug("No auth plugins could be found. Falling back to default mapping");
 			defaultUserMapper(batch, user, token);
 		}
 

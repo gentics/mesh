@@ -19,6 +19,11 @@ All fixes and changes in LTS releases will be released the next minor release. C
 
 = 1.6
 
+[[v1.6.2]]
+== 1.6.2 (TBD)
+
+icon:check[] Additional log output and checks have been added to the auth plugin mapping code. This fix also addresses the `Null keys are not supported` error which was thrown when handling mappings which provide no group and role names. link:https://github.com/gentics/mesh/issues/1138[#1138]
+
 [[v1.6.1]]
 == 1.6.1 (24.09.2020)
 
