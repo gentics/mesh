@@ -17,7 +17,6 @@ import com.orientechnologies.common.util.OCallableNoParamNoReturn;
 import com.orientechnologies.common.util.OCallableUtils;
 import com.orientechnologies.orient.core.OSignalHandler;
 import com.orientechnologies.orient.core.Orient;
-import com.orientechnologies.orient.core.db.ODefaultEmbeddedDatabaseInstanceFactory;
 import com.orientechnologies.orient.server.OServer;
 import com.orientechnologies.orient.server.distributed.ODistributedException;
 import com.orientechnologies.orient.server.hazelcast.OHazelcastDistributedMap;
@@ -134,7 +133,6 @@ public class MeshOHazelcastPlugin extends OHazelcastPlugin {
 			}
 		});
 
-		serverInstance.getDatabases().replaceFactory(new ODefaultEmbeddedDatabaseInstanceFactory());
 		setNodeStatus(NODE_STATUS.OFFLINE);
 		OServer.unregisterServerInstance(getLocalNodeName());
 	}
