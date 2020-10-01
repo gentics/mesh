@@ -10,6 +10,11 @@
 
 = Mesh Commercial Plugin Commons Changelog
 
+[[v1.3.13]]
+== 1.3.13 (2020-10-01)
+
+icon:check[] Common: The `HandlerUtil#meshBinaryHandler()` uses the `verboseErrorHandler` now also for errors during download
+
 [[v1.3.12]]
 == 1.3.12 (2020-07-14)
 
