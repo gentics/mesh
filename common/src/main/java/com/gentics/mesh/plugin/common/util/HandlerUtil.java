@@ -240,7 +240,7 @@ public class HandlerUtil {
 
 				binaryResponse.getFlowable()
 					.map(Buffer::buffer)
-					.subscribe(response::write, errorHandler(rc), response::end);
+					.subscribe(response::write, errorHandler(rc, verboseErrorHandler), response::end);
 
 				/* TODO analyse why using the Pump does not emit the onComplete event.
 
