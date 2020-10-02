@@ -54,6 +54,7 @@ public class DevRunner {
 		// options.getSearchOptions().setUrl(null);
 		// options.getSearchOptions().setStartEmbedded(false);
 		// options.getSearchOptions().setMappingMode(MappingMode.STRICT);
+		options.getStorageOptions().setDirectory("/media/ext4/db/test");
 		options.getSearchOptions().disable();
 
 		Mesh mesh = Mesh.create(options);
