@@ -211,7 +211,9 @@ The found nodes will be sorted ascending by creator.
 
 *Search nodes by micronode field values*
 
-Find all nodes which have a micronode list field (vcardlist) that contain at least one micronode which contains the two string fields (firstName, lastName) with the values ("Joe", "Doe"):
+When searching by a micronode field value, the parameters after `fields.<fieldname>.` need to be `field-<name of microschema>.<field of microschema>`. The full key would thus be: `"fields.<field name of schema>.fields-<microschema name>.<field name of microschema>"`
+
+Example: Find all nodes which have a micronode list field (vcardlist) that contain at least one micronode which contains the two string fields (firstName, lastName) of the schema 'vcard_details' with the values ("Joe", "Doe"):
 
 [source,json]
 ----
@@ -224,12 +226,12 @@ Find all nodes which have a micronode list field (vcardlist) that contain at lea
           "must": [
             {
               "match": {
-                "fields.vcardlist.fields.firstName": "Joe"
+                "fields.vcardlist.fields-vcard_details.firstName": "Joe"
               }
             },
             {
               "match": {
-                "fields.vcardlist.fields.lastName": "Doe"
+                "fields.vcardlist.fields-vcard_details.lastName": "Doe"
               }
             }
           ]

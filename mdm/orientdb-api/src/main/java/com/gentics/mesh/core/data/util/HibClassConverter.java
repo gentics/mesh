@@ -5,7 +5,9 @@ import java.util.Objects;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.HibContent;
 import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
@@ -129,6 +131,10 @@ public final class HibClassConverter {
 
 	public static Node toGraph(HibNode node) {
 		return checkAndCast(node, Node.class);
+	}
+
+	public static NodeGraphFieldContainer toGraph(HibContent content) {
+		return checkAndCast(content, NodeGraphFieldContainer.class);
 	}
 
 	public static Job toGraph(HibJob job) {

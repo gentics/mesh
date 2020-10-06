@@ -23,7 +23,8 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.webroot.PathPrefixUtil;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.path.Path;
-import com.gentics.mesh.path.PathSegment;
+import com.gentics.mesh.path.impl.PathImpl;
+import com.gentics.mesh.path.impl.PathSegmentImpl;
 import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.URIUtils;
 
@@ -62,7 +63,7 @@ public class WebRootServiceImpl implements WebRootService {
 
 		// Check whether the path contains the branch path prefix. Return an empty node path in those cases. (e.g. Node was not found)
 		if (!PathPrefixUtil.startsWithPrefix(branch, path)) {
-			Path nodePath = new Path();
+			Path nodePath = new PathImpl();
 			nodePath.setTargetPath(path);
 			nodePath.setInitialStack(new Stack<>());
 			nodePath.setPrefixMismatch(true);
@@ -79,7 +80,7 @@ public class WebRootServiceImpl implements WebRootService {
 		}
 
 		// Locating did not yield a result. Lets try the regular segment path info.
-		Path nodePath = new Path();
+		Path nodePath = new PathImpl();
 		HibNode baseNode = project.getBaseNode();
 		nodePath.setTargetPath(strippedPath);
 		Stack<String> stack = new Stack<>();
@@ -89,7 +90,7 @@ public class WebRootServiceImpl implements WebRootService {
 			// TODO Why this container? Any other container would also be fine?
 			Iterator<NodeGraphFieldContainer> it = contentDao.getDraftGraphFieldContainers(baseNode).iterator();
 			NodeGraphFieldContainer container = it.next();
-			nodePath.addSegment(new PathSegment(container, null, null, "/"));
+			nodePath.addSegment(new PathSegmentImpl(container, null, null, "/"));
 			stack.push("/");
 			nodePath.setInitialStack(stack);
 			pathStore.store(project, branch, type, path, nodePath);

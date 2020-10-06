@@ -7,6 +7,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.cache.ProjectBranchNameCache;
 import com.gentics.mesh.cache.ProjectNameCache;
+import com.gentics.mesh.cache.WebrootPathCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.generic.UserProperties;
@@ -62,6 +63,8 @@ public interface BaseMeshComponent {
 	UserProperties userProperties();
 
 	// Caches
+
+	WebrootPathCache pathCache();
 
 	PermissionCache permissionCache();
 

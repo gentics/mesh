@@ -45,6 +45,7 @@ import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
+import com.gentics.mesh.path.impl.PathSegmentImpl;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.NumberUtils;
 
@@ -118,7 +119,8 @@ public class WebRootHandler {
 			if (lastSegment == null) {
 				throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(path));
 			}
-			NodeGraphFieldContainer container = lastSegment.getContainer();
+			PathSegmentImpl graphSegment = (PathSegmentImpl) lastSegment;
+			NodeGraphFieldContainer container = graphSegment.getContainer();
 			if (container == null) {
 				throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(path));
 			}
@@ -131,7 +133,7 @@ public class WebRootHandler {
 			rc.response().putHeader(MeshHeaders.WEBROOT_NODE_UUID, node.getUuid());
 			// TODO decide whether we want to add also lang, version
 
-			GraphField field = lastSegment.getPathField();
+			GraphField field = graphSegment.getPathField();
 			if (field instanceof BinaryGraphField) {
 				BinaryGraphField binaryField = (BinaryGraphField) field;
 				String sha512sum = binaryField.getBinary().getSHA512Sum();
@@ -238,7 +240,8 @@ public class WebRootHandler {
 
 				// Update Node
 				if (nodePath.isFullyResolved()) {
-					NodeGraphFieldContainer container = lastSegment.getContainer();
+					PathSegmentImpl graphSegment = (PathSegmentImpl) lastSegment;
+					NodeGraphFieldContainer container = graphSegment.getContainer();
 					NodeUpdateRequest request = ac.fromJson(NodeUpdateRequest.class);
 					// We can deduce a missing the language via the path
 					if (request.getLanguage() == null) {
@@ -265,7 +268,8 @@ public class WebRootHandler {
 							parentNode = tx.getProject(ac).getBaseNode();
 						} else {
 							PathSegment parentSegment = segments.get(segments.size() - 1);
-							parentNode = contentDao.getNode(parentSegment.getContainer());
+							PathSegmentImpl graphSegment = (PathSegmentImpl) parentSegment;
+							parentNode = contentDao.getNode(graphSegment.getContainer());
 						}
 						String parentUuid = parentNode.getUuid();
 						log.debug("Using deduced parent node uuid: " + parentUuid);

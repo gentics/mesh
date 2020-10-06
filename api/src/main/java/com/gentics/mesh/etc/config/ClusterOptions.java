@@ -173,6 +173,10 @@ public class ClusterOptions implements Option {
 	 */
 	public void validate(MeshOptions meshOptions) {
 		if (isEnabled()) {
+			if ("0.0.0.0".contentEquals(networkHost)) {
+				throw new NullPointerException(
+					"Invalid networkHost setting. A value of 0.0.0.0 is invalid since this IP can't be used as source IP for nodes.");
+			}
 			Objects.requireNonNull(getClusterName(), "No cluster.clusterName was specified within mesh options.");
 			Objects.requireNonNull(meshOptions.getNodeName(), "No nodeName was specified within mesh options.");
 		}

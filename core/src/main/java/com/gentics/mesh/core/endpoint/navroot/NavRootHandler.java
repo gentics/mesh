@@ -21,6 +21,7 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
+import com.gentics.mesh.path.impl.PathSegmentImpl;
 
 import io.vertx.ext.web.RoutingContext;
 
@@ -56,7 +57,8 @@ public class NavRootHandler {
 			if (lastSegment == null) {
 				throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(path));
 			}
-			NodeGraphFieldContainer container = lastSegment.getContainer();
+			PathSegmentImpl graphSegment = (PathSegmentImpl) lastSegment;
+			NodeGraphFieldContainer container = graphSegment.getContainer();
 			if (container == null) {
 				throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(path));
 			}

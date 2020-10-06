@@ -147,6 +147,7 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
+import com.gentics.mesh.path.impl.PathSegmentImpl;
 import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.StreamUtil;
@@ -1945,7 +1946,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			if (field != null) {
 				String fieldValue = field.getString();
 				if (segment.equals(fieldValue)) {
-					return new PathSegment(container, field, container.getLanguageTag(), segment);
+					return new PathSegmentImpl(container, field, container.getLanguageTag(), segment);
 				}
 			}
 
@@ -1960,7 +1961,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			} else {
 				String binaryFilename = binaryField.getFileName();
 				if (segment.equals(binaryFilename)) {
-					return new PathSegment(container, binaryField, container.getLanguageTag(), segment);
+					return new PathSegmentImpl(container, binaryField, container.getLanguageTag(), segment);
 				}
 			}
 		}

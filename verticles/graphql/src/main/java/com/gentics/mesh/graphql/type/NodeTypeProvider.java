@@ -64,6 +64,8 @@ import com.gentics.mesh.handler.Versioned;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
+import com.gentics.mesh.path.impl.PathImpl;
+import com.gentics.mesh.path.impl.PathSegmentImpl;
 import com.gentics.mesh.search.index.node.NodeSearchHandler;
 
 import graphql.GraphQLException;
@@ -294,7 +296,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 						ContainerType type = getNodeVersion(env);
 						Stack<String> pathStack = new Stack<>();
 						pathStack.add(nodePath);
-						Path path = new Path();
+						Path path = new PathImpl();
 						try {
 							NodeDaoWrapper nodeDao = Tx.get().nodeDao();
 							nodeDao.resolvePath(node, branchUuid, type, path, pathStack);
@@ -312,7 +314,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 						}
 						// Otherwise return the last segment.
 						PathSegment lastSegment = path.getSegments().get(path.getSegments().size() - 1);
-						NodeGraphFieldContainer containerFromPath = lastSegment.getContainer();
+						NodeGraphFieldContainer containerFromPath = ((PathSegmentImpl)lastSegment).getContainer();
 						HibNode nodeFromPath = null;
 						if (containerFromPath != null) {
 							nodeFromPath = boot.contentDao().getNode(containerFromPath);

@@ -272,6 +272,15 @@ public interface InternalEndpointRoute extends Comparable<InternalEndpointRoute>
 	InternalEndpointRoute setRAMLPath(String path);
 
 	/**
+	 * 
+	 * @param name
+	 * @param description
+	 * @param example
+	 * @return
+	 */
+	InternalEndpointRoute addQueryParameter(String name, String description, String example);
+
+	/**
 	 * Add a query parameter provider to the endpoint. The query parameter provider will in turn provide examples, descriptions for all query parameters which
 	 * the parameter provider provides.
 	 * 
@@ -411,4 +420,5 @@ public interface InternalEndpointRoute extends Comparable<InternalEndpointRoute>
 	 * @return
 	 */
 	Route getRoute();
+
 }

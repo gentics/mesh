@@ -72,6 +72,7 @@ import com.gentics.mesh.graphql.type.field.FieldDefinitionProvider;
 import com.gentics.mesh.graphql.type.field.MicronodeFieldTypeProvider;
 import com.gentics.mesh.handler.Versioned;
 import com.gentics.mesh.path.Path;
+import com.gentics.mesh.path.impl.PathSegmentImpl;
 import com.gentics.mesh.search.index.group.GroupSearchHandler;
 import com.gentics.mesh.search.index.project.ProjectSearchHandler;
 import com.gentics.mesh.search.index.role.RoleSearchHandler;
@@ -290,7 +291,9 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 				return null;
 			}
 
-			NodeGraphFieldContainer container = pathResult.getLast().getContainer();
+			// TODO HIB
+			PathSegmentImpl graphSegment = (PathSegmentImpl) pathResult.getLast();
+			NodeGraphFieldContainer container = graphSegment.getContainer();
 			HibNode nodeOfContainer = contentDao.getNode(container);
 
 			nodeOfContainer = gc.requiresPerm(nodeOfContainer, READ_PERM, READ_PUBLISHED_PERM);
