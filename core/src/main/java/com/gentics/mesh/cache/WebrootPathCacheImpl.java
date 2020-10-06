@@ -73,7 +73,12 @@ public class WebrootPathCacheImpl extends AbstractMeshCache<String, Path> implem
 			return null;
 		}
 		String key = createCacheKey(project, branch, type, path);
-		return cache.get(key);
+		Path value = cache.get(key);
+		if (value == null || !value.isValid()) {
+			return null;
+		} else {
+			return value;
+		}
 	}
 
 	@Override
