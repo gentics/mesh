@@ -40,6 +40,13 @@ icon:check[] Clustering: The webroot handler no longer uses the cluster-wide wri
 
 icon:check[] Logging: Failing readiness checks are now logged using the `WARN` level.
 
+[[v1.5.5]]
+== 1.5.5 (06.10.2020)
+
+icon:check[] OrientDB: The included OrientDB version has been updated to version `3.0.34`.
+
+icon:check[] Rest: The webroot cache error handling has been improved.
+
 [[v1.5.4]]
 == 1.5.4 (24.09.2020)
 
@@ -54,7 +61,7 @@ icon:check[] Clustering: The webroot handler no longer uses the cluster-wide wri
 icon:check[] Logging: Failing readiness checks are now logged using the `WARN` level.
 
 [[v1.4.16]]
-== 1.4.16 (06.09.2020)
+== 1.4.16 (06.10.2020)
 
 icon:check[] OrientDB: The included OrientDB version has been updated to version `3.0.34`.
 
