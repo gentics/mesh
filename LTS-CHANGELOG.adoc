@@ -22,6 +22,8 @@ All fixes and changes in LTS releases will be released the next minor release. C
 
 icon:check[] OrientDB: The included OrientDB version has been updated to version `3.0.34`.
 
+icon:check[] Rest: The webroot cache error handling has been improved.
+
 [[1.4.15]]
 == 1.4.15 (23.09.2020)
 
