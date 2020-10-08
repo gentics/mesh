@@ -77,7 +77,6 @@ public class AdminEndpointBackupLocalTest extends AbstractMeshTest {
 			Node bogus = tx.getGraph().addFramedVertex(NodeImpl.class);
 			bogus.setUuid(UUIDUtil.randomUUID());
 			bogus.setProject(project());
-			tx.success();
 			return bogus;
 		});
 
