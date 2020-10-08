@@ -9,6 +9,7 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.NONE;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.io.IOException;
@@ -16,11 +17,15 @@ import java.io.IOException;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.parameter.client.BackupParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.util.UUIDUtil;
 
 @MeshTestSetting(elasticsearch = NONE, testSize = FULL, startServer = true, inMemoryDB = false)
 public class AdminEndpointBackupLocalTest extends AbstractMeshTest {
@@ -56,6 +61,36 @@ public class AdminEndpointBackupLocalTest extends AbstractMeshTest {
 
 		call(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid()));
 		call(() -> client().findNodeByUuid(NEW_PROJECT_NAME, baseNodeUuid), NOT_FOUND, "project_not_found", NEW_PROJECT_NAME);
+	}
+
+	@Test
+	public void testBackupInconsistentDB() throws IOException {
+		final String backupDir = testContext.getOptions().getStorageOptions().getBackupDirectory();
+		assertFilesInDir(backupDir, 0);
+
+		grantAdminRole();
+		GenericMessageResponse message = call(() -> client().invokeBackup(new BackupParametersImpl().setConsistencyCheck(true)));
+		assertThat(message).matches("backup_finished");
+
+		// Now produce inconsistency
+		Node bogusNode = tx(tx -> {
+			Node bogus = tx.getGraph().addFramedVertex(NodeImpl.class);
+			bogus.setUuid(UUIDUtil.randomUUID());
+			bogus.setProject(project());
+			tx.success();
+			return bogus;
+		});
+
+		// Re-Run the backup and expect a failure
+		grantAdminRole();
+		call(() -> client().invokeBackup(new BackupParametersImpl().setConsistencyCheck(true)), INTERNAL_SERVER_ERROR, "backup_consistency_check_failed", "1");
+		assertFilesInDir(backupDir, 1);
+
+		// Remove the node to avoid test consistency check errors
+		tx(tx -> {
+			bogusNode.remove();
+			tx.success();
+		});
 	}
 
 	@Test
