@@ -36,7 +36,7 @@ public class BackupParametersImpl extends AbstractParameters implements BackupPa
 		// consistency check
 		QueryParameter consistencyCheck = new QueryParameter();
 		consistencyCheck.setDefaultValue("false");
-		consistencyCheck.setDescription("Specifiy whether the consistency check should be run before running the backup.");
+		consistencyCheck.setDescription("Specify whether the consistency check should be run before running the backup.");
 		consistencyCheck.setExample("true");
 		consistencyCheck.setRequired(false);
 		consistencyCheck.setType(ParamType.BOOLEAN);
