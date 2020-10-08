@@ -82,7 +82,6 @@ public class AdminEndpointBackupLocalTest extends AbstractMeshTest {
 		});
 
 		// Re-Run the backup and expect a failure
-		grantAdminRole();
 		call(() -> client().invokeBackup(new BackupParametersImpl().setConsistencyCheck(true)), INTERNAL_SERVER_ERROR, "backup_consistency_check_failed", "1");
 		assertFilesInDir(backupDir, 1);
 
