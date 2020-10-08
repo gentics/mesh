@@ -21,7 +21,6 @@ public class BackupParametersImpl extends AbstractParameters implements BackupPa
 
 	@Override
 	public void validate() {
-		// TODO validate query parameter value
 	}
 
 	@Override
