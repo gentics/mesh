@@ -18,8 +18,13 @@ The LTS changelog lists releases which are only accessible via a commercial subs
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
 
+[[v1.6.3]]
+== 1.6.3 (TBD)
+
+icon:check[] Tests: The path handling for the `MeshContainer` test container class has been updated. Container data will now be placed in the `target/mesh-containers` folder.
+
 [[v1.6.2]]
-== 1.6.2 (TBD)
+== 1.6.2 (06.10.2020)
 
 icon:check[] Additional log output and checks have been added to the auth plugin mapping code. This fix also addresses the `Null keys are not supported` error which was thrown when handling mappings which provide no group and role names. link:https://github.com/gentics/mesh/issues/1138[#1138]
 
