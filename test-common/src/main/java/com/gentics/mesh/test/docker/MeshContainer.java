@@ -646,6 +646,14 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 		}
 	}
 
+	public String getHost() {
+		return getContainerIpAddress();
+	}
+
+	public int getPort() {
+		return getMappedPort(8080);
+	}
+
 	public String getInternalContainerIpAddress() {
 		return getContainerInfo().getNetworkSettings().getIpAddress();
 	}
