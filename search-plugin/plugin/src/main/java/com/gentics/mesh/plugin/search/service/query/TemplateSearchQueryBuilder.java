@@ -24,25 +24,29 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 /**
- * Builds queries by replacing search parameters via {@link Handlebars} templates.
+ * Builds queries by replacing search parameters via {@link Handlebars}
+ * templates.
  *
  * <p>
- *     The generated templates will be cached for {@link SearchConfiguration#getExpireTime()} seconds.
+ *     The generated templates will be cached for
+ *     {@link SearchConfiguration#getExpireTime()} seconds.
  * </p>
  *
  * <p>
- *     The parameters "query", "lang", and "projects", will be set in all query types. The "tags" parameter, will
- *     only be set for {@link #buildSearchQuery(PluginContext, String) search queries}.
+ *     The parameters "query", "lang", "projects", and "tags" will be set in all
+ *     queries.
  * </p>
  *
  * <p>
- *     For search queries, the "from" and "size" fields will also be set accordingly.
+ *     For search and custom queries, the "from" and "size" fields will also be
+ *     set accordingly.
  * </p>
  *
  * <p>
- *     <strong>IMPORTANT:</strong> the parameters are already sanitized and escaped, so the raw query template should
- *     always use the "<code>{{{ value }}}</code>" placeholder notation to prevent Handlebars from escaping HTML
- *     markup.
+ *     <strong>IMPORTANT:</strong> the parameters are already sanitized and
+ *     escaped, so the raw query template should always use the
+ *     "<code>{{{ value }}}</code>" placeholder notation to prevent Handlebars
+ *     from escaping HTML markup.
  * </p>
  */
 public class TemplateSearchQueryBuilder implements CachingSearchQueryBuilder {
@@ -67,18 +71,84 @@ public class TemplateSearchQueryBuilder implements CachingSearchQueryBuilder {
 	}
 
 	/**
-	 * Tries to load the specified query template from the cache, or creates it from the <code>rawQuery</code>.
+	 * Tries to load the specified query template from the cache, or creates it
+	 * from the {@code rawQuery}.
 	 *
-	 * @see #buildQuery(PluginContext, boolean, Object)
-	 * @see #parseTemplate(String)
+	 * <p>
+	 *     The fields {@code size} and {@code from} will automatically be added
+	 *     to the query.
+	 * </p>
+	 *
+	 * @see #buildQuery(PluginContext, String, String, boolean)
 	 *
 	 * @param context The current plugin context
 	 * @param name The name of the query
-	 * @param rawQuery Initially loaded search query which can be modified. May be null if you want to create your query from scratch
+	 * @param rawQuery Initially loaded search query which can be modified. May
+	 * 		be null if you want to create your query from scratch
 	 * @return The final query
 	 */
 	@Override
 	public JsonObject buildQuery(PluginContext context, String name, String rawQuery) {
+		return buildQuery(context, name, rawQuery, true);
+	}
+
+	@Override
+	public JsonObject buildQuery(PluginContext context, String name) {
+		return buildQuery(context, name, null);
+	}
+
+	@Override
+	public JsonObject buildSearchQuery(PluginContext context, String rawQuery) {
+		return buildQuery(context, "search", rawQuery, true);
+	}
+
+	@Override
+	public JsonObject buildSearchQuery(PluginContext context) {
+		return buildSearchQuery(context, null);
+	}
+
+	@Override
+	public JsonObject buildAutocompleteQuery(PluginContext context, String rawQuery) {
+		return buildQuery(context, "auto", rawQuery, false);
+	}
+
+	@Override
+	public JsonObject buildAutocompleteQuery(PluginContext context) {
+		return buildAutocompleteQuery(context, null);
+	}
+
+	@Override
+	public JsonObject buildDidYouMeanQuery(PluginContext context, String rawQuery, boolean binary) {
+		return buildQuery(context, "dym" + (binary ? "b" : "c"), rawQuery, false);
+	}
+
+	@Override
+	public JsonObject buildDidYouMeanQuery(PluginContext context, boolean binary) {
+		return buildDidYouMeanQuery(context, null, binary);
+	}
+
+	@Override
+	public void clearCache() {
+		cache.invalidateAll();
+	}
+
+
+	/**
+	 * Tries to load the specified query template from the cache, or creates it
+	 * from the {@code rawQuery}.
+	 *
+	 * @see #parseTemplate(String)
+	 * @see #buildQuery(PluginContext, boolean, Object)
+	 *
+	 * @param context The current plugin context
+	 * @param name The name of the query
+	 * @param rawQuery Initially loaded search query which can be modified. May
+	 * 		be null if you want to create your query from scratch
+	 * @param addPaging Whether to add the {@code size} and {@code from} fields
+	 * 		to the query
+	 * @return The final query
+	 */
+	private JsonObject buildQuery(PluginContext context, String name, String rawQuery, boolean addPaging) {
 		String cacheKey = context.projectName() + "/" + name;
 		Object template = cache.get(cacheKey, parseTemplate(rawQuery));
 
@@ -90,19 +160,40 @@ public class TemplateSearchQueryBuilder implements CachingSearchQueryBuilder {
 			return null;
 		}
 
-		return buildQuery(context, name.equals("search"), template);
+		return buildQuery(context, addPaging, template);
 	}
 
-	@Override
-	public JsonObject buildQuery(PluginContext context, String name) {
-		return buildQuery(context, name, null);
-	}
+	/**
+	 * Build the final query from the given template.
+	 *
+	 * <p>
+	 *     When template generation failed, <code>template</code> will be a {@link RuntimeException} which is
+	 *     just thrown immediately.
+	 * </p>
+	 * <p>
+	 *     Page and size parameters are added automatically
+	 * </p>
+	 * @param context The current plugin context
+	 * @param addPaging Whether to add the {@code size} and {@code page} fields to the query
+	 * @param template The Handlebars template for the query
+	 * @return The final query
+	 * @throws RuntimeException When the template could not be generated or applied to the search parameters
+	 */
+	private JsonObject buildQuery(PluginContext context, boolean addPaging, Object template) {
+		Map<String, Object> params = getParameters(context.request(), context.projectName());
 
-	@Override
-	public JsonObject buildSearchQuery(PluginContext context, String rawQuery) {
-		JsonObject query = buildQuery(context, "search", rawQuery);
+		if (template instanceof RuntimeException) {
+			throw (RuntimeException) template;
+		}
+		JsonObject query;
 
-		if (query != null) {
+		try {
+			 query = new JsonObject(((Template) template).apply(params));
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+
+		if (addPaging) {
 			int page = NumberUtils.toInt(context.request().getParam("p"), 0);
 			int pageSize = config.getPageSize();
 
@@ -113,73 +204,14 @@ public class TemplateSearchQueryBuilder implements CachingSearchQueryBuilder {
 		return query;
 	}
 
-	@Override
-	public JsonObject buildSearchQuery(PluginContext context) {
-		return buildSearchQuery(context, null);
-	}
-
-	@Override
-	public JsonObject buildAutocompleteQuery(PluginContext context, String rawQuery) {
-		return buildQuery(context, "auto", rawQuery);
-	}
-
-	@Override
-	public JsonObject buildAutocompleteQuery(PluginContext context) {
-		return buildQuery(context, "auto");
-	}
-
-	@Override
-	public JsonObject buildDidYouMeanQuery(PluginContext context, String rawQuery, boolean binary) {
-		return buildQuery(context, "dym" + (binary ? "b" : "c"), rawQuery);
-	}
-
-	@Override
-	public JsonObject buildDidYouMeanQuery(PluginContext context, boolean binary) {
-		return buildQuery(context, "dym" + (binary ? "b" : "c"));
-	}
-
-	@Override
-	public void clearCache() {
-		cache.invalidateAll();
-	}
-
-	/**
-	 * Build the final query from the given template.
-	 *
-	 * <p>
-	 *     When template generation failed, <code>template</code> will be a {@link RuntimeException} which is
-	 *     just thrown immediately.
-	 * </p>
-	 *
-	 * @param context The current plugin context
-	 * @param isSearchQuery Whether the build query is a search query which needs the "from" and "size" parameters
-	 * @param template The Handlebars template for the query
-	 * @return The final query
-	 * @throws RuntimeException When the template could not be generated or applied to the search parameters
-	 */
-	private JsonObject buildQuery(PluginContext context, boolean isSearchQuery, Object template) {
-		Map<String, Object> params = getParameters(context.request(), isSearchQuery, context.projectName());
-
-		if (template instanceof RuntimeException) {
-			throw (RuntimeException) template;
-		}
-
-		try {
-			return new JsonObject(((Template) template).apply(params));
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
 	/**
 	 * Extract the "query", "lang", "projects" and if needed the "tags" parameters from the search request.
 	 *
 	 * @param request The current search request
-	 * @param isSearchQuery Whether the parameters are for a search query which needs the "tags" parameter
 	 * @param projectName The project that received the search request
 	 * @return A map containing the extracted query parameters
 	 */
-	private Map<String, Object> getParameters(HttpServerRequest request, boolean isSearchQuery, String projectName) {
+	private Map<String, Object> getParameters(HttpServerRequest request, String projectName) {
 		Map<String, Object> params = new HashMap<>();
 		String param = request.getParam("l");
 
@@ -190,10 +222,7 @@ public class TemplateSearchQueryBuilder implements CachingSearchQueryBuilder {
 		params.put("lang", StringEscapeUtils.escapeJson(param));
 		params.put("query", QueryBuilderUtils.getEscapedSearchTerm(request));
 		params.put("projects", QueryBuilderUtils.getProjectsRegexp(config.getSearchedProjects(projectName)));
-
-		if (isSearchQuery) {
-			params.put("tags", String.join(" ", QueryBuilderUtils.getTags(request)));
-		}
+		params.put("tags", String.join(" ", QueryBuilderUtils.getTags(request)));
 
 		return params;
 	}

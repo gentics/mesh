@@ -44,6 +44,7 @@ public class SearchQueryBuilderTest {
 		AUTOCOMPLETE("autocomplete.es"),
 		DID_YOU_MEAN_BINARY("did-you-mean.es"),
 		DID_YOU_MEAN_CONTENT("did-you-mean.es"),
+		CUSTOM("custom.es"),
 		INVALID("invalid.es");
 
 		public final String filename;
@@ -56,7 +57,7 @@ public class SearchQueryBuilderTest {
 	private static final Pattern TEST_CASE_PATTERN = Pattern.compile("(\\S*)\\s*(\\S*)\\s*(\\S*)");
 	private static final String PROJECT_NAME = "dummy";
 
-	@Parameter(0)
+	@Parameter
 	public QueryType queryType;
 
 	@Parameter(1)
@@ -123,7 +124,7 @@ public class SearchQueryBuilderTest {
 			loadResource("/builder/input/template/" + queryType.filename));
 	}
 
-	private boolean test(SearchQueryBuilder builder, String input) throws IOException {
+	private void test(SearchQueryBuilder builder, String input) throws IOException {
 		JsonObject query;
 		boolean failed;
 		boolean shouldFail = queryType == QueryType.INVALID;
@@ -147,6 +148,10 @@ public class SearchQueryBuilderTest {
 
 			case DID_YOU_MEAN_CONTENT:
 				query = builder.buildDidYouMeanQuery(pc, input, false);
+				break;
+
+			case CUSTOM:
+				query = builder.buildQuery(pc, "custom-query", input);
 				break;
 
 			case INVALID:
@@ -176,6 +181,5 @@ public class SearchQueryBuilderTest {
 			.as("Result query")
 			.isEqualTo(expected);
 
-		return true;
 	}
 }

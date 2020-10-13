@@ -61,7 +61,7 @@ public class KeycloakPlugin extends AbstractCommercialPlugin<KeycloakPluginConfi
 
 	@Override
 	public boolean acceptToken(HttpServerRequest httpServerRequest, JsonObject token) {
-		log.info("Checking token. Accepting..");
+		log.debug("Accepting token");
 		printToken(token);
 		return true;
 	}
@@ -90,9 +90,12 @@ public class KeycloakPlugin extends AbstractCommercialPlugin<KeycloakPluginConfi
 	}
 
 	private void printToken(JsonObject token) {
-		String username = token.getString("preferred_username");
-		System.out.println("Token for {" + username + "}");
-		System.out.println(token.encodePrettily());
+		if (log.isTraceEnabled()) {
+			log.trace(
+				"Token for user {}:\n{}",
+				token.getString("preferred_username"),
+				token.encodePrettily());
+		}
 	}
 
 	/**

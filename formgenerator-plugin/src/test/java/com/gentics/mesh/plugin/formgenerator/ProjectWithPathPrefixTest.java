@@ -1,14 +1,13 @@
 package com.gentics.mesh.plugin.formgenerator;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.junit.ClassRule;
-import org.junit.Test;
-
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.plugin.test.common.AbstractPluginLocalIntegrationTest;
 import com.gentics.mesh.plugin.test.common.util.PluginTestUtil;
 import com.gentics.mesh.test.local.MeshLocalServer;
+import org.junit.ClassRule;
+import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Test case for enabling the plugin for a project, that has a non-empty pathPrefix

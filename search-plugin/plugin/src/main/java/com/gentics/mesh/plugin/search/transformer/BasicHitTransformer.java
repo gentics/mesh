@@ -59,6 +59,10 @@ public class BasicHitTransformer implements HitTransformer {
 
 		if (node != null) {
 			ret.put("additional", node.getJsonObject("fields", emptyObject));
+			// TODO: above line is to allow backward compatibility
+			JsonObject tmp = node.copy();
+			tmp.remove("fields");
+			ret.put("additionalDetails", tmp);
 		}
 
 		return ret;

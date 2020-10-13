@@ -1,0 +1,26 @@
+{
+	"responses": [
+		{
+			"hits": {
+				"total": 1,
+				"hits": [
+					{
+						"_id": "01234-de",
+						"_index": "mesh-node-project-branch_dummy-version-draft-de",
+						"_source": {
+							"project": {
+								"name": "dummy"
+							},
+							"language": "de",
+							"fields": {
+								"title": "Test result 1"
+							},
+							"uuid": "01234"
+						}
+					}
+				]
+			},
+			"status": 200
+		}
+	]
+}

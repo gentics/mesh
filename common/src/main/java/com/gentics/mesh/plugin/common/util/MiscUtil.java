@@ -4,6 +4,7 @@ import com.gentics.mesh.plugin.common.service.MeshPluginService;
 import com.google.common.base.Charsets;
 import org.apache.commons.io.IOUtils;
 
+import javax.annotation.Nonnull;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,23 +26,62 @@ public class MiscUtil {
 	 *     into {@link RuntimeException RuntimeExceptions}.
 	 * </p>
 	 *
+	 * @deprecated Use {@link #loadResourceString(String)} instead
 	 * @param path The path to the resource to load
 	 * @return The string contents of the specified resource
 	 */
+	@Deprecated
 	public static String loadResource(String path) {
-		try {
-			InputStream stream = MeshPluginService.class.getResourceAsStream(path);
-			if (stream == null) {
-				throw new FileNotFoundException(path);
-			}
-			String resource = IOUtils.toString(
-				stream,
-				Charsets.UTF_8);
-			stream.close();
-			return resource;
+		return loadResourceString(path);
+	}
+
+	/**
+	 * Load the specified resource as a String.
+	 *
+	 * @see #loadResourceStream(String)
+	 * @param path The path to the resource to load
+	 * @return The string contents of the specified resource
+	 */
+	public static String loadResourceString(String path) {
+		try (InputStream stream = loadResourceStream(path)) {
+			return IOUtils.toString(stream, Charsets.UTF_8);
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new RuntimeException("Could not load resource \"" + path + "\": " + e.getMessage(), e);
 		}
+	}
+
+	/**
+	 * Load the specified resource as a byte array.
+	 *
+	 * @see #loadResourceStream(String)
+	 * @param path The path to the resource to load
+	 * @return The contents of the specified resource as a byte array
+	 */
+	public static byte[] loadResourceBytes(String path) {
+		try (InputStream stream = loadResourceStream(path)) {
+			return IOUtils.toByteArray(stream);
+		} catch (IOException e) {
+			throw new RuntimeException("Could not load resource \"" + path + "\": " + e.getMessage(), e);
+		}
+	}
+
+
+	/**
+	 * Load the specified resource as a byte array.
+	 *
+	 * @see #loadResourceStream(String)
+	 * @param path The path to the resource to load
+	 * @return The contents of the specified resource as a byte array
+	 */
+	@Nonnull
+	public static InputStream loadResourceStream(String path) throws FileNotFoundException {
+		InputStream stream = MiscUtil.class.getResourceAsStream(path);
+
+		if (stream == null) {
+			throw new FileNotFoundException(path);
+		}
+
+		return stream;
 	}
 
 	/**
