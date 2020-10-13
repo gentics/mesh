@@ -43,8 +43,6 @@ public final class MeshVersionUtil {
 	 */
 	public static String getMatchingImage() {
 		String version = MeshVersion.getPlainVersion();
-		// TODO REMOVE ME - THIS IS FOR TESTING ONLY
-		version="1.6.0";
 		if (isOSS(version)) {
 			return OSS_IMAGE + ":" + version;
 		} else {
