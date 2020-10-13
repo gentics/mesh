@@ -11,6 +11,9 @@ import com.gentics.mesh.core.rest.user.UserListResponse;
 public class MeshContainerTest {
 
 	@ClassRule
+	// We are hardcoding mesh versions here since we can't use a 
+	// fixed version because the docker build is has not been created at 
+	// that point.
 	public static MeshContainer server = new MeshContainer("gentics/mesh:1.6.0")
 		.withDebug(9200)
 		.waitForStartup();
