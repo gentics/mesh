@@ -24,6 +24,8 @@ icon:check[] Clustering: Internal caches will now be cleared when cluster topolo
 
 icon:plus[] Backup: The `?consistencyCheck` query parameter was added to the `/api/v2/admin/backup` endpoint. When set to true it will run the consistency check before invoking the backup. The call will fail when inconsistencies were detected.
 
+icon:check[] Clustering: An additional check has been added which will prevent nodes from joining a cluster which contains an outdated database. The `-initCluster` flag needs to be used for a single instance to migrate the cluster. This is done to prevent concurrency issues during changelog execution and cluster formation.
+
 [[v1.4.16]]
 == 1.4.16 (06.09.2020)
 

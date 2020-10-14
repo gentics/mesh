@@ -250,6 +250,14 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				// Only execute the changelog if there are any elements in the graph
 				invokeChangelog();
 			}
+
+			if (isJoiningCluster && requiresChangelog()) {
+				// Joining of cluster members is only allowed when the changelog has been applied
+				throw new RuntimeException(
+					"The instance can't join the cluster since the cluster database does not contain all needed changes. Please restart a single instance in the cluster with the "
+						+ MeshOptions.MESH_CLUSTER_INIT_ENV + " environment flag or the -" + MeshCLI.INIT_CLUSTER + " command line argument to migrate the database.");
+			}
+
 			return false;
 		}
 	}
@@ -295,7 +303,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				db.closeConnectionPool();
 				db.shutdown();
 
-				db.clusterManager().start();
+				db.clusterManager().startAndSync();
 				db.clusterManager().registerEventHandlers();
 				db.setupConnectionPool();
 				searchProvider.init();
@@ -305,7 +313,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				}
 			} else {
 				// We need to wait for other nodes and receive the graphdb
-				db.clusterManager().start();
+				db.clusterManager().startAndSync();
 				db.clusterManager().registerEventHandlers();
 				isInitialSetup = false;
 				db.setupConnectionPool();
@@ -333,7 +341,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			initLocalData(options, false);
 			if (startOrientServer) {
 				db.closeConnectionPool();
-				db.clusterManager().start();
+				db.clusterManager().startAndSync();
 				db.setupConnectionPool();
 			}
 		}
@@ -697,6 +705,13 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 		log.info("Changelog completed.");
 		cls.setCurrentVersionAndRev();
+	}
+
+	@Override
+	public boolean requiresChangelog() {
+		log.info("Checking whether changelog entries need to be applied");
+		ChangelogSystem cls = new ChangelogSystem(db, options);
+		return cls.requiresChanges() || highlevelChangelogSystem.requiresChanges(meshRoot);
 	}
 
 	@Override
