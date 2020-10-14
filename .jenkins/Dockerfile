@@ -22,6 +22,11 @@ RUN cd /opt && wget -nv -O maven.tar.gz "https://downloads.apache.org/maven/mave
     tar -xzf maven.tar.gz && mv apache-maven* maven && rm maven.tar.gz && \
     ln -s /opt/maven/bin/mvn /usr/local/bin/mvn
 
+# kubectl
+RUN curl -LO "https://storage.googleapis.com/kubernetes-release/release/1.19.0/bin/linux/amd64/kubectl" && \
+    chmod +x kubectl && \
+    mv kubectl /usr/local/bin/kubectl
+
 # Docker
 RUN curl "https://get.docker.com/builds/`uname -s`/`uname -m`/docker-latest.tgz" > docker.tgz &&\
     tar -xzf docker.tgz &&\
