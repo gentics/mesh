@@ -84,6 +84,8 @@ public class ChangelogSystem {
 		TransactionalGraph graph = db.rawTx();
 		try {
 			for (Change change : changes) {
+				change.setGraph(graph);
+				change.setDb(db);
 				if (!change.isApplied()) {
 					log.info("Change " + change.getName() + " has not yet been applied.");
 					return true;
