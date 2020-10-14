@@ -1,0 +1,19 @@
+query Forms($perPage: Long = 2147483647, $page: Long = 1) {
+  schema(name: "form") {
+    nodes(perPage: $perPage, page: $page) {
+      elements {
+        uuid
+        fields {
+          ... on form {
+            name
+            cms_id
+          }
+        }
+      }
+      totalCount
+      currentPage
+      pageCount
+      perPage
+    }
+  }
+}

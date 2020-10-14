@@ -1,0 +1,10 @@
+{
+	"name": "Invalid form with radio element without list elements",
+	"elements": [
+		{
+			"type": "radio",
+			"name": "radio1",
+			"label": "Radio"
+		}
+	]
+}
