@@ -23,7 +23,7 @@ RUN cd /opt && wget -nv -O maven.tar.gz "https://downloads.apache.org/maven/mave
     ln -s /opt/maven/bin/mvn /usr/local/bin/mvn
 
 # kubectl
-RUN curl -LO "https://storage.googleapis.com/kubernetes-release/release/1.19.0/bin/linux/amd64/kubectl" && \
+RUN curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.19.0/bin/linux/amd64/kubectl" && \
     chmod +x kubectl && \
     mv kubectl /usr/local/bin/kubectl
 
