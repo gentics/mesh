@@ -1,9 +1,4 @@
 {
-  "configPaths": [
-    "/fl-config",
-    "/common-config",
-    "/oi-config",
-    "/koma-config"
-  ],
+  "configPaths": [],
   "configNodesCacheTime": 600
 }
