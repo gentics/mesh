@@ -303,7 +303,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				db.closeConnectionPool();
 				db.shutdown();
 
-				db.clusterManager().start();
+				db.clusterManager().startAndSync();
 				db.clusterManager().registerEventHandlers();
 				db.setupConnectionPool();
 				searchProvider.init();
@@ -313,7 +313,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				}
 			} else {
 				// We need to wait for other nodes and receive the graphdb
-				db.clusterManager().start();
+				db.clusterManager().startAndSync();
 				db.clusterManager().registerEventHandlers();
 				isInitialSetup = false;
 				db.setupConnectionPool();
@@ -341,7 +341,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			initLocalData(options, false);
 			if (startOrientServer) {
 				db.closeConnectionPool();
-				db.clusterManager().start();
+				db.clusterManager().startAndSync();
 				db.setupConnectionPool();
 			}
 		}
