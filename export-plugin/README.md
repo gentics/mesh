@@ -4,13 +4,15 @@ A Mesh-Plugin to export any Mesh content dynamically into a CSV File.
 
 ## Building:
 
-build the Plugin with maven
+Build the Plugin with maven:
+
 ```bash
 mvn clean package
 ```
-after building, take the "mesh.plugin.export-PLUGIN-VERSION.jar" from the "/target" folder.
 
-> **Note:** if there comes a error while building with maven, try building it without running the Tests: `-Dmaven.test.skip=true`
+After building, take the build Plugin `mesh-export-plugin-{VERSION}.jar` from the `target` folder.
+
+> **Note:** If there comes a error while building with maven, try building it without running the Tests: `-Dmaven.test.skip=true` -> `mvn -Dmaven.test.skip=true clean package`
 
 ## Installation
 
@@ -21,8 +23,16 @@ You can then manually deploy it when the server is still running or restart the 
 
 The only configuration-options are the webroot-paths to the config-nodes which are used for `CONFIG_VALUE` mappings
 and the cache timing of these config-nodes.
-
 If the webroot-path does not exist, it is simply ignored.
+
+| Setting                  | Type        | Default Value | Description |
+| ------------------------ | ----------- | ------------- | ----------- |
+| `configPaths`            | `String[]`  | `[]`          | Webroot Paths to the configuration nodes. |
+| `configNodesCacheTime`   | `Integer`   | `600`         | Amount of seconds how long the configuration nodes are being cached. |
+| `configNodesCacheTimeMs` | `Integer`   | `600000`      | Same as `configNodesCacheTime`, but in milliseconds. |
+
+### Configuration Nodes
+
 The format of the configuration-nodes need to look like this:
 
 Configuration Schema:
@@ -62,6 +72,75 @@ Option Micro-Schema:
     }
   ]
 }
+```
+
+Configuration Node:
+```json
+{
+  "language": "en",
+  "schema": {
+    "name": "example_configuration"
+  },
+  "parentNode": {
+    "uuid": "00112233445566778899aabbccddeeff"
+  },
+  "fields": {
+    "slug": "config",
+    "exampleOption": [
+      {
+        "microschema": { "name": { "example_option" } },
+        "fields": { "id": "1", "value": "Example Option Value 001" }
+      },
+      {
+        "microschema": { "name": { "example_option" } },
+        "fields": { "id": "2", "value": "Another Example Option Value 002" }
+      },
+      {
+        "microschema": { "name": { "example_option" } },
+        "fields": { "id": "3", "value": "Some other Option Value 003" }
+      }
+    ]
+  }
+}
+```
+
+Plugin Configuration:
+```yml
+configPaths:
+- "/config"
+```
+
+Example Mapping:
+```json
+{
+  "path": "fields.name",
+  "label": "Name",
+  "type": "STRING"
+},
+{
+  "path": "fields.someOptionField",
+  "label": "Value Label",
+  "type": "CONFIG_VALUE",
+  "configKey": "exampleOption"
+}
+```
+
+Example Node:
+```json5
+{
+  // ...
+  "fields": {
+    "name": "Example Node 01",
+    "someOptionField": "1"
+  }
+  // ...
+}
+```
+
+Output:
+```csv
+"Name";"Value Label"
+"Example Node 01";"Example Option Value 001"
 ```
 
 ## Request
@@ -185,35 +264,35 @@ Example:
           "path": "fields.myField",
           "value": null
         }
-      },
-      {
-        "range": {
-          "path": "created",
-          "gte": "2020-01-01T00:00:00Z"
-        }
-      },
-      {
-        "or": [
-          {
-            "equals": {
-              "path": "fields.myType",
-              "value": 1
-            }
-          },
-          {
-            "equals": {
-              "path": "fields.myType",
-              "value": 2
-            }
-          },
-          {
-            "equals": {
-              "path": "fields.myType",
-              "value": 3
-            }
-          }
-        ]
       }
+    },
+    {
+      "range": {
+        "path": "created",
+        "gte": "2020-01-01T00:00:00Z"
+      }
+    },
+    {
+      "or": [
+        {
+          "equals": {
+            "path": "fields.myType",
+            "value": 1
+          }
+        },
+        {
+          "equals": {
+            "path": "fields.myType",
+            "value": 2
+          }
+        },
+        {
+          "equals": {
+            "path": "fields.myType",
+            "value": 3
+          }
+        }
+      ]
     }
   ]
 }
