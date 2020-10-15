@@ -191,6 +191,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 			log.trace("Using ridbag transition threshold {" + value + "}");
 		}
 		OGlobalConfiguration.RID_BAG_EMBEDDED_TO_SBTREEBONSAI_THRESHOLD.setValue(value);
+		OGlobalConfiguration.WARNING_DEFAULT_USERS.setValue(false);
 
 		clusterManager.initConfigurationFiles();
 
