@@ -329,13 +329,11 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			searchProvider.init();
 			searchProvider.start();
 			// No cluster mode - Just setup the connection pool and load or setup the local data
+			if (startOrientServer) {
+				db.clusterManager().start();
+			}
 			db.setupConnectionPool();
 			initLocalData(options, false);
-			if (startOrientServer) {
-				db.closeConnectionPool();
-				db.clusterManager().start();
-				db.setupConnectionPool();
-			}
 		}
 
 		eventManager.registerHandlers();
