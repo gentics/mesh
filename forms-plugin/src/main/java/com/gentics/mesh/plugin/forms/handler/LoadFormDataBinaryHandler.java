@@ -1,7 +1,5 @@
 package com.gentics.mesh.plugin.forms.handler;
 
-import java.util.Map;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -12,7 +10,6 @@ import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import io.reactivex.Completable;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 

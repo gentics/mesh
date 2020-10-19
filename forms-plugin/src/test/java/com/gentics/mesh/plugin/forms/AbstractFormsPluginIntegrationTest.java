@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
@@ -96,6 +97,25 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 		return String.format("http://%s:%d/api/v1/%s/plugins/%s%s", server.getHostname(), server.getPort(), PROJECT_NAME, "forms", path);
 	}
 
+	/**
+	 * Get the auth headers (based on whether the permission flag is set)
+	 * @param permission flag
+	 * @return auth headers or empty headers (if permission flag is not set)
+	 */
+	protected static Headers auth(boolean permission) {
+		return Headers.of(permission ? server.client().getAuthentication().getHeaders() : Collections.emptyMap());
+	}
+
+	/**
+	 * Assert that the response was 403
+	 * @param response response
+	 */
+	protected static void assertForbidden(Response response) {
+		assertThat(response.isSuccessful())
+				.as(String.format("Response status %d (%s)", response.code(), response.message())).isEqualTo(false);
+		assertThat(response.code()).as("Response code").isEqualTo(403);
+	}
+
 	protected static OkHttpClient client() {
 		OkHttpClient.Builder builder = new OkHttpClient.Builder();
 		builder.connectTimeout(1, TimeUnit.HOURS).readTimeout(1, TimeUnit.HOURS).writeTimeout(1, TimeUnit.HOURS);
@@ -129,7 +149,7 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 	}
 
 	/**
-	 * Convenience method for {@link #createForm(String, boolean)} which passes <code>true</code>
+	 * Convenience method for {@link #createForm(String, boolean, boolean)} which passes <code>true</code>
 	 * for <code>expectSuccess</code>.
 	 *
 	 * @param fileName file name
@@ -137,29 +157,34 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 	 * @throws IOException
 	 */
 	protected Response createForm(String fileName) throws IOException {
-		return createForm(fileName, true);
+		return createForm(fileName, true, true);
 	}
 
 	/**
 	 * Create a form with data from the given file.
 	 * Assert that creation succeeded
 	 * @param fileName file name
+	 * @param permission whether the request shall be made with the required permissions
 	 * @param expectSuccess whether the request is expected to be successful
 	 * @return response
 	 * @throws IOException
 	 */
-	protected Response createForm(String fileName, boolean expectSuccess) throws IOException {
+	protected Response createForm(String fileName, boolean permission, boolean expectSuccess) throws IOException {
 		String uuid = UUIDUtil.randomUUID();
 		Request createRequest = new Request.Builder()
 			.url(projectUrl("/forms/" + uuid))
-			.headers(Headers.of(server.client().getAuthentication().getHeaders()))
+			.headers(auth(permission))
 			.post(requestBodyFromFile(fileName))
 			.build();
 		Response response = client().newCall(createRequest).execute();
 
-		assertThat(response.isSuccessful())
-			.as(String.format("Response status %d (%s)", response.code(), response.message()))
-			.isEqualTo(expectSuccess);
+		if (permission) {
+			assertThat(response.isSuccessful())
+					.as(String.format("Response status %d (%s)", response.code(), response.message()))
+					.isEqualTo(expectSuccess);
+		} else {
+			assertForbidden(response);
+		}
 
 		return response;
 	}
@@ -167,32 +192,35 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 	/**
 	 * Create a new form from file <code>create.json</code>, and update it with the from in <code>fileName</code>.
 	 * @param fileName The JSON file for the update request
+	 * @param permission TODO
 	 * @param expectSuccess Whether the update request is expected to succedd
 	 * @return The <code>NodeResponse</code> of the update request
 	 * @throws IOException
 	 */
-	protected NodeResponse updateForm(String fileName, boolean expectSuccess) throws IOException {
-		Response createResponse = createForm("create.json", true);
+	protected NodeResponse updateForm(String fileName, boolean permission, boolean expectSuccess) throws IOException {
+		Response createResponse = createForm("create.json", true, true);
 		NodeResponse createdNode = JsonUtil.readValue(createResponse.body().string(), NodeResponse.class);
 		Request updateRequest = new Request.Builder()
 			.url(projectUrl("/forms/" + createdNode.getUuid()))
-			.headers(Headers.of(server.client().getAuthentication().getHeaders()))
+			.headers(auth(permission))
 			.post(requestBodyFromFile(fileName))
 			.build();
 		Response response = client().newCall(updateRequest).execute();
 
-		assertThat(response.isSuccessful())
-			.as(String.format("Response success %d (%s)", response.code(), response.message()))
-			.isEqualTo(expectSuccess);
+		if (permission) {
+			assertThat(response.isSuccessful())
+					.as(String.format("Response success %d (%s)", response.code(), response.message()))
+					.isEqualTo(expectSuccess);
 
-		if (expectSuccess) {
-			NodeResponse updatedNode = JsonUtil.readValue(response.body().string(), NodeResponse.class);
+			if (expectSuccess) {
+				NodeResponse updatedNode = JsonUtil.readValue(response.body().string(), NodeResponse.class);
 
-			assertThat(updatedNode)
-				.as("Loaded Form Node")
-				.isEqualToComparingOnlyGivenFields(createdNode, "uuid");
+				assertThat(updatedNode).as("Loaded Form Node").isEqualToComparingOnlyGivenFields(createdNode, "uuid");
 
-			return updatedNode;
+				return updatedNode;
+			}
+		} else {
+			assertForbidden(response);
 		}
 
 		// The update request is expected to fail.

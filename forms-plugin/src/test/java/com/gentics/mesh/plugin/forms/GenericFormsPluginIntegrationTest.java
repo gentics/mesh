@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -29,6 +30,10 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -48,14 +53,26 @@ import com.jayway.jsonpath.JsonPath;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import okhttp3.Cookie;
-import okhttp3.Headers;
 import okhttp3.HttpUrl;
 import okhttp3.MultipartBody;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+@RunWith(value = Parameterized.class)
 public class GenericFormsPluginIntegrationTest extends AbstractFormsPluginIntegrationTest {
+	@Parameters(name = "{index}: permission {0}")
+	public static Collection<Object[]> data() {
+		Collection<Object[]> data = new ArrayList<>();
+		for (Boolean permission : Arrays.asList(true, false)) {
+			data.add(new Object[] { permission });
+		}
+		return data;
+	}
+
+	@Parameter(0)
+	public boolean permission;
+
 	@Before
 	public void setup() {
 		super.setup();
@@ -69,19 +86,21 @@ public class GenericFormsPluginIntegrationTest extends AbstractFormsPluginIntegr
 	 */
 	@Test
 	public void testCreateForm() throws IOException {
-		Response response = createForm("create.json");
+		Response response = createForm("create.json", permission, true);
 
-		NodeResponse nodeResponse = JsonUtil.readValue(response.body().string(), NodeResponse.class);
-		assertThat(nodeResponse.getProject().getName()).as("NodeResponse Project").isEqualTo(PROJECT_NAME);
-		assertThat(nodeResponse.getFields().getStringField("name").getString()).as("NodeResponse name").isEqualTo("Created Form");
-		JsonObject loadedJson = JsonUtil.readValue(nodeResponse.getFields().getStringField("json").getString(), JsonObject.class);
-		JsonObject expectedJson = JsonUtil.readValue(fromFile("create.json"), JsonObject.class);
-		assertThat(loadedJson).as("NodeResponse json").isEqualTo(expectedJson);
+		if (permission) {
+			NodeResponse nodeResponse = JsonUtil.readValue(response.body().string(), NodeResponse.class);
+			assertThat(nodeResponse.getProject().getName()).as("NodeResponse Project").isEqualTo(PROJECT_NAME);
+			assertThat(nodeResponse.getFields().getStringField("name").getString()).as("NodeResponse name").isEqualTo("Created Form");
+			JsonObject loadedJson = JsonUtil.readValue(nodeResponse.getFields().getStringField("json").getString(), JsonObject.class);
+			JsonObject expectedJson = JsonUtil.readValue(fromFile("create.json"), JsonObject.class);
+			assertThat(loadedJson).as("NodeResponse json").isEqualTo(expectedJson);
 
-		Optional<NodeResponse> optionalNode = loadNode(nodeResponse.getUuid());
-		assertThat(optionalNode).as("Form Node").isPresent();
-		assertThat(optionalNode.get().getParentNode().getSchema().getName()).as("Parent schema").isEqualTo(SchemaService.PLUGIN_SCHEMA_NAME);
-		assertThat(loadSchema(SchemaService.getSchemaName(nodeResponse.getUuid()))).as("Form Schema").isPresent();
+			Optional<NodeResponse> optionalNode = loadNode(nodeResponse.getUuid());
+			assertThat(optionalNode).as("Form Node").isPresent();
+			assertThat(optionalNode.get().getParentNode().getSchema().getName()).as("Parent schema").isEqualTo(SchemaService.PLUGIN_SCHEMA_NAME);
+			assertThat(loadSchema(SchemaService.getSchemaName(nodeResponse.getUuid()))).as("Form Schema").isPresent();
+		}
 	}
 
 	/**
@@ -96,17 +115,22 @@ public class GenericFormsPluginIntegrationTest extends AbstractFormsPluginIntegr
 
 		Request listRequest = new Request.Builder()
 				.url(projectUrl("/forms"))
-				.headers(Headers.of(server.client().getAuthentication().getHeaders()))
+				.headers(auth(permission))
 				.get()
 				.build();
 		Response response = client().newCall(listRequest).execute();
-		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
 
-		String responseBody = response.body().string();
-		int totalCount = JsonPath.read(responseBody, "$.totalCount");
-		assertThat(totalCount).as("Total count").isEqualTo(3);
-		List<String> names = JsonPath.read(responseBody, "$.forms[*].name");
-		assertThat(names).as("Form names").containsOnly("Form List 1", "Form List 2", "Form List 3");
+		if (permission) {
+			assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+
+			String responseBody = response.body().string();
+			int totalCount = JsonPath.read(responseBody, "$.totalCount");
+			assertThat(totalCount).as("Total count").isEqualTo(3);
+			List<String> names = JsonPath.read(responseBody, "$.forms[*].name");
+			assertThat(names).as("Form names").containsOnly("Form List 1", "Form List 2", "Form List 3");
+		} else {
+			assertForbidden(response);
+		}
 	}
 
 	/**
@@ -120,14 +144,19 @@ public class GenericFormsPluginIntegrationTest extends AbstractFormsPluginIntegr
 
 		Request loadRequest = new Request.Builder()
 				.url(projectUrl("/forms/" + createdNode.getUuid()))
-				.headers(Headers.of(server.client().getAuthentication().getHeaders()))
+				.headers(auth(permission))
 				.get()
 				.build();
 		Response response = client().newCall(loadRequest).execute();
-		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
 
-		NodeResponse loadedNode = JsonUtil.readValue(response.body().string(), NodeResponse.class);
-		assertThat(loadedNode).as("Loaded Form Node").isEqualToComparingOnlyGivenFields(createdNode, "uuid", "displayName");
+		if (permission) {
+			assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+
+			NodeResponse loadedNode = JsonUtil.readValue(response.body().string(), NodeResponse.class);
+			assertThat(loadedNode).as("Loaded Form Node").isEqualToComparingOnlyGivenFields(createdNode, "uuid", "displayName");
+		} else {
+			assertForbidden(response);
+		}
 	}
 
 	/**
@@ -136,11 +165,13 @@ public class GenericFormsPluginIntegrationTest extends AbstractFormsPluginIntegr
 	 */
 	@Test
 	public void testUpdateForm() throws IOException {
-		NodeResponse updatedNode = updateForm("update.json", true);
+		NodeResponse updatedNode = updateForm("update.json", permission, true);
 
-		assertThat(updatedNode.getDisplayName())
-			.as("Name of updated form")
-			.isEqualTo("Updated Form");
+		if (permission) {
+			assertThat(updatedNode.getDisplayName())
+				.as("Name of updated form")
+				.isEqualTo("Updated Form");
+		}
 	}
 
 	/**
@@ -154,14 +185,19 @@ public class GenericFormsPluginIntegrationTest extends AbstractFormsPluginIntegr
 
 		Request deleteRequest = new Request.Builder()
 				.url(projectUrl("/forms/" + createdNode.getUuid()))
-				.headers(Headers.of(server.client().getAuthentication().getHeaders()))
+				.headers(auth(permission))
 				.delete()
 				.build();
 		Response response = client().newCall(deleteRequest).execute();
-		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
 
-		assertThat(loadNode(createdNode.getUuid())).as("Form Node").isEmpty();
-		assertThat(loadSchema(SchemaService.getSchemaName(createdNode.getUuid()))).as("Form Schema").isEmpty();
+		if (permission) {
+			assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+
+			assertThat(loadNode(createdNode.getUuid())).as("Form Node").isEmpty();
+			assertThat(loadSchema(SchemaService.getSchemaName(createdNode.getUuid()))).as("Form Schema").isEmpty();
+		} else {
+			assertForbidden(response);
+		}
 	}
 
 	/**
@@ -175,17 +211,22 @@ public class GenericFormsPluginIntegrationTest extends AbstractFormsPluginIntegr
 
 		Request loadSchemaRequest = new Request.Builder()
 				.url(projectUrl("/forms/" + createdNode.getUuid() + "/schema"))
-				.headers(Headers.of(server.client().getAuthentication().getHeaders()))
+				.headers(auth(permission))
 				.get()
 				.build();
 		Response response = client().newCall(loadSchemaRequest).execute();
-		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
 
-		String responseBody = response.body().string();
-		String schemaName = JsonPath.read(responseBody, "$.name");
-		assertThat(schemaName).as("Schema name").isEqualTo(SchemaService.getSchemaName(createdNode.getUuid()));
-		int cmsId = JsonPath.read(responseBody, "$.cms_id");
-		assertThat(cmsId).as("CMS ID").isEqualTo(4711);
+		if (permission) {
+			assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+
+			String responseBody = response.body().string();
+			String schemaName = JsonPath.read(responseBody, "$.name");
+			assertThat(schemaName).as("Schema name").isEqualTo(SchemaService.getSchemaName(createdNode.getUuid()));
+			int cmsId = JsonPath.read(responseBody, "$.cms_id");
+			assertThat(cmsId).as("CMS ID").isEqualTo(4711);
+		} else {
+			assertForbidden(response);
+		}
 	}
 
 	/**
@@ -204,6 +245,41 @@ public class GenericFormsPluginIntegrationTest extends AbstractFormsPluginIntegr
 		assertThat(response.body().string()).as("Rendered form").isEqualTo(fromFile("inputfield.html"));
 	}
 
+	/**
+	 * Test rendering a form with data
+	 * @throws IOException
+	 */
+	@Test
+	public void testRenderData() throws IOException {
+		Response createResponse = createForm("threefields.json");
+		NodeResponse createdNode = JsonUtil.readValue(createResponse.body().string(), NodeResponse.class);
+
+		RequestBody requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
+				.addFormDataPart("input1", "someValue").build();
+		okio.Buffer buffer = new okio.Buffer();
+		requestBody.writeTo(buffer);
+
+		Request postRequest = new Request.Builder().url(projectUrl("/forms/" + createdNode.getUuid() + "/data"))
+				.header("Referer", "ref").post(requestBody).build();
+		Response postDataResponse = client().newCall(postRequest).execute();
+		assertThat(postDataResponse.isSuccessful())
+				.as(String.format("Response success %d (%s)", postDataResponse.code(), postDataResponse.message())).isTrue();
+
+		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, createdNode.getUuid()));
+		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
+		NodeResponse dataNode = dataNodes.getData().get(0);
+
+		Request renderRequest = new Request.Builder().url(projectUrl("/forms/" + createdNode.getUuid() + "/data/" + dataNode.getUuid())).header("Accept", "text/html").get().build();
+		Response response = client().newCall(renderRequest).execute();
+		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+
+		assertThat(response.body().string()).as("Rendered form").isEqualTo(fromFile("threefields_data.html"));
+	}
+
+	/**
+	 * Test rendering a form preview
+	 * @throws IOException
+	 */
 	@Test
 	public void testRenderPreview() throws IOException {
 		String uuid = UUIDUtil.randomUUID();
@@ -587,15 +663,20 @@ public class GenericFormsPluginIntegrationTest extends AbstractFormsPluginIntegr
 		for (NodeResponse nodeResponse : dataNodes.getData()) {
 			Request downloadRequest = new Request.Builder()
 					.url(projectUrl("/forms/" + createdNode.getUuid() + "/data/" + nodeResponse.getUuid() + "/binary/file1"))
-					.headers(Headers.of(server.client().getAuthentication().getHeaders()))
+					.headers(auth(permission))
 					.get()
 					.build();
 			Response downloadResponse = client().newCall(downloadRequest).execute();
-			assertThat(downloadResponse.isSuccessful()).as(String.format("Response success %d (%s)", downloadResponse.code(), downloadResponse.message())).isTrue();
-			String download = downloadResponse.body().string();
-			assertThat(download).as("Downloaded file").isEqualTo(fromFile("filefield.json"));
-			assertThat(downloadResponse.header("Content-Type")).as("Content-Type").isEqualTo("application/json");
-			assertThat(downloadResponse.header("Content-Disposition")).as("Content-Disposition").isEqualTo("attachment; filename=\"filefield.json\"");
+
+			if (permission) {
+				assertThat(downloadResponse.isSuccessful()).as(String.format("Response success %d (%s)", downloadResponse.code(), downloadResponse.message())).isTrue();
+				String download = downloadResponse.body().string();
+				assertThat(download).as("Downloaded file").isEqualTo(fromFile("filefield.json"));
+				assertThat(downloadResponse.header("Content-Type")).as("Content-Type").isEqualTo("application/json");
+				assertThat(downloadResponse.header("Content-Disposition")).as("Content-Disposition").isEqualTo("attachment; filename=\"filefield.json\"");
+			} else {
+				assertForbidden(downloadResponse);
+			}
 		}
 	}
 
@@ -625,14 +706,19 @@ public class GenericFormsPluginIntegrationTest extends AbstractFormsPluginIntegr
 
 			Request deleteRequest = new Request.Builder()
 					.url(projectUrl("/forms/" + createdNode.getUuid() + "/data/" + nodeResponse.getUuid()))
-					.headers(Headers.of(server.client().getAuthentication().getHeaders()))
+					.headers(auth(permission))
 					.delete()
 					.build();
 			Response response = client().newCall(deleteRequest).execute();
-			assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
 
-			nodes2 = call(() -> server.client().findNodeChildren(PROJECT_NAME, createdNode.getUuid()));
-			assertThat(nodes2.getData()).as("List after deleting").usingElementComparatorOnFields("uuid").doesNotContain(nodeResponse);
+			if (permission) {
+				assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+
+				nodes2 = call(() -> server.client().findNodeChildren(PROJECT_NAME, createdNode.getUuid()));
+				assertThat(nodes2.getData()).as("List after deleting").usingElementComparatorOnFields("uuid").doesNotContain(nodeResponse);
+			} else {
+				assertForbidden(response);
+			}
 		}
 	}
 
@@ -652,19 +738,25 @@ public class GenericFormsPluginIntegrationTest extends AbstractFormsPluginIntegr
 
 		Request updateRequest = new Request.Builder()
 				.url(projectUrl("/forms/" + createdNode.getUuid()))
-				.headers(Headers.of(server.client().getAuthentication().getHeaders()))
+				.headers(auth(permission))
 				.post(requestBodyFromFile("threefields.json"))
 				.build();
-		client().newCall(updateRequest).execute();
+		Response response = client().newCall(updateRequest).execute();
 
-		optionalSchema = loadSchema(SchemaService.getSchemaName(createdNode.getUuid()));
-		assertThat(optionalSchema).as("Schema").isPresent();
-		assertThat(optionalSchema.get().getFields()).as("Schema Fields").usingFieldByFieldElementComparator()
-				.containsExactly(
-						new StringFieldSchemaImpl().setName("input1").setLabel("First Field"),
-						new StringFieldSchemaImpl().setName("input2").setLabel("Second Field"),
-						new StringFieldSchemaImpl().setName("input3").setLabel("Third Field"),
-						new StringFieldSchemaImpl().setName("errors").setLabel("Errors"));
+		if (permission) {
+			assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+
+			optionalSchema = loadSchema(SchemaService.getSchemaName(createdNode.getUuid()));
+			assertThat(optionalSchema).as("Schema").isPresent();
+			assertThat(optionalSchema.get().getFields()).as("Schema Fields").usingFieldByFieldElementComparator()
+					.containsExactly(
+							new StringFieldSchemaImpl().setName("input1").setLabel("First Field"),
+							new StringFieldSchemaImpl().setName("input2").setLabel("Second Field"),
+							new StringFieldSchemaImpl().setName("input3").setLabel("Third Field"),
+							new StringFieldSchemaImpl().setName("errors").setLabel("Errors"));
+		} else {
+			assertForbidden(response);
+		}
 	}
 
 	@Test
@@ -706,28 +798,33 @@ public class GenericFormsPluginIntegrationTest extends AbstractFormsPluginIntegr
 
 		Request zipDownloadRequest = new Request.Builder()
 				.url(projectUrl("/forms/" + createdNode.getUuid() + "/binaries"))
-				.headers(Headers.of(server.client().getAuthentication().getHeaders()))
+				.headers(auth(permission))
 				.get()
 				.build();
 		Response zipDownloadResponse = client().newCall(zipDownloadRequest).execute();
-		assertThat(zipDownloadResponse.isSuccessful()).as(String.format("Response success %d (%s)", zipDownloadResponse.code(), zipDownloadResponse.message())).isTrue();
 
-		assertThat(zipDownloadResponse.header(HttpHeaders.CONTENT_DISPOSITION)).as("Content-Disposition").startsWith("attachment; filename=forms-files_Form with Filefield_").endsWith(".zip");
-		assertThat(zipDownloadResponse.header(HttpHeaders.CONTENT_TYPE)).as("Content-Type").isEqualTo("application/zip");
+		if (permission) {
+			assertThat(zipDownloadResponse.isSuccessful()).as(String.format("Response success %d (%s)", zipDownloadResponse.code(), zipDownloadResponse.message())).isTrue();
 
-		Set<String> foundFiles = new HashSet<>();
-		try (ZipInputStream zipIn = new ZipInputStream(zipDownloadResponse.body().byteStream())) {
-			ZipEntry entry = null;
-			while ((entry = zipIn.getNextEntry()) != null) {
-				String name = entry.getName();
-				foundFiles.add(name);
-				StringWriter fileContents = new StringWriter();
-				IOUtils.copy(zipIn, fileContents, "UTF-8");
-				assertThat(fileContents.toString()).as(String.format("Contents of file %s", name)).isEqualTo(fromFile(name));
+			assertThat(zipDownloadResponse.header(HttpHeaders.CONTENT_DISPOSITION)).as("Content-Disposition").startsWith("attachment; filename=forms-files_Form with Filefield_").endsWith(".zip");
+			assertThat(zipDownloadResponse.header(HttpHeaders.CONTENT_TYPE)).as("Content-Type").isEqualTo("application/zip");
+
+			Set<String> foundFiles = new HashSet<>();
+			try (ZipInputStream zipIn = new ZipInputStream(zipDownloadResponse.body().byteStream())) {
+				ZipEntry entry = null;
+				while ((entry = zipIn.getNextEntry()) != null) {
+					String name = entry.getName();
+					foundFiles.add(name);
+					StringWriter fileContents = new StringWriter();
+					IOUtils.copy(zipIn, fileContents, "UTF-8");
+					assertThat(fileContents.toString()).as(String.format("Contents of file %s", name)).isEqualTo(fromFile(name));
+				}
 			}
-		}
 
-		assertThat(foundFiles).as("Files found in ZIP").containsOnlyElementsOf(filesToPost);
+			assertThat(foundFiles).as("Files found in ZIP").containsOnlyElementsOf(filesToPost);
+		} else {
+			assertForbidden(zipDownloadResponse);
+		}
 	}
 
 	/**
@@ -754,22 +851,27 @@ public class GenericFormsPluginIntegrationTest extends AbstractFormsPluginIntegr
 
 		Request zipDownloadRequest = new Request.Builder()
 				.url(projectUrl("/forms/" + createdNode.getUuid() + "/binaries"))
-				.headers(Headers.of(server.client().getAuthentication().getHeaders()))
+				.headers(auth(permission))
 				.get()
 				.build();
 		Response zipDownloadResponse = client().newCall(zipDownloadRequest).execute();
-		assertThat(zipDownloadResponse.isSuccessful()).as(String.format("Response success %d (%s)", zipDownloadResponse.code(), zipDownloadResponse.message())).isTrue();
 
-		Set<String> foundFiles = new HashSet<>();
-		try (ZipInputStream zipIn = new ZipInputStream(zipDownloadResponse.body().byteStream())) {
-			ZipEntry entry = null;
-			while ((entry = zipIn.getNextEntry()) != null) {
-				String name = entry.getName();
-				foundFiles.add(name);
+		if (permission) {
+			assertThat(zipDownloadResponse.isSuccessful()).as(String.format("Response success %d (%s)", zipDownloadResponse.code(), zipDownloadResponse.message())).isTrue();
+
+			Set<String> foundFiles = new HashSet<>();
+			try (ZipInputStream zipIn = new ZipInputStream(zipDownloadResponse.body().byteStream())) {
+				ZipEntry entry = null;
+				while ((entry = zipIn.getNextEntry()) != null) {
+					String name = entry.getName();
+					foundFiles.add(name);
+				}
 			}
-		}
 
-		assertThat(foundFiles).as("Files found in ZIP").containsOnlyElementsOf(expectedNames);
+			assertThat(foundFiles).as("Files found in ZIP").containsOnlyElementsOf(expectedNames);
+		} else {
+			assertForbidden(zipDownloadResponse);
+		}
 	}
 
 	/**
@@ -783,11 +885,15 @@ public class GenericFormsPluginIntegrationTest extends AbstractFormsPluginIntegr
 
 		Request zipDownloadRequest = new Request.Builder()
 				.url(projectUrl("/forms/" + createdNode.getUuid() + "/binaries"))
-				.headers(Headers.of(server.client().getAuthentication().getHeaders()))
+				.headers(auth(permission))
 				.get()
 				.build();
 		Response zipDownloadResponse = client().newCall(zipDownloadRequest).execute();
-		assertThat(zipDownloadResponse.isSuccessful()).as(String.format("Response success %d (%s)", zipDownloadResponse.code(), zipDownloadResponse.message())).isTrue();
+		if (permission) {
+			assertThat(zipDownloadResponse.isSuccessful()).as(String.format("Response success %d (%s)", zipDownloadResponse.code(), zipDownloadResponse.message())).isTrue();
+		} else {
+			assertForbidden(zipDownloadResponse);
+		}
 	}
 
 	/**
@@ -801,11 +907,15 @@ public class GenericFormsPluginIntegrationTest extends AbstractFormsPluginIntegr
 
 		Request zipDownloadRequest = new Request.Builder()
 				.url(projectUrl("/forms/" + createdNode.getUuid() + "/binaries"))
-				.headers(Headers.of(server.client().getAuthentication().getHeaders()))
+				.headers(auth(permission))
 				.get()
 				.build();
 		Response zipDownloadResponse = client().newCall(zipDownloadRequest).execute();
-		assertThat(zipDownloadResponse.isSuccessful()).as(String.format("Response success %d (%s)", zipDownloadResponse.code(), zipDownloadResponse.message())).isTrue();
+		if (permission) {
+			assertThat(zipDownloadResponse.isSuccessful()).as(String.format("Response success %d (%s)", zipDownloadResponse.code(), zipDownloadResponse.message())).isTrue();
+		} else {
+			assertForbidden(zipDownloadResponse);
+		}
 	}
 
 	/**

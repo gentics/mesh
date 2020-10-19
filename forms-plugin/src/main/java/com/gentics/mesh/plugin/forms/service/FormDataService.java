@@ -269,10 +269,11 @@ public class FormDataService {
 	 *            form data UUID
 	 * @param rc
 	 *            routing context
+	 * @param lang optional languages
 	 * @return single buffer of rendered form
 	 */
-	public Single<Buffer> render(String projectName, String formUuid, String formDataUuid, RoutingContext rc) {
-		return Single.zip(formService.loadAsAdmin(projectName, formUuid), load(projectName, formUuid, formDataUuid).onErrorReturn(t -> null),
+	public Single<Buffer> render(String projectName, String formUuid, String formDataUuid, RoutingContext rc, String...lang) {
+		return Single.zip(formService.loadAsAdmin(projectName, formUuid, lang), load(projectName, formUuid, formDataUuid).onErrorReturn(t -> null),
 			(formNode, formDataNode) -> {
 				JsonObject formJson = new JsonObject(formNode.getFields().getStringField("json").getString());
 

@@ -126,9 +126,15 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 			// TODO better error handler
 			handler.apply(component(userClient)).handle(meshContext).doOnError(t -> {
 				log.error("Error while handling request", t);
+				MeshRestClientMessageException mrcmException = null;
 				if (t instanceof MeshRestClientMessageException) {
-					MeshRestClientMessageException meshException = (MeshRestClientMessageException) t;
-					context.response().setStatusCode(meshException.getStatusCode()).setStatusMessage(meshException.getMessage()).end();
+					mrcmException = (MeshRestClientMessageException) t;
+				} else if (t.getCause() instanceof MeshRestClientMessageException) {
+					mrcmException = (MeshRestClientMessageException) t.getCause();
+				}
+
+				if (mrcmException != null) {
+					context.response().setStatusCode(mrcmException.getStatusCode()).setStatusMessage(mrcmException.getMessage()).end();
 				} else if (t instanceof FormsError) {
 					FormsError meshException = (FormsError) t;
 					context.response()

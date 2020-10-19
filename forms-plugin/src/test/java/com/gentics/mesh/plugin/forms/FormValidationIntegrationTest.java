@@ -44,7 +44,7 @@ public class FormValidationIntegrationTest extends AbstractFormsPluginIntegratio
 	@Test
 	public void testCreateInvalidForm() throws IOException {
 		// The method will already check if the create response was successful, so there is nothing more to test here.
-		createForm(fileName, expectSuccess);
+		createForm(fileName, true, expectSuccess);
 	}
 
 	/**
@@ -54,6 +54,6 @@ public class FormValidationIntegrationTest extends AbstractFormsPluginIntegratio
 	@Test
 	public void testUpdateInvalidForm() throws IOException {
 		// The method will already check if the create response was successful, so there is nothing more to test here.
-		updateForm(fileName, expectSuccess);
+		updateForm(fileName, true, expectSuccess);
 	}
 }

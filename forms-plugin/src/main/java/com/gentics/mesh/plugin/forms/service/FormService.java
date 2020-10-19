@@ -30,8 +30,11 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
+import com.gentics.mesh.parameter.NodeParameters;
+import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.parameter.client.DeleteParametersImpl;
 import com.gentics.mesh.parameter.client.NodeParametersImpl;
+import com.gentics.mesh.parameter.client.VersioningParametersImpl;
 import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.dagger.UserClient;
 import com.gentics.mesh.plugin.forms.FormsError;
@@ -54,7 +57,6 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.reactivex.core.buffer.Buffer;
 import io.vertx.reactivex.ext.web.templ.handlebars.HandlebarsTemplateEngine;
-
 
 @Singleton
 public class FormService {
@@ -187,10 +189,16 @@ public class FormService {
 	 * @param projectName project name
 	 * @param uuid
 	 *            uuid
+	 * @param lang optional languages
 	 * @return single noderesponse
 	 */
-	public Single<NodeResponse> loadAsAdmin(String projectName, String uuid) {
-		return adminClient.findNodeByUuid(projectName, uuid).toSingle().flatMap(nodeResponse -> {
+	public Single<NodeResponse> loadAsAdmin(String projectName, String uuid, String...lang) {
+		NodeParameters nParams = new NodeParametersImpl();
+		if (lang.length > 0) {
+			nParams.setLanguages(lang);
+		}
+		VersioningParameters vParams = new VersioningParametersImpl().setVersion("published");
+		return adminClient.findNodeByUuid(projectName, uuid, nParams, vParams).toSingle().flatMap(nodeResponse -> {
 			if (isFormNode(nodeResponse)) {
 				return Single.just(nodeResponse);
 			} else {
@@ -249,10 +257,24 @@ public class FormService {
 		try {
 			String graphQlQuery = IOUtils.toString(FormsPlugin.class.getResource("forms.graphql"), StandardCharsets.UTF_8);
 
-			return userClient.graphql(projectName, new GraphQLRequest().setQuery(graphQlQuery).setVariables(pagingParams)).toSingle()
+			return userClient.findNodeByUuid(projectName, schemaService.getRootNodeUuid(projectName)).toSingle()
+				.flatMap(rootNode -> userClient.graphql(projectName, new GraphQLRequest().setQuery(graphQlQuery).setVariables(pagingParams)).toSingle())
 				.flatMap(graphQlResponse -> {
 					JsonObject clientResponse = new JsonObject();
-					JsonObject nodes = graphQlResponse.getData().getJsonObject("schema").getJsonObject("nodes");
+					if (graphQlResponse.getData() == null) {
+						// TODO
+						return Single.error(new Exception());
+					}
+					if (!graphQlResponse.getData().containsKey("schema")) {
+						// TODO
+						return Single.error(new Exception());
+					}
+					JsonObject schema = graphQlResponse.getData().getJsonObject("schema");
+					if (!schema.containsKey("nodes")) {
+						// TODO
+						return Single.error(new Exception());
+					}
+					JsonObject nodes = schema.getJsonObject("nodes");
 					if (nodes == null) {
 						// TODO
 						return Single.error(new Exception());
@@ -323,6 +345,13 @@ public class FormService {
 		});
 	}
 
+	/**
+	 * Insert or update the form
+	 * @param projectName project name
+	 * @param uuid form uuid
+	 * @param formData form data
+	 * @return single node response
+	 */
 	public Single<NodeResponse> upsert(String projectName, String uuid, JsonObject formData) {
 		Optional<ValidationError> error = checkForm(formData);
 
@@ -405,10 +434,14 @@ public class FormService {
 
 	/**
 	 * Prepare an existing form to be rendered by the template handler
-	 *
+	 * @param projectName project name
+	 * @param uuid form uuid
+	 * @param rc routing context
+	 * @param lang optional languages
+	 * @return single buffer
 	 */
-	public Single<Buffer> render(String projectName, String uuid, RoutingContext rc) {
-		return loadAsAdmin(projectName, uuid).flatMap(formNode -> {
+	public Single<Buffer> render(String projectName, String uuid, RoutingContext rc, String...lang) {
+		return loadAsAdmin(projectName, uuid, lang).flatMap(formNode -> {
 			JsonObject formJson = new JsonObject(formNode.getFields().getStringField("json").getString());
 
 			removeInactiveElements(formJson);
