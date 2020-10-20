@@ -8,6 +8,7 @@ import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_IMPORT_FINISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_IMPORT_START;
 import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_RESTORE_FINISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_RESTORE_START;
+import static com.gentics.mesh.core.rest.admin.consistency.ConsistencyRating.INCONSISTENT;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_YAML_UTF8;
 import static com.gentics.mesh.rest.Messages.message;
@@ -32,11 +33,13 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfig;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorMasterResponse;
+import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
@@ -46,6 +49,7 @@ import com.gentics.mesh.distributed.coordinator.MasterServer;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.generator.RAMLGenerator;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.parameter.BackupParameters;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.router.RouterStorageRegistry;
 import com.gentics.mesh.search.SearchProvider;
@@ -85,10 +89,12 @@ public class AdminHandler extends AbstractHandler {
 
 	private final WriteLock writeLock;
 
+	private final ConsistencyCheckHandler consistencyCheckHandler;
+
 	@Inject
 	public AdminHandler(Vertx vertx, Database db, RouterStorage routerStorage, BootstrapInitializer boot, SearchProvider searchProvider,
 		HandlerUtilities utils,
-		MeshOptions options, RouterStorageRegistry routerStorageRegistry, Coordinator coordinator, WriteLock writeLock) {
+		MeshOptions options, RouterStorageRegistry routerStorageRegistry, Coordinator coordinator, WriteLock writeLock, ConsistencyCheckHandler consistencyCheckHandler) {
 		this.vertx = vertx;
 		this.db = db;
 		this.routerStorage = routerStorage;
@@ -99,6 +105,7 @@ public class AdminHandler extends AbstractHandler {
 		this.routerStorageRegistry = routerStorageRegistry;
 		this.coordinator = coordinator;
 		this.writeLock = writeLock;
+		this.consistencyCheckHandler = consistencyCheckHandler;
 	}
 
 	public void handleMeshStatus(InternalActionContext ac) {
@@ -116,6 +123,16 @@ public class AdminHandler extends AbstractHandler {
 		utils.syncTx(ac, tx -> {
 			if (!ac.getUser().isAdmin()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
+			}
+			BackupParameters params = ac.getBackupParameters();
+			if (params.isConsistencyCheck()) {
+				log.info("Starting consistency check as requested.");
+				ConsistencyCheckResponse result = consistencyCheckHandler.checkConsistency(false).runInExistingTx(tx);
+				if (result.getResult() == INCONSISTENT) {
+					long count = result.getInconsistencies().size();
+					log.error("Backup aborted due to found inconsistencies: " + count);
+					throw error(INTERNAL_SERVER_ERROR, "backup_consistency_check_failed", String.valueOf(count));
+				}
 			}
 			backup();
 			return message(ac, "backup_finished");

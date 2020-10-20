@@ -1,6 +1,8 @@
 package com.gentics.mesh.cache;
 
 import static com.gentics.mesh.core.rest.MeshEvent.CLEAR_PERMISSION_STORE;
+import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_DATABASE_CHANGE_STATUS;
+import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_JOINED;
 
 import java.time.temporal.ChronoUnit;
 
@@ -9,6 +11,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.cache.impl.EventAwareCacheFactory;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.vertx.core.Vertx;
@@ -29,6 +32,12 @@ public class PermissionCacheImpl extends AbstractMeshCache<String, Boolean> impl
 
 	private static final long CACHE_SIZE = 100_000;
 
+	private static final MeshEvent EVENTS[] = {
+		CLEAR_PERMISSION_STORE,
+		CLUSTER_NODE_JOINED,
+		CLUSTER_DATABASE_CHANGE_STATUS,
+	};
+
 	@Inject
 	public PermissionCacheImpl(EventAwareCacheFactory factory, Vertx vertx, CacheRegistry registry, MeshOptions options) {
 		super(createCache(factory), registry, CACHE_SIZE);
@@ -38,7 +47,7 @@ public class PermissionCacheImpl extends AbstractMeshCache<String, Boolean> impl
 
 	private static EventAwareCache<String, Boolean> createCache(EventAwareCacheFactory factory) {
 		return factory.<String, Boolean>builder()
-			.events(CLEAR_PERMISSION_STORE)
+			.events(EVENTS)
 			.action((event, cache) -> {
 				if (log.isDebugEnabled()) {
 					log.debug("Clearing permission store due to received event from {" + event.address() + "}");
@@ -83,7 +92,8 @@ public class PermissionCacheImpl extends AbstractMeshCache<String, Boolean> impl
 	/**
 	 * Invalidate the LRU cache and optionally notify other instances in the cluster.
 	 * 
-	 * @param notify Whether to publish an event to inform other nodes in the cluster
+	 * @param notify
+	 *            Whether to publish an event to inform other nodes in the cluster
 	 */
 	@Override
 	public void clear(boolean notify) {

@@ -191,6 +191,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 			log.trace("Using ridbag transition threshold {" + value + "}");
 		}
 		OGlobalConfiguration.RID_BAG_EMBEDDED_TO_SBTREEBONSAI_THRESHOLD.setValue(value);
+		OGlobalConfiguration.WARNING_DEFAULT_USERS.setValue(false);
 
 		clusterManager.initConfigurationFiles();
 
@@ -255,6 +256,10 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	public void setupConnectionPool() throws Exception {
 		Orient.instance().startup();
+		// The mesh shutdown hook manages OrientDB shutdown.
+		// We need to manage this ourself since hazelcast is otherwise shutdown before closing vert.x
+		// When we control the shutdown we can ensure a clean shutdown process.
+		Orient.instance().removeShutdownHook();
 		initGraphDB();
 	}
 

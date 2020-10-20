@@ -10,6 +10,8 @@ import com.gentics.mesh.verticle.admin.AdminGUI2Endpoint;
 import com.gentics.mesh.verticle.admin.AdminGUIEndpoint;
 
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public class ClusterServer {
 
@@ -17,9 +19,11 @@ public class ClusterServer {
 		// Disable direct IO (My dev system uses ZFS. Otherwise the test will not run)
 		System.setProperty("storage.wal.allowDirectIO", "false");
 	}
+	public static Logger log;
 
 	public static MeshOptions init(String[] args) {
 		LoggingConfigurator.init();
+		log = LoggerFactory.getLogger(ClusterServer.class);
 		MeshOptions options = OptionsLoader.createOrloadOptions(args);
 
 		// options.setAdminPassword("admin");
@@ -61,7 +65,13 @@ public class ClusterServer {
 			registry.register(AdminGUIEndpoint.class);
 			registry.register(AdminGUI2Endpoint.class);
 		});
-		mesh.run();
+
+		try {
+			mesh.run();
+		} catch (Throwable t) {
+			log.error("Error while starting mesh. Invoking shutdown.", t);
+			mesh.shutdownAndTerminate(10);
+		}
 
 	}
 }
