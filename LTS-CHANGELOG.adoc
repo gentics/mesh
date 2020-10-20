@@ -17,12 +17,23 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
-[[1.4.16]]
-== 1.4.16 (TBD)
+[[v1.4.17]] 
+== 1.4.17 (TBD)
+
+icon:check[] Clustering: Internal caches will now be cleared when cluster topology changes occur.
+
+icon:plus[] Backup: The `?consistencyCheck` query parameter was added to the `/api/v2/admin/backup` endpoint. When set to true it will run the consistency check before invoking the backup. The call will fail when inconsistencies were detected.
+
+icon:check[] Clustering: An additional check has been added which will prevent nodes from joining a cluster which contains an outdated database. The `-initCluster` flag needs to be used for a single instance to migrate the cluster. This is done to prevent concurrency issues during changelog execution and cluster formation.
+
+[[v1.4.16]]
+== 1.4.16 (06.09.2020)
 
 icon:check[] OrientDB: The included OrientDB version has been updated to version `3.1.3`.
 
-[[1.4.15]]
+icon:check[] Rest: The webroot cache error handling has been improved.
+
+[[v1.4.15]]
 == 1.4.15 (23.09.2020)
 
 icon:plus[] Monitoring: The readiness probe will now no longer fail when a plugin is not registered. Instead it will only fail when a plugin deployment has failed.

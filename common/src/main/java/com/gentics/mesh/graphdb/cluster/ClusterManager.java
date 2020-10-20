@@ -21,7 +21,7 @@ public interface ClusterManager {
 	 * 
 	 * @throws Exception
 	 */
-	void start() throws Exception;
+	void startAndSync() throws Exception;
 
 	/**
 	 * Stop the server and release all used resources.

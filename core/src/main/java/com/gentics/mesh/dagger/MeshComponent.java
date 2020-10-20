@@ -12,6 +12,7 @@ import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.cache.ProjectBranchNameCache;
 import com.gentics.mesh.cache.ProjectNameCache;
+import com.gentics.mesh.cache.WebrootPathCache;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.binary.Binaries;
@@ -169,6 +170,8 @@ public interface MeshComponent {
 	PermissionProperties permissionProperties();
 
 	WriteLock globalLock();
+
+	WebrootPathCache pathCache();
 
 	RoleCrudHandler roleCrudHandler();
 

@@ -27,10 +27,14 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.StringGraphField;
+import com.gentics.mesh.core.data.node.field.impl.StringGraphFieldImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -42,6 +46,8 @@ import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
+import com.gentics.mesh.path.Path;
+import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
@@ -93,6 +99,28 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		assertThat(response.getNodeResponse()).is(node).hasLanguage("en");
 		assertFalse(response.isBinary());
 		assertEquals("Webroot response node uuid header value did not match", nodeUuid, response.getNodeUuid());
+	}
+
+	@Test
+	public void testInvaliedWebrootPath() {
+		Node node = folder("2015");
+		String path = "/News/2015";
+
+		call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft()));
+		call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft()));
+
+		// Modify the cache entry by adding another bogus segment. The validation should pick up the inconsistency and invalidate the whole path entry
+		tx(tx -> {
+			NodeGraphFieldContainerImpl bogusContainer = tx.addVertex(NodeGraphFieldContainerImpl.class);
+			StringGraphField bogusField = new StringGraphFieldImpl("name", bogusContainer);
+			Path entry = mesh().pathCache().getPath(project(), initialBranch(), ContainerType.DRAFT, path);
+			entry.addSegment(new PathSegment(bogusContainer, bogusField, "en", "bogus"));
+			tx.rollback();
+		});
+
+		// Now ensure that the bogus cache entry is ignored and regular response is returned
+		MeshWebrootResponse response = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft()));
+		assertThat(response.getNodeResponse()).is(node).hasLanguage("en");
 	}
 
 	@Test

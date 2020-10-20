@@ -1,6 +1,8 @@
 package com.gentics.mesh.cache;
 
 import static com.gentics.mesh.core.rest.MeshEvent.CLEAR_PATH_STORE;
+import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_DATABASE_CHANGE_STATUS;
+import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_JOINED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
@@ -22,7 +24,6 @@ import com.gentics.mesh.etc.config.CacheConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.path.Path;
 
-import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -43,6 +44,8 @@ public class WebrootPathCacheImpl extends AbstractMeshCache<String, Path> implem
 		NODE_MOVED,
 		NODE_CONTENT_CREATED,
 		NODE_CONTENT_DELETED,
+		CLUSTER_NODE_JOINED,
+		CLUSTER_DATABASE_CHANGE_STATUS,
 		SCHEMA_MIGRATION_FINISHED };
 
 	@Inject
@@ -73,7 +76,12 @@ public class WebrootPathCacheImpl extends AbstractMeshCache<String, Path> implem
 			return null;
 		}
 		String key = createCacheKey(project, branch, type, path);
-		return cache.get(key);
+		Path value = cache.get(key);
+		if (value == null || !value.isValid()) {
+			return null;
+		} else {
+			return value;
+		}
 	}
 
 	@Override

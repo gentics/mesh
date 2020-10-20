@@ -5,10 +5,17 @@ import java.util.List;
 import java.util.Stack;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
 /**
  * A webroot path consists of multiple segments. This class provides a useful container which can be used when resolving webroot paths.
  */
 public class Path {
+
+	private static final Logger log = LoggerFactory.getLogger(Path.class);
 
 	private List<PathSegment> segments = new ArrayList<>();
 
@@ -116,6 +123,27 @@ public class Path {
 
 	public boolean isPrefixMismatch() {
 		return prefixMismatch;
+	}
+
+	/**
+	 * Check whether all segments in the path are valid.
+	 * 
+	 * @return
+	 */
+	public boolean isValid() {
+		for (PathSegment segment : segments) {
+			try {
+				NodeGraphFieldContainer container = segment.getContainer();
+				if (container == null || container.getElement() == null) {
+					log.debug("Container or element of container is null. Segment is invalid.");
+					return false;
+				}
+			} catch (RuntimeException e) {
+				log.debug("Error while checking path segment {" + segment.getSegment() + "}", e);
+				return false;
+			}
+		}
+		return true;
 	}
 
 }

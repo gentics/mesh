@@ -377,7 +377,7 @@ public class OrientDBClusterManager implements ClusterManager {
 	 * @throws Exception
 	 */
 	@Override
-	public void start() throws Exception {
+	public void startAndSync() throws Exception {
 
 		String orientdbHome = new File("").getAbsolutePath();
 		System.setProperty("ORIENTDB_HOME", orientdbHome);
