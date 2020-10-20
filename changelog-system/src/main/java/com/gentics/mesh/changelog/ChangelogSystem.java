@@ -74,6 +74,29 @@ public class ChangelogSystem {
 	}
 
 	/**
+	 * Check whether all changes have been applied or whether the changelog would need to apply changes.
+	 * 
+	 * @return
+	 */
+	public boolean requiresChanges() {
+		List<Change> changes = ChangesList.getList(options);
+		TransactionalGraph graph = db.rawTx();
+		try {
+			for (Change change : changes) {
+				change.setGraph(graph);
+				change.setDb(db);
+				if (!change.isApplied()) {
+					log.info("Change " + change.getName() + " has not yet been applied.");
+					return true;
+				}
+			}
+		} finally {
+			graph.shutdown();
+		}
+		return false;
+	}
+
+	/**
 	 * Mark all changelog entries as applied. This is useful if you resolved issues manually or if you want to create a fresh mesh database dump.
 	 */
 	public void markAllAsApplied(List<Change> list) {

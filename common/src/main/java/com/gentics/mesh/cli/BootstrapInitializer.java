@@ -268,4 +268,11 @@ public interface BootstrapInitializer {
 	 */
 	boolean isVertxReady();
 
+	/**
+	 * Check whether the execution of the changelog is required.
+	 * 
+	 * @return 
+	 */
+	boolean requiresChangelog();
+
 }

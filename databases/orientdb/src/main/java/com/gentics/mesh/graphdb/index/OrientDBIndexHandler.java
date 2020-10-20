@@ -105,7 +105,7 @@ public class OrientDBIndexHandler implements IndexHandler {
 			name = name.toLowerCase();
 			if (fields.size() != 0 && e.getClassIndex(name) == null) {
 				String[] fieldArray = fields.keySet().stream().toArray(String[]::new);
-				OIndex<?> idx = e.createIndex(name,
+				OIndex idx = e.createIndex(name,
 					unique ? OClass.INDEX_TYPE.UNIQUE_HASH_INDEX.toString() : OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX.toString(), null,
 					new ODocument().fields("ignoreNullValues", true), fieldArray);
 				if (idx == null) {
@@ -127,7 +127,7 @@ public class OrientDBIndexHandler implements IndexHandler {
 		OrientEdgeType edgeType = orientBaseGraph.getEdgeType(edgeLabel);
 		if (edgeType != null) {
 			// Fetch the required index
-			OIndex<?> index = edgeType.getClassIndex("e." + edgeLabel.toLowerCase() + "_" + indexPostfix);
+			OIndex index = edgeType.getClassIndex("e." + edgeLabel.toLowerCase() + "_" + indexPostfix);
 			if (index != null) {
 				// Iterate over the sb-tree index entries
 				OIndexCursor cursor = index.iterateEntriesMajor(new OCompositeKey(key), true, false);
@@ -162,7 +162,7 @@ public class OrientDBIndexHandler implements IndexHandler {
 			if (v == null) {
 				throw new RuntimeException("Vertex type {" + name + "} is unknown. Can't remove index {" + indexName + "}");
 			}
-			OIndex<?> index = v.getClassIndex(indexName);
+			OIndex index = v.getClassIndex(indexName);
 			if (index != null) {
 				noTx.dropIndex(index.getName());
 			}
@@ -197,7 +197,7 @@ public class OrientDBIndexHandler implements IndexHandler {
 			elementType = orientBaseGraph.getVertexType(element.getClass().getSimpleName());
 		}
 		if (elementType != null) {
-			OIndex<?> index = elementType.getClassIndex(indexName);
+			OIndex index = elementType.getClassIndex(indexName);
 			if (index != null) {
 				Object recordId = index.get(key);
 				if (recordId != null) {
@@ -232,7 +232,7 @@ public class OrientDBIndexHandler implements IndexHandler {
 
 		OrientVertexType vertexType = orientBaseGraph.getVertexType(classOfT.getSimpleName());
 		if (vertexType != null) {
-			OIndex<?> index = vertexType.getClassIndex(indexName);
+			OIndex index = vertexType.getClassIndex(indexName);
 			if (index != null) {
 				Object recordId = index.get(key);
 				if (recordId != null) {
@@ -329,7 +329,7 @@ public class OrientDBIndexHandler implements IndexHandler {
 			if (fields != null && fields.size() != 0 && e.getClassIndex(name) == null) {
 				String[] fieldArray = fields.keySet().stream().toArray(String[]::new);
 				String indexType = unique ? OClass.INDEX_TYPE.UNIQUE_HASH_INDEX.toString() : OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX.toString();
-				OIndex<?> idx = e.createIndex(name, indexType, null, new ODocument().fields("ignoreNullValues", true), fieldArray);
+				OIndex idx = e.createIndex(name, indexType, null, new ODocument().fields("ignoreNullValues", true), fieldArray);
 				if (idx == null) {
 					new RuntimeException("Index for {" + label + "/" + indexPostfix + "} was not created.");
 				}
@@ -408,7 +408,7 @@ public class OrientDBIndexHandler implements IndexHandler {
 
 		OrientVertexType vertexType = orientBaseGraph.getVertexType(type);
 		if (vertexType != null) {
-			OIndex<?> index = vertexType.getClassIndex(type);
+			OIndex index = vertexType.getClassIndex(type);
 			if (index != null) {
 				Object recordId = index.get(uuid);
 				if (recordId != null) {

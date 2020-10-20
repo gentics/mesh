@@ -256,6 +256,13 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				// Only execute the changelog if there are any elements in the graph
 				invokeChangelog(flags);
 			}
+
+			if (isJoiningCluster && requiresChangelog()) {
+				// Joining of cluster members is only allowed when the changelog has been applied
+				throw new RuntimeException(
+					"The instance can't join the cluster since the cluster database does not contain all needed changes. Please restart a single instance in the cluster with the "
+						+ MeshOptions.MESH_CLUSTER_INIT_ENV + " environment flag or the -" + MeshCLI.INIT_CLUSTER + " command line argument to migrate the database.");
+			}
 		}
 	}
 
@@ -289,30 +296,56 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				clusterOptions.setNetworkHost(localIp);
 			}
 
-			// Ensure that hazelcast is started before Vert.x since it is required for Vert.x creation.
-			db.clusterManager().startHazelcast();
-			initVertx(options);
-
 			if (isInitMode) {
 				log.info("Init cluster flag was found. Creating initial graph database now.");
 				// We need to init the graph db before starting the OrientDB Server. Otherwise the database will not get picked up by the orientdb server which
 				// handles the clustering.
 				db.setupConnectionPool();
+
+				// TODO find a better way around the chicken and the egg issues.
+				// Vert.x is currently needed for eventQueueBatch creation.
+				// This process fails if vert.x has not been made accessible during local data setup.
+				vertx = Vertx.vertx();
 				initLocalData(flags, options, false);
 				db.closeConnectionPool();
 				db.shutdown();
+				vertx.close();
+				vertx = null;
 
-				db.clusterManager().start();
+				// Start OrientDB Server which will open the previously created db and init hazelcast
+				db.clusterManager().startAndSync();
+
+				// Now since hazelcast is ready we can create Vert.x
+				initVertx(options);
+
+				// Register the event handlers now since vert.x can now be used
 				db.clusterManager().registerEventHandlers();
+
+				// Setup the connection pool in order to allow transactions to be used
 				db.setupConnectionPool();
+
+				// Finally start ES integration
 				searchProvider.init();
 				searchProvider.start();
+				if (flags.isReindex()) {
+					createSearchIndicesAndMappings();
+				}
 			} else {
+				// Start the server - it will block until a database could be synced.
 				// We need to wait for other nodes and receive the graphdb
-				db.clusterManager().start();
+				db.clusterManager().startAndSync();
+
+				// Now init vert.x since hazelcast is now ready.
+				initVertx(options);
+
+				// Register the event handlers now since vert.x can now be used
 				db.clusterManager().registerEventHandlers();
 				isInitialSetup = false;
+
+				// Setup the connection pool in order to allow transactions to be used
 				db.setupConnectionPool();
+
+				// Finally start ES integration
 				searchProvider.init();
 				searchProvider.start();
 				initLocalData(flags, options, true);
@@ -337,7 +370,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			initLocalData(flags, options, false);
 			if (startOrientServer) {
 				db.closeConnectionPool();
-				db.clusterManager().start();
+				db.clusterManager().startAndSync();
 				db.setupConnectionPool();
 			}
 		}
@@ -492,7 +525,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		Vertx vertx = null;
 		if (vertxOptions.getEventBusOptions().isClustered()) {
 			log.info("Creating clustered Vert.x instance");
-			vertx = createClusteredVertx(options, vertxOptions, (HazelcastInstance) db.clusterManager().getHazelcast());
+			vertx = createClusteredVertx(options, vertxOptions, db.clusterManager().getHazelcast());
 		} else {
 			log.info("Creating non-clustered Vert.x instance");
 			vertx = Vertx.vertx(vertxOptions);
@@ -719,6 +752,13 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 		log.info("Changelog completed.");
 		cls.setCurrentVersionAndRev();
+	}
+
+	@Override
+	public boolean requiresChangelog() {
+		log.info("Checking whether changelog entries need to be applied");
+		ChangelogSystem cls = new ChangelogSystem(db, options);
+		return cls.requiresChanges() || highlevelChangelogSystem.requiresChanges(meshRoot);
 	}
 
 	@Override
