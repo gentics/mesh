@@ -47,7 +47,6 @@ public class OrientLocalStorageImpl extends AbstractOrientStorage {
 	@Override
 	public void close() {
 		factory.close();
-		Orient.instance().shutdown();
 	}
 
 	@Override

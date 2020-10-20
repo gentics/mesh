@@ -169,7 +169,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 		if (txProvider != null) {
 			txProvider.close();
 		}
-
 	}
 
 	@Override

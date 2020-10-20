@@ -396,8 +396,15 @@ public class MeshImpl implements Mesh {
 
 		// database
 		try {
-			log.info("Stopping database provider");
+			log.info("Stopping and closing database provider");
 			meshInternal.database().stop();
+		} catch (Throwable t) {
+			log.error("Error while stopping database", t);
+		}
+
+		try {
+			log.info("Shutting database provider down");
+			meshInternal.database().shutdown();
 		} catch (Throwable t) {
 			log.error("Error while stopping database", t);
 		}

@@ -55,7 +55,7 @@ public class AdminEndpointBackupLocalTest extends AbstractMeshTest {
 
 		expect(GRAPH_RESTORE_START).one();
 		expect(GRAPH_RESTORE_FINISHED).one();
-		message = call(() -> client().invokeRestore());
+		message = adminCall(() -> client().invokeRestore());
 		awaitEvents();
 		assertThat(message).matches("restore_finished");
 

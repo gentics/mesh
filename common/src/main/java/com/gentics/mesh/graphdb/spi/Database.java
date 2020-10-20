@@ -50,6 +50,11 @@ public interface Database extends TxFactory {
 	void stop();
 
 	/**
+	 * Shutdown the database. This will terminate the database provider.
+	 */
+	void shutdown();
+
+	/**
 	 * Start the graph database.
 	 * 
 	 * @throws Exception
@@ -407,8 +412,6 @@ public interface Database extends TxFactory {
 	 * @return
 	 */
 	String getElementVersion(Element element);
-
-	void shutdown();
 
 	/**
 	 * Reload the given element.
