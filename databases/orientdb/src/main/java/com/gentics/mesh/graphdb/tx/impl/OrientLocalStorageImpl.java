@@ -11,6 +11,7 @@ import com.gentics.mesh.metric.MetricsService;
 import com.orientechnologies.orient.core.Orient;
 import com.orientechnologies.orient.core.command.OCommandOutputListener;
 import com.orientechnologies.orient.core.db.ODatabaseSession;
+import com.orientechnologies.orient.core.db.OrientDBInternal;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
 import com.orientechnologies.orient.core.db.tool.ODatabaseExport;
 import com.orientechnologies.orient.core.db.tool.ODatabaseImport;
@@ -46,6 +47,9 @@ public class OrientLocalStorageImpl extends AbstractOrientStorage {
 	@Override
 	public void close() {
 		factory.close();
+//		for (OrientDBInternal i : Orient.instance().getRunningInstances()) {
+//			i.close();
+//		}
 		Orient.instance().shutdown();
 	}
 
