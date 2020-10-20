@@ -36,6 +36,7 @@ import com.gentics.mesh.graphdb.spi.GraphStorage;
 import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.PropertyUtil;
 import com.hazelcast.core.HazelcastInstance;
+import com.orientechnologies.orient.core.Orient;
 import com.orientechnologies.orient.core.record.impl.ODocument;
 import com.orientechnologies.orient.server.OServer;
 import com.orientechnologies.orient.server.OServerMain;
@@ -382,7 +383,7 @@ public class OrientDBClusterManager implements ClusterManager {
 		System.setProperty("ORIENTDB_HOME", orientdbHome);
 
 		if (server == null) {
-			server = OServerMain.create();
+			server = OServerMain.create(false);
 			updateOrientDBPlugin();
 		}
 
@@ -400,6 +401,10 @@ public class OrientDBClusterManager implements ClusterManager {
 		OServerPluginManager manager = new OServerPluginManager();
 		manager.config(server);
 		server.activate();
+		// The mesh shutdown hook manages OrientDB shutdown.
+		// We need to manage this ourself since hazelcast is otherwise shutdown before closing vert.x
+		// When we control the shutdown we can ensure a clean shutdown process.
+		Orient.instance().removeShutdownHook();
 
 		if (isClusteringEnabled) {
 			ODistributedServerManager distributedManager = server.getDistributedManager();

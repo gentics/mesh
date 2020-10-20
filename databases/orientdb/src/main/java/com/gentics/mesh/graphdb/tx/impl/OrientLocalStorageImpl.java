@@ -8,6 +8,7 @@ import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.tx.AbstractOrientStorage;
 import com.gentics.mesh.metric.MetricsService;
+import com.orientechnologies.orient.core.Orient;
 import com.orientechnologies.orient.core.command.OCommandOutputListener;
 import com.orientechnologies.orient.core.db.ODatabaseSession;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
@@ -45,6 +46,7 @@ public class OrientLocalStorageImpl extends AbstractOrientStorage {
 	@Override
 	public void close() {
 		factory.close();
+		Orient.instance().shutdown();
 	}
 
 	@Override

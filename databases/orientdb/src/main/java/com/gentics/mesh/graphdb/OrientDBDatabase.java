@@ -256,6 +256,10 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	public void setupConnectionPool() throws Exception {
 		Orient.instance().startup();
+		// The mesh shutdown hook manages OrientDB shutdown.
+		// We need to manage this ourself since hazelcast is otherwise shutdown before closing vert.x
+		// When we control the shutdown we can ensure a clean shutdown process.
+		Orient.instance().removeShutdownHook();
 		initGraphDB();
 	}
 

@@ -355,7 +355,13 @@ public class MeshImpl implements Mesh {
 		}
 
 		log.info("Mesh shutting down...");
-		setStatus(MeshStatus.SHUTTING_DOWN);
+
+		// status
+		try {
+			setStatus(MeshStatus.SHUTTING_DOWN);
+		} catch (Throwable t) {
+			log.error("Error while setting shutdown status", t);
+		}
 
 		// plugins
 		try {
@@ -400,11 +406,16 @@ public class MeshImpl implements Mesh {
 			log.error("Error while clearing refs", t);
 		}
 
-
 		deleteLock();
 		meshInternal = null;
 		log.info("Shutdown completed...");
-		latch.countDown();
+
+		try {
+			latch.countDown();
+		} catch (Exception e) {
+			log.debug("Error while releasing latch. Maybe it was already released.", e);
+		}
+
 		shutdown = true;
 	}
 
