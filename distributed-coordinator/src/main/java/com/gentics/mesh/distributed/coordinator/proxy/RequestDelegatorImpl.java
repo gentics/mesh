@@ -118,7 +118,7 @@ public class RequestDelegatorImpl implements RequestDelegator {
 
 	@Override
 	public boolean canWrite() {
-		if (CoordinatorMode.DISABLED.equals(coordinator.getCoordinatorMode())) {
+		if (!options.getClusterOptions().isEnabled() || CoordinatorMode.DISABLED.equals(coordinator.getCoordinatorMode())) {
 			return true;
 		} else {
 			MasterServer master = coordinator.getMasterMember();
