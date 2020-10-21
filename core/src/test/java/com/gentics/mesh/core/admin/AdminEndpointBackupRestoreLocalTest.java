@@ -1,9 +1,15 @@
 package com.gentics.mesh.core.admin;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_BACKUP_FINISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_BACKUP_START;
+import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_RESTORE_FINISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_RESTORE_START;
 import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
+import static com.gentics.mesh.test.context.ElasticsearchTestMode.NONE;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.io.IOException;
 
@@ -15,16 +21,21 @@ import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(testSize = FULL, startServer = true, startStorageServer = true, clusterMode = false, inMemoryDB = false)
-public class AdminEndpointBackupServerTest extends AbstractMeshTest {
+@MeshTestSetting(elasticsearch = NONE, testSize = FULL, startServer = true, inMemoryDB = false)
+public class AdminEndpointBackupRestoreLocalTest extends AbstractMeshTest {
 
 	@Test
 	public void testBackupRestore() throws IOException {
 		final String NEW_PROJECT_NAME = "enemenemuh";
 		final String backupDir = testContext.getOptions().getStorageOptions().getBackupDirectory();
-
 		assertFilesInDir(backupDir, 0);
-		GenericMessageResponse message = adminCall(() -> client().invokeBackup());
+		grantAdmin();
+
+		expect(GRAPH_BACKUP_START).one();
+		expect(GRAPH_BACKUP_FINISHED).one();
+		GenericMessageResponse message = call(() -> client().invokeBackup());
+		awaitEvents();
+
 		assertThat(message).matches("backup_finished");
 		assertFilesInDir(backupDir, 1);
 
@@ -36,7 +47,14 @@ public class AdminEndpointBackupServerTest extends AbstractMeshTest {
 		String baseNodeUuid = projectResponse.getRootNode().getUuid();
 		call(() -> client().findNodeByUuid(NEW_PROJECT_NAME, baseNodeUuid));
 
-		adminCall(() -> client().invokeRestore(), SERVICE_UNAVAILABLE, "restore_error_in_server_mode");
+		expect(GRAPH_RESTORE_START).one();
+		expect(GRAPH_RESTORE_FINISHED).one();
+		message = adminCall(() -> client().invokeRestore());
+		awaitEvents();
+		assertThat(message).matches("restore_finished");
+
+		call(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid()));
+		call(() -> client().findNodeByUuid(NEW_PROJECT_NAME, baseNodeUuid), NOT_FOUND, "project_not_found", NEW_PROJECT_NAME);
 	}
 
 }
