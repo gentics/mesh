@@ -357,14 +357,14 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			coordinatorMasterElector.start();
 		} else {
 			// No cluster mode - Just setup the connection pool and load or setup the local data
-			if (startOrientServer) {
-				db.clusterManager().startAndSync();
-			}
 			db.setupConnectionPool();
 			initVertx(options);
 			searchProvider.init();
 			searchProvider.start();
 			initLocalData(options, false);
+			if (startOrientServer) {
+				db.clusterManager().startAndSync();
+			}
 		}
 
 		eventManager.registerHandlers();
