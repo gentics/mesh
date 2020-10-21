@@ -75,4 +75,17 @@ public class HighLevelChangelogSystemImpl implements HighLevelChangelogSystem {
 		});
 	}
 
+	@Override
+	public boolean requiresChanges(MeshRoot meshRoot) {
+		return db.tx(tx -> {
+			List<HighLevelChange> changes = highLevelChangesList.getList();
+			for (HighLevelChange change : changes) {
+				if (!isApplied(meshRoot, change)) {
+					return true;
+				}
+			}
+			return false;
+		});
+	}
+
 }

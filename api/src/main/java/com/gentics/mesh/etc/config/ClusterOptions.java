@@ -173,7 +173,7 @@ public class ClusterOptions implements Option {
 	 */
 	public void validate(MeshOptions meshOptions) {
 		if (isEnabled()) {
-			if ("0.0.0.0".contentEquals(networkHost)) {
+			if ("0.0.0.0".equals(networkHost)) {
 				throw new NullPointerException(
 					"Invalid networkHost setting. A value of 0.0.0.0 is invalid since this IP can't be used as source IP for nodes.");
 			}

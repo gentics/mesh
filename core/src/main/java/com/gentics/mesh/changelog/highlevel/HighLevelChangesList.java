@@ -46,6 +46,10 @@ public class HighLevelChangesList {
 			setAdminUserFlag,
 			prepareBucketableElements
 		// ADD NEW CHANGES HERE!
+		// WARNING!
+		// Only add changes when absolutely needed. Try to avoid changelog entries since those would require a offline update.
+		// Instead it is recommended to write changes in a way so that those can be applied on the fly.
+		// WARNING!
 		);
 	}
 }

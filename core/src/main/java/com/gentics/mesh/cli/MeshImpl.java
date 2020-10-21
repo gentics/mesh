@@ -140,21 +140,19 @@ public class MeshImpl implements Mesh {
 			printProductInformation();
 		}
 		// Create dagger context and invoke bootstrap init in order to startup mesh
-		try {
-			meshInternal = builder.configuration(options).mesh(this).build();
-			setMeshInternal(meshInternal);
-			meshInternal.boot().init(this, forceIndexSync, options, verticleLoader);
-			if (options.isUpdateCheckEnabled()) {
-				try {
-					invokeUpdateCheck();
-				} catch (Exception e) {
-					// Ignored
+		meshInternal = builder.configuration(options).mesh(this).build();
+		setMeshInternal(meshInternal);
+		meshInternal.boot().init(this, forceIndexSync, options, verticleLoader);
+		if (options.isUpdateCheckEnabled()) {
+			try {
+				invokeUpdateCheck();
+			} catch (Exception e) {
+				if (log.isTraceEnabled()) {
+					log.trace("Error while checking for updates", e);
 				}
 			}
-		} catch (Exception e) {
-			log.error("Error while starting mesh", e);
-			shutdown();
 		}
+
 		setStatus(MeshStatus.READY);
 		if (block) {
 			dontExit();
@@ -354,6 +352,11 @@ public class MeshImpl implements Mesh {
 	}
 
 	@Override
+	public void shutdownAndTerminate(int code) {
+		Runtime.getRuntime().exit(code);
+	}
+
+	@Override
 	public void shutdown() throws Exception {
 		if (shutdown) {
 			log.info("Instance is already shut down...");
@@ -361,10 +364,18 @@ public class MeshImpl implements Mesh {
 		}
 
 		log.info("Mesh shutting down...");
-		setStatus(MeshStatus.SHUTTING_DOWN);
+
+		// status
+		try {
+			log.info("Setting shutdown status");
+			setStatus(MeshStatus.SHUTTING_DOWN);
+		} catch (Throwable t) {
+			log.error("Error while setting shutdown status", t);
+		}
 
 		// plugins
 		try {
+			log.info("Undeploying plugins");
 			meshInternal.pluginManager().stop().blockingAwait(getOptions().getPluginTimeout(), TimeUnit.SECONDS);
 		} catch (Throwable t) {
 			log.error("One of the plugins could not be undeployed in the allotted time.", t);
@@ -391,13 +402,22 @@ public class MeshImpl implements Mesh {
 
 		// database
 		try {
+			log.info("Stopping and closing database provider");
 			meshInternal.database().stop();
+		} catch (Throwable t) {
+			log.error("Error while stopping database", t);
+		}
+
+		try {
+			log.info("Shutting database provider down");
+			meshInternal.database().shutdown();
 		} catch (Throwable t) {
 			log.error("Error while stopping database", t);
 		}
 
 		// boot
 		try {
+			log.info("Clearing references");
 			BootstrapInitializer boot = meshInternal.boot();
 			if (boot != null) {
 				boot.clearReferences();
@@ -406,11 +426,16 @@ public class MeshImpl implements Mesh {
 			log.error("Error while clearing refs", t);
 		}
 
-
 		deleteLock();
 		meshInternal = null;
 		log.info("Shutdown completed...");
-		latch.countDown();
+
+		try {
+			latch.countDown();
+		} catch (Exception e) {
+			log.debug("Error while releasing latch. Maybe it was already released.", e);
+		}
+
 		shutdown = true;
 	}
 

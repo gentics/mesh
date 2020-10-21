@@ -98,6 +98,7 @@ import com.gentics.mesh.core.rest.user.UserResetTokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.core.rest.validation.SchemaValidationResponse;
+import com.gentics.mesh.parameter.BackupParameters;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.ParameterProvider;
@@ -1012,6 +1013,11 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	@Override
 	public MeshRequest<GenericMessageResponse> invokeBackup() {
 		return prepareRequest(POST, "/admin/graphdb/backup", GenericMessageResponse.class);
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> invokeBackup(BackupParameters parameters) {
+		return prepareRequest(POST, "/admin/graphdb/backup" + getQuery(parameters), GenericMessageResponse.class);
 	}
 
 	@Override

@@ -11,6 +11,8 @@ import com.gentics.mesh.router.EndpointRegistry;
 import com.gentics.mesh.verticle.admin.AdminGUIEndpoint;
 
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 /**
  * Main runner that is used to deploy a preconfigured set of verticles.
@@ -24,6 +26,8 @@ public class LocalRunner {
 
 	public static void main(String[] args) throws Exception {
 		LoggingConfigurator.init();
+		Logger log = LoggerFactory.getLogger(LocalRunner.class);
+
 		MeshOptions options = OptionsLoader.createOrloadOptions(args);
 
 		// options.setAdminPassword("admin");
@@ -47,7 +51,13 @@ public class LocalRunner {
 			registry.register(AdminGUIEndpoint.class);
 
 		});
-		mesh.run();
+
+		try {
+			mesh.run();
+		} catch (Throwable t) {
+			log.error("Error while starting mesh. Invoking shutdown.", t);
+			mesh.shutdownAndTerminate(10);
+		}
 	}
 
 }

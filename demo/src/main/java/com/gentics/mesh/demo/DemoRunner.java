@@ -61,7 +61,12 @@ public class DemoRunner {
 			registry.register(AdminGUIEndpoint.class);
 			registry.register(AdminGUI2Endpoint.class);
 		});
-		mesh.run();
+		try {
+			mesh.run();
+		} catch (Throwable t) {
+			log.error("Error while starting mesh. Invoking shutdown.", t);
+			mesh.shutdownAndTerminate(10);
+		}
 	}
 
 	private static void setupDemo() throws FileNotFoundException, IOException, ZipException {

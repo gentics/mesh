@@ -65,7 +65,11 @@ public class BasicClusterTest extends AbstractClusterTest {
 
 	private static final Logger log = LoggerFactory.getLogger(BasicClusterTest.class);
 
-	// public static MeshLocalServer serverA = new MeshLocalServer("localNodeA", true, true);
+	// public static MeshLocalServer serverA = new MeshLocalServer()
+	// .withClusterName("dockerCluster" + clusterPostFix)
+	// .withNodeName("localNodeA")
+	// .withInitCluster()
+	// .waitForStartup();
 
 	public static MeshContainer serverA = new MeshContainer(MeshContainer.LOCAL_PROVIDER)
 		.withClusterName("dockerCluster" + clusterPostFix)
