@@ -1,16 +1,5 @@
 package com.gentics.mesh.changelog.highlevel;
 
-import java.util.List;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
-
-import java.util.List;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import com.gentics.mesh.cli.PostProcessFlags;
 import com.gentics.mesh.core.data.changelog.HighLevelChange;
 import com.gentics.mesh.core.data.root.MeshRoot;
@@ -41,4 +30,13 @@ public interface HighLevelChangelogSystem {
 	 * @param meshRoot
 	 */
 	void markAllAsApplied(MeshRoot meshRoot);
+
+
+	/**
+	 * Check whether any high level changelog entry needs to be applied.
+	 * 
+	 * @param meshRoot
+	 * @return
+	 */
+	boolean requiresChanges(MeshRoot meshRoot);
 }

@@ -82,9 +82,9 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 	private StartupLatchingConsumer startupConsumer = new StartupLatchingConsumer(startupAction);
 
 	/**
-	 * Name of the node.
+	 * Name of the node. Default: dummy
 	 */
-	private String nodeName;
+	private String nodeName = "dummy";
 
 	/**
 	 * -1 = "majority"
@@ -125,7 +125,11 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 
 	@Override
 	protected void configure() {
-		String basePath = "/opt/jenkins-slave/" + clusterName + "-" + nodeName;
+		String instanceFolderName = isClustered() ? clusterName + "-" + nodeName : nodeName;
+		File containerFolder = new File("target", "mesh-containers");
+		File baseFolder = new File(containerFolder, instanceFolderName);
+		String basePath = baseFolder.getAbsolutePath();
+		log.info("Using base folder {}", basePath);
 		String confPath = basePath + "/config";
 		if (useFilesystem) {
 			String dataGraphDBPath = basePath + "/data-graphdb" + dataPathPostfix;
@@ -153,14 +157,16 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 			// withCreateContainerCmdModifier(it -> it.withVolumes(new Volume("/data")));
 		}
 
-		try {
-			new File(confPath).mkdirs();
-			File confFile = new File(confPath, "default-distributed-db-config.json");
-			String jsonConfig = generateDistributedConfig(writeQuorum).encodePrettily();
-			FileUtils.writeStringToFile(confFile, jsonConfig, Charset.forName("UTF-8"));
-			addFileSystemBind(confFile.getAbsolutePath(), "/config/default-distributed-db-config.json", BindMode.READ_ONLY);
-		} catch (Exception e) {
-			throw new RuntimeException("Error while creating default-distributed-db-config.json", e);
+		if (isClustered()) {
+			try {
+				new File(confPath).mkdirs();
+				File confFile = new File(confPath, "default-distributed-db-config.json");
+				String jsonConfig = generateDistributedConfig(writeQuorum).encodePrettily();
+				FileUtils.writeStringToFile(confFile, jsonConfig, Charset.forName("UTF-8"));
+				addFileSystemBind(confFile.getAbsolutePath(), "/config/default-distributed-db-config.json", BindMode.READ_ONLY);
+			} catch (Exception e) {
+				throw new RuntimeException("Error while creating default-distributed-db-config.json", e);
+			}
 		}
 
 		changeUserInContainer();
@@ -608,7 +614,7 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 	}
 
 	/**
-	 * Set the data path postfix.
+	 * Set the data path postfix. This will append the postfix to all data folders in order to make them unique.
 	 * 
 	 * @param postfix
 	 * @return
@@ -640,6 +646,14 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 		}
 	}
 
+	public String getHost() {
+		return getContainerIpAddress();
+	}
+
+	public int getPort() {
+		return getMappedPort(8080);
+	}
+
 	public String getInternalContainerIpAddress() {
 		return getContainerInfo().getNetworkSettings().getIpAddress();
 	}
@@ -665,6 +679,10 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 	public MeshContainer withPublicKeys(File file) {
 		addFileSystemBind(file.getAbsolutePath(), "/config/public-keys.json", BindMode.READ_ONLY);
 		return this;
+	}
+
+	private boolean isClustered() {
+		return clusterName != null;
 	}
 
 }

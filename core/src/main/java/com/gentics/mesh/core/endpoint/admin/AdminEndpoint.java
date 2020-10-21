@@ -32,6 +32,7 @@ import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoHandler;
 import com.gentics.mesh.core.endpoint.admin.plugin.PluginHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.parameter.impl.BackupParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
@@ -276,6 +277,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		endpoint.path("/graphdb/backup");
 		endpoint.method(POST);
 		endpoint.setMutating(false);
+		endpoint.addQueryParameters(BackupParametersImpl.class);
 		endpoint.description(
 			"Invoke a graph database backup and dump the data to the configured backup location. Note that this operation will block all current operation.");
 		endpoint.produces(APPLICATION_JSON);

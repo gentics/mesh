@@ -22,10 +22,9 @@ public class AdminEndpointBackupServerTest extends AbstractMeshTest {
 	public void testBackupRestore() throws IOException {
 		final String NEW_PROJECT_NAME = "enemenemuh";
 		final String backupDir = testContext.getOptions().getStorageOptions().getBackupDirectory();
-		grantAdmin();
 
 		assertFilesInDir(backupDir, 0);
-		GenericMessageResponse message = call(() -> client().invokeBackup());
+		GenericMessageResponse message = adminCall(() -> client().invokeBackup());
 		assertThat(message).matches("backup_finished");
 		assertFilesInDir(backupDir, 1);
 
@@ -37,7 +36,7 @@ public class AdminEndpointBackupServerTest extends AbstractMeshTest {
 		String baseNodeUuid = projectResponse.getRootNode().getUuid();
 		call(() -> client().findNodeByUuid(NEW_PROJECT_NAME, baseNodeUuid));
 
-		call(() -> client().invokeRestore(), SERVICE_UNAVAILABLE, "restore_error_in_server_mode");
+		adminCall(() -> client().invokeRestore(), SERVICE_UNAVAILABLE, "restore_error_in_server_mode");
 	}
 
 }
