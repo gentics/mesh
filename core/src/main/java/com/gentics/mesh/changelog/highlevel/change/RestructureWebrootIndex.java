@@ -4,6 +4,8 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIE
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 
+import java.util.stream.Collectors;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -67,7 +69,7 @@ public class RestructureWebrootIndex extends AbstractHighLevelChange {
 				if (container == null) {
 					continue;
 				}
-				edge.setUrlFieldInfo(container.getUrlFieldValues());
+				edge.setUrlFieldInfo(container.getUrlFieldValues().collect(Collectors.toSet()));
 				String segment = container.getSegmentFieldValue();
 				if (segment != null && !segment.trim().isEmpty()) {
 					Node node = container.getParentNode();

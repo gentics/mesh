@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -481,11 +482,11 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	void postfixSegmentFieldValue();
 
 	/**
-	 * Return the URL field values for the container.
+	 * Return the URL field values for the container. The order of fields returned is the same order defined in the schema.
 	 * 
 	 * @return
 	 */
-	Set<String> getUrlFieldValues();
+	Stream<String> getUrlFieldValues();
 
 	/**
 	 * Traverse to the base node and build up the path to this container.
