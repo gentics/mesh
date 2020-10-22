@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <orient-server>
 	<handlers>
-		<handler class="com.gentics.mesh.graphdb.cluster.MeshOHazelcastPlugin">
+		<handler class="com.orientechnologies.orient.server.hazelcast.OHazelcastPlugin">
 			<parameters>
 				<parameter name="nodeName" value="${ORIENTDB_NODE_NAME}" />
 				<parameter name="enabled" value="${ORIENTDB_DISTRIBUTED}" />

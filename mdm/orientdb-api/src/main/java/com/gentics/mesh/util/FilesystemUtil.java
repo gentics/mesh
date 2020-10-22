@@ -3,8 +3,9 @@ package com.gentics.mesh.util;
 import java.io.File;
 import java.nio.file.Path;
 
-import com.orientechnologies.common.jna.ONative;
-import com.sun.jna.Platform;
+import org.apache.commons.lang3.SystemUtils;
+
+import com.orientechnologies.common.jnr.ONative;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -24,7 +25,7 @@ public final class FilesystemUtil {
 	 * @return
 	 */
 	public static boolean supportsDirectIO(Path path) {
-		if (Platform.isLinux()) {
+		if (SystemUtils.IS_OS_LINUX) {
 			try {
 				path.toFile().mkdirs();
 				Path testPath = path.resolve(".check_fs_support");

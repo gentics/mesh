@@ -181,7 +181,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 		if (txProvider != null) {
 			txProvider.close();
 		}
-
 	}
 
 	@Override
@@ -207,6 +206,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 			log.trace("Using ridbag transition threshold {" + value + "}");
 		}
 		OGlobalConfiguration.RID_BAG_EMBEDDED_TO_SBTREEBONSAI_THRESHOLD.setValue(value);
+		OGlobalConfiguration.WARNING_DEFAULT_USERS.setValue(false);
 
 		clusterManager.initConfigurationFiles();
 
@@ -271,6 +271,10 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	public void setupConnectionPool() throws Exception {
 		Orient.instance().startup();
+		// The mesh shutdown hook manages OrientDB shutdown.
+		// We need to manage this ourself since hazelcast is otherwise shutdown before closing vert.x
+		// When we control the shutdown we can ensure a clean shutdown process.
+		Orient.instance().removeShutdownHook();
 		initGraphDB();
 	}
 
@@ -309,7 +313,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
 		OrientVertexType elementType = orientBaseGraph.getVertexType(classOfVertex.getSimpleName());
 		String indexName = classOfVertex.getSimpleName() + "_" + indexPostfix;
-		OIndex<?> index = elementType.getClassIndex(indexName);
+		OIndex index = elementType.getClassIndex(indexName);
 		Object startKey = index().createComposedIndexKey(fieldValues[0], start);
 		Object endKey = index().createComposedIndexKey(fieldValues[0], end); 
 		OIndexCursor entries = index.getInternal().iterateEntriesBetween(startKey, true, endKey, true, false);

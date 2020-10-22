@@ -114,4 +114,23 @@ public class ChangelogSystemImpl implements ChangelogSystem {
 			graph.shutdown();
 		}
 	}
+
+	@Override
+	public boolean requiresChanges() {
+		List<Change> changes = ChangesList.getList(options);
+		TransactionalGraph graph = db.rawTx();
+		try {
+			for (Change change : changes) {
+				change.setGraph(graph);
+				change.setDb(db);
+				if (!change.isApplied()) {
+					log.info("Change " + change.getName() + " has not yet been applied.");
+					return true;
+				}
+			}
+		} finally {
+			graph.shutdown();
+		}
+		return false;
+	}
 }

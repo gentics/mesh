@@ -8,6 +8,7 @@ import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorMasterRes
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.parameter.BackupParameters;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.monitoring.MonitoringRestClient;
@@ -57,6 +58,12 @@ public interface AdminClientMethods {
 	 * @return
 	 */
 	MeshRequest<GenericMessageResponse> invokeBackup();
+
+	/**
+	 * Invoke a graph database backup.
+	 * @return
+	 */
+	MeshRequest<GenericMessageResponse> invokeBackup(BackupParameters parameters);
 
 	/**
 	 * Invoke a graph database export.

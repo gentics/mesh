@@ -7,9 +7,9 @@ import org.apache.commons.lang3.NotImplementedException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.tx.AbstractOrientStorage;
 import com.gentics.mesh.metric.MetricsService;
-import com.orientechnologies.orient.core.Orient;
 import com.orientechnologies.orient.core.db.ODatabaseDocumentInternal;
 import com.orientechnologies.orient.core.db.ODatabaseSession;
+import com.orientechnologies.orient.core.db.ODatabaseType;
 import com.orientechnologies.orient.core.db.OrientDB;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
@@ -29,16 +29,11 @@ public class OrientServerStorageImpl extends AbstractOrientStorage {
 
 	@Override
 	public void open(String name) {
-		// db = context.open(name, "admin", "admin");
-		// if (db instanceof ODatabaseDocumentInternal) {
-		// // internalNoTxFactory = OrientGraphFactory.getNoTxGraphImplFactory();
-		// // ImplFactory internalTxFactory =
-		// }
+		context.createIfNotExists(DB_NAME, ODatabaseType.PLOCAL);
 	}
 
 	@Override
 	public void close() {
-		Orient.instance().shutdown();
 	}
 
 	@Override

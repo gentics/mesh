@@ -16,6 +16,13 @@ public interface ChangelogSystem {
 	boolean applyChanges(PostProcessFlags flags, List<Change> list);
 
 	/**
+	 * Check whether all changes have been applied or whether the changelog would need to apply changes.
+	 * 
+	 * @return
+	 */
+	boolean requiresChanges();
+
+	/**
 	 * Mark all changelog entries as applied. This is useful if you resolved issues manually or if you want to create a fresh mesh database dump.
 	 */
 	void markAllAsApplied(List<Change> list);
