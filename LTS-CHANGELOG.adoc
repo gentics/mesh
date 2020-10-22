@@ -18,6 +18,13 @@ The LTS changelog lists releases which are only accessible via a commercial subs
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
 
+[[v1.6.4]]
+== 1.6.4 (TBD)
+
+icon:check[] OrientDB: The included OrientDB version has been updated to version `3.1.4`.
+
+icon:check[] Clustering: The coordination feature will now be automatically disabled whenever clustering is disabled.
+
 [[v1.6.3]]
 == 1.6.3 (21.10.2020)
 
@@ -62,6 +69,20 @@ icon:plus[] Monitoring: The liveness probe will now check for plugin status. Fai
 icon:check[] Clustering: The webroot handler no longer uses the cluster-wide write lock.
 
 icon:check[] Logging: Failing readiness checks are now logged using the `WARN` level.
+
+[[v1.5.6]]
+== 1.5.6 (22.10.2020)
+
+icon:check[] OrientDB: The included OrientDB version has been updated to version `3.1.4`.
+
+icon:check[] Clustering: The coordination feature will now be automatically disabled whenever clustering is disabled.
+
+icon:check[] Clustering: Internal caches will now be cleared when cluster topology changes occur.
+
+icon:plus[] Backup: The `?consistencyCheck` query parameter was added to the `/api/v2/admin/backup` endpoint. When set to true it will run the consistency check before invoking the backup. The call will fail when inconsistencies were detected.
+
+icon:check[] Clustering: An additional check has been added which will prevent nodes from joining a cluster which contains an outdated database. The `-initCluster` flag needs to be used for a single instance to migrate the cluster. This is done to prevent concurrency issues during changelog execution and cluster formation.
+
 
 [[v1.5.5]]
 == 1.5.5 (06.10.2020)

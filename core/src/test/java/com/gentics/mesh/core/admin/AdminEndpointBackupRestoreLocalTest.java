@@ -29,11 +29,10 @@ public class AdminEndpointBackupRestoreLocalTest extends AbstractMeshTest {
 		final String NEW_PROJECT_NAME = "enemenemuh";
 		final String backupDir = testContext.getOptions().getStorageOptions().getBackupDirectory();
 		assertFilesInDir(backupDir, 0);
-		grantAdmin();
 
 		expect(GRAPH_BACKUP_START).one();
 		expect(GRAPH_BACKUP_FINISHED).one();
-		GenericMessageResponse message = call(() -> client().invokeBackup());
+		GenericMessageResponse message = adminCall(() -> client().invokeBackup());
 		awaitEvents();
 
 		assertThat(message).matches("backup_finished");
@@ -56,5 +55,4 @@ public class AdminEndpointBackupRestoreLocalTest extends AbstractMeshTest {
 		call(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid()));
 		call(() -> client().findNodeByUuid(NEW_PROJECT_NAME, baseNodeUuid), NOT_FOUND, "project_not_found", NEW_PROJECT_NAME);
 	}
-
 }

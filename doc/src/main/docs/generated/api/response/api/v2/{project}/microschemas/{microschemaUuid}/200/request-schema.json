@@ -101,6 +101,16 @@
           "elasticsearch" : {
             "type" : "object",
             "$ref" : "urn:jsonschema:io:vertx:core:json:JsonObject"
+          },
+          "name" : {
+            "type" : "string",
+            "required" : true,
+            "description" : "Name of the field."
+          },
+          "type" : {
+            "type" : "string",
+            "required" : true,
+            "description" : "Type of the field."
           }
         }
       }
