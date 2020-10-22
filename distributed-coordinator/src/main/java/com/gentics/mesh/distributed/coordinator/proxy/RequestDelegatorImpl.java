@@ -10,6 +10,7 @@ import javax.inject.Inject;
 import com.gentics.mesh.distributed.RequestDelegator;
 import com.gentics.mesh.distributed.coordinator.Coordinator;
 import com.gentics.mesh.distributed.coordinator.MasterServer;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.cluster.CoordinatorMode;
 
 import io.vertx.core.MultiMap;
@@ -34,13 +35,16 @@ public class RequestDelegatorImpl implements RequestDelegator {
 
 	private final Coordinator coordinator;
 	private final HttpClient httpClient;
+	private final MeshOptions options;
+
 	private static final Set<Pattern> readOnlyPathPatternSet = createReadOnlyPatternSet();
 	private static final Set<Pattern> whiteListPathPatternSet = createWhitelistPatternSet();
 
 	@Inject
-	public RequestDelegatorImpl(Coordinator coordinator, Vertx vertx) {
+	public RequestDelegatorImpl(Coordinator coordinator, Vertx vertx, MeshOptions options) {
 		this.coordinator = coordinator;
 		this.httpClient = vertx.createHttpClient();
+		this.options = options;
 	}
 
 	@Override
@@ -49,6 +53,15 @@ public class RequestDelegatorImpl implements RequestDelegator {
 		String requestURI = request.uri();
 		String path = request.path();
 		HttpMethod method = request.method();
+
+		if (!options.getClusterOptions().isEnabled()) {
+			if (log.isDebugEnabled()) {
+				log.debug("Skipping delegation since clustering is not enabled.");
+			}
+			rc.next();
+			return;
+		}
+
 		CoordinatorMode mode = coordinator.getCoordinatorMode();
 		if (mode == CoordinatorMode.DISABLED) {
 			if (log.isDebugEnabled()) {
@@ -105,7 +118,7 @@ public class RequestDelegatorImpl implements RequestDelegator {
 
 	@Override
 	public boolean canWrite() {
-		if (CoordinatorMode.DISABLED.equals(coordinator.getCoordinatorMode())) {
+		if (!options.getClusterOptions().isEnabled() || CoordinatorMode.DISABLED.equals(coordinator.getCoordinatorMode())) {
 			return true;
 		} else {
 			MasterServer master = coordinator.getMasterMember();
