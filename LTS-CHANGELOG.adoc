@@ -22,6 +22,8 @@ All fixes and changes in LTS releases will be released the next minor release. C
 
 icon:check[] OrientDB: The included OrientDB version has been updated to version `3.1.3`.
 
+icon:check[] Clustering: The coordination feature will now be automatically disabled whenever clustering is disabled.
+
 icon:check[] Clustering: Internal caches will now be cleared when cluster topology changes occur.
 
 icon:plus[] Backup: The `?consistencyCheck` query parameter was added to the `/api/v2/admin/backup` endpoint. When set to true it will run the consistency check before invoking the backup. The call will fail when inconsistencies were detected.
