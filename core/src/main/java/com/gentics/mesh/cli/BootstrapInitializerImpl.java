@@ -290,33 +290,56 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				clusterOptions.setNetworkHost(localIp);
 			}
 
-			// Ensure that hazelcast is started before Vert.x since it is required for Vert.x creation.
-			db.clusterManager().startHazelcast();
-			initVertx(options);
-
 			if (isInitMode) {
 				log.info("Init cluster flag was found. Creating initial graph database now.");
 				// We need to init the graph db before starting the OrientDB Server. Otherwise the database will not get picked up by the orientdb server which
 				// handles the clustering.
 				db.setupConnectionPool();
+
+				// TODO find a better way around the chicken and the egg issues.
+				// Vert.x is currently needed for eventQueueBatch creation.
+				// This process fails if vert.x has not been made accessible during local data setup.
+				vertx = Vertx.vertx();
 				boolean setupData = initLocalData(options, false);
 				db.closeConnectionPool();
 				db.shutdown();
+				vertx.close();
+				vertx = null;
 
+				// Start OrientDB Server which will open the previously created db and init hazelcast
 				db.clusterManager().startAndSync();
+
+				// Now since hazelcast is ready we can create Vert.x
+				initVertx(options);
+
+				// Register the event handlers now since vert.x can now be used
 				db.clusterManager().registerEventHandlers();
+
+				// Setup the connection pool in order to allow transactions to be used
 				db.setupConnectionPool();
+
+				// Finally start ES integration
 				searchProvider.init();
 				searchProvider.start();
 				if (setupData) {
 					createSearchIndicesAndMappings();
 				}
 			} else {
+				// Start the server - it will block until a database could be synced.
 				// We need to wait for other nodes and receive the graphdb
 				db.clusterManager().startAndSync();
+
+				// Now init vert.x since hazelcast is now ready.
+				initVertx(options);
+
+				// Register the event handlers now since vert.x can now be used
 				db.clusterManager().registerEventHandlers();
 				isInitialSetup = false;
+
+				// Setup the connection pool in order to allow transactions to be used
 				db.setupConnectionPool();
+
+				// Finally start ES integration
 				searchProvider.init();
 				searchProvider.start();
 				initLocalData(options, true);
@@ -333,16 +356,14 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			}
 			coordinatorMasterElector.start();
 		} else {
+			// No cluster mode - Just setup the connection pool and load or setup the local data
+			db.setupConnectionPool();
 			initVertx(options);
 			searchProvider.init();
 			searchProvider.start();
-			// No cluster mode - Just setup the connection pool and load or setup the local data
-			db.setupConnectionPool();
 			initLocalData(options, false);
 			if (startOrientServer) {
-				db.closeConnectionPool();
 				db.clusterManager().startAndSync();
-				db.setupConnectionPool();
 			}
 		}
 
@@ -496,7 +517,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		Vertx vertx = null;
 		if (vertxOptions.getEventBusOptions().isClustered()) {
 			log.info("Creating clustered Vert.x instance");
-			vertx = createClusteredVertx(options, vertxOptions, (HazelcastInstance) db.clusterManager().getHazelcast());
+			vertx = createClusteredVertx(options, vertxOptions, db.clusterManager().getHazelcast());
 		} else {
 			log.info("Creating non-clustered Vert.x instance");
 			vertx = Vertx.vertx(vertxOptions);

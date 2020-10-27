@@ -33,7 +33,7 @@ public class RunnerNodeA {
 
 		MeshOptions options = OptionsLoader.createOrloadOptions("-" + MeshCLI.INIT_CLUSTER);
 		options.getStorageOptions().setDirectory(basePath + "/graph");
-//		options.getSearchOptions().setDirectory(basePath + "/es");
+		// options.getSearchOptions().setDirectory(basePath + "/es");
 		options.getUploadOptions().setDirectory(basePath + "/binaryFiles");
 		options.getUploadOptions().setTempDirectory(basePath + "/temp");
 		options.getHttpServerOptions().setPort(8080);
@@ -53,7 +53,8 @@ public class RunnerNodeA {
 
 			// Add demo content provider
 			registry.register(DemoAppEndpoint.class);
-			DemoVerticle demoVerticle = new DemoVerticle(meshInternal.boot(), new DemoDataProvider(meshInternal.database(), meshInternal.meshLocalClientImpl(),
+			DemoVerticle demoVerticle = new DemoVerticle(meshInternal.boot(),
+				new DemoDataProvider(meshInternal.database(), meshInternal.meshLocalClientImpl(),
 					meshInternal.boot()));
 			DeploymentUtil.deployAndWait(vertx, config, demoVerticle, false);
 
@@ -65,7 +66,11 @@ public class RunnerNodeA {
 			// registry.register(ElasticsearchHeadEndpoint.class);
 			// }
 		});
-		mesh.run();
+		try {
+			mesh.run();
+		} catch (Throwable t) {
+			mesh.shutdownAndTerminate(10);
+		}
 	}
 
 }

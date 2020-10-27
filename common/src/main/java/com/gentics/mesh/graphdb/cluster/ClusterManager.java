@@ -48,22 +48,10 @@ public interface ClusterManager {
 	void registerEventHandlers();
 
 	/**
-	 * Stop the hazelcast instance that has been created by the manager.
-	 */
-	void stopHazelcast();
-
-	/**
 	 * Returns a completable which will complete once the quorum has been reached.
 	 * 
 	 * @return
 	 */
 	Completable waitUntilWriteQuorumReached();
-
-	/**
-	 * Start the hazelcast instance.
-	 * 
-	 * @return
-	 */
-	HazelcastInstance startHazelcast();
 
 }

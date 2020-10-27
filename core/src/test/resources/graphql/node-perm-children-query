@@ -15,11 +15,11 @@
 				# [$.data.node.children.elements[0].language=en]
 				# [$.data.node.children.elements[1].language=en]
 				language
-				
-				# [$.data.node.children.elements[0].path=/Deals]
-				# [$.data.node.children.elements[1].path=/Products]
+
+				# [$.data.node.children.elements[0].path=/Products]
+				# [$.data.node.children.elements[1].path=/Deals]
 				path
-                ... on folder { fields { slug }}
+				... on folder { fields { slug }}
 			}
 		}
 		# [$.data.node.parent=<is-null>]

@@ -13,8 +13,6 @@ import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.distributed.containers.MeshDockerServer;
 
-import io.vertx.core.Vertx;
-
 /**
  * Test how a cluster behaves with more than two nodes.
  */
@@ -24,7 +22,6 @@ public class MultiNodeClusterTest extends AbstractClusterTest {
 
 	private static String clusterPostFix = randomUUID();
 
-	private static Vertx vertx = Vertx.vertx();
 	// public static MeshLocalServer serverA = new MeshLocalServer("localNodeA", true, true);
 
 	public static MeshDockerServer serverA = new MeshDockerServer()
