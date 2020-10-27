@@ -46,6 +46,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
 import java.util.function.Predicate;
@@ -250,7 +251,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			List<String> segments = new ArrayList<>();
 			String segment = getPathSegment(branchUuid, type, languageTag);
 			if (segment == null) {
-				return null;
+				// Fall back to url fields
+				return getUrlFieldPath(branchUuid, type, languageTag);
 			}
 			segments.add(segment);
 
@@ -265,10 +267,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				// For the path segments of the container, we allow ANY language (of the project)
 				segment = current.getPathSegment(branchUuid, type, true, languageTag);
 
-				// Abort early if one of the path segments could not be resolved. We
-				// need to return a 404 in those cases.
+				// Abort early if one of the path segments could not be resolved.
+				// We need to fall back to url fields in those cases.
 				if (segment == null) {
-					return null;
+					return getUrlFieldPath(branchUuid, type, languageTag);
 				}
 				segments.add(segment);
 			}
@@ -301,6 +303,22 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			return builder.toString();
 		});
 
+	}
+
+	/**
+	 * Return the first url field path found.
+	 *
+	 * @param branchUuid
+	 * @param type
+	 * @param languages  The order of languages will be used to search for the url field values.
+	 * @return null if no url field could be found.
+	 */
+	private String getUrlFieldPath(String branchUuid, ContainerType type, String... languages) {
+		return Stream.of(languages)
+			.flatMap(language -> Optional.ofNullable(getGraphFieldContainer(language, branchUuid, type)).map(Stream::of).orElseGet(Stream::empty))
+			.flatMap(NodeGraphFieldContainer::getUrlFieldValues)
+			.findFirst()
+			.orElse(null);
 	}
 
 	@Override

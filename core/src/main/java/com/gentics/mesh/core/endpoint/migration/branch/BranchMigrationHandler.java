@@ -8,6 +8,7 @@ import static com.gentics.mesh.core.rest.job.JobStatus.RUNNING;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -139,7 +140,7 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 					} else {
 						draftEdge.setSegmentInfo(null);
 					}
-					draftEdge.setUrlFieldInfo(container.getUrlFieldValues());
+					draftEdge.setUrlFieldInfo(container.getUrlFieldValues().collect(Collectors.toSet()));
 					batch.add(container.onUpdated(newBranch.getUuid(), DRAFT));
 				});
 
@@ -159,7 +160,7 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 					} else {
 						publishEdge.setSegmentInfo(null);
 					}
-					publishEdge.setUrlFieldInfo(container.getUrlFieldValues());
+					publishEdge.setUrlFieldInfo(container.getUrlFieldValues().collect(Collectors.toSet()));
 					batch.add(container.onUpdated(newBranch.getUuid(), PUBLISHED));
 				});
 

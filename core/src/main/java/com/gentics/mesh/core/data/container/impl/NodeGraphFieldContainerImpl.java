@@ -19,7 +19,6 @@ import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.error.Errors.nodeConflict;
-import static com.gentics.mesh.madl.field.FieldType.INTEGER;
 import static com.gentics.mesh.madl.field.FieldType.LONG;
 import static com.gentics.mesh.madl.field.FieldType.STRING;
 import static com.gentics.mesh.madl.index.IndexType.NOTUNIQUE;
@@ -34,6 +33,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -41,6 +41,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
@@ -84,7 +85,6 @@ import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
-import com.gentics.mesh.madl.index.IndexType;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
@@ -236,35 +236,36 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-	public Set<String> getUrlFieldValues() {
+	public Stream<String> getUrlFieldValues() {
 		SchemaModel schema = getSchemaContainerVersion().getSchema();
 
-		Set<String> urlFieldValues = new HashSet<>();
-		if (schema.getUrlFields() != null) {
-			for (String urlField : schema.getUrlFields()) {
-				FieldSchema fieldSchema = schema.getField(urlField);
-				GraphField field = getField(fieldSchema);
-				if (field instanceof StringGraphFieldImpl) {
-					StringGraphFieldImpl stringField = (StringGraphFieldImpl) field;
-					String value = stringField.getString();
-					if (value != null) {
-						urlFieldValues.add(value);
-					}
-				}
-				if (field instanceof StringGraphFieldListImpl) {
-					StringGraphFieldListImpl stringListField = (StringGraphFieldListImpl) field;
-					for (StringGraphField listField : stringListField.getList()) {
-						if (listField != null) {
-							String value = listField.getString();
-							if (value != null) {
-								urlFieldValues.add(value);
-							}
-						}
-					}
+		List<String> urlFields = schema.getUrlFields();
+		if (urlFields == null) {
+			return Stream.empty();
+		}
+		return urlFields.stream().flatMap(urlField -> {
+			FieldSchema fieldSchema = schema.getField(urlField);
+			GraphField field = getField(fieldSchema);
+			if (field instanceof StringGraphFieldImpl) {
+				StringGraphFieldImpl stringField = (StringGraphFieldImpl) field;
+				String value = stringField.getString();
+				if (StringUtils.isBlank(value)) {
+					return Stream.empty();
+				} else {
+					return Stream.of(value);
 				}
 			}
-		}
-		return urlFieldValues;
+			if (field instanceof StringGraphFieldListImpl) {
+				StringGraphFieldListImpl stringListField = (StringGraphFieldListImpl) field;
+				return stringListField.getList().stream()
+					.flatMap(listField -> Optional.ofNullable(listField)
+						.map(StringGraphField::getString)
+						.filter(StringUtils::isNotBlank)
+						.map(Stream::of).orElseGet(Stream::empty));
+			}
+
+			return Stream.empty();
+		});
 	}
 
 	/**
@@ -291,7 +292,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 					// We know that the found container already occupies the index with one of the given paths. Lets compare both sets of paths in order to
 					// determine
 					// which path caused the conflict.
-					Set<String> fromConflictingContainer = conflictingContainer.getUrlFieldValues();
+					Set<String> fromConflictingContainer = conflictingContainer.getUrlFieldValues().collect(Collectors.toSet());
 					@SuppressWarnings("unchecked")
 					Collection<String> conflictingValues = CollectionUtils.intersection(fromConflictingContainer, urlFieldValues);
 					String paths = conflictingValues.stream().map(n -> n.toString()).collect(Collectors.joining(","));
@@ -310,7 +311,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public void updateWebrootPathInfo(InternalActionContext ac, String branchUuid, String conflictI18n) {
-		Set<String> urlFieldValues = getUrlFieldValues();
+		Set<String> urlFieldValues = getUrlFieldValues().collect(Collectors.toSet());
 		Iterator<? extends GraphFieldContainerEdge> it = getContainerEdge(DRAFT, branchUuid);
 		if (it.hasNext()) {
 			GraphFieldContainerEdge draftEdge = it.next();
