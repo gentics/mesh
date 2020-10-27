@@ -18,6 +18,7 @@ import com.gentics.mesh.core.rest.plugin.PluginResponse;
 import com.gentics.mesh.plugin.test.common.util.ConfigSetupAction;
 import com.gentics.mesh.plugin.test.common.util.MeshVersionUtil;
 import com.gentics.mesh.plugin.test.common.util.PluginTestUtil;
+import com.gentics.mesh.test.docker.MeshContainer;
 import com.gentics.mesh.test.docker.MeshDockerServer;
 
 import io.vertx.core.Vertx;
@@ -52,7 +53,7 @@ public abstract class AbstractPluginContainerIntegrationTest {
 	}
 
 	@ClassRule
-	public static final MeshDockerServer meshServer = new MeshDockerServer(meshImage(), Vertx.vertx())
+	public static final MeshContainer meshServer = new MeshContainer(meshImage())
 		.withFileSystemBind(PLUGINS_DIR.getAbsolutePath(), "/plugins")
 		.waitForStartup();
 

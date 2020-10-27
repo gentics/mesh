@@ -151,6 +151,6 @@ public class MailServiceIT extends AbstractPluginContainerIntegrationTest {
 	}
 
 	protected String serverURL() {
-		return "http://" + meshServer.getHostname() + ":" + meshServer.getPort();
+		return "http://" + meshServer.getHost() + ":" + meshServer.getPort();
 	}
 }

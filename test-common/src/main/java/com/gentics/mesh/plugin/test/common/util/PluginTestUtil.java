@@ -10,8 +10,10 @@ import java.util.concurrent.TimeUnit;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.plugin.PluginListResponse;
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
+import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshWebsocket;
-import com.gentics.mesh.test.MeshTestServer;
+import com.gentics.mesh.test.docker.MeshContainer;
+import com.gentics.mesh.test.local.MeshLocalServer;
 
 public final class PluginTestUtil {
 
@@ -26,9 +28,17 @@ public final class PluginTestUtil {
 	 * @param pluginId
 	 * @throws InterruptedException
 	 */
-	public static void waitForPluginRegistration(MeshTestServer server, int timeoutInMilliseconds, String pluginId) throws InterruptedException {
+	public static void waitForPluginRegistration(MeshContainer container, int timeoutInMilliseconds, String pluginId) throws InterruptedException {
+		waitForPluginRegistration(container.client(), timeoutInMilliseconds, pluginId);
+	}
+
+	public static void waitForPluginRegistration(MeshLocalServer server, int timeoutInMilliseconds, String pluginId) throws InterruptedException {
+		waitForPluginRegistration(server.client(), timeoutInMilliseconds, pluginId);
+	}
+
+	public static void waitForPluginRegistration(MeshRestClient client, int timeoutInMilliseconds, String pluginId) throws InterruptedException {
 		// 1. Initial check
-		PluginListResponse plugins = call(() -> server.client().findPlugins());
+		PluginListResponse plugins = call(() -> client.findPlugins());
 		Optional<PluginResponse> foundPlugin = plugins.getData().stream().filter(plugin -> plugin.getId().equals(pluginId)).findFirst();
 		if (foundPlugin.isPresent()) {
 			if (REGISTERED == foundPlugin.get().getStatus()) {
@@ -36,7 +46,7 @@ public final class PluginTestUtil {
 			}
 		}
 		// Wait for event
-		MeshWebsocket eb = server.client().eventbus();
+		MeshWebsocket eb = client.eventbus();
 		try {
 			eb.registerEvents(MeshEvent.PLUGIN_REGISTERED);
 			CountDownLatch latch = new CountDownLatch(1);

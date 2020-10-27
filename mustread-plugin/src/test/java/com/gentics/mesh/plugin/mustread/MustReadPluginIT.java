@@ -88,6 +88,6 @@ public class MustReadPluginIT extends AbstractPluginContainerIntegrationTest imp
 
 	@Override
 	public String serverURL() {
-		return "http://" + meshServer.getHostname() + ":" + meshServer.getPort();
+		return "http://" + meshServer.getHost() + ":" + meshServer.getPort();
 	}
 }
