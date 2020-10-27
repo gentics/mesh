@@ -17,6 +17,15 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.6.4]]
+== 1.6.4 (27.10.2020)
+
+icon:check[] OrientDB: The included OrientDB version has been updated to version `3.1.4`.
+
+icon:check[] Clustering: The coordination feature will now be automatically disabled whenever clustering is disabled.
+
+icon:plus[] Core: The link renderer now tries to use url fields to render the link if it cannot be constructed using segment fields.
+
 [[v1.6.3]]
 == 1.6.3 (21.10.2020)
 
