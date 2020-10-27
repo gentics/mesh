@@ -3,6 +3,7 @@ package com.gentics.mesh.core.rest.node.field.list.impl;
 import java.util.Arrays;
 
 public class StringFieldListImpl extends AbstractFieldList<String> {
+
 	/**
 	 * Creates a string field list.
 	 *

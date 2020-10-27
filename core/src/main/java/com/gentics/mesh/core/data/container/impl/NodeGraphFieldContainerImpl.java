@@ -19,7 +19,6 @@ import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.error.Errors.nodeConflict;
-import static com.gentics.mesh.madl.field.FieldType.INTEGER;
 import static com.gentics.mesh.madl.field.FieldType.LONG;
 import static com.gentics.mesh.madl.field.FieldType.STRING;
 import static com.gentics.mesh.madl.index.IndexType.NOTUNIQUE;
@@ -242,6 +241,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
+<<<<<<< HEAD
 	public Stream<String> getUrlFieldValues() {
 		SchemaVersionModel schema = getSchemaContainerVersion().getSchema();
 
