@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "1.4.16"
+version: "1.4.17"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -8298,6 +8298,14 @@ mediaType: application/json
     /graphdb/backup: 
         post: 
             description: Invoke a graph database backup and dump the data to the configured backup location. Note that this operation will block all current operation.
+            queryParameters: 
+                consistencyCheck: 
+                    description: Specify whether the consistency check should be run before running the backup.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    default: "false"
+                    example: "true"
             responses: 
                 "200": 
                     description: Incremental backup was invoked.
@@ -13623,7 +13631,7 @@ mediaType: application/json
                                 }
                             example: |
                                 {
-                                  "meshVersion" : "1.4.16",
+                                  "meshVersion" : "1.4.17",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",
