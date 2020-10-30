@@ -53,6 +53,10 @@ public class SchemaUpdateRequest implements SchemaModel {
 	@JsonPropertyDescription("Auto purge flag of the schema. Controls whether contents of this schema should create new versions.")
 	private Boolean autoPurge;
 
+	@JsonProperty
+	@JsonPropertyDescription("Versioning flag of the schema. Controls whether versioning is enabled for nodes of this schema.")
+	private Boolean versioning;
+
 	@Override
 	public String getName() {
 		return name;
@@ -154,6 +158,17 @@ public class SchemaUpdateRequest implements SchemaModel {
 	@Override
 	public SchemaUpdateRequest setAutoPurge(Boolean autoPurge) {
 		this.autoPurge = autoPurge;
+		return this;
+	}
+
+	@Override
+	public Boolean getVersioning() {
+		return versioning;
+	}
+
+	@Override
+	public SchemaUpdateRequest setVersioning(Boolean versioning) {
+		this.versioning = versioning;
 		return this;
 	}
 

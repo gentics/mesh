@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.schema.impl;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.AUTO_PURGE_FLAG_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.CONTAINER_FLAG_KEY;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.VERSIONING_FLAG_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.DISPLAY_FIELD_NAME_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.SEGMENT_FIELD_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.URLFIELDS_KEY;
@@ -119,6 +120,16 @@ public class UpdateSchemaChangeImpl extends AbstractFieldSchemaContainerUpdateCh
 	@Override
 	public void setAutoPurgeFlag(Boolean flag) {
 		setRestProperty(AUTO_PURGE_FLAG_KEY, flag);
+	}
+
+	@Override
+	public Boolean getVersioningFlag() {
+		return getRestProperty(VERSIONING_FLAG_KEY);
+	}
+
+	@Override
+	public void setVersioningFlag(Boolean flag) {
+		setRestProperty(VERSIONING_FLAG_KEY, flag);
 	}
 
 	@Override

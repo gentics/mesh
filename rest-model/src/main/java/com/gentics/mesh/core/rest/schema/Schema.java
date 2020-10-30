@@ -16,14 +16,14 @@ public interface Schema extends FieldSchemaContainer {
 	/**
 	 * Return the display field of the schema which nodes will inherit in order. This is useful when you want to unify the name that should be displayed for
 	 * nodes of different types. Nodes that use the folder schema may use the display field name to display the name and blogpost nodes the field title.
-	 * 
+	 *
 	 * @return Display field of the schema
 	 */
 	String getDisplayField();
 
 	/**
 	 * Set the display field value.
-	 * 
+	 *
 	 * @param displayField
 	 *            Display field
 	 */
@@ -31,14 +31,14 @@ public interface Schema extends FieldSchemaContainer {
 
 	/**
 	 * Return the container flag.
-	 * 
+	 *
 	 * @return
 	 */
 	Boolean getContainer();
 
 	/**
 	 * Set the container flag for this schema. Nodes that are created using a schema which has an enabled container flag can be used as a parent for new nodes.
-	 * 
+	 *
 	 * @param flag
 	 *            Container flag value
 	 */
@@ -46,14 +46,14 @@ public interface Schema extends FieldSchemaContainer {
 
 	/**
 	 * Return the segment field name.
-	 * 
+	 *
 	 * @return
 	 */
 	String getSegmentField();
 
 	/**
 	 * Set the segment field name.
-	 * 
+	 *
 	 * @param segmentField
 	 */
 	Schema setSegmentField(String segmentField);
@@ -105,14 +105,14 @@ public interface Schema extends FieldSchemaContainer {
 
 	/**
 	 * Return the list of url fields.
-	 * 
+	 *
 	 * @return
 	 */
 	List<String> getUrlFields();
 
 	/**
 	 * Set the list of url field names.
-	 * 
+	 *
 	 * @param urlFields
 	 * @return Fluent API
 	 */
@@ -120,7 +120,7 @@ public interface Schema extends FieldSchemaContainer {
 
 	/**
 	 * Set the url field names.
-	 * 
+	 *
 	 * @param fieldNames
 	 * @return Fluent API
 	 */
@@ -131,16 +131,31 @@ public interface Schema extends FieldSchemaContainer {
 
 	/**
 	 * Return the auto purge flag for the schema.
-	 * 
+	 *
 	 * @return
 	 */
 	Boolean getAutoPurge();
 
 	/**
 	 * Set the auto purge flag.
-	 * 
+	 *
 	 * @param autoPurge
 	 * @return
 	 */
 	Schema setAutoPurge(Boolean autoPurge);
+
+	/**
+	 * Return the versioning flag for the schema.
+	 *
+	 * @return The versioning flag for the schema.
+	 */
+	Boolean getVersioning();
+
+	/**
+	 * Set the versioning flag for the schema.
+	 *
+	 * @param versioning Whether to disable versioning for this schema
+	 * @return Fluent API
+	 */
+	Schema setVersioning(Boolean versioning);
 }

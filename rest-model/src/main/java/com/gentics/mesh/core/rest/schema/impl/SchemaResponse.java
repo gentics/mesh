@@ -54,6 +54,10 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 	@JsonPropertyDescription("Auto purge flag of the schema. Controls whether contents of this schema should be automatically purged on update.")
 	private Boolean autoPurge;
 
+	@JsonProperty
+	@JsonPropertyDescription("Versioning flag of the schema. Controls whether versioning is enabled for nodes of this schema.")
+	private Boolean versioning;
+
 	@Override
 	public String getName() {
 		return name;
@@ -144,7 +148,7 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 
 	/**
 	 * Create a schema reference using the schema as source.
-	 * 
+	 *
 	 * @return
 	 */
 	public SchemaReferenceImpl toReference() {
@@ -188,6 +192,17 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 	@Override
 	public SchemaResponse setAutoPurge(Boolean autoPurge) {
 		this.autoPurge = autoPurge;
+		return this;
+	}
+
+	@Override
+	public Boolean getVersioning() {
+		return versioning;
+	}
+
+	@Override
+	public SchemaResponse setVersioning(Boolean versioning) {
+		this.versioning = versioning;
 		return this;
 	}
 

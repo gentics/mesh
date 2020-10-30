@@ -4,6 +4,7 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.AUTO_PURGE_FLAG_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.CONTAINER_FLAG_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.DISPLAY_FIELD_NAME_KEY;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.VERSIONING_FLAG_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.ADDFIELD;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.REMOVEFIELD;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEFIELD;
@@ -123,6 +124,28 @@ public class SchemaDiffEndpointTest extends AbstractMeshTest {
 		assertThat(changes.getChanges()).hasSize(1);
 		assertThat(changes.getChanges().get(0)).is(UPDATESCHEMA).hasProperty(AUTO_PURGE_FLAG_KEY, true);
 
+	}
+
+	@Test
+	public void testDiffVersioningFlag() {
+		String schemaUuid = tx(() -> schemaContainer("content").getUuid());
+		Schema request = getSchema();
+
+		// Flag not specified
+		request.setVersioning(null);
+		SchemaChangesListModel changes = call(() -> client().diffSchema(schemaUuid, request));
+		assertThat(changes.getChanges()).hasSize(0);
+
+		// Set to same value
+		request.setVersioning(false);
+		changes = call(() -> client().diffSchema(schemaUuid, request));
+		assertThat(changes.getChanges().get(0)).is(UPDATESCHEMA).hasProperty(VERSIONING_FLAG_KEY, false);
+
+		// Flag set to different value
+		request.setVersioning(true);
+		changes = call(() -> client().diffSchema(schemaUuid, request));
+		assertThat(changes.getChanges()).hasSize(1);
+		assertThat(changes.getChanges().get(0)).is(UPDATESCHEMA).hasProperty(VERSIONING_FLAG_KEY, true);
 	}
 
 	@Test

@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.schema.handler;
 
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.CONTAINER_FLAG_KEY;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.VERSIONING_FLAG_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.DISPLAY_FIELD_NAME_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.ELASTICSEARCH_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.AUTO_PURGE_FLAG_KEY;
@@ -44,6 +45,9 @@ public class SchemaComparator extends AbstractFieldSchemaContainerComparator<Sch
 
 		// .autoPurge
 		compareAndAddSchemaProperty(changes, AUTO_PURGE_FLAG_KEY, schemaA.getAutoPurge(), schemaB.getAutoPurge(), Schema.class);
+
+		// .versioning
+		compareAndAddSchemaProperty(changes, VERSIONING_FLAG_KEY, schemaA.getVersioning(), schemaB.getVersioning(), Schema.class);
 
 		// .container
 		// Only diff the flag if a value has been set in the schemaB

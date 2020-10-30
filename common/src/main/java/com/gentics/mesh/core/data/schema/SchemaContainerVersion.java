@@ -60,9 +60,14 @@ public interface SchemaContainerVersion
 	TraversalResult<? extends Node> getNodes(String branchUuid, User user, ContainerType type);
 
 	/**
-	 * Check whether versioning is disabled by default or via the schema setting.
+	 * Check whether auto purge is enabled by default or via the schema setting.
 	 * @return
 	 */
 	boolean isAutoPurgeEnabled();
 
+	/**
+	 * Check whether versioning is enabled.
+	 * @return Whether versioning is enabled
+	 */
+	boolean isVersioning();
 }

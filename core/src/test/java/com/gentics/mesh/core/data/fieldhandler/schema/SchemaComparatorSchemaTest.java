@@ -9,6 +9,7 @@ import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.FI
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.NAME_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.SEGMENT_FIELD_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.TYPE_KEY;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.VERSIONING_FLAG_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.CHANGEFIELDTYPE;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATESCHEMA;
 import static com.gentics.mesh.test.TestSize.FULL;
@@ -227,6 +228,43 @@ public class SchemaComparatorSchemaTest extends AbstractMeshTest {
 		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
 		assertThat(changes).hasSize(1);
 		assertThat(changes.get(0)).is(UPDATESCHEMA).hasProperty(AUTO_PURGE_FLAG_KEY, null);
+	}
+
+	@Test
+	public void testVersioningFlagUpdated() throws IOException {
+		Schema schemaA = FieldUtil.createMinimalValidSchema();
+		Schema schemaB = FieldUtil.createMinimalValidSchema();
+		schemaA.setVersioning(true);
+		schemaB.setVersioning(false);
+		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
+		assertThat(changes).hasSize(1);
+		assertThat(changes.get(0)).is(UPDATESCHEMA).hasProperty(VERSIONING_FLAG_KEY, false);
+	}
+
+	@Test
+	public void testVersioningFlagSame() throws IOException {
+		Schema schemaA = FieldUtil.createMinimalValidSchema();
+		Schema schemaB = FieldUtil.createMinimalValidSchema();
+		schemaA.setVersioning(true);
+		schemaB.setVersioning(true);
+		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
+		assertThat(changes).isEmpty();
+
+		schemaA.setVersioning(false);
+		schemaB.setVersioning(false);
+		changes = comparator.diff(schemaA, schemaB);
+		assertThat(changes).isEmpty();
+	}
+
+	@Test
+	public void testVersioningFlagNull() throws IOException {
+		Schema schemaA = FieldUtil.createMinimalValidSchema();
+		Schema schemaB = FieldUtil.createMinimalValidSchema();
+		schemaA.setVersioning(true);
+		schemaB.setVersioning(null);
+		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
+		assertThat(changes).hasSize(1);
+		assertThat(changes.get(0)).is(UPDATESCHEMA).hasProperty(VERSIONING_FLAG_KEY, null);
 	}
 
 	@Test

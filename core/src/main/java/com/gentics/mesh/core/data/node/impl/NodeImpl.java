@@ -418,19 +418,28 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 
 		// Create the new container
-		NodeGraphFieldContainerImpl newContainer = getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
-		if (original != null) {
-			newContainer.setEditor(editor);
-			newContainer.setLastEditedTimestamp();
-			newContainer.setLanguageTag(languageTag);
-			newContainer.setSchemaContainerVersion(original.getSchemaContainerVersion());
-		} else {
-			newContainer.setEditor(editor);
-			newContainer.setLastEditedTimestamp();
-			newContainer.setLanguageTag(languageTag);
-			// We need create a new container with no reference. So use the latest version available to use.
-			newContainer.setSchemaContainerVersion(branch.findLatestSchemaVersion(getSchemaContainer()));
+		NodeGraphFieldContainer newContainer = null;
+		SchemaContainerVersion latestSchemaVersion = branch.findLatestSchemaVersion(getSchemaContainer());
+
+		if (original != null && !latestSchemaVersion.isVersioning()) {
+			newContainer = original;
 		}
+
+		if (newContainer == null) {
+			newContainer = getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+
+			if (original != null) {
+				newContainer.setSchemaContainerVersion(original.getSchemaContainerVersion());
+			} else {
+				// We need create a new container with no reference. So use the latest version available to use.
+				newContainer.setSchemaContainerVersion(branch.findLatestSchemaVersion(getSchemaContainer()));
+			}
+		}
+
+		newContainer.setEditor(editor);
+		newContainer.setLastEditedTimestamp();
+		newContainer.setLanguageTag(languageTag);
+
 		if (previous != null) {
 			// set the next version number
 			newContainer.setVersion(previous.getVersion().nextDraft());

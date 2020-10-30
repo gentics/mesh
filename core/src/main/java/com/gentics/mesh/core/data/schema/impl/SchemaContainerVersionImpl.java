@@ -190,7 +190,7 @@ public class SchemaContainerVersionImpl extends
 
 	/**
 	 * Genereates branch unassign events for every assigned branch.
-	 * 
+	 *
 	 * @return
 	 */
 	private Stream<BranchSchemaAssignEventModel> generateUnassignEvents() {
@@ -226,4 +226,8 @@ public class SchemaContainerVersionImpl extends
 		}
 	}
 
+	@Override
+	public boolean isVersioning() {
+		return !Boolean.FALSE.equals(getSchema().getVersioning());
+	}
 }

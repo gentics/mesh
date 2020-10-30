@@ -34,6 +34,8 @@ public class SchemaChangeModel implements RestModel {
 
 	public static final String AUTO_PURGE_FLAG_KEY = "autoPurge";
 
+	public static final String VERSIONING_FLAG_KEY = "versioning";
+
 	public static final String FIELD_ORDER_KEY = "order";
 
 	public static final String NAME_KEY = "name";
@@ -63,7 +65,7 @@ public class SchemaChangeModel implements RestModel {
 
 	/**
 	 * Create a new change.
-	 * 
+	 *
 	 * @param operation
 	 */
 	private SchemaChangeModel(SchemaChangeOperation operation) {
@@ -72,7 +74,7 @@ public class SchemaChangeModel implements RestModel {
 
 	/**
 	 * Create a new change that includes field name information.
-	 * 
+	 *
 	 * @param operation
 	 * @param fieldName
 	 */
@@ -83,7 +85,7 @@ public class SchemaChangeModel implements RestModel {
 
 	/**
 	 * Return the UUID of the change.
-	 * 
+	 *
 	 * @return
 	 */
 	public String getUuid() {
@@ -92,7 +94,7 @@ public class SchemaChangeModel implements RestModel {
 
 	/**
 	 * Set the UUID of the change.
-	 * 
+	 *
 	 * @param uuid
 	 */
 	public void setUuid(String uuid) {
@@ -101,7 +103,7 @@ public class SchemaChangeModel implements RestModel {
 
 	/**
 	 * Return the operation for the change.
-	 * 
+	 *
 	 * @return
 	 */
 	public SchemaChangeOperation getOperation() {
@@ -110,7 +112,7 @@ public class SchemaChangeModel implements RestModel {
 
 	/**
 	 * Set the operation for this change.
-	 * 
+	 *
 	 * @param operation
 	 */
 	public SchemaChangeModel setOperation(SchemaChangeOperation operation) {
@@ -120,7 +122,7 @@ public class SchemaChangeModel implements RestModel {
 
 	/**
 	 * Return additional properties for the change.
-	 * 
+	 *
 	 * @return
 	 */
 	public Map<String, Object> getProperties() {
@@ -129,7 +131,7 @@ public class SchemaChangeModel implements RestModel {
 
 	/**
 	 * Set an additional property to the change.
-	 * 
+	 *
 	 * @param key
 	 * @param value
 	 */
@@ -139,7 +141,7 @@ public class SchemaChangeModel implements RestModel {
 
 	/**
 	 * Create a new update schema change.
-	 * 
+	 *
 	 * @return
 	 */
 	public static SchemaChangeModel createUpdateSchemaChange() {
@@ -148,7 +150,7 @@ public class SchemaChangeModel implements RestModel {
 
 	/**
 	 * Create a new update microschema change.
-	 * 
+	 *
 	 * @return
 	 */
 	public static SchemaChangeModel createUpdateMicroschemaChange() {
@@ -157,7 +159,7 @@ public class SchemaChangeModel implements RestModel {
 
 	/**
 	 * Create a new field removal change.
-	 * 
+	 *
 	 * @param name
 	 * @return
 	 */
@@ -167,7 +169,7 @@ public class SchemaChangeModel implements RestModel {
 
 	/**
 	 * Create a change field type change.
-	 * 
+	 *
 	 * @param fieldName
 	 * @param type
 	 * @return
@@ -180,7 +182,7 @@ public class SchemaChangeModel implements RestModel {
 
 	/**
 	 * Create an update field change to rename a field.
-	 * 
+	 *
 	 * @param fieldName
 	 * @param newFieldName
 	 * @return
@@ -193,7 +195,7 @@ public class SchemaChangeModel implements RestModel {
 
 	/**
 	 * Create a add field change.
-	 * 
+	 *
 	 * @param fieldName
 	 *            Field key
 	 * @param type
@@ -216,7 +218,7 @@ public class SchemaChangeModel implements RestModel {
 
 	/**
 	 * Return the model property of the given key.
-	 * 
+	 *
 	 * @param key
 	 * @return
 	 */

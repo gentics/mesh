@@ -39,7 +39,7 @@ public class SchemaModelImpl implements SchemaModel {
 
 	/**
 	 * Create a new schema with the given name.
-	 * 
+	 *
 	 * @param name
 	 */
 	public SchemaModelImpl(String name) {
@@ -68,6 +68,10 @@ public class SchemaModelImpl implements SchemaModel {
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Auto purge flag of the schema. Controls whether contents of this schema should create new versions.")
 	private Boolean autoPurge;
+
+	@JsonProperty
+	@JsonPropertyDescription("Versioning flag of the schema. Controls whether versioning is enabled for nodes of this schema.")
+	private Boolean versioning;
 
 	@Override
 	public String getVersion() {
@@ -176,6 +180,17 @@ public class SchemaModelImpl implements SchemaModel {
 	@Override
 	public SchemaModelImpl setAutoPurge(Boolean autoPurge) {
 		this.autoPurge = autoPurge;
+		return this;
+	}
+
+	@Override
+	public Boolean getVersioning() {
+		return versioning;
+	}
+
+	@Override
+	public SchemaModelImpl setVersioning(Boolean versioning) {
+		this.versioning = versioning;
 		return this;
 	}
 
