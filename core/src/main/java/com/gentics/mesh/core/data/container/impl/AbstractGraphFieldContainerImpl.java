@@ -74,7 +74,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	/**
 	 * Return the parent node of the field container.
-	 * 
+	 *
 	 * @return
 	 */
 	abstract protected Node getParentNode();
@@ -292,7 +292,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	/**
 	 * Create new list of the given type. If the container already has a list of given type, it will be "unattached" and removed, if this container was the only
 	 * parent
-	 * 
+	 *
 	 * @param classOfT
 	 *            Implementation/Type of list
 	 * @param fieldKey
@@ -300,6 +300,8 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	 * @return
 	 */
 	private <T extends ListGraphField<?, ?, ?>> T createList(Class<T> classOfT, String fieldKey) {
+		// TODO Check if versioning is enabled, and if not do not create a new list.
+
 		T existing = getList(classOfT, fieldKey);
 		T list = getGraph().addFramedVertex(classOfT);
 		list.setFieldKey(fieldKey);
@@ -327,7 +329,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	/**
 	 * Update or create the field using the given restField. The {@link FieldSchema} is used to determine the type of the field.
-	 * 
+	 *
 	 * @param ac
 	 *            Action context
 	 * @param fieldMap
@@ -418,7 +420,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	/**
 	 * Gets the node from a node field.
-	 * 
+	 *
 	 * @param field
 	 *            The node field to get the node from
 	 * @return Gets the node as a stream or an empty stream if the node field is not set

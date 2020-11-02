@@ -83,6 +83,12 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 			return model != null ? model.getAutoPurge() : null;
 		}));
 
+		// .isVersioning
+		schemaType.field(newFieldDefinition().name("isVersioning").type(GraphQLBoolean).dataFetcher((env) -> {
+			SchemaModel model = loadModelWithFallback(env);
+			return model != null ? model.getVersioning() : null;
+		}));
+
 		// .displayField
 		schemaType.field(newFieldDefinition().name("displayField").type(GraphQLString).dataFetcher((env) -> {
 			SchemaModel model = loadModelWithFallback(env);

@@ -132,7 +132,7 @@ public class BinaryUploadHandler extends AbstractHandler {
 
 	/**
 	 * Handle a request to create a new field.
-	 * 
+	 *
 	 * @param ac
 	 * @param nodeUuid
 	 *            UUID of the node which should be updated
@@ -331,6 +331,7 @@ public class BinaryUploadHandler extends AbstractHandler {
 				BinaryGraphField oldField = newDraftVersion.getBinary(fieldName);
 
 				// Create the new field
+				// TODO do not create new binary field when versioning is disabled.
 				BinaryGraphField field = newDraftVersion.createBinary(fieldName, binary);
 
 				// Reuse the existing properties
@@ -375,7 +376,7 @@ public class BinaryUploadHandler extends AbstractHandler {
 	/**
 	 * Processes the upload and set the binary information (e.g.: image dimensions) within the provided field. The binary data will be stored in the
 	 * {@link BinaryStorage} if desired.
-	 * 
+	 *
 	 * @param upload
 	 *            Upload to process
 	 * @param hash

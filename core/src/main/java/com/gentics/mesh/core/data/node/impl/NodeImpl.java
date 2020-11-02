@@ -419,10 +419,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// Create the new container
 		NodeGraphFieldContainer newContainer = null;
+		boolean reuseContainer = false;
 		SchemaContainerVersion latestSchemaVersion = branch.findLatestSchemaVersion(getSchemaContainer());
 
 		if (original != null && !latestSchemaVersion.isVersioning()) {
 			newContainer = original;
+			reuseContainer = true;
 		}
 
 		if (newContainer == null) {
@@ -440,45 +442,53 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		newContainer.setLastEditedTimestamp();
 		newContainer.setLanguageTag(languageTag);
 
-		if (previous != null) {
+		if (reuseContainer) {
+			newContainer.setVersion(newContainer.getVersion().nextPublished());
+		} else if (previous != null) {
 			// set the next version number
 			newContainer.setVersion(previous.getVersion().nextDraft());
 			previous.setNextVersion(newContainer);
 		} else {
 			// set the initial version number
-			newContainer.setVersion(new VersionNumber());
+			VersionNumber version = new VersionNumber();
+
+			newContainer.setVersion(latestSchemaVersion.isVersioning() ? version : version.nextPublished());
 		}
 
-		// clone the original or the previous container
-		if (original != null) {
-			newContainer.clone(original);
-		} else if (previous != null) {
-			newContainer.clone(previous);
-		}
+		// TODO When reusing the container, check the published edge.
 
-		// remove existing draft edge
-		if (draftEdge != null) {
-			draftEdge.remove();
-			newContainer.updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_update");
-		}
-		// We need to update the display field property since we created a new
-		// node graph field container.
-		newContainer.updateDisplayFieldValue();
+		if (!reuseContainer) {
+			// clone the original or the previous container
+			if (original != null) {
+				newContainer.clone(original);
+			} else if (previous != null) {
+				newContainer.clone(previous);
+			}
 
-		if (handleDraftEdge) {
-			// create a new draft edge
-			GraphFieldContainerEdge edge = addFramedEdge(HAS_FIELD_CONTAINER, newContainer, GraphFieldContainerEdgeImpl.class);
-			edge.setLanguageTag(languageTag);
-			edge.setBranchUuid(branchUuid);
-			edge.setType(DRAFT);
-		}
+			// remove existing draft edge
+			if (draftEdge != null) {
+				draftEdge.remove();
+				newContainer.updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_update");
+			}
+			// We need to update the display field property since we created a new
+			// node graph field container.
+			newContainer.updateDisplayFieldValue();
 
-		// if there is no initial edge, create one
-		if (getGraphFieldContainerEdge(languageTag, branchUuid, INITIAL) == null) {
-			GraphFieldContainerEdge initialEdge = addFramedEdge(HAS_FIELD_CONTAINER, newContainer, GraphFieldContainerEdgeImpl.class);
-			initialEdge.setLanguageTag(languageTag);
-			initialEdge.setBranchUuid(branchUuid);
-			initialEdge.setType(INITIAL);
+			if (handleDraftEdge) {
+				// create a new draft edge
+				GraphFieldContainerEdge edge = addFramedEdge(HAS_FIELD_CONTAINER, newContainer, GraphFieldContainerEdgeImpl.class);
+				edge.setLanguageTag(languageTag);
+				edge.setBranchUuid(branchUuid);
+				edge.setType(DRAFT);
+			}
+
+			// if there is no initial edge, create one
+			if (getGraphFieldContainerEdge(languageTag, branchUuid, INITIAL) == null) {
+				GraphFieldContainerEdge initialEdge = addFramedEdge(HAS_FIELD_CONTAINER, newContainer, GraphFieldContainerEdgeImpl.class);
+				initialEdge.setLanguageTag(languageTag);
+				initialEdge.setBranchUuid(branchUuid);
+				initialEdge.setType(INITIAL);
+			}
 		}
 
 		return newContainer;

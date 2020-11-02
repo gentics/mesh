@@ -83,7 +83,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 	/**
 	 * Handle image transformation. This operation will utilize the binary data of the existing field and apply the transformation options. The new binary data
 	 * will be stored and the field will be updated accordingly.
-	 * 
+	 *
 	 * @param rc
 	 *            routing context
 	 * @param uuid
@@ -236,6 +236,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 
 			// Now create the binary field in which we store the information about the file
 			BinaryGraphField oldField = newDraftVersion.getBinary(fieldName);
+			// TODO do not create new binary field when versioning is disabled.
 			BinaryGraphField field = newDraftVersion.createBinary(fieldName, binary);
 			if (oldField != null) {
 				oldField.copyTo(field);
