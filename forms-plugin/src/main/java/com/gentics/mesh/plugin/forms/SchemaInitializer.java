@@ -7,6 +7,7 @@ import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.parameter.client.NodeParametersImpl;
@@ -14,9 +15,11 @@ import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.service.MeshPluginService;
 import com.gentics.mesh.plugin.forms.dagger.BaseUrls;
 import com.gentics.mesh.plugin.forms.service.SchemaService;
+import com.gentics.mesh.plugin.forms.service.StatusService;
 import com.gentics.mesh.rest.client.MeshRestClient;
 
 import io.reactivex.Completable;
+import io.reactivex.Observable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -39,7 +42,8 @@ public class SchemaInitializer {
 	public static final String PLUGIN_SCHEMA_NAME = "forms_plugin";
 
 	@Inject
-	public SchemaInitializer(@AdminClient MeshRestClient adminClient, MeshPluginService meshPluginService, SchemaService schemaService, @BaseUrls Map<String, String> baseUrls) {
+	public SchemaInitializer(@AdminClient MeshRestClient adminClient, MeshPluginService meshPluginService,
+			SchemaService schemaService, @BaseUrls Map<String, String> baseUrls) {
 		this.adminClient = adminClient;
 		this.meshPluginService = meshPluginService;
 		this.schemaService = schemaService;

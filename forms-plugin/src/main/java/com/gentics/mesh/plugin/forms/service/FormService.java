@@ -76,9 +76,11 @@ public class FormService {
 
 	private final FormsConfig configuration;
 
+	private final StatusService statusService;
+
 	@Inject
 	public FormService(@AdminClient MeshRestClient adminClient, @UserClient @Nullable MeshRestClient userClient, ObjectMapper objectMapper, SchemaService schemaService, PagingService pagingService,
-					   HandlebarsTemplateEngine templateEngine, FormsConfig configuration) {
+					   HandlebarsTemplateEngine templateEngine, FormsConfig configuration, StatusService statusService) {
 		this.adminClient = adminClient;
 		this.userClient = userClient;
 		this.objectMapper = objectMapper;
@@ -86,6 +88,7 @@ public class FormService {
 		this.pagingService = pagingService;
 		this.templateEngine = templateEngine;
 		this.configuration = configuration;
+		this.statusService = statusService;
 	}
 
 	/**
@@ -441,21 +444,22 @@ public class FormService {
 	 * @return single buffer
 	 */
 	public Single<Buffer> render(String projectName, String uuid, RoutingContext rc, String...lang) {
-		return loadAsAdmin(projectName, uuid, lang).flatMap(formNode -> {
-			JsonObject formJson = new JsonObject(formNode.getFields().getStringField("json").getString());
+		return statusService.languageFallback(projectName, lang)
+				.flatMap(langFallback -> loadAsAdmin(projectName, uuid, langFallback).flatMap(formNode -> {
+					JsonObject formJson = new JsonObject(formNode.getFields().getStringField("json").getString());
 
-			removeInactiveElements(formJson);
+					removeInactiveElements(formJson);
 
-			// add id
-			formJson.put("id", uuid);
-			// add options
-			formJson.put("options", JsonObject.mapFrom(configuration));
-			markFormpages(formJson, Collections.emptySet());
+					// add id
+					formJson.put("id", uuid);
+					// add options
+					formJson.put("options", JsonObject.mapFrom(configuration));
+					markFormpages(formJson, Collections.emptySet());
 
-			rc.put("form", formJson);
+					rc.put("form", formJson);
 
-			return templateEngine.rxRender(rc.data(), "form");
-		});
+					return templateEngine.rxRender(rc.data(), "form");
+				}));
 	}
 
 	/**

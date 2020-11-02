@@ -9,6 +9,13 @@
 			"label": "Name",
 			"type": "string",
 			"required": false
+		},
+		{
+			"name": "languages",
+			"label": "Languages",
+			"type": "list",
+			"listType": "string",
+			"required": false
 		}
 	]
 }

@@ -55,6 +55,8 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 		projectRouter.route("/active").method(GET).handler(fromComponent(FormsPluginComponent::checkStatusHandler));
 		projectRouter.route("/active").method(PUT).handler(fromComponent(FormsPluginComponent::activateHandler));
 		projectRouter.route("/active").method(DELETE).handler(fromComponent(FormsPluginComponent::deactivateHandler));
+		projectRouter.route("/languages").method(GET).handler(fromComponent(FormsPluginComponent::getLanguagesHandler));
+		projectRouter.route("/languages").method(PUT).handler(fromComponent(FormsPluginComponent::setLanguagesHandler));
 
 		// TODO cors
 		projectRouter.route("/forms").method(GET).handler(fromComponent(FormsPluginComponent::listFormsHandler));
@@ -99,7 +101,7 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 				configuration = new FormsConfig();
 			}
 
-			return Completable.complete();
+			return component(null).statusService().initialize();
 		} catch (Exception e) {
 			return Completable.error(e);
 		}

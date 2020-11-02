@@ -74,10 +74,20 @@ public class SchemaService {
 		}
 	}
 
+	/**
+	 * Set the uuid of the FormsPlugin Root node for the project
+	 * @param projectName project name
+	 * @param uuid root node uuid
+	 */
 	public void setRootNodeUuid(String projectName, String uuid) {
 		rootNodeUuids.put(projectName, uuid);
 	}
 
+	/**
+	 * Get the uuid of the FormsPlugin Root node for the project
+	 * @param projectName project name
+	 * @return uuid or null, if not found
+	 */
 	public String getRootNodeUuid(String projectName) {
 		return rootNodeUuids.get(projectName);
 	}

@@ -27,6 +27,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.client.DeleteParametersImpl;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
+import com.gentics.mesh.plugin.forms.model.LanguagesModel;
 import com.gentics.mesh.plugin.forms.model.response.StatusResponse;
 import com.gentics.mesh.plugin.forms.service.SchemaService;
 import com.gentics.mesh.plugin.test.common.AbstractPluginLocalIntegrationTest;
@@ -116,6 +117,16 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 		assertThat(response.code()).as("Response code").isEqualTo(403);
 	}
 
+	/**
+	 * Assert that the response was 404
+	 * @param response response
+	 */
+	protected static void assertNotFound(Response response) {
+		assertThat(response.isSuccessful())
+				.as(String.format("Response status %d (%s)", response.code(), response.message())).isEqualTo(false);
+		assertThat(response.code()).as("Response code").isEqualTo(404);
+	}
+
 	protected static OkHttpClient client() {
 		OkHttpClient.Builder builder = new OkHttpClient.Builder();
 		builder.connectTimeout(1, TimeUnit.HOURS).readTimeout(1, TimeUnit.HOURS).writeTimeout(1, TimeUnit.HOURS);
@@ -184,6 +195,29 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 					.isEqualTo(expectSuccess);
 		} else {
 			assertForbidden(response);
+		}
+
+		return response;
+	}
+
+	/**
+	 * Create a form with data from the given files, which are supposed to be the language variants
+	 * Assert that creation succeeded
+	 * @param fileNames file names
+	 * @return response
+	 * @throws IOException
+	 */
+	protected Response createMultilanguageForm(String...fileNames) throws IOException {
+		String uuid = UUIDUtil.randomUUID();
+		Response response = null;
+
+		for (String fileName : fileNames) {
+			Request createRequest = new Request.Builder().url(projectUrl("/forms/" + uuid)).headers(auth(true))
+					.post(requestBodyFromFile(fileName)).build();
+			response = client().newCall(createRequest).execute();
+
+			assertThat(response.isSuccessful())
+					.as(String.format("Response status %d (%s)", response.code(), response.message())).isEqualTo(true);
 		}
 
 		return response;
@@ -283,21 +317,60 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 		latch.await(timeout, unit);
 	}
 
+	/**
+	 * Get the activation status for the project
+	 * @param project project
+	 * @return true iff plugin is activated for project
+	 */
 	protected boolean getStatus(String project) {
 		StatusResponse response = call(() -> server.client()
 				.get(String.format("/%s/plugins/forms/active", URIUtils.encodeSegment(project)), StatusResponse.class));
 		return response.isActive();
 	}
 
+	/**
+	 * Activate the plugin for the project
+	 * @param project project
+	 * @return true iff plugin is activated for the project
+	 */
 	protected boolean activate(String project) {
 		StatusResponse response = call(() -> server.client()
 				.put(String.format("/%s/plugins/forms/active", URIUtils.encodeSegment(project)), StatusResponse.class));
 		return response.isActive();
 	}
 
+	/**
+	 * Deactivate the plugin for the project
+	 * @param project project
+	 * @return true iff plugin is activated for the project
+	 */
 	protected boolean deActivate(String project) {
 		StatusResponse response = call(() -> server.client()
 				.delete(String.format("/%s/plugins/forms/active", URIUtils.encodeSegment(project)), StatusResponse.class));
 		return response.isActive();
+	}
+
+	/**
+	 * Get the languages for the project
+	 * @param project project
+	 * @return list of languages (may be null or empty)
+	 */
+	protected List<String> getLanguages(String project) {
+		LanguagesModel response = call(() -> server.client().get(
+				String.format("/%s/plugins/forms/languages", URIUtils.encodeSegment(project)), LanguagesModel.class));
+		return response.getLanguages();
+	}
+
+	/**
+	 * Set the languages for the project
+	 * @param project project
+	 * @param languages language code list
+	 * @return list of languages (may be null or empty)
+	 */
+	protected List<String> setLanguages(String project, List<String> languages) {
+		LanguagesModel response = call(
+				() -> server.client().put(String.format("/%s/plugins/forms/languages", URIUtils.encodeSegment(project)),
+						new LanguagesModel().setLanguages(languages), LanguagesModel.class));
+		return response.getLanguages();
 	}
 }

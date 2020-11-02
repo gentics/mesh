@@ -1,0 +1,21 @@
+{
+	"name": "Form with Textfield",
+	"language": "en",
+	"elements": [
+		{
+			"type": "input",
+			"name": "input1",
+			"placeholderName": "",
+			"label": "English",
+			"mandatory": true,
+			"info": "",
+			"tooltip": "",
+			"validation": "",
+			"value": "",
+			"minVal": "",
+			"maxVal": "",
+			"maxCharCount": "",
+			"elements": []
+		}
+	]
+}

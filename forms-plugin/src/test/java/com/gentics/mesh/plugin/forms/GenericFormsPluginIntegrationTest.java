@@ -61,11 +61,11 @@ import okhttp3.Response;
 
 @RunWith(value = Parameterized.class)
 public class GenericFormsPluginIntegrationTest extends AbstractFormsPluginIntegrationTest {
-	@Parameters(name = "{index}: permission {0}")
+	@Parameters(name = "{index}: active {0}, permission {1}")
 	public static Collection<Object[]> data() {
 		Collection<Object[]> data = new ArrayList<>();
 		for (Boolean permission : Arrays.asList(true, false)) {
-			data.add(new Object[] { permission });
+				data.add(new Object[] { permission });
 		}
 		return data;
 	}
@@ -243,6 +243,30 @@ public class GenericFormsPluginIntegrationTest extends AbstractFormsPluginIntegr
 		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
 
 		assertThat(response.body().string()).as("Rendered form").isEqualTo(fromFile("inputfield.html"));
+	}
+
+	/**
+	 * Test rendering a form with language fallback
+	 * @throws IOException
+	 */
+	@Test
+	public void testRenderFallback() throws IOException {
+		List<String> languages = Arrays.asList("de", "en", "it", "fr");
+
+		// set the languages for fallback
+		setLanguages(PROJECT_NAME, languages);
+
+		Response createResponse = createMultilanguageForm("inputfield_languages_en.json", "inputfield_languages_it.json");
+		NodeResponse createdNode = JsonUtil.readValue(createResponse.body().string(), NodeResponse.class);
+
+		for (String language : languages) {
+			Request renderRequest = new Request.Builder().url(projectUrl("/forms/" + createdNode.getUuid()) + "?lang=" + language).header("Accept", "text/html").get().build();
+			Response response = client().newCall(renderRequest).execute();
+			assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+
+			assertThat(response.body().string()).as("Rendered form in " + language)
+					.isEqualTo(fromFile("inputfield_languages_" + language + ".html"));
+		}
 	}
 
 	/**

@@ -9,7 +9,6 @@ import javax.inject.Singleton;
 import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.dagger.StorageDir;
 import com.gentics.mesh.plugin.common.dagger.UserClient;
-import com.gentics.mesh.plugin.forms.SchemaInitializer;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.handler.DeleteFormDataHandler;
 import com.gentics.mesh.plugin.forms.handler.DeleteFormHandler;
@@ -34,6 +33,9 @@ import com.gentics.mesh.plugin.forms.handler.UpsertFormHandler;
 import com.gentics.mesh.plugin.forms.handler.status.ActivateHandler;
 import com.gentics.mesh.plugin.forms.handler.status.CheckStatusHandler;
 import com.gentics.mesh.plugin.forms.handler.status.DeactivateHandler;
+import com.gentics.mesh.plugin.forms.handler.status.GetLanguagesHandler;
+import com.gentics.mesh.plugin.forms.handler.status.SetLanguagesHandler;
+import com.gentics.mesh.plugin.forms.service.StatusService;
 import com.gentics.mesh.rest.client.MeshRestClient;
 
 import dagger.BindsInstance;
@@ -43,13 +45,17 @@ import io.vertx.core.Vertx;
 @Singleton
 @Component(modules = { FormsPluginModule.class })
 public interface FormsPluginComponent {
-	SchemaInitializer schemaInitializer();
+	StatusService statusService();
 
 	CheckStatusHandler checkStatusHandler();
 
 	ActivateHandler activateHandler();
 
 	DeactivateHandler deactivateHandler();
+
+	GetLanguagesHandler getLanguagesHandler();
+
+	SetLanguagesHandler setLanguagesHandler();
 
 	UpsertFormHandler upsertFormHandler();
 
