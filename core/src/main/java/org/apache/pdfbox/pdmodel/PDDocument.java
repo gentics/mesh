@@ -94,14 +94,20 @@ public class PDDocument implements Closeable
      */
     private static final int[] RESERVE_BYTE_RANGE = new int[] { 0, 1000000000, 1000000000, 1000000000 };
 
-    private static final Log LOG = LogFactory.getLog(PDDocument.class);
+    private static Log LOG;
 
     /**
      * avoid concurrency issues with PDDeviceRGB and deadlock in COSNumber/COSInteger
      */
     static
     {
-    	try
+        try {
+            LOG = LogFactory.getLog(PDDocument.class);
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+
+        try
         {
             WritableRaster raster = Raster.createBandedRaster(DataBuffer.TYPE_BYTE, 1, 1, 3, new Point(0, 0));
             PDDeviceRGB.INSTANCE.toRGBImage(raster);
@@ -110,6 +116,7 @@ public class PDDocument implements Closeable
         // catch (IOException ex)
         catch (Throwable t)
         {
+            t.printStackTrace();
             LOG.error("voodoo error", t);
         }
 
@@ -122,6 +129,7 @@ public class PDDocument implements Closeable
         // catch (IOException ex)
         catch (Throwable t)
         {
+            t.printStackTrace();
             LOG.error("voodoo error 2", t);
         }
     }
