@@ -23,6 +23,12 @@ include::content/docs/variables.adoc-include[]
 
 * The support for the *embedded* version of Elasticsearch will be dropped in the future. It is highly recommended to link:{{< relref "elasticsearch.asciidoc" >}}#_dedicated_elasticsearch[setup Elasticsearch as a dedicated service].
 
+[[v1.7.5]]
+== 1.7.5 (TBD)
+
+icon:check[] Changelog: The changelog entry that introduces bucket ids which are needed for the differential sync mechanism has been removed. New Ids will now be generated on-the-fly. link:https://github.com/gentics/mesh/issues/1152[#1152]
+
+https://github.com/gentics/mesh/issues/1152
 
 [[v1.7.4]]
 == 1.7.4 (22.10.2020)
