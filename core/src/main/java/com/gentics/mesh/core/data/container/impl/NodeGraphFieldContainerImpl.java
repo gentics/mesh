@@ -241,7 +241,6 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
-<<<<<<< HEAD
 	public Stream<String> getUrlFieldValues() {
 		SchemaVersionModel schema = getSchemaContainerVersion().getSchema();
 

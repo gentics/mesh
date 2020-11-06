@@ -15,7 +15,8 @@ public final class BucketableElementHelper {
 	public static Integer getBucketId(BucketableElement e) {
 		Long bucketId = e.property(BUCKET_ID_KEY);
 		if (bucketId == null) {
-			return null;
+			e.generateBucketId();
+			return e.getProperty(BUCKET_ID_KEY);
 		} else {
 			return bucketId.intValue();
 		}

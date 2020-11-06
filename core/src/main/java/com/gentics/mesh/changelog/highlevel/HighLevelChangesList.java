@@ -8,7 +8,6 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.changelog.highlevel.change.ExtractPlainText;
 import com.gentics.mesh.changelog.highlevel.change.FixNodeVersionOrder;
-import com.gentics.mesh.changelog.highlevel.change.PrepareBucketableElements;
 import com.gentics.mesh.changelog.highlevel.change.RestructureWebrootIndex;
 import com.gentics.mesh.changelog.highlevel.change.SetAdminUserFlag;
 import com.gentics.mesh.core.data.changelog.HighLevelChange;
@@ -32,9 +31,6 @@ public class HighLevelChangesList {
 	public SetAdminUserFlag setAdminUserFlag;
 
 	@Inject
-	public PrepareBucketableElements prepareBucketableElements;
-
-	@Inject
 	public HighLevelChangesList() {
 	}
 
@@ -43,8 +39,7 @@ public class HighLevelChangesList {
 			restructureWebroot,
 			plainText,
 			fixNodeVersionOrder,
-			setAdminUserFlag,
-			prepareBucketableElements
+			setAdminUserFlag
 		// ADD NEW CHANGES HERE!
 		// WARNING!
 		// Only add changes when absolutely needed. Try to avoid changelog entries since those would require a offline update.
