@@ -7,6 +7,75 @@ include::content/docs/variables.adoc-include[]
 
 This page contains some useful DevOps related information.
 
+== SystemD Service File
+
+This is an example service file to be used with Gentics Mesh.
+
+```
+[Unit]
+Description=Gentics Mesh Server
+Wants=basic.target
+After=basic.target network.target syslog.target
+
+[Service]
+User=mesh
+Restart=on-failure
+ExecStart=/usr/bin/java -Xms512m -Xmx512m -XX:MaxDirectMemorySize=256m -Dstorage.diskCache.bufferSize=256 -jar /opt/mesh-website-server/mesh-server.jar
+WorkingDirectory=/opt/mesh-website-server
+
+LimitMEMLOCK=infinity
+LimitNPROC=4096
+LimitNOFILE=65536
+LimitAS=infinity
+LimitRSS=infinity
+LimitCORE=infinity
+
+# Features
+Environment=MESH_UPDATECHECK=false
+Environment=MESH_DEBUGINFO_LOG_ENABLED=false
+Environment=MESH_BINARY_DOCUMENT_PARSER=false
+Environment=MESH_DEFAULT_LANG=en
+
+# Auth
+Environment=MESH_AUTH_KEYSTORE_PASS=YOUR_KEYSTORE_PW
+
+# ES
+Environment=MESH_ELASTICSEARCH_URL=http://localhost:9200
+Environment=MESH_ELASTICSEARCH_PREFIX=website
+Environment=MESH_ELASTICSEARCH_START_EMBEDDED=false
+
+# Monitoring
+Environment=MESH_MONITORING_ENABLED=false
+Environment=MESH_MONITORING_HTTP_PORT=7071
+Environment=MESH_MONITORING_HTTP_HOST=127.0.0.1
+
+# Ports
+Environment=MESH_HTTP_PORT=8080
+
+# Clustering
+Environment=MESH_NODE_NAME=mesh-website
+Environment=MESH_CLUSTER_VERTX_PORT=4841
+Environment=MESH_CLUSTER_NAME=mesh-dev
+Environment=MESH_CLUSTER_ENABLED=false
+Environment=MESH_CLUSTER_INIT=false
+
+# Paths
+Environment=MESH_AUTH_KEYSTORE_PATH=/opt/mesh-website-server/keystore
+Environment=MESH_GRAPH_EXPORT_DIRECTORY=/opt/mesh-website-server/exports
+Environment=MESH_GRAPH_BACKUP_DIRECTORY=/opt/mesh-website-server/backups
+Environment=MESH_BINARY_DIR=/opt/mesh-website-server/uploads
+Environment=MESH_TEMP_DIR=/opt/mesh-website-server/temp
+Environment=MESH_GRAPH_DB_DIRECTORY=/opt/mesh-website-server/graphdb
+Environment=MESH_BINARY_UPLOAD_TEMP_DIR=/opt/mesh-website-server/temp
+Environment=MESH_INITIAL_ADMIN_PASSWORD=admin
+
+# Search
+Environment=MESH_ELASTICSEARCH_WAIT_FOR_IDLE=false
+
+[Install]
+WantedBy=multi-user.target
+```
+
 
 == Apache Reverse Proxy
 

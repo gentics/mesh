@@ -11,11 +11,11 @@
 | *MESH_HTTP_CORS_ENABLE*
 | Override the configured CORS enable flag.
 
-| *MESH_HTTP_SSL_ENABLE*
-| Override the configured https server flag.
-
 | *MESH_GRAPH_STARTSERVER*
 | Override the graph database server flag.
+
+| *MESH_HTTP_SSL_ENABLE*
+| Override the configured https server flag.
 
 | *MESH_GRAPH_TX_RETRY_LIMIT*
 | Override the transaction retry limit. Default: 10
@@ -23,11 +23,11 @@
 | *MESH_HTTP_VERTICLE_AMOUNT*
 | Override the http verticle amount.
 
-| *MESH_PLUGIN_TIMEOUT*
-| Override the configured plugin timeout.
-
 | *MESH_CLUSTER_NETWORK_HOST*
 | Override the cluster network host.
+
+| *MESH_PLUGIN_TIMEOUT*
+| Override the configured plugin timeout.
 
 | *MESH_LOCK_PATH*
 | Path to the mesh lock file.
@@ -41,11 +41,11 @@
 | *MESH_VERTX_WORKER_POOL_SIZE*
 | Override the configured Vert.x worker pool size.
 
-| *MESH_HTTP_SSL_CERT_PATH*
-| Override the configured SSL enable flag.
-
 | *MESH_CLUSTER_COORDINATOR_REGEX*
 | Override the cluster coordinator regex.
+
+| *MESH_HTTP_SSL_CERT_PATH*
+| Override the configured SSL enable flag.
 
 | *MESH_CONTENT_AUTO_PURGE*
 | Override the content versioning flag
@@ -59,11 +59,14 @@
 | *MESH_AUTH_TOKEN_EXP*
 | Override the configured JWT expiration time.
 
+| *MESH_IMAGE_MAX_HEIGHT*
+| Override the max height for image resize operations.
+
 | *MESH_ELASTICSEARCH_MAPPING_MODE*
 | Override the search mapping mode. 
 
-| *MESH_IMAGE_MAX_HEIGHT*
-| Override the max height for image resize operations.
+| *MESH_DEBUGINFO_LOG_FOLDER*
+| Override the path to the debug info log folder
 
 | *MESH_ELASTICSEARCH_HOSTNAME_VERIFICATION*
 | Override the configured hostname verification flag.
@@ -71,14 +74,11 @@
 | *MESH_ELASTICSEARCH_WAIT_FOR_IDLE*
 | Override the search idle wait flag.
 
-| *MESH_DEBUGINFO_LOG_FOLDER*
-| Override the path to the debug info log folder
+| *MESH_CLUSTER_VERTX_PORT*
+| Override the vert.x eventbus server port.
 
 | *MESH_GRAPH_SYNC_WRITES*
 | Override the graph database sync writes flag.
-
-| *MESH_CLUSTER_VERTX_PORT*
-| Override the vert.x eventbus server port.
 
 | *MESH_HTTP_CORS_ALLOW_CREDENTIALS*
 | Override the configured CORS allowed credentials flag.
@@ -86,11 +86,11 @@
 | *MESH_CLUSTER_COORDINATOR_TOPOLOGY*
 | Override the cluster coordinator topology management mode.
 
-| *MESH_GRAPH_SYNC_WRITES_TIMEOUT*
-| Override the graph database sync write timeout.
-
 | *MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET*
 | Control whether a forced password reset should be triggered when creating the initial admin user. Default: true
+
+| *MESH_GRAPH_SYNC_WRITES_TIMEOUT*
+| Override the graph database sync write timeout.
 
 | *MESH_ELASTICSEARCH_STARTUP_TIMEOUT*
 | Override the configured elasticsearch server timeout.
@@ -98,11 +98,11 @@
 | *MESH_AUTH_PUBLIC_KEYS_PATH*
 | Override the configured public keys file path.
 
-| *MESH_ELASTICSEARCH_PREFIX*
-| Override the configured elasticsearch prefix.
-
 | *MESH_LANGUAGES_FILE_PATH*
 | Override the path to the optional languages file
+
+| *MESH_ELASTICSEARCH_PREFIX*
+| Override the configured elasticsearch prefix.
 
 | *MESH_HTTP_PORT*
 | Override the configured server http port.
@@ -110,23 +110,23 @@
 | *MESH_ELASTICSEARCH_SYNC_BATCH_SIZE*
 | Override the search sync batch size
 
-| *MESH_AUTH_KEYSTORE_PASS*
-| Override the configured keystore password.
-
 | *MESH_MONITORING_JVM_METRICS_ENABLED*
 | Override the configured JVM metrics enabled flag.
-
-| *MESH_BINARY_DOCUMENT_PARSER*
-| Override the document parser enabled flag.
 
 | *MESH_CLUSTER_TOPOLOGY_LOCK_DELAY*
 | Override the cluster topology lock delay in ms.
 
-| *MESH_GRAPH_EXPORT_DIRECTORY*
-| Override the graph database export directory.
+| *MESH_BINARY_DOCUMENT_PARSER*
+| Override the document parser enabled flag.
+
+| *MESH_AUTH_KEYSTORE_PASS*
+| Override the configured keystore password.
 
 | *MESH_CACHE_PATH_SIZE*
 | Override the path cache size.
+
+| *MESH_GRAPH_EXPORT_DIRECTORY*
+| Override the graph database export directory.
 
 | *MESH_HTTP_SSL_CLIENT_AUTH_MODE*
 | Override the configured client certificate handling mode.
@@ -182,20 +182,20 @@
 | *MESH_GRAPH_TX_RETRY_DELAY*
 | Override the transaction retry delay. Default: 10
 
-| *MESH_DEBUGINFO_LOG_FILE_SIZE*
-| Override the log file size
-
 | *MESH_BINARY_DIR*
 | Override the configured binary data directory.
+
+| *MESH_DEBUGINFO_LOG_FILE_SIZE*
+| Override the log file size
 
 | *MESH_UPDATECHECK*
 | Override the configured updatecheck flag.
 
-| *MESH_ELASTICSEARCH_START_EMBEDDED*
-| Override the start embedded elasticsearch server flag.
-
 | *MESH_AUTH_JWT_ALGO*
 | Override the configured algorithm which is used to sign the JWT.
+
+| *MESH_ELASTICSEARCH_START_EMBEDDED*
+| Override the start embedded elasticsearch server flag.
 
 | *MESH_ELASTICSEARCH_BULK_LIMIT*
 | Override the batch bulk limit. Default: 100
@@ -209,11 +209,11 @@
 | *MESH_ELASTICSEARCH_EVENT_BUFFER_SIZE*
 | Override the configured event buffer size.
 
-| *MESH_GRAPH_BACKUP_DIRECTORY*
-| Override the graph database backup directory.
-
 | *MESH_CLUSTER_TOPOLOGY_LOCK_TIMEOUT*
 | Override the cluster topology lock timeout in ms.
+
+| *MESH_GRAPH_BACKUP_DIRECTORY*
+| Override the graph database backup directory.
 
 | *MESH_HTTP_CORS_ORIGIN_PATTERN*
 | Override the configured CORS allowed origin pattern.
@@ -221,11 +221,11 @@
 | *MESH_DEFAULT_LANG*
 | Override the configured default language.
 
-| *MESH_IMAGE_RESAMPLE_FILTER*
-| Override the sample filter for image resize operations.
-
 | *MESH_GRAPH_TX_COMMIT_TIMEOUT*
 | Override the transaction commit timeout. Default: 0
+
+| *MESH_IMAGE_RESAMPLE_FILTER*
+| Override the sample filter for image resize operations.
 
 | *MESH_CLUSTER_NAME*
 | Override the cluster name.
@@ -242,14 +242,14 @@
 | *MESH_ELASTICSEARCH_TIMEOUT*
 | Override the configured elasticsearch server timeout.
 
-| *MESH_HTTPS_PORT*
-| Override the configured server https port.
-
 | *MESH_VERTX_EVENT_POOL_SIZE*
 | Override the configured Vert.x event pool size.
 
 | *MESH_IMAGE_MAX_WIDTH*
 | Override the max width for image resize operations.
+
+| *MESH_HTTPS_PORT*
+| Override the configured server https port.
 
 | *MESH_AUTH_ANONYMOUS_ENABLED*
 | Override the configured anonymous enabled flag.
@@ -263,11 +263,11 @@
 | *MESH_BINARY_UPLOAD_TEMP_DIR*
 | Override the configured upload temporary directory.
 
-| *MESH_HTTP_SERVER_TOKENS*
-| Override the http server tokens flag.
-
 | *MESH_GRAPH_DB_DIRECTORY*
 | Override the graph database storage directory.
+
+| *MESH_HTTP_SERVER_TOKENS*
+| Override the http server tokens flag.
 
 | *MESH_NODE_NAME*
 | Override the configured node name.
@@ -287,10 +287,10 @@
 | *MESH_ELASTICSEARCH_IDLE_DEBOUNCE_TIME*
 | Override the idle debounce time.
 
-| *MESH_AUTH_KEYSTORE_PATH*
-| Override the configured keystore path.
-
 | *MESH_BINARY_METADATA_WHITELIST*
 | Override the metadata whitelist
+
+| *MESH_AUTH_KEYSTORE_PATH*
+| Override the configured keystore path.
 
 |======
