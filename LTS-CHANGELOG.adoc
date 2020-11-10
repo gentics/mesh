@@ -17,6 +17,11 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.6.6]]
+== 1.6.6 (11.11.2020)
+
+icon:plus[] GraphQL: The `breadcrumb` field now accepts the `lang` parameter which will be used for additional fallback languages.
+
 [[v1.6.5]]
 == 1.6.5 (04.11.2020)
 
@@ -92,7 +97,7 @@ icon:check[] Clustering: An additional check has been added which will prevent n
 
 
 [[v1.5.5]]
-== 1.5.5 (06.10.2020) 
+== 1.5.5 (06.10.2020)
 
 icon:check[] OrientDB: The included OrientDB version has been updated to version `3.0.34`.
 
