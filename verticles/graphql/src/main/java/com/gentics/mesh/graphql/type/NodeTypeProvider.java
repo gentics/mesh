@@ -106,7 +106,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 	/**
 	 * Fetcher for the parent node reference of a node.
-	 * 
+	 *
 	 * @param env
 	 * @return
 	 */
@@ -158,6 +158,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		ContainerType type = getNodeVersion(env);
 		return content.getNode().getBreadcrumbNodes(gc).stream().map(node -> {
 			List<String> languageTags = getLanguageArgument(env, content);
+
 			NodeGraphFieldContainer container = node.findVersion(gc, languageTags, type);
 			return new NodeContent(node, container, languageTags, type);
 		})
@@ -232,6 +233,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				.description("Breadcrumb of the node")
 				.type(new GraphQLList(new GraphQLTypeReference(NODE_TYPE_NAME)))
 				.argument(createNodeVersionArg())
+				.argument(createLanguageTagArg(false))
 				.dataFetcher(this::breadcrumbFetcher).build(),
 
 			// .availableLanguages

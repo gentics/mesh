@@ -1,0 +1,24 @@
+{
+	node(path:"/Neuigkeiten/2015/News_2015.de.html") {
+		path
+		# [$.data.node.breadcrumb[0].path=/]
+		# [$.data.node.breadcrumb[1].language=de]
+		# [$.data.node.breadcrumb[1].path=/Neuigkeiten]
+		### The language for this entry is english because the node 2015 is only
+		### available in english, and when its path is resolved that is the
+		### used fallback instead of the language of the originally requested
+		### node (News_2015.de.html).
+		# [$.data.node.breadcrumb[2].path=/News/2015]
+		# [$.data.node.breadcrumb[2].language=en]
+		# [$.data.node.breadcrumb[3].path=/Neuigkeiten/2015/News_2015.de.html]
+		breadcrumb(lang: ["de", "en"]) {
+			language
+			path
+			fields {
+				... on content { slug }
+				... on folder { slug }
+			}
+		}
+	}
+}
+# [$.errors=<is-undefined>]
