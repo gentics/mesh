@@ -25,7 +25,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.impl.GroupImpl;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.job.JobRoot;
@@ -107,6 +106,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	public Job enqueueSchemaMigration(HibUser creator, HibBranch branch, HibSchemaVersion fromVersion, HibSchemaVersion toVersion) {
 		NodeMigrationJobImpl job = getGraph().addFramedVertex(NodeMigrationJobImpl.class);
 		job.setType(JobType.schema);
+		job.setCreationTimestamp();
 		job.setBranch(branch);
 		job.setStatus(QUEUED);
 		job.setFromSchemaVersion(fromVersion);
@@ -123,6 +123,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 		HibMicroschemaVersion toVersion) {
 		MicronodeMigrationJobImpl job = getGraph().addFramedVertex(MicronodeMigrationJobImpl.class);
 		job.setType(JobType.microschema);
+		job.setCreationTimestamp();
 		job.setBranch(branch);
 		job.setStatus(QUEUED);
 		job.setFromMicroschemaVersion(fromVersion);
@@ -139,6 +140,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	public HibJob enqueueBranchMigration(HibUser creator, HibBranch branch, HibSchemaVersion fromVersion, HibSchemaVersion toVersion) {
 		Job job = getGraph().addFramedVertex(BranchMigrationJobImpl.class);
 		job.setType(JobType.branch);
+		job.setCreationTimestamp();
 		job.setBranch(branch);
 		job.setStatus(QUEUED);
 		job.setFromSchemaVersion(fromVersion);
@@ -154,6 +156,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	public Job enqueueBranchMigration(HibUser creator, HibBranch branch) {
 		Job job = getGraph().addFramedVertex(BranchMigrationJobImpl.class);
 		job.setType(JobType.branch);
+		job.setCreationTimestamp();
 		job.setStatus(QUEUED);
 		job.setBranch(branch);
 		addItem(job);
@@ -168,6 +171,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 		VersionPurgeJobImpl job = getGraph().addFramedVertex(VersionPurgeJobImpl.class);
 		// TODO Don't add the user to reduce contention
 		// job.setCreated(user);
+		job.setCreationTimestamp();
 		job.setType(JobType.versionpurge);
 		job.setStatus(QUEUED);
 		job.setProject(project);
