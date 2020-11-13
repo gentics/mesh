@@ -49,6 +49,7 @@ import com.gentics.mesh.distributed.coordinator.MasterServer;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.generator.RAMLGenerator;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.parameter.BackupParameters;
 import com.gentics.mesh.router.RouterStorageImpl;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
 import com.gentics.mesh.search.SearchProvider;
