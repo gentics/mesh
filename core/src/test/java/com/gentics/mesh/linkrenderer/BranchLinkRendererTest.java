@@ -7,6 +7,7 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -216,6 +217,5 @@ public class BranchLinkRendererTest extends AbstractMeshTest {
 			return pathPrefix;
 		}
 	}
-
 
 }

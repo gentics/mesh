@@ -37,7 +37,7 @@ public abstract class AbstractJobVerticle extends AbstractVerticle {
 	}
 
 	private void registerJobHandler() {
-		jobConsumer = vertx.eventBus().consumer(getJobAdress(), (message) -> {
+		jobConsumer = vertx.eventBus().consumer(getJobAdress(), message -> {
 			invokeJobAction(message);
 		});
 	}

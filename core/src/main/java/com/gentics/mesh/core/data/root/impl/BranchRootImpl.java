@@ -40,6 +40,7 @@ import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
@@ -177,6 +178,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 		assignSchemas(creator, baseBranch, branch, true, batch);
 
 		batch.add(branch.onCreated());
+		batch.add(() -> MeshEvent.triggerJobWorker(meshApi()));
 
 		return branch;
 	}

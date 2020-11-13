@@ -16,6 +16,8 @@ import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
+import io.reactivex.Completable;
+
 public interface JobDaoWrapper extends JobDao, DaoTransformable<HibJob, JobResponse>{
 
 	Result<? extends HibJob> findAll();
@@ -55,5 +57,7 @@ public interface JobDaoWrapper extends JobDao, DaoTransformable<HibJob, JobRespo
 	HibJob create(InternalActionContext ac, EventQueueBatch batch, String uuid);
 
 	void clear();
+
+	Completable process();
 
 }

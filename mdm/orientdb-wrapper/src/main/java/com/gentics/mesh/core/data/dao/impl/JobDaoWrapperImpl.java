@@ -17,6 +17,7 @@ import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.JobDaoWrapper;
 import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.job.HibJob;
+import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
@@ -24,10 +25,12 @@ import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
 import dagger.Lazy;
+import io.reactivex.Completable;
 
 @Singleton
 public class JobDaoWrapperImpl extends AbstractDaoWrapper<HibJob> implements JobDaoWrapper {
@@ -139,6 +142,12 @@ public class JobDaoWrapperImpl extends AbstractDaoWrapper<HibJob> implements Job
 	@Override
 	public void clear() {
 		boot.get().jobRoot().clear();
+	}
+
+	@Override
+	public Completable process() {
+		JobRoot jobRoot = boot.get().jobRoot();
+		return jobRoot.process();
 	}
 
 	@Override

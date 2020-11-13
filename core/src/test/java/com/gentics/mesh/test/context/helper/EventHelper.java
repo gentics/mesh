@@ -198,7 +198,7 @@ public interface EventHelper extends BaseHelper {
 		action.run();
 
 		// Now poll the migration status and check the response
-		final int MAX_WAIT = 120;
+		final int MAX_WAIT = 30;
 		JobListResponse response;
 		for (int i = 0; i < MAX_WAIT; i++) {
 

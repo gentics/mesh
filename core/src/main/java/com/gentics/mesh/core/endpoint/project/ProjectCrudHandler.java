@@ -15,7 +15,6 @@ import javax.inject.Inject;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.ProjectDAOActions;
-import com.gentics.mesh.core.actions.impl.ProjectDAOActionsImpl;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -82,7 +81,6 @@ public class ProjectCrudHandler extends AbstractCrudHandler<HibProject, ProjectR
 					}
 				});
 				MeshEvent.triggerJobWorker(boot.mesh());
-
 				return message(ac, "project_version_purge_enqueued");
 			}, message -> ac.send(message, OK));
 		}

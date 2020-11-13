@@ -177,12 +177,12 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 							// Assign the new version to the branch
 							branch.assignSchemaVersion(user, createdVersion, batch);
 						}
+						batch.add(() -> MeshEvent.triggerJobWorker(boot.get().mesh()));
 					}
 					return createdVersion.getVersion();
 				});
 
 				if (updateParams.getUpdateAssignedBranches()) {
-					MeshEvent.triggerJobWorker(boot.get().mesh());
 					return message(ac, "schema_updated_migration_invoked", schemaName, version);
 				} else {
 					return message(ac, "schema_updated_migration_deferred", schemaName, version);

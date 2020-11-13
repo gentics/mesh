@@ -124,12 +124,12 @@ public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResp
 						}
 						branch.assignSchemaVersion(ac.getUser(), version, event);
 					}
-
+					// 2. Invoke migrations which will populate the created index
+					event.add(() ->  MeshEvent.triggerJobWorker(boot.mesh()));
 					return getSchemaVersionsInfo(branch);
 				});
 
-				// 2. Invoke migrations which will populate the created index
-				MeshEvent.triggerJobWorker(boot.mesh());
+
 
 				return branchList;
 
@@ -186,9 +186,9 @@ public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResp
 						}
 						branch.assignMicroschemaVersion(user, version, batch);
 					}
+					batch.add(() -> MeshEvent.triggerJobWorker(boot.mesh()));
 				});
 
-				MeshEvent.triggerJobWorker(boot.mesh());
 				return getMicroschemaVersions(branch);
 			}, model -> ac.send(model, OK));
 		}

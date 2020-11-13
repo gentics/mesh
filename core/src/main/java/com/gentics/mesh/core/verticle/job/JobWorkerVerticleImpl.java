@@ -54,9 +54,8 @@ public class JobWorkerVerticleImpl extends AbstractJobVerticle implements JobWor
 
 	@Override
 	public Completable executeJob(Message<Object> message) {
-		return Completable.defer(() -> db.tx(() -> {
-			JobRoot jobRoot = boot.get().jobRoot();
-			return jobRoot.process();
+		return Completable.defer(() -> db.tx(tx -> {
+			return tx.jobDao().process();
 		}));
 	}
 
