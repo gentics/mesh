@@ -81,6 +81,11 @@ icon:check[] Clustering: The webroot handler no longer uses the cluster-wide wri
 
 icon:check[] Logging: Failing readiness checks are now logged using the `WARN` level.
 
+[[v1.5.7]]
+== 1.5.7 (13.11.2020)
+
+icon:check[] Search: Fixed potential `NullPointerException` that could occur during search index synchronization.
+
 [[v1.5.6]]
 == 1.5.6 (22.10.2020)
 
