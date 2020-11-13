@@ -2,7 +2,7 @@ package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_MOVED;
-import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
+import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
@@ -44,7 +44,7 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testMoveNodeIntoNonFolderNode() {
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 
 			String branchUuid = project().getLatestBranch().getUuid();
 			HibNode sourceNode = folder("news");
@@ -60,7 +60,7 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testMoveNodesSame() {
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 
 			String branchUuid = project().getLatestBranch().getUuid();
 			HibNode sourceNode = folder("news");
@@ -74,7 +74,7 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testMoveNodeIntoChildNode() {
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 
 			String branchUuid = project().getLatestBranch().getUuid();
 			HibNode sourceNode = folder("news");
@@ -95,16 +95,16 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 		HibNode targetNode = folder("2015");
 
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			assertNotEquals(targetNode.getUuid(), nodeDao.getParentNode(sourceNode, initialBranchUuid()).getUuid());
 			roleDao.revokePermissions(role(), sourceNode, UPDATE_PERM);
 			tx.success();
 		}
 
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 
 			call(() -> client().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid()), FORBIDDEN, "error_missing_perm",
 				sourceNode.getUuid(), UPDATE_PERM.getRestPerm().getName());
@@ -121,11 +121,11 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 		String sourceNodeUuid = tx(() -> sourceNode.getUuid());
 		String targetNodeUuid = tx(() -> targetNode.getUuid());
 		String oldSourceParentId = tx(tx -> {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 			return nodeDao.getParentNode(sourceNode, branchUuid).getUuid();
 		});
 		assertNotEquals(targetNodeUuid, tx(tx -> {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 			return nodeDao.getParentNode(sourceNode, branchUuid).getUuid();
 		}));
 
@@ -140,7 +140,7 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 		waitForSearchIdleEvent();
 
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 
 			assertNotEquals("The source node parent uuid should have been updated.", oldSourceParentId,
 				nodeDao.getParentNode(sourceNode, branchUuid).getUuid());

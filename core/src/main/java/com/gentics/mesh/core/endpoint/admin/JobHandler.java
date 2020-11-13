@@ -21,7 +21,8 @@ import com.gentics.mesh.core.data.dao.JobDaoWrapper;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.job.JobRoot;
-import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.PageTransformer;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
@@ -43,10 +44,13 @@ public class JobHandler extends AbstractCrudHandler<HibJob, JobResponse> {
 
 	private BootstrapInitializer boot;
 
+	private final PageTransformer pageTransformer;
+
 	@Inject
-	public JobHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, WriteLockImpl writeLock, JobDAOActions jobActions) {
+	public JobHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, WriteLockImpl writeLock, JobDAOActions jobActions, PageTransformer pageTransformer) {
 		super(db, utils, writeLock, jobActions);
 		this.boot = boot;
+		this.pageTransformer = pageTransformer;
 	}
 
 	@Override
@@ -58,17 +62,17 @@ public class JobHandler extends AbstractCrudHandler<HibJob, JobResponse> {
 			JobRoot root = boot.jobRoot();
 
 			PagingParameters pagingInfo = ac.getPagingParameters();
-			TransformablePage<? extends Job> page = root.findAllNoPerm(ac, pagingInfo);
+			Page<? extends Job> page = root.findAllNoPerm(ac, pagingInfo);
 
 			// Handle etag
 			if (ac.getGenericParameters().getETag()) {
-				String etag = page.getETag(ac);
+				String etag = pageTransformer.getETag(page, ac);
 				ac.setEtag(etag, true);
 				if (ac.matches(etag, true)) {
 					throw new NotModifiedException();
 				}
 			}
-			return page.transformToRestSync(ac, 0);
+			return pageTransformer.transformToRestSync(page, ac, 0);
 		}, e -> ac.send(e, OK));
 	}
 
@@ -103,7 +107,7 @@ public class JobHandler extends AbstractCrudHandler<HibJob, JobResponse> {
 			if (!ac.getUser().isAdmin()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
-			JobDaoWrapper jobDao = tx.data().jobDao();
+			JobDaoWrapper jobDao = tx.jobDao();
 			HibJob job = jobDao.loadObjectByUuidNoPerm(uuid, true);
 			String etag = jobDao.getETag(job, ac);
 			ac.setEtag(etag, true);

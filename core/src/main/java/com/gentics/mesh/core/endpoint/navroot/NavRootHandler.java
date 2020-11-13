@@ -16,11 +16,12 @@ import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.service.WebRootServiceImpl;
-import com.gentics.mesh.core.data.user.MeshAuthUser;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
+import com.gentics.mesh.path.impl.PathSegmentImpl;
 
 import io.vertx.ext.web.RoutingContext;
 
@@ -44,23 +45,24 @@ public class NavRootHandler {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 		String path = rc.request().path().substring(
 			rc.mountPoint().length());
-		MeshAuthUser requestUser = ac.getUser();
+		HibUser requestUser = ac.getUser();
 
 		utils.syncTx(ac, tx -> {
 			ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
 			Path nodePath = webrootService.findByProjectPath(ac, path, type);
 			PathSegment lastSegment = nodePath.getLast();
-			UserDaoWrapper userDao = tx.data().userDao();
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			UserDaoWrapper userDao = tx.userDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 
 			if (lastSegment == null) {
 				throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(path));
 			}
-			NodeGraphFieldContainer container = lastSegment.getContainer();
+			PathSegmentImpl graphSegment = (PathSegmentImpl) lastSegment;
+			NodeGraphFieldContainer container = graphSegment.getContainer();
 			if (container == null) {
 				throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(path));
 			}
-			HibNode node = tx.data().contentDao().getNode(container);
+			HibNode node = tx.contentDao().getNode(container);
 			if (!userDao.hasPermission(requestUser, node, READ_PUBLISHED_PERM)) {
 				throw error(FORBIDDEN, "error_missing_perm", node.getUuid(), READ_PUBLISHED_PERM.getRestPerm().getName());
 			}

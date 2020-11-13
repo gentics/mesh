@@ -44,7 +44,7 @@ import com.gentics.mesh.core.data.dao.JobDaoWrapper;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.job.HibJob;
-import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.BranchRoot;
@@ -81,7 +81,7 @@ import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.handler.VersionHandler;
+import com.gentics.mesh.handler.VersionHandlerImpl;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.VersionUtil;
@@ -246,8 +246,8 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 	}
 
 	@Override
-	public Branch setNextBranch(Branch branch) {
-		setUniqueLinkOutTo(branch, HAS_NEXT_BRANCH);
+	public Branch setNextBranch(HibBranch branch) {
+		setUniqueLinkOutTo(toGraph(branch), HAS_NEXT_BRANCH);
 		return this;
 	}
 
@@ -365,7 +365,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 
 	@Override
 	public HibJob assignSchemaVersion(HibUser user, HibSchemaVersion schemaVersion, EventQueueBatch batch) {
-		JobDaoWrapper jobDao = Tx.get().data().jobDao();
+		JobDaoWrapper jobDao = Tx.get().jobDao();
 		BranchSchemaEdge edge = findBranchSchemaEdge(schemaVersion);
 		HibJob job = null;
 		// Don't remove any existing edge. Otherwise the edge properties are lost
@@ -389,7 +389,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 
 	@Override
 	public HibJob assignMicroschemaVersion(HibUser user, HibMicroschemaVersion microschemaVersion, EventQueueBatch batch) {
-		JobDaoWrapper jobDao = Tx.get().data().jobDao();
+		JobDaoWrapper jobDao = Tx.get().jobDao();
 		BranchMicroschemaEdge edge = findBranchMicroschemaEdge(microschemaVersion);
 		HibJob job = null;
 		// Don't remove any existing edge. Otherwise the edge properties are lost
@@ -513,7 +513,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 
 	@Override
 	public String getAPIPath(InternalActionContext ac) {
-		return VersionHandler.baseRoute(ac) + "/" + encodeSegment(getProject().getName()) + "/branches/" + getUuid();
+		return VersionHandlerImpl.baseRoute(ac) + "/" + encodeSegment(getProject().getName()) + "/branches/" + getUuid();
 	}
 
 	@Override
@@ -631,14 +631,14 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 	}
 
 	@Override
-	public TransformablePage<? extends Tag> getTags(HibUser user, PagingParameters params) {
-		VertexTraversal<?, ?, ?> traversal = outE(HAS_BRANCH_TAG).inV();
-		return new DynamicTransformablePageImpl<Tag>(user, traversal, params, READ_PERM, TagImpl.class);
+	public Tag findTagByUuid(String uuid) {
+		return outE(HAS_BRANCH_TAG).inV().has(UUID_KEY, uuid).nextOrDefaultExplicit(TagImpl.class, null);
 	}
 
 	@Override
-	public Tag findTagByUuid(String uuid) {
-		return outE(HAS_BRANCH_TAG).inV().has(UUID_KEY, uuid).nextOrDefaultExplicit(TagImpl.class, null);
+	public Page<? extends Tag> getTags(HibUser user, PagingParameters params) {
+		VertexTraversal<?, ?, ?> traversal = outE(HAS_BRANCH_TAG).inV();
+		return new DynamicTransformablePageImpl<Tag>(user, traversal, params, READ_PERM, TagImpl.class);
 	}
 
 	@Override
@@ -647,7 +647,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 	}
 
 	@Override
-	public TransformablePage<? extends HibTag> updateTags(InternalActionContext ac, EventQueueBatch batch) {
+	public Page<? extends HibTag> updateTags(InternalActionContext ac, EventQueueBatch batch) {
 		List<HibTag> tags = getTagsToSet(ac, batch);
 		// TODO Rework this code. We should only add the needed tags and don't dispatch all events.
 		removeAllTags();

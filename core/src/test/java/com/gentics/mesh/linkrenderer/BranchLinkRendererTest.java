@@ -40,6 +40,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 @RunWith(value = Parameterized.class)
 @MeshTestSetting(testSize = FULL, startServer = true)
 public class BranchLinkRendererTest extends AbstractMeshTest {
+
 	private WebRootLinkReplacer replacer;
 
 	private String branchUuid;

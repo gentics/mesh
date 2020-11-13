@@ -25,7 +25,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Micronode;
@@ -47,7 +47,7 @@ import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.link.WebRootLinkReplacer;
+import com.gentics.mesh.core.link.WebRootLinkReplacerImpl;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -76,7 +76,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	public MicronodeFieldTypeProvider micronodeFieldTypeProvider;
 
 	@Inject
-	public WebRootLinkReplacer linkReplacer;
+	public WebRootLinkReplacerImpl linkReplacer;
 
 	@Inject
 	public FieldDefinitionProvider(MeshOptions options) {
@@ -89,7 +89,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		// .binaryUuid
 		type.field(newFieldDefinition().name("binaryUuid").description("UUID of the binary data.").type(GraphQLString).dataFetcher(fetcher -> {
 			BinaryGraphField field = fetcher.getSource();
-			Binary binary = field.getBinary();
+			HibBinary binary = field.getBinary();
 			return binary == null ? 0 : binary.getUuid();
 		}));
 
@@ -99,14 +99,14 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		// .width
 		type.field(newFieldDefinition().name("width").description("Image width in pixel.").type(GraphQLInt).dataFetcher(fetcher -> {
 			BinaryGraphField field = fetcher.getSource();
-			Binary binary = field.getBinary();
+			HibBinary binary = field.getBinary();
 			return binary == null ? 0 : binary.getImageWidth();
 		}));
 
 		// .height
 		type.field(newFieldDefinition().name("height").description("Image height in pixel.").type(GraphQLInt).dataFetcher(fetcher -> {
 			BinaryGraphField field = fetcher.getSource();
-			Binary binary = field.getBinary();
+			HibBinary binary = field.getBinary();
 			return binary == null ? 0 : binary.getImageHeight();
 		}));
 
@@ -203,11 +203,12 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				GraphFieldContainer container = env.getSource();
 				HtmlGraphField htmlField = container.getHtml(schema.getName());
 				if (htmlField != null) {
+					Tx tx = Tx.get();
 					GraphQLContext gc = env.getContext();
 					LinkType type = getLinkType(env);
 					String content = htmlField.getHTML();
-					return linkReplacer.replace(gc, gc.getBranch()
-						.getUuid(), null, content, type, gc.getProject().getName(), Arrays.asList(container.getLanguageTag()));
+					return linkReplacer.replace(gc, tx.getBranch(gc)
+						.getUuid(), null, content, type, tx.getProject(gc).getName(), Arrays.asList(container.getLanguageTag()));
 				}
 				return null;
 			}).build();
@@ -216,14 +217,15 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	public GraphQLFieldDefinition createStringDef(FieldSchema schema) {
 		return newFieldDefinition().name(schema.getName()).description(schema.getLabel()).type(GraphQLString).argument(createLinkTypeArg())
 			.dataFetcher(env -> {
+				Tx tx = Tx.get();
 				GraphFieldContainer container = env.getSource();
 				StringGraphField field = container.getString(schema.getName());
 				if (field != null) {
 					GraphQLContext gc = env.getContext();
 					LinkType type = getLinkType(env);
 					String content = field.getString();
-					return linkReplacer.replace(gc, gc.getBranch()
-						.getUuid(), null, content, type, gc.getProject().getName(), Arrays.asList(container.getLanguageTag()));
+					return linkReplacer.replace(gc, tx.getBranch(gc)
+						.getUuid(), null, content, type, tx.getProject(gc).getName(), Arrays.asList(container.getLanguageTag()));
 				}
 				return null;
 			}).build();
@@ -269,7 +271,8 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		}
 
 		return fieldType.dataFetcher(env -> {
-			ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+			Tx tx = Tx.get();
+			ContentDaoWrapper contentDao = tx.contentDao();
 			GraphFieldContainer container = env.getSource();
 			GraphQLContext gc = env.getContext();
 
@@ -288,7 +291,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				return htmlList.getList().stream().map(item -> {
 					String content = item.getHTML();
 					LinkType linkType = getLinkType(env);
-					return linkReplacer.replace(gc, null, null, content, linkType, gc.getProject().getName(),
+					return linkReplacer.replace(gc, null, null, content, linkType, tx.getProject(gc).getName(),
 						Arrays.asList(container.getLanguageTag()));
 				}).collect(Collectors.toList());
 			case "string":
@@ -299,7 +302,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				return stringList.getList().stream().map(item -> {
 					String content = item.getString();
 					LinkType linkType = getLinkType(env);
-					return linkReplacer.replace(gc, null, null, content, linkType, gc.getProject().getName(),
+					return linkReplacer.replace(gc, null, null, content, linkType, tx.getProject(gc).getName(),
 						Arrays.asList(container.getLanguageTag()));
 				}).collect(Collectors.toList());
 			case "number":
@@ -409,7 +412,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 			.argument(createNodeVersionArg())
 			.description(schema.getLabel())
 			.type(new GraphQLTypeReference(NODE_TYPE_NAME)).dataFetcher(env -> {
-				ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+				ContentDaoWrapper contentDao = Tx.get().contentDao();
 				GraphQLContext gc = env.getContext();
 				GraphFieldContainer source = env.getSource();
 				ContainerType type = getNodeVersion(env);

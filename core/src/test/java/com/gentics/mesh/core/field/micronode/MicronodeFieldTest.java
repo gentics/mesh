@@ -125,8 +125,8 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 		HibNode newOverview = content("news overview");
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.data().contentDao();
-			MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
+			ContentDaoWrapper contentDao = tx.contentDao();
+			MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
 
 			MicroschemaVersionModel fullMicroschema = new MicroschemaModelImpl();
 			fullMicroschema.setName("full");

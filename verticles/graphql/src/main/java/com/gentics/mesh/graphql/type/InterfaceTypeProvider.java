@@ -169,7 +169,7 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 				GraphQLContext gc = env.getContext();
 				HibCoreElement element = getMeshCoreElement(env.getSource());
 
-				UserDaoWrapper userDao = Tx.get().data().userDao();
+				UserDaoWrapper userDao = Tx.get().userDao();
 				return userDao.getPermissionInfo(gc.getUser(), element);
 			})
 		);
@@ -185,7 +185,7 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 				GraphQLContext gc = env.getContext();
 				HibCoreElement element = getMeshCoreElement(env.getSource());
 
-				UserDaoWrapper userDao = Tx.get().data().userDao();
+				UserDaoWrapper userDao = Tx.get().userDao();
 				return userDao.getRolePermissions(element, gc, env.getArgument("role"));
 			})
 		);

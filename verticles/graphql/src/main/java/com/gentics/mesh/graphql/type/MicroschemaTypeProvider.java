@@ -53,7 +53,7 @@ public class MicroschemaTypeProvider extends AbstractTypeProvider {
 		schemaType.field(newPagingFieldWithFetcher("projects", "Projects that this schema is assigned to", (env) -> {
 			GraphQLContext gc = env.getContext();
 			Microschema microschema = env.getSource();
-			UserDaoWrapper userDao = Tx.get().data().userDao();
+			UserDaoWrapper userDao = Tx.get().userDao();
 			return microschema.findReferencedBranches().keySet().stream()
 				.map(HibBranch::getProject)
 				.distinct()

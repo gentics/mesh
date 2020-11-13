@@ -30,7 +30,7 @@ public class ProjectEndpointETagTest extends AbstractMeshTest {
 	@Test
 	public void testReadOne() {
 		try (Tx tx = tx()) {
-			ProjectDaoWrapper projectDao = tx.data().projectDao();
+			ProjectDaoWrapper projectDao = tx.projectDao();
 			String actualETag = callETag(() -> client().findProjectByUuid(projectUuid()));
 			String etag = projectDao.getETag(project(), mockActionContext());
 			assertEquals(etag, actualETag);

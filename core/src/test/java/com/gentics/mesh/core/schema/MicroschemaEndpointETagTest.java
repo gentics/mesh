@@ -32,7 +32,7 @@ public class MicroschemaEndpointETagTest extends AbstractMeshTest {
 	@Test
 	public void testReadOne() {
 		try (Tx tx = tx()) {
-			MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
+			MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
 			HibMicroschema schema = microschemaContainers().get("vcard");
 
 			String actualEtag = callETag(() -> client().findMicroschemaByUuid(schema.getUuid()));

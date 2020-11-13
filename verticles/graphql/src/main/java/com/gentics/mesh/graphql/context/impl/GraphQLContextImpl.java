@@ -3,7 +3,6 @@ package com.gentics.mesh.graphql.context.impl;
 import static com.gentics.mesh.core.rest.error.Errors.missingPerm;
 
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
@@ -31,7 +30,7 @@ public class GraphQLContextImpl extends InternalRoutingActionContextImpl impleme
 
 	@Override
 	public <T extends HibCoreElement> T requiresPerm(T element, InternalPermission... permission) {
-		UserDaoWrapper userDao = Tx.get().data().userDao();
+		UserDaoWrapper userDao = Tx.get().userDao();
 		for (InternalPermission perm : permission) {
 			if (userDao.hasPermission(getUser(), element, perm)) {
 				return element;
@@ -52,16 +51,17 @@ public class GraphQLContextImpl extends InternalRoutingActionContextImpl impleme
 
 	@Override
 	public boolean hasReadPerm(NodeGraphFieldContainer container) {
-		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+		Tx tx = Tx.get();
+		ContentDaoWrapper contentDao = tx.contentDao();
 		HibNode node = contentDao.getNode(container);
 		Object nodeId = node.getId();
-		UserDaoWrapper userDao = Tx.get().data().userDao();
+		UserDaoWrapper userDao = tx.userDao();
 
 		if (userDao.hasPermissionForId(getUser(), nodeId, InternalPermission.READ_PERM)) {
 			return true;
 		}
 
-		boolean isPublished = container.isPublished(getBranch().getUuid());
+		boolean isPublished = container.isPublished(tx.getBranch(this).getUuid());
 		if (isPublished && userDao.hasPermissionForId(getUser(), nodeId, InternalPermission.READ_PUBLISHED_PERM)) {
 			return true;
 		}
@@ -70,7 +70,7 @@ public class GraphQLContextImpl extends InternalRoutingActionContextImpl impleme
 
 	@Override
 	public NodeGraphFieldContainer requiresReadPermSoft(NodeGraphFieldContainer container, DataFetchingEnvironment env) {
-		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+		ContentDaoWrapper contentDao = Tx.get().contentDao();
 		if (container == null) {
 			return null;
 		}
@@ -87,27 +87,27 @@ public class GraphQLContextImpl extends InternalRoutingActionContextImpl impleme
 
 	@Override
 	public String branchName() {
-		return getBranch().getName();
+		return Tx.get().getBranch(this).getName();
 	}
 
 	@Override
 	public String branchUuid() {
-		return getBranch().getUuid();
+		return Tx.get().getBranch(this).getUuid();
 	}
 
 	@Override
 	public String projectName() {
-		return getProject().getName();
+		return Tx.get().getProject(this).getName();
 	}
 
 	@Override
 	public String projectUuid() {
-		return getProject().getUuid();
+		return Tx.get().getProject(this).getUuid();
 	}
 
 	@Override
 	public JsonObject principal() {
-		return getUser().principal();
+		return getMeshAuthUser().principal();
 	}
 
 }

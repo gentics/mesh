@@ -15,7 +15,7 @@ import com.gentics.mesh.search.index.AbstractSearchHandler;
 public class SchemaSearchHandler extends AbstractSearchHandler<HibSchema, SchemaResponse> {
 
 	@Inject
-	public SchemaSearchHandler(Database db, SearchProvider searchProvider, SchemaContainerIndexHandler indexHandler, MeshOptions options, SchemaDAOActions actions) {
+	public SchemaSearchHandler(Database db, SearchProvider searchProvider, SchemaContainerIndexHandlerImpl indexHandler, MeshOptions options, SchemaDAOActions actions) {
 		super(db, searchProvider, options, indexHandler, actions);
 	}
 

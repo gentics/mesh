@@ -3,59 +3,10 @@ package com.gentics.mesh.dagger.module;
 import java.util.Arrays;
 import java.util.List;
 
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-
-import com.gentics.mesh.auth.MeshOAuthService;
-import com.gentics.mesh.auth.oauth2.MeshOAuth2ServiceImpl;
-import com.gentics.mesh.cache.CacheRegistry;
-import com.gentics.mesh.cache.CacheRegistryImpl;
-import com.gentics.mesh.cache.PermissionCache;
-import com.gentics.mesh.cache.PermissionCacheImpl;
-import com.gentics.mesh.cache.ProjectBranchNameCache;
-import com.gentics.mesh.cache.ProjectBranchNameCacheImpl;
-import com.gentics.mesh.cache.ProjectNameCache;
-import com.gentics.mesh.cache.ProjectNameCacheImpl;
-import com.gentics.mesh.cache.WebrootPathCache;
-import com.gentics.mesh.cache.WebrootPathCacheImpl;
 import com.gentics.mesh.changelog.ChangelogSystem;
 import com.gentics.mesh.changelog.ChangelogSystemImpl;
 import com.gentics.mesh.changelog.highlevel.HighLevelChangelogSystem;
 import com.gentics.mesh.changelog.highlevel.HighLevelChangelogSystemImpl;
-import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.cli.BootstrapInitializerImpl;
-import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.context.impl.BulkActionContextImpl;
-import com.gentics.mesh.core.action.BranchDAOActions;
-import com.gentics.mesh.core.action.DAOActionsCollection;
-import com.gentics.mesh.core.action.GroupDAOActions;
-import com.gentics.mesh.core.action.JobDAOActions;
-import com.gentics.mesh.core.action.MicroschemaDAOActions;
-import com.gentics.mesh.core.action.NodeDAOActions;
-import com.gentics.mesh.core.action.ProjectDAOActions;
-import com.gentics.mesh.core.action.RoleDAOActions;
-import com.gentics.mesh.core.action.SchemaDAOActions;
-import com.gentics.mesh.core.action.TagDAOActions;
-import com.gentics.mesh.core.action.TagFamilyDAOActions;
-import com.gentics.mesh.core.action.UserDAOActions;
-import com.gentics.mesh.core.actions.impl.BranchDAOActionsImpl;
-import com.gentics.mesh.core.actions.impl.DAOActionsCollectionImpl;
-import com.gentics.mesh.core.actions.impl.GroupDAOActionsImpl;
-import com.gentics.mesh.core.actions.impl.JobDAOActionsImpl;
-import com.gentics.mesh.core.actions.impl.MicroschemaDAOActionsImpl;
-import com.gentics.mesh.core.actions.impl.NodeDAOActionsImpl;
-import com.gentics.mesh.core.actions.impl.ProjectDAOActionsImpl;
-import com.gentics.mesh.core.actions.impl.RoleDAOActionsImpl;
-import com.gentics.mesh.core.actions.impl.SchemaDAOActionsImpl;
-import com.gentics.mesh.core.actions.impl.TagDAOActionsImpl;
-import com.gentics.mesh.core.actions.impl.TagFamilyDAOActionsImpl;
-import com.gentics.mesh.core.actions.impl.UserDAOActionsImpl;
-import com.gentics.mesh.core.binary.BinaryProcessorRegistry;
-import com.gentics.mesh.core.binary.BinaryProcessorRegistryImpl;
-import com.gentics.mesh.core.data.PersistenceClassMap;
-import com.gentics.mesh.core.data.PersistenceClassMapImpl;
-import com.gentics.mesh.core.data.binary.Binaries;
-import com.gentics.mesh.core.data.binary.impl.BinariesImpl;
 import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
@@ -87,12 +38,8 @@ import com.gentics.mesh.core.data.dao.impl.SchemaDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.TagDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.TagFamilyDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.UserDaoWrapperImpl;
-import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
-import com.gentics.mesh.core.data.schema.handler.MicroschemaComparatorImpl;
-import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
-import com.gentics.mesh.core.data.schema.handler.SchemaComparatorImpl;
-import com.gentics.mesh.core.data.service.WebRootService;
-import com.gentics.mesh.core.data.service.WebRootServiceImpl;
+import com.gentics.mesh.core.data.generic.GraphUserPropertiesImpl;
+import com.gentics.mesh.core.data.generic.UserProperties;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.BinaryCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.BranchCheck;
@@ -108,13 +55,8 @@ import com.gentics.mesh.core.endpoint.admin.consistency.check.SchemaContainerChe
 import com.gentics.mesh.core.endpoint.admin.consistency.check.TagCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.TagFamilyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.check.UserCheck;
-import com.gentics.mesh.core.verticle.handler.WriteLock;
-import com.gentics.mesh.core.verticle.handler.WriteLockImpl;
-import com.gentics.mesh.distributed.RequestDelegator;
-import com.gentics.mesh.distributed.coordinator.proxy.RequestDelegatorImpl;
-import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.event.impl.EventQueueBatchImpl;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
+import com.gentics.mesh.graphdb.dagger.OrientDBCoreModule;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.RangeRequestHandler;
 import com.gentics.mesh.handler.impl.RangeRequestHandlerImpl;
@@ -142,74 +84,14 @@ import dagger.Binds;
 import dagger.Module;
 import dagger.Provides;
 
-@Module
+@Module(includes = { OrientDBCoreModule.class })
 public abstract class OrientDBModule {
 
 	@Binds
-	abstract DropIndexHandler bindCommonHandler(DropIndexHandlerImpl e);
-
-	@Binds
-	abstract BootstrapInitializer bindBoot(BootstrapInitializerImpl e);
-
-	@Binds
-	abstract WebRootService bindWebrootService(WebRootServiceImpl e);
-
-	@Binds
-	abstract MeshOAuthService bindOAuthHandler(MeshOAuth2ServiceImpl e);
-
-	@Binds
-	abstract BinaryStorage bindBinaryStorage(LocalBinaryStorage e);
-
-	@Binds
-	abstract MetricsService bindMetricsService(MetricsServiceImpl e);
+	abstract UserProperties userProperties(GraphUserPropertiesImpl e);
 
 	@Binds
 	abstract Database bindDatabase(OrientDBDatabase e);
-
-	@Binds
-	abstract RangeRequestHandler bindRangeRequestHandler(RangeRequestHandlerImpl e);
-
-	@Binds
-	abstract ProjectBranchNameCache bindBranchNameCache(ProjectBranchNameCacheImpl e);
-
-	@Binds
-	abstract WebrootPathCache bindWebrootPathCache(WebrootPathCacheImpl e);
-
-	@Binds
-	abstract PermissionCache bindPermissionCache(PermissionCacheImpl e);
-
-	@Binds
-	abstract ProjectNameCache bindProjectNameCache(ProjectNameCacheImpl e);
-
-	@Binds
-	abstract PluginEnvironment bindPluginEnv(PluginEnvironmentImpl e);
-
-	@Binds
-	abstract MeshPluginManager bindPluginManager(MeshPluginManagerImpl pm);
-
-	@Binds
-	abstract EventQueueBatch bindEventQueueBatch(EventQueueBatchImpl e);
-
-	@Binds
-	abstract BulkActionContext bindActionContext(BulkActionContextImpl e);
-
-	@Binds
-	abstract CacheRegistry bindCacheRegistry(CacheRegistryImpl e);
-
-	@Binds
-	abstract Binaries bindBinaries(BinariesImpl e);
-
-	@Binds
-	abstract PersistenceClassMap bindPersistenceClassMap(PersistenceClassMapImpl e);
-
-	@Binds
-	abstract RequestDelegator bindRequestDelegator(RequestDelegatorImpl e);
-
-	@Binds
-	abstract WriteLock bindWriteLock(WriteLockImpl e);
-
-	@Binds
-	abstract DelegatingPluginRegistry bindPluginRegistry(DelegatingPluginRegistryImpl e);
 
 	@Binds
 	abstract ChangelogSystem bindChangelogSystem(ChangelogSystemImpl e);
@@ -217,7 +99,10 @@ public abstract class OrientDBModule {
 	@Binds
 	abstract HighLevelChangelogSystem bindHighLevelChangelogSystem(HighLevelChangelogSystemImpl e);
 
-	// Daos
+	// DAOs
+
+	@Binds
+	abstract DaoCollection daoCollection(OrientDBDaoCollection daoCollection);
 
 	@Binds
 	abstract UserDaoWrapper bindUserDao(UserDaoWrapperImpl e);
@@ -261,68 +146,13 @@ public abstract class OrientDBModule {
 	@Binds
 	abstract LanguageDaoWrapper bindLanguageDao(LanguageDaoWrapperImpl e);
 
-	@Binds
-	abstract RouterStorageRegistry bindRouterStorageRegistry(RouterStorageRegistryImpl e);
+	// END
 
 	@Binds
-	abstract PasswordEncoder bindPasswordEncoder(BCryptPasswordEncoder e);
-
-	@Binds
-	abstract NodeIndexHandler bindNodeIndexHandler(NodeIndexHandlerImpl e);
-
-	@Binds
-	abstract BinaryProcessorRegistry bindBinaryProcessorRegistry(BinaryProcessorRegistryImpl e);
-
-	@Binds
-	abstract DAOActionsCollection bindDaoCollection(DAOActionsCollectionImpl e);
-
-	@Binds
-	abstract DaoCollection daoCollection(OrientDBDaoCollection daoCollection);
+	abstract BucketManager bindBucketManager(BucketManagerImpl e);
 
 	@Binds
 	abstract PermissionRoots permissionRoots(PermissionRootsImpl daoCollection);
-
-	@Binds
-	abstract UserDAOActions userDAOActions(UserDAOActionsImpl e);
-
-	@Binds
-	abstract GroupDAOActions grouDAOpActions(GroupDAOActionsImpl e);
-
-	@Binds
-	abstract RoleDAOActions roleDAOActions(RoleDAOActionsImpl e);
-
-	@Binds
-	abstract TagDAOActions tagADAOctions(TagDAOActionsImpl e);
-
-	@Binds
-	abstract TagFamilyDAOActions tagFDAOamilyActions(TagFamilyDAOActionsImpl e);
-
-	@Binds
-	abstract BranchDAOActions branDAOchActions(BranchDAOActionsImpl e);
-
-	@Binds
-	abstract ProjectDAOActions projDAOectActions(ProjectDAOActionsImpl e);
-
-	@Binds
-	abstract NodeDAOActions nodeDAOActions(NodeDAOActionsImpl e);
-
-	@Binds
-	abstract MicroschemaDAOActions microschemaDAOActions(MicroschemaDAOActionsImpl e);
-
-	@Binds
-	abstract SchemaDAOActions schemaDAOActions(SchemaDAOActionsImpl e);
-
-	@Binds
-	abstract JobDAOActions jobDAOActions(JobDAOActionsImpl e);
-
-	@Binds
-	abstract MicroschemaComparator microschemaComparator(MicroschemaComparatorImpl e);
-
-	@Binds
-	abstract SchemaComparator schemaComparator(SchemaComparatorImpl e);
-
-	@Binds 
-	abstract BucketManager bucketManager(BucketManagerImpl e);
 
 	@Provides
 	public static List<ConsistencyCheck> consistencyCheckList() {
@@ -340,7 +170,6 @@ public abstract class OrientDBModule {
 			new GraphFieldContainerCheck(),
 			new MicronodeCheck(),
 			new BinaryCheck(),
-			new FieldCheck()
-		);
+			new FieldCheck());
 	}
 }

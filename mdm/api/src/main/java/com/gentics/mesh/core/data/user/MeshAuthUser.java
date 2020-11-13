@@ -6,7 +6,7 @@ import io.vertx.ext.auth.User;
 /**
  * Mesh graph user which additionally implements the vertex {@link User} interface.
  */
-public interface MeshAuthUser extends User, HibUser, ClusterSerializable {
+public interface MeshAuthUser extends User, ClusterSerializable {
 
 	HibUser getDelegate();
 

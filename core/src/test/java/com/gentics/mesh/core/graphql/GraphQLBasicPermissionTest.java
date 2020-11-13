@@ -18,7 +18,7 @@ public class GraphQLBasicPermissionTest extends AbstractMeshTest {
 	@Test
 	public void testReadProjectNoPerm() throws Throwable {
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), project(), READ_PERM);
 			tx.success();
 		}

@@ -26,18 +26,16 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
-import com.gentics.mesh.core.data.generic.PermissionProperties;
+import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.data.util.HibClassConverter;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -60,7 +58,7 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements Tag
 	private static final Logger log = LoggerFactory.getLogger(TagDaoWrapperImpl.class);
 
 	@Inject
-	public TagDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionProperties> permissions) {
+	public TagDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
 		super(boot, permissions);
 	}
 
@@ -107,9 +105,10 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements Tag
 
 	@Override
 	public String getSubETag(HibTag tag, InternalActionContext ac) {
+		Tx tx = Tx.get();
 		StringBuilder keyBuilder = new StringBuilder();
 		keyBuilder.append(tag.getLastEditedTimestamp());
-		keyBuilder.append(ac.getBranch(tag.getProject()).getUuid());
+		keyBuilder.append(tx.getBranch(ac, tag.getProject()).getUuid());
 		return keyBuilder.toString();
 	}
 
@@ -240,7 +239,7 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements Tag
 	}
 
 	@Override
-	public TransformablePage<? extends Node> findTaggedNodes(HibTag tag, HibUser requestUser, HibBranch branch, List<String> languageTags,
+	public Page<? extends Node> findTaggedNodes(HibTag tag, HibUser requestUser, HibBranch branch, List<String> languageTags,
 		ContainerType type, PagingParameters pagingInfo) {
 		return boot.get().tagRoot().findTaggedNodes(toGraph(tag), requestUser, toGraph(branch), languageTags, type, pagingInfo);
 	}
@@ -267,17 +266,17 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements Tag
 
 	@Override
 	public HibTag create(HibTagFamily tagFamily, InternalActionContext ac, EventQueueBatch batch, String uuid) {
+		Tx tx = Tx.get();
 		TagFamily graphTagFamily = toGraph(tagFamily);
-
-		HibProject project = ac.getProject();
+		HibProject project = tx.getProject(ac);
 		TagCreateRequest requestModel = ac.fromJson(TagCreateRequest.class);
 		String tagName = requestModel.getName();
 		if (isEmpty(tagName)) {
 			throw error(BAD_REQUEST, "tag_name_not_set");
 		}
 
-		UserDaoWrapper userDao = Tx.get().data().userDao();
-		MeshAuthUser requestUser = ac.getUser();
+		UserDaoWrapper userDao = Tx.get().userDao();
+		HibUser requestUser = ac.getUser();
 		if (!userDao.hasPermission(requestUser, tagFamily, CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", tagFamily.getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
@@ -339,7 +338,7 @@ public class TagDaoWrapperImpl extends AbstractDaoWrapper<HibTag> implements Tag
 	}
 
 	@Override
-	public TransformablePage<? extends HibTag> getTags(HibNode node, HibUser user, PagingParameters params, HibBranch branch) {
+	public Page<? extends HibTag> getTags(HibNode node, HibUser user, PagingParameters params, HibBranch branch) {
 		return toGraph(node).getTags(user, params, branch);
 	}
 

@@ -93,7 +93,8 @@ import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 import com.gentics.mesh.path.Path;
-import com.gentics.mesh.path.PathSegment;
+import com.gentics.mesh.path.impl.PathImpl;
+import com.gentics.mesh.path.impl.PathSegmentImpl;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.Tuple;
@@ -234,7 +235,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	@Override
 	public void updateFieldsFromRest(InternalActionContext ac, FieldMap restFields) {
 		super.updateFieldsFromRest(ac, restFields);
-		String branchUuid = ac.getBranch().getUuid();
+		String branchUuid = Tx.get().getBranch(ac).getUuid();
 
 		updateWebrootPathInfo(ac, branchUuid, "node_conflicting_segmentfield_update");
 		updateDisplayFieldValue();
@@ -388,8 +389,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	private boolean updateWebrootPathInfo(Node node, GraphFieldContainerEdge edge, String languageTag, String branchUuid, String segmentFieldName,
 		String conflictI18n,
 		ContainerType type) {
-		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
-		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+		NodeDaoWrapper nodeDao = Tx.get().nodeDao();
+		ContentDaoWrapper contentDao = Tx.get().contentDao();
 
 		// Determine the webroot path of the container parent node
 		String segment = contentDao.getPathSegment(node, branchUuid, type, getLanguageTag());
@@ -746,8 +747,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	public com.gentics.mesh.path.Path getPath(InternalActionContext ac) {
-		Path nodePath = new Path();
-		nodePath.addSegment(new PathSegment(this, null, getLanguageTag(), null));
+		Path nodePath = new PathImpl();
+		nodePath.addSegment(new PathSegmentImpl(this, null, getLanguageTag(), null));
 		return nodePath;
 	}
 
@@ -807,7 +808,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public VersionInfo transformToVersionInfo(InternalActionContext ac) {
-		String branchUuid = ac.getBranch().getUuid();
+		String branchUuid = Tx.get().getBranch(ac).getUuid();
 		VersionInfo info = new VersionInfo();
 		info.setVersion(getVersion().getFullVersion());
 		info.setCreated(getLastEditedDate());

@@ -38,6 +38,7 @@ public abstract class AbstractDynamicPage<T> implements Page<T> {
 	protected Iterator<? extends T> visibleItems;
 
 	public AbstractDynamicPage(PagingParameters pagingInfo) {
+		// TODO HIB use ValidationUtil from common module
 		if (pagingInfo.getPage() < 1) {
 			throw new GenericRestException(BAD_REQUEST, "error_page_parameter_must_be_positive", String.valueOf(pagingInfo.getPage()));
 		}

@@ -18,8 +18,8 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.migration.NodeMigration;
 import com.gentics.mesh.core.migration.impl.MigrationStatusHandlerImpl;
-import com.gentics.mesh.core.migration.impl.NodeMigrationImpl;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.SchemaMigrationCause;
@@ -126,7 +126,7 @@ public class NodeMigrationJobImpl extends JobImpl {
 	}
 
 	protected Completable processTask() {
-		NodeMigrationImpl handler = mesh().nodeMigrationHandler();
+		NodeMigration handler = mesh().nodeMigrationHandler();
 
 		return Completable.defer(() -> {
 			NodeMigrationActionContextImpl context = prepareContext();

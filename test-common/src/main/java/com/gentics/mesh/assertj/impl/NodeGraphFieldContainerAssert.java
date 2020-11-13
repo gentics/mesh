@@ -56,7 +56,7 @@ public class NodeGraphFieldContainerAssert extends AbstractObjectAssert<NodeGrap
 	 * @return fluent API
 	 */
 	public NodeGraphFieldContainerAssert isLast() {
-		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+		ContentDaoWrapper contentDao = Tx.get().contentDao();
 		assertThat(contentDao.getNextVersions(actual)).as(descriptionText() + " next container").isEmpty();
 		return this;
 	}
@@ -68,7 +68,7 @@ public class NodeGraphFieldContainerAssert extends AbstractObjectAssert<NodeGrap
 	 * @return fluent API
 	 */
 	public NodeGraphFieldContainerAssert hasNext(NodeGraphFieldContainer container) {
-		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+		ContentDaoWrapper contentDao = Tx.get().contentDao();
 		Iterable<NodeGraphFieldContainer> next = (Iterable<NodeGraphFieldContainer>) contentDao.getNextVersions(actual);
 		assertThat(next).as(descriptionText() + " next container").isNotNull().usingFieldByFieldElementComparator().contains(container);
 		return this;

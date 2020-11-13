@@ -8,10 +8,11 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
-import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
+import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.rest.client.MeshRestClientUtil.onErrorCodeResumeNext;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.validateDeletion;
@@ -307,7 +308,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.setParentNodeUuid(parentNodeUuid);
 
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), folder("news"), CREATE_PERM);
 			tx.success();
 		}
@@ -405,7 +406,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			() -> client().createNode(PROJECT_NAME, request, new VersioningParametersImpl().setBranch(INITIAL_BRANCH_NAME)));
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.data().contentDao();
+			ContentDaoWrapper contentDao = tx.contentDao();
 			HibNode newNode = boot().nodeDao().findByUuid(project(), nodeResponse.getUuid());
 			for (ContainerType type : Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT)) {
 				assertThat(contentDao.getGraphFieldContainer(newNode, "en", initialBranchUuid, type)).as(type + " Field container for initial branch")
@@ -435,7 +436,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			initialBranchUuid)));
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.data().contentDao();
+			ContentDaoWrapper contentDao = tx.contentDao();
 			HibNode newNode = boot().nodeDao().findByUuid(project(), nodeResponse.getUuid());
 			for (ContainerType type : Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT)) {
 				assertThat(contentDao.getGraphFieldContainer(newNode, "en", initialBranchUuid, type)).as(type + " Field container for initial branch")
@@ -452,7 +453,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		HibBranch newBranch = createBranch("newbranch", true);
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.data().contentDao();
+			ContentDaoWrapper contentDao = tx.contentDao();
 			HibNode parentNode = folder("news");
 			String uuid = parentNode.getUuid();
 			NodeCreateRequest request = new NodeCreateRequest();
@@ -569,7 +570,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		HibNode node = folder("news");
 
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), schemaContainer("content"), READ_PERM);
 			tx.success();
 		}
@@ -595,7 +596,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// Revoke create perm
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), folder("news"), CREATE_PERM);
 			tx.success();
 		}
@@ -639,8 +640,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testReadMultipleAndAssertOrder() {
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			HibNode parentNode = folder("2015");
 			int nNodes = 20;
 			for (int i = 0; i < nNodes; i++) {
@@ -693,7 +694,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Override
 	public void testReadMultiple() throws Exception {
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 			HibNode parentNode = folder("2015");
 			// Don't grant permissions to the no perm node. We want to make sure that this one will not be listed.
 			HibNode noPermNode = nodeDao.create(parentNode, user(), schemaContainer("content").getLatestVersion(), project());
@@ -785,7 +786,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		HibBranch newBranch = tx(() -> createBranch("newbranch"));
 
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 
 			NodeListResponse restResponse = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 1000L),
 				new VersioningParametersImpl().draft()));
@@ -873,7 +874,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		while (!nodes.isEmpty()) {
 			HibNode folder = nodes.remove(0);
 			tx((tx) -> {
-				RoleDaoWrapper roleDao = tx.data().roleDao();
+				RoleDaoWrapper roleDao = tx.roleDao();
 				roleDao.revokePermissions(role(), folder, READ_PUBLISHED_PERM);
 				roleDao.revokePermissions(role(), folder, READ_PERM);
 				tx.success();
@@ -910,7 +911,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		for (HibNode node : nodes) {
 			// Revoke the read perm but keep the read published perm on the node
 			tx((tx) -> {
-				RoleDaoWrapper roleDao = tx.data().roleDao();
+				RoleDaoWrapper roleDao = tx.roleDao();
 				roleDao.revokePermissions(role(), node, READ_PERM);
 				roleDao.grantPermissions(role(), node, READ_PUBLISHED_PERM);
 				tx.success();
@@ -965,7 +966,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// 3. Revoke permissions and only grant read_published
 		tx((tx) -> {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			HibNode node = content();
 			roleDao.revokePermissions(role(), node, READ_PERM);
 			roleDao.revokePermissions(role(), node, CREATE_PERM);
@@ -1009,10 +1010,11 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String uuid;
 
 		try (Tx tx = tx()) {
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 			HibNode parentNode = folder("news");
 			uuid = parentNode.getUuid();
 
-			nNodesFound = project().getNodeRoot().computeCount();
+			nNodesFound = nodeDao.computeCount(project());
 		}
 
 		Function<Long, NodeCreateRequest> createRequest = nr -> {
@@ -1049,7 +1051,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			}).blockingAwait();
 
 		try (Tx tx = tx()) {
-			long nNodesFoundAfterRest = project().getNodeRoot().findAll().count();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
+			long nNodesFoundAfterRest = nodeDao.findAll(project()).count();
 			assertEquals("All created nodes should have been created.", nNodesFound, nNodesFoundAfterRest);
 		}
 	}
@@ -1158,7 +1161,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String folderUuid = tx(() -> folder("2015").getUuid());
 		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, folderUuid, new VersioningParametersImpl().draft()));
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 
 			String branchUuid = project().getLatestBranch().getUuid();
 			assertThat(folder("2015")).matches(response);
@@ -1174,7 +1177,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String folderUuid = tx(() -> folder("2015").getUuid());
 		// Remove the editor and creator references to simulate that the user has been deleted.
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.data().contentDao();
+			ContentDaoWrapper contentDao = tx.contentDao();
 			folder("2015").setCreated(null);
 			contentDao.getLatestDraftFieldContainer(folder("2015"), english()).setEditor(null);
 			tx.success();
@@ -1184,7 +1187,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, folderUuid, new VersioningParametersImpl().draft()));
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 
 			String branchUuid = project().getLatestBranch().getUuid();
 			assertThat(folder("2015")).matches(response);
@@ -1554,8 +1557,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testReadNodeByUUIDNoLanguage() throws Exception {
 		HibNode node;
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			// Create node with nl language
 			HibNode parentNode = folder("products");
 			Language languageNl = meshRoot().getLanguageRoot().findByLanguageTag("nl");
@@ -1613,7 +1616,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testReadByUUIDWithMissingPermission() throws Exception {
 		String uuid;
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			HibNode node = folder("2015");
 			uuid = node.getUuid();
 			roleDao.revokePermissions(role(), node, READ_PERM);
@@ -1666,8 +1669,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String uuid = tx(() -> content("concorde").getUuid());
 		final HibNode node = tx(() -> content("concorde"));
 		NodeGraphFieldContainer origContainer = tx(tx -> {
-			ContentDaoWrapper contentDao = tx.data().contentDao();
-			GroupDaoWrapper groupRoot = tx.data().groupDao();
+			ContentDaoWrapper contentDao = tx.contentDao();
+			GroupDaoWrapper groupRoot = tx.groupDao();
 			HibNode prod = content("concorde");
 			NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(prod, english());
 			assertEquals("Concorde_english_name", container.getString("teaser").getString());
@@ -1709,7 +1712,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String projectUuid = tx(() -> project().getUuid());
 		String branchUuid = tx(() -> project().getLatestBranch().getUuid());
 		String schemaContainerVersionUuid = tx(tx -> {
-			ContentDaoWrapper contentDao = tx.data().contentDao();
+			ContentDaoWrapper contentDao = tx.contentDao();
 			return contentDao.getLatestDraftFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
 		});
 
@@ -1724,7 +1727,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// 5. Assert graph changes
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.data().contentDao();
+			ContentDaoWrapper contentDao = tx.contentDao();
 
 			// First check whether the objects we check are the correct ones
 			assertEquals("The original container should be 1.0 (the latest published version)", "1.0", origContainer.getVersion().toString());
@@ -1766,7 +1769,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String projectUuid = tx(() -> project().getUuid());
 		String branchUuid = tx(() -> project().getLatestBranch().getUuid());
 		String schemaContainerVersionUuid = tx(tx -> {
-			ContentDaoWrapper contentDao = tx.data().contentDao();
+			ContentDaoWrapper contentDao = tx.contentDao();
 			return contentDao.getLatestDraftFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
 		});
 		String schemaUuid = tx(() -> schemaContainer("folder").getUuid());
@@ -1804,7 +1807,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
 		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), node, UPDATE_PERM);
 			tx.success();
 		}
@@ -1901,7 +1904,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testUpdateNodeWithExtraField2() throws GenericRestException, Exception {
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.data().contentDao();
+			ContentDaoWrapper contentDao = tx.contentDao();
 			HibNode node = folder("2015");
 			String uuid = node.getUuid();
 
@@ -1946,7 +1949,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		waitForSearchIdleEvent();
 
 		try (Tx tx = tx()) {
-			assertElement(project().getNodeRoot(), uuid, false);
+			assertElement(toGraph(project()).getNodeRoot(), uuid, false);
 			// Delete Events after node delete. We expect 4 since both languages have draft and publish version.
 			int deletes = 4;
 			assertThat(trackingSearchProvider()).hasEvents(0, 0, deletes, 0, 0);
@@ -2095,7 +2098,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 		String uuid;
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			HibNode node = folder("2015");
 			uuid = node.getUuid();
 			roleDao.revokePermissions(role(), node, DELETE_PERM);

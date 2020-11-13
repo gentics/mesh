@@ -20,7 +20,7 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
-import com.gentics.mesh.core.migration.impl.MicronodeMigrationImpl;
+import com.gentics.mesh.core.migration.MicronodeMigration;
 import com.gentics.mesh.core.migration.impl.MigrationStatusHandlerImpl;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.migration.MicroschemaMigrationMeshEventModel;
@@ -121,7 +121,7 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 	protected Completable processTask() {
 		return Completable.defer(() -> {
 			MicronodeMigrationContext context = prepareContext();
-			MicronodeMigrationImpl handler = mesh().micronodeMigrationHandler();
+			MicronodeMigration handler = mesh().micronodeMigrationHandler();
 			return handler.migrateMicronodes(context)
 				.doOnComplete(() -> {
 					db().tx(() -> {

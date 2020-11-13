@@ -17,7 +17,7 @@ import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.auth.MeshAuthChain;
+import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -26,14 +26,14 @@ import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
 public class RoleEndpoint extends AbstractInternalEndpoint {
 
-	private RoleCrudHandler crudHandler;
+	private RoleCrudHandlerImpl crudHandler;
 
 	public RoleEndpoint() {
 		super("roles", null);
 	}
 
 	@Inject
-	public RoleEndpoint(MeshAuthChain chain, RoleCrudHandler crudHandler) {
+	public RoleEndpoint(MeshAuthChainImpl chain, RoleCrudHandlerImpl crudHandler) {
 		super("roles", chain);
 		this.crudHandler = crudHandler;
 	}

@@ -94,12 +94,12 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName("test12345");
 		String groupRootUuid = db().tx(tx -> {
-			return boot().groupRoot().getUuid();
+			return tx.data().permissionRoots().group().getUuid();
 		});
 
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
-			roleDao.revokePermissions(role(), boot().groupRoot(), CREATE_PERM);
+			RoleDaoWrapper roleDao = tx.roleDao();
+			roleDao.revokePermissions(role(), tx.data().permissionRoots().group(), CREATE_PERM);
 			tx.success();
 		}
 
@@ -123,7 +123,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 		try (Tx tx = tx()) {
 			assertThat(restGroup).matches(request);
-			HibGroup reloadedGroup = tx.data().groupDao().findByUuid(uuid);
+			HibGroup reloadedGroup = tx.groupDao().findByUuid(uuid);
 			assertEquals("The group should have been updated", name, reloadedGroup.getName());
 		}
 	}
@@ -142,7 +142,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 	@Test
 	public void testBatchCreation() {
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			GroupRoot root = meshRoot().getGroupRoot();
 			roleDao.grantPermissions(role(), root, CREATE_PERM);
 			tx.success();
@@ -166,7 +166,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		request.setName(name);
 
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			roleDao.grantPermissions(role(), meshRoot().getGroupRoot(), CREATE_PERM);
 			tx.success();
 		}
@@ -192,7 +192,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 			GroupResponse restGroup = call(() -> client().createGroup(request));
 			assertThat(restGroup).matches(request);
 
-			HibGroup foundGroup = tx.data().groupDao().findByUuid(restGroup.getUuid());
+			HibGroup foundGroup = tx.groupDao().findByUuid(restGroup.getUuid());
 			assertNotNull("Group should have been created.", foundGroup);
 
 			call(() -> client().findGroupByUuid(restGroup.getUuid()));
@@ -205,7 +205,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 	@Test
 	public void testCreateGroupWithMissingName() throws Exception {
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			roleDao.grantPermissions(role(), group(), CREATE_PERM);
 			tx.success();
 		}
@@ -221,8 +221,8 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		request.setName(name);
 
 		tx(tx -> {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
-			UserDaoWrapper userDao = tx.data().userDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
+			UserDaoWrapper userDao = tx.userDao();
 			GroupRoot root = meshRoot().getGroupRoot();
 
 			roleDao.revokePermissions(role(), root, CREATE_PERM);
@@ -241,8 +241,8 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		final int nGroups = 21;
 
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
-			GroupDaoWrapper groupDao = tx.data().groupDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
+			GroupDaoWrapper groupDao = tx.groupDao();
 			// Create and save some groups
 			groupDao.create(extraGroupName, user());
 			for (int i = 0; i < nGroups; i++) {
@@ -327,7 +327,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			HibGroup group = group();
 			roleDao.revokePermissions(role(), group, READ_PERM);
 			assertNotNull("The UUID of the group must not be null.", group.getUuid());
@@ -366,7 +366,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 		try (Tx tx = tx()) {
 			assertThat(restGroup).matches(request);
-			HibGroup reloadedGroup = tx.data().groupDao().findByUuid(groupUuid);
+			HibGroup reloadedGroup = tx.groupDao().findByUuid(groupUuid);
 			assertEquals("The group should have been updated", name, reloadedGroup.getName());
 		}
 	}
@@ -375,7 +375,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), group(), UPDATE_PERM);
 			tx.success();
 		}
@@ -393,7 +393,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 		String oldName;
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			HibGroup group = group();
 			oldName = group.getName();
 			roleDao.grantPermissions(role(), group, UPDATE_PERM);
@@ -403,7 +403,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		call(() -> client().updateGroup(groupUuid(), request), BAD_REQUEST, "error_name_must_be_set");
 
 		try (Tx tx = tx()) {
-			HibGroup reloadedGroup = tx.data().groupDao().findByUuid(groupUuid());
+			HibGroup reloadedGroup = tx.groupDao().findByUuid(groupUuid());
 			assertEquals("The group should not have been updated", oldName, reloadedGroup.getName());
 		}
 	}
@@ -419,7 +419,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		awaitEvents();
 
 		try (Tx tx = tx()) {
-			HibGroup reloadedGroup = tx.data().groupDao().findByUuid(groupUuid());
+			HibGroup reloadedGroup = tx.groupDao().findByUuid(groupUuid());
 			assertEquals("The group should be the same", name, reloadedGroup.getName());
 		}
 	}
@@ -431,8 +431,8 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		request.setName(alreadyUsedName);
 
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
-			GroupDaoWrapper groupDao = tx.data().groupDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
+			GroupDaoWrapper groupDao = tx.groupDao();
 
 			// Create a group which occupies the name
 			assertNotNull(groupDao.create(alreadyUsedName, user()));
@@ -443,7 +443,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		call(() -> client().updateGroup(groupUuid(), request), CONFLICT, "group_conflicting_name", alreadyUsedName);
 
 		try (Tx tx = tx()) {
-			GroupDaoWrapper groupDao = tx.data().groupDao();
+			GroupDaoWrapper groupDao = tx.groupDao();
 			HibGroup reloadedGroup = groupDao.findByUuid(group().getUuid());
 			assertEquals("The group should not have been updated", group().getName(), reloadedGroup.getName());
 		}
@@ -527,7 +527,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 		// Don't allow delete
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), group(), DELETE_PERM);
 			tx.success();
 		}

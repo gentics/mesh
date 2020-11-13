@@ -16,14 +16,15 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.webroot.PathPrefixUtil;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.path.Path;
-import com.gentics.mesh.path.PathSegment;
+import com.gentics.mesh.path.impl.PathImpl;
+import com.gentics.mesh.path.impl.PathSegmentImpl;
 import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.URIUtils;
 
@@ -47,10 +48,11 @@ public class WebRootServiceImpl implements WebRootService {
 
 	@Override
 	public Path findByProjectPath(InternalActionContext ac, String path, ContainerType type) {
-		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
-		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
-		HibProject project = ac.getProject();
-		HibBranch branch = ac.getBranch();
+		Tx tx = Tx.get();
+		NodeDaoWrapper nodeDao = tx.nodeDao();
+		ContentDaoWrapper contentDao = tx.contentDao();
+		HibProject project = tx.getProject(ac);
+		HibBranch branch = tx.getBranch(ac);
 
 		Path cachedPath = pathStore.getPath(project, branch, type, path);
 		if (cachedPath != null) {
@@ -61,7 +63,7 @@ public class WebRootServiceImpl implements WebRootService {
 
 		// Check whether the path contains the branch path prefix. Return an empty node path in those cases. (e.g. Node was not found)
 		if (!PathPrefixUtil.startsWithPrefix(branch, path)) {
-			Path nodePath = new Path();
+			Path nodePath = new PathImpl();
 			nodePath.setTargetPath(path);
 			nodePath.setInitialStack(new Stack<>());
 			nodePath.setPrefixMismatch(true);
@@ -78,8 +80,8 @@ public class WebRootServiceImpl implements WebRootService {
 		}
 
 		// Locating did not yield a result. Lets try the regular segment path info.
-		Path nodePath = new Path();
-		Node baseNode = project.getBaseNode();
+		Path nodePath = new PathImpl();
+		HibNode baseNode = project.getBaseNode();
 		nodePath.setTargetPath(strippedPath);
 		Stack<String> stack = new Stack<>();
 
@@ -88,7 +90,7 @@ public class WebRootServiceImpl implements WebRootService {
 			// TODO Why this container? Any other container would also be fine?
 			Iterator<NodeGraphFieldContainer> it = contentDao.getDraftGraphFieldContainers(baseNode).iterator();
 			NodeGraphFieldContainer container = it.next();
-			nodePath.addSegment(new PathSegment(container, null, null, "/"));
+			nodePath.addSegment(new PathSegmentImpl(container, null, null, "/"));
 			stack.push("/");
 			nodePath.setInitialStack(stack);
 			pathStore.store(project, branch, type, path, nodePath);
@@ -109,7 +111,7 @@ public class WebRootServiceImpl implements WebRootService {
 		}
 
 		// Traverse the graph and buildup the result path while doing so
-		Path resolvedPath = nodeDao.resolvePath(baseNode, ac.getBranch().getUuid(), type, nodePath, stack);
+		Path resolvedPath = nodeDao.resolvePath(baseNode, tx.getBranch(ac).getUuid(), type, nodePath, stack);
 		pathStore.store(project, branch, type, path, nodePath);
 		return resolvedPath;
 	}

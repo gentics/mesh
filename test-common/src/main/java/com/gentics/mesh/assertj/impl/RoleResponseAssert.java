@@ -1,6 +1,5 @@
 package com.gentics.mesh.assertj.impl;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -17,7 +16,7 @@ public class RoleResponseAssert extends AbstractMeshAssert<RoleResponseAssert, R
 	}
 
 	public RoleResponseAssert matches(HibRole role) {
-		assertGenericNode(toGraph(role), actual);
+		assertGenericNode(role, actual);
 		assertEquals(role.getName(), actual.getName());
 		assertNotNull(actual.getGroups());
 		return this;

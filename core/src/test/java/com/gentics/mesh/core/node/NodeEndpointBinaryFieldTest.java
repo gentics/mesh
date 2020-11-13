@@ -71,7 +71,7 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 
 		// Only grant read_published perm
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), node, READ_PERM);
 			roleDao.grantPermissions(role(), node, READ_PUBLISHED_PERM);
 			tx.success();
@@ -99,7 +99,7 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 		// Only grant read_published perm
 		revokeAdmin();
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), node, READ_PERM);
 			roleDao.grantPermissions(role(), node, READ_PUBLISHED_PERM);
 			tx.success();

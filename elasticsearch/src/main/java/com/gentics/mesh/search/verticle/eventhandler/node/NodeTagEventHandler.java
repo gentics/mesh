@@ -47,7 +47,7 @@ public class NodeTagEventHandler implements EventHandler {
 		return Flowable.defer(() -> {
 			NodeTaggedEventModel model = requireType(NodeTaggedEventModel.class, messageEvent.message);
 			return helper.getDb().transactional(tx -> {
-				//ProjectDaoWrapper projectDao = tx.data().projectDao();
+				//ProjectDaoWrapper projectDao = tx.projectDao();
 				return findElementByUuidStream(helper.getBoot().projectRoot(), model.getProject().getUuid())
 					.flatMap(project -> findElementByUuidStream(toGraph(project).getBranchRoot(), model.getBranch().getUuid())
 						.flatMap(branch -> entities.generateNodeRequests(model.getNode().getUuid(), project, branch)))

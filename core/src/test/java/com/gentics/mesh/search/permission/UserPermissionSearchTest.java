@@ -28,8 +28,8 @@ public class UserPermissionSearchTest extends AbstractMeshTest {
 		String username = "testuser42a";
 		UserResponse response = createUser(username);
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
-			UserDaoWrapper userDao = tx.data().userDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
+			UserDaoWrapper userDao = tx.userDao();
 			HibUser user = meshRoot().getUserRoot().findByUuid(response.getUuid());
 			System.out.println("User Uuid:" + response.getUuid());
 			for (HibRole role : userDao.getRoles(user())) {
@@ -49,8 +49,8 @@ public class UserPermissionSearchTest extends AbstractMeshTest {
 
 		// Now add the perm
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
-			UserDaoWrapper userDao = tx.data().userDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
+			UserDaoWrapper userDao = tx.userDao();
 			HibUser user = userDao.findByUuid(response.getUuid());
 			System.out.println("User Uuid:" + response.getUuid());
 			roleDao.grantPermissions(role(), user, InternalPermission.READ_PERM);

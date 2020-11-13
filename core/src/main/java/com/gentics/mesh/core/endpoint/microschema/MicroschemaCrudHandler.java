@@ -21,7 +21,6 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.root.MicroschemaRoot;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparatorImpl;
@@ -73,7 +72,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<HibMicroschema, 
 				if (!UUIDUtil.isUUID(uuid)) {
 					return false;
 				}
-				MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
+				MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
 				HibMicroschema microschema = microschemaDao.findByUuid(uuid);
 				return microschema == null;
 			});
@@ -86,7 +85,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<HibMicroschema, 
 			}
 
 			utils.syncTx(ac, tx -> {
-				MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
+				MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
 				HibMicroschema microschema = microschemaDao.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 				MicroschemaModel requestModel = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModelImpl.class);
 				requestModel.validate();
@@ -144,7 +143,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<HibMicroschema, 
 	 */
 	public void handleDiff(InternalActionContext ac, String uuid) {
 		utils.syncTx(ac, tx -> {
-			MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
+			MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
 
 			HibMicroschema microschema = microschemaDao.loadObjectByUuid(ac, uuid, READ_PERM);
 			MicroschemaModel requestModel = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModelImpl.class);
@@ -164,8 +163,8 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<HibMicroschema, 
 	public void handleApplySchemaChanges(InternalActionContext ac, String schemaUuid) {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
-				HibMicroschema schema = tx.data().microschemaDao().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
+				MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
+				HibMicroschema schema = tx.microschemaDao().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
 				utils.eventAction(batch -> {
 					microschemaDao.applyChanges(schema.getLatestVersion(), ac, batch);
 				});
@@ -204,22 +203,21 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<HibMicroschema, 
 		validateParameter(microschemaUuid, "microschemaUuid");
 
 		utils.syncTx(ac, tx -> {
-			HibProject project = ac.getProject();
-			UserDaoWrapper userDao = tx.data().userDao();
-			MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
-			
+			HibProject project = tx.getProject(ac);
+			UserDaoWrapper userDao = tx.userDao();
+			MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
+
 			if (!userDao.hasPermission(ac.getUser(), project, UPDATE_PERM)) {
 				String projectUuid = project.getUuid();
 				throw error(FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
 			}
-			HibMicroschema microschema = tx.data().microschemaDao().loadObjectByUuid(ac, microschemaUuid, READ_PERM);
-			MicroschemaRoot root = project.getMicroschemaContainerRoot();
+			HibMicroschema microschema = tx.microschemaDao().loadObjectByUuid(ac, microschemaUuid, READ_PERM);
 
 			// Only assign if the microschema has not already been assigned.
-			if (!root.contains(microschema)) {
+			if (!microschemaDao.contains(project, microschema)) {
 				// Assign the microschema to the project
 				utils.eventAction(batch -> {
-					root.addMicroschema(ac.getUser(), microschema, batch);
+					microschemaDao.addMicroschema(project, ac.getUser(), microschema, batch);
 				});
 			}
 			return microschemaDao.transformToRestSync(microschema, ac, 0);
@@ -230,15 +228,15 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<HibMicroschema, 
 		validateParameter(microschemaUuid, "microschemaUuid");
 
 		utils.syncTx(ac, tx -> {
-			MicroschemaDaoWrapper microschemaDao = tx.data().microschemaDao();
+			MicroschemaDaoWrapper microschemaDao = tx.microschemaDao();
+			UserDaoWrapper userDao = tx.userDao();
 
-			HibProject project = ac.getProject();
+			HibProject project = tx.getProject(ac);
 			String projectUuid = project.getUuid();
-			UserDaoWrapper userDao = tx.data().userDao();
 			if (!userDao.hasPermission(ac.getUser(), project, UPDATE_PERM)) {
 				throw error(FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
 			}
-			HibMicroschema microschema = tx.data().microschemaDao().loadObjectByUuid(ac, microschemaUuid, READ_PERM);
+			HibMicroschema microschema = tx.microschemaDao().loadObjectByUuid(ac, microschemaUuid, READ_PERM);
 			if (microschemaDao.isLinkedToProject(microschema, project)) {
 				utils.eventAction(batch -> {
 					// Remove the microschema from the project

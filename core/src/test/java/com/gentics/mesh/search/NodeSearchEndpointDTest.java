@@ -156,8 +156,8 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 	public void testSearchManyNodesWithMicronodes() throws Exception {
 		long numAdditionalNodes = 99;
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			String branchUuid = project().getLatestBranch().getUuid();
 			addMicronodeField();
 			HibUser user = user();
@@ -199,7 +199,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 		recreateIndices();
 
 		try (Tx tx = tx()) {
-			TagDaoWrapper tagDao = tx.data().tagDao();
+			TagDaoWrapper tagDao = tx.tagDao();
 
 			HibNode node = content("concorde");
 			long previousTagCount = tagDao.getTags(node, project().getLatestBranch()).count();

@@ -78,15 +78,15 @@ public class PermissionChangedEventHandler implements EventHandler {
 	private Flowable<UpdateDocumentRequest> handleNodePermissionsChange(PermissionChangedProjectElementEventModel model) {
 		NodeContainerTransformer tf = (NodeContainerTransformer) meshEntities.nodeContent.getTransformer();
 		return meshHelper.getDb().tx(tx -> {
-			ProjectDaoWrapper projectDao = tx.data().projectDao();
-			BranchDaoWrapper branchDao =  tx.data().branchDao();
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			ProjectDaoWrapper projectDao = tx.projectDao();
+			BranchDaoWrapper branchDao =  tx.branchDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 
 			return ofNullable(projectDao.findByUuid(model.getProject().getUuid()))
 				.flatMap(project -> ofNullable(nodeDao.findByUuid(project, model.getUuid()))
 					.flatMap(node -> branchDao.findAll(project).stream().map(HibBaseElement::getUuid)
 						.flatMap(branchUuid -> Util.latestVersionTypes()
-							.flatMap(type -> tx.data().contentDao().getGraphFieldContainers(node, branchUuid, type).stream()
+							.flatMap(type -> tx.contentDao().getGraphFieldContainers(node, branchUuid, type).stream()
 								.map(container -> meshHelper.updateDocumentRequest(
 									ContentDaoWrapper.composeIndexName(
 										model.getProject().getUuid(),

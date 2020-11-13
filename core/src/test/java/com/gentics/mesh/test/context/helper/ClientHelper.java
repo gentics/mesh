@@ -112,7 +112,7 @@ public interface ClientHelper extends EventHelper {
 
 		// return new branch
 		return tx(tx -> {
-			return tx.data().branchDao().findByUuid(project(), uuid.toString());
+			return tx.branchDao().findByUuid(project(), uuid.toString());
 		});
 	}
 

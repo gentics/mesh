@@ -155,7 +155,7 @@ public class NodeEndpointETagTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 			String actualEtag = callETag(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid()));
 			String etag = nodeDao.getETag(node, mockActionContext());
 			assertEquals(etag, actualEtag);

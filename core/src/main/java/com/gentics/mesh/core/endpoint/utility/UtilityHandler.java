@@ -11,7 +11,7 @@ import javax.inject.Inject;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.i18n.I18NUtil;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
-import com.gentics.mesh.core.link.WebRootLinkReplacer;
+import com.gentics.mesh.core.link.WebRootLinkReplacerImpl;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.AbstractRestException;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
@@ -42,14 +42,14 @@ public class UtilityHandler extends AbstractHandler {
 
 	private final Database db;
 
-	private final WebRootLinkReplacer linkReplacer;
+	private final WebRootLinkReplacerImpl linkReplacer;
 
 	private final NodeIndexHandlerImpl nodeIndexHandler;
 
 	private final HandlerUtilities utils;
 
 	@Inject
-	public UtilityHandler(MeshOptions options, Database db, WebRootLinkReplacer linkReplacer, NodeIndexHandlerImpl nodeIndexHandler,
+	public UtilityHandler(MeshOptions options, Database db, WebRootLinkReplacerImpl linkReplacer, NodeIndexHandlerImpl nodeIndexHandler,
 		HandlerUtilities utils) {
 		this.options = options;
 		this.db = db;

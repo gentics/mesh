@@ -12,6 +12,7 @@ import com.gentics.mesh.core.action.SchemaDAOActions;
 import com.gentics.mesh.core.action.TagDAOActions;
 import com.gentics.mesh.core.action.TagFamilyDAOActions;
 import com.gentics.mesh.core.action.UserDAOActions;
+import com.gentics.mesh.core.context.ContextDataRegistry;
 
 @Singleton
 public class OrientDBDaoCollection implements DaoCollection {
@@ -84,7 +85,9 @@ public class OrientDBDaoCollection implements DaoCollection {
 
 		LanguageDaoWrapper languageDao,
 		BinaryDaoWrapper binaryDao,
-		JobDaoWrapper jobDao) {
+		JobDaoWrapper jobDao,
+
+		ContextDataRegistry contextDataRegistry) {
 		this.userDao = userDao;
 		this.userActions = userActions;
 
@@ -234,4 +237,5 @@ public class OrientDBDaoCollection implements DaoCollection {
 	public ContentDaoWrapper contentDao() {
 		return contentDao;
 	}
+
 }

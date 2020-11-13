@@ -64,6 +64,8 @@ import com.gentics.mesh.handler.Versioned;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
+import com.gentics.mesh.path.impl.PathImpl;
+import com.gentics.mesh.path.impl.PathSegmentImpl;
 import com.gentics.mesh.search.index.node.NodeSearchHandler;
 
 import graphql.GraphQLException;
@@ -117,15 +119,16 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	 * @return
 	 */
 	public Object parentNodeFetcher(DataFetchingEnvironment env) {
-		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
-		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+		Tx tx = Tx.get();
+		NodeDaoWrapper nodeDao = tx.nodeDao();
+		ContentDaoWrapper contentDao = tx.contentDao();
 
 		NodeContent content = env.getSource();
 		if (content == null) {
 			return null;
 		}
 		GraphQLContext gc = env.getContext();
-		String uuid = gc.getBranch().getUuid();
+		String uuid = tx.getBranch(gc).getUuid();
 		HibNode parentNode = nodeDao.getParentNode(content.getNode(), uuid);
 		// The project root node can have no parent. Lets check this and exit early.
 		if (parentNode == null) {
@@ -143,7 +146,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	}
 
 	public Object nodeLanguageFetcher(DataFetchingEnvironment env) {
-		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+		ContentDaoWrapper contentDao = Tx.get().contentDao();
 		NodeContent content = env.getSource();
 		if (content == null) {
 			return null;
@@ -159,8 +162,8 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	}
 
 	public Object breadcrumbFetcher(DataFetchingEnvironment env) {
-		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
-		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+		ContentDaoWrapper contentDao = Tx.get().contentDao();
+		NodeDaoWrapper nodeDao = Tx.get().nodeDao();
 		GraphQLContext gc = env.getContext();
 		NodeContent content = env.getSource();
 		if (content == null) {
@@ -183,9 +186,10 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		if (content == null) {
 			return null;
 		}
-		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+		Tx tx = Tx.get();
+		ContentDaoWrapper contentDao = tx.contentDao();
 		GraphQLContext gc = env.getContext();
-		HibBranch branch = gc.getBranch();
+		HibBranch branch = tx.getBranch(gc);
 
 		ContainerType type = getNodeVersion(env);
 		Stream<? extends NodeGraphFieldContainer> stream = StreamSupport
@@ -250,7 +254,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			// .availableLanguages
 			newFieldDefinition().name("availableLanguages").description("List all available languages for the node").type(new GraphQLList(
 				GraphQLString)).dataFetcher(env -> {
-					NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+					NodeDaoWrapper nodeDao = Tx.get().nodeDao();
 					NodeContent content = env.getSource();
 					if (content == null) {
 						return null;
@@ -276,6 +280,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				.argument(createNodeVersionArg())
 				.type(new GraphQLTypeReference(NODE_TYPE_NAME))
 				.dataFetcher(env -> {
+					Tx tx = Tx.get();
 					String nodePath = env.getArgument("path");
 					if (nodePath != null) {
 						GraphQLContext gc = env.getContext();
@@ -286,14 +291,14 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 						}
 						HibNode node = content.getNode();
 						// Resolve the given path and return the found container
-						HibBranch branch = gc.getBranch();
+						HibBranch branch = tx.getBranch(gc);
 						String branchUuid = branch.getUuid();
 						ContainerType type = getNodeVersion(env);
 						Stack<String> pathStack = new Stack<>();
 						pathStack.add(nodePath);
-						Path path = new Path();
+						Path path = new PathImpl();
 						try {
-							NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+							NodeDaoWrapper nodeDao = Tx.get().nodeDao();
 							nodeDao.resolvePath(node, branchUuid, type, path, pathStack);
 						} catch (GenericRestException e) {
 							// Check whether the path could not be resolved
@@ -309,7 +314,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 						}
 						// Otherwise return the last segment.
 						PathSegment lastSegment = path.getSegments().get(path.getSegments().size() - 1);
-						NodeGraphFieldContainer containerFromPath = lastSegment.getContainer();
+						NodeGraphFieldContainer containerFromPath = ((PathSegmentImpl)lastSegment).getContainer();
 						HibNode nodeFromPath = null;
 						if (containerFromPath != null) {
 							nodeFromPath = boot.contentDao().getNode(containerFromPath);
@@ -329,8 +334,8 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 			// .children
 			newPagingFieldWithFetcherBuilder("children", "Load child nodes of the node.", (env) -> {
-				ContentDaoWrapper contentDao = Tx.get().data().contentDao();
-				NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+				ContentDaoWrapper contentDao = Tx.get().contentDao();
+				NodeDaoWrapper nodeDao = Tx.get().nodeDao();
 				GraphQLContext gc = env.getContext();
 				NodeContent content = env.getSource();
 				if (content == null) {
@@ -361,18 +366,20 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				.dataFetcher(this::parentNodeFetcher).build(),
 
 			// .tags
-			newFieldDefinition().name("tags").argument(createPagingArgs()).type(new GraphQLTypeReference(TAG_PAGE_TYPE_NAME)).dataFetcher((
-				env) -> {
-				TagDaoWrapper tagDao = Tx.get().data().tagDao();
+			newFieldDefinition().name("tags")
+				.argument(createPagingArgs()).type(new GraphQLTypeReference(TAG_PAGE_TYPE_NAME))
+				.dataFetcher(env -> {
+					Tx tx = Tx.get();
+					TagDaoWrapper tagDao = tx.tagDao();
 
-				GraphQLContext gc = env.getContext();
-				NodeContent content = env.getSource();
-				if (content == null) {
-					return null;
-				}
-				HibNode node = content.getNode();
-				return tagDao.getTags(node, gc.getUser(), getPagingInfo(env), gc.getBranch());
-			}).build(),
+					GraphQLContext gc = env.getContext();
+					NodeContent content = env.getSource();
+					if (content == null) {
+						return null;
+					}
+					HibNode node = content.getNode();
+					return tagDao.getTags(node, gc.getUser(), getPagingInfo(env), tx.getBranch(gc));
+				}).build(),
 
 			// TODO Fix name confusion and check what version of schema should be used to determine this type
 			// .isContainer
@@ -430,7 +437,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					return null;
 				}
 				ContainerType containerType = getNodeVersion(env);
-				String branchUuid = gc.getBranch().getUuid();
+				String branchUuid = Tx.get().getBranch(gc).getUuid();
 				String languageTag = container.getLanguageTag();
 				return boot.nodeDao().getPath(boot.contentDao().getNode(container), gc, branchUuid, containerType, languageTag);
 			}).build(),
@@ -466,6 +473,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			// .isPublished
 			newFieldDefinition().name("isPublished").description("Check whether the content is published.").type(GraphQLBoolean)
 				.dataFetcher(env -> {
+					Tx tx = Tx.get();
 					GraphQLContext gc = env.getContext();
 					NodeContent content = env.getSource();
 					if (content == null) {
@@ -475,19 +483,20 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					if (container == null) {
 						return null;
 					}
-					return container.isPublished(gc.getBranch().getUuid());
+					return container.isPublished(tx.getBranch(gc).getUuid());
 				}).build(),
 
 			// .isDraft
 			newFieldDefinition().name("isDraft").description("Check whether the content is a draft.").type(GraphQLBoolean).dataFetcher(
 				env -> {
+					Tx tx = Tx.get();
 					GraphQLContext gc = env.getContext();
 					NodeContent content = env.getSource();
 					NodeGraphFieldContainer container = content.getContainer();
 					if (container == null) {
 						return null;
 					}
-					return container.isDraft(gc.getBranch().getUuid());
+					return container.isDraft(tx.getBranch(gc).getUuid());
 				}).build(),
 
 			// .version
@@ -504,7 +513,8 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			newFieldDefinition().name("versions").description("List of versions of the node.")
 				.argument(createSingleLanguageTagArg(true))
 				.type(GraphQLList.list(GraphQLTypeReference.typeRef(NODE_CONTENT_VERSION_TYPE_NAME))).dataFetcher(env -> {
-					ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+					Tx tx = Tx.get();
+					ContentDaoWrapper contentDao = tx.contentDao();
 					GraphQLContext gc = env.getContext();
 					String languageTag = getSingleLanguageArgument(env);
 					NodeContent content = env.getSource();
@@ -514,7 +524,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					}
 					// TODO this is hardcoding the draft versions. We maybe want both or check which type of nodecontent is currently loaded.
 					// This would not have been a problem if contents would be reflected as a type in graphql
-					return contentDao.getGraphFieldContainers(node, gc.getBranch(), DRAFT).stream().filter(c -> {
+					return contentDao.getGraphFieldContainers(node, tx.getBranch(gc), DRAFT).stream().filter(c -> {
 						String lang = c.getLanguageTag();
 						return lang.equals(languageTag);
 					}).findFirst().map(NodeGraphFieldContainer::versions).orElse(null);
@@ -577,17 +587,19 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		// .draft
 		builder.field(newFieldDefinition().name("draft").description("Flag that indicates whether the version is used as a draft.")
 			.type(GraphQLBoolean).dataFetcher((env) -> {
+				Tx tx = Tx.get();
 				GraphQLContext gc = env.getContext();
-				String branchUuid = gc.getBranch().getUuid();
+				String branchUuid = tx.getBranch(gc).getUuid();
 				NodeGraphFieldContainer version = env.getSource();
 				return version.isDraft(branchUuid);
 			}));
 
 		// .published
 		builder.field(newFieldDefinition().name("published").description("Flag that indicates whether the version is used as a published version.")
-			.type(GraphQLBoolean).dataFetcher((env) -> {
+			.type(GraphQLBoolean).dataFetcher(env -> {
+				Tx tx = Tx.get();
 				GraphQLContext gc = env.getContext();
-				String branchUuid = gc.getBranch().getUuid();
+				String branchUuid = tx.getBranch(gc).getUuid();
 				NodeGraphFieldContainer version = env.getSource();
 				return version.isPublished(branchUuid);
 			}));
@@ -698,9 +710,12 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	}
 
 	private List<GraphQLObjectType> generateSchemaFieldTypesV1(GraphQLContext context) {
-		HibProject project = context.getProject();
+		Tx tx = Tx.get();
+		SchemaDaoWrapper schemaDao = tx.schemaDao();
+
+		HibProject project = tx.getProject(context);
 		List<GraphQLObjectType> schemaTypes = new ArrayList<>();
-		for (HibSchema container : project.getSchemaContainerRoot().findAll()) {
+		for (HibSchema container : schemaDao.findAll(project)) {
 			HibSchemaVersion version = container.getLatestVersion();
 			SchemaModel schema = version.getSchema();
 			GraphQLObjectType.Builder root = newObject();
@@ -749,9 +764,10 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	}
 
 	private List<GraphQLObjectType> generateSchemaFieldTypesV2(GraphQLContext context) {
-		HibProject project = context.getProject();
+		Tx tx = Tx.get();
+		HibProject project = tx.getProject(context);
 
-		SchemaDaoWrapper schemaDao = Tx.get().data().schemaDao();
+		SchemaDaoWrapper schemaDao = Tx.get().schemaDao();
 		return schemaDao.findAll(project).stream().map(container -> {
 			HibSchemaVersion version = container.getLatestVersion();
 			SchemaModel schema = version.getSchema();

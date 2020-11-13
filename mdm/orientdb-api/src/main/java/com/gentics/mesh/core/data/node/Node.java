@@ -21,13 +21,14 @@ import com.gentics.mesh.core.data.ProjectElement;
 import com.gentics.mesh.core.data.Taggable;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
-import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.search.BucketableElement;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeTaggedEventModel;
@@ -108,7 +109,7 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 * @param branch
 	 * @return Page which contains the result
 	 */
-	TransformablePage<? extends HibTag> getTags(HibUser user, PagingParameters params, HibBranch branch);
+	Page<? extends HibTag> getTags(HibUser user, PagingParameters params, HibBranch branch);
 
 	/**
 	 * Tests if the node is tagged with the given tag.
@@ -330,7 +331,7 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 * @param pagingParameter
 	 * @return
 	 */
-	TransformablePage<Node> getChildren(InternalActionContext ac, List<String> languageTags, String branchUuid, ContainerType type,
+	Page<Node> getChildren(InternalActionContext ac, List<String> languageTags, String branchUuid, ContainerType type,
 		PagingParameters pagingParameter);
 
 	/**
@@ -375,7 +376,7 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 * @return Next matching field container or null when no language matches
 	 */
 	default NodeGraphFieldContainer findVersion(InternalActionContext ac, List<String> languageTags, String version) {
-		return findVersion(languageTags, ac.getBranch().getUuid(), version);
+		return findVersion(languageTags, Tx.get().getBranch(ac).getUuid(), version);
 	}
 
 	/**
@@ -615,7 +616,7 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 *
 	 */
 	// TODO Remove this method
-	TransformablePage<? extends HibTag> updateTags(InternalActionContext ac, EventQueueBatch batch);
+	Page<? extends HibTag> updateTags(InternalActionContext ac, EventQueueBatch batch);
 
 	/**
 	 * Update the tags of the node using the provides list of tag references.

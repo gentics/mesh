@@ -146,9 +146,9 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 	 */
 	private Maybe<BinaryExtractOptions> getExtractOptions(InternalActionContext ac, String nodeUuid, String fieldName) {
 		return db.maybeTx(tx -> {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
-			HibProject project = ac.getProject();
-			HibBranch branch = ac.getBranch();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
+			HibProject project = tx.getProject(ac);
+			HibBranch branch = tx.getBranch(ac);
 			HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, InternalPermission.UPDATE_PERM);
 
 			// Load the current latest draft

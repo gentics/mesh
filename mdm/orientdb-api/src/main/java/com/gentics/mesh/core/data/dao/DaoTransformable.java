@@ -43,4 +43,13 @@ public interface DaoTransformable<T, R extends RestModel> {
 	 */
 	R transformToRestSync(T element, InternalActionContext ac, int level, String... languageTags);
 
+	/**
+	 * Return the etag for the element.
+	 *
+	 * @param element
+	 * @param ac
+	 * @return Generated etag
+	 */
+	String getETag(T element, InternalActionContext ac);
+
 }

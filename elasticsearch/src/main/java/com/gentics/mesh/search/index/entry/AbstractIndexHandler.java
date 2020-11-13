@@ -98,12 +98,8 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 	 */
 	abstract protected Transformer getTransformer();
 
-	/**
-	 * Return the index specific mapping provider.
-	 * 
-	 * @return
-	 */
-	abstract protected MappingProvider getMappingProvider();
+	@Override
+	abstract public MappingProvider getMappingProvider();
 
 	/**
 	 * Compose the index name using the batch entry data.
@@ -121,14 +117,7 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 	 */
 	abstract protected String composeDocumentIdFromEntry(UpdateDocumentEntry entry);
 
-	/**
-	 * Store the given object within the search index.
-	 * 
-	 * @param element
-	 * @param entry
-	 *            search queue entry
-	 * @return
-	 */
+	@Override
 	public Completable store(T element, UpdateDocumentEntry entry) {
 		String indexName = composeIndexNameFromEntry(entry);
 		String documentId = composeDocumentIdFromEntry(entry);
@@ -262,10 +251,11 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 
 	private Map<String, String> loadVersionsFromGraph(Bucket bucket) {
 		return db.tx(tx -> {
-			return loadAllElements(tx)
+			return loadAllElements()
 				.filter(element -> {
 					return bucket.filter().test((HibBucketableElement)element);
-				}).collect(Collectors.toMap(
+				})
+				.collect(Collectors.toMap(
 					HibBaseElement::getUuid,
 					this::generateVersion));
 		});

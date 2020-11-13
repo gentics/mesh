@@ -34,7 +34,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.dao.impl.BinaryDaoWrapperImpl;
-import com.gentics.mesh.core.image.spi.ImageInfo;
+import com.gentics.mesh.core.image.ImageInfo;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.image.CropMode;

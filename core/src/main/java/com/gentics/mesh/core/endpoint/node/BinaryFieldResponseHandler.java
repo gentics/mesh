@@ -9,11 +9,11 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.image.spi.ImageManipulator;
+import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.handler.RangeRequestHandler;
 import com.gentics.mesh.http.MeshHeaders;
@@ -91,10 +91,10 @@ public class BinaryFieldResponseHandler {
 	}
 
 	private void respond(RoutingContext rc, BinaryGraphField binaryField) {
-		BinaryDaoWrapper binaryDao = Tx.get().data().binaryDao();
+		BinaryDaoWrapper binaryDao = Tx.get().binaryDao();
 		HttpServerResponse response = rc.response();
 
-		Binary binary = binaryField.getBinary();
+		HibBinary binary = binaryField.getBinary();
 		String fileName = binaryField.getFileName();
 		String contentType = binaryField.getMimeType();
 		// Try to guess the contenttype via the filename

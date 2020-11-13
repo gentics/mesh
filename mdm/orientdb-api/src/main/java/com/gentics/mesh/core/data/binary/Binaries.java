@@ -16,7 +16,7 @@ public interface Binaries {
 	 * @param hash
 	 * @return
 	 */
-	Transactional<Binary> findByHash(String hash);
+	Transactional<HibBinary> findByHash(String hash);
 
 	/**
 	 * Create a new binary.
@@ -29,9 +29,9 @@ public interface Binaries {
 	 *            Size in bytes
 	 * @return
 	 */
-	Transactional<Binary> create(String uuid, String hash, Long size);
+	Transactional<HibBinary> create(String uuid, String hash, Long size);
 
-	default Transactional<Binary> create(String hash, long size) {
+	default Transactional<HibBinary> create(String hash, long size) {
 		return create(UUIDUtil.randomUUID(), hash, size);
 	}
 

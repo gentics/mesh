@@ -1,6 +1,5 @@
 package com.gentics.mesh.auth.provider;
 
-import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -200,7 +199,7 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 		if (user instanceof MeshAuthUser) {
 			AuthenticationOptions options = meshOptions.getAuthenticationOptions();
 			JsonObject tokenData = new JsonObject();
-			String uuid = db.tx(((MeshAuthUser) user)::getUuid);
+			String uuid = db.tx(((MeshAuthUser) user).getDelegate()::getUuid);
 			tokenData.put(USERID_FIELD_NAME, uuid);
 			JWTOptions jwtOptions = new JWTOptions().setAlgorithm(options.getAlgorithm())
 				.setExpiresInSeconds(options.getTokenExpirationTime());
@@ -243,7 +242,7 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 	private User loadUserByJWT(JsonObject jwt) throws Exception {
 		return db.tx(tx -> {
 			String userUuid = jwt.getString(USERID_FIELD_NAME);
-			MeshAuthUser user = tx.data().userDao().findMeshAuthUserByUuid(userUuid);
+			MeshAuthUser user = tx.userDao().findMeshAuthUserByUuid(userUuid);
 			if (user == null) {
 				if (log.isDebugEnabled()) {
 					log.debug("Could not load user with UUID {" + userUuid + "}.");
@@ -251,8 +250,6 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 				// TODO use NoStackTraceThrowable?
 				throw new Exception("Invalid credentials!");
 			}
-			// Set the uuid to cache it in the element. We know it is valid.
-			toGraph(user).setCachedUuid(userUuid);
 
 			// TODO Re-enable isEnabled cache and check if User#delete behaviour changes
 			//	if (!user.isEnabled()) {
@@ -264,7 +261,7 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 				String apiKeyToken = jwt.getString(API_KEY_TOKEN_CODE_FIELD_NAME);
 				// TODO: All tokens without exp must have a token code - See https://github.com/gentics/mesh/issues/412
 				if (apiKeyToken != null) {
-					String storedApiKey = user.getAPIKeyTokenCode();
+					String storedApiKey = user.getDelegate().getAPIKeyTokenCode();
 					// Verify that the API token is invalid.
 					if (apiKeyToken != null && !apiKeyToken.equals(storedApiKey)) {
 						throw new Exception("API key token is invalid.");

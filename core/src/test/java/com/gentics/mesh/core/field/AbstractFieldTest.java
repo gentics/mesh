@@ -14,10 +14,9 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
-import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -41,11 +40,11 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 
 	abstract protected FS createFieldSchema(boolean isRequired);
 
-	protected Tuple<Node, NodeGraphFieldContainer> createNode(boolean isRequiredField, String segmentField) {
-		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
+	protected Tuple<HibNode, NodeGraphFieldContainer> createNode(boolean isRequiredField, String segmentField) {
+		NodeDaoWrapper nodeDao = Tx.get().nodeDao();
 
 		Schema container = Tx.get().getGraph().addFramedVertex(SchemaContainerImpl.class);
-		SchemaContainerVersionImpl version = Tx.get().getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+		HibSchemaVersion version = createSchemaVersion(Tx.get());
 		version.setSchemaContainer(container);
 		container.setLatestVersion(version);
 		SchemaVersionModel schema = new SchemaModelImpl();
@@ -55,7 +54,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 			schema.setSegmentField(segmentField);
 		}
 		version.setSchema(schema);
-		Node node = project().getNodeRoot().create(user(), version, project());
+		HibNode node = nodeDao.create(project(), user(), version);
 		nodeDao.setParentNode(node, initialBranchUuid(), project().getBaseNode());
 		EventQueueBatch batch = Mockito.mock(EventQueueBatch.class);
 		initialBranch().assignSchemaVersion(user(), version, batch);

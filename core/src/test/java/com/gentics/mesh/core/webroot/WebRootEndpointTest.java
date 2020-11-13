@@ -1,9 +1,9 @@
 package com.gentics.mesh.core.webroot;
 
+import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
-import static com.gentics.mesh.handler.VersionHandler.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.parameter.LinkType.MEDIUM;
 import static com.gentics.mesh.parameter.LinkType.SHORT;
 import static com.gentics.mesh.test.ClientHelper.call;
@@ -51,7 +51,7 @@ import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.path.Path;
-import com.gentics.mesh.path.PathSegment;
+import com.gentics.mesh.path.impl.PathSegmentImpl;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
@@ -68,7 +68,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		String nodeUuid = tx(() -> node.getUuid());
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.data().contentDao();
+			ContentDaoWrapper contentDao = tx.contentDao();
 			// 1. Transform the node into a binary content
 			HibSchema container = schemaContainer("binary_content");
 			node.setSchemaContainer(container);
@@ -119,7 +119,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			NodeGraphFieldContainerImpl bogusContainer = tx.addVertex(NodeGraphFieldContainerImpl.class);
 			StringGraphField bogusField = new StringGraphFieldImpl("name", bogusContainer);
 			Path entry = mesh().pathCache().getPath(project(), initialBranch(), ContainerType.DRAFT, path);
-			entry.addSegment(new PathSegment(bogusContainer, bogusField, "en", "bogus"));
+			entry.addSegment(new PathSegmentImpl(bogusContainer, bogusField, "en", "bogus"));
 			tx.rollback();
 		});
 
@@ -133,7 +133,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		HibNode content = content("news_2015");
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.data().contentDao();
+			ContentDaoWrapper contentDao = tx.contentDao();
 			contentDao.getLatestDraftFieldContainer(content, english()).getHtml("content")
 				.setHtml("<a href=\"{{mesh.link('" + content.getUuid() + "', 'en')}}\">somelink</a>");
 			tx.success();
@@ -169,9 +169,9 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 	public void testReadContentWithNodeRefByPath() throws Exception {
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.data().contentDao();
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			ContentDaoWrapper contentDao = tx.contentDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			HibNode parentNode = folder("2015");
 			// Update content schema and add node field
 			HibSchema folderSchema = schemaContainer("folder");
@@ -338,7 +338,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		String englishPath = "/News/2015";
 		String uuid;
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			HibNode newsFolder = folder("2015");
 			uuid = newsFolder.getUuid();
 			roleDao.revokePermissions(role(), newsFolder, READ_PERM);
@@ -413,7 +413,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		String path = "/News/2015";
 
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			roleDao.grantPermissions(anonymousRole(), folder("2015"), READ_PERM);
 			tx.success();
 		}
@@ -429,7 +429,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		String path = "/News/2015";
 
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			roleDao.grantPermissions(anonymousRole(), folder("2015"), READ_PUBLISHED_PERM);
 			tx.success();
 		}
@@ -458,7 +458,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 		// 2. Publish nodes
 		try (Tx tx = tx()) {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 			BulkActionContext bac = createBulkContext();
 			nodeDao.publish(folder("news"), mockActionContext(), bac);
 			nodeDao.publish(folder("2015"), mockActionContext(), bac);
@@ -483,7 +483,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 		// 2. Remove read perm and grant only publish perm to node
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), folder("2015"), READ_PERM);
 			roleDao.grantPermissions(role(), folder("2015"), READ_PUBLISHED_PERM);
 			tx.success();
@@ -504,7 +504,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 		// 1. Publish nodes
 		tx(tx -> {
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 			BulkActionContext bac = createBulkContext();
 			nodeDao.publish(folder("news"), mockActionContext(), bac);
 			nodeDao.publish(folder("2015"), mockActionContext(), bac);

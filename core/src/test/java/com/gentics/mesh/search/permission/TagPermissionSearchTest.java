@@ -30,9 +30,9 @@ public class TagPermissionSearchTest extends AbstractMeshTest {
 		String tagFamilyUuid = tx(() -> tagFamily("colors").getUuid());
 		TagResponse response = createTag(PROJECT_NAME, tagFamilyUuid, tagname);
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
-			TagDaoWrapper tagDao = tx.data().tagDao();
-			UserDaoWrapper userDao = tx.data().userDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
+			TagDaoWrapper tagDao = tx.tagDao();
+			UserDaoWrapper userDao = tx.userDao();
 
 			HibTag tag = tagDao.findByUuid(tagFamily("colors"), response.getUuid());
 			System.out.println("Tag Uuid:" + response.getUuid());
@@ -51,9 +51,9 @@ public class TagPermissionSearchTest extends AbstractMeshTest {
 
 		// Now add the perm
 		try (Tx tx = tx()) {
-			UserDaoWrapper userDao = tx.data().userDao();
-			RoleDaoWrapper roleDao = tx.data().roleDao();
-			TagDaoWrapper tagDao = tx.data().tagDao();
+			UserDaoWrapper userDao = tx.userDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
+			TagDaoWrapper tagDao = tx.tagDao();
 
 			HibTag tag = tagDao.findByUuid(tagFamily("colors"), response.getUuid());
 			System.out.println("Tag Uuid:" + response.getUuid());

@@ -4,18 +4,19 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.parameter.PagingParameters;
 
 /**
  * @see Page
  * @param <T>
  */
-public class PageImpl<T> implements Iterable<T>, Page<T> {
+public class PageImpl<T> implements Page<T> {
 
-	protected List<? extends T> wrappedList;
-	protected long totalElements;
-	protected long pageNumber;
-	protected long totalPages;
-	protected Long perPage;
+	private List<T> wrappedList;
+	private long totalElements;
+	private long pageNumber;
+	private long totalPages;
+	private Long perPage;
 
 	/**
 	 * Construct a new page
@@ -31,17 +32,37 @@ public class PageImpl<T> implements Iterable<T>, Page<T> {
 	 * @param perPage
 	 *            Number of element per page
 	 */
+	@SuppressWarnings("unchecked")
 	public PageImpl(List<? extends T> wrappedList, long totalElements, long pageNumber, long totalPages, Long perPage) {
-		this.wrappedList = wrappedList;
+		this.wrappedList = (List<T>)wrappedList;
 		this.totalElements = totalElements;
 		this.pageNumber = pageNumber;
 		this.totalPages = totalPages;
 		this.perPage = perPage;
 	}
 
+	public PageImpl(List<? extends T> wrappedList, PagingParameters pagingParameters, long totalElements) {
+		this(wrappedList, totalElements, pagingParameters.getPage(), getTotalPages(pagingParameters, totalElements), pagingParameters.getPerPage());
+	}
+
+	private static long getTotalPages(PagingParameters pagingParameters, long totalElements) {
+		Long perPage = pagingParameters.getPerPage();
+		if (perPage == null) {
+			return 1;
+		} else if (perPage == 0) {
+			return 0;
+		} else {
+			return ceilDiv(totalElements, perPage);
+		}
+	}
+
+	private static long ceilDiv(long x, long y) {
+		return Math.floorDiv(x, y) + (x % y == 0 ? 0 : 1);
+	}
+
 	@Override
 	public Iterator<T> iterator() {
-		return (Iterator<T>) wrappedList.iterator();
+		return wrappedList.iterator();
 	}
 
 	@Override

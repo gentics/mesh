@@ -96,8 +96,8 @@ public class SchemaContainerVersionImpl extends
 
 	@Override
 	public Result<? extends Node> getNodes(String branchUuid, HibUser user, ContainerType type) {
-		UserDaoWrapper userDao = Tx.get().data().userDao();
-		SchemaDaoWrapper schemaDao = Tx.get().data().schemaDao();
+		UserDaoWrapper userDao = Tx.get().userDao();
+		SchemaDaoWrapper schemaDao = Tx.get().schemaDao();
 		return new TraversalResult<>(schemaDao.getNodes(getSchemaContainer()).stream()
 			.filter(node -> GraphFieldContainerEdgeImpl.matchesBranchAndType(node.getId(), branchUuid, type)
 				&& userDao.hasPermissionForId(user, node.getId(), READ_PUBLISHED_PERM)));

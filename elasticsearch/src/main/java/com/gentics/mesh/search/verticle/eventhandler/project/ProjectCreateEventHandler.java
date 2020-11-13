@@ -5,7 +5,7 @@ import com.gentics.mesh.core.data.search.request.CreateIndexRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
-import com.gentics.mesh.search.index.tag.TagIndexHandler;
+import com.gentics.mesh.search.index.tag.TagIndexHandlerImpl;
 import com.gentics.mesh.search.verticle.MessageEvent;
 import com.gentics.mesh.search.verticle.eventhandler.EventHandler;
 import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
@@ -23,10 +23,10 @@ import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
 public class ProjectCreateEventHandler implements EventHandler {
 
 	private final MeshHelper helper;
-	private final TagIndexHandler tagIndexHandler;
+	private final TagIndexHandlerImpl tagIndexHandler;
 
 	@Inject
-	public ProjectCreateEventHandler(MeshHelper helper, TagIndexHandler tagIndexHandler) {
+	public ProjectCreateEventHandler(MeshHelper helper, TagIndexHandlerImpl tagIndexHandler) {
 		this.helper = helper;
 		this.tagIndexHandler = tagIndexHandler;
 	}

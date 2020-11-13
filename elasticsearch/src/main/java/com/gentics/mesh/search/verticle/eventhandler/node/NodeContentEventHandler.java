@@ -139,16 +139,16 @@ public class NodeContentEventHandler implements EventHandler {
 
 	private Transactional<HibSchemaVersion> findLatestSchemaVersion(NodeMeshEventModel message) {
 		return helper.getDb().transactional(tx -> {
-			HibSchema schema = tx.data().schemaDao().findByUuid(message.getSchema().getUuid());
-			HibProject project = tx.data().projectDao().findByUuid(message.getProject().getUuid());
-			return tx.data().branchDao().findByUuid(project, message.getBranchUuid())
+			HibSchema schema = tx.schemaDao().findByUuid(message.getSchema().getUuid());
+			HibProject project = tx.projectDao().findByUuid(message.getProject().getUuid());
+			return tx.branchDao().findByUuid(project, message.getBranchUuid())
 				.findLatestSchemaVersion(schema);
 		});
 	}
 
 	private String getSchemaVersionUuid(SchemaReference reference) {
 		return helper.getDb().tx(tx -> {
-			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			SchemaDaoWrapper schemaDao = tx.schemaDao();
 			HibSchema schema = schemaDao
 				.findByUuid(reference.getUuid());
 			return schemaDao.findVersionByRev(schema, reference.getVersion()).getUuid();

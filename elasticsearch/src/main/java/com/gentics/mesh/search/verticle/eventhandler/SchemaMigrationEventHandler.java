@@ -84,8 +84,8 @@ public class SchemaMigrationEventHandler implements EventHandler {
 
 	public Flowable<SearchRequest> migrationStart(BranchSchemaAssignEventModel model) {
 		Map<String, IndexInfo> map = helper.getDb().transactional(tx -> {
-			HibProject project = tx.data().projectDao().findByUuid(model.getProject().getUuid());
-			HibBranch branch = tx.data().branchDao().findByUuid(project, model.getBranch().getUuid());
+			HibProject project = tx.projectDao().findByUuid(model.getProject().getUuid());
+			HibBranch branch = tx.branchDao().findByUuid(project, model.getBranch().getUuid());
 			HibSchemaVersion schema = getNewSchemaVersion(model).runInExistingTx(tx);
 			return nodeIndexHandler.getIndices(project, branch, schema).runInExistingTx(tx);
 		}).runInNewTx();
@@ -95,7 +95,7 @@ public class SchemaMigrationEventHandler implements EventHandler {
 
 	private Transactional<HibSchemaVersion> getNewSchemaVersion(BranchSchemaAssignEventModel model) {
 		return helper.getDb().transactional(tx -> {
-			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			SchemaDaoWrapper schemaDao = tx.schemaDao();
 			SchemaReference schema = model.getSchema();
 			HibSchema container = schemaDao.findByUuid(schema.getUuid());
 			return schemaDao.findVersionByUuid(container, schema.getVersionUuid());

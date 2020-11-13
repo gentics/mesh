@@ -34,15 +34,13 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
-import com.gentics.mesh.core.data.generic.PermissionProperties;
+import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.group.GroupRoleAssignModel;
 import com.gentics.mesh.core.rest.event.group.GroupUserAssignModel;
@@ -64,7 +62,7 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 	private Lazy<PermissionCache> permissionCache;
 
 	@Inject
-	public GroupDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionProperties> permissions, Lazy<PermissionCache> permissionCache) {
+	public GroupDaoWrapperImpl(Lazy<BootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions, Lazy<PermissionCache> permissionCache) {
 		super(boot, permissions);
 		this.permissionCache = permissionCache;
 	}
@@ -93,8 +91,8 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 
 	@Override
 	public HibGroup create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		MeshAuthUser requestUser = ac.getUser();
-		UserDaoWrapper userDao = Tx.get().data().userDao();
+		HibUser requestUser = ac.getUser();
+		UserDaoWrapper userDao = Tx.get().userDao();
 		GroupCreateRequest requestModel = ac.fromJson(GroupCreateRequest.class);
 		GroupRoot groupRoot = boot.get().groupRoot();
 
@@ -127,8 +125,8 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 		graphGroup.setUniqueLinkInTo(graphUser, HAS_USER);
 
 		// Add shortcut edge from user to roles of this group
-		for (Role role : getRoles(group)) {
-			graphUser.setUniqueLinkOutTo(role, ASSIGNED_TO_ROLE);
+		for (HibRole role : getRoles(group)) {
+			graphUser.setUniqueLinkOutTo(toGraph(role), ASSIGNED_TO_ROLE);
 		}
 	}
 
@@ -152,7 +150,7 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 	}
 
 	@Override
-	public Result<? extends Role> getRoles(HibGroup group) {
+	public Result<? extends HibRole> getRoles(HibGroup group) {
 		Group graphGroup = toGraph(group);
 		GroupRoot groupRoot = boot.get().groupRoot();
 		return groupRoot.getRoles(graphGroup);
@@ -198,14 +196,14 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 	}
 
 	@Override
-	public TransformablePage<? extends HibUser> getVisibleUsers(HibGroup group, MeshAuthUser user, PagingParameters pagingInfo) {
+	public Page<? extends HibUser> getVisibleUsers(HibGroup group, HibUser user, PagingParameters pagingInfo) {
 		GroupRoot groupRoot = boot.get().groupRoot();
 		Group graphGroup = toGraph(group);
 		return groupRoot.getVisibleUsers(graphGroup, user, pagingInfo);
 	}
 
 	@Override
-	public TransformablePage<? extends Role> getRoles(HibGroup group, HibUser user, PagingParameters pagingInfo) {
+	public Page<? extends Role> getRoles(HibGroup group, HibUser user, PagingParameters pagingInfo) {
 		GroupRoot groupRoot = boot.get().groupRoot();
 		Group graphGroup = toGraph(group);
 		return groupRoot.getRoles(graphGroup, user, pagingInfo);
@@ -269,7 +267,7 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 	 * @param restGroup
 	 */
 	private void setRoles(HibGroup group, InternalActionContext ac, GroupResponse restGroup) {
-		for (Role role : getRoles(group)) {
+		for (HibRole role : getRoles(group)) {
 			String name = role.getName();
 			if (name != null) {
 				restGroup.getRoles().add(role.transformToReference());
@@ -353,7 +351,7 @@ public class GroupDaoWrapperImpl extends AbstractDaoWrapper<HibGroup> implements
 	}
 
 	@Override
-	public TransformablePage<? extends HibGroup> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
+	public Page<? extends HibGroup> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 		GroupRoot groupRoot = boot.get().groupRoot();
 		return groupRoot.findAll(ac, pagingInfo);
 	}

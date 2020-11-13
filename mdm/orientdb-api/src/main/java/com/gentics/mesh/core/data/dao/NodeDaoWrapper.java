@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.dao;
 
 import java.util.List;
 import java.util.Stack;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -9,10 +10,11 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
@@ -30,6 +32,8 @@ public interface NodeDaoWrapper extends NodeDao, DaoWrapper<HibNode>, DaoTransfo
 
 	HibNode loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, InternalPermission perm);
 
+	HibNode loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound);
+
 	/**
 	 * Finds a node in a project by its uuid.
 	 * 
@@ -38,6 +42,8 @@ public interface NodeDaoWrapper extends NodeDao, DaoWrapper<HibNode>, DaoTransfo
 	 * @return The found node. Null if the node could not be found in the project.
 	 */
 	HibNode findByUuid(HibProject project, String uuid);
+
+	HibNode findByName(HibProject project, String name);
 
 	/**
 	 * Create a child node in the latest branch of the project.
@@ -107,14 +113,6 @@ public interface NodeDaoWrapper extends NodeDao, DaoWrapper<HibNode>, DaoTransfo
 	HibNode getParentNode(HibNode node, String branchUuid);
 
 	/**
-	 * Set the parent node of this node.
-	 *
-	 * @param branchUuid
-	 * @param parentNode
-	 */
-	void setParentNode(HibNode node, String branchUuid, HibNode parentNode);
-
-	/**
 	 * Return a page with child nodes that are visible to the given user.
 	 *
 	 * @param ac
@@ -127,9 +125,17 @@ public interface NodeDaoWrapper extends NodeDao, DaoWrapper<HibNode>, DaoTransfo
 	 * @param pagingParameter
 	 * @return
 	 */
-	TransformablePage<? extends HibNode> getChildren(HibNode node, InternalActionContext ac, List<String> languageTags, String branchUuid,
+	Page<? extends HibNode> getChildren(HibNode node, InternalActionContext ac, List<String> languageTags, String branchUuid,
 		ContainerType type,
 		PagingParameters pagingParameter);
+
+	/**
+	 * Set the parent node of this node.
+	 *
+	 * @param branchUuid
+	 * @param parentNode
+	 */
+	void setParentNode(HibNode node, String branchUuid, HibNode parentNode);
 
 	/**
 	 * Return a list of language names for draft versions in the latest branch
@@ -302,5 +308,21 @@ public interface NodeDaoWrapper extends NodeDao, DaoWrapper<HibNode>, DaoTransfo
 	String getETag(HibNode node, InternalActionContext ac);
 
 	String getAPIPath(HibNode node, InternalActionContext ac);
+
+	Page<? extends HibTag> updateTags(HibNode node, InternalActionContext ac, EventQueueBatch batch);
+
+	HibNode create(HibProject project, InternalActionContext ac, EventQueueBatch batch, String uuid);
+
+	Result<? extends HibNode> findAll(HibProject project);
+
+	Page<? extends HibNode> findAll(HibProject project, InternalActionContext ac, PagingParameters pagingInfo);
+
+	Page<? extends HibNode> findAll(HibProject project, InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibNode> filter);
+
+	Stream<? extends HibNode> findAllStream(HibProject project, InternalActionContext ac, InternalPermission perm);
+
+	long computeCount(HibProject project);
+
+	HibNode create(HibProject project, HibUser user, HibSchemaVersion version);
 
 }

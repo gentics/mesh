@@ -21,7 +21,7 @@ import io.vertx.ext.web.RoutingContext;
 /**
  * Abstract class for CRUD REST handlers. The abstract class provides handler methods for create, read (one), read (multiple) and delete.
  */
-public abstract class AbstractCrudHandler<T extends HibCoreElement, RM extends RestModel> extends AbstractHandler {
+public abstract class AbstractCrudHandler<T extends HibCoreElement, RM extends RestModel> extends AbstractHandler implements CrudHandler {
 
 	public static final String TAGFAMILY_ELEMENT_CONTEXT_DATA_KEY = "rootElement";
 
@@ -41,56 +41,30 @@ public abstract class AbstractCrudHandler<T extends HibCoreElement, RM extends R
 		return actions;
 	}
 
-	/**
-	 * Handle create requests.
-	 * 
-	 * @param ac
-	 */
+	@Override
 	public void handleCreate(InternalActionContext ac) {
 		utils.createElement(ac, crudActions());
 	}
 
-	/**
-	 * Handle delete requests.
-	 * 
-	 * @param ac
-	 * @param uuid
-	 *            Uuid of the element which should be deleted
-	 */
+	@Override
 	public void handleDelete(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 		utils.deleteElement(ac, crudActions(), uuid);
 	}
 
-	/**
-	 * Handle read requests that target a single object.
-	 * 
-	 * @param ac
-	 * @param uuid
-	 *            Uuid of the element which should be read
-	 */
+	@Override
 	public void handleRead(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 		utils.readElement(ac, uuid, crudActions(), READ_PERM);
 	}
 
-	/**
-	 * Handle update requests.
-	 * 
-	 * @param ac
-	 * @param uuid
-	 *            Uuid of the element which should be updated
-	 */
+	@Override
 	public void handleUpdate(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 		utils.updateElement(ac, uuid, crudActions());
 	}
 
-	/**
-	 * Handle read list requests.
-	 * 
-	 * @param ac
-	 */
+	@Override
 	public void handleReadList(InternalActionContext ac) {
 		utils.readElementList(ac, crudActions());
 	}
@@ -109,7 +83,7 @@ public abstract class AbstractCrudHandler<T extends HibCoreElement, RM extends R
 			// Only try to load the root element when a uuid string was specified
 			if (!isEmpty(uuid)) {
 				boolean result = db.tx(tx -> {
-					//TODO Calling load is not correct. The findByUuid method should be used here instead or the loadObject
+					// TODO Calling load is not correct. The findByUuid method should be used here instead or the loadObject
 					T foundElement = crudActions().loadByUuid(context(tx, ac), uuid, null, false);
 					if (foundElement == null) {
 						throw error(NOT_FOUND, i18nNotFoundMessage, uuid);

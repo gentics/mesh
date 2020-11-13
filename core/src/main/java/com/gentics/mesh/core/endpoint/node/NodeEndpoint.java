@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.endpoint.node;
 
-import com.gentics.mesh.auth.MeshAuthChain;
+import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
@@ -53,7 +53,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 
 	private NodeCrudHandler crudHandler;
 
-	private BinaryUploadHandler binaryUploadHandler;
+	private BinaryUploadHandlerImpl binaryUploadHandler;
 
 	private BinaryTransformHandler binaryTransformHandler;
 
@@ -64,7 +64,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 	}
 
 	@Inject
-	public NodeEndpoint(MeshAuthChain chain, BootstrapInitializer boot, NodeCrudHandler crudHandler, BinaryUploadHandler binaryUploadHandler,
+	public NodeEndpoint(MeshAuthChainImpl chain, BootstrapInitializer boot, NodeCrudHandler crudHandler, BinaryUploadHandlerImpl binaryUploadHandler,
 		BinaryTransformHandler binaryTransformHandler, BinaryDownloadHandler binaryDownloadHandler) {
 		super("nodes", chain, boot);
 		this.crudHandler = crudHandler;

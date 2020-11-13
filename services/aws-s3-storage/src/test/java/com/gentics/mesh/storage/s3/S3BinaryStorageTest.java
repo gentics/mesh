@@ -11,6 +11,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.Wait;
 
 import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 
 import io.reactivex.Flowable;
@@ -51,7 +52,7 @@ public class S3BinaryStorageTest {
 	@Test
 	public void testStore() {
 		BinaryGraphField mockField = Mockito.mock(BinaryGraphField.class);
-		Binary binary = Mockito.mock(Binary.class);
+		HibBinary binary = Mockito.mock(Binary.class);
 		Mockito.when(mockField.getBinary()).thenReturn(binary);
 		Mockito.when(binary.getSHA512Sum()).thenReturn("test");
 //		assertFalse(storage.exists(mockField));

@@ -173,7 +173,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 			boolean bothEmpty = oldValue != null && newValue.getItems().isEmpty() && oldValue.isEmpty();
 			if (!bothEmpty) {
 				try (Tx tx = tx()) {
-					ContentDaoWrapper contentDao = tx.data().contentDao();
+					ContentDaoWrapper contentDao = tx.contentDao();
 					NodeGraphFieldContainer newContainer = contentDao.getNextVersions(container).iterator().next();
 					assertNotNull("No new container version was created. {" + i % 3 + "}", newContainer);
 					assertEquals("Check version number", newContainer.getVersion().toString(), response.getVersion());
@@ -224,7 +224,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 
 		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.data().contentDao();
+			ContentDaoWrapper contentDao = tx.contentDao();
 			HibNode node = folder("2015");
 			NodeGraphFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());

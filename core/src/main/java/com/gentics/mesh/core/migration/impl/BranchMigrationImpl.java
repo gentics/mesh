@@ -23,10 +23,9 @@ import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
-import com.gentics.mesh.core.endpoint.node.BinaryUploadHandler;
+import com.gentics.mesh.core.endpoint.node.BinaryUploadHandlerImpl;
 import com.gentics.mesh.core.migration.AbstractMigrationHandler;
 import com.gentics.mesh.core.migration.BranchMigration;
 import com.gentics.mesh.core.rest.event.node.BranchMigrationCause;
@@ -46,7 +45,7 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 	private static final Logger log = LoggerFactory.getLogger(BranchMigrationImpl.class);
 
 	@Inject
-	public BranchMigrationImpl(Database db, BinaryUploadHandler nodeFieldAPIHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider) {
+	public BranchMigrationImpl(Database db, BinaryUploadHandlerImpl nodeFieldAPIHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider) {
 		super(db, nodeFieldAPIHandler, metrics, batchProvider);
 	}
 
@@ -66,9 +65,9 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 				}
 			});
 
-			List<? extends Node> nodes = db.tx(() -> {
+			List<? extends HibNode> nodes = db.tx(tx -> {
 				HibProject project = oldBranch.getProject();
-				return project.findNodes().list();
+				return tx.nodeDao().findAll(project).list();
 			});
 
 			List<Exception> errorsDetected = new ArrayList<>();
@@ -109,9 +108,9 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 	private void migrateNode(HibNode node, EventQueueBatch batch, HibBranch oldBranch, HibBranch newBranch, List<Exception> errorsDetected) {
 		try {
 			db.tx((tx) -> {
-				NodeDaoWrapper nodeDao = tx.data().nodeDao();
-				TagDaoWrapper tagDao = tx.data().tagDao();
-				ContentDaoWrapper contentDao = tx.data().contentDao();
+				NodeDaoWrapper nodeDao = tx.nodeDao();
+				TagDaoWrapper tagDao = tx.tagDao();
+				ContentDaoWrapper contentDao = tx.contentDao();
 
 				// Check whether the node already has an initial container and thus was already migrated
 				if (contentDao.getGraphFieldContainers(node, newBranch, INITIAL).hasNext()) {

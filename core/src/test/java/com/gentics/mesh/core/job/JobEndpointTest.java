@@ -202,7 +202,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 		// Change the job so that it will no longer fail
 		tx(tx -> {
-			BranchDaoWrapper branchDao = tx.data().branchDao();
+			BranchDaoWrapper branchDao = tx.branchDao();
 			HibBranch branch = branchDao.create(project(), "testBranch", user(), null, true, initialBranch(), createBatch());
 			job.setBranch(branch);
 		});

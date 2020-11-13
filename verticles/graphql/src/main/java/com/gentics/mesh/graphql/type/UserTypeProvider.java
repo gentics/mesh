@@ -96,7 +96,7 @@ public class UserTypeProvider extends AbstractTypeProvider {
 		root.field(newPagingFieldWithFetcher("groups", "Groups to which the user belongs.", (env) -> {
 			HibUser user = env.getSource();
 			GraphQLContext gc = env.getContext();
-			UserDaoWrapper userDao = Tx.get().data().userDao();
+			UserDaoWrapper userDao = Tx.get().userDao();
 
 			return userDao.getGroups(user, gc.getUser(), getPagingInfo(env));
 		}, GROUP_PAGE_TYPE_NAME));
@@ -105,7 +105,7 @@ public class UserTypeProvider extends AbstractTypeProvider {
 		root.field(newPagingFieldWithFetcher("roles", "Roles the user has", env -> {
 			HibUser user = env.getSource();
 			GraphQLContext gc = env.getContext();
-			UserDaoWrapper userDao = Tx.get().data().userDao();
+			UserDaoWrapper userDao = Tx.get().userDao();
 
 			return userDao.getRolesViaShortcut(user, gc.getUser(), getPagingInfo(env));
 		}, ROLE_PAGE_TYPE_NAME));
@@ -122,8 +122,9 @@ public class UserTypeProvider extends AbstractTypeProvider {
 			.description("User node reference")
 			.argument(createNodeVersionArg())
 			.type(new GraphQLTypeReference("Node"))
-			.dataFetcher((env) -> {
-				ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+			.dataFetcher(env -> {
+				Tx tx = Tx.get();
+				ContentDaoWrapper contentDao = tx.contentDao();
 				GraphQLContext gc = env.getContext();
 				HibUser user = env.getSource();
 				HibNode node = (HibNode) user.getReferencedNode();
@@ -131,7 +132,7 @@ public class UserTypeProvider extends AbstractTypeProvider {
 					return null;
 				}
 				// Ensure that the graphql traversal does not leave the scope of the current project.
-				if (!node.getProject().getUuid().equals(gc.getProject().getUuid())) {
+				if (!node.getProject().getUuid().equals(tx.getProject(gc).getUuid())) {
 					// TODO throw error - We can't traverse across projects
 					return null;
 				}

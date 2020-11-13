@@ -28,7 +28,7 @@ public class BootstrapInitializerTest extends AbstractMeshTest {
 	public void testInitLanguages() throws JsonParseException, JsonMappingException, IOException {
 		try (Tx tx = tx()) {
 			boot().initLanguages(meshRoot().getLanguageRoot());
-			HibLanguage language = tx.data().languageDao().findByLanguageTag("de");
+			HibLanguage language = tx.languageDao().findByLanguageTag("de");
 			assertNotNull(language);
 			assertEquals("German", language.getName());
 			assertEquals("Deutsch", language.getNativeName());
@@ -42,7 +42,7 @@ public class BootstrapInitializerTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			boot().initLanguages(meshRoot().getLanguageRoot());
 
-			HibLanguage language = tx.data().languageDao().findByLanguageTag("de");
+			HibLanguage language = tx.languageDao().findByLanguageTag("de");
 			assertThat(language).as("Default language").isNotNull().hasTag("de").hasName("German").hasNativeName("Deutsch");
 			tx.success();
 		}
@@ -53,11 +53,11 @@ public class BootstrapInitializerTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			// check added language
-			HibLanguage language = tx.data().languageDao().findByLanguageTag("sq-KS");
+			HibLanguage language = tx.languageDao().findByLanguageTag("sq-KS");
 			assertThat(language).as("Custom language").isNotNull().hasTag("sq-KS").hasName("Albanian (Kosovo)").hasNativeName("Shqip (Kosovo)");
 
 			// check overwritten language
-			language = tx.data().languageDao().findByLanguageTag("de");
+			language = tx.languageDao().findByLanguageTag("de");
 			assertThat(language).as("Overwritten default language").isNotNull().hasTag("de").hasName("German (modified)").hasNativeName("Deutsch (modifiziert)");
 
 			tx.success();

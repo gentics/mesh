@@ -112,41 +112,41 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 	public String getJson(HibNode node) throws Exception {
 		InternalActionContext ac = mockActionContext("lang=en&version=draft");
 		ac.data().put(SharedKeys.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
-		return Tx.get().data().nodeDao().transformToRestSync(node, ac, 0).toJson();
+		return Tx.get().nodeDao().transformToRestSync(node, ac, 0).toJson();
 	}
 
 	protected void testPermission(InternalPermission perm, HibBaseElement element) {
 		RoutingContext rc = tx(() -> mockRoutingContext());
 
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 
 			roleDao.grantPermissions(role(), element, perm);
 			tx.success();
 		}
 
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			assertTrue("The role {" + role().getName() + "} does not grant permission on element {" + element.getUuid()
 				+ "} although we granted those permissions.", roleDao.hasPermission(role(), perm, element));
 			assertTrue("The user has no {" + perm.getRestPerm().getName() + "} permission on node {" + element.getUuid() + "/" + element.getClass()
-				.getSimpleName() + "}", tx.data().userDao().hasPermission(getRequestUser(), element, perm));
+				.getSimpleName() + "}", tx.userDao().hasPermission(getRequestUser(), element, perm));
 		}
 
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), element, perm);
 			rc.data().clear();
 			tx.success();
 		}
 
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
 			boolean hasPerm = roleDao.hasPermission(role(), perm, element);
 			assertFalse("The user's role {" + role().getName() + "} still got {" + perm.getRestPerm().getName() + "} permission on node {" + element
 				.getUuid() + "/" + element.getClass().getSimpleName() + "} although we revoked it.", hasPerm);
 
-			hasPerm = tx.data().userDao().hasPermission(getRequestUser(), element, perm);
+			hasPerm = tx.userDao().hasPermission(getRequestUser(), element, perm);
 			assertFalse("The user {" + getRequestUser().getUsername() + "} still got {" + perm.getRestPerm().getName() + "} permission on node {"
 				+ element.getUuid() + "/" + element.getClass().getSimpleName() + "} although we revoked it.", hasPerm);
 		}

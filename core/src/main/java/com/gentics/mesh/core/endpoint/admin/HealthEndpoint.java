@@ -4,7 +4,7 @@ import static io.vertx.core.http.HttpMethod.GET;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.auth.MeshAuthChain;
+import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.core.endpoint.handler.MonitoringCrudHandler;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
@@ -13,7 +13,7 @@ public class HealthEndpoint extends AbstractInternalEndpoint {
 	private MonitoringCrudHandler monitoringCrudHandler;
 
 	@Inject
-	public HealthEndpoint(MeshAuthChain chain, MonitoringCrudHandler monitoringCrudHandler) {
+	public HealthEndpoint(MeshAuthChainImpl chain, MonitoringCrudHandler monitoringCrudHandler) {
 		super("health", chain);
 		this.monitoringCrudHandler = monitoringCrudHandler;
 	}

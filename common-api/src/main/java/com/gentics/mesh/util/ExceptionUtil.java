@@ -23,4 +23,19 @@ public final class ExceptionUtil {
 			throw new RuntimeException(e);
 		}
 	}
+
+	/**
+	 * Throws the passed throwable.
+	 * If the throwable is not a {@link RuntimeException}, it will be wrapped in one and then thrown.
+	 *
+	 * @param throwable
+	 * @return
+	 */
+	public static RuntimeException rethrow(Throwable throwable) {
+		if (throwable instanceof RuntimeException) {
+			throw ((RuntimeException) throwable);
+		} else {
+			throw new RuntimeException(throwable);
+		}
+	}
 }

@@ -66,7 +66,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 		HibSchemaVersion version = tx(() -> schemaContainer("content").getLatestVersion());
 
 		long before = tx(tx -> {
-			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			SchemaDaoWrapper schemaDao = tx.schemaDao();
 			content.setBucketId(Integer.MAX_VALUE);
 			// Count contents in bucket 0 to MaxInt/2
 			return schemaDao.getFieldContainers(version, initialBranchUuid(), bucket).count();
@@ -78,7 +78,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 		});
 
 		tx(tx -> {
-			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			SchemaDaoWrapper schemaDao = tx.schemaDao();
 			// Now set the bucketId so that the content is within the bounds of the bucket / range query
 			long after = schemaDao.getFieldContainers(version, initialBranchUuid(), bucket).count();
 			assertEquals("We should find one more content.", before + 1, after);
@@ -90,7 +90,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 		});
 
 		tx(tx -> {
-			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			SchemaDaoWrapper schemaDao = tx.schemaDao();
 			// Now set the bucketId so that the content is within the bounds of the bucket / range query
 			long after = schemaDao.getFieldContainers(version, initialBranchUuid(), bucket).count();
 			assertEquals("We should still find the altered element ", before + 1, after);
@@ -102,7 +102,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 		});
 
 		tx(tx -> {
-			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			SchemaDaoWrapper schemaDao = tx.schemaDao();
 			// Now set the bucketId so that the content is within the bounds of the bucket / range query
 			long after = schemaDao.getFieldContainers(version, initialBranchUuid(), bucket).count();
 			assertEquals("We should still find the altered element ", before, after);
@@ -113,7 +113,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Test
 	public void testGetRoot() {
 		try (Tx tx = tx()) {
-			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			SchemaDaoWrapper schemaDao = tx.schemaDao();
 			HibSchema schemaContainer = schemaDao.findByName("content");
 			RootVertex<? extends HibSchema> root = toGraph(schemaContainer).getRoot();
 			assertNotNull(root);
@@ -124,7 +124,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Override
 	public void testFindByName() throws IOException {
 		try (Tx tx = tx()) {
-			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			SchemaDaoWrapper schemaDao = tx.schemaDao();
 			HibSchema schemaContainer = schemaDao.findByName("content");
 			assertNotNull(schemaContainer);
 			assertEquals("content", schemaContainer.getLatestVersion().getSchema().getName());
@@ -136,7 +136,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Override
 	public void testRootNode() throws MeshSchemaException {
 		try (Tx tx = tx()) {
-			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			SchemaDaoWrapper schemaDao = tx.schemaDao();
 
 			long nSchemasBefore = schemaDao.globalCount();
 			SchemaVersionModel schema = FieldUtil.createMinimalValidSchema();
@@ -196,7 +196,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Override
 	public void testDelete() throws Exception {
 		try (Tx tx = tx()) {
-			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			SchemaDaoWrapper schemaDao = tx.schemaDao();
 			BulkActionContext context = createBulkContext();
 			String uuid = getSchemaContainer().getUuid();
 			for (Node node : schemaDao.getNodes(getSchemaContainer())) {
@@ -225,7 +225,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Override
 	public void testCreateDelete() throws Exception {
 		try (Tx tx = tx()) {
-			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			SchemaDaoWrapper schemaDao = tx.schemaDao();
 
 			SchemaVersionModel schema = FieldUtil.createMinimalValidSchema();
 			HibSchema newContainer = schemaDao.create(schema, user());
@@ -240,9 +240,9 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Override
 	public void testCRUDPermissions() throws MeshSchemaException {
 		try (Tx tx = tx()) {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
-			UserDaoWrapper userDao = tx.data().userDao();
-			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
+			UserDaoWrapper userDao = tx.userDao();
+			SchemaDaoWrapper schemaDao = tx.schemaDao();
 
 			SchemaVersionModel schema = FieldUtil.createMinimalValidSchema();
 			HibSchema newContainer = schemaDao.create(schema, user());
@@ -276,7 +276,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Override
 	public void testUpdate() throws IOException {
 		try (Tx tx = tx()) {
-			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			SchemaDaoWrapper schemaDao = tx.schemaDao();
 			HibSchema schemaContainer = schemaDao.findByName("content");
 			HibSchemaVersion currentVersion = schemaContainer.getLatestVersion();
 			SchemaVersionModel schema = currentVersion.getSchema();
@@ -308,7 +308,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Override
 	public void testReadPermission() throws MeshSchemaException {
 		try (Tx tx = tx()) {
-			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			SchemaDaoWrapper schemaDao = tx.schemaDao();
 			SchemaVersionModel schema = FieldUtil.createMinimalValidSchema();
 			HibSchema newContainer = schemaDao.create(schema, user());
 			testPermission(InternalPermission.READ_PERM, newContainer);
@@ -319,7 +319,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Override
 	public void testDeletePermission() throws MeshSchemaException {
 		try (Tx tx = tx()) {
-			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			SchemaDaoWrapper schemaDao = tx.schemaDao();
 			SchemaVersionModel schema = FieldUtil.createMinimalValidSchema();
 			HibSchema newContainer = schemaDao.create(schema, user());
 			testPermission(InternalPermission.DELETE_PERM, newContainer);
@@ -330,7 +330,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Override
 	public void testUpdatePermission() throws MeshSchemaException {
 		try (Tx tx = tx()) {
-			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			SchemaDaoWrapper schemaDao = tx.schemaDao();
 			SchemaVersionModel schema = FieldUtil.createMinimalValidSchema();
 			HibSchema newContainer = schemaDao.create(schema, user());
 			testPermission(InternalPermission.UPDATE_PERM, newContainer);
@@ -341,7 +341,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Override
 	public void testCreatePermission() throws MeshSchemaException {
 		try (Tx tx = tx()) {
-			SchemaDaoWrapper schemaDao = tx.data().schemaDao();
+			SchemaDaoWrapper schemaDao = tx.schemaDao();
 			SchemaVersionModel schema = FieldUtil.createMinimalValidSchema();
 			HibSchema newContainer = schemaDao.create(schema, user());
 			testPermission(InternalPermission.CREATE_PERM, newContainer);

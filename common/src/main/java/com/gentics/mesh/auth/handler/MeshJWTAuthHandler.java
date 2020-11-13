@@ -1,3 +1,4 @@
+
 package com.gentics.mesh.auth.handler;
 
 import static io.vertx.core.http.HttpHeaders.AUTHORIZATION;
@@ -25,7 +26,6 @@ import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.JWTAuthHandler;
 import io.vertx.ext.web.handler.impl.AuthHandlerImpl;
-import io.vertx.ext.web.handler.impl.JWTAuthHandlerImpl;
 
 /**
  * This class extends the Vert.x AuthHandler, so that it also works when the token is set as a cookie.
@@ -35,7 +35,7 @@ import io.vertx.ext.web.handler.impl.JWTAuthHandlerImpl;
 @Singleton
 public class MeshJWTAuthHandler extends AuthHandlerImpl implements JWTAuthHandler, MeshAuthHandler {
 
-	private static final Logger log = LoggerFactory.getLogger(JWTAuthHandlerImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(MeshJWTAuthHandler.class);
 
 	private static final Pattern BEARER = Pattern.compile("^Bearer$", Pattern.CASE_INSENSITIVE);
 

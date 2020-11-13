@@ -5,7 +5,6 @@ import java.util.function.Predicate;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -19,7 +18,7 @@ public interface BranchDaoWrapper extends BranchDao, DaoTransformable<HibBranch,
 
 	Result<? extends HibBranch> findAll(HibProject project);
 
-	TransformablePage<? extends HibBranch> findAll(HibProject project, InternalActionContext ac, PagingParameters pagingInfo);
+	Page<? extends HibBranch> findAll(HibProject project, InternalActionContext ac, PagingParameters pagingInfo);
 
 	Page<? extends HibBranch> findAll(HibProject project, InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibBranch> extraFilter);
 

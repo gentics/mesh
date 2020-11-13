@@ -4,7 +4,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibBaseElement;
-import com.gentics.mesh.core.data.generic.PermissionProperties;
+import com.gentics.mesh.core.data.generic.PermissionPropertiesImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
@@ -17,9 +17,9 @@ public abstract class AbstractDaoWrapper<T extends HibBaseElement> implements Da
 
 	protected final Lazy<BootstrapInitializer> boot;
 
-	protected final Lazy<PermissionProperties> permissions;
+	protected final Lazy<PermissionPropertiesImpl> permissions;
 
-	public AbstractDaoWrapper(Lazy<BootstrapInitializer> boot, Lazy<PermissionProperties> permissions) {
+	public AbstractDaoWrapper(Lazy<BootstrapInitializer> boot, Lazy<PermissionPropertiesImpl> permissions) {
 		this.boot = boot;
 		this.permissions = permissions;
 	}

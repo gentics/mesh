@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.dao;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -11,7 +12,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.SchemaRoot;
@@ -19,7 +20,6 @@ import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
@@ -31,7 +31,7 @@ import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
-public interface SchemaDaoWrapper extends SchemaDao, DaoWrapper<HibSchema> {
+public interface SchemaDaoWrapper extends SchemaDao, DaoWrapper<HibSchema>, DaoTransformable<HibSchema, SchemaResponse> {
 
 	HibSchema findByUuid(String uuid);
 
@@ -41,11 +41,13 @@ public interface SchemaDaoWrapper extends SchemaDao, DaoWrapper<HibSchema> {
 
 	HibSchema loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound);
 
+	HibSchema loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, InternalPermission perm);
+
 	Result<HibSchema> findAll();
 
-	TransformablePage<? extends HibSchema> findAll(InternalActionContext ac, PagingParameters pagingInfo);
+	Page<? extends HibSchema> findAll(InternalActionContext ac, PagingParameters pagingInfo);
 
-	TransformablePage<? extends HibSchema> findAll(InternalActionContext ac, HibProject project, PagingParameters pagingInfo);
+	Page<? extends HibSchema> findAll(InternalActionContext ac, HibProject project, PagingParameters pagingInfo);
 
 	HibSchema create(InternalActionContext ac, EventQueueBatch batch, String uuid);
 
@@ -158,8 +160,6 @@ public interface SchemaDaoWrapper extends SchemaDao, DaoWrapper<HibSchema> {
 
 	boolean isLinkedToProject(HibSchema schema, HibProject project);
 
-	SchemaResponse transformToRestSync(HibSchema schema, InternalActionContext ac, int level);
-
 	void removeSchema(HibSchema schema, HibProject project, EventQueueBatch batch);
 
 	SchemaChangesListModel diff(HibSchemaVersion latestVersion, InternalActionContext ac, SchemaModel requestModel);
@@ -174,7 +174,7 @@ public interface SchemaDaoWrapper extends SchemaDao, DaoWrapper<HibSchema> {
 
 	String getETag(HibSchema schema, InternalActionContext ac);
 
-	Result<? extends HibNode> findNodes(HibSchemaVersion version, String uuid, MeshAuthUser user, ContainerType type);
+	Result<? extends HibNode> findNodes(HibSchemaVersion version, String uuid, HibUser user, ContainerType type);
 
 	Result<? extends HibSchema> findAll(HibProject project);
 
@@ -195,5 +195,9 @@ public interface SchemaDaoWrapper extends SchemaDao, DaoWrapper<HibSchema> {
 	Stream<? extends NodeGraphFieldContainer> getFieldContainers(HibSchemaVersion version, String branchUuid, Bucket bucket);
 
 	long globalCount();
+
+	Page<? extends HibSchema> findAll(HibProject project, InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibSchema> extraFilter);
+
+	boolean contains(HibProject project, HibSchema schema);
 
 }

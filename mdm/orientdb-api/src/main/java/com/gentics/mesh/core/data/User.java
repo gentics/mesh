@@ -8,6 +8,8 @@ import java.util.Objects;
 
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.TypeInfo;
+import com.gentics.mesh.core.data.group.HibGroup;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.role.HibRole;
@@ -165,7 +167,7 @@ public interface User extends MeshCoreVertex<UserResponse>, ReferenceableElement
 	 * @param node
 	 * @return Fluent API
 	 */
-	HibUser setReferencedNode(HibInNode node);
+	HibUser setReferencedNode(HibNode node);
 
 	/**
 	 * Return a page of groups which the user was assigned to.
@@ -181,7 +183,7 @@ public interface User extends MeshCoreVertex<UserResponse>, ReferenceableElement
 	 *
 	 * @return
 	 */
-	Result<? extends Group> getGroups();
+	Result<? extends HibGroup> getGroups();
 
 	/**
 	 * Add the user to the given group.

@@ -26,8 +26,8 @@ public class ProjectSchemaContainerRootImpl extends SchemaContainerRootImpl {
 
 	@Override
 	public void addSchemaContainer(HibUser user, HibSchema schema, EventQueueBatch batch) {
-		ProjectDaoWrapper projectDao = Tx.get().data().projectDao();
-		BranchDaoWrapper branchDao = Tx.get().data().branchDao();
+		ProjectDaoWrapper projectDao = Tx.get().projectDao();
+		BranchDaoWrapper branchDao = Tx.get().branchDao();
 
 		HibProject project = getProject();
 		batch.add(projectDao.onSchemaAssignEvent(project,schema, ASSIGNED));
@@ -41,8 +41,8 @@ public class ProjectSchemaContainerRootImpl extends SchemaContainerRootImpl {
 
 	@Override
 	public void removeSchemaContainer(HibSchema schema, EventQueueBatch batch) {
-		ProjectDaoWrapper projectDao = Tx.get().data().projectDao();
-		BranchDaoWrapper branchDao = Tx.get().data().branchDao();
+		ProjectDaoWrapper projectDao = Tx.get().projectDao();
+		BranchDaoWrapper branchDao = Tx.get().branchDao();
 
 		HibProject project = getProject();
 		batch.add(projectDao.onSchemaAssignEvent(project, schema, UNASSIGNED));

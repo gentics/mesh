@@ -51,7 +51,7 @@ public class PluginEnvironmentImpl implements PluginEnvironment {
 	@Override
 	public String adminToken() {
 		return db.tx(tx -> {
-			HibUser admin = tx.data().userDao().findByUsername("admin");
+			HibUser admin = tx.userDao().findByUsername("admin");
 			// TODO: Use dedicated tokenCode - See https://github.com/gentics/mesh/issues/412
 			return authProvider.get().generateAPIToken(admin, null, null);
 		});

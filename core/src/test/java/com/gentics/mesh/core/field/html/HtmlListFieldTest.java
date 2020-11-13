@@ -57,7 +57,7 @@ public class HtmlListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 		}
 
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.data().contentDao();
+			ContentDaoWrapper contentDao = tx.contentDao();
 			ListFieldSchema htmlListFieldSchema = new ListFieldSchemaImpl();
 			htmlListFieldSchema.setName(HTML_LIST);
 			htmlListFieldSchema.setListType("html");

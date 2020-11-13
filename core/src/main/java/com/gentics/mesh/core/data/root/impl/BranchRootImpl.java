@@ -39,7 +39,6 @@ import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchReference;
@@ -130,7 +129,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 	public Branch create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 
 		BranchCreateRequest request = ac.fromJson(BranchCreateRequest.class);
-		MeshAuthUser requestUser = ac.getUser();
+		HibUser requestUser = ac.getUser();
 
 		// Check for completeness of request
 		if (StringUtils.isEmpty(request.getName())) {
@@ -141,7 +140,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 		String projectName = project.getName();
 		String projectUuid = project.getUuid();
 
-		UserDaoWrapper userDao = Tx.get().data().userDao();
+		UserDaoWrapper userDao = Tx.get().userDao();
 
 		if (!userDao.hasPermission(requestUser, project, InternalPermission.UPDATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", projectUuid + "/" + projectName, UPDATE_PERM.getRestPerm().getName());

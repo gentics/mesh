@@ -13,7 +13,6 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -89,7 +88,7 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<HibUser>, DaoTransfo
 
 	HibUser loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound);
 
-	TransformablePage<? extends HibUser> findAll(InternalActionContext ac, PagingParameters pagingInfo);
+	Page<? extends HibUser> findAll(InternalActionContext ac, PagingParameters pagingInfo);
 
 	Page<? extends HibUser> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibUser> extraFilter);
 
@@ -298,7 +297,7 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<HibUser>, DaoTransfo
 
 	String getETag(HibUser user, InternalActionContext ac);
 
-	Page<? extends HibRole> getRolesViaShortcut(HibUser fromUser, MeshAuthUser authUser, PagingParameters pagingInfo);
+	Page<? extends HibRole> getRolesViaShortcut(HibUser fromUser, HibUser authUser, PagingParameters pagingInfo);
 
-	Page<? extends HibGroup> getGroups(HibUser fromUser, MeshAuthUser authUser, PagingParameters pagingInfo);
+	Page<? extends HibGroup> getGroups(HibUser fromUser, HibUser authUser, PagingParameters pagingInfo);
 }

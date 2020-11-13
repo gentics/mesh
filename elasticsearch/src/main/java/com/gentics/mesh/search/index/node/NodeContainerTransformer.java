@@ -23,7 +23,7 @@ import org.jsoup.Jsoup;
 
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
@@ -208,7 +208,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 					binaryFieldInfo.put("mimeType", binaryField.getMimeType());
 					binaryFieldInfo.put("dominantColor", binaryField.getImageDominantColor());
 
-					Binary binary = binaryField.getBinary();
+					HibBinary binary = binaryField.getBinary();
 					if (binary != null) {
 						binaryFieldInfo.put("filesize", binary.getSize());
 						binaryFieldInfo.put("sha512sum", binary.getSHA512Sum());
@@ -470,7 +470,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	}
 
 	public String generateVersion(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
-		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+		ContentDaoWrapper contentDao = Tx.get().contentDao();
 		HibNode node = contentDao.getNode(container);
 		HibProject project = node.getProject();
 
@@ -506,9 +506,9 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	 * @return
 	 */
 	public JsonObject toDocument(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
-		TagDaoWrapper tagDao = Tx.get().data().tagDao();
-		NodeDaoWrapper nodeDao = Tx.get().data().nodeDao();
-		ContentDaoWrapper contentDao = Tx.get().data().contentDao();
+		TagDaoWrapper tagDao = Tx.get().tagDao();
+		NodeDaoWrapper nodeDao = Tx.get().nodeDao();
+		ContentDaoWrapper contentDao = Tx.get().contentDao();
 
 		HibNode node = contentDao.getNode(container);
 		JsonObject document = new JsonObject();

@@ -2,6 +2,7 @@
 package com.gentics.mesh.server.cluster.test.task;
 
 import com.gentics.mesh.context.impl.LocalActionContextImpl;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.role.RoleCrudHandler;
@@ -32,8 +33,9 @@ public class RoleCRUDGlobalLockInserterTask extends AbstractLoadTask {
 		try {
 			MeshComponent comp = test.getMesh().internal();
 			RoleCrudHandler crudHandler = comp.roleCrudHandler();
-			MeshAuthUser user = comp.database().tx(() -> {
-				return comp.boot().meshRoot().getUserRoot().findMeshAuthUserByUsername("admin");
+			MeshAuthUser user = comp.database().tx(tx -> {
+				UserDaoWrapper userDao = tx.userDao();
+				return userDao.findMeshAuthUserByUsername("admin");
 			});
 			String roleUuid = UUIDUtil.randomUUID();
 			LocalActionContextImpl<RoleResponse> ac = new LocalActionContextImpl<>(user, RoleResponse.class);

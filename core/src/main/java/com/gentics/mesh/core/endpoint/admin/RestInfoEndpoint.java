@@ -7,7 +7,7 @@ import static io.vertx.core.http.HttpMethod.GET;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.auth.MeshAuthChain;
+import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.example.RestInfoExamples;
 import com.gentics.mesh.rest.InternalEndpointRoute;
@@ -26,7 +26,7 @@ public class RestInfoEndpoint extends AbstractInternalEndpoint {
 	private RouterStorage routerStorage;
 
 	@Inject
-	public RestInfoEndpoint(MeshAuthChain chain, AdminHandler adminHandler) {
+	public RestInfoEndpoint(MeshAuthChainImpl chain, AdminHandler adminHandler) {
 		super(null, chain);
 		this.adminHandler = adminHandler;
 	}

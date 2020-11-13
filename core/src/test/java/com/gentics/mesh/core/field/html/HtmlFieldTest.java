@@ -79,7 +79,7 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 	public void testFieldTransformation() throws Exception {
 		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
-			ContentDaoWrapper contentDao = tx.data().contentDao();
+			ContentDaoWrapper contentDao = tx.contentDao();
 
 			// Add html field schema to the schema
 			SchemaVersionModel schema = node.getSchemaContainer().getLatestVersion().getSchema();

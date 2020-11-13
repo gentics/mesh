@@ -14,7 +14,8 @@ import com.gentics.mesh.core.action.TagDAOActions;
 import com.gentics.mesh.core.action.TagFamilyDAOActions;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.PageTransformer;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.Tx;
@@ -38,15 +39,17 @@ public class TagCrudHandler extends AbstractHandler {
 	private final WriteLock globalLock;
 	private final TagDAOActions tagActions;
 	private final TagFamilyDAOActions tagFamilyActions;
+	private final PageTransformer pageTransformer;
 
 	@Inject
 	public TagCrudHandler(MeshOptions options, HandlerUtilities utils, WriteLock writeLock, TagDAOActions tagActions,
-		TagFamilyDAOActions tagFamilyActions) {
+		TagFamilyDAOActions tagFamilyActions, PageTransformer pageTransformer) {
 		this.options = options;
 		this.utils = utils;
 		this.globalLock = writeLock;
 		this.tagActions = tagActions;
 		this.tagFamilyActions = tagFamilyActions;
+		this.pageTransformer = pageTransformer;
 	}
 
 	/**
@@ -65,15 +68,15 @@ public class TagCrudHandler extends AbstractHandler {
 
 		try (WriteLock lock = globalLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				TagDaoWrapper tagDao = tx.data().tagDao();
+				TagDaoWrapper tagDao = tx.tagDao();
 				PagingParameters pagingParams = ac.getPagingParameters();
 				NodeParameters nodeParams = ac.getNodeParameters();
 				HibTagFamily tagFamily = tagFamilyActions.loadByUuid(context(tx, ac), tagFamilyUuid, READ_PERM, true);
 				HibTag tag = tagActions.loadByUuid(context(tx, ac, tagFamily), tagUuid, READ_PERM, true);
-				TransformablePage<? extends HibNode> page = tagDao.findTaggedNodes(tag, ac.getUser(), ac.getBranch(),
+				Page<? extends HibNode> page = tagDao.findTaggedNodes(tag, ac.getUser(), tx.getBranch(ac),
 					nodeParams.getLanguageList(options),
 					ContainerType.forVersion(ac.getVersioningParameters().getVersion()), pagingParams);
-				return page.transformToRestSync(ac, 0);
+				return pageTransformer.transformToRestSync(page, ac, 0);
 			}, model -> ac.send(model, OK));
 		}
 	}
@@ -89,7 +92,7 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 
 		Function<Tx, Object> tagFamilyLoader = tx -> {
-			return tx.data().tagFamilyActions().loadByUuid(context(tx, ac), tagFamilyUuid, READ_PERM, true);
+			return tx.tagFamilyActions().loadByUuid(context(tx, ac), tagFamilyUuid, READ_PERM, true);
 		};
 		utils.readElementList(ac, tagFamilyLoader, tagActions);
 	}
@@ -107,7 +110,7 @@ public class TagCrudHandler extends AbstractHandler {
 
 		try (WriteLock lock = globalLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				TagDaoWrapper tagDao = tx.data().tagDao();
+				TagDaoWrapper tagDao = tx.tagDao();
 				ResultInfo info = utils.eventAction(batch -> {
 					// TODO use DAOActionContext and load tagFamily by uuid first. Without a parent this is inconsistent.
 					HibTag tag = tagActions.create(tx, ac, batch, null);
@@ -141,7 +144,7 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagUuid, "tagUuid");
 
 		Function<Tx, Object> tagFamilyLoader = tx -> {
-			return tx.data().tagFamilyActions().loadByUuid(context(tx, ac), tagFamilyUuid, READ_PERM, true);
+			return tx.tagFamilyActions().loadByUuid(context(tx, ac), tagFamilyUuid, READ_PERM, true);
 		};
 		utils.createOrUpdateElement(ac, tagFamilyLoader, tagUuid, tagActions);
 	}
@@ -161,7 +164,7 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagUuid, "tagUuid");
 
 		Function<Tx, Object> tagFamilyLoader = tx -> {
-			return tx.data().tagFamilyActions().loadByUuid(context(tx, ac), tagFamilyUuid, READ_PERM, true);
+			return tx.tagFamilyActions().loadByUuid(context(tx, ac), tagFamilyUuid, READ_PERM, true);
 		};
 		utils.readElement(ac, tagFamilyLoader, tagUuid, tagActions, READ_PERM);
 

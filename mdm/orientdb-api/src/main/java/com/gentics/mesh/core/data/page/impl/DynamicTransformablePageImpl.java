@@ -10,7 +10,6 @@ import java.util.stream.StreamSupport;
 
 import com.gentics.mesh.core.data.TransformableElement;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
-import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -30,8 +29,7 @@ import com.tinkerpop.blueprints.Vertex;
  *
  * @param <T>
  */
-public class DynamicTransformablePageImpl<T extends TransformableElement<? extends RestModel>> extends AbstractDynamicPage<T>
-	implements TransformablePage<T> {
+public class DynamicTransformablePageImpl<T extends TransformableElement<? extends RestModel>> extends AbstractDynamicPage<T> {
 
 	private HibUser requestUser;
 
@@ -150,7 +148,7 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 		AtomicLong pageCounter = new AtomicLong();
 		FramedGraph graph = Tx.get().getGraph();
 
-		UserDaoWrapper userDao = Tx.get().data().userDao();
+		UserDaoWrapper userDao = Tx.get().userDao();
 
 		// Only handle elements which are visible to the user
 		if (perm != null) {

@@ -55,7 +55,7 @@ public class ClusterServer {
 
 	public static void run(MeshOptions options) throws Exception {
 		Mesh mesh = Mesh.create(options);
-		mesh.setCustomLoader((vertx) -> {
+		mesh.setCustomLoader(vertx -> {
 			JsonObject config = new JsonObject();
 			config.put("port", options.getHttpServerOptions().getPort());
 

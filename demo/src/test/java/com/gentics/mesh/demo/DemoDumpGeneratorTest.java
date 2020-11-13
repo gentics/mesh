@@ -21,7 +21,7 @@ import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.group.HibGroup;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
@@ -61,15 +61,15 @@ public class DemoDumpGeneratorTest {
 	public void testSetup() throws Exception {
 		generator.dump();
 		db.tx(tx -> {
-			RoleDaoWrapper roleDao = tx.data().roleDao();
-			UserDaoWrapper userDao = tx.data().userDao();
-			GroupDaoWrapper groupDao = tx.data().groupDao();
-			ProjectDaoWrapper projectDao = tx.data().projectDao();
-			ContentDaoWrapper contentDao = tx.data().contentDao();
-			NodeDaoWrapper nodeDao = tx.data().nodeDao();
+			RoleDaoWrapper roleDao = tx.roleDao();
+			UserDaoWrapper userDao = tx.userDao();
+			GroupDaoWrapper groupDao = tx.groupDao();
+			ProjectDaoWrapper projectDao = tx.projectDao();
+			ContentDaoWrapper contentDao = tx.contentDao();
+			NodeDaoWrapper nodeDao = tx.nodeDao();
 
 			HibProject project = projectDao.findByName("demo");
-			assertTrue(project.getNodeRoot().computeCount() > 0);
+			assertTrue(nodeDao.computeCount(project) > 0);
 			HibUser user = userDao.findByUsername("webclient");
 			assertNotNull("The webclient user should have been created but could not be found.", user);
 			assertFalse("The webclient user should also have at least one group assigned to it.", !userDao.getGroups(user).iterator().hasNext());
@@ -81,13 +81,13 @@ public class DemoDumpGeneratorTest {
 			assertTrue("The webclient user has no permission on itself.", userDao.hasPermission(user, user, InternalPermission.READ_PERM));
 			assertTrue("The webclient user has no read permission on the user root node..", userDao.hasPermission(user, boot.meshRoot().getUserRoot(), InternalPermission.READ_PERM));
 
-			assertTrue("We expected to find at least 5 nodes.", project.getNodeRoot().computeCount() > 5);
+			assertTrue("We expected to find at least 5 nodes.", nodeDao.computeCount(project) > 5);
 
 			// Verify that the uuids have been updated
 			assertNotNull(nodeDao.findByUuid(project, "df8beb3922c94ea28beb3922c94ea2f6"));
 
 			// Verify that all documents are stored in the index
-			for (Node node : project.getNodeRoot().findAll()) {
+			for (HibNode node : nodeDao.findAll(project)) {
 				NodeGraphFieldContainer container = contentDao.getLatestDraftFieldContainer(node, "en");
 				String languageTag = "en";
 				String projectUuid = node.getProject().getUuid();
