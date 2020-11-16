@@ -26,6 +26,8 @@ include::content/docs/variables.adoc-include[]
 [[v1.7.6]]
 == 1.7.6  (TBD)
 
+icon:check[] Jobs: A race condition within the job processing mechanism has been fixed. In some cases newly created jobs would not be automatically invoked. This has been fixed now.
+
 icon:check[] Jobs: New jobs will now set the correct start date and time.
 
 [[v1.7.5]]
