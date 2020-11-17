@@ -28,6 +28,13 @@ public interface EventQueueBatch {
 	List<MeshEventModel> getEntries();
 
 	/**
+	 * Return a list of all actions in this batch.
+	 * 
+	 * @return
+	 */
+	List<Runnable> getActions();
+
+	/**
 	 * Dispatch events for all entries in the batch.
 	 */
 	void dispatch();
@@ -37,6 +44,7 @@ public interface EventQueueBatch {
 	 */
 	default void clear() {
 		getEntries().clear();
+		getActions().clear();
 	}
 
 	/**
@@ -57,6 +65,12 @@ public interface EventQueueBatch {
 		Objects.requireNonNull(event);
 		Objects.requireNonNull(event.getEvent(), "The event model does not contain the event info");
 		getEntries().add(event);
+		return this;
+	}
+
+	default EventQueueBatch add(Runnable action) {
+		Objects.requireNonNull(action);
+		getActions().add(action);
 		return this;
 	}
 
