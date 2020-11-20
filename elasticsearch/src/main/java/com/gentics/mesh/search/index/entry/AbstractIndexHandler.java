@@ -5,6 +5,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -237,15 +238,29 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 				meters.getUpdateMeter().addPending((needUpdateInEs.size()));
 				meters.getDeleteMeter().addPending((needRemovalInES.size()));
 
-				Function<Action, Function<String, CreateDocumentRequest>> toCreateRequest = action -> uuid -> {
-					JsonObject doc = db.tx(() -> getTransformer().toDocument(getElement(uuid)));
+				Function<String, Optional<JsonObject>> toDoc = uuid -> {
+					return db.tx(() -> {
+						T element = getElement(uuid);
+						if (element == null) {
+							log.error("Element for uuid {" + uuid + "} in type handler {" + getType() + "}  could not be found. Skipping document.");
+							return Optional.empty();
+						} else {
+							return Optional.of(getTransformer().toDocument(element));
+						}
+					});
+				};
+
+				Function<Action, Function<JsonObject, CreateDocumentRequest>> toCreateRequest = action -> doc -> {
+					String uuid = doc.getString("uuid");
 					return helper.createDocumentRequest(indexName, uuid, doc, complianceMode, action);
 				};
 
 				Flowable<SearchRequest> toInsert = Flowable.fromIterable(needInsertionInES)
+					.map(toDoc).filter(opt -> opt.isPresent()).map(opt -> opt.get())
 					.map(toCreateRequest.apply(meters.getInsertMeter()::synced));
 
 				Flowable<SearchRequest> toUpdate = Flowable.fromIterable(needUpdateInEs)
+					.map(toDoc).filter(opt -> opt.isPresent()).map(opt -> opt.get())
 					.map(toCreateRequest.apply(meters.getUpdateMeter()::synced));
 
 				Flowable<SearchRequest> toDelete = Flowable.fromIterable(needRemovalInES)

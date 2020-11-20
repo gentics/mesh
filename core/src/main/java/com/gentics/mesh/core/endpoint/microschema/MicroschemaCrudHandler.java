@@ -119,12 +119,12 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 							// Assign the new version to the branch
 							branch.assignMicroschemaVersion(user, createdVersion, batch);
 						}
+						batch.add(() -> MeshEvent.triggerJobWorker(boot.get().mesh()));
 					}
 					return createdVersion.getVersion();
 				});
 
 				if (updateParams.getUpdateAssignedBranches()) {
-					MeshEvent.triggerJobWorker(boot.get().mesh());
 					return message(ac, "schema_updated_migration_invoked", name, version);
 				} else {
 					return message(ac, "schema_updated_migration_deferred", name, version);
