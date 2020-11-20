@@ -81,6 +81,11 @@ icon:check[] Clustering: The webroot handler no longer uses the cluster-wide wri
 
 icon:check[] Logging: Failing readiness checks are now logged using the `WARN` level.
 
+[[v1.5.8]]
+== 1.5.8 (20.11.2020)
+
+icon:check[] Jobs: A race condition within the job processing mechanism has been fixed. In some cases newly created jobs would not be automatically invoked. This has been fixed now.
+
 [[v1.5.7]]
 == 1.5.7 (13.11.2020)
 
