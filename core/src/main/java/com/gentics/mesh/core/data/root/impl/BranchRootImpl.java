@@ -34,6 +34,7 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -159,6 +160,7 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 		assignSchemas(creator, baseBranch, branch, true, batch);
 
 		batch.add(branch.onCreated());
+		batch.add(() -> MeshEvent.triggerJobWorker(meshApi()));
 
 		return branch;
 	}

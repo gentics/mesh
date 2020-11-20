@@ -586,7 +586,6 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse, Branch> i
 
 	@Override
 	public BranchMeshEventModel onCreated() {
-		MeshEvent.triggerJobWorker(meshApi());
 		return createEvent(getTypeInfo().getOnCreated());
 	}
 

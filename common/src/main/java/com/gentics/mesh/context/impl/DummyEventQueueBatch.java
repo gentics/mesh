@@ -31,6 +31,11 @@ public class DummyEventQueueBatch implements EventQueueBatch {
 	}
 
 	@Override
+	public List<Runnable> getActions() {
+		return null;
+	}
+
+	@Override
 	public EventCauseInfoImpl getCause() {
 		return null;
 	}

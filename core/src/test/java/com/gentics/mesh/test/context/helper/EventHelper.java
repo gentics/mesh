@@ -239,7 +239,7 @@ public interface EventHelper extends BaseHelper {
 		action.run();
 
 		// Now poll the migration status and check the response
-		final int MAX_WAIT = 120;
+		final int MAX_WAIT = 30;
 		for (int i = 0; i < MAX_WAIT; i++) {
 			JobListResponse response = runAsAdmin(() -> call(() -> client().findJobs()));
 			List<JobResponse> diff = TestUtils.difference(response.getData(), before.getData(), JobResponse::getUuid);
