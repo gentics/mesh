@@ -14,8 +14,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang.StringUtils;
-
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.tx.Tx;
 import com.gentics.madl.type.TypeHandler;
@@ -333,17 +331,18 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 	}
 
 	@Override
-	public Map<String, String> getMetadataProperties() {
-		List<String> keys = getPropertyKeys().stream().filter(k -> k.startsWith(META_DATA_PROPERTY_PREFIX)).collect(Collectors.toList());
-
-		Map<String, String> metadata = new HashMap<>();
-		for (String key : keys) {
-			String name = key.substring(META_DATA_PROPERTY_PREFIX.length());
-			String value = property(key);
-			metadata.put(name, value);
-		}
-		return metadata;
-	}
+    public Map<String, String> getMetadataProperties() {
+        List<String> keys = getPropertyKeys().stream().filter(k -> k.startsWith(META_DATA_PROPERTY_PREFIX)).collect(Collectors.toList());
+        Map<String, String> metadata = new HashMap<>();
+        for (String key : keys) {
+            String name = key.substring(META_DATA_PROPERTY_PREFIX.length());
+            name = key.replaceAll("%5B", "[");
+            name = key.replaceAll("%5D", "]");
+            String value = property(key);
+            metadata.put(name, value);
+        }
+        return metadata;
+    }
 
 	@Override
 	public BinaryMetadata getMetadata() {
@@ -366,12 +365,15 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 	}
 
 	@Override
-	public void setMetadata(String key, String value) {
-		if (StringUtils.isNotBlank(key) && key.indexOf("[") > 0) {
-			key = key.substring(0, key.indexOf("["));
-		}
-		setProperty(META_DATA_PROPERTY_PREFIX + key, value);
-	}
+    public void setMetadata(String key, String value) {
+        key = key.replaceAll("\\[", "%5B");
+        key = key.replaceAll("\\]", "%5D");
+        if (value == null) {
+            removeProperty(META_DATA_PROPERTY_PREFIX + key);
+        } else {
+            setProperty(META_DATA_PROPERTY_PREFIX + key, value);
+        }
+    }
 
 	@Override
 	public String getPlainText() {
