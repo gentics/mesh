@@ -14,6 +14,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.tx.Tx;
 import com.gentics.madl.type.TypeHandler;
@@ -365,6 +367,9 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 
 	@Override
 	public void setMetadata(String key, String value) {
+		if (StringUtils.isNotBlank(key) && key.indexOf("[") > 0) {
+			key = key.substring(0, key.indexOf("["));
+		}
 		setProperty(META_DATA_PROPERTY_PREFIX + key, value);
 	}
 
