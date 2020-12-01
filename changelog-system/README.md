@@ -1,4 +1,4 @@
-# Changelog System
+# Gentics Mesh - Changelog System
 
 The changelog system is responsible to apply graph database changes which may be required during an upgrade. Gentics Mesh will automatically process new changes and apply those. Executed changes will be internally stored as executed and thus only be executed once.
 
