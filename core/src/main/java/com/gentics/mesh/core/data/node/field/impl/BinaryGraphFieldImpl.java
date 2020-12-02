@@ -336,9 +336,9 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
         Map<String, String> metadata = new HashMap<>();
         for (String key : keys) {
             String name = key.substring(META_DATA_PROPERTY_PREFIX.length());
-            name = key.replaceAll("%5B", "[");
-            name = key.replaceAll("%5D", "]");
-            String value = property(key);
+            name = name.replaceAll("%5B", "[");
+            name = name.replaceAll("%5D", "]");
+            String value = property(name);
             metadata.put(name, value);
         }
         return metadata;
