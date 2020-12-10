@@ -5,14 +5,43 @@ import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 
 public interface HibSchemaChange<T extends FieldSchemaContainer> extends HibBaseElement {
 
+	/**
+	 * Load the next change.
+	 * 
+	 * @return Next change or null when no futher changes exist
+	 */
 	HibSchemaChange<?> getNextChange();
 
+	/**
+	 * Set the next change that should follow up on the current change.
+	 * 
+	 * @param change
+	 * @return
+	 */
 	HibSchemaChange<T> setNextChange(HibSchemaChange<?> change);
 
+	/**
+	 * Return the previous change.
+	 * 
+	 * @return Previous change or null when no previous change could be found
+	 */
 	HibSchemaChange<?> getPreviousChange();
 
+	/**
+	 * Apply the change onto the given REST model.
+	 * 
+	 * @param <R>
+	 * @param container
+	 * @return
+	 */
 	<R extends FieldSchemaContainer> R apply(R container);
 
+	/**
+	 * Return the next container version.
+	 * 
+	 * @param <R>
+	 * @return
+	 */
 	<R extends HibFieldSchemaVersionElement<?, ?, ?, ?>> R getNextContainerVersion();
 
 	/**

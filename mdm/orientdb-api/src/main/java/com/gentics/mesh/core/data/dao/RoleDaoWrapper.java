@@ -98,6 +98,12 @@ public interface RoleDaoWrapper extends RoleDao, DaoWrapper<HibRole>, DaoTransfo
 	 */
 	void removeRole(HibRole role);
 
+	/**
+	 * Return all groups for the given role.
+	 * 
+	 * @param role
+	 * @return
+	 */
 	Result<? extends HibGroup> getGroups(HibRole role);
 
 	/**

@@ -21,8 +21,21 @@ public interface HibNode extends HibCoreElement, HibCreatorTracking, HibBucketab
 	 */
 	String getElementVersion();
 
+	/**
+	 * Transform the node to a reference POJO.
+	 * 
+	 * @param ac
+	 * @return
+	 */
 	NodeReference transformToReference(InternalActionContext ac);
 
+	/**
+	 * Update the tags for the node.
+	 * 
+	 * @param ac
+	 * @param batch
+	 * @param tags
+	 */
 	void updateTags(InternalActionContext ac, EventQueueBatch batch, List<TagReference> tags);
 
 	/**

@@ -661,6 +661,12 @@ public interface ContentDaoWrapper extends ContentDao {
 	 */
 	List<FieldContainerChange> compareTo(NodeGraphFieldContainer content, FieldMap fieldMap);
 
+	/**
+	 * Return the schema version for the given content
+	 * 
+	 * @param content
+	 * @return
+	 */
 	HibSchemaVersion getSchemaContainerVersion(NodeGraphFieldContainer content);
 
 	/**

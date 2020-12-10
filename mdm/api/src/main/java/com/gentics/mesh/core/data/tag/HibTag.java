@@ -9,17 +9,52 @@ import com.gentics.mesh.core.rest.tag.TagReference;
 
 public interface HibTag extends HibCoreElement, HibUserTracking, HibBucketableElement {
 
+	/**
+	 * Return the tag name.
+	 * 
+	 * @return
+	 */
 	String getName();
 
-	HibTagFamily getTagFamily();
-
+	/**
+	 * Set the name.
+	 * 
+	 * @param name
+	 */
 	void setName(String name);
 
+	/**
+	 * Return the tag family of the tag.
+	 * 
+	 * @return
+	 */
+	HibTagFamily getTagFamily();
+
+	/**
+	 * Return the project in which the tag is used.
+	 * 
+	 * @return
+	 */
 	HibProject getProject();
 
+	/**
+	 * Delete the tag.
+	 */
 	void deleteElement();
 
+	/**
+	 * Transform the tag to a reference.
+	 * 
+	 * @return
+	 */
 	TagReference transformToReference();
 
+	/**
+	 * Return the current element version.
+	 * 
+	 * TODO: Check how versions can be accessed via Hibernate and refactor / remove this method accordingly
+	 * 
+	 * @return
+	 */
 	String getElementVersion();
 }

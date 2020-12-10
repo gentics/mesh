@@ -160,11 +160,33 @@ public interface ProjectDaoWrapper extends ProjectDao, DaoWrapper<HibProject>, D
 
 	/**
 	 * Return the etag for the project.
+	 * 
+	 * @param project
+	 * @param ac
+	 * @return
 	 */
 	String getETag(HibProject project, InternalActionContext ac);
 
+	/**
+	 * Return the API path for the given project.
+	 * 
+	 * @param project
+	 * @param ac
+	 * @return
+	 */
 	String getAPIPath(HibProject project, InternalActionContext ac);
 
+	/**
+	 * Create a schema assign event for the given input values.
+	 * 
+	 * @param project
+	 *            Project
+	 * @param schema
+	 *            Schema
+	 * @param assignment
+	 *            Assignment or unassignment
+	 * @return
+	 */
 	MeshEventModel onSchemaAssignEvent(HibProject project, HibSchema schema, Assignment assignment);
 
 }

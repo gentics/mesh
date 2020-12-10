@@ -7,6 +7,11 @@ import com.gentics.mesh.core.data.schema.HibSchemaVersion;
  */
 public interface HibBranchSchemaVersion extends HibBranchVersionAssignment {
 
+	/**
+	 * Return the schema version.
+	 * 
+	 * @return
+	 */
 	HibSchemaVersion getSchemaContainerVersion();
 
 }

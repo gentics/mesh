@@ -19,6 +19,11 @@ public interface HibSchemaVersion extends HibFieldSchemaVersionElement<SchemaRes
 
 	Iterable<? extends HibJob> referencedJobsViaTo();
 
+	/**
+	 * Check the autopurge flag of the version.
+	 * 
+	 * @return
+	 */
 	boolean isAutoPurgeEnabled();
 
 }

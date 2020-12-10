@@ -30,8 +30,27 @@ import com.gentics.mesh.path.Path;
 
 public interface NodeDaoWrapper extends NodeDao, DaoWrapper<HibNode>, DaoTransformable<HibNode, NodeResponse> {
 
+	/**
+	 * Load the node by uuid.
+	 * 
+	 * @param project
+	 * @param ac
+	 * @param uuid
+	 * @param perm
+	 * @return
+	 */
 	HibNode loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, InternalPermission perm);
 
+	/**
+	 * Load the node by uuid.
+	 * 
+	 * @param project
+	 * @param ac
+	 * @param uuid
+	 * @param perm
+	 * @param errorIfNotFound
+	 * @return
+	 */
 	HibNode loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound);
 
 	/**
@@ -389,6 +408,14 @@ public interface NodeDaoWrapper extends NodeDao, DaoWrapper<HibNode>, DaoTransfo
 	 */
 	Page<? extends HibNode> findAll(HibProject project, InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibNode> filter);
 
+	/**
+	 * Load a stream of nodes with the given perms in the project.
+	 * 
+	 * @param project
+	 * @param ac
+	 * @param perm
+	 * @return
+	 */
 	Stream<? extends HibNode> findAllStream(HibProject project, InternalActionContext ac, InternalPermission perm);
 
 	/**

@@ -4,6 +4,11 @@ import java.util.function.Predicate;
 
 import io.vertx.core.json.JsonObject;
 
+/**
+ * Representation of a bucket which is used for segmenting the differential elasticsearch sync into smaller work units. A bucket is defined by a start and end
+ * number. The bucket provides filters and queries to be used in combination with the ES sync in order to load only the elements which match the area which the
+ * bucket covers.
+ */
 public class Bucket {
 
 	public static final String BUCKET_ID_KEY = "bucket_id";

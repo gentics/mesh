@@ -7,6 +7,11 @@ import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
  */
 public interface HibBranchMicroschemaVersion extends HibBranchVersionAssignment {
 
+	/**
+	 * Set the microschema version.
+	 * 
+	 * @return
+	 */
 	HibMicroschemaVersion getMicroschemaContainerVersion();
 
 }

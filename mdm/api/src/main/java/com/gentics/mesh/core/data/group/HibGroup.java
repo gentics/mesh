@@ -21,10 +21,26 @@ public interface HibGroup extends HibCoreElement, HibUserTracking, HibNamedEleme
 		return TYPE_INFO;
 	}
 
+	/**
+	 * Transform the group to a reference POJO.
+	 * 
+	 * @return
+	 */
 	GroupReference transformToReference();
 
+	/**
+	 * Delete the element.
+	 * 
+	 * TODO: This method should be removed in the future.
+	 */
 	void removeElement();
 
+	/**
+	 * Return the current element version.
+	 * 
+	 * TODO: Check how versions can be accessed via Hibernate and refactor / remove this method accordingly
+	 * @return
+	 */
 	String getElementVersion();
 
 }

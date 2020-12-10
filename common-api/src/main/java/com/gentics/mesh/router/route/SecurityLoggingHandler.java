@@ -5,6 +5,9 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 
+/**
+ * Handler for the {@link SecurityLogger}
+ */
 public class SecurityLoggingHandler implements Handler<RoutingContext> {
 
 	public static final String SECURITY_LOGGER_CONTEXT_KEY = "securityLogger";

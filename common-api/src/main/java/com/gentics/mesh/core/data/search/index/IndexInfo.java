@@ -6,6 +6,7 @@ import io.vertx.core.json.JsonObject;
  * Container for the index information.
  */
 public class IndexInfo {
+
 	private String indexName;
 	private JsonObject indexSettings;
 	private JsonObject indexMappings;

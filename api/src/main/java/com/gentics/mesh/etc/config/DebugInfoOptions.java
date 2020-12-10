@@ -8,6 +8,7 @@ import com.gentics.mesh.etc.config.env.Option;
 
 @GenerateDocumentation
 public class DebugInfoOptions implements Option {
+
 	private static final String DEFAULT_LOG_FOLDER = "debuginfo";
 	private static final String DEFAULT_LOG_FILE_SIZE = "5MB";
 	private static final String DEFAULT_LOG_PATTERN = "%d{HH:mm:ss.SSS} [%meshName] %-5level [%thread] [%file:%line] - %msg%n";

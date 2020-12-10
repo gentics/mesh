@@ -18,6 +18,12 @@ public interface ContextDataRegistry {
 	 */
 	HibProject getProject(InternalActionContext ac);
 
+	/**
+	 * Store the project information in the given context.
+	 * 
+	 * @param ac
+	 * @param project
+	 */
 	void setProject(InternalActionContext ac, HibProject project);
 
 	/**

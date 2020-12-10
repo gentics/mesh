@@ -12,6 +12,7 @@ import static com.gentics.mesh.util.RxUtil.NOOP;
  * Contains all information to execute a search request to elasticsearch.
  */
 public interface SearchRequest {
+
 	/**
 	 * The amount of requests that will be executed.
 	 * @return
