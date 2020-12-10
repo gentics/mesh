@@ -25,12 +25,30 @@ import com.gentics.mesh.parameter.PagingParameters;
 
 public interface HibBranch extends HibCoreElement, HibUserTracking {
 
+	/**
+	 * Return the branch name.
+	 * 
+	 * @return
+	 */
 	String getName();
 
+	/**
+	 * Set branch name.
+	 * 
+	 * @param string
+	 */
 	void setName(String string);
 
+	/**
+	 * Return the creator of the branch.
+	 */
 	HibUser getCreator();
 
+	/**
+	 * Return the project.
+	 * 
+	 * @return
+	 */
 	HibProject getProject();
 
 	/**
@@ -414,6 +432,11 @@ public interface HibBranch extends HibCoreElement, HibUserTracking {
 	 */
 	HibTag findTagByUuid(String uuid);
 
+	/**
+	 * Transform the branch into a reference.
+	 * 
+	 * @return
+	 */
 	BranchReference transformToReference();
 
 }

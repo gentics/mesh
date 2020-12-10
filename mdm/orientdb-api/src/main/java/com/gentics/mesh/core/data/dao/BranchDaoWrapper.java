@@ -16,14 +16,56 @@ import com.gentics.mesh.parameter.PagingParameters;
 // TODO move the contents of this to BranchDao once migration is done
 public interface BranchDaoWrapper extends BranchDao, DaoTransformable<HibBranch, BranchResponse>, DaoWrapper<HibBranch> {
 
+	/**
+	 * Load all branches.
+	 * 
+	 * @param project
+	 * @return
+	 */
 	Result<? extends HibBranch> findAll(HibProject project);
 
+	/**
+	 * Load a page of branches.
+	 * 
+	 * @param project
+	 * @param ac
+	 * @param pagingInfo
+	 * @return
+	 */
 	Page<? extends HibBranch> findAll(HibProject project, InternalActionContext ac, PagingParameters pagingInfo);
 
+	/**
+	 * Load a page of branches.
+	 * 
+	 * @param project
+	 * @param ac
+	 * @param pagingInfo
+	 * @param extraFilter
+	 * @return
+	 */
 	Page<? extends HibBranch> findAll(HibProject project, InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibBranch> extraFilter);
 
+	/**
+	 * Load the branch of the project.
+	 * 
+	 * @param project
+	 * @param ac
+	 * @param uuid
+	 * @param perm
+	 * @return
+	 */
 	HibBranch loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, InternalPermission perm);
 
+	/**
+	 * Load the branch by uuid.
+	 * 
+	 * @param project
+	 * @param ac
+	 * @param uuid
+	 * @param perm
+	 * @param errorIfNotFound
+	 * @return
+	 */
 	HibBranch loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound);
 
 	/**
@@ -34,20 +76,85 @@ public interface BranchDaoWrapper extends BranchDao, DaoTransformable<HibBranch,
 	 */
 	HibBranch findByUuid(HibProject project, String uuid);
 
+	/**
+	 * Return the branch by name.
+	 * 
+	 * @param project
+	 * @param name
+	 * @return
+	 */
 	HibBranch findByName(HibProject project, String name);
 
+	/**
+	 * Return the etag for the branch.
+	 * 
+	 * @param branch
+	 * @param ac
+	 * @return
+	 */
 	String getETag(HibBranch branch, InternalActionContext ac);
 
+	/**
+	 * Return the API path for the given branch.
+	 * 
+	 * @param branch
+	 * @param ac
+	 * @return
+	 */
 	String getAPIPath(HibBranch branch, InternalActionContext ac);
 
+	/**
+	 * Update the branch.
+	 * 
+	 * @param branch
+	 * @param ac
+	 * @param batch
+	 * @return
+	 */
 	boolean update(HibBranch branch, InternalActionContext ac, EventQueueBatch batch);
 
+	/**
+	 * Create the branch.
+	 * 
+	 * @param project
+	 * @param name
+	 * @param user
+	 * @param batch
+	 * @return
+	 */
 	HibBranch create(HibProject project, String name, HibUser user, EventQueueBatch batch);
 
+	/**
+	 * Create the branch.
+	 * 
+	 * @param project
+	 * @param ac
+	 * @param batch
+	 * @param uuid
+	 * @return
+	 */
 	HibBranch create(HibProject project, InternalActionContext ac, EventQueueBatch batch, String uuid);
 
+	/**
+	 * Create the branch.
+	 * 
+	 * @param project
+	 * @param name
+	 * @param creator
+	 * @param uuid
+	 * @param setLatest
+	 * @param baseBranch
+	 * @param batch
+	 * @return
+	 */
 	HibBranch create(HibProject project, String name, HibUser creator, String uuid, boolean setLatest, HibBranch baseBranch, EventQueueBatch batch);
 
+	/**
+	 * Return the latest branch for the project.
+	 * 
+	 * @param project
+	 * @return
+	 */
 	HibBranch getLatestBranch(HibProject project);
 
 }

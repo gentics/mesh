@@ -26,8 +26,19 @@ import com.gentics.mesh.parameter.PagingParameters;
 // TODO move the contents of this to UserDao once migration is done
 public interface UserDaoWrapper extends UserDao, DaoWrapper<HibUser>, DaoTransformable<HibUser, UserResponse> {
 
+	/**
+	 * Return the sub etag for the given user.
+	 * 
+	 * @param user
+	 * @param ac
+	 * @return
+	 */
 	String getSubETag(HibUser user, InternalActionContext ac);
 
+	/**
+	 * 
+	 * @return
+	 */
 	Result<? extends HibUser> findAll();
 
 	/**
@@ -42,6 +53,14 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<HibUser>, DaoTransfo
 	@Deprecated
 	boolean hasPermission(HibUser user, MeshVertex element, InternalPermission permission);
 
+	/**
+	 * Check the permission on the given element.
+	 * 
+	 * @param user
+	 * @param element
+	 * @param permission
+	 * @return
+	 */
 	boolean hasPermission(HibUser user, HibBaseElement element, InternalPermission permission);
 
 	/**
@@ -86,12 +105,44 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<HibUser>, DaoTransfo
 	 */
 	boolean canReadNode(HibUser user, InternalActionContext ac, HibNode node);
 
+	/**
+	 * Load the user with the given uuid.
+	 * 
+	 * @param ac
+	 * @param uuid
+	 * @param perm
+	 * @param errorIfNotFound
+	 * @return
+	 */
 	HibUser loadObjectByUuid(InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound);
 
+	/**
+	 * Load the page with the users.
+	 * 
+	 * @param ac
+	 * @param pagingInfo
+	 * @return
+	 */
 	Page<? extends HibUser> findAll(InternalActionContext ac, PagingParameters pagingInfo);
 
+	/**
+	 * Load the page with the users.
+	 * 
+	 * @param ac
+	 * @param pagingInfo
+	 * @param extraFilter
+	 * @return
+	 */
 	Page<? extends HibUser> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibUser> extraFilter);
 
+	/**
+	 * Load the user with the given uuid.
+	 * 
+	 * @param ac
+	 * @param userUuid
+	 * @param perm
+	 * @return
+	 */
 	HibUser loadObjectByUuid(InternalActionContext ac, String userUuid, InternalPermission perm);
 
 	/**
@@ -133,6 +184,14 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<HibUser>, DaoTransfo
 	 */
 	boolean updateDry(HibUser user, InternalActionContext ac);
 
+	/**
+	 * Create the user with the given uuid.
+	 * 
+	 * @param ac
+	 * @param batch
+	 * @param uuid
+	 * @return
+	 */
 	HibUser create(InternalActionContext ac, EventQueueBatch batch, String uuid);
 
 	/**
@@ -211,6 +270,17 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<HibUser>, DaoTransfo
 	@Deprecated
 	HibUser inheritRolePermissions(HibUser user, MeshVertex sourceNode, MeshVertex targetNode);
 
+	/**
+	 * Inherit the permissions of the source elment to the target element.
+	 * 
+	 * @param user
+	 *            User to check the permission from
+	 * @param source
+	 *            Element from which the element should be loaded
+	 * @param target
+	 *            Element for which the perms should be applied
+	 * @return
+	 */
 	HibUser inheritRolePermissions(HibUser user, HibBaseElement source, HibBaseElement target);
 
 	/**
@@ -225,8 +295,20 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<HibUser>, DaoTransfo
 	// blocking
 	HibUser setPassword(HibUser user, String password);
 
+	/**
+	 * Find the user by uuid.
+	 * 
+	 * @param uuid
+	 * @return
+	 */
 	HibUser findByUuid(String uuid);
 
+	/**
+	 * Find the user by username.
+	 * 
+	 * @param name
+	 * @return
+	 */
 	HibUser findByName(String name);
 
 	/**
@@ -237,6 +319,12 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<HibUser>, DaoTransfo
 	 */
 	HibUser findByUsername(String username);
 
+	/**
+	 * Delete the user.
+	 * 
+	 * @param user
+	 * @param bac
+	 */
 	void delete(HibUser user, BulkActionContext bac);
 
 	/**
@@ -291,13 +379,51 @@ public interface UserDaoWrapper extends UserDao, DaoWrapper<HibUser>, DaoTransfo
 	 */
 	HibUser addGroup(HibUser user, HibGroup group);
 
+	/**
+	 * Load the roles of the user.
+	 * 
+	 * @param user
+	 * @return
+	 */
 	Iterable<? extends HibRole> getRoles(HibUser user);
 
+	/**
+	 * Load the groups of the user.
+	 * 
+	 * @param user
+	 * @return
+	 */
 	Result<? extends HibGroup> getGroups(HibUser user);
 
+	/**
+	 * Return the ETag of the user.
+	 * 
+	 * @param user
+	 * @param ac
+	 * @return
+	 */
 	String getETag(HibUser user, InternalActionContext ac);
 
+	/**
+	 * Load the effective roles for user via the shortcut edges.
+	 * 
+	 * @param fromUser
+	 * @param authUser
+	 * @param pagingInfo
+	 * @return
+	 */
 	Page<? extends HibRole> getRolesViaShortcut(HibUser fromUser, HibUser authUser, PagingParameters pagingInfo);
 
+	/**
+	 * Return the page of groups which the user is part of.
+	 * 
+	 * @param fromUser
+	 *            User to be checked
+	 * @param authUser
+	 *            User to be used to permission checks
+	 * @param pagingInfo
+	 *            Paging to be applied
+	 * @return
+	 */
 	Page<? extends HibGroup> getGroups(HibUser fromUser, HibUser authUser, PagingParameters pagingInfo);
 }

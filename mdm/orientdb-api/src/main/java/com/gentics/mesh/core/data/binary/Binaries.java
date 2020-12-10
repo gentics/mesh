@@ -35,5 +35,10 @@ public interface Binaries {
 		return create(UUIDUtil.randomUUID(), hash, size);
 	}
 
+	/**
+	 * Return a transactional stream of all binaries.
+	 * 
+	 * @return
+	 */
 	Transactional<Stream<HibBinary>> findAll();
 }

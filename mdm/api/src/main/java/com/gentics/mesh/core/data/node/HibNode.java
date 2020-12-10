@@ -14,19 +14,37 @@ import com.gentics.mesh.event.EventQueueBatch;
 
 public interface HibNode extends HibCoreElement, HibCreatorTracking, HibBucketableElement {
 
+	/**
+	 * Return the element version string.
+	 * 
+	 * @return
+	 */
 	String getElementVersion();
 
 	NodeReference transformToReference(InternalActionContext ac);
 
 	void updateTags(InternalActionContext ac, EventQueueBatch batch, List<TagReference> tags);
 
+	/**
+	 * Return the project of the node.
+	 * 
+	 * @return
+	 */
 	HibProject getProject();
 
 	// TODO rename method
 	HibSchema getSchemaContainer();
 
+	/**
+	 * Set the schema for the node.
+	 * 
+	 * @param container
+	 */
 	void setSchemaContainer(HibSchema container);
 
+	/**
+	 * Remove the element.
+	 */
 	void removeElement();
 
 }

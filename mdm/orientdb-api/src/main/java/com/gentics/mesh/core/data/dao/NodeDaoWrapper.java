@@ -43,6 +43,14 @@ public interface NodeDaoWrapper extends NodeDao, DaoWrapper<HibNode>, DaoTransfo
 	 */
 	HibNode findByUuid(HibProject project, String uuid);
 
+	/**
+	 * Return the node by name.
+	 * 
+	 * @param project
+	 * @param name
+	 * @return
+	 */
+	// TODO remove this method. It has no meaning for nodes.
 	HibNode findByName(HibProject project, String name);
 
 	/**
@@ -303,26 +311,102 @@ public interface NodeDaoWrapper extends NodeDao, DaoWrapper<HibNode>, DaoTransfo
 	 */
 	NodeVersionsResponse transformToVersionList(HibNode node, InternalActionContext ac);
 
+	/**
+	 * Update the node.
+	 * 
+	 * @param node
+	 * @param ac
+	 * @param batch
+	 * @return
+	 */
 	boolean update(HibNode node, InternalActionContext ac, EventQueueBatch batch);
 
+	/**
+	 * Return the etag for the node.
+	 * 
+	 * @param node
+	 * @param ac
+	 * @return
+	 */
 	String getETag(HibNode node, InternalActionContext ac);
 
+	/**
+	 * Return API path for the node.
+	 * 
+	 * @param node
+	 * @param ac
+	 * @return
+	 */
 	String getAPIPath(HibNode node, InternalActionContext ac);
 
+	/**
+	 * Update the tags of the node and return a page of updated tags.
+	 * 
+	 * @param node
+	 * @param ac
+	 * @param batch
+	 * @return
+	 */
 	Page<? extends HibTag> updateTags(HibNode node, InternalActionContext ac, EventQueueBatch batch);
 
+	/**
+	 * Create a new node.
+	 * 
+	 * @param project
+	 * @param ac
+	 * @param batch
+	 * @param uuid
+	 * @return
+	 */
 	HibNode create(HibProject project, InternalActionContext ac, EventQueueBatch batch, String uuid);
 
+	/**
+	 * Load all nodes for the project.
+	 * 
+	 * @param project
+	 * @return
+	 */
 	Result<? extends HibNode> findAll(HibProject project);
 
+	/**
+	 * Load a page of nodes.
+	 * 
+	 * @param project
+	 * @param ac
+	 * @param pagingInfo
+	 * @return
+	 */
 	Page<? extends HibNode> findAll(HibProject project, InternalActionContext ac, PagingParameters pagingInfo);
 
+	/**
+	 * Load a page of nodes.
+	 * 
+	 * @param project
+	 * @param ac
+	 * @param pagingInfo
+	 * @param filter
+	 * @return
+	 */
 	Page<? extends HibNode> findAll(HibProject project, InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibNode> filter);
 
 	Stream<? extends HibNode> findAllStream(HibProject project, InternalActionContext ac, InternalPermission perm);
 
+	/**
+	 * Return the count of nodes for the project.
+	 * 
+	 * @param project
+	 * @return
+	 */
 	long computeCount(HibProject project);
 
+	/**
+	 * Create a new node.
+	 * 
+	 * @param project
+	 * @param user
+	 * @param version
+	 * @return
+	 */
 	HibNode create(HibProject project, HibUser user, HibSchemaVersion version);
 
 }

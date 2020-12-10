@@ -7,8 +7,19 @@ package com.gentics.mesh.core.data.dao;
  */
 public interface DaoGlobal<T> {
 
+	/**
+	 * Find the element globally.
+	 * 
+	 * @param uuid
+	 * @return
+	 */
 	T findByUuidGlobal(String uuid);
 
+	/**
+	 * Return total amount of elements which are stored.
+	 * 
+	 * @return
+	 */
 	long globalCount();
 
 }
