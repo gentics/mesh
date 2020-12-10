@@ -15,6 +15,9 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.CookieHandler;
 
+/**
+ * Central router for /api/v1 routes
+ */
 public class APIRouterImpl implements APIRouter {
 
 	private static final Logger log = LoggerFactory.getLogger(APIRouterImpl.class);

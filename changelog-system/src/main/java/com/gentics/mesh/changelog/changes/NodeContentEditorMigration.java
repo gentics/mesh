@@ -10,6 +10,7 @@ import static com.tinkerpop.blueprints.Direction.IN;
 import static com.tinkerpop.blueprints.Direction.OUT;
 
 public class NodeContentEditorMigration extends AbstractChange {
+
 	@Override
 	public String getName() {
 		return "Migrate node content editor";

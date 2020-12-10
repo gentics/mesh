@@ -8,6 +8,11 @@ import io.vertx.ext.auth.User;
  */
 public interface MeshAuthUser extends User, ClusterSerializable {
 
+	/**
+	 * Return the delegate which references the database entity of the auth user.
+	 * 
+	 * @return
+	 */
 	HibUser getDelegate();
 
 }

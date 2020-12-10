@@ -8,6 +8,7 @@ import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
 
 public class DebugInfoBufferEntry implements DebugInfoEntry {
+
 	private final String fileName;
 	private final Buffer data;
 

@@ -10,6 +10,9 @@ import java.util.Map;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
 
+/**
+ * Example generator for the table of all Gentics Mesh event models.
+ */
 public class EventTableGenerator extends AbstractRenderingGenerator {
 
 	public static final String TEMPLATE_NAME = "event-table.hbs";

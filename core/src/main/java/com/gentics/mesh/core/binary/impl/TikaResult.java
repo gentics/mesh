@@ -5,6 +5,9 @@ import java.util.Optional;
 
 import com.gentics.mesh.core.rest.node.field.binary.Location;
 
+/**
+ * POJO for the result of a Tika parsing operation.
+ */
 public class TikaResult {
 
 	private Optional<String> plainText;

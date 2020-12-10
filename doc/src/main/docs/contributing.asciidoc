@@ -64,7 +64,9 @@ NOTE: Running all test locally is *not* recommended since the execution time is 
 git clone git@github.com:gentics/mesh.git
 cd mesh
 git checkout master
-JAVA_HOME=<PATH-TO-YOUR-JAVA8> mvn clean package -Denv.JAVA_1_8_HOME=$JAVA_HOME -DskipTests -Dskip.unit.tests -Dskip.performance.tests -Dskip.cluster.tests
+export JAVA_HOME=<PATH-TO-YOUR-JAVA11>
+export JAVA_18_HOME=<PATH-TO-YOUR-JAVA8>
+mvn clean package -Denv.JAVA_1_8_HOME=$JAVA_18_HOME -DskipTests -Dskip.unit.tests -Dskip.performance.tests -Dskip.cluster.tests
 ```
 
 The master branch should be used as the branch to be build since the dev branch can be unstable.

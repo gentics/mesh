@@ -9,7 +9,11 @@ import com.gentics.mesh.core.endpoint.handler.MonitoringCrudHandler;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
+/**
+ * Endpoint definition for health / readiness checks
+ */
 public class HealthEndpoint extends AbstractInternalEndpoint {
+
 	private MonitoringCrudHandler monitoringCrudHandler;
 
 	@Inject

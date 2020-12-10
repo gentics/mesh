@@ -8,6 +8,9 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
+/**
+ * Internal command line interface option handling for the server jars.
+ */
 public final class MeshCLI {
 
 	public static final String HELP = "help";

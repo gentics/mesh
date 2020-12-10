@@ -26,6 +26,9 @@ import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.LinkType;
 import com.syncleus.ferma.AbstractVertexFrame;
 
+/**
+ * @see StringGraphField
+ */
 public class StringGraphFieldImpl extends AbstractBasicField<StringField> implements StringGraphField {
 
 	public static FieldTransformer<StringField> STRING_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {

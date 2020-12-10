@@ -13,7 +13,11 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Utility to handle environment variable parsing and options overloading. 
+ */
 public class OptionUtils {
+
 	static final Logger log = LoggerFactory.getLogger(Option.class);
 	private static final Pattern SPLIT_PATTERN = Pattern.compile(",");
 

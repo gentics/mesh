@@ -1,5 +1,8 @@
 package com.gentics.mesh.util;
 
+/**
+ * Mathematical utils
+ */
 public final class MathUtil {
 
 	private MathUtil() {

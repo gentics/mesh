@@ -56,7 +56,6 @@ public class MicroschemaEndpoint extends AbstractInternalEndpoint {
 		addReadHandlers();
 		addUpdateHandler();
 		addDeleteHandler();
-
 	}
 
 	private void addDiffHandler() {

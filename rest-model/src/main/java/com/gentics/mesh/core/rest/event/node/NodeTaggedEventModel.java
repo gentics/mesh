@@ -8,6 +8,9 @@ import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
 
+/**
+ * POJO for a node tagged event.
+ */
 public class NodeTaggedEventModel extends AbstractMeshEventModel {
 
 	@JsonProperty(required = true)

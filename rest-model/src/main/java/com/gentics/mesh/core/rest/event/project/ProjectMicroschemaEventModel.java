@@ -8,6 +8,9 @@ import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 
+/**
+ * POJO for microschema events.
+ */
 public class ProjectMicroschemaEventModel extends AbstractMeshEventModel {
 
 	@JsonProperty(required = true)

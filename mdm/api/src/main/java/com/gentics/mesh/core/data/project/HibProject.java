@@ -82,7 +82,17 @@ public interface HibProject extends HibCoreElement, HibUserTracking, HibBucketab
 	 */
 	void setBaseNode(HibNode baseNode);
 
+	/**
+	 * Return the hib base element which is used to track permissions.
+	 * 
+	 * @return
+	 */
 	HibBaseElement getBranchPermissionRoot();
 
+	/**
+	 * Return the tag family hib base element which tracks tag family permissions.
+	 * 
+	 * @return
+	 */
 	HibBaseElement getTagFamilyPermissionRoot();
 }

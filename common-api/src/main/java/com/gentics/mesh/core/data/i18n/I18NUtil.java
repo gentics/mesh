@@ -9,6 +9,9 @@ import com.gentics.mesh.handler.ActionContext;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Central I18N Util which manages the i18n handling of messages.
+ */
 public class I18NUtil {
 
 	private static final Logger log = LoggerFactory.getLogger(I18NUtil.class);

@@ -22,6 +22,7 @@ import io.reactivex.Flowable;
 
 @Singleton
 public class MigrationStatusProvider implements DebugInfoProvider {
+
 	private final Database db;
 	private final BootstrapInitializer boot;
 	private final BranchCrudHandler branchCrudHandler;

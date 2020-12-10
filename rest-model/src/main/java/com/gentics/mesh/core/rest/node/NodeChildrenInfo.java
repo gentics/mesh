@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.RestModel;
 
+/**
+ * REST model for the node children field.
+ */
 public class NodeChildrenInfo implements RestModel {
 
 	@JsonProperty(required = true)

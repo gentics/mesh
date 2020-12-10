@@ -7,6 +7,9 @@ import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
 
+/**
+ * Rest Client methods for handling webroot requests.
+ */
 public interface WebRootClientMethods {
 
 	/**

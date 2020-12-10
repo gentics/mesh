@@ -13,10 +13,26 @@ public interface HibSchemaVersion extends HibFieldSchemaVersionElement<SchemaRes
 	// TODO MDM rename method
 	void setSchemaContainer(HibSchema container);
 
+	/**
+	 * Transform the version to a reference POJO.
+	 * 
+	 * @return
+	 */
 	SchemaReference transformToReference();
 
+	/**
+	 * Return the element version of the schema. Please note that this is not the schema version. The element version instead reflects the update history of the
+	 * element.
+	 * 
+	 * @return
+	 */
 	String getElementVersion();
 
+	/**
+	 * Return jobs which reference the schema version.
+	 * 
+	 * @return
+	 */
 	Iterable<? extends HibJob> referencedJobsViaTo();
 
 	/**

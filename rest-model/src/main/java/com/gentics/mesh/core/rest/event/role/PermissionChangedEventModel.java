@@ -4,6 +4,9 @@ import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.role.RoleReference;
 
+/**
+ * Interface to be used for event POJOs that track permission changes.
+ */
 public interface PermissionChangedEventModel extends MeshElementEventModel {
 
 	/**

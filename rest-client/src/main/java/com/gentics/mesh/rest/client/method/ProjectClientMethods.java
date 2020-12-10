@@ -9,6 +9,9 @@ import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.impl.EmptyResponse;
 
+/**
+ * Rest Client methods for handling projects requests.
+ */
 public interface ProjectClientMethods {
 
 	/**

@@ -3,6 +3,10 @@ package com.gentics.mesh.core.rest.error;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Single;
 
+/**
+ * Central enum which keeps track of various common API errors. The {@link Errors#error(HttpResponseStatus, String, String...)} methods can be used to quickly
+ * generate specific API errors.
+ */
 public enum Errors {
 
 	NAME_CONFLICT(NameConflictException.TYPE, NameConflictException.class),

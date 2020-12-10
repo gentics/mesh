@@ -375,6 +375,11 @@ public class HandlerUtilities {
 		return tuple.v1();
 	}
 
+	/**
+	 * Check whether the user is an admin. An error will be thrown otherwise.
+	 *  
+	 * @param context
+	 */
 	public void requiresAdminRole(RoutingContext context) {
 		InternalRoutingActionContextImpl rc = new InternalRoutingActionContextImpl(context);
 		if (database.tx(() -> !rc.getUser().isAdmin())) {

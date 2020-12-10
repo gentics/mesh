@@ -8,6 +8,9 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
 
+/**
+ * The custom router is used to manage custom routes outside of the regular API routes. The basepath for these routes would be /custom/
+ */
 public class CustomRouterImpl implements CustomRouter {
 
 	private static final Logger log = LoggerFactory.getLogger(CustomRouterImpl.class);
@@ -30,6 +33,11 @@ public class CustomRouterImpl implements CustomRouter {
 		rootRouter.mountSubRouter(CUSTOM_MOUNTPOINT, router);
 	}
 
+	/**
+	 * Return the router which mounts custom routers / routes.
+	 * 
+	 * @return
+	 */
 	public Router getRouter() {
 		return this.router;
 	}

@@ -8,13 +8,16 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Common interface for options. Every option should implement this in order to prepare for environment variable handling via the {@link EnvironmentVariable}
+ * annotation.
+ */
 public interface Option {
 
 	Logger log = LoggerFactory.getLogger(Option.class);
 
 	/**
-	 * Override the annotated methods and fields of this option class
-	 * and referenced sub options with environment variables.
+	 * Override the annotated methods and fields of this option class and referenced sub options with environment variables.
 	 */
 	default void overrideWithEnv() {
 		for (Method method : getClass().getDeclaredMethods()) {

@@ -4,6 +4,9 @@ import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshRequest;
 
+/**
+ * Rest Client methods for handling nav root requests.
+ */
 public interface NavRootClientMethods {
 
 	/**

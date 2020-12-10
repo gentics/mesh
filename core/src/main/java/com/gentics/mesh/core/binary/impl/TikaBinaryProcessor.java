@@ -47,6 +47,10 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.reactivex.core.Vertx;
 
+/**
+ * This class can be used to parse binary data from {@link BinaryGraphField} fields. Once parsed the processor will populate the field with additional meta data
+ * from the parsing result.
+ */
 @Singleton
 public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 
@@ -133,12 +137,12 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 			.flatMap(
 				extractOptions -> process(extractOptions, upload),
 				Maybe::error,
-				() -> process(null, upload)
-			);
+				() -> process(null, upload));
 	}
 
 	/**
 	 * Determines if the binary data will be processed for the node.
+	 * 
 	 * @param ac
 	 * @param nodeUuid
 	 * @param fieldName
@@ -174,7 +178,8 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 	private Maybe<Consumer<BinaryGraphField>> process(BinaryExtractOptions extractOptions, FileUpload upload) {
 		// Shortcut if no field specific options are specified and parsing is globally disabled
 		if (!options.getUploadOptions().isParser() && extractOptions == null) {
-			log.debug("Not parsing " + upload.fileName() + " because it is globally disabled and no extract options are defined in the binary field schema.");
+			log.debug("Not parsing " + upload.fileName()
+				+ " because it is globally disabled and no extract options are defined in the binary field schema.");
 			return Maybe.empty();
 		}
 

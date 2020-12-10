@@ -56,7 +56,12 @@ import com.gentics.mesh.util.ETag;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+
+/**
+ * @see Micronode
+ */
 public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Micronode {
+
 	private static final Logger log = LoggerFactory.getLogger(MicronodeImpl.class);
 
 	public static void init(TypeHandler type, IndexHandler index) {
@@ -132,12 +137,12 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 		if (container == null) {
 			// the micronode may be part of a list field
 			container = in(HAS_ITEM).in(HAS_LIST).has(NodeGraphFieldContainerImpl.class).nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class,
-					null);
+				null);
 		}
 
 		return container;
 	}
-	
+
 	@Override
 	public Result<? extends NodeGraphFieldContainer> getContainers() {
 		// First try to get the container in case for normal fields
@@ -172,7 +177,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 
 	@Override
 	public Field getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, java.util.List<String> languageTags,
-			int level) {
+		int level) {
 
 		// Filter out unsupported field types
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());

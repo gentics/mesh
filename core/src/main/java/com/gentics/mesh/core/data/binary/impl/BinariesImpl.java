@@ -13,6 +13,9 @@ import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.Transactional;
 
+/**
+ * This class manages the {@link HibBinary} instances that have been persisted.
+ */
 @Singleton
 public class BinariesImpl implements Binaries {
 

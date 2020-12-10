@@ -13,6 +13,7 @@ import io.reactivex.Flowable;
 
 @Singleton
 public class LocalConfigProvider implements DebugInfoProvider {
+
 	private final LocalConfigApi localConfigApi;
 
 	@Inject

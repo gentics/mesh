@@ -6,6 +6,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.RestModel;
 
+/**
+ * GraphQL error REST model.
+ */
 public class GraphQLError implements RestModel {
 
 	@JsonProperty(required = true)
@@ -151,6 +154,5 @@ public class GraphQLError implements RestModel {
 		this.path = path;
 		return this;
 	}
-
 
 }

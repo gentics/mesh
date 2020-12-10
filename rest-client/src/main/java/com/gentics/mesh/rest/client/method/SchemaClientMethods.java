@@ -13,6 +13,9 @@ import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.impl.EmptyResponse;
 
+/**
+ * Rest Client methods for handling schema requests.
+ */
 public interface SchemaClientMethods {
 
 	/**

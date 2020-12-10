@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.user.NodeReference;
 
+/**
+ * Model POJO for a node moved event.
+ */
 public class NodeMovedEventModel extends NodeMeshEventModel {
 
 	@JsonProperty(required = true)

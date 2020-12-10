@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.rest.node.field;
 
+/**
+ * The HTML field stores plain HTML data.
+ */
 public interface HtmlField extends ListableField, MicroschemaListableField {
 
 	/**

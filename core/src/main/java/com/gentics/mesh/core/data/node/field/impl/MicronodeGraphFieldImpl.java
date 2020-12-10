@@ -43,7 +43,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 /**
- * See {@link MicronodeGraphField}
+ * @see MicronodeGraphField
  */
 public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGraphField {
 

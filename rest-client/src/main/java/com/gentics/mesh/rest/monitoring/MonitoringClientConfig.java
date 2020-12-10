@@ -2,7 +2,11 @@ package com.gentics.mesh.rest.monitoring;
 
 import java.util.Objects;
 
+/**
+ * REST Client configuration and builder for the monitoring client.
+ */
 public class MonitoringClientConfig {
+
 	private final String host;
 	private final String basePath;
 	private final int port;
