@@ -92,6 +92,7 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 		// Check if an active transaction already exists.
 		Tx activeTx = Tx.get();
 		if (activeTx != null) {
+			//TODO Use this spot here to check for nested / wrapped transactions. Nested Tx must not be used when using MDM / Hibernate
 			isWrapped = true;
 			init(activeTx.getGraph());
 		} else {
