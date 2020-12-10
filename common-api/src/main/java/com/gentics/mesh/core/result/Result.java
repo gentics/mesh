@@ -17,10 +17,25 @@ public interface Result<T> extends Iterable<T> {
 	 */
 	boolean isEmpty();
 
+	/**
+	 * Return the next element or null when no next element could be loaded.
+	 * 
+	 * @return
+	 */
 	T nextOrNull();
 
+	/**
+	 * Return the next element.
+	 * 
+	 * @return
+	 */
 	T next();
 
+	/**
+	 * Check whether the result has a next element.
+	 * 
+	 * @return
+	 */
 	boolean hasNext();
 
 	/**
@@ -45,7 +60,9 @@ public interface Result<T> extends Iterable<T> {
 	Iterable<T> iterable();
 
 	/**
-	 * Count the results. Please note that this will seek the datastream and calls to {@link #next()} or {@link #nextOrNull()} or {@link #stream()} will yield no element/s.
+	 * Count the results. Please note that this will seek the datastream and calls to {@link #next()} or {@link #nextOrNull()} or {@link #stream()} will yield
+	 * no element/s.
+	 * 
 	 * @return
 	 */
 	long count();
