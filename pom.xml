@@ -60,15 +60,6 @@
 				<role>Core Developer</role>
 			</roles>
 		</developer>
-		<developer>
-			<name>Philipp Gürtler</name>
-			<url>https://github.com/philippguertler</url>
-			<email>p.guertler@gentics.com</email>
-			<organization>Gentics Software</organization>
-			<roles>
-				<role>Core Developer</role>
-			</roles>
-		</developer>
 	</developers>
 
 	<organization>
