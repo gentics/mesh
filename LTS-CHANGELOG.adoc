@@ -26,6 +26,8 @@ icon:check[] OrientDB: A bug in the startup order has been fixed which prevented
 
 icon:check[] Core: An uploading of PDF binary files with complex metadata is improved.
 
+icon:check[] OrientDB: A bug in the startup order has been fixed which prevented opening of databases via OrientDB Studio.
+
 [[v1.4.18]]
 == 1.4.18 (18.11.2020)
 
