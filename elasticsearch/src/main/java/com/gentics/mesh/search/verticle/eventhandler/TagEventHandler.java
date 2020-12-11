@@ -30,6 +30,9 @@ import com.gentics.mesh.search.verticle.entity.MeshEntities;
 
 import io.reactivex.Flowable;
 
+/**
+ * Search index handler for tagging events.
+ */
 @Singleton
 public class TagEventHandler implements EventHandler {
 	

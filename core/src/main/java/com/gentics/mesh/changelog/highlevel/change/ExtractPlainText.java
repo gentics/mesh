@@ -26,6 +26,9 @@ import dagger.Lazy;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Changelog entry which re-runs the tika extraction.
+ */
 @Singleton
 public class ExtractPlainText extends AbstractHighLevelChange {
 

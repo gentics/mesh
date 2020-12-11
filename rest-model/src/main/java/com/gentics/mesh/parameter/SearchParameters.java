@@ -2,6 +2,9 @@ package com.gentics.mesh.parameter;
 
 import java.util.Optional;
 
+/**
+ * Interface for search query parameters.
+ */
 public interface SearchParameters extends ParameterProvider {
 
 	String WAIT_PARAMETER_KEY = "wait";

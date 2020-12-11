@@ -29,6 +29,9 @@ import io.vertx.micrometer.MetricsDomain;
 import io.vertx.micrometer.MicrometerMetricsOptions;
 import io.vertx.micrometer.VertxPrometheusOptions;
 
+/**
+ * Dagger module for micrometer related options and registries. 
+ */
 @Module
 public class MicrometerModule {
 

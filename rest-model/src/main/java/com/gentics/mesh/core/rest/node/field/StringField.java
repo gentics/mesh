@@ -1,7 +1,11 @@
 package com.gentics.mesh.core.rest.node.field;
 
+import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 
+/**
+ * REST POJO for string field information. Please note that {@link FieldMap} will handle the actual JSON format building.
+ */
 public interface StringField extends ListableField, MicroschemaListableField {
 
 	/**
@@ -27,6 +31,7 @@ public interface StringField extends ListableField, MicroschemaListableField {
 
 	/**
 	 * Convenience method of creating a simple string field.
+	 * 
 	 * @param value
 	 * @return
 	 */

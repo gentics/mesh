@@ -406,7 +406,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	@Deprecated
 	public Tx tx() {
-		//return new OrientDBTx(options, this, boot.get(), daos.get(), txProvider, resolver, commitTimer, permissionRoots.get());
 		return txFactory.create(txProvider, resolver).tx();
 	}
 

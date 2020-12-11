@@ -41,6 +41,9 @@ import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.syncleus.ferma.ElementFrame;
 
+/**
+ * @see MicroschemaVersion
+ */
 public class MicroschemaContainerVersionImpl extends
 	AbstractGraphFieldSchemaContainerVersion<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, HibMicroschemaVersion, HibMicroschema>
 	implements MicroschemaVersion {

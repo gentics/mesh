@@ -13,6 +13,9 @@ import io.vertx.core.logging.LoggerFactory;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 
+/**
+ * Helper class to handle unzipping of the demo content.
+ */
 public class DemoZipHelper {
 
 	private static final Logger log = LoggerFactory.getLogger(DemoZipHelper.class);

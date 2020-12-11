@@ -28,6 +28,9 @@ import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
 
 import io.reactivex.Flowable;
 
+/**
+ * @see UserIndexHandler
+ */
 @Singleton
 public class UserIndexHandlerImpl extends AbstractIndexHandler<HibUser> implements UserIndexHandler {
 

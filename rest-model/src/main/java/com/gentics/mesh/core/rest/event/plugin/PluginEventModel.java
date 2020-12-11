@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.event.AbstractMeshEventModel;
 
+/**
+ * Event POJO for plugin state change events.
+ */
 public class PluginEventModel extends AbstractMeshEventModel {
 
 	@JsonProperty(required = true)

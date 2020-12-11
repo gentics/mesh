@@ -14,6 +14,10 @@ import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
 
+
+/**
+ * Endpoint for /api/v1/:projectName
+ */
 public class ProjectInfoEndpoint extends AbstractInternalEndpoint {
 
 	private ProjectCrudHandler crudHandler;

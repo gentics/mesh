@@ -7,6 +7,9 @@ import com.gentics.mesh.core.rest.event.AbstractMeshEventModel;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.tag.TagReference;
 
+/**
+ * POJO for a branch tagging event.
+ */
 public class BranchTaggedEventModel extends AbstractMeshEventModel {
 
 	@JsonProperty(required = true)

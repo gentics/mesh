@@ -42,6 +42,9 @@ import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
 
 import io.reactivex.Flowable;
 
+/**
+ * Handler for node content events which will be processed into {@link SearchRequest} for Elasticsearch synchronization.
+ */
 @Singleton
 public class NodeContentEventHandler implements EventHandler {
 	private final MeshHelper helper;

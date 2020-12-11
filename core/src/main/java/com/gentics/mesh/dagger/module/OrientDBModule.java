@@ -84,6 +84,9 @@ import dagger.Binds;
 import dagger.Module;
 import dagger.Provides;
 
+/**
+ * Dagger module for OrientDB specific dependencies.
+ */
 @Module(includes = { OrientDBCoreModule.class })
 public abstract class OrientDBModule {
 

@@ -23,6 +23,7 @@ import com.gentics.madl.tx.TxAction1;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.NodeDAOActions;
+import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
@@ -110,7 +111,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				HibNode node = crudActions().loadByUuid(context(tx, ac), uuid, DELETE_PERM, true);
-				Language language = boot.meshRoot().getLanguageRoot().findByLanguageTag(languageTag);
+				HibLanguage language = tx.languageDao().findByLanguageTag(languageTag);
 				if (language == null) {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
 				}

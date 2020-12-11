@@ -32,6 +32,9 @@ import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Endpoint for /api/v1/:project/tagFamilies
+ */
 public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 
 	private static final Logger log = LoggerFactory.getLogger(TagFamilyEndpoint.class);

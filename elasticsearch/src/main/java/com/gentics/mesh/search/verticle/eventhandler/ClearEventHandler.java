@@ -18,6 +18,9 @@ import static com.gentics.mesh.core.rest.MeshEvent.INDEX_CLEAR_REQUEST;
 import java.util.Collection;
 import java.util.Collections;
 
+/**
+ * Handler which handles the purge / clear operation on all managed indices.
+ */
 @Singleton
 public class ClearEventHandler implements EventHandler {
 	private static final Logger log = LoggerFactory.getLogger(ClearEventHandler.class);
@@ -34,8 +37,7 @@ public class ClearEventHandler implements EventHandler {
 		return Flowable.just(SearchRequest.create(provider -> provider.clear()
 			.andThen(Completable.fromAction(() -> vertx.eventBus().publish(INDEX_CLEAR_FINISHED.address, null)))
 			.doOnSubscribe(ignore -> log.info("Clearing indices"))
-			.doOnComplete(() -> log.info("Clearing indices complete")))
-		);
+			.doOnComplete(() -> log.info("Clearing indices complete"))));
 	}
 
 	@Override

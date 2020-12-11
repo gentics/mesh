@@ -22,6 +22,7 @@ import io.vertx.reactivex.core.Vertx;
 
 @Singleton
 public class SystemInfoProvider implements DebugInfoProvider {
+
 	private final Vertx vertx;
 
 	@Inject

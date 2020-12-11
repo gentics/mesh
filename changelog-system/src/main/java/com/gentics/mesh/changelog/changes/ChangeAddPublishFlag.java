@@ -4,6 +4,9 @@ import com.gentics.mesh.changelog.AbstractChange;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Vertex;
 
+/**
+ * Changelog entry which migrates the publish flag. 
+ */
 public class ChangeAddPublishFlag extends AbstractChange {
 
 	@Override

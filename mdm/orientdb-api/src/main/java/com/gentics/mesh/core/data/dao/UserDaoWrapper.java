@@ -27,15 +27,6 @@ import com.gentics.mesh.parameter.PagingParameters;
 public interface UserDaoWrapper extends UserDao, DaoWrapper<HibUser>, DaoTransformable<HibUser, UserResponse> {
 
 	/**
-	 * Return the sub etag for the given user.
-	 * 
-	 * @param user
-	 * @param ac
-	 * @return
-	 */
-	String getSubETag(HibUser user, InternalActionContext ac);
-
-	/**
 	 * 
 	 * @return
 	 */

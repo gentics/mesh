@@ -57,6 +57,9 @@ import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.file.FileProps;
 import io.vertx.reactivex.core.file.FileSystem;
 
+/**
+ * Handler for binary transformer requests.
+ */
 @Singleton
 public class BinaryTransformHandler extends AbstractHandler {
 
@@ -150,22 +153,22 @@ public class BinaryTransformHandler extends AbstractHandler {
 
 		// Read and resize the original image and store the result in the filesystem
 		Single<TransformationResult> obsTransformation = db.tx(() -> imageManipulator.handleResize(binaryField, parameters))
-		.flatMap(file -> {
-			// Hash the resized image data and store it using the computed fieldUuid + hash
-			Flowable<Buffer> stream = fs.rxOpen(file, new OpenOptions()).flatMapPublisher(RxUtil::toBufferFlow);
-			Single<String> hash = FileUtils.hash(stream);
+			.flatMap(file -> {
+				// Hash the resized image data and store it using the computed fieldUuid + hash
+				Flowable<Buffer> stream = fs.rxOpen(file, new OpenOptions()).flatMapPublisher(RxUtil::toBufferFlow);
+				Single<String> hash = FileUtils.hash(stream);
 
-			// The image was stored and hashed. Now we need to load the stored file again and check the image properties
-			Single<ImageInfo> info = imageManipulator.readImageInfo(file);
+				// The image was stored and hashed. Now we need to load the stored file again and check the image properties
+				Single<ImageInfo> info = imageManipulator.readImageInfo(file);
 
-			Single<FileProps> fileProps = fs.rxProps(file);
+				Single<FileProps> fileProps = fs.rxProps(file);
 
-			return Single.zip(hash, info, fileProps, (hashV, infoV, props) -> {
-				// Return a POJO which hold all information that is needed to update the field
-				TransformationResult result = new TransformationResult(hashV, props.size(), infoV, file);
-				return Single.just(result);
-			}).flatMap(e -> e);
-		});
+				return Single.zip(hash, info, fileProps, (hashV, infoV, props) -> {
+					// Return a POJO which hold all information that is needed to update the field
+					TransformationResult result = new TransformationResult(hashV, props.size(), infoV, file);
+					return Single.just(result);
+				}).flatMap(e -> e);
+			});
 
 		obsTransformation.flatMap(r -> {
 			db.tx(tx -> {
@@ -220,7 +223,8 @@ public class BinaryTransformHandler extends AbstractHandler {
 			HibBranch branch = tx.getBranch(ac);
 
 			// Create a new node version field container to store the upload
-			NodeGraphFieldContainer newDraftVersion = contentDao.createGraphFieldContainer(node, languageTag, branch, ac.getUser(), latestDraftVersion, true);
+			NodeGraphFieldContainer newDraftVersion = contentDao.createGraphFieldContainer(node, languageTag, branch, ac.getUser(),
+				latestDraftVersion, true);
 
 			// TODO Add conflict checking
 

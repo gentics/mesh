@@ -3,6 +3,9 @@ package com.gentics.mesh.core.rest.schema.impl;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
 
+/**
+ * @see NumberFieldSchema
+ */
 public class NumberFieldSchemaImpl extends AbstractFieldSchema implements NumberFieldSchema {
 
 	//	private Integer min;

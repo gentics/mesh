@@ -5,6 +5,9 @@ import java.math.BigInteger;
 
 import org.apache.commons.lang.StringUtils;
 
+/**
+ * Extended utility class to handle number conversions.
+ */
 public final class NumberUtils extends org.apache.commons.lang.math.NumberUtils {
 
 	/**

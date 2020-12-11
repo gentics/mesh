@@ -5,6 +5,9 @@ import java.util.List;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
 
+/**
+ * Registry for index handlers keep track of various listed handlers.
+ */
 public interface IndexHandlerRegistry {
 
 	/**

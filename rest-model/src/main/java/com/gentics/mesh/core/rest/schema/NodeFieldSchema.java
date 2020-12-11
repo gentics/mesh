@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.rest.schema;
 
+/**
+ * Interface for a schema definition of a node field.
+ */
 public interface NodeFieldSchema extends FieldSchema {
 
 	/**
@@ -13,7 +16,7 @@ public interface NodeFieldSchema extends FieldSchema {
 	 * Set the allowed schema white list for the node field.
 	 * 
 	 * @param allowedSchemas
-	 * @return Fluent API 
+	 * @return Fluent API
 	 */
 	NodeFieldSchema setAllowedSchemas(String... allowedSchemas);
 

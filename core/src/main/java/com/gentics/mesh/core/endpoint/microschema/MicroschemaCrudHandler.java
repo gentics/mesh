@@ -40,6 +40,9 @@ import com.gentics.mesh.util.UUIDUtil;
 
 import dagger.Lazy;
 
+/**
+ * Handler for /api/v1/microschemas CRUD operations.
+ */
 public class MicroschemaCrudHandler extends AbstractCrudHandler<HibMicroschema, MicroschemaResponse> {
 
 	private MicroschemaComparatorImpl comparator;

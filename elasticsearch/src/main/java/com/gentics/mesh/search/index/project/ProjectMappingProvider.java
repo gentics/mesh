@@ -11,6 +11,9 @@ import com.gentics.mesh.search.index.AbstractMappingProvider;
 
 import io.vertx.core.json.JsonObject;
 
+/**
+ * Provider for elasticsearch project index mapping.
+ */
 @Singleton
 public class ProjectMappingProvider extends AbstractMappingProvider {
 

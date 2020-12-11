@@ -2,6 +2,9 @@ package com.gentics.mesh.parameter;
 
 import org.apache.commons.lang.BooleanUtils;
 
+/**
+ * Interface for backup query parameters.
+ */
 public interface BackupParameters extends ParameterProvider {
 
 	public static final String CONSISTENCY_CHECK_PARAMETER_KEY = "consistencyCheck";

@@ -1,5 +1,9 @@
 package com.gentics.mesh.core.rest.error;
 
+/**
+ * Exception for etag mismatch errors. 
+ * The failure handler will process this exception and return a corresponding response error code. 
+ */
 public class NotModifiedException extends RuntimeException {
 
 	private static final long serialVersionUID = -8156052697627682011L;

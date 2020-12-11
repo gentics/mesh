@@ -3,6 +3,9 @@ package com.gentics.mesh.parameter;
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.util.NumberUtils;
 
+/**
+ * Interface for paging query parameters.
+ */
 public interface PagingParameters extends ParameterProvider {
 
 	public static final String PAGE_PARAMETER_KEY = "page";

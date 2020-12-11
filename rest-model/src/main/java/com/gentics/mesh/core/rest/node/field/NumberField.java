@@ -1,5 +1,10 @@
 package com.gentics.mesh.core.rest.node.field;
 
+import com.gentics.mesh.core.rest.node.FieldMap;
+
+/**
+ * REST POJO for number field information. Please note that {@link FieldMap} will handle the actual JSON format building.
+ */
 public interface NumberField extends ListableField, MicroschemaListableField {
 
 	/**

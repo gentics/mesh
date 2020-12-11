@@ -37,6 +37,10 @@ import com.gentics.mesh.search.verticle.entity.MeshEntities;
 
 import io.reactivex.Flowable;
 
+/**
+ * Event handler for permission change events. A permission change event may require documents to be updated since the document also contain references to the
+ * roleUuids which grant read to those elements.
+ */
 @Singleton
 public class PermissionChangedEventHandler implements EventHandler {
 
@@ -79,7 +83,7 @@ public class PermissionChangedEventHandler implements EventHandler {
 		NodeContainerTransformer tf = (NodeContainerTransformer) meshEntities.nodeContent.getTransformer();
 		return meshHelper.getDb().tx(tx -> {
 			ProjectDaoWrapper projectDao = tx.projectDao();
-			BranchDaoWrapper branchDao =  tx.branchDao();
+			BranchDaoWrapper branchDao = tx.branchDao();
 			NodeDaoWrapper nodeDao = tx.nodeDao();
 
 			return ofNullable(projectDao.findByUuid(model.getProject().getUuid()))

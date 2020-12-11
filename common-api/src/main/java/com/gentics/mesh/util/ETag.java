@@ -4,6 +4,9 @@ import java.nio.charset.StandardCharsets;
 
 import com.google.common.hash.Hashing;
 
+/**
+ * Helper class to manage HTTP ETags.
+ */
 public class ETag {
 
 	/**

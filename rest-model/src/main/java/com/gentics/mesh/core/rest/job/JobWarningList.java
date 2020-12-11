@@ -6,6 +6,9 @@ import java.util.List;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.job.warning.JobWarning;
 
+/**
+ * POJO for warnings within a {@link JobResponse}
+ */
 public class JobWarningList implements RestModel {
 
 	private List<JobWarning> data = new ArrayList<>();

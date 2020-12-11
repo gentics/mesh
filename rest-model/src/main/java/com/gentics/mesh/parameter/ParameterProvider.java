@@ -6,6 +6,9 @@ import java.util.Map.Entry;
 import org.apache.commons.lang.BooleanUtils;
 import org.raml.model.parameter.QueryParameter;
 
+/**
+ * Common interface for query parameters.
+ */
 public interface ParameterProvider {
 
 	/**

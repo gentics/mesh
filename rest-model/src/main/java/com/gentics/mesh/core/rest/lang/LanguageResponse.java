@@ -2,6 +2,9 @@ package com.gentics.mesh.core.rest.lang;
 
 import com.gentics.mesh.core.rest.common.AbstractResponse;
 
+/**
+ * POJO for a language response.
+ */
 public class LanguageResponse extends AbstractResponse {
 
 	private String name;

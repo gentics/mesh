@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.rest.plugin;
 
+/**
+ * Status list for Gentics Mesh Plugins. 
+ */
 public enum PluginStatus {
 
 	/**

@@ -3,7 +3,11 @@ package com.gentics.mesh.rest.client.method;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.impl.EmptyResponse;
 
+/**
+ * REST client methods for health checks.
+ */
 public interface HealthClientMethods {
+
 	/**
 	 * Invoke a readiness probe request.
 	 *

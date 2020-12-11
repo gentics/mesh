@@ -2,8 +2,11 @@ package com.gentics.mesh.core.rest.node.field;
 
 import java.util.Map;
 
+import com.gentics.mesh.core.rest.node.FieldMap;
+
 /**
  * A node field is a field which contains a node reference to other nodes.
+ * Please note that {@link FieldMap} will handle the actual JSON format building.
  */
 public interface NodeField extends ListableField, MicroschemaListableField {
 

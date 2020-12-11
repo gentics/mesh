@@ -24,6 +24,9 @@ import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
+/**
+ * Endpoint for /api/v1/roles
+ */
 public class RoleEndpoint extends AbstractInternalEndpoint {
 
 	private RoleCrudHandlerImpl crudHandler;

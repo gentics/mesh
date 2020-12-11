@@ -5,6 +5,9 @@ import org.apache.commons.lang.BooleanUtils;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Interface for schema update query parameters.
+ */
 public interface SchemaUpdateParameters extends ParameterProvider {
 
 	/**

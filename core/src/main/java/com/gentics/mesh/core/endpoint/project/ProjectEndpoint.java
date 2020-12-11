@@ -26,6 +26,9 @@ import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
+/**
+ * Endpoint for /api/v1/projects
+ */
 public class ProjectEndpoint extends AbstractInternalEndpoint {
 
 	private ProjectCrudHandler crudHandler;

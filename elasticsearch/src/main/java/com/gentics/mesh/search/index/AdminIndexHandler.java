@@ -29,6 +29,9 @@ import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Handler for index admin operations (purge,sync)
+ */
 @Singleton
 public class AdminIndexHandler {
 
@@ -47,7 +50,8 @@ public class AdminIndexHandler {
 	private HandlerUtilities utils;
 
 	@Inject
-	public AdminIndexHandler(Vertx vertx, Database db, SearchProvider searchProvider, SyncEventHandler syncVerticle, IndexHandlerRegistryImpl registry, HandlerUtilities utils) {
+	public AdminIndexHandler(Vertx vertx, Database db, SearchProvider searchProvider, SyncEventHandler syncVerticle,
+		IndexHandlerRegistryImpl registry, HandlerUtilities utils) {
 		this.vertx = vertx;
 		this.db = db;
 		this.searchProvider = searchProvider;
@@ -71,11 +75,9 @@ public class AdminIndexHandler {
 			metrics.put(type, handler.getMetrics());
 		}
 
-		return searchProvider.isAvailable().map(available ->
-			new SearchStatusResponse()
-				.setMetrics(metrics)
-				.setAvailable(available)
-		);
+		return searchProvider.isAvailable().map(available -> new SearchStatusResponse()
+			.setMetrics(metrics)
+			.setAvailable(available));
 	}
 
 	public void handleSync(InternalActionContext ac) {
@@ -95,7 +97,7 @@ public class AdminIndexHandler {
 			if (isAdmin) {
 				return searchProvider.clear()
 					.andThen(Observable.fromIterable(registry.getHandlers())
-					.flatMapCompletable(handler -> handler.init()));
+						.flatMapCompletable(handler -> handler.init()));
 			} else {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}

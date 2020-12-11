@@ -5,6 +5,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import com.gentics.mesh.util.VersionNumber;
 
+/**
+ * Interface for versioning query parameters.
+ */
 public interface VersioningParameters extends ParameterProvider {
 
 	public static final String BRANCH_QUERY_PARAM_KEY = "branch";

@@ -27,6 +27,9 @@ import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
 import io.vertx.core.http.HttpHeaders;
 
+/**
+ * Endpoint for /api/v1/users
+ */
 public class UserEndpoint extends AbstractInternalEndpoint {
 
 	private UserCrudHandler crudHandler;

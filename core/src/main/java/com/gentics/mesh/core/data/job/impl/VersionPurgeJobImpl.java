@@ -25,6 +25,9 @@ import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Graph entity for version purge jobs.
+ */
 public class VersionPurgeJobImpl extends JobImpl {
 
 	private static final Logger log = LoggerFactory.getLogger(VersionPurgeJobImpl.class);

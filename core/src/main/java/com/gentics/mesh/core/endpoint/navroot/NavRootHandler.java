@@ -25,6 +25,9 @@ import com.gentics.mesh.path.impl.PathSegmentImpl;
 
 import io.vertx.ext.web.RoutingContext;
 
+/**
+ * Handler for nav root requests.
+ */
 public class NavRootHandler {
 
 	private WebRootServiceImpl webrootService;

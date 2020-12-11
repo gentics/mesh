@@ -11,6 +11,9 @@ import com.gentics.mesh.parameter.image.ImageRect;
 import com.gentics.mesh.parameter.image.ResizeMode;
 import com.gentics.mesh.util.NumberUtils;
 
+/**
+ * Interface for image manipulation query parameters.
+ */
 public interface ImageManipulationParameters extends ParameterProvider {
 
 	public static final String WIDTH_QUERY_PARAM_KEY = "w";

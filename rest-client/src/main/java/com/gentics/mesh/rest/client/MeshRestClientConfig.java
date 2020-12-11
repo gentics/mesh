@@ -93,6 +93,9 @@ public class MeshRestClientConfig {
 		return new Builder();
 	}
 
+	/**
+	 * Builder for the REST config
+	 */
 	public static class Builder {
 		private String host;
 		private String basePath = "/api/v1";

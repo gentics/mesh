@@ -11,6 +11,9 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 
 import io.vertx.core.json.JsonObject;
 
+/**
+ * POJO for a microschema update request.
+ */
 public class MicroschemaUpdateRequest implements MicroschemaVersionModel {
 
 	@JsonProperty(required = false)

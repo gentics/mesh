@@ -3,6 +3,9 @@ package com.gentics.mesh.util;
 import java.util.List;
 import java.util.ListIterator;
 
+/**
+ * Utils used for comparing objects.
+ */
 public final class CompareUtils {
 
 	/**

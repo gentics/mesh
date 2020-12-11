@@ -26,6 +26,9 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
+/**
+ * Endpoint for /api/v1/microschemas
+ */
 public class MicroschemaEndpoint extends AbstractInternalEndpoint {
 
 	private MicroschemaCrudHandler crudHandler;

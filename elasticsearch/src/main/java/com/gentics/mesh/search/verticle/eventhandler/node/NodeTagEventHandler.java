@@ -7,7 +7,6 @@ import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.toFlowable;
 
-
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -25,8 +24,12 @@ import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
 
 import io.reactivex.Flowable;
 
+/**
+ * Handler for node tagging events which will be processed into {@link SearchRequest} for Elasticsearch synchronization.
+ */
 @Singleton
 public class NodeTagEventHandler implements EventHandler {
+
 	private final MeshHelper helper;
 	private final MeshEntities entities;
 
@@ -41,13 +44,12 @@ public class NodeTagEventHandler implements EventHandler {
 		return Arrays.asList(NODE_TAGGED, NODE_UNTAGGED);
 	}
 
-
 	@Override
 	public Flowable<SearchRequest> handle(MessageEvent messageEvent) {
 		return Flowable.defer(() -> {
 			NodeTaggedEventModel model = requireType(NodeTaggedEventModel.class, messageEvent.message);
 			return helper.getDb().transactional(tx -> {
-				//ProjectDaoWrapper projectDao = tx.projectDao();
+				// ProjectDaoWrapper projectDao = tx.projectDao();
 				return findElementByUuidStream(helper.getBoot().projectRoot(), model.getProject().getUuid())
 					.flatMap(project -> findElementByUuidStream(toGraph(project).getBranchRoot(), model.getBranch().getUuid())
 						.flatMap(branch -> entities.generateNodeRequests(model.getNode().getUuid(), project, branch)))

@@ -5,6 +5,9 @@ import java.util.Optional;
 
 import com.gentics.mesh.util.DateUtils;
 
+/**
+ * Interface for project purge query parameters.
+ */
 public interface ProjectPurgeParameters extends ParameterProvider {
 
 	public static final String BEFORE_QUERY_PARAM_KEY = "before";

@@ -34,6 +34,9 @@ import com.gentics.mesh.graphdb.spi.Database;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Handler for /api/v1/roles endpoint crud operations.
+ */
 public class RoleCrudHandlerImpl extends AbstractCrudHandler<HibRole, RoleResponse> implements RoleCrudHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(RoleCrudHandlerImpl.class);
@@ -148,7 +151,8 @@ public class RoleCrudHandlerImpl extends AbstractCrudHandler<HibRole, RoleRespon
 						}
 					}
 					// 3. Apply the permission actions
-					roleDao.applyPermissions(element, batch, role, BooleanUtils.isTrue(requestModel.getRecursive()), permissionsToGrant, permissionsToRevoke);
+					roleDao.applyPermissions(element, batch, role, BooleanUtils.isTrue(requestModel.getRecursive()), permissionsToGrant,
+						permissionsToRevoke);
 					return role.getName();
 				});
 				if (ac.getSecurityLogger().isInfoEnabled()) {

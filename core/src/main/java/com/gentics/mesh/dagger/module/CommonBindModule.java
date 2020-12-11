@@ -128,6 +128,9 @@ import com.gentics.mesh.storage.LocalBinaryStorageImpl;
 import dagger.Binds;
 import dagger.Module;
 
+/**
+ * Dagger module for common bindings
+ */
 @Module
 public abstract class CommonBindModule {
 	@Binds

@@ -15,6 +15,11 @@ import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 
 import io.vertx.ext.web.Route;
 
+/**
+ * Endpoint for /api/v1/languages
+ * 
+ * NOTE: This endpoint is currently not active
+ */
 public class LanguageEndpoint extends AbstractProjectEndpoint {
 
 	@Inject

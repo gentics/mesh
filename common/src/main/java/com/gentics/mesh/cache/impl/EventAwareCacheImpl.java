@@ -27,6 +27,9 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * @see EventAwareCache
+ */
 public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 
 	private static final Logger log = LoggerFactory.getLogger(EventAwareCacheImpl.class);
@@ -48,9 +51,10 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 	private final Counter missCounter;
 	private final Counter hitCounter;
 
-	public EventAwareCacheImpl(String name, long maxSize, Duration expireAfter, Vertx vertx, MeshOptions options, MetricsService metricsService, Predicate<Message<JsonObject>> filter,
-							   BiConsumer<Message<JsonObject>, EventAwareCache<K, V>> onNext,
-							   MeshEvent... events) {
+	public EventAwareCacheImpl(String name, long maxSize, Duration expireAfter, Vertx vertx, MeshOptions options, MetricsService metricsService,
+		Predicate<Message<JsonObject>> filter,
+		BiConsumer<Message<JsonObject>, EventAwareCache<K, V>> onNext,
+		MeshEvent... events) {
 		this.vertx = vertx;
 		this.options = options;
 		Caffeine<Object, Object> cacheBuilder = Caffeine.newBuilder().maximumSize(maxSize);
@@ -193,7 +197,8 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 			Objects.requireNonNull(events, "No events for the cache have been set");
 			Objects.requireNonNull(vertx, "No Vert.x instance has been set");
 			Objects.requireNonNull(name, "No name has been set");
-			EventAwareCacheImpl<K, V> c = new EventAwareCacheImpl<>(name, maxSize, expireAfter, vertx, options, metricsService, filter, onNext, events);
+			EventAwareCacheImpl<K, V> c = new EventAwareCacheImpl<>(name, maxSize, expireAfter, vertx, options, metricsService, filter, onNext,
+				events);
 			if (disabled) {
 				c.disable();
 			}
@@ -255,6 +260,7 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 
 		/**
 		 * Sets the mesh options which will be used to determine if cache metrics are enabled.
+		 * 
 		 * @param options
 		 * @return
 		 */
@@ -265,6 +271,7 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 
 		/**
 		 * Set the metrics service which will be used to track caching statistics.
+		 * 
 		 * @param metricsService
 		 * @return
 		 */
@@ -298,6 +305,7 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 
 		/**
 		 * Sets the name for the cache. This is used for caching metrics.
+		 * 
 		 * @param name
 		 * @return Fluent API
 		 */

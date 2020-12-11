@@ -2,6 +2,9 @@ package com.gentics.mesh.core.rest.error;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
+/**
+ * Exception which can be used to return name conflict errors to clients.
+ */
 public class NameConflictException extends AbstractRestException {
 
 	public static final String TYPE = "name_conflict";
