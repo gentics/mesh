@@ -19,6 +19,9 @@ import dagger.Lazy;
 import io.vertx.core.Vertx;
 import okhttp3.OkHttpClient;
 
+/**
+ * @see PluginEnvironment
+ */
 public class PluginEnvironmentImpl implements PluginEnvironment {
 
 	private final Database db;

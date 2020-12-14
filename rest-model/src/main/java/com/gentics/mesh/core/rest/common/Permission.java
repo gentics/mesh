@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.rest.common;
 
+/**
+ * REST model for permissions.
+ */
 public enum Permission {
 
 	CREATE("create"),

@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.rest.schema;
 
+/**
+ * String field schema definition.
+ */
 public interface StringFieldSchema extends FieldSchema {
 
 	/**

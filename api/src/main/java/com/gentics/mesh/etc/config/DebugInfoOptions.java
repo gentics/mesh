@@ -6,6 +6,9 @@ import com.gentics.mesh.doc.GenerateDocumentation;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 import com.gentics.mesh.etc.config.env.Option;
 
+/**
+ * Options related to the debuginfo endpoint.
+ */
 @GenerateDocumentation
 public class DebugInfoOptions implements Option {
 

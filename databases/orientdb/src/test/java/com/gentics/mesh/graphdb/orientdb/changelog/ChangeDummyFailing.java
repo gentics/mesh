@@ -2,6 +2,9 @@ package com.gentics.mesh.graphdb.orientdb.changelog;
 
 import com.gentics.mesh.changelog.AbstractChange;
 
+/**
+ * Test change which fails.
+ */
 public class ChangeDummyFailing extends AbstractChange {
 
 	@Override

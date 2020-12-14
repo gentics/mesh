@@ -25,6 +25,9 @@ import com.gentics.mesh.parameter.PagingParameters;
 
 import dagger.Lazy;
 
+/**
+ * @see TagDAOActions
+ */
 @Singleton
 public class TagDAOActionsImpl implements TagDAOActions {
 

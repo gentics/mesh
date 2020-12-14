@@ -4,6 +4,9 @@ import java.util.Iterator;
 
 import com.gentics.mesh.core.data.MeshVertex;
 
+/**
+ * Root element for @link {@link ChangeMarkerVertex} vertices.
+ */
 public interface ChangelogRoot extends MeshVertex {
 
 	/**

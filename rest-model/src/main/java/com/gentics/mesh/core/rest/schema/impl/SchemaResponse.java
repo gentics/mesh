@@ -12,6 +12,9 @@ import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 
 import io.vertx.core.json.JsonObject;
 
+/**
+ * REST model of a schema.
+ */
 public class SchemaResponse extends AbstractGenericRestResponse implements SchemaVersionModel {
 
 	@JsonProperty(required = true)

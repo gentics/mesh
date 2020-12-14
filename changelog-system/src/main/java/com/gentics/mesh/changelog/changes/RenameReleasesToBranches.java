@@ -12,6 +12,9 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 
+/**
+ * Changelog entry which renames releases to branches.
+ */
 public class RenameReleasesToBranches extends AbstractChange {
 
 	private static long EDGE_BATCH_LIMIT = 200_000;

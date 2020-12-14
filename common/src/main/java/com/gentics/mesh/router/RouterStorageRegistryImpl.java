@@ -8,6 +8,9 @@ import javax.naming.InvalidNameException;
 
 import io.vertx.core.impl.ConcurrentHashSet;
 
+/**
+ * @see RouterStorageRegistry
+ */
 @Singleton
 public class RouterStorageRegistryImpl implements RouterStorageRegistry {
 

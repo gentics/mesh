@@ -15,6 +15,9 @@ import java.time.format.DateTimeParseException;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Utility which contains date and time related methods.
+ */
 public final class DateUtils {
 
 	private static final Logger log = LoggerFactory.getLogger(DateUtils.class);

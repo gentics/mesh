@@ -12,6 +12,9 @@ import com.gentics.mesh.search.index.AbstractMappingProvider;
 
 import io.vertx.core.json.JsonObject;
 
+/**
+ * ES Mapping provider for schema indices.
+ */
 @Singleton
 public class SchemaMappingProvider extends AbstractMappingProvider {
 

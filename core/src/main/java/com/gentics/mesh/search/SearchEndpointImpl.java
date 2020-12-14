@@ -44,6 +44,9 @@ import com.gentics.mesh.search.index.user.UserSearchHandler;
 
 import dagger.Lazy;
 
+/**
+ * @see SearchEndpoint
+ */
 public class SearchEndpointImpl extends AbstractInternalEndpoint implements SearchEndpoint {
 
 	private Lazy<BootstrapInitializer> boot;

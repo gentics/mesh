@@ -8,6 +8,9 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 
+/**
+ * @see ChangelogRoot
+ */
 public class ChangelogRootImpl extends MeshVertexImpl implements ChangelogRoot {
 
 	public static void init(TypeHandler type, IndexHandler index) {

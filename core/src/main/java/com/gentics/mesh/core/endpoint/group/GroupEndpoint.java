@@ -30,6 +30,9 @@ import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
+/**
+ * Endpoint defintion for /api/v1/groups
+ */
 public class GroupEndpoint extends AbstractInternalEndpoint {
 
 	private GroupCrudHandler crudHandler;

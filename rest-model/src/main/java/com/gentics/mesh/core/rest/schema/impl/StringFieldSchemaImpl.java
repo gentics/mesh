@@ -9,6 +9,9 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 
+/**
+ * @see StringFieldSchema
+ */
 public class StringFieldSchemaImpl extends AbstractFieldSchema implements StringFieldSchema {
 
 	@JsonProperty("allow")

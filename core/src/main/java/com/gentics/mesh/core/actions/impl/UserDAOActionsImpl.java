@@ -21,6 +21,9 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
+/**
+ * @see UserDAOActions
+ */
 @Singleton
 public class UserDAOActionsImpl implements UserDAOActions {
 

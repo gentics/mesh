@@ -21,6 +21,9 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
+/**
+ * @see MicroschemaDAOActions
+ */
 @Singleton
 public class MicroschemaDAOActionsImpl implements MicroschemaDAOActions {
 

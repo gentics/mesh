@@ -2,7 +2,11 @@ package com.gentics.mesh.context.impl;
 
 import io.vertx.core.spi.logging.LogDelegate;
 
+/**
+ * Dummy logger which does not log anything
+ */
 public class DummyLogger implements LogDelegate {
+
 	@Override
 	public boolean isWarnEnabled() {
 		return false;

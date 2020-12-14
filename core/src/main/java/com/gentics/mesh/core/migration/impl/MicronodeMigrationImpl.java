@@ -43,6 +43,9 @@ import io.reactivex.exceptions.CompositeException;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * @see MicronodeMigration
+ */
 @Singleton
 public class MicronodeMigrationImpl extends AbstractMigrationHandler implements MicronodeMigration {
 

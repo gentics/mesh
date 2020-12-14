@@ -10,6 +10,9 @@ import static com.gentics.mesh.test.TestSize.PROJECT;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.NONE;
 import static com.gentics.mesh.test.context.MeshOptionChanger.NO_CHANGE;
 
+/**
+ * 
+ */
 @Retention(RetentionPolicy.RUNTIME)
 public @interface MeshTestSetting {
 

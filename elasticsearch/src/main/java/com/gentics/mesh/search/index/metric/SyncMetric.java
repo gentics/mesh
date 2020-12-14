@@ -23,14 +23,17 @@ public class SyncMetric implements Metric {
 		return null;
 	}
 
+	/**
+	 * Operation type.
+	 */
 	public enum Operation {
-		INSERT,
-		UPDATE,
-		DELETE,
+		INSERT, UPDATE, DELETE,
 	}
 
+	/**
+	 * Meter variation.
+	 */
 	public enum Meter {
-		PENDING,
-		SYNCED
+		PENDING, SYNCED
 	}
 }

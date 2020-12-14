@@ -10,6 +10,9 @@ import com.gentics.mesh.core.rest.schema.SchemaModel;
 
 import io.vertx.core.json.JsonObject;
 
+/**
+ * REST model for schema create requests. 
+ */
 public class SchemaCreateRequest implements SchemaModel {
 
 	@JsonProperty(required = false)

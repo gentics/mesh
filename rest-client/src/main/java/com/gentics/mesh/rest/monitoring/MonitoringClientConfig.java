@@ -34,6 +34,9 @@ public class MonitoringClientConfig {
 			getBasePath();
 	}
 
+	/**
+	 * Builder for the monitoring client config. 
+	 */
 	public static class Builder {
 		private String host;
 		private String basePath = "/api/v2";

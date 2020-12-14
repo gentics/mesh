@@ -18,6 +18,9 @@ import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
+/**
+ * @see GroupDAOActions
+ */
 @Singleton
 public class GroupDAOActionsImpl implements GroupDAOActions {
 

@@ -11,6 +11,9 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractSearchHandler;
 
+/**
+ * Handler for role index search operations.
+ */
 @Singleton
 public class RoleSearchHandler extends AbstractSearchHandler<HibRole, RoleResponse> {
 

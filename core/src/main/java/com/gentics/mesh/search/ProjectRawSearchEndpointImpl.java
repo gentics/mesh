@@ -9,6 +9,9 @@ import com.gentics.mesh.search.index.node.NodeSearchHandler;
 import com.gentics.mesh.search.index.tag.TagSearchHandler;
 import com.gentics.mesh.search.index.tagfamily.TagFamilySearchHandler;
 
+/**
+ * @see SearchEndpoint 
+ */
 public class ProjectRawSearchEndpointImpl extends AbstractProjectEndpoint implements SearchEndpoint {
 
 	@Inject

@@ -9,8 +9,12 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
 
+/**
+ * Utility for debug info operations.
+ */
 @Singleton
 public class DebugInfoUtil {
+
 	private final Vertx vertx;
 	private static final Logger log = LoggerFactory.getLogger(DebugInfoUtil.class);
 

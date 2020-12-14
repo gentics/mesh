@@ -2,6 +2,9 @@ package com.gentics.mesh.changelog.changes;
 
 import com.gentics.mesh.changelog.AbstractChange;
 
+/**
+ * Changelog entry to invoke a orientdb reindex for all types.
+ */
 public class ReindexDatabase extends AbstractChange {
 
 	@Override

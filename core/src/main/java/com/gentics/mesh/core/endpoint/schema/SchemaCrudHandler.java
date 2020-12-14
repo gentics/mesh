@@ -48,6 +48,9 @@ import com.gentics.mesh.util.UUIDUtil;
 
 import dagger.Lazy;
 
+/**
+ * CRUD handler for schema REST operation.
+ */
 public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResponse> {
 
 	private SchemaComparatorImpl comparator;

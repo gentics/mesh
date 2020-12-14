@@ -4,6 +4,9 @@ import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.ext.web.FileUpload;
 
+/**
+ * Context object for upload operations. The context is used to keep track of the upload data (upload, binaryUuids, storing) during the upload process.
+ */
 public class UploadContext {
 
 	private String binaryUuid;

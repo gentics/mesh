@@ -21,6 +21,9 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
+/**
+ * @see NodeDAOActions
+ */
 @Singleton
 public class NodeDAOActionsImpl implements NodeDAOActions {
 

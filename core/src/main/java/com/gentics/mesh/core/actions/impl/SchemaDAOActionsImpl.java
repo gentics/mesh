@@ -22,6 +22,9 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
+/**
+ * @see SchemaDAOActions
+ */
 @Singleton
 public class SchemaDAOActionsImpl implements SchemaDAOActions {
 

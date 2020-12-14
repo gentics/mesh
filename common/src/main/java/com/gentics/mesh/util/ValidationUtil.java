@@ -5,6 +5,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.parameter.PagingParameters;
 
+/**
+ * Utility for validating query parameters.
+ */
 public final class ValidationUtil {
 
 	private ValidationUtil() {

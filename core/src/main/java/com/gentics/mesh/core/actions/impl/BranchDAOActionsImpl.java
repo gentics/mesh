@@ -18,6 +18,9 @@ import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
+/**
+ * @see BranchDAOActions
+ */
 @Singleton
 public class BranchDAOActionsImpl implements BranchDAOActions {
 

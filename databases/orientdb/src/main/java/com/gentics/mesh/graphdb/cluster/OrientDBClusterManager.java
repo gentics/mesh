@@ -53,6 +53,14 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.TimeoutStream;
 
+/**
+ * Manager for OrientDB cluster and server features.
+ * 
+ * The manager handles the OrientDB cluster/server configuration, OrientDB studio plugin installation, OrientDB server startup.
+ * 
+ * Additionally the manager also provides methods to access the cluster information.
+ * The {@link TopologyEventBridge} is installed by the manager during the startup to handle cluster specific events.
+ */
 @Singleton
 public class OrientDBClusterManager implements ClusterManager {
 

@@ -28,6 +28,9 @@ import com.gentics.mesh.search.verticle.entity.MeshEntities;
 
 import io.reactivex.Flowable;
 
+/**
+ * Handler which processes tag family index related events. 
+ */
 @Singleton
 public class TagFamilyEventHandler implements EventHandler {
 	private final MeshHelper helper;

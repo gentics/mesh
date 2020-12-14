@@ -7,6 +7,9 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 
+/**
+ * REST model for a project create request.
+ */
 public class ProjectCreateRequest implements RestModel {
 
 	@JsonProperty(required = true)

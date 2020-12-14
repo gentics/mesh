@@ -10,6 +10,9 @@ import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 import java.util.ResourceBundle.Control;
 
+/**
+ * Extended {@link Control} which supports utf8 resource bundles.
+ */
 public class UTF8Control extends Control {
 
 	public ResourceBundle newBundle(String baseName, Locale locale, String format, ClassLoader loader, boolean reload)

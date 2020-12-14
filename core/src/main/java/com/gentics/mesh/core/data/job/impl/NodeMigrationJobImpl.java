@@ -32,6 +32,11 @@ import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Job implementation for node migrations.
+ * 
+ * The job class contains code for initialization, handler invocation and finalization of a node migration.
+ */
 public class NodeMigrationJobImpl extends JobImpl {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeMigrationJobImpl.class);

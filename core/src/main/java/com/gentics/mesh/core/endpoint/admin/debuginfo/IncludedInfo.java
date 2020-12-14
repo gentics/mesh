@@ -10,7 +10,11 @@ import java.util.stream.Stream;
 
 import io.vertx.ext.web.RoutingContext;
 
+/**
+ * Include, Exclude options for the "include" query parameter of the debug info endpoint.
+ */
 public class IncludedInfo {
+
 	private final Set<String> included;
 	private final Set<String> excluded;
 

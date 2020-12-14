@@ -16,6 +16,9 @@ import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 
+/**
+ * REST API endpoint definition for /api/v1/:project/webroot
+ */
 public class WebRootEndpoint extends AbstractProjectEndpoint {
 
 	private WebRootHandler handler;

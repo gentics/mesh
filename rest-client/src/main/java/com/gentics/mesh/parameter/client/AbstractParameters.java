@@ -5,9 +5,12 @@ import java.util.Map;
 
 import org.raml.model.parameter.QueryParameter;
 
+import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.ParameterProvider;
 
-
+/**
+ * Common default implementation for {@link PagingParameters}
+ */
 public abstract class AbstractParameters implements ParameterProvider {
 
 	protected Map<String, String> parameters = new HashMap<>();

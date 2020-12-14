@@ -5,6 +5,9 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.user.NodeReference;
 
+/**
+ * REST model for a project response.
+ */
 public class ProjectResponse extends AbstractGenericRestResponse {
 
 	@JsonProperty(required = true)

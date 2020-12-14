@@ -9,6 +9,9 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.parameter.PagingParameters;
 
+/**
+ * Load action for schemas.
+ */
 @Singleton
 public class ProjectSchemaLoadAllActionImpl implements LoadAllAction<HibSchema> {
 

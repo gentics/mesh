@@ -18,6 +18,9 @@ import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
+/**
+ * @see ProjectDAOActions
+ */
 @Singleton
 public class ProjectDAOActionsImpl implements ProjectDAOActions {
 

@@ -1,5 +1,8 @@
 package com.gentics.mesh.parameter;
 
+/**
+ * Definition for user specific query parameters.
+ */
 public interface UserParameters extends ParameterProvider {
 
 	public static final String TOKEN_PARAMETER_KEY = "token";

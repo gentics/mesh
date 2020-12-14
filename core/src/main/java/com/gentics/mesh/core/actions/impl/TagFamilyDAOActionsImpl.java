@@ -20,6 +20,9 @@ import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
+/**
+ * @see TagFamilyDAOActions
+ */
 @Singleton
 public class TagFamilyDAOActionsImpl implements TagFamilyDAOActions {
 

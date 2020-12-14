@@ -2,6 +2,9 @@ package com.gentics.mesh.parameter;
 
 import com.gentics.mesh.util.NumberUtils;
 
+/**
+ * REST query parameters which are related to the navigation endpoint.
+ */
 public interface NavigationParameters extends ParameterProvider {
 
 	public static final String MAX_DEPTH_QUERY_PARAM_KEY = "maxDepth";
