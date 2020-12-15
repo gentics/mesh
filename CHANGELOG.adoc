@@ -30,6 +30,8 @@ icon:check[] Jobs: A race condition within the job processing mechanism has been
 
 icon:check[] Jobs: New jobs will now set the correct start date and time.
 
+icon:check[] Changelog: Fix the failing on-the-fly migration introduced in 1.7.5. The migration was producing `ClassCastExceptions`.
+
 [[v1.7.5]]
 == 1.7.5 (09.11.2020)
 
