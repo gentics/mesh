@@ -21,10 +21,8 @@ public final class BucketableElementHelper {
 		if (bucketId == null) {
 			e.generateBucketId();
 			bucketId = e.getProperty(BUCKET_ID_KEY);
-			return bucketId.intValue();
-		} else {
-			return bucketId.intValue();
 		}
+		return bucketId.intValue();
 	}
 
 	/**
