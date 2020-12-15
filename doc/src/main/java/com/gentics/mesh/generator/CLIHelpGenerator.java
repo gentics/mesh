@@ -11,6 +11,10 @@ import org.apache.commons.io.FileUtils;
 
 import com.gentics.mesh.cli.MeshCLI;
 
+/**
+ * Example generator for the Mesh Server CLI help output.
+ * Note this is not related to the Mesh CLI tool.
+ */
 public class CLIHelpGenerator extends AbstractGenerator {
 
 	public CLIHelpGenerator(File outputFolder) {

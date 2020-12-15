@@ -9,6 +9,9 @@ import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.json.JsonObject;
 
+/**
+ * Cleanup of the stored schema JSON. 
+ */
 public class ChangeSanitizeSchemaJson extends AbstractChange {
 
 	@Override

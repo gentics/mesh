@@ -9,6 +9,7 @@ import java.util.Set;
 import io.vertx.core.json.JsonObject;
 
 public class TestOptions implements Option {
+
 	public static final String STRING_VALUE_ENV = "STRING_VALUE_ENV";
 	public static final String DOUBLE_VALUE_ENV = "DOUBLE_VALUE_ENV";
 	public static final String DOUBLE_VALUE_PRIMITIVE_ENV = "DOUBLE_VALUE_PRIMITIVE_ENV";

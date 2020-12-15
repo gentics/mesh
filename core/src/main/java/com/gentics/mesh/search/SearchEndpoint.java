@@ -9,6 +9,9 @@ import com.gentics.mesh.parameter.impl.SearchParametersImpl;
 import com.gentics.mesh.rest.InternalEndpoint;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 
+/**
+ * Endpoint definition for /api/v1/:project/search/:type routes.
+ */
 public interface SearchEndpoint extends InternalEndpoint {
 
 	/**

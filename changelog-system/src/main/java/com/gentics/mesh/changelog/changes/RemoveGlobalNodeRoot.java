@@ -5,6 +5,9 @@ import static com.tinkerpop.blueprints.Direction.OUT;
 import com.gentics.mesh.changelog.AbstractChange;
 import com.tinkerpop.blueprints.Vertex;
 
+/**
+ * Changelog entry which removed the global node root vertex.
+ */
 public class RemoveGlobalNodeRoot extends AbstractChange {
 
 	@Override
@@ -21,12 +24,12 @@ public class RemoveGlobalNodeRoot extends AbstractChange {
 	public String getUuid() {
 		return "947FA1AB31FC4705BFA1AB31FCC705D7";
 	}
-	
+
 	@Override
 	public void applyInTx() {
 		Vertex root = getMeshRootVertex();
 		Iterable<Vertex> nodeRoots = root.getVertices(OUT, "HAS_NODE_ROOT");
-		for(Vertex nodeRoot : nodeRoots) {
+		for (Vertex nodeRoot : nodeRoots) {
 			nodeRoot.remove();
 		}
 	}

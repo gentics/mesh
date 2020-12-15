@@ -15,6 +15,9 @@ import org.slf4j.LoggerFactory;
 import com.gentics.mesh.plugin.MeshPlugin;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 
+/**
+ * Factory which is used to instantiate plugins via the {@link PluginWrapper} class information.
+ */
 @Singleton
 public class MeshPluginFactory implements PluginFactory {
 

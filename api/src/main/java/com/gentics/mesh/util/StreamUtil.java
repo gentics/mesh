@@ -17,17 +17,21 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+/**
+ * Utility for stream related operations and conversions.
+ */
 public final class StreamUtil {
+
 	private StreamUtil() {
 
 	}
 
 	public static <T> Stream<T> toStream(Iterable<? extends T> iterable) {
-		return (Stream<T>)StreamSupport.stream(iterable.spliterator(), false);
+		return (Stream<T>) StreamSupport.stream(iterable.spliterator(), false);
 	}
 
 	public static <T> Stream<T> toStream(Iterator<? extends T> iterator) {
-		return toStream(() -> (Iterator<T>)iterator);
+		return toStream(() -> (Iterator<T>) iterator);
 	}
 
 	/**
@@ -92,8 +96,7 @@ public final class StreamUtil {
 			(m1, m2) -> {
 				m1.putAll(m2);
 				return m1;
-			}
-		);
+			});
 	}
 
 	public static <T> Stream<T> ofNullable(T... elements) {
@@ -107,6 +110,7 @@ public final class StreamUtil {
 
 	/**
 	 * Filters out duplicate items in the stream. Use this with {@link Stream#filter(Predicate)}.
+	 * 
 	 * @return
 	 */
 	public static <T> Predicate<T> unique() {
@@ -114,8 +118,9 @@ public final class StreamUtil {
 	}
 
 	/**
-	 * Filters out duplicate items in the stream. Use this with {@link Stream#filter(Predicate)}.
-	 * Two items are considered equal when the results of the <code>keyMapper</code> function are equal by {@link #equals(Object)}.
+	 * Filters out duplicate items in the stream. Use this with {@link Stream#filter(Predicate)}. Two items are considered equal when the results of the
+	 * <code>keyMapper</code> function are equal by {@link #equals(Object)}.
+	 * 
 	 * @param keyMapper
 	 * @param <T>
 	 * @param <K>

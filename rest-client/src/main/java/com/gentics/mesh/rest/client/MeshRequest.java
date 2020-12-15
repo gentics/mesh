@@ -8,6 +8,11 @@ import io.reactivex.Single;
 
 import java.util.Map;
 
+/**
+ * Definition of a REST client request.
+ * 
+ * @param <T> Response type
+ */
 public interface MeshRequest<T> {
 
 	/**
@@ -55,6 +60,7 @@ public interface MeshRequest<T> {
 
 	/**
 	 * Invokes the request and blocks the current thread until the result is received.
+	 * 
 	 * @return The result from the response or null if the response is empty
 	 */
 	default T blockingGet() {

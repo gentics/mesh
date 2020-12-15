@@ -6,6 +6,9 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 
+/**
+ * Event model for microschema migrations.
+ */
 public class MicroschemaMigrationMeshEventModel extends AbstractMigrationMeshEventModel {
 
 	@JsonProperty(required = true)

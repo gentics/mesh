@@ -5,6 +5,9 @@ import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshRestClientConfig;
 import com.gentics.mesh.rest.client.MeshRestClientConfig.Builder;
 
+/**
+ * REST client usage example code.
+ */
 public class MeshRestClientExample {
 
 	public static void main(String[] args) {

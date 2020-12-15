@@ -5,6 +5,9 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.event.AbstractProjectEventModel;
 import com.gentics.mesh.core.rest.job.JobStatus;
 
+/**
+ * Model for project version purge events.
+ */
 public class ProjectVersionPurgeEventModel extends AbstractProjectEventModel {
 
 	@JsonProperty(required = true)

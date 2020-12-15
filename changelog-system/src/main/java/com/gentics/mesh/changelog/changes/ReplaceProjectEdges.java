@@ -6,7 +6,11 @@ import com.gentics.mesh.changelog.AbstractChange;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 
+/**
+ * Changelog entry which replaces the project edges.
+ */
 public class ReplaceProjectEdges extends AbstractChange {
+
 	@Override
 	public String getUuid() {
 		return "4D718477D2714EF0B18477D2711EF0A4";

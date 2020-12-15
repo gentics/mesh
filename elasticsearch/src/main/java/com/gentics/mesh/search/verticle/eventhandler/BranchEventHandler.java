@@ -24,6 +24,9 @@ import com.gentics.mesh.search.verticle.MessageEvent;
 
 import io.reactivex.Flowable;
 
+/**
+ * Event handler for branch search index related events.
+ */
 @Singleton
 public class BranchEventHandler implements EventHandler {
 

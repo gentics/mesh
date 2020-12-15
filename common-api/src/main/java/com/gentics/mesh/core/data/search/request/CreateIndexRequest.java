@@ -6,6 +6,9 @@ import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Index create request wrapper which can be used with RxJava.
+ */
 public class CreateIndexRequest implements SearchRequest {
 
 	private static final Logger log = LoggerFactory.getLogger(CreateIndexRequest.class);

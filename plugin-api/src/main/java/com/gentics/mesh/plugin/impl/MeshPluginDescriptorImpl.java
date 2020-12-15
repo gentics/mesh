@@ -12,6 +12,9 @@ import org.pf4j.PluginDependency;
 import com.gentics.mesh.plugin.MeshPluginDescriptor;
 import com.gentics.mesh.plugin.PluginManifest;
 
+/**
+ * POJO which describes the metadata of a plugin.
+ */
 public class MeshPluginDescriptorImpl implements MeshPluginDescriptor {
 
 	private String id;

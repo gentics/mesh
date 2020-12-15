@@ -40,6 +40,9 @@ import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.util.CompareUtils;
 
+/**
+ * @see NodeGraphFieldList
+ */
 public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<NodeGraphField, NodeFieldList, HibNode> implements NodeGraphFieldList {
 
 	public static FieldTransformer<NodeFieldList> NODE_LIST_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level,

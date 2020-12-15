@@ -10,8 +10,12 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.parameter.PagingParameters;
 
+/**
+ * Load action for microschemas.
+ */
 @Singleton
 public class ProjectMicroschemaLoadAllActionImpl implements LoadAllAction<HibMicroschema> {
+
 	@Inject
 	public ProjectMicroschemaLoadAllActionImpl() {
 	}

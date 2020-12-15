@@ -13,6 +13,9 @@ import com.gentics.mesh.server.cluster.test.AbstractClusterTest;
 import com.gentics.mesh.util.UUIDUtil;
 import com.tinkerpop.blueprints.Vertex;
 
+/**
+ * Test task
+ */
 public class RoleCRUDGlobalLockInserterTask extends AbstractLoadTask {
 
 	public static final String ROLE = "RoleImpl";

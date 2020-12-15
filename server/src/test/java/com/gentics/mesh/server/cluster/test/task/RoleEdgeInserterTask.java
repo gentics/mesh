@@ -10,6 +10,9 @@ import com.hazelcast.core.HazelcastInstance;
 import com.orientechnologies.common.concur.ONeedRetryException;
 import com.tinkerpop.blueprints.Vertex;
 
+/**
+ * Test task which inserts role edges.
+ */
 public class RoleEdgeInserterTask extends AbstractLoadTask {
 
 	public static final String ROLE = "RoleImpl";

@@ -9,7 +9,11 @@ import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.json.JsonObject;
 
+/**
+ * Changelog entry which changes the type of the schema version.
+ */
 public class ChangeSchemaVersionType extends AbstractChange {
+
 	@Override
 	public String getUuid() {
 		return "904F55D71CC54B388F55D71CC5BB38D1";

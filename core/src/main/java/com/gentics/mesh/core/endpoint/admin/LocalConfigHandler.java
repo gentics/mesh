@@ -9,6 +9,9 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.rest.admin.localconfig.LocalConfigModel;
 import com.gentics.mesh.json.JsonUtil;
 
+/**
+ * Handler allows setting and getting the local configuration.
+ */
 @Singleton
 public class LocalConfigHandler {
 

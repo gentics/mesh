@@ -10,6 +10,9 @@ import io.reactivex.Completable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * Utility to handle the elasticsearch wait 
+ */
 @Singleton
 public class SearchWaitUtil {
 

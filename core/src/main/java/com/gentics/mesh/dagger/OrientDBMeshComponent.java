@@ -21,6 +21,9 @@ public interface OrientDBMeshComponent extends MeshComponent {
 
 	OrientDBDatabase database();
 
+	/**
+	 * Builder for the dagger component which allows to inject outside objects into the dagger dependency tree.
+	 */
 	@Component.Builder
 	interface Builder extends MeshComponent.Builder {
 		@BindsInstance

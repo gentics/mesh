@@ -9,6 +9,9 @@ import com.gentics.mesh.util.UUIDUtil;
 import com.orientechnologies.common.concur.ONeedRetryException;
 import com.tinkerpop.blueprints.Vertex;
 
+/**
+ * Test task
+ */
 public class RoleEdgeGlobalLockInserterTask extends AbstractLoadTask {
 
 	public static final String ROLE = "RoleImpl";

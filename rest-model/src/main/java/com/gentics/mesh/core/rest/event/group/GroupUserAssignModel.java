@@ -6,6 +6,9 @@ import com.gentics.mesh.core.rest.event.AbstractMeshEventModel;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.user.UserReference;
 
+/**
+ * POJO for user<->group assignment events.
+ */
 public class GroupUserAssignModel extends AbstractMeshEventModel {
 
 	@JsonProperty(required = true)

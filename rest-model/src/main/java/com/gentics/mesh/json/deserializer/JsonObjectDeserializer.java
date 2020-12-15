@@ -11,6 +11,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import io.vertx.core.json.JsonObject;
 
+/**
+ * Custom deserializer for {@link JsonObject}
+ */
 public class JsonObjectDeserializer extends JsonDeserializer<JsonObject> {
 
 	@Override

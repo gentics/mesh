@@ -15,6 +15,9 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 
+/**
+ * Handler for monitoring related actions.
+ */
 @Singleton
 public class MonitoringCrudHandler {
 	private static final Logger log = LoggerFactory.getLogger(MonitoringCrudHandler.class);

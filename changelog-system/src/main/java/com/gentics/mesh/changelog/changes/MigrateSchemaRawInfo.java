@@ -10,6 +10,9 @@ import com.tinkerpop.blueprints.Vertex;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+/**
+ * Changelog entry for migrating the raw info from schemas. 
+ */
 public class MigrateSchemaRawInfo extends AbstractChange {
 
 	@Override

@@ -5,7 +5,11 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.SCHEMA_
 import com.gentics.mesh.changelog.AbstractChange;
 import com.tinkerpop.blueprints.Direction;
 
+/**
+ * Changelog entry which removed the schema version edges with properties
+ */
 public class ReplaceSchemaVersionEdges extends AbstractChange {
+
 	@Override
 	public String getUuid() {
 		return "E737684330534623B768433053C623F2";

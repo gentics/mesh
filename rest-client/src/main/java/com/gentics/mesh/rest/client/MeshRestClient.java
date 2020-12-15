@@ -32,6 +32,9 @@ import com.gentics.mesh.rest.client.method.WebRootClientMethods;
 
 import okhttp3.OkHttpClient;
 
+/**
+ * Definition of the main Mesh REST client API. It aggregates all client methods interfaces to provide a full list of the whole API.
+ */
 public interface MeshRestClient extends NodeClientMethods, TagClientMethods, ProjectClientMethods, TagFamilyClientMethods, WebRootClientMethods,
 	SchemaClientMethods, GroupClientMethods, UserClientMethods, RoleClientMethods, AuthClientMethods, SearchClientMethods, AdminClientMethods,
 	AdminPluginClientMethods, MicroschemaClientMethods, NodeBinaryFieldClientMethods, UtilityClientMethods, NavigationClientMethods,

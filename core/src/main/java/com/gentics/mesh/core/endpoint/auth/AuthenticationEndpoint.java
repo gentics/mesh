@@ -12,6 +12,9 @@ import com.gentics.mesh.auth.MeshBasicAuthLoginHandler;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
+/**
+ * Endpoint definition for /api/v1/auth routes.
+ */
 public class AuthenticationEndpoint extends AbstractInternalEndpoint {
 
 	private AuthenticationRestHandler authRestHandler;

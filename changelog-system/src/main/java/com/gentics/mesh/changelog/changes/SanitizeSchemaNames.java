@@ -10,6 +10,9 @@ import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.json.JsonObject;
 
+/**
+ * Changelog entry which sanitizes the schema and microschema names to avoid issues with graphql.
+ */
 public class SanitizeSchemaNames extends AbstractChange {
 
 	@Override

@@ -12,6 +12,9 @@ import java.security.MessageDigest;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Generic utils for file operations.
+ */
 public final class FileUtils {
 
 	private static final Logger log = LoggerFactory.getLogger(FileUtils.class);

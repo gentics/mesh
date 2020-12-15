@@ -36,6 +36,9 @@ import dagger.Lazy;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * The type handler is used to manage OrientDB type system and create, update, removed types.
+ */
 @Singleton
 public class OrientDBTypeHandler implements TypeHandler {
 

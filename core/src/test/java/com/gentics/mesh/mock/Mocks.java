@@ -26,6 +26,9 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.Session;
 
+/**
+ * List of test mocks.
+ */
 public final class Mocks {
 
 	private Mocks() {

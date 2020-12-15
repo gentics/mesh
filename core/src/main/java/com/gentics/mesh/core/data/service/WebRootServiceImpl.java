@@ -31,6 +31,9 @@ import com.gentics.mesh.util.URIUtils;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * @see WebRootService
+ */
 @Singleton
 public class WebRootServiceImpl implements WebRootService {
 

@@ -39,6 +39,9 @@ import io.reactivex.exceptions.CompositeException;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * @see BranchMigration
+ */
 @Singleton
 public class BranchMigrationImpl extends AbstractMigrationHandler implements BranchMigration {
 

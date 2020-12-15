@@ -10,6 +10,9 @@ import com.gentics.mesh.plugin.PluginManifest;
 import com.gentics.mesh.plugin.RestPlugin;
 import com.gentics.mesh.plugin.graphql.GraphQLPlugin;
 
+/**
+ * Utils for plugins.
+ */
 public final class PluginUtils {
 
 	public static final String NAME_REGEX = "^[_a-zA-Z][_a-zA-Z0-9]*$";

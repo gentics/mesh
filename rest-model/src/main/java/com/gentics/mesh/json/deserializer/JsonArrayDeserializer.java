@@ -11,6 +11,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import io.vertx.core.json.JsonArray;
 
+/**
+ * Custom deserializer for Vert.x {@link JsonArray}
+ */
 public class JsonArrayDeserializer extends JsonDeserializer<JsonArray> {
 
 	@Override

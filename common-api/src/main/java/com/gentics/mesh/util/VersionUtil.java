@@ -1,5 +1,8 @@
 package com.gentics.mesh.util;
 
+/**
+ * Utility for version handling.
+ */
 public final class VersionUtil {
 
 	private VersionUtil() {

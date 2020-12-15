@@ -10,6 +10,9 @@ import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 
+/**
+ * Utility to handle SSL / Keystore related operations.
+ */
 public final class SSLUtil {
 
 	public static final String KEYSTORE_PASSWORD = "changeit";

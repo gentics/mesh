@@ -17,6 +17,9 @@ import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.Router;
 
+/**
+ * Endpoint definition for /api/v1 routes.
+ */
 public class RestInfoEndpoint extends AbstractInternalEndpoint {
 
 	private RestInfoExamples examples = new RestInfoExamples();

@@ -19,6 +19,9 @@ import java.util.Collection;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_CREATED;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
 
+/**
+ * Handler for project events which need to update the project index.
+ */
 @Singleton
 public class ProjectCreateEventHandler implements EventHandler {
 

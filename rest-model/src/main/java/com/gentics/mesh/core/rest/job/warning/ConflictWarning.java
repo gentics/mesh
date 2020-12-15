@@ -2,6 +2,9 @@ package com.gentics.mesh.core.rest.job.warning;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+/**
+ * POJO for a job conflict.
+ */
 public class ConflictWarning extends JobWarning {
 
 	public ConflictWarning() {

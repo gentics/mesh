@@ -4,6 +4,9 @@ import com.gentics.madl.annotations.GraphElement;
 import com.gentics.mesh.core.db.AbstractVertexFrame;
 import com.gentics.mesh.madl.traversal.TraversalResult;
 
+/**
+ * Test entity
+ */
 @GraphElement
 public class Person extends AbstractVertexFrame {
 

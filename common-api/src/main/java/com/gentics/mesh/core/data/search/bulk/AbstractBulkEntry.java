@@ -2,6 +2,9 @@ package com.gentics.mesh.core.data.search.bulk;
 
 import com.gentics.mesh.etc.config.search.ComplianceMode;
 
+/**
+ * @see BulkEntry
+ */
 public abstract class AbstractBulkEntry implements BulkEntry {
 
 	private final String indexName;

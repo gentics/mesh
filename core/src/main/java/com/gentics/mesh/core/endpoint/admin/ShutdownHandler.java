@@ -14,7 +14,11 @@ import io.reactivex.schedulers.Schedulers;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Handler for the shutdown endpoint.
+ */
 public class ShutdownHandler {
+
 	private static final Logger log = LoggerFactory.getLogger(ShutdownHandler.class);
 
 	private final BootstrapInitializer boot;

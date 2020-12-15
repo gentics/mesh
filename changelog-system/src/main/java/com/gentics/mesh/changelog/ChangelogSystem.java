@@ -5,7 +5,11 @@ import java.util.List;
 import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.cli.PostProcessFlags;
 
+/**
+ * The low level changelog system is used to apply graph database structure changes. 
+ */
 public interface ChangelogSystem {
+
 	/**
 	 * Apply all listed changes.
 	 *

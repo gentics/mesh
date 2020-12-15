@@ -13,7 +13,11 @@ import io.reactivex.Single;
 import io.reactivex.functions.Action;
 import io.vertx.core.json.JsonObject;
 
+/**
+ * Document create request wrapper which can be used with RxJava and bulked into a batch request.
+ */
 public class CreateDocumentRequest implements Bulkable {
+
 	private final String index;
 	private final String transformedIndex;
 	private final String id;
@@ -79,10 +83,20 @@ public class CreateDocumentRequest implements Bulkable {
 		return transformedIndex;
 	}
 
+	/**
+	 * Return the document id.
+	 * 
+	 * @return
+	 */
 	public String getId() {
 		return id;
 	}
 
+	/**
+	 * Return the document which should be stored.
+	 * 
+	 * @return
+	 */
 	public JsonObject getDoc() {
 		return doc.getProxyTarget();
 	}

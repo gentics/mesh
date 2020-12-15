@@ -24,6 +24,9 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 
+/**
+ * Example generator for various JSON / YAML models.
+ */
 public class ModelExampleGenerator extends AbstractGenerator {
 
 	public ModelExampleGenerator(File outputFolder) throws IOException {

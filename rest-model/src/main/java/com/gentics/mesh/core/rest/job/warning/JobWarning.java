@@ -5,6 +5,9 @@ import java.util.Map;
 
 import com.gentics.mesh.core.rest.common.RestModel;
 
+/**
+ * POJO for a job warning.
+ */
 public class JobWarning implements RestModel {
 
 	private String type;

@@ -6,6 +6,9 @@ import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * @see CacheRegistry
+ */
 @Singleton
 public class CacheRegistryImpl implements CacheRegistry {
 

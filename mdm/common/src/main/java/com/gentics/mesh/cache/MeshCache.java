@@ -2,6 +2,12 @@ package com.gentics.mesh.cache;
 
 import java.util.function.Function;
 
+/**
+ * Common interface for caches that are used in Gentics Mesh. 
+ *
+ * @param <K> Type of the cache key
+ * @param <V> Type of the cache value
+ */
 public interface MeshCache<K, V> {
 
 	/**

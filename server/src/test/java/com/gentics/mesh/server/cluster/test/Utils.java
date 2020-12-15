@@ -2,6 +2,9 @@ package com.gentics.mesh.server.cluster.test;
 
 import java.util.UUID;
 
+/**
+ * Various test utility methods.
+ */
 public final class Utils {
 
 	private Utils() {

@@ -16,6 +16,9 @@ import io.vertx.core.file.AsyncFile;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Utility for RXJava methods.
+ */
 public final class RxUtil {
 
 	private static final Logger log = LoggerFactory.getLogger(RxUtil.class);

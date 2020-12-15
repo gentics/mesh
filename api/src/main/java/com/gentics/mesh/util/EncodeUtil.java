@@ -9,6 +9,9 @@ import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 
+/**
+ * Utility to help with UTF8 and ISO encoding operations 
+ */
 public final class EncodeUtil {
 
 	private static final Charset ISO88591_CHARSET = Charset.forName("ISO-8859-1");

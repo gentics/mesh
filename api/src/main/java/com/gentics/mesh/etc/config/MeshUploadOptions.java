@@ -9,6 +9,9 @@ import com.gentics.mesh.doc.GenerateDocumentation;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 import com.gentics.mesh.etc.config.env.Option;
 
+/**
+ * POJO related to upload and binary storage settings.
+ */
 @GenerateDocumentation
 public class MeshUploadOptions implements Option {
 
