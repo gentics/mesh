@@ -14,6 +14,9 @@ import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModelImpl;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedProjectElementEventModel;
 import com.gentics.mesh.core.rest.event.role.TagPermissionChangedEventModel;
 
+/**
+ * Custom JSON deserializer for {@link PermissionChangedEventModelImpl} events. The implementation uses specific model classes according to the type of the event.
+ */
 public class PermissionChangedEventModelDeserializer extends JsonDeserializer<PermissionChangedEventModelImpl> {
 
 	@Override

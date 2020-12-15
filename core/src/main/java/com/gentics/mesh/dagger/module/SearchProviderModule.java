@@ -15,6 +15,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.search.DevNullSearchProvider;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.TrackingSearchProviderImpl;
 import com.gentics.mesh.search.impl.ElasticSearchProvider;
 
@@ -23,12 +24,24 @@ import dagger.Module;
 import dagger.Provides;
 import io.vertx.core.json.JsonObject;
 
+/**
+ * Dagger module which provides the configured search implementation.
+ * 
+ * Currently three different providers may be injected:
+ * 
+ * <ul>
+ * <li>{@link DevNullSearchProvider} - Noop provider</li>
+ * <li>{@link TrackingSearchProvider} - Noop provider which tracks operations (needed for testing)</li>
+ * <li>{@link ElasticSearchProvider} - Real Elasticsearch provider which connects to ES</li>
+ * </ul>
+ */
 @Module
 public class SearchProviderModule {
 
 	@Provides
 	@Singleton
-	public static SearchProvider searchProvider(@Nullable SearchProviderType type, MeshOptions options, Lazy<ElasticSearchProvider> elasticsearchProvider) {
+	public static SearchProvider searchProvider(@Nullable SearchProviderType type, MeshOptions options,
+		Lazy<ElasticSearchProvider> elasticsearchProvider) {
 		if (type == null) {
 			if (options.getSearchOptions().getUrl() == null) {
 				return new DevNullSearchProvider(options);
@@ -47,6 +60,12 @@ public class SearchProviderModule {
 		}
 	}
 
+	/**
+	 * Return the configured ES client to be used to communicate with ES.
+	 * 
+	 * @param options
+	 * @return
+	 */
 	@Provides
 	@Singleton
 	public static ElasticsearchClient<JsonObject> searchClient(MeshOptions options) {

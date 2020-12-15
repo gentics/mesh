@@ -5,10 +5,13 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.MeshFactory;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
+import com.gentics.mesh.dagger.module.SearchProviderModule;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.BucketManager;
 
 /**
@@ -24,13 +27,40 @@ public interface MeshComponent extends BaseMeshComponent {
 
 	BucketManager bucketManager();
 
+	/**
+	 * Builder for the main dagger component. It allows injection of options and the mesh instance which will be created by the {@link MeshFactory} outside of
+	 * dagger.
+	 */
 	interface Builder {
+		/**
+		 * Inject configuration options.
+		 * 
+		 * @param options
+		 * @return
+		 */
 		Builder configuration(MeshOptions options);
 
+		/**
+		 * Inject mesh instance.
+		 * 
+		 * @param mesh
+		 * @return
+		 */
 		Builder mesh(Mesh mesh);
 
+		/**
+		 * Inject the search provider type. The {@link SearchProviderModule} will utilize this info to select the correct {@link SearchProvider} for DI.
+		 * 
+		 * @param type
+		 * @return
+		 */
 		Builder searchProviderType(@Nullable SearchProviderType type);
 
+		/**
+		 * Build the component.
+		 * 
+		 * @return
+		 */
 		MeshComponent build();
 	}
 }

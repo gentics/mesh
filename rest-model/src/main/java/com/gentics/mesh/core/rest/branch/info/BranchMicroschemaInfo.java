@@ -2,6 +2,9 @@ package com.gentics.mesh.core.rest.branch.info;
 
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 
+/**
+ * REST POJO for branch microschema information.
+ */
 public class BranchMicroschemaInfo extends AbstractBranchSchemaInfo<MicroschemaReference> implements MicroschemaReference {
 
 	private String versionUuid;

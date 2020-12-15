@@ -8,6 +8,9 @@ import com.gentics.mesh.core.rest.event.AbstractProjectEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 
+/**
+ * Node event model POJO.
+ */
 public class NodeMeshEventModel extends AbstractProjectEventModel {
 
 	@JsonProperty(required = false)

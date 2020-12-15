@@ -11,7 +11,11 @@ import com.gentics.mesh.changelog.AbstractChange;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 
+/**
+ * Changelog entry which removes the HAS_PARENT_NODE edges.
+ */
 public class ReplaceParentEdges extends AbstractChange {
+
 	@Override
 	public String getUuid() {
 		return "FC6F16B67721469BAF16B67721069B88";

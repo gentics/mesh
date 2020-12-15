@@ -8,8 +8,12 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.metric.MetricsService;
 
+/**
+ * 
+ */
 @Singleton
 public class SyncMetersFactory {
+
 	private final MetricsService registry;
 
 	private final Map<String, SyncMeters> meters = new ConcurrentHashMap<>();

@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.rest.search;
 
 public class EntityMetrics {
+
 	private TypeMetrics insert = new TypeMetrics();
 	private TypeMetrics update = new TypeMetrics();
 	private TypeMetrics delete = new TypeMetrics();

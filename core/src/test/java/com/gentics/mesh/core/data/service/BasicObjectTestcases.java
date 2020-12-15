@@ -1,7 +1,10 @@
 package com.gentics.mesh.core.data.service;
 
+/**
+ * Common definition of testcases for basic core objects.
+ */
 public interface BasicObjectTestcases {
-	
+
 	void testTransformToReference() throws Exception;
 
 	void testFindAllVisible() throws Exception;

@@ -15,6 +15,12 @@ import com.gentics.mesh.search.index.tag.TagSearchHandler;
 import com.gentics.mesh.search.index.tagfamily.TagFamilySearchHandler;
 import com.gentics.mesh.search.index.user.UserSearchHandler;
 
+/**
+ * 
+ * Endpoint defintion for the /api/v1/rawSearch/:field routes.
+ * 
+ * @see SearchProvider
+ */
 public class RawSearchEndpointImpl extends AbstractInternalEndpoint implements SearchEndpoint {
 
 	@Inject

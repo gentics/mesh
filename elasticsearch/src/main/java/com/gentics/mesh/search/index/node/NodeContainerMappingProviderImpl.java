@@ -44,6 +44,9 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * @see NodeContainerMappingProvider
+ */
 @Singleton
 public class NodeContainerMappingProviderImpl extends AbstractMappingProvider implements NodeContainerMappingProvider {
 
@@ -145,7 +148,6 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 		JsonObject fieldJson = new JsonObject();
 		fieldJson.put("properties", fieldProps);
 		typeProperties.put("fields", fieldJson);
-		
 
 		for (FieldSchema field : schema.getFields()) {
 			getFieldMapping(field, branch, language).ifPresent(info -> {
@@ -157,7 +159,7 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 		case ES_7:
 			return typeMapping;
 		case ES_6:
-			mapping.put(DEFAULT_TYPE, typeMapping); 
+			mapping.put(DEFAULT_TYPE, typeMapping);
 			return mapping;
 		default:
 			throw new RuntimeException("Unknown compliance mode {" + complianceMode + "}");
@@ -246,7 +248,8 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 		}
 	}
 
-	private void addMicronodeMapping(JsonObject fieldInfo, FieldSchema fieldSchema, HibBranch branch, String language, JsonObject customIndexOptions) {
+	private void addMicronodeMapping(JsonObject fieldInfo, FieldSchema fieldSchema, HibBranch branch, String language,
+		JsonObject customIndexOptions) {
 		if (isStrictMode) {
 			fieldInfo.mergeIn(customIndexOptions);
 		} else {
@@ -269,7 +272,8 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 		}
 	}
 
-	private void addListFieldMapping(JsonObject fieldInfo, HibBranch branch, ListFieldSchemaImpl fieldSchema, String language, JsonObject customIndexOptions) {
+	private void addListFieldMapping(JsonObject fieldInfo, HibBranch branch, ListFieldSchemaImpl fieldSchema, String language,
+		JsonObject customIndexOptions) {
 		if (isStrictMode) {
 			fieldInfo.mergeIn(customIndexOptions);
 		} else {

@@ -9,6 +9,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.endpoint.admin.AdminHandler;
+import com.gentics.mesh.core.endpoint.admin.HealthEndpoint;
 import com.gentics.mesh.core.endpoint.handler.MonitoringCrudHandler;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.handler.VersionHandlerImpl;
@@ -23,6 +24,9 @@ import io.vertx.ext.web.handler.LoggerHandler;
 import io.vertx.ext.web.impl.RouterImpl;
 import io.vertx.micrometer.PrometheusScrapingHandler;
 
+/**
+ * Routes for the monitoring server. Not to be confused with {@link HealthEndpoint} which is used for the Mesh REST server. 
+ */
 public class MonitoringRoutes {
 
 	private static final Logger log = LoggerFactory.getLogger(MonitoringRoutes.class);

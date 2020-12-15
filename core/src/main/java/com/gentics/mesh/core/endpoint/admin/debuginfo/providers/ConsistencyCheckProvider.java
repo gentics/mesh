@@ -12,8 +12,12 @@ import com.gentics.mesh.graphdb.spi.Database;
 
 import io.reactivex.Flowable;
 
+/**
+ * Debug info provider for consistency check information.
+ */
 @Singleton
 public class ConsistencyCheckProvider implements DebugInfoProvider {
+
 	private final ConsistencyCheckHandler consistencyCheckHandler;
 	private final Database db;
 

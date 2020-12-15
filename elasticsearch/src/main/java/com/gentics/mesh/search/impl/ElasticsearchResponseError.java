@@ -4,9 +4,13 @@ import io.vertx.core.json.JsonObject;
 
 import java.util.stream.Stream;
 
+/**
+ * Response error for failed ES queries. 
+ */
 public class ElasticsearchResponseError extends Throwable implements ElasticsearchResponseErrorStreamable {
+
 	private final JsonObject json;
-	private final String actionType	;
+	private final String actionType;
 
 	public ElasticsearchResponseError(JsonObject json, String actionType) {
 		super(json.getString("reason"));
@@ -32,8 +36,8 @@ public class ElasticsearchResponseError extends Throwable implements Elasticsear
 	}
 
 	/**
-	 * Can be index, create, delete or update.
-	 * See <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html"></a>
+	 * Can be index, create, delete or update. See <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html"></a>
+	 * 
 	 * @return
 	 */
 	public String getActionType() {

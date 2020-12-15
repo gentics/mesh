@@ -33,7 +33,14 @@ import okhttp3.ResponseBody;
 import okio.BufferedSink;
 import okio.Okio;
 
+/**
+ * OkHttp implementation of the {@link MeshRequest}.
+ * 
+ * @see MeshRequest
+ * @param <T>
+ */
 public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
+
 	private final OkHttpClient client;
 	private final Class<? extends T> resultClass;
 
@@ -151,7 +158,7 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 		String contentType = response.header("Content-Type");
 		if (!response.isSuccessful()) {
 			return null;
-		} else if  (resultClass.isAssignableFrom(EmptyResponse.class)) {
+		} else if (resultClass.isAssignableFrom(EmptyResponse.class)) {
 			return (T) EmptyResponse.getInstance();
 		} else if (resultClass.isAssignableFrom(MeshBinaryResponse.class)) {
 			return (T) new OkHttpBinaryResponse(response);

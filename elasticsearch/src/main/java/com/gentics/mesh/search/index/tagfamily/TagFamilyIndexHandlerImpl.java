@@ -37,6 +37,9 @@ import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
 
+/**
+ * @see TagFamilyIndexHandler
+ */
 @Singleton
 public class TagFamilyIndexHandlerImpl extends AbstractIndexHandler<HibTagFamily> implements TagFamilyIndexHandler {
 

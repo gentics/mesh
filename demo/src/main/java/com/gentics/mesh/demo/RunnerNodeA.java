@@ -17,6 +17,9 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
 
+/**
+ * Cluster runner
+ */
 public class RunnerNodeA {
 
 	private static final String basePath = "data-nodeA";

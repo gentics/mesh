@@ -24,6 +24,9 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
 
+/**
+ * {@link PluginRegistry} which keeps track of plugins which extend the REST API.
+ */
 @Singleton
 public class RestPluginRegistry implements PluginRegistry {
 

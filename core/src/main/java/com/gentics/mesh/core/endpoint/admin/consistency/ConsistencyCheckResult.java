@@ -7,6 +7,9 @@ import com.gentics.mesh.core.rest.admin.consistency.InconsistencyInfo;
 import com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity;
 import com.gentics.mesh.core.rest.admin.consistency.RepairAction;
 
+/**
+ * POJO of consistency check result.
+ */
 public class ConsistencyCheckResult {
 
 	private static final int MAX_RESULTS = 200;

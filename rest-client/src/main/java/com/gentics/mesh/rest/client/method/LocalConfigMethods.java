@@ -4,6 +4,7 @@ import com.gentics.mesh.core.rest.admin.localconfig.LocalConfigModel;
 import com.gentics.mesh.rest.client.MeshRequest;
 
 public interface LocalConfigMethods {
+
 	/**
 	 * Loads the currently active local config.
 	 * @return

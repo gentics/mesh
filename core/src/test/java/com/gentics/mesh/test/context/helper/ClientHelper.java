@@ -28,6 +28,9 @@ import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 
+/**
+ * Test helper for client operation.
+ */
 public interface ClientHelper extends EventHelper {
 
 	default Completable migrateSchema(String schemaName) {

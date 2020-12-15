@@ -18,6 +18,9 @@ import com.gentics.mesh.etc.config.MonitoringConfig;
 import com.gentics.mesh.etc.config.VertxOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 
+/**
+ * @see TxData
+ */
 public class TxDataImpl implements TxData {
 
 	private final BootstrapInitializer boot;

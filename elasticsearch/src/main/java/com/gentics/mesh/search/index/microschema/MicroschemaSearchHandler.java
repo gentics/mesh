@@ -11,6 +11,9 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractSearchHandler;
 
+/**
+ * Handler for microschema search index queries.
+ */
 @Singleton
 public class MicroschemaSearchHandler extends AbstractSearchHandler<HibMicroschema, MicroschemaResponse> {
 

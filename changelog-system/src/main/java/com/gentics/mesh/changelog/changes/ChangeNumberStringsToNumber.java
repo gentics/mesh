@@ -17,8 +17,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-
+/**
+ * Changelog entry which converts number strings to numbers.
+ */
 public class ChangeNumberStringsToNumber extends AbstractChange {
+
 	private static final String NUMBER_TYPE = "number";
 	private static final String LIST_TYPE = "list";
 	private static final String SCHEMA_FIELDS = "fields";
@@ -52,7 +55,6 @@ public class ChangeNumberStringsToNumber extends AbstractChange {
 		return "Changes the values of number fields (and number list fields) from strings to actual numbers.";
 	}
 
-
 	private Schema buildSchemaFromVertex(Vertex schemaVertex, String className) {
 		return schemaMap.computeIfAbsent(schemaVertex.getProperty(UUID), uuid -> {
 			Schema schema = new Schema();
@@ -72,12 +74,12 @@ public class ChangeNumberStringsToNumber extends AbstractChange {
 			schema.name = jsonSchema.getString("name");
 			JsonArray fields = jsonSchema.getJsonArray(SCHEMA_FIELDS);
 			schema.fieldMap = IntStream.range(0, fields.size())
-					.mapToObj(fields::getJsonObject)
-					.filter(f -> {
-						String type = f.getString(FIELD_TYPE_KEY);
-						return NUMBER_TYPE.equals(type) || (LIST_TYPE.equals(type) && NUMBER_TYPE.equals(f.getString(FIELD_LIST_TYPE_KEY)));
-					})
-					.collect(Collectors.toMap(o -> o.getString(FIELD_NAME_KEY), Function.identity()));
+				.mapToObj(fields::getJsonObject)
+				.filter(f -> {
+					String type = f.getString(FIELD_TYPE_KEY);
+					return NUMBER_TYPE.equals(type) || (LIST_TYPE.equals(type) && NUMBER_TYPE.equals(f.getString(FIELD_LIST_TYPE_KEY)));
+				})
+				.collect(Collectors.toMap(o -> o.getString(FIELD_NAME_KEY), Function.identity()));
 			return schema;
 		});
 	}
@@ -89,7 +91,8 @@ public class ChangeNumberStringsToNumber extends AbstractChange {
 		}
 		if (!(obj instanceof String)) {
 			if (log.isDebugEnabled()) {
-				log.debug("Property '{}' for node '{}' in database is no string so we don't convert it. {}: '{}'", propertyName, node.getProperty(UUID), obj.getClass(), obj);
+				log.debug("Property '{}' for node '{}' in database is no string so we don't convert it. {}: '{}'", propertyName,
+					node.getProperty(UUID), obj.getClass(), obj);
 			}
 			return;
 		}
@@ -106,23 +109,22 @@ public class ChangeNumberStringsToNumber extends AbstractChange {
 	}
 
 	private void updateLists(Vertex container, Map<String, JsonObject> fieldMap) {
-		for (Vertex listElement: container.getVertices(Direction.OUT, HAS_LIST)) {
+		for (Vertex listElement : container.getVertices(Direction.OUT, HAS_LIST)) {
 			String fieldName = listElement.getProperty(FIELD_KEY);
 			if (fieldMap.containsKey(fieldName) && NUMBER_TYPE.equals(fieldMap.get(fieldName).getString(FIELD_LIST_TYPE_KEY))) {
 				listElement.getPropertyKeys().stream()
-						.filter(k -> k.startsWith(ITEM_PREFIX))
-						.forEach(k -> updateProperty(k, listElement));
+					.filter(k -> k.startsWith(ITEM_PREFIX))
+					.forEach(k -> updateProperty(k, listElement));
 			}
 		}
 	}
 
 	private void updateFields(Vertex container, Map<String, JsonObject> fieldMap) {
 		fieldMap.entrySet().stream()
-				.map(Map.Entry::getValue)
-				.filter(f -> NUMBER_TYPE.equals(f.getString(FIELD_TYPE_KEY)))
-				.forEach(f -> updateProperty(f.getString(FIELD_NAME_KEY) + "-" + NUMBER_TYPE, container));
+			.map(Map.Entry::getValue)
+			.filter(f -> NUMBER_TYPE.equals(f.getString(FIELD_TYPE_KEY)))
+			.forEach(f -> updateProperty(f.getString(FIELD_NAME_KEY) + "-" + NUMBER_TYPE, container));
 	}
-
 
 	public void updateVerticesForSchema(Vertex schemaVertex, Map<String, JsonObject> fieldMap, String label) {
 		long count = 0;
@@ -173,10 +175,10 @@ public class ChangeNumberStringsToNumber extends AbstractChange {
 		@Override
 		public String toString() {
 			return type + "{" +
-					"name='" + name + '\'' +
-					", uuid='" + uuid + '\'' +
-					", version='" + version + '\'' +
-					'}';
+				"name='" + name + '\'' +
+				", uuid='" + uuid + '\'' +
+				", version='" + version + '\'' +
+				'}';
 		}
 	}
 }

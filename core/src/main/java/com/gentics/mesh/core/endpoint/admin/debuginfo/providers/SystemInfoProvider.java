@@ -20,6 +20,9 @@ import com.gentics.mesh.json.JsonUtil;
 import io.reactivex.Flowable;
 import io.vertx.reactivex.core.Vertx;
 
+/**
+ * Debug info provider for JVM system information.
+ */
 @Singleton
 public class SystemInfoProvider implements DebugInfoProvider {
 
@@ -98,4 +101,3 @@ public class SystemInfoProvider implements DebugInfoProvider {
 	}
 
 }
-

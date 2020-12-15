@@ -21,8 +21,12 @@ import com.gentics.mesh.json.JsonUtil;
 
 import io.reactivex.Flowable;
 
+/**
+ * Debug info provider for entity information (jobs, schemas, microschemas, projects, branches)
+ */
 @Singleton
 public class EntitiesProvider implements DebugInfoProvider {
+
 	private final BootstrapInitializer boot;
 	private final Database db;
 

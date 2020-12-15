@@ -2,7 +2,11 @@ package com.gentics.mesh.search.index.metric;
 
 import com.gentics.mesh.metric.Metric;
 
+/**
+ * Metric POJO for elasticsearch sync operation.
+ */
 public class SyncMetric implements Metric {
+
 	private final Operation operation;
 	private final Meter meter;
 	private final String type;

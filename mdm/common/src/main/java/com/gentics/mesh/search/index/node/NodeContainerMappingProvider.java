@@ -6,6 +6,9 @@ import com.gentics.mesh.search.index.MappingProvider;
 
 import io.vertx.core.json.JsonObject;
 
+/**
+ * Elasticsearch index mapping provider for the node indices which store node contents.
+ */
 public interface NodeContainerMappingProvider extends MappingProvider {
 
 	/**

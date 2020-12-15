@@ -12,6 +12,9 @@ import com.gentics.mesh.search.index.AbstractMappingProvider;
 
 import io.vertx.core.json.JsonObject;
 
+/**
+ * Search index mapping provider for microschema indices.
+ */
 @Singleton
 public class MicroschemaMappingProvider extends AbstractMappingProvider {
 

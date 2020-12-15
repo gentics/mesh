@@ -26,6 +26,9 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Test plugin.
+ */
 public class MapperTestPlugin extends AbstractPlugin implements AuthServicePlugin {
 
 	private static final Logger log = LoggerFactory.getLogger(MapperTestPlugin.class);

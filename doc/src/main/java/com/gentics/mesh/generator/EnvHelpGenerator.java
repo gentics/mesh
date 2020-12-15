@@ -13,6 +13,9 @@ import org.reflections.scanners.FieldAnnotationsScanner;
 
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 
+/**
+ * Example generator for the environment settings table.
+ */
 public class EnvHelpGenerator extends AbstractRenderingGenerator {
 
 	public static File DOCS_FOLDER = new File("src/main/docs");

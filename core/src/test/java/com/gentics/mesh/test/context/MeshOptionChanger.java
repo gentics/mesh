@@ -7,6 +7,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.MappingMode;
 
 public enum MeshOptionChanger {
+
 	NO_CHANGE(ignore -> {
 	}), SMALL_EVENT_BUFFER(options -> {
 		options.getSearchOptions().setEventBufferSize(100);

@@ -8,6 +8,9 @@ import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 
+/**
+ * @see BinaryField
+ */
 public class BinaryFieldImpl implements BinaryField {
 
 	@JsonIgnore

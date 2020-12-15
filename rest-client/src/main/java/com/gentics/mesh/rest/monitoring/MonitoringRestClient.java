@@ -2,6 +2,9 @@ package com.gentics.mesh.rest.monitoring;
 
 import com.gentics.mesh.rest.monitoring.impl.MonitoringOkHttpClientImpl;
 
+/**
+ * REST client which is used for the monitoring server.
+ */
 public interface MonitoringRestClient extends MonitoringClientMethods {
 
 	/**

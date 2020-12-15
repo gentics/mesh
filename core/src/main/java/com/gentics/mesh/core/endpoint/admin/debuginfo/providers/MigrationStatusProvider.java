@@ -7,7 +7,6 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
@@ -20,6 +19,9 @@ import com.gentics.mesh.graphdb.spi.Database;
 
 import io.reactivex.Flowable;
 
+/**
+ * Debug info provider for migration status information.
+ */
 @Singleton
 public class MigrationStatusProvider implements DebugInfoProvider {
 
@@ -44,15 +46,13 @@ public class MigrationStatusProvider implements DebugInfoProvider {
 		return getAllBranches()
 			.flatMap(projectBranch -> Flowable.mergeArray(
 				getSchemastatus(projectBranch.branch).map(json -> toDebugInfoEntry(json, projectBranch, "schemas.json")),
-				getMicroschemastatus(projectBranch.branch).map(json -> toDebugInfoEntry(json, projectBranch, "microschemas.json"))
-			));
+				getMicroschemastatus(projectBranch.branch).map(json -> toDebugInfoEntry(json, projectBranch, "microschemas.json"))));
 	}
 
 	private DebugInfoEntry toDebugInfoEntry(String json, ProjectBranch projectBranch, String filename) {
 		return DebugInfoBufferEntry.fromString(
 			String.format("migrationStatus/%s/%s/%s", projectBranch.projectName, projectBranch.branchName, filename),
-			json
-		);
+			json);
 	}
 
 	private Flowable<ProjectBranch> getAllBranches() {

@@ -2,6 +2,9 @@ package com.gentics.mesh.core.rest.schema;
 
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 
+/**
+ * Name/UUID/Version reference to a schema.
+ */
 public interface SchemaReference extends NameUuidReference<SchemaReference> {
 
 	/**

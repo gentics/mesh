@@ -55,6 +55,9 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 
+/**
+ * REST handler for webroot requests.
+ */
 @Singleton
 public class WebRootHandler {
 

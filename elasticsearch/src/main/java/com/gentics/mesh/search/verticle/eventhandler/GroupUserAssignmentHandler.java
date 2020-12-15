@@ -18,6 +18,9 @@ import com.gentics.mesh.search.verticle.entity.MeshEntities;
 
 import io.reactivex.Flowable;
 
+/**
+ * Search event handler for group<->user assignment events.
+ */
 public class GroupUserAssignmentHandler implements EventHandler {
 
 	private final MeshHelper helper;

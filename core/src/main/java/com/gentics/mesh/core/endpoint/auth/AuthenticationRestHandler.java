@@ -18,6 +18,9 @@ import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.json.JsonUtil;
 
+/**
+ * REST handler for authentication calls.
+ */
 @Singleton
 public class AuthenticationRestHandler extends AbstractHandler {
 

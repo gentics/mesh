@@ -9,6 +9,9 @@ import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
+/**
+ * Changelog entry which updates the release edges.
+ */
 public class UpdateReleaseSchemaEdge extends AbstractChange {
 
 	@Override

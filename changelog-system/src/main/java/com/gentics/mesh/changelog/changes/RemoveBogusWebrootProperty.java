@@ -6,6 +6,9 @@ import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
+/**
+ * Changelog entry which removes bogus properties.
+ */
 public class RemoveBogusWebrootProperty extends AbstractChange {
 
 	public static final String WEBROOT_PUB = "publishedWebrootPathInfo";

@@ -29,7 +29,11 @@ import java.util.stream.Stream;
 
 import static com.gentics.mesh.rest.client.impl.Util.eventbusMessage;
 
+/**
+ * Websocket client implementation for {@link OkHttpClient}. 
+ */
 public class OkHttpWebsocket implements MeshWebsocket {
+
 	private static final Logger log = LoggerFactory.getLogger(OkHttpWebsocket.class);
 
 	private final OkHttpClient client;

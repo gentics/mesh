@@ -10,6 +10,7 @@ import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.FieldFetcher;
 
 public interface DateListFieldHelper {
+
 	public static final long DATEVALUE = fromISO8601(toISO8601(new Date().getTime()));
 
 	public static final long OTHERDATEVALUE = fromISO8601(toISO8601(4711000));

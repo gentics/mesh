@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.graph;
 
+/**
+ * List of graph attribute keys.
+ */
 public class GraphAttribute {
 
 	/**

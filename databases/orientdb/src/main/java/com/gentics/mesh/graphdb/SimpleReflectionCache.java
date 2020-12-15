@@ -11,6 +11,9 @@ import org.reflections.Reflections;
 
 import com.gentics.madl.annotations.GraphElement;
 
+/**
+ * Cache for classes which were annotated with {@link GraphElement}.
+ */
 public class SimpleReflectionCache extends Reflections {
 
 	private final Map<String, Set<String>> hierarchy;

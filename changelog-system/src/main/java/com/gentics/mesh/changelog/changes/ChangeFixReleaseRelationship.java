@@ -7,6 +7,9 @@ import com.gentics.mesh.changelog.MeshGraphHelper;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Vertex;
 
+/**
+ * Change which fixes the release edges in the graph.
+ */
 public class ChangeFixReleaseRelationship extends AbstractChange {
 
 	@Override

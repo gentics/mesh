@@ -5,6 +5,11 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.AbstractNameUuidReference;
 import com.gentics.mesh.core.rest.job.JobStatus;
 
+/**
+ * Abstract implementation of the branch schema information REST model.
+ * 
+ * @param <T>
+ */
 public class AbstractBranchSchemaInfo<T> extends AbstractNameUuidReference<T> {
 
 	@JsonProperty(required = true)

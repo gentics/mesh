@@ -11,6 +11,9 @@ import com.gentics.mesh.graphdb.spi.Database;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Abstract implementation of a consistency check which provides helper methods to track edges and vertices.
+ */
 public abstract class AbstractConsistencyCheck implements ConsistencyCheck {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractConsistencyCheck.class);

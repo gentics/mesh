@@ -4,7 +4,7 @@ import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 
 /**
- * Interface for micronode fields
+ * Micronode field with microschema reference and the actual value.
  */
 public interface MicronodeField extends ListableField, FieldContainer {
 
