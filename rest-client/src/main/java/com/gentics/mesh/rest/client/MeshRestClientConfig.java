@@ -10,7 +10,11 @@ import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 
+/**
+ * Gentics Mesh REST client configuration.
+ */
 public class MeshRestClientConfig {
+
 	private final String host;
 	private final String basePath;
 	private final int port;
@@ -37,6 +41,7 @@ public class MeshRestClientConfig {
 
 	/**
 	 * Creates a new builder based on the values of this config.
+	 * 
 	 * @return
 	 */
 	public MeshRestClientConfig.Builder asBuilder() {
@@ -114,6 +119,7 @@ public class MeshRestClientConfig {
 
 		/**
 		 * Creates a new builder based on the values of the given config.
+		 * 
 		 * @param config
 		 */
 		public Builder(MeshRestClientConfig config) {
