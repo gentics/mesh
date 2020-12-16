@@ -180,6 +180,12 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 		}
 	}
 
+	/**
+	 * Builder for caches.
+	 * 
+	 * @param <K>
+	 * @param <V>
+	 */
 	public static class Builder<K, V> {
 		private boolean disabled = false;
 

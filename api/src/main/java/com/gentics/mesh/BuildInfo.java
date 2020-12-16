@@ -2,6 +2,10 @@ package com.gentics.mesh;
 
 import java.util.Properties;
 
+/**
+ * POJO to map the properties from the mesh.build.properties resource file.
+ * The file is updated via maven property filtering during build/release time.
+ */
 public class BuildInfo {
 
 	private String version;

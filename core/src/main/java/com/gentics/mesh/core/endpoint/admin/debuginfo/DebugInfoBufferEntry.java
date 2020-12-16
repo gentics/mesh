@@ -7,6 +7,9 @@ import com.gentics.mesh.json.JsonUtil;
 import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
 
+/**
+ * Entry which references the buffer and filename to be read and added to the zip file data stream for the final debug info zip data.
+ */
 public class DebugInfoBufferEntry implements DebugInfoEntry {
 
 	private final String fileName;
@@ -24,8 +27,7 @@ public class DebugInfoBufferEntry implements DebugInfoEntry {
 	public static DebugInfoEntry fromString(String filename, String data) {
 		return new DebugInfoBufferEntry(
 			filename,
-			Buffer.buffer(data)
-		);
+			Buffer.buffer(data));
 	}
 
 	public static DebugInfoEntry asJson(String fileName, Object data) {

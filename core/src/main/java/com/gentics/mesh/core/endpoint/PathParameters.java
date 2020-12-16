@@ -4,6 +4,9 @@ import com.gentics.mesh.context.InternalActionContext;
 
 import io.vertx.ext.web.RoutingContext;
 
+/**
+ * Helper for easy path parameter access.
+ */
 public class PathParameters {
 
 	public static String TAG_FAMILY_PARAM = "tagFamilyUuid";

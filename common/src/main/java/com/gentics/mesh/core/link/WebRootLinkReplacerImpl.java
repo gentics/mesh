@@ -97,7 +97,7 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 			link = link.replaceAll("\"", "");
 			String[] linkArguments = link.split(",");
 			if (linkArguments.length == 3) {
-				// Branch in link argument always comes first
+				// Branch in link argument always comes last (third argument)
 				branch = linkArguments[2].trim();
 			}
 			if (linkArguments.length >= 2) {

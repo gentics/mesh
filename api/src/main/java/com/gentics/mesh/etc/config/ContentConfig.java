@@ -6,6 +6,9 @@ import com.gentics.mesh.doc.GenerateDocumentation;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 import com.gentics.mesh.etc.config.env.Option;
 
+/**
+ * Configuration options which are related to stored content.
+ */
 @GenerateDocumentation
 public class ContentConfig implements Option {
 

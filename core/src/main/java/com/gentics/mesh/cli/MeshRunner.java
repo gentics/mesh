@@ -4,6 +4,9 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
 
+/**
+ * Minimalistic mesh runner
+ */
 public class MeshRunner {
 
 	public static void main(String[] args) throws Exception {

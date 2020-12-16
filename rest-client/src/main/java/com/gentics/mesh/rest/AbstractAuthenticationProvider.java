@@ -1,5 +1,10 @@
 package com.gentics.mesh.rest;
 
+/**
+ * Abstract implementation for REST Client authentication providers.
+ * 
+ * @see MeshRestClientAuthenticationProvider
+ */
 public abstract class AbstractAuthenticationProvider implements MeshRestClientAuthenticationProvider {
 
 	private String username;

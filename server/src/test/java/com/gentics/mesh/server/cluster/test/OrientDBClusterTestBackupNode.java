@@ -5,6 +5,9 @@ import org.junit.Before;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.server.cluster.test.task.BackupTask;
 
+/**
+ * Test runner which invokes backups.
+ */
 public class OrientDBClusterTestBackupNode extends AbstractClusterTest {
 
 	@Before

@@ -17,6 +17,9 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Dedicated entity definition for nodes. This class provides methods to transform database entities to documents and also to generate the partial update requests.
+ */
 public class NodeMeshEntity extends MeshEntity<NodeGraphFieldContainer> {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeMeshEntity.class);

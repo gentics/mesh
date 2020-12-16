@@ -8,8 +8,11 @@ import java.util.Iterator;
 import com.gentics.mesh.core.data.BasicFieldContainer;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.MeshCoreVertex;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
+import com.gentics.mesh.core.data.node.field.impl.MicronodeGraphFieldImpl;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.AbstractResponse;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -19,8 +22,16 @@ import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
+/**
+ * Abstract implementation for field containers. This can be used by {@link NodeImpl}
+ * 
+ * TODO: This is a dedicated class due to history reasons and should be merged with NodeImpl
+ * 
+ * @param <T>
+ * @param <R>
+ */
 public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResponse, R extends MeshCoreVertex<T>> extends
-		AbstractMeshCoreVertex<T> {
+	AbstractMeshCoreVertex<T> {
 
 	protected <U extends BasicFieldContainer> U getGraphFieldContainer(String languageTag, HibBranch branch, ContainerType type, Class<U> classOfU) {
 		return getGraphFieldContainer(languageTag, branch != null ? branch.getUuid() : null, type, classOfU);
@@ -51,7 +62,7 @@ public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResp
 	 * @return
 	 */
 	protected <U extends BasicFieldContainer> U getGraphFieldContainer(String languageTag, String branchUuid, ContainerType type,
-			Class<U> classOfU) {
+		Class<U> classOfU) {
 		Edge edge = getGraphFieldContainerEdge(languageTag, branchUuid, type);
 		if (edge != null) {
 			FramedGraph graph = Tx.get().getGraph();

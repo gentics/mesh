@@ -27,6 +27,9 @@ import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Job implementation to be used for persisting and invoking branch migrations.
+ */
 public class BranchMigrationJobImpl extends JobImpl {
 
 	private static final Logger log = LoggerFactory.getLogger(BranchMigrationJobImpl.class);

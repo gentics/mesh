@@ -14,6 +14,11 @@ import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.graphdb.model.MeshElement;
 
+/**
+ * Helper code that allows to resolve user references via the graph element properties.
+ * 
+ * @see UserProperties
+ */
 @Singleton
 public class GraphUserPropertiesImpl implements UserProperties {
 
@@ -52,7 +57,7 @@ public class GraphUserPropertiesImpl implements UserProperties {
 		}
 	}
 
-	private HibUser getUser(MeshElement  element, String propertyKey) {
+	private HibUser getUser(MeshElement element, String propertyKey) {
 		return Optional.ofNullable(element)
 			.map(v -> v.<String>getProperty(propertyKey))
 			.map(boot.userDao()::findByUuid)

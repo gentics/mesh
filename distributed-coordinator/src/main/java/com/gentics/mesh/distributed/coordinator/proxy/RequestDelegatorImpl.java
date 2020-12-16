@@ -1,6 +1,7 @@
 package com.gentics.mesh.distributed.coordinator.proxy;
 
 import java.util.HashSet;
+
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -27,6 +28,9 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.streams.Pump;
 import io.vertx.ext.web.RoutingContext;
 
+/**
+ * @see RequestDelegator
+ */
 public class RequestDelegatorImpl implements RequestDelegator {
 
 	private static final Logger log = LoggerFactory.getLogger(RequestDelegatorImpl.class);

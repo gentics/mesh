@@ -13,7 +13,10 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-public class ClusterServer {
+/**
+ * Abstract implementation for cluster servers.
+ */
+public abstract class ClusterServer {
 
 	static {
 		// Disable direct IO (My dev system uses ZFS. Otherwise the test will not run)

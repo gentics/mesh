@@ -23,6 +23,9 @@ import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * @see ProjectVersionPurgeHandler
+ */
 @Singleton
 public class ProjectVersionPurgeHandlerImpl implements ProjectVersionPurgeHandler {
 

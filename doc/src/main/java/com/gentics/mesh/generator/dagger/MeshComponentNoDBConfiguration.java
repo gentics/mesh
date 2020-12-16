@@ -11,6 +11,9 @@ import com.gentics.mesh.test.util.TestUtils;
 import dagger.Module;
 import dagger.Provides;
 
+/**
+ * Dagger module for in-memory database setups.
+ */
 @Module
 public class MeshComponentNoDBConfiguration {
 

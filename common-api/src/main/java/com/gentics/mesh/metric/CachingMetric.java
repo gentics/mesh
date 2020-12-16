@@ -23,6 +23,9 @@ public class CachingMetric implements Metric {
 		return null;
 	}
 
+	/**
+	 * Metric event types.
+	 */
 	public enum Event {
 		HIT,
 		MISS,

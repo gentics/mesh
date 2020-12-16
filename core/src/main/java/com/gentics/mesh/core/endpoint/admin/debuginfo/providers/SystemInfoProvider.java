@@ -62,6 +62,9 @@ public class SystemInfoProvider implements DebugInfoProvider {
 			.toFlowable();
 	}
 
+	/**
+	 * Reference to system information (Heap, Disk Space, JVM Args)
+	 */
 	public static class SystemInfo {
 		public double systemLoadAverage;
 		public ReadableMemoryUsage heapMemoryUsage;
@@ -70,12 +73,18 @@ public class SystemInfoProvider implements DebugInfoProvider {
 		public List<String> jvmArguments;
 	}
 
+	/**
+	 * Information on the filesystem in-use.
+	 */
 	private static class DiskSpace {
 		public String totalSpace;
 		public String unallocatedSpace;
 		public String usableSpace;
 	}
 
+	/**
+	 * Memory information.
+	 */
 	private static class ReadableMemoryUsage {
 		private final MemoryUsage memoryUsage;
 

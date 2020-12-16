@@ -13,6 +13,9 @@ import org.apache.commons.io.IOUtils;
 import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.Template;
 
+/**
+ * Abstract implementation for an example generator that renders using handlebars.
+ */
 public class AbstractRenderingGenerator extends AbstractGenerator {
 
 	public AbstractRenderingGenerator(File file, boolean cleanDir) throws IOException {

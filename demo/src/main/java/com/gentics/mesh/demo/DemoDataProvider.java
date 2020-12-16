@@ -60,6 +60,11 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Central data provider for the Gentics Mesh Demo content.
+ * 
+ * The content is created using the {@link MeshLocalClient}.
+ */
 @Singleton
 public class DemoDataProvider {
 

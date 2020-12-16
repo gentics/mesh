@@ -62,6 +62,20 @@ import io.micrometer.core.instrument.Timer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Implementation of an OrientDB transaction.
+ * 
+ * This implementation cares care of various aspects including:
+ * <ul>
+ * <li>Handling of nested/wrapped transactions</li>
+ * <li>Collecting metrics on Tx duration</li>
+ * <li>Providing access to various dao methods</li>
+ * <li>Providing access to {@link TxData} via {@link #txData}</li>
+ * <li>Handling topology locks before commit via {@link Database#blockingTopologyLockCheck()}</li>
+ * <li>Register and Unregister of active Tx via {@link TxCleanupTask}</li>
+ * <li>Making Tx accessible via threadlocal {@link Tx#setActive(Tx)}
+ * </ul>
+ */
 public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 
 	private static final Logger log = LoggerFactory.getLogger(OrientDBTx.class);
@@ -92,7 +106,7 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 		// Check if an active transaction already exists.
 		Tx activeTx = Tx.get();
 		if (activeTx != null) {
-			//TODO Use this spot here to check for nested / wrapped transactions. Nested Tx must not be used when using MDM / Hibernate
+			// TODO Use this spot here to check for nested / wrapped transactions. Nested Tx must not be used when using MDM / Hibernate
 			isWrapped = true;
 			init(activeTx.getGraph());
 		} else {

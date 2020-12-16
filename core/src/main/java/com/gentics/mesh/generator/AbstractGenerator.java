@@ -5,6 +5,9 @@ import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 
+/**
+ * Abstract implementation for an example generator.
+ */
 public abstract class AbstractGenerator {
 
 	protected File outputFolder;

@@ -37,6 +37,9 @@ import com.gentics.mesh.parameter.PagingParameters;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * REST handler for job endpoint operations.
+ */
 @Singleton
 public class JobHandler extends AbstractCrudHandler<HibJob, JobResponse> {
 
@@ -47,7 +50,8 @@ public class JobHandler extends AbstractCrudHandler<HibJob, JobResponse> {
 	private final PageTransformer pageTransformer;
 
 	@Inject
-	public JobHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, WriteLockImpl writeLock, JobDAOActions jobActions, PageTransformer pageTransformer) {
+	public JobHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, WriteLockImpl writeLock, JobDAOActions jobActions,
+		PageTransformer pageTransformer) {
 		super(db, utils, writeLock, jobActions);
 		this.boot = boot;
 		this.pageTransformer = pageTransformer;

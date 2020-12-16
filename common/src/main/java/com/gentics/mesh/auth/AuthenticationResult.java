@@ -2,6 +2,9 @@ package com.gentics.mesh.auth;
 
 import io.vertx.ext.auth.User;
 
+/**
+ * POJO for an authentication result.
+ */
 public class AuthenticationResult {
 
 	private User user;
@@ -12,6 +15,11 @@ public class AuthenticationResult {
 		this.user = user;
 	}
 
+	/**
+	 * Return the set user.
+	 * 
+	 * @return
+	 */
 	public User getUser() {
 		return user;
 	}

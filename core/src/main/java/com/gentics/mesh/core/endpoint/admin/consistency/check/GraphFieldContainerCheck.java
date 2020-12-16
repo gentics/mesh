@@ -23,6 +23,9 @@ import com.gentics.mesh.util.VersionNumber;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Consistency check for node contents.
+ */
 public class GraphFieldContainerCheck extends AbstractConsistencyCheck {
 
 	private static final Logger log = LoggerFactory.getLogger(GraphFieldContainerCheck.class);

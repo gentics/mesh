@@ -7,6 +7,7 @@ import java.util.Date;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.tx.AbstractOrientStorage;
+import com.gentics.mesh.graphdb.tx.OrientStorage;
 import com.gentics.mesh.metric.MetricsService;
 import com.orientechnologies.orient.core.command.OCommandOutputListener;
 import com.orientechnologies.orient.core.db.ODatabaseSession;
@@ -21,6 +22,9 @@ import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Non-Clustered implementation of an {@link OrientStorage} which uses the {@link OrientGraphFactory} to provide transactions.
+ */
 public class OrientLocalStorageImpl extends AbstractOrientStorage {
 
 	private static final Logger log = LoggerFactory.getLogger(OrientLocalStorageImpl.class);
@@ -36,7 +40,7 @@ public class OrientLocalStorageImpl extends AbstractOrientStorage {
 		GraphStorageOptions storageOptions = options.getStorageOptions();
 		if (storageOptions == null || storageOptions.getDirectory() == null) {
 			log.info("No graph database settings found. Fallback to in memory mode.");
-			factory = new OrientGraphFactory("memory:tinkerpop" +  System.currentTimeMillis()).setupPool(16, 100);
+			factory = new OrientGraphFactory("memory:tinkerpop" + System.currentTimeMillis()).setupPool(16, 100);
 		} else {
 			factory = new OrientGraphFactory("plocal:" + new File(storageOptions.getDirectory(), DB_NAME).getAbsolutePath()).setupPool(16, 100);
 		}

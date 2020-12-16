@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.endpoint.admin.debuginfo;
 
-
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 
@@ -25,14 +24,17 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 
+/**
+ * REST handler for the debuginfo endpoint.
+ */
 @Singleton
 public class DebugInfoHandler {
+
 	private final Set<DebugInfoProvider> debugInfoProviders;
 	private final Database db;
 	private static final Logger log = LoggerFactory.getLogger(DebugInfoHandler.class);
 	private final Set<String> defaultExcluded = Stream.of(
-		"consistencyCheck"
-	).collect(Collectors.toSet());
+		"consistencyCheck").collect(Collectors.toSet());
 
 	@Inject
 	public DebugInfoHandler(Set<DebugInfoProvider> debugInfoProviders, Database db) {
@@ -94,9 +96,8 @@ public class DebugInfoHandler {
 		IncludedInfo includedInfos = new IncludedInfo(ac);
 		return Stream.concat(
 			defaultInclusions(),
-			includedInfos.getIncluded().stream()
-		).filter(name -> !includedInfos.getExcluded().contains(name))
-		.collect(Collectors.toSet());
+			includedInfos.getIncluded().stream()).filter(name -> !includedInfos.getExcluded().contains(name))
+			.collect(Collectors.toSet());
 	}
 
 	private Stream<String> defaultInclusions() {

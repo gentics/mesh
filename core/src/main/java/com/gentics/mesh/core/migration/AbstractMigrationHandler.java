@@ -37,6 +37,9 @@ import com.gentics.mesh.util.StreamUtil;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Abstract implementation for migration handlers that deal with content migrations.
+ */
 public abstract class AbstractMigrationHandler extends AbstractHandler implements MigrationHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractMigrationHandler.class);
