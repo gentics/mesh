@@ -4,7 +4,11 @@ import com.gentics.mesh.core.data.branch.HibBranchVersionAssignment;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.rest.job.JobStatus;
 
+/**
+ * Wrapper for migration status for tests.
+ */
 public class DummyMigrationStatus implements MigrationStatusHandler {
+
 	private static DummyMigrationStatus instance = new DummyMigrationStatus();
 
 	private DummyMigrationStatus() {

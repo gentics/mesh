@@ -38,6 +38,7 @@ import io.vertx.ext.web.FileUpload;
  *
  * @param <T>
  *            Type of the response object
+ * @see InternalActionContext
  */
 public class LocalActionContextImpl<T> extends AbstractInternalActionContext implements InternalActionContext {
 

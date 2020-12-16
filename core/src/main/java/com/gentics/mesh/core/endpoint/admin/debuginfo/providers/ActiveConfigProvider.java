@@ -12,6 +12,9 @@ import com.gentics.mesh.json.JsonUtil;
 
 import io.reactivex.Flowable;
 
+/**
+ * Debug info provider for the currently active configuration (mesh options).
+ */
 @Singleton
 public class ActiveConfigProvider implements DebugInfoProvider {
 	private final MeshOptions meshOptions;

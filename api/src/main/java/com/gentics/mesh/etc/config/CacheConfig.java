@@ -6,6 +6,9 @@ import com.gentics.mesh.doc.GenerateDocumentation;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 import com.gentics.mesh.etc.config.env.Option;
 
+/**
+ * Configuration POJO for caching options.
+ */
 @GenerateDocumentation
 public class CacheConfig implements Option {
 

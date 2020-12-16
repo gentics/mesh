@@ -10,6 +10,9 @@ import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoUtil;
 
 import io.reactivex.Flowable;
 
+/**
+ * 
+ */
 @Singleton
 public class ConfigProvider implements DebugInfoProvider {
 	private final DebugInfoUtil debugInfoUtil;

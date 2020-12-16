@@ -3,7 +3,14 @@ package com.gentics.mesh.core.rest.node.field.list;
 import java.util.List;
 
 import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.HtmlField;
 
+/**
+ * Node field definition for field lists of a specific type.
+ * 
+ * @param <T>
+ *            Type of listed elements (e.g {@link HtmlField})
+ */
 public interface FieldList<T> extends Field {
 
 	/**

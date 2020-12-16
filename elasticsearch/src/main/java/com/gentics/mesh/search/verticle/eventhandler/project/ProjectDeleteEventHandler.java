@@ -21,6 +21,9 @@ import com.gentics.mesh.search.verticle.eventhandler.EventHandler;
 
 import io.reactivex.Flowable;
 
+/**
+ * Event handler which updates the project, content, tag, tagfamily search indices on a project delete event.
+ */
 @Singleton
 public class ProjectDeleteEventHandler implements EventHandler {
 

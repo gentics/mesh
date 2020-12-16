@@ -13,8 +13,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-// TODO Replace this with generic way of adding request/response hooks
-// This way, the auth provider can add and set headers on its own on each request
+/**
+ * Authentication provider for the Mesh Rest Client.
+ * TODO Replace this with generic way of adding request/response hooks
+ * This way, the auth provider can add and set headers on its own on each request
+ */
 public class JWTAuthentication extends AbstractAuthenticationProvider {
 
 	private String token;
@@ -53,7 +56,7 @@ public class JWTAuthentication extends AbstractAuthenticationProvider {
 
 			return meshRestClient.prepareRequest(HttpMethod.POST, "/auth/login", TokenResponse.class, loginRequest).toSingle();
 		}).doOnSuccess(response -> token = response.getToken())
-		.map(ignore -> new GenericMessageResponse("OK"));
+			.map(ignore -> new GenericMessageResponse("OK"));
 	}
 
 	@Override

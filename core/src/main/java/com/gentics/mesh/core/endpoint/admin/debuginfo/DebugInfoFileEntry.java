@@ -8,7 +8,11 @@ import io.vertx.core.file.OpenOptions;
 import io.vertx.reactivex.core.file.AsyncFile;
 import io.vertx.reactivex.core.file.FileSystem;
 
+/**
+ * @see DebugInfoEntry
+ */
 public class DebugInfoFileEntry implements DebugInfoEntry {
+
 	private final FileSystem fs;
 	private final String source;
 	private final String target;

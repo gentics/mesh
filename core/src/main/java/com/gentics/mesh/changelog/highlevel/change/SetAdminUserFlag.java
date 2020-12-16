@@ -13,6 +13,9 @@ import dagger.Lazy;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Changelog entry which migrates from admin role to admin user flag.
+ */
 public class SetAdminUserFlag extends AbstractHighLevelChange {
 
 	private static final Logger log = LoggerFactory.getLogger(SetAdminUserFlag.class);

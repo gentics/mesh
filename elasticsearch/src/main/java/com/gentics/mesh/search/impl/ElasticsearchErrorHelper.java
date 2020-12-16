@@ -15,6 +15,9 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Utility class which contains methods that are useful when dealing with Elasticsearch errors.
+ */
 public final class ElasticsearchErrorHelper {
 
 	private static final Logger log = LoggerFactory.getLogger(ElasticsearchErrorHelper.class);
@@ -52,6 +55,12 @@ public final class ElasticsearchErrorHelper {
 		return false;
 	}
 
+	/**
+	 * Check whether the throwable does indicate that a 'resource_already_exists_exception' occured in ES.
+	 * 
+	 * @param error
+	 * @return
+	 */
 	public static boolean isResourceAlreadyExistsError(Throwable error) {
 		if (error instanceof HttpErrorException) {
 			HttpErrorException re = (HttpErrorException) error;

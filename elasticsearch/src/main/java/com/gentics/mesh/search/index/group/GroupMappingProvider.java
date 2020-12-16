@@ -11,6 +11,9 @@ import com.gentics.mesh.search.index.AbstractMappingProvider;
 
 import io.vertx.core.json.JsonObject;
 
+/**
+ * Elasticsearch mapping provider for group indices.
+ */
 @Singleton
 public class GroupMappingProvider extends AbstractMappingProvider {
 

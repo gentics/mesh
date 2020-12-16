@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.rest.search;
 
+/**
+ * POJO to store metric information of a specific entity type. (Used during index sync)
+ */
 public class EntityMetrics {
 
 	private TypeMetrics insert = new TypeMetrics();

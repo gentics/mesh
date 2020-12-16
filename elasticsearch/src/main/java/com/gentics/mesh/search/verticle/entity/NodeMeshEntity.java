@@ -6,7 +6,6 @@ import java.util.Optional;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModelImpl;

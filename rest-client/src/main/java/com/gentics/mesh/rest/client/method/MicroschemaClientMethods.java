@@ -10,6 +10,9 @@ import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.impl.EmptyResponse;
 
+/**
+ * Microschema rest client methods.
+ */
 public interface MicroschemaClientMethods {
 
 	/**
@@ -55,7 +58,8 @@ public interface MicroschemaClientMethods {
 	/**
 	 * Delete the given microschema.
 	 *
-	 * @param uuid Microschema UUID
+	 * @param uuid
+	 *            Microschema UUID
 	 * @return
 	 */
 	MeshRequest<EmptyResponse> deleteMicroschema(String uuid);

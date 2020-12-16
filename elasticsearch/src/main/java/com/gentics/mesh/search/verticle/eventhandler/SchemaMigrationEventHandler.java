@@ -34,8 +34,13 @@ import io.reactivex.Flowable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Event handler that will catch schema migration events (assign, unassign, migration finished). The handler will for example drop old content indices when a
+ * migration finishes. Indices will be created when a schema gets assigned to a branch.
+ */
 @Singleton
 public class SchemaMigrationEventHandler implements EventHandler {
+
 	private static final Logger log = LoggerFactory.getLogger(SchemaMigrationEventHandler.class);
 
 	private final NodeIndexHandlerImpl nodeIndexHandler;
@@ -59,15 +64,13 @@ public class SchemaMigrationEventHandler implements EventHandler {
 				return migrationEnd(
 					model.getProject().getUuid(),
 					model.getBranch().getUuid(),
-					model.getSchema().getVersionUuid()
-				);
+					model.getSchema().getVersionUuid());
 			} else if (event == SCHEMA_MIGRATION_FINISHED) {
 				SchemaMigrationMeshEventModel model = requireType(SchemaMigrationMeshEventModel.class, messageEvent.message);
 				return migrationEnd(
 					model.getProject().getUuid(),
 					model.getBranch().getUuid(),
-					model.getFromVersion().getVersionUuid()
-				);
+					model.getFromVersion().getVersionUuid());
 			} else {
 				throw new RuntimeException("Unexpected event " + event.address);
 			}
@@ -78,8 +81,7 @@ public class SchemaMigrationEventHandler implements EventHandler {
 		return Flowable.just(new DropIndexRequest(ContentDaoWrapper.composeIndexPattern(
 			projectUuid,
 			branchUuid,
-			schemaVersionUuid
-		)));
+			schemaVersionUuid)));
 	}
 
 	public Flowable<SearchRequest> migrationStart(BranchSchemaAssignEventModel model) {

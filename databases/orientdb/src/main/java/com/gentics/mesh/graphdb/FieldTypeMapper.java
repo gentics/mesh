@@ -3,6 +3,9 @@ package com.gentics.mesh.graphdb;
 import com.gentics.mesh.madl.field.FieldType;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 
+/**
+ * The field mapper provides the bridge between field types that were defined in MADL and field types of OrientDB.
+ */
 public final class FieldTypeMapper {
 
 	/**

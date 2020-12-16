@@ -174,6 +174,7 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 			})
 		);
 
+		// .rolePerms
 		setField.accept(newFieldDefinition().name("rolePerms").description("Permissions information of the element for a certain role")
 			.type(new GraphQLTypeReference(PERM_INFO_TYPE_NAME))
 			.argument(new GraphQLArgument.Builder()

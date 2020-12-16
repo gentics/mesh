@@ -13,17 +13,19 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 
 import io.reactivex.Flowable;
-import io.reactivex.Single;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.file.FileSystem;
 
+/**
+ * Debug info provider for database dump content. The provider can invoke a dump and add return a {@link DebugInfoEntry} which can be included in the returned
+ * zip content.
+ */
 @Singleton
 public class DatabaseDumpProvider implements DebugInfoProvider {
 	private final AdminHandler adminHandler;
 	private final Database db;
 	private final FileSystem fs;
 	private final MeshOptions options;
-
 
 	@Inject
 	public DatabaseDumpProvider(AdminHandler adminHandler, Database db, DebugInfoUtil util, Vertx vertx, MeshOptions options) {

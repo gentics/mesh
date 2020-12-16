@@ -412,7 +412,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			.argument(createNodeVersionArg())
 			.argument(NodeFilter.filter(context).createFilterArgument())
 			.type(new GraphQLTypeReference(NODE_PAGE_TYPE_NAME))
-			.dataFetcher((env) -> {
+			.dataFetcher(env -> {
 				String query = env.getArgument("query");
 
 				// Check whether we need to load the nodes via a query or regular project-wide paging

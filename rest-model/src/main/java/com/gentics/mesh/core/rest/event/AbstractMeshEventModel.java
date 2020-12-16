@@ -5,6 +5,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.MeshEvent;
 
+/**
+ * Abstract event model implementation which contains information about the {@link #cause} of the event and where the event originates (cluster node name via
+ * {@link #origin})
+ */
 public abstract class AbstractMeshEventModel implements MeshEventModel {
 
 	@JsonProperty(required = true)

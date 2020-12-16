@@ -15,6 +15,9 @@ import org.codehaus.jettison.json.JSONObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Node name provider for Gentics Mesh. Names are used for the logger and cluster names. (When no name has been specified). 
+ */
 public class MeshNameProvider {
 
 	private static final Logger log = LoggerFactory.getLogger(MeshNameProvider.class);

@@ -3,6 +3,9 @@ package com.gentics.mesh.core.rest.event.tag;
 import com.gentics.mesh.core.rest.event.MeshProjectElementEventModel;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 
+/**
+ * Event model definition for tag events which contain the tag family reference.
+ */
 public interface TagElementEventModel extends MeshProjectElementEventModel {
 
 	/**

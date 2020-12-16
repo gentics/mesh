@@ -8,6 +8,9 @@ import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.rest.event.node.MicroschemaMigrationCause;
 
+/**
+ * @see MicronodeMigrationContext
+ */
 public class MicronodeMigrationContextImpl implements MicronodeMigrationContext {
 
 	private MigrationStatusHandler status;

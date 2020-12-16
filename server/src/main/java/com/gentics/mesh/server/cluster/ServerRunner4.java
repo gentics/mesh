@@ -4,6 +4,9 @@ import java.io.File;
 
 import com.gentics.mesh.etc.config.MeshOptions;
 
+/**
+ * Cluster Runner 4
+ */
 public class ServerRunner4 extends ClusterServer {
 
 	static {

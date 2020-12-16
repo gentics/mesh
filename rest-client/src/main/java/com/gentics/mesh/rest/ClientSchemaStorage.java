@@ -10,6 +10,9 @@ import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.schema.SchemaStorage;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 
+/**
+ * REST client implemantion of a {@link SchemaStorage}
+ */
 public class ClientSchemaStorage implements SchemaStorage {
 
 	private Map<String, Map<String, SchemaVersionModel>> schemaMap = new HashMap<>();

@@ -3,12 +3,17 @@ package com.gentics.mesh.rest.client.impl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.rest.client.MeshRestClient;
 
 import java.security.InvalidParameterException;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+/**
+ * Collection of utility methods that are useful for {@link MeshRestClient} operation.
+ */
 public final class Util {
+
 	private Util() {
 	}
 

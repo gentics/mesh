@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.field;
 
+/**
+ * Test case definition for list fields
+ */
 public interface ListFieldEndpointTestcases {
 
 	/**
