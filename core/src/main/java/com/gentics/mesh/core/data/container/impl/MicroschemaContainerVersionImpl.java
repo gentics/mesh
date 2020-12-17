@@ -48,6 +48,12 @@ public class MicroschemaContainerVersionImpl extends
 	AbstractGraphFieldSchemaContainerVersion<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, HibMicroschemaVersion, HibMicroschema>
 	implements MicroschemaVersion {
 
+	/**
+	 * Initialize the vertex type.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(MicroschemaContainerVersionImpl.class, MeshVertexImpl.class);
 	}
@@ -183,6 +189,9 @@ public class MicroschemaContainerVersionImpl extends
 		return getSchemaContainer().onUpdated();
 	}
 
+	/**
+	 * Delete the graph element.
+	 */
 	public void deleteElement() {
 		remove();
 	}

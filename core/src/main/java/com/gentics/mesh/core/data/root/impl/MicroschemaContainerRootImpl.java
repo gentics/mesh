@@ -26,6 +26,12 @@ import com.gentics.mesh.event.EventQueueBatch;
  */
 public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema> implements MicroschemaRoot {
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(MicroschemaContainerRootImpl.class, MeshVertexImpl.class);
 		type.createType(edgeType(HAS_SCHEMA_CONTAINER_ITEM));

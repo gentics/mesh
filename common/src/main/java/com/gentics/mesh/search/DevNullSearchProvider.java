@@ -56,6 +56,14 @@ public class DevNullSearchProvider implements SearchProvider {
 		return Completable.complete();
 	}
 
+	/**
+	 * No-operation setter.
+	 * 
+	 * @param indexName
+	 * @param type
+	 * @param schema
+	 * @return
+	 */
 	public Completable setNodeIndexMapping(String indexName, String type, SchemaModel schema) {
 		return Completable.complete();
 	}

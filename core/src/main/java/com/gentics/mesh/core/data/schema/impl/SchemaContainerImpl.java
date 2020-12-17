@@ -36,6 +36,12 @@ public class SchemaContainerImpl extends
 		return SchemaContainerVersionImpl.class;
 	}
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(SchemaContainerImpl.class, MeshVertexImpl.class);
 	}

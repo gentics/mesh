@@ -102,6 +102,12 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 
 	public static final String MIGRATED_PROPERTY_KEY = "migrated";
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(BranchImpl.class, MeshVertexImpl.class);
 		index.createIndex(vertexIndex(BranchImpl.class)

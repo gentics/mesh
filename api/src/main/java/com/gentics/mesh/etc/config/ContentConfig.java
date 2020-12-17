@@ -2,6 +2,7 @@ package com.gentics.mesh.etc.config;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.doc.GenerateDocumentation;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 import com.gentics.mesh.etc.config.env.Option;
@@ -30,6 +31,7 @@ public class ContentConfig implements Option {
 		return autoPurge;
 	}
 
+	@Setter
 	public ContentConfig setAutoPurge(boolean autoPurge) {
 		this.autoPurge = autoPurge;
 		return this;

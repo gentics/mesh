@@ -40,6 +40,12 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 
 	private static final Logger log = LoggerFactory.getLogger(MicronodeMigrationJobImpl.class);
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(MicronodeMigrationJobImpl.class, MeshVertexImpl.class);
 	}

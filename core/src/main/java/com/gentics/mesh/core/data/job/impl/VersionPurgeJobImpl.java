@@ -34,6 +34,12 @@ public class VersionPurgeJobImpl extends JobImpl {
 
 	private static final String MAX_AGE_PROPERTY = "maxAge";
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(VersionPurgeJobImpl.class, MeshVertexImpl.class);
 	}

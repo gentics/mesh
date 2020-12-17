@@ -2,6 +2,7 @@ package com.gentics.mesh.etc.config;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.doc.GenerateDocumentation;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 import com.gentics.mesh.etc.config.env.Option;
@@ -69,6 +70,7 @@ public class MonitoringConfig implements Option {
 		return host;
 	}
 
+	@Setter
 	public MonitoringConfig setHost(String host) {
 		this.host = host;
 		return this;
@@ -78,6 +80,7 @@ public class MonitoringConfig implements Option {
 		return jvmMetricsEnabled;
 	}
 
+	@Setter
 	public MonitoringConfig setJvmMetricsEnabled(boolean jvmMetricsEnabled) {
 		this.jvmMetricsEnabled = jvmMetricsEnabled;
 		return this;

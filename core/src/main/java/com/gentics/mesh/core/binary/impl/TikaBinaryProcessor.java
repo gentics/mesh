@@ -223,10 +223,32 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 		}, true);
 	}
 
+	/**
+	 * Parse the given file via the provided input stream.
+	 * 
+	 * @param ins
+	 * @param len
+	 * @return
+	 * @throws TikaException
+	 * @throws IOException
+	 */
 	public TikaResult parseFile(InputStream ins, int len) throws TikaException, IOException {
 		return parseFile(ins, len, true);
 	}
 
+	/**
+	 * Parse the given file with the provided inputstream.
+	 * 
+	 * @param ins
+	 *            Data stream
+	 * @param len
+	 *            Expected length of the stream
+	 * @param parseMetadata
+	 *            Whether to also parse metadata
+	 * @return Result of the parse operation
+	 * @throws TikaException
+	 * @throws IOException
+	 */
 	public TikaResult parseFile(InputStream ins, int len, boolean parseMetadata) throws TikaException, IOException {
 
 		Location loc = new Location();

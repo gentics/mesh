@@ -52,6 +52,12 @@ import io.reactivex.Completable;
  */
 public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(JobRootImpl.class, MeshVertexImpl.class);
 		index.createIndex(edgeIndex(HAS_JOB).withInOut().withOut());

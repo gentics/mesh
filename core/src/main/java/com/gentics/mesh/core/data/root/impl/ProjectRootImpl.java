@@ -36,6 +36,12 @@ import com.gentics.mesh.event.EventQueueBatch;
  */
 public class ProjectRootImpl extends AbstractRootVertex<Project> implements ProjectRoot {
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(ProjectRootImpl.class, MeshVertexImpl.class);
 		type.createType(edgeType(HAS_PROJECT));

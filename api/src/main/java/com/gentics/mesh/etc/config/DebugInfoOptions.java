@@ -2,6 +2,7 @@ package com.gentics.mesh.etc.config;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.doc.GenerateDocumentation;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 import com.gentics.mesh.etc.config.env.Option;
@@ -40,6 +41,7 @@ public class DebugInfoOptions implements Option {
 		return logFolder;
 	}
 
+	@Setter
 	public DebugInfoOptions setLogFolder(String logFolder) {
 		this.logFolder = logFolder;
 		return this;
@@ -49,6 +51,7 @@ public class DebugInfoOptions implements Option {
 		return logFileSize;
 	}
 
+	@Setter
 	public DebugInfoOptions setLogFileSize(String logFileSize) {
 		this.logFileSize = logFileSize;
 		return this;
@@ -58,6 +61,7 @@ public class DebugInfoOptions implements Option {
 		return logEnabled;
 	}
 
+	@Setter
 	public DebugInfoOptions setLogEnabled(boolean logEnabled) {
 		this.logEnabled = logEnabled;
 		return this;
@@ -67,6 +71,7 @@ public class DebugInfoOptions implements Option {
 		return logPattern;
 	}
 
+	@Setter
 	public DebugInfoOptions setLogPattern(String logPattern) {
 		this.logPattern = logPattern;
 		return this;

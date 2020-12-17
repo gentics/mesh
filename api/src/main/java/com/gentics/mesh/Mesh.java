@@ -147,6 +147,12 @@ public interface Mesh {
 	 */
 	<T> T internal();
 
+	/**
+	 * Set the dagger mesh component reference which allows access to the internal API.
+	 * 
+	 * @param <T>
+	 * @param meshInternal
+	 */
 	<T> void setMeshInternal(T meshInternal);
 
 	/**

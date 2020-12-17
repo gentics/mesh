@@ -32,12 +32,25 @@ public class MeshModule {
 
 	private static final int PASSWORD_HASH_LOGROUND_COUNT = 10;
 
+	/**
+	 * Return the configured image manipulator.
+	 * 
+	 * @param vertx
+	 * @param options
+	 * @param boot
+	 * @return
+	 */
 	@Provides
 	@Singleton
 	public static ImageManipulator imageProvider(io.vertx.reactivex.core.Vertx vertx, MeshOptions options, BootstrapInitializer boot) {
 		return new ImgscalrImageManipulator(vertx, options, boot);
 	}
 
+	/**
+	 * Create the password encoder for bcrypt.
+	 * 
+	 * @return
+	 */
 	@Provides
 	@Singleton
 	public static BCryptPasswordEncoder passwordEncoder() {
@@ -70,11 +83,23 @@ public class MeshModule {
 		return corsHandler;
 	}
 
+	/**
+	 * Provide the vertex instance from the {@link BootstrapInitializer} since it is initialized there.
+	 * 
+	 * @param boot
+	 * @return
+	 */
 	@Provides
 	public static Vertx vertx(BootstrapInitializer boot) {
 		return boot.vertx();
 	}
 
+	/**
+	 * Return the rx variant of {@link Vertx}
+	 * 
+	 * @param vertx
+	 * @return
+	 */
 	@Provides
 	public static io.vertx.reactivex.core.Vertx rxVertx(Vertx vertx) {
 		return new io.vertx.reactivex.core.Vertx(vertx);
@@ -98,6 +123,12 @@ public class MeshModule {
 		return handler;
 	}
 
+	/**
+	 * Return the hazelcast instance which is fetched from OrientDB cluster manager.
+	 * 
+	 * @param db
+	 * @return
+	 */
 	@Provides
 	@Singleton
 	public static HazelcastInstance hazelcast(Database db) {

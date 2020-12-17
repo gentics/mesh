@@ -93,6 +93,14 @@ public class TrackingSearchProviderImpl implements TrackingSearchProvider {
 		});
 	}
 
+	/**
+	 * No-operation setter for the index mapping. The method will just complete.
+	 * 
+	 * @param indexName
+	 * @param type
+	 * @param schema
+	 * @return
+	 */
 	public Completable setNodeIndexMapping(String indexName, String type, SchemaModel schema) {
 		return Completable.complete();
 	}
@@ -224,7 +232,6 @@ public class TrackingSearchProviderImpl implements TrackingSearchProvider {
 			.orElse(null);
 	}
 
-
 	@Override
 	public List<String> getDeleteEvents() {
 		return deleteEvents;
@@ -260,6 +267,12 @@ public class TrackingSearchProviderImpl implements TrackingSearchProvider {
 		return null;
 	}
 
+	/**
+	 * Print the tracked store events to the console.
+	 * 
+	 * @param withJson
+	 *            Flag to control whether the entry json should also be printed
+	 */
 	public void printStoreEvents(boolean withJson) {
 		for (Entry<String, JsonObject> entry : getStoreEvents().entrySet()) {
 			System.out.println("Store event {" + entry.getKey() + "}");

@@ -56,6 +56,12 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 
 	public static final Set<String> UUID_TYPES = ImmutableSet.of("binary", "node", "micronode");
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(FieldTypeChangeImpl.class, MeshVertexImpl.class);
 	}

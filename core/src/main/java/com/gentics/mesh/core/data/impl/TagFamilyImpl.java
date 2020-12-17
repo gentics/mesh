@@ -50,6 +50,12 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 
 	private static final Logger log = LoggerFactory.getLogger(TagFamilyImpl.class);
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(TagFamilyImpl.class, MeshVertexImpl.class);
 		// TODO why was the branch key omitted? TagEdgeImpl.BRANCH_UUID_KEY
@@ -220,6 +226,9 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 			.nextOrDefaultExplicit(TagImpl.class, null);
 	}
 
+	/**
+	 * Delete the graph element.
+	 */
 	public void deleteElement() {
 		getElement().remove();
 	}

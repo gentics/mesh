@@ -9,6 +9,9 @@ import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.FieldFetcher;
 
+/**
+ * Test helper for date list fields. 
+ */
 public interface DateListFieldHelper {
 
 	public static final long DATEVALUE = fromISO8601(toISO8601(new Date().getTime()));

@@ -8,6 +8,11 @@ import io.vertx.ext.web.RoutingContext;
  */
 public class PoweredByHandler implements Handler<RoutingContext> {
 
+	/**
+	 * Create a new powered by handler.
+	 * 
+	 * @return
+	 */
 	public static PoweredByHandler create() {
 		return new PoweredByHandler();
 	}

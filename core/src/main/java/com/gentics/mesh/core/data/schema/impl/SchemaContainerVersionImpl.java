@@ -68,6 +68,12 @@ public class SchemaContainerVersionImpl extends
 
 	private static final Logger log = LoggerFactory.getLogger(SchemaContainerVersionImpl.class);
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(SchemaContainerVersionImpl.class, MeshVertexImpl.class);
 	}

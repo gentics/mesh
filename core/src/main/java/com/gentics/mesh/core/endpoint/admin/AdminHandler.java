@@ -94,7 +94,8 @@ public class AdminHandler extends AbstractHandler {
 	@Inject
 	public AdminHandler(Vertx vertx, Database db, RouterStorageImpl routerStorage, BootstrapInitializer boot, SearchProvider searchProvider,
 		HandlerUtilities utils,
-		MeshOptions options, RouterStorageRegistryImpl routerStorageRegistry, Coordinator coordinator, WriteLock writeLock, ConsistencyCheckHandler consistencyCheckHandler) {
+		MeshOptions options, RouterStorageRegistryImpl routerStorageRegistry, Coordinator coordinator, WriteLock writeLock,
+		ConsistencyCheckHandler consistencyCheckHandler) {
 		this.vertx = vertx;
 		this.db = db;
 		this.routerStorage = routerStorage;
@@ -139,6 +140,11 @@ public class AdminHandler extends AbstractHandler {
 		}, model -> ac.send(model, OK));
 	}
 
+	/**
+	 * Invoke the graph database backup.
+	 * 
+	 * @return
+	 */
 	public String backup() {
 		Mesh mesh = boot.mesh();
 		MeshStatus oldStatus = mesh.getStatus();
@@ -314,6 +320,11 @@ public class AdminHandler extends AbstractHandler {
 		return info;
 	}
 
+	/**
+	 * Generate and return the RAML of the server.
+	 * 
+	 * @param ac
+	 */
 	public void handleRAML(InternalActionContext ac) {
 		boolean admin = db.tx(() -> ac.isAdmin());
 		if (admin) {
@@ -325,6 +336,11 @@ public class AdminHandler extends AbstractHandler {
 		}
 	}
 
+	/**
+	 * Load the currently active cluster configuration.
+	 * 
+	 * @param ac
+	 */
 	public void handleLoadClusterConfig(InternalActionContext ac) {
 		utils.syncTx(ac, tx -> {
 			HibUser user = ac.getUser();
@@ -335,6 +351,11 @@ public class AdminHandler extends AbstractHandler {
 		}, model -> ac.send(model, OK));
 	}
 
+	/**
+	 * Update the OrientDB cluster configuration.
+	 * 
+	 * @param ac
+	 */
 	public void handleUpdateClusterConfig(InternalActionContext ac) {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
@@ -349,6 +370,11 @@ public class AdminHandler extends AbstractHandler {
 		}
 	}
 
+	/**
+	 * Load information on the currently elected coordination master.
+	 * 
+	 * @param ac
+	 */
 	public void handleLoadCoordinationMaster(InternalActionContext ac) {
 		utils.syncTx(ac, tx -> {
 			HibUser user = ac.getUser();
@@ -363,6 +389,11 @@ public class AdminHandler extends AbstractHandler {
 		}, model -> ac.send(model, OK));
 	}
 
+	/**
+	 * Manually set the elected master on the instance which runs this handler.
+	 * 
+	 * @param ac
+	 */
 	public void handleSetCoordinationMaster(InternalActionContext ac) {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
@@ -387,6 +418,11 @@ public class AdminHandler extends AbstractHandler {
 		return new CoordinatorMasterResponse(name, port, host);
 	}
 
+	/**
+	 * Return the currently set coordinator config.
+	 * 
+	 * @param ac
+	 */
 	public void handleLoadCoordinationConfig(InternalActionContext ac) {
 		utils.syncTx(ac, tx -> {
 			HibUser user = ac.getUser();
@@ -397,6 +433,11 @@ public class AdminHandler extends AbstractHandler {
 		}, model -> ac.send(model, OK));
 	}
 
+	/**
+	 * Update the coordination configuration.
+	 * 
+	 * @param ac
+	 */
 	public void handleUpdateCoordinationConfig(InternalActionContext ac) {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {

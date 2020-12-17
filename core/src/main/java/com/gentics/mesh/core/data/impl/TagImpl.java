@@ -42,6 +42,12 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse> implements Tag 
 
 	public static final String TAG_VALUE_KEY = "tagValue";
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(TagImpl.class, MeshVertexImpl.class);
 	}
@@ -81,6 +87,9 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse> implements Tag 
 		return out(HAS_TAGFAMILY_ROOT, TagFamilyImpl.class).nextOrNull();
 	}
 
+	/**
+	 * Ensure that the edge to the project exists.
+	 */
 	public void setProject(HibProject project) {
 		setUniqueLinkOutTo(toGraph(project), ASSIGNED_TO_PROJECT);
 	}

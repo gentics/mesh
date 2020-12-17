@@ -35,6 +35,13 @@ public class MeshAuthUserImpl implements MeshAuthUser {
 		this.delegate = user;
 	}
 
+	/**
+	 * Create a new {@link MeshAuthUser} wrapper.
+	 * 
+	 * @param db
+	 * @param user
+	 * @return
+	 */
 	public static MeshAuthUserImpl create(Database db, HibUser user) {
 		Objects.requireNonNull(db);
 		if (user == null) {

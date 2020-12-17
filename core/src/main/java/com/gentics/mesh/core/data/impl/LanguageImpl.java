@@ -15,8 +15,6 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 
-import io.reactivex.Single;
-
 /**
  * @see Language
  */
@@ -26,6 +24,12 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse> imple
 	public static final String LANGUAGE_NATIVE_NAME_PROPERTY_KEY = "nativeName";
 	public static final String LANGUAGE_NAME_PROPERTY_KEY = "name";
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(LanguageImpl.class, MeshVertexImpl.class);
 		index.createIndex(vertexIndex(LanguageImpl.class)

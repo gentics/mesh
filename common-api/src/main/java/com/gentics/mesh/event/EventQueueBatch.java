@@ -74,8 +74,13 @@ public interface EventQueueBatch {
 		return this;
 	}
 
+	/**
+	 * Merge the contents of the given batch with the current batch.
+	 * @param containerBatch
+	 */
 	default void addAll(EventQueueBatch containerBatch) {
 		getEntries().addAll(containerBatch.getEntries());
+		getActions().addAll(containerBatch.getActions());
 	}
 
 	/**

@@ -3,6 +3,7 @@ package com.gentics.mesh.etc.config.search;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.doc.GenerateDocumentation;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
@@ -313,6 +314,7 @@ public class ElasticSearchOptions implements Option {
 		return embeddedArguments;
 	}
 
+	@Setter
 	public ElasticSearchOptions setEmbeddedArguments(String embeddedArguments) {
 		this.embeddedArguments = embeddedArguments;
 		return this;
@@ -322,6 +324,7 @@ public class ElasticSearchOptions implements Option {
 		return startupTimeout;
 	}
 
+	@Setter
 	public ElasticSearchOptions setStartupTimeout(Integer startupTimeout) {
 		this.startupTimeout = startupTimeout;
 		return this;
@@ -331,6 +334,7 @@ public class ElasticSearchOptions implements Option {
 		return bulkLimit;
 	}
 
+	@Setter
 	public ElasticSearchOptions setBulkLimit(int bulkLimit) {
 		this.bulkLimit = bulkLimit;
 		return this;
@@ -340,6 +344,7 @@ public class ElasticSearchOptions implements Option {
 		return bulkLengthLimit;
 	}
 
+	@Setter
 	public ElasticSearchOptions setBulkLengthLimit(long bulkLengthLimit) {
 		this.bulkLengthLimit = bulkLengthLimit;
 		return this;
@@ -349,6 +354,7 @@ public class ElasticSearchOptions implements Option {
 		return prefix;
 	}
 
+	@Setter
 	public ElasticSearchOptions setPrefix(String prefix) {
 		this.prefix = prefix;
 		return this;
@@ -358,6 +364,7 @@ public class ElasticSearchOptions implements Option {
 		return eventBufferSize;
 	}
 
+	@Setter
 	public ElasticSearchOptions setEventBufferSize(int eventBufferSize) {
 		this.eventBufferSize = eventBufferSize;
 		return this;
@@ -367,6 +374,7 @@ public class ElasticSearchOptions implements Option {
 		return bulkDebounceTime;
 	}
 
+	@Setter
 	public ElasticSearchOptions setBulkDebounceTime(int bulkDebounceTime) {
 		this.bulkDebounceTime = bulkDebounceTime;
 		return this;
@@ -376,6 +384,7 @@ public class ElasticSearchOptions implements Option {
 		return idleDebounceTime;
 	}
 
+	@Setter
 	public ElasticSearchOptions setIdleDebounceTime(int idleDebounceTime) {
 		this.idleDebounceTime = idleDebounceTime;
 		return this;
@@ -385,6 +394,7 @@ public class ElasticSearchOptions implements Option {
 		return retryInterval;
 	}
 
+	@Setter
 	public ElasticSearchOptions setRetryInterval(int retryInterval) {
 		this.retryInterval = retryInterval;
 		return this;
@@ -394,6 +404,7 @@ public class ElasticSearchOptions implements Option {
 		return waitForIdle;
 	}
 
+	@Setter
 	public ElasticSearchOptions setWaitForIdle(boolean waitForIdle) {
 		this.waitForIdle = waitForIdle;
 		return this;
@@ -403,6 +414,7 @@ public class ElasticSearchOptions implements Option {
 		return includeBinaryFields;
 	}
 
+	@Setter
 	public ElasticSearchOptions setIncludeBinaryFields(boolean includeBinaryFields) {
 		this.includeBinaryFields = includeBinaryFields;
 		return this;
@@ -412,6 +424,7 @@ public class ElasticSearchOptions implements Option {
 		return mappingMode;
 	}
 
+	@Setter
 	public ElasticSearchOptions setMappingMode(MappingMode mode) {
 		this.mappingMode = mode;
 		return this;
@@ -430,15 +443,24 @@ public class ElasticSearchOptions implements Option {
 		return retryLimit;
 	}
 
+	@Setter
 	public ElasticSearchOptions setRetryLimit(int retryLimit) {
 		this.retryLimit = retryLimit;
 		return this;
 	}
 
+	/**
+	 * Validate the options.
+	 */
 	public void validate(MeshOptions meshOptions) {
 
 	}
 
+	/**
+	 * Disable the elasticsearch integration by setting a null URL and disabling the embedded ES provider.
+	 * 
+	 * @return
+	 */
 	@JsonIgnore
 	public ElasticSearchOptions disable() {
 		setUrl(null);

@@ -34,6 +34,12 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 
 	private static final Logger log = LoggerFactory.getLogger(RoleRootImpl.class);
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(RoleRootImpl.class, MeshVertexImpl.class);
 		index.createIndex(edgeIndex(HAS_ROLE).withInOut().withOut());

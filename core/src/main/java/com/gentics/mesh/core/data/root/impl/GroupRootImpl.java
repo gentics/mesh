@@ -37,6 +37,12 @@ import com.syncleus.ferma.traversals.VertexTraversal;
  */
 public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoot {
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(GroupRootImpl.class, MeshVertexImpl.class);
 		type.createType(edgeType(HAS_GROUP));

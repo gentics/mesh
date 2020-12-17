@@ -21,19 +21,35 @@ public class PostProcessFlags {
 		this.resync = resync;
 	}
 
+	/**
+	 * Mark the required reindex and resync flags.
+	 */
 	public void requireReindex() {
 		setReindex(true);
 		setResync(true);
 	}
 
+	/**
+	 * Mark the required sync flag.
+	 */
 	public void requireResync() {
 		setResync(true);
 	}
 
+	/**
+	 * Check whether a reindex should be invoked (includes recreation of indices)
+	 * 
+	 * @return
+	 */
 	public boolean isReindex() {
 		return reindex;
 	}
 
+	/**
+	 * Check whether a index sync should be invoked.
+	 * 
+	 * @return
+	 */
 	public boolean isResync() {
 		return resync;
 	}

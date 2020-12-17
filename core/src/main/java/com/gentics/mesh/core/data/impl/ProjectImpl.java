@@ -76,6 +76,12 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 
 	private static final Logger log = LoggerFactory.getLogger(ProjectImpl.class);
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		// TODO index to name + unique constraint
 		type.createVertexType(ProjectImpl.class, MeshVertexImpl.class);

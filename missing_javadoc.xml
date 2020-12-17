@@ -15,13 +15,19 @@
       <property name="scope" value="public"/>
     </module>
     <module name="MissingJavadocMethod">
-      <property name="severity" value="ignore"/>
-      <property name="allowedAnnotations" value="Override"/>
+      <property name="allowedAnnotations" value="Override,Getter,Setter,Binds,Test"/>
       <property name="scope" value="public"/>
-      <metadata name="net.sf.eclipsecs.core.lastEnabledSeverity" value="inherit"/>
+      <property name="allowMissingPropertyJavadoc" value="true"/>
+      <property name="ignoreMethodNamesRegex" value="test.*"/>
+      <property name="tokens" value="METHOD_DEF,ANNOTATION_FIELD_DEF"/>
     </module>
   </module>
   <module name="BeforeExecutionExclusionFileFilter">
+    <metadata name="net.sf.eclipsecs.core.comment" value="Exclude tests"/>
     <property name="fileNamePattern" value=".*Test.java"/>
+  </module>
+  <module name="BeforeExecutionExclusionFileFilter">
+    <metadata name="net.sf.eclipsecs.core.comment" value="Exclude test sources"/>
+    <property name="fileNamePattern" value=".*/src/main/test/.*"/>
   </module>
 </module>

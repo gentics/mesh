@@ -19,6 +19,12 @@ public interface GenericHttpMethods {
 
 	/* POST */
 
+	/**
+	 * Create a post request for the given path.
+	 * 
+	 * @param path
+	 * @return
+	 */
 	MeshRequest<JsonObject> post(String path);
 
 	MeshRequest<JsonObject> post(String path, JsonObject body);

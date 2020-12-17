@@ -79,6 +79,12 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements Us
 
 	public static final String FORCE_PASSWORD_CHANGE_KEY = "forcePasswordChange";
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(UserImpl.class, MeshVertexImpl.class);
 		index.createIndex(edgeIndex(ASSIGNED_TO_ROLE).withOut());

@@ -30,6 +30,12 @@ import com.gentics.mesh.madl.field.FieldType;
  */
 public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse> implements Group {
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(GroupImpl.class, MeshVertexImpl.class);
 		index.createIndex(vertexIndex(GroupImpl.class)
