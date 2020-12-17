@@ -338,7 +338,7 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
             String name = key.substring(META_DATA_PROPERTY_PREFIX.length());
             name = name.replaceAll("%5B", "[");
             name = name.replaceAll("%5D", "]");
-            String value = property(name);
+            String value = property(key);
             metadata.put(name, value);
         }
         return metadata;
