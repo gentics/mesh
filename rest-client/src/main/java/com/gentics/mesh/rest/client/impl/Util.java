@@ -67,8 +67,7 @@ public final class Util {
 	}
 
 	/**
-	 * A container for a value that is evaluated on demand.
-	 * The supplier will be called at most once. After that, the received value is stored and returned on
+	 * A container for a value that is evaluated on demand. The supplier will be called at most once. After that, the received value is stored and returned on
 	 * subsequent calls of {@link Supplier#get()}
 	 *
 	 * @param supplier
@@ -95,6 +94,12 @@ public final class Util {
 		};
 	}
 
+	/**
+	 * Return the array of event addresses from the given event enums.
+	 * 
+	 * @param events
+	 * @return
+	 */
 	public static String[] toAddresses(MeshEvent... events) {
 		return Stream.of(events)
 			.map(MeshEvent::getAddress)
@@ -103,6 +108,7 @@ public final class Util {
 
 	/**
 	 * Tests if the given value is positive. Throws an InvalidParameterException if not.
+	 * 
 	 * @param value
 	 * @param name
 	 */

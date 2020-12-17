@@ -321,6 +321,12 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 		}
 	}
 
+	/**
+	 * Return the parser limit for the given contentType.
+	 * 
+	 * @param contentType
+	 * @return
+	 */
 	public int getParserLimit(String contentType) {
 		boolean isDocument = acceptedDocumentTypes.stream().anyMatch(type -> {
 			return contentType.startsWith(type);

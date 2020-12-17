@@ -556,6 +556,11 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		waitForJob(() -> client().updateSchema(uuid, request).blockingAwait());
 	}
 
+	/**
+	 * Delete the schema with the given uuid.
+	 * 
+	 * @param uuid
+	 */
 	default public void deleteSchema(String uuid) {
 		call(() -> client().deleteSchema(uuid));
 	}

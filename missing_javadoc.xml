@@ -30,4 +30,8 @@
     <metadata name="net.sf.eclipsecs.core.comment" value="Exclude test sources"/>
     <property name="fileNamePattern" value=".*/src/main/test/.*"/>
   </module>
+  <module name="BeforeExecutionExclusionFileFilter">
+    <metadata name="net.sf.eclipsecs.core.comment" value="Ignore examples"/>
+    <property name="fileNamePattern" value="Examples.java"/>
+  </module>
 </module>

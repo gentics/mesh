@@ -20,6 +20,13 @@ public class RoleEdgeGlobalLockInserterTask extends AbstractLoadTask {
 		super(test);
 	}
 
+	/**
+	 * Create a new role vertex.
+	 * 
+	 * @param tx
+	 * @param uuid
+	 * @return
+	 */
 	public Vertex createRole(Tx tx, String uuid) {
 		Vertex v = tx.getGraph().addVertex("class:" + ROLE);
 		v.setProperty("uuid", uuid);

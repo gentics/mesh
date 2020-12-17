@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.doc.GenerateDocumentation;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 import com.gentics.mesh.etc.config.env.Option;
@@ -76,12 +77,14 @@ public class AuthenticationOptions implements Option {
 		return publicKeys;
 	}
 
+	@Setter
 	public AuthenticationOptions setPublicKeys(Collection<JsonObject> keys) {
 		this.publicKeys = keys.stream()
 			.collect(Collectors.toList());
 		return this;
 	}
 
+	@Setter
 	public AuthenticationOptions setPublicKey(JsonObject jwk) {
 		this.publicKeys = Arrays.asList(jwk);
 		return this;
@@ -91,6 +94,7 @@ public class AuthenticationOptions implements Option {
 		return publicKeysPath;
 	}
 
+	@Setter
 	public AuthenticationOptions setPublicKeysPath(String publicKeysPath) {
 		this.publicKeysPath = publicKeysPath;
 		return this;
@@ -100,6 +104,7 @@ public class AuthenticationOptions implements Option {
 		return tokenExpirationTime;
 	}
 
+	@Setter
 	public AuthenticationOptions setTokenExpirationTime(int tokenExpirationTime) {
 		this.tokenExpirationTime = tokenExpirationTime;
 		return this;
@@ -109,6 +114,7 @@ public class AuthenticationOptions implements Option {
 		return keystorePassword;
 	}
 
+	@Setter
 	public AuthenticationOptions setKeystorePassword(String password) {
 		this.keystorePassword = password;
 		return this;
@@ -118,6 +124,7 @@ public class AuthenticationOptions implements Option {
 		return keystorePath;
 	}
 
+	@Setter
 	public AuthenticationOptions setKeystorePath(String keystorePath) {
 		this.keystorePath = keystorePath;
 		return this;
@@ -127,6 +134,7 @@ public class AuthenticationOptions implements Option {
 		return algorithm;
 	}
 
+	@Setter
 	public AuthenticationOptions setAlgorithm(String algorithm) {
 		this.algorithm = algorithm;
 		return this;
@@ -136,11 +144,17 @@ public class AuthenticationOptions implements Option {
 		return enableAnonymousAccess;
 	}
 
+	@Setter
 	public AuthenticationOptions setEnableAnonymousAccess(boolean enableAnonymousAccess) {
 		this.enableAnonymousAccess = enableAnonymousAccess;
 		return this;
 	}
 
+	/**
+	 * Validate the options.
+	 * 
+	 * @param meshOptions
+	 */
 	public void validate(MeshOptions meshOptions) {
 		Objects.requireNonNull(getKeystorePassword(), "The keystore password was not specified.");
 		Objects.requireNonNull(keystorePath, "The keystore path cannot be null.");

@@ -52,6 +52,7 @@ public class MonitoringConfig implements Option {
 		return enabled;
 	}
 
+	@Setter
 	public MonitoringConfig setEnabled(boolean enabled) {
 		this.enabled = enabled;
 		return this;
@@ -61,6 +62,7 @@ public class MonitoringConfig implements Option {
 		return port;
 	}
 
+	@Setter
 	public MonitoringConfig setPort(int port) {
 		this.port = port;
 		return this;

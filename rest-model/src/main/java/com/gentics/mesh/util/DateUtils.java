@@ -62,6 +62,12 @@ public final class DateUtils {
 		return Instant.ofEpochMilli(timeInMs).atZone(ZoneOffset.UTC);
 	}
 
+	/**
+	 * Convert the given data string from ISO8601 format back to a unixtimestamp.
+	 * 
+	 * @param dateString
+	 * @return
+	 */
 	public static Long fromISO8601(String dateString) {
 		return fromISO8601(dateString, false);
 	}

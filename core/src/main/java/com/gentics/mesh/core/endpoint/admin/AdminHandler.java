@@ -109,6 +109,11 @@ public class AdminHandler extends AbstractHandler {
 		this.consistencyCheckHandler = consistencyCheckHandler;
 	}
 
+	/**
+	 * Handle the mesh status request.
+	 * 
+	 * @param ac
+	 */
 	public void handleMeshStatus(InternalActionContext ac) {
 		MeshStatusResponse response = new MeshStatusResponse();
 		response.setStatus(boot.mesh().getStatus());
@@ -285,6 +290,11 @@ public class AdminHandler extends AbstractHandler {
 		}
 	}
 
+	/**
+	 * Load cluster status information.
+	 * 
+	 * @param ac
+	 */
 	public void handleClusterStatus(InternalActionContext ac) {
 		utils.syncTx(ac, tx -> {
 			HibUser user = ac.getUser();
@@ -299,11 +309,22 @@ public class AdminHandler extends AbstractHandler {
 		}, model -> ac.send(model, OK));
 	}
 
+	/**
+	 * Load the mesh server version information.
+	 * 
+	 * @param ac
+	 */
 	public void handleVersions(InternalActionContext ac) {
 		MeshServerInfoModel model = getMeshServerInfoModel(ac);
 		ac.send(model, OK);
 	}
 
+	/**
+	 * Populate the mesh server version info.
+	 * 
+	 * @param ac
+	 * @return
+	 */
 	public MeshServerInfoModel getMeshServerInfoModel(InternalActionContext ac) {
 		boolean admin = db.tx(() -> ac.isAdmin());
 		MeshServerInfoModel info = new MeshServerInfoModel();

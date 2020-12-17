@@ -133,7 +133,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 	private final TransactionComponent.Factory txFactory;
 
 	@Inject
-	public OrientDBDatabase(MeshOptions options, Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, Lazy<DaoCollection> daos, MetricsService metrics, OrientDBTypeHandler typeHandler,
+	public OrientDBDatabase(MeshOptions options, Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, Lazy<DaoCollection> daos, MetricsService metrics,
+		OrientDBTypeHandler typeHandler,
 		OrientDBIndexHandler indexHandler,
 		OrientDBClusterManager clusterManager,
 		TxCleanupTask txCleanupTask,
@@ -298,16 +299,17 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public Iterable<Vertex> getVerticesForRange(Class<?> classOfVertex, String indexPostfix, String[] fieldNames, Object[] fieldValues, String rangeKey, long start,
+	public Iterable<Vertex> getVerticesForRange(Class<?> classOfVertex, String indexPostfix, String[] fieldNames, Object[] fieldValues,
+		String rangeKey, long start,
 		long end) {
 		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
 		OrientVertexType elementType = orientBaseGraph.getVertexType(classOfVertex.getSimpleName());
 		String indexName = classOfVertex.getSimpleName() + "_" + indexPostfix;
 		OIndex index = elementType.getClassIndex(indexName);
 		Object startKey = index().createComposedIndexKey(fieldValues[0], start);
-		Object endKey = index().createComposedIndexKey(fieldValues[0], end); 
+		Object endKey = index().createComposedIndexKey(fieldValues[0], end);
 		OIndexCursor entries = index.getInternal().iterateEntriesBetween(startKey, true, endKey, true, false);
-		return () -> entries.toEntries().stream().map( entry -> {
+		return () -> entries.toEntries().stream().map(entry -> {
 			Vertex vertex = new OrientVertex(orientBaseGraph, entry.getValue());
 			return vertex;
 		}).iterator();
@@ -573,6 +575,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 		return txProvider;
 	}
 
+	/**
+	 * Return the orientdb cluster manager.
+	 */
 	public OrientDBClusterManager clusterManager() {
 		return clusterManager;
 	}

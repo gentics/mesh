@@ -20,6 +20,9 @@ public class RouterStorageRegistryImpl implements RouterStorageRegistry {
 	public RouterStorageRegistryImpl() {
 	}
 
+	/**
+	 * Register the eventbus handlers of all stored router storages.
+	 */
 	public synchronized void registerEventbus() {
 		for (RouterStorage rs : instances) {
 			rs.registerEventbusHandlers();

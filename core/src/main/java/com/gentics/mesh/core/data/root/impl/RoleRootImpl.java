@@ -86,6 +86,9 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 		return new DynamicTransformablePageImpl<Group>(user, traversal, pagingInfo, READ_PERM, GroupImpl.class);
 	}
 
+	/**
+	 * Create a new role vertex.
+	 */
 	public Role create() {
 		return getGraph().addFramedVertex(RoleImpl.class);
 	}

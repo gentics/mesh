@@ -12,8 +12,7 @@ import org.apache.commons.io.FileUtils;
 import com.gentics.mesh.cli.MeshCLI;
 
 /**
- * Example generator for the Mesh Server CLI help output.
- * Note this is not related to the Mesh CLI tool.
+ * Example generator for the Mesh Server CLI help output. Note this is not related to the Mesh CLI tool.
  */
 public class CLIHelpGenerator extends AbstractGenerator {
 
@@ -21,10 +20,21 @@ public class CLIHelpGenerator extends AbstractGenerator {
 		this.outputFolder = new File(outputFolder, "models");
 	}
 
+	/**
+	 * Start the generator and write data to the output folder.
+	 * 
+	 * @param args
+	 * @throws IOException
+	 */
 	public static void main(String[] args) throws IOException {
 		new CLIHelpGenerator(new File("target", "output/models")).run();
 	}
 
+	/**
+	 * Start the generator.
+	 * 
+	 * @throws IOException
+	 */
 	public void run() throws IOException {
 		System.out.println("Writing files to  {" + outputFolder.getAbsolutePath() + "}");
 		HelpFormatter formatter = new HelpFormatter();

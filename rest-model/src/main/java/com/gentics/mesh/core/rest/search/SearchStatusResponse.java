@@ -27,6 +27,12 @@ public class SearchStatusResponse implements RestModel {
 		return metrics;
 	}
 
+	/**
+	 * Set the metric information to the response.
+	 * 
+	 * @param metrics
+	 * @return
+	 */
 	public SearchStatusResponse setMetrics(Map<String, EntityMetrics> metrics) {
 		this.metrics = metrics;
 		return this;

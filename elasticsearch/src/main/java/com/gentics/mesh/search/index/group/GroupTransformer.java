@@ -7,7 +7,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.group.HibGroup;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.search.index.AbstractTransformer;
 import com.gentics.mesh.search.index.MappingHelper;
 import com.gentics.mesh.util.ETag;
@@ -24,6 +23,7 @@ public class GroupTransformer extends AbstractTransformer<HibGroup> {
 	public GroupTransformer() {
 	}
 
+	@Override
 	public String generateVersion(HibGroup group) {
 		// No need to add users since the creator/editor edge affects the group version
 		return ETag.hash(group.getElementVersion());

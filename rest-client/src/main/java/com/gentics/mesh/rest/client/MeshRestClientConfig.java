@@ -94,6 +94,11 @@ public class MeshRestClientConfig {
 		return trustedCAs;
 	}
 
+	/**
+	 * Create a fresh config builder.
+	 * 
+	 * @return
+	 */
 	public static Builder newConfig() {
 		return new Builder();
 	}
@@ -141,6 +146,11 @@ public class MeshRestClientConfig {
 			}
 		}
 
+		/**
+		 * Build and return the configuration.
+		 * 
+		 * @return
+		 */
 		public MeshRestClientConfig build() {
 			return new MeshRestClientConfig(this);
 		}

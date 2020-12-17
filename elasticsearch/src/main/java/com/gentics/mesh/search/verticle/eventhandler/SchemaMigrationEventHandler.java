@@ -84,6 +84,11 @@ public class SchemaMigrationEventHandler implements EventHandler {
 			schemaVersionUuid)));
 	}
 
+	/**
+	 * Generate sear
+	 * @param model
+	 * @return
+	 */
 	public Flowable<SearchRequest> migrationStart(BranchSchemaAssignEventModel model) {
 		Map<String, IndexInfo> map = helper.getDb().transactional(tx -> {
 			HibProject project = tx.projectDao().findByUuid(model.getProject().getUuid());

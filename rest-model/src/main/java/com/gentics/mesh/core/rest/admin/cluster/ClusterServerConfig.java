@@ -2,6 +2,7 @@ package com.gentics.mesh.core.rest.admin.cluster;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.core.rest.common.RestModel;
 
 /**
@@ -24,11 +25,13 @@ public class ClusterServerConfig implements RestModel {
 		return name;
 	}
 
+	@Setter
 	public ClusterServerConfig setName(String name) {
 		this.name = name;
 		return this;
 	}
 
+	@Setter
 	public ClusterServerConfig setRole(ServerRole restRole) {
 		this.role = restRole;
 		return this;

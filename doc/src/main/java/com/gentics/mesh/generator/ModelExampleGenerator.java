@@ -33,6 +33,12 @@ public class ModelExampleGenerator extends AbstractGenerator {
 		super(new File(outputFolder, "models"));
 	}
 
+	/**
+	 * Start the generator.
+	 * 
+	 * @throws JsonProcessingException
+	 * @throws IOException
+	 */
 	public void run() throws JsonProcessingException, IOException {
 		writeMeshConfig();
 		writeChangeExamples();

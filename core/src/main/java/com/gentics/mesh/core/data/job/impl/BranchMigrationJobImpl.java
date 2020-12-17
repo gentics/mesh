@@ -34,10 +34,23 @@ public class BranchMigrationJobImpl extends JobImpl {
 
 	private static final Logger log = LoggerFactory.getLogger(BranchMigrationJobImpl.class);
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(BranchMigrationJobImpl.class, MeshVertexImpl.class);
 	}
 
+	/**
+	 * Create a new branch migration event.
+	 * 
+	 * @param event
+	 * @param status
+	 * @return
+	 */
 	public BranchMigrationMeshEventModel createEvent(MeshEvent event, JobStatus status) {
 		BranchMigrationMeshEventModel model = new BranchMigrationMeshEventModel();
 		model.setEvent(event);

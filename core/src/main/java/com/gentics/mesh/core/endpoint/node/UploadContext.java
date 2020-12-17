@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.endpoint.node;
 
+import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.ext.web.FileUpload;
@@ -51,6 +52,7 @@ public class UploadContext {
 		return temporaryId;
 	}
 
+	@Setter
 	public void setInvokeStore() {
 		this.invokeStore = true;
 	}

@@ -78,6 +78,9 @@ public class ImageRect {
 		}
 	}
 
+	/**
+	 * Validate the image crop area parameters.
+	 */
 	public void validate() {
 		Integer croph = getHeight();
 		Integer cropw = getWidth();
@@ -96,12 +99,12 @@ public class ImageRect {
 
 			if (startx != null && startx <= -1) {
 				throw error(BAD_REQUEST, "image_error_crop_start_not_negative", ImageManipulationParameters.RECT_QUERY_PARAM_KEY, String.valueOf(
-						startx));
+					startx));
 			}
 
 			if (starty != null && starty <= -1) {
 				throw error(BAD_REQUEST, "image_error_crop_start_not_negative", ImageManipulationParameters.RECT_QUERY_PARAM_KEY, String.valueOf(
-						starty));
+					starty));
 			}
 		}
 
@@ -112,7 +115,7 @@ public class ImageRect {
 		if (obj instanceof ImageRect) {
 			ImageRect rect = (ImageRect) obj;
 			return rect.getStartX() == getStartX() && rect.getStartY() == getStartY() && rect.getWidth() == getWidth() && rect
-					.getHeight() == getHeight();
+				.getHeight() == getHeight();
 		}
 		return false;
 	}

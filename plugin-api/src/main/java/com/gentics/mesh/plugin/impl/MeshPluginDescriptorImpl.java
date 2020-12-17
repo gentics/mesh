@@ -64,6 +64,12 @@ public class MeshPluginDescriptorImpl implements MeshPluginDescriptor {
 		return date;
 	}
 
+	/**
+	 * Add an additional dependency to the manifest.
+	 * 
+	 * @param dependency
+	 * @deprecated No longer used. Should be removed.
+	 */
 	public void addDependency(PluginDependency dependency) {
 		this.dependencies.add(dependency);
 	}

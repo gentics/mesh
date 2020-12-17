@@ -128,6 +128,13 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 		});
 	}
 
+	/**
+	 * Generate an observable which emits a new {@link IndexBulkEntry} which contains the search index document that can be added to a bulk update request.
+	 * 
+	 * @param element
+	 * @param entry
+	 * @return
+	 */
 	public Observable<IndexBulkEntry> storeForBulk(T element, UpdateDocumentEntry entry) {
 		String indexName = composeIndexNameFromEntry(entry);
 		String documentId = composeDocumentIdFromEntry(entry);
@@ -253,7 +260,7 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 		return db.tx(tx -> {
 			return loadAllElements()
 				.filter(element -> {
-					return bucket.filter().test((HibBucketableElement)element);
+					return bucket.filter().test((HibBucketableElement) element);
 				})
 				.collect(Collectors.toMap(
 					HibBaseElement::getUuid,

@@ -13,6 +13,12 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
  */
 public class ChangelogRootImpl extends MeshVertexImpl implements ChangelogRoot {
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(ChangelogRootImpl.class, MeshVertexImpl.class);
 	}

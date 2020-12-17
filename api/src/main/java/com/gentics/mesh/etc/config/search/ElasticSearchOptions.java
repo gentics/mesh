@@ -434,6 +434,7 @@ public class ElasticSearchOptions implements Option {
 		return complianceMode;
 	}
 
+	@Setter
 	public ElasticSearchOptions setComplianceMode(ComplianceMode complianceMode) {
 		this.complianceMode = complianceMode;
 		return this;

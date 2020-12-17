@@ -122,6 +122,12 @@ public class TagIndexHandlerImpl extends AbstractIndexHandler<HibTag> implements
 		});
 	}
 
+	/**
+	 * Return the index information (settings,mapping) for the tag index of the project.
+	 * 
+	 * @param projectUuid
+	 * @return
+	 */
 	public IndexInfo getIndex(String projectUuid) {
 		return new IndexInfo(Tag.composeIndexName(projectUuid), null, getMappingProvider().getMapping(), "tag");
 	}

@@ -56,7 +56,6 @@ import com.gentics.mesh.util.ETag;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-
 /**
  * @see Micronode
  */
@@ -64,6 +63,12 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 
 	private static final Logger log = LoggerFactory.getLogger(MicronodeImpl.class);
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createType(vertexType(MicronodeImpl.class, MeshVertexImpl.class)
 			.withField(MICROSCHEMA_VERSION_KEY_PROPERTY, FieldType.STRING));

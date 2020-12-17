@@ -16,6 +16,12 @@ import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 @GraphElement
 public class BranchSchemaEdgeImpl extends AbstractVersionEdge implements BranchSchemaEdge {
 
+	/**
+	 * Initialize the edge type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createType(edgeType(BranchSchemaEdgeImpl.class.getSimpleName()));
 		type.createType(edgeType(HAS_SCHEMA_VERSION).withSuperClazz(BranchSchemaEdgeImpl.class));

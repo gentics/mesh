@@ -27,10 +27,21 @@ public class EnvHelpGenerator extends AbstractRenderingGenerator {
 		super(new File(outputFolder, "tables"), false);
 	}
 
+	/**
+	 * Run the generator and write to the docs folder.
+	 * 
+	 * @param args
+	 * @throws IOException
+	 */
 	public static void main(String[] args) throws IOException {
 		new EnvHelpGenerator(OUTPUT_ROOT_FOLDER).run();
 	}
 
+	/**
+	 * Start the generator.
+	 * 
+	 * @throws IOException
+	 */
 	public void run() throws IOException {
 		System.out.println("Writing files to  {" + outputFolder.getAbsolutePath() + "}");
 

@@ -23,7 +23,8 @@ public final class RxUtil {
 
 	private static final Logger log = LoggerFactory.getLogger(RxUtil.class);
 
-	public static final Action NOOP = () -> {};
+	public static final Action NOOP = () -> {
+	};
 
 	private RxUtil() {
 	}
@@ -46,6 +47,12 @@ public final class RxUtil {
 		return stream.reduce((a, b) -> a.appendBuffer(b)).toSingle();
 	}
 
+	/**
+	 * Return a buffer flow from the given async file.
+	 * 
+	 * @param file
+	 * @return
+	 */
 	public static Flowable<Buffer> toBufferFlow(AsyncFile file) {
 		return toBufferFlow(new io.vertx.reactivex.core.file.AsyncFile(file));
 	}
@@ -94,6 +101,13 @@ public final class RxUtil {
 		return Single.zip(source1, source2, zipper).flatMap(x -> x);
 	}
 
+	/**
+	 * Convenient method to convert nullable elements to maybe's.
+	 * 
+	 * @param <T>
+	 * @param item
+	 * @return
+	 */
 	public static <T> Maybe<T> fromNullable(T item) {
 		if (item == null) {
 			return Maybe.empty();

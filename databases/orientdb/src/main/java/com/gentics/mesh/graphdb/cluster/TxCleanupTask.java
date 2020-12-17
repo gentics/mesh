@@ -78,10 +78,20 @@ public class TxCleanupTask implements Handler<Long> {
 		}
 	}
 
+	/**
+	 * Register the thread that runs a tx.
+	 * 
+	 * @param thread
+	 */
 	public static void register(Thread thread) {
 		registeredThreads.put(thread, System.currentTimeMillis());
 	}
 
+	/**
+	 * Unregister the thread that runs tx.
+	 * 
+	 * @param thread
+	 */
 	public static void unregister(Thread thread) {
 		registeredThreads.remove(thread);
 	}

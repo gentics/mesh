@@ -158,6 +158,11 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 		return reference;
 	}
 
+	/**
+	 * Create a new {@link SchemaUpdateRequest} using the current schema values as source.
+	 * 
+	 * @return
+	 */
 	public SchemaUpdateRequest toUpdateRequest() {
 		SchemaUpdateRequest updateRequest = new SchemaUpdateRequest();
 		updateRequest.setContainer(getContainer());

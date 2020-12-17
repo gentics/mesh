@@ -16,6 +16,12 @@ import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 @GraphElement
 public class BranchMicroschemaEdgeImpl extends AbstractVersionEdge implements BranchMicroschemaEdge {
 
+	/**
+	 * Initialize the edge type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createType(edgeType(BranchMicroschemaEdgeImpl.class.getSimpleName()));
 		type.createType(edgeType(HAS_MICROSCHEMA_VERSION).withSuperClazz(BranchMicroschemaEdgeImpl.class));

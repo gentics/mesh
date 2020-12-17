@@ -297,14 +297,30 @@ public class MasterElector {
 		return member.getBooleanAttribute(MASTER) == Boolean.TRUE;
 	}
 
+	/**
+	 * Check whether the given instance is the local instance.
+	 * 
+	 * @param member
+	 * @return
+	 */
 	public boolean isLocal(Member member) {
 		return localUuid.equals(member.getUuid());
 	}
 
+	/**
+	 * Return the hazelcast member for this instance.
+	 * 
+	 * @return
+	 */
 	public Member localMember() {
 		return hazelcast.get().getCluster().getLocalMember();
 	}
 
+	/**
+	 * Return the master server information.
+	 * 
+	 * @return
+	 */
 	public MasterServer getMasterMember() {
 		if (masterMember == null) {
 			return null;

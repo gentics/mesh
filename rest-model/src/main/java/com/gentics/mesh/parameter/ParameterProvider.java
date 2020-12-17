@@ -43,6 +43,11 @@ public interface ParameterProvider {
 	 */
 	String getParameter(String name);
 
+	/**
+	 * Return the query parameters as a map.
+	 * 
+	 * @return
+	 */
 	Map<String, String> getParameters();
 
 	/**

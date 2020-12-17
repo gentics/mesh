@@ -169,6 +169,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	private static final Logger log = LoggerFactory.getLogger(NodeImpl.class);
 
+	/**
+	 * Initialize the node vertex type and indices.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createType(vertexType(NodeImpl.class, MeshVertexImpl.class)
 			.withField(PARENTS_KEY_PROPERTY, STRING_SET)
@@ -2160,6 +2166,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		throw new NotImplementedException("Use dedicated onDeleted method for nodes instead.");
 	}
 
+	/**
+	 * Create a new node moved event model.
+	 * 
+	 * @param branchUuid
+	 * @param target
+	 * @return
+	 */
 	public NodeMovedEventModel onNodeMoved(String branchUuid, Node target) {
 		NodeMovedEventModel model = new NodeMovedEventModel();
 		model.setEvent(NODE_MOVED);
@@ -2179,6 +2192,21 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return model;
 	}
 
+	/**
+	 * Create a new referenced element update event model.
+	 * 
+	 * @param uuid
+	 *            Uuid of the referenced node
+	 * @param schema
+	 *            Schema of the referenced node
+	 * @param branchUuid
+	 *            Branch of the referenced node
+	 * @param type
+	 *            Type of the content that was updated (if known)
+	 * @param languageTag
+	 *            Language of the content that was updated (if known)
+	 * @return
+	 */
 	public NodeMeshEventModel onReferenceUpdated(String uuid, HibSchema schema, String branchUuid, ContainerType type, String languageTag) {
 		NodeMeshEventModel event = new NodeMeshEventModel();
 		event.setEvent(NODE_REFERENCE_UPDATED);

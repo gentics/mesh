@@ -231,6 +231,17 @@ public class HandlerUtilities {
 		}, model -> ac.send(model, OK));
 	}
 
+	/**
+	 * Read the element list and return it to the client.
+	 * 
+	 * @param <T>
+	 *            Persistence entity type
+	 * @param <RM>
+	 *            Response model type
+	 * @param ac
+	 * @param actions
+	 *            Actions to be used to load the paged data
+	 */
 	public <T extends HibCoreElement, RM extends RestModel> void readElementList(InternalActionContext ac, LoadAllAction<T> actions) {
 		readElementList(ac, null, actions);
 	}
@@ -377,7 +388,7 @@ public class HandlerUtilities {
 
 	/**
 	 * Check whether the user is an admin. An error will be thrown otherwise.
-	 *  
+	 * 
 	 * @param context
 	 */
 	public void requiresAdminRole(RoutingContext context) {

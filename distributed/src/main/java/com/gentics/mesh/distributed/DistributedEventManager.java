@@ -15,6 +15,7 @@ import javax.naming.InvalidNameException;
 import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.graphdb.cluster.TopologyEventBridge;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
@@ -48,7 +49,8 @@ public class DistributedEventManager {
 	private final Lazy<PermissionCache> permCache;
 
 	@Inject
-	public DistributedEventManager(Lazy<Vertx> vertx, Lazy<Database> db, Lazy<BootstrapInitializer> boot, RouterStorageRegistryImpl routerStorageRegistry,
+	public DistributedEventManager(Lazy<Vertx> vertx, Lazy<Database> db, Lazy<BootstrapInitializer> boot,
+		RouterStorageRegistryImpl routerStorageRegistry,
 		Lazy<PermissionCache> permCache) {
 		this.vertx = vertx;
 		this.db = db;
@@ -57,6 +59,9 @@ public class DistributedEventManager {
 		this.permCache = permCache;
 	}
 
+	/**
+	 * Handle events which were dispatched by the {@link TopologyEventBridge}.
+	 */
 	public void registerHandlers() {
 		EventBus eb = vertx.get().eventBus();
 

@@ -24,6 +24,12 @@ public class EventTableGenerator extends AbstractRenderingGenerator {
 		this.eventTableTemplateSource = getTemplate(TEMPLATE_NAME);
 	}
 
+	/**
+	 * Run the table generator.
+	 * 
+	 * @param args
+	 * @throws IOException
+	 */
 	public static void main(String[] args) throws IOException {
 		// Generate asciidoc tables to be included in the docs.
 		final File DOCS_FOLDER = new File("src/main/docs");
@@ -33,6 +39,11 @@ public class EventTableGenerator extends AbstractRenderingGenerator {
 		tableGen.run();
 	}
 
+	/**
+	 * Run the generator.
+	 * 
+	 * @throws IOException
+	 */
 	public void run() throws IOException {
 		// Render event tables
 		writeFile(MeshEvent.class.getSimpleName() + ".adoc-include", renderEventTable());

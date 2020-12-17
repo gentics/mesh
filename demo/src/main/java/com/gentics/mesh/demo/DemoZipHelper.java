@@ -20,6 +20,15 @@ public class DemoZipHelper {
 
 	private static final Logger log = LoggerFactory.getLogger(DemoZipHelper.class);
 
+	/**
+	 * Unzip the mesh-demo.zip file which contains the content and demo application.
+	 * 
+	 * @param zipClasspath
+	 * @param outdir
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 * @throws ZipException
+	 */
 	public static void unzip(String zipClasspath, String outdir) throws FileNotFoundException, IOException, ZipException {
 		InputStream ins = DemoZipHelper.class.getResourceAsStream(zipClasspath);
 		if (ins != null) {

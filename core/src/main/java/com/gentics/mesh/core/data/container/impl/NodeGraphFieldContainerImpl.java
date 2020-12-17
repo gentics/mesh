@@ -216,6 +216,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		bac.inc();
 	}
 
+	@Override
 	@SuppressWarnings("unchecked")
 	public void deleteFromBranch(HibBranch branch, BulkActionContext bac) {
 		String branchUuid = branch.getUuid();

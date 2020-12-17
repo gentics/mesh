@@ -2,6 +2,7 @@ package com.gentics.mesh.core.rest.admin.cluster.coordinator;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.core.rest.common.RestModel;
 
 /**
@@ -34,6 +35,7 @@ public class CoordinatorMasterResponse implements RestModel {
 		return name;
 	}
 
+	@Setter
 	public CoordinatorMasterResponse setName(String name) {
 		this.name = name;
 		return this;
@@ -43,6 +45,7 @@ public class CoordinatorMasterResponse implements RestModel {
 		return port;
 	}
 
+	@Setter
 	public CoordinatorMasterResponse setPort(int port) {
 		this.port = port;
 		return this;
@@ -52,6 +55,7 @@ public class CoordinatorMasterResponse implements RestModel {
 		return host;
 	}
 
+	@Setter
 	public CoordinatorMasterResponse setHost(String host) {
 		this.host = host;
 		return this;

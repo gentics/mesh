@@ -196,6 +196,21 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 		});
 	}
 
+	/**
+	 * Create the index information which contains the mapping and elasticsearch settings which are loaded from the provided schema model.
+	 * 
+	 * @param branch
+	 *            The branch is used to select the correct schema versions
+	 * @param schema
+	 *            Schema to select the correct version
+	 * @param language
+	 *            Mappings can be language specific
+	 * @param indexName
+	 *            Name of the search index
+	 * @param sourceInfo
+	 *            Human readable name of the source of the index settings (often used for debug information)
+	 * @return
+	 */
 	public IndexInfo createIndexInfo(HibBranch branch, SchemaModel schema, String language, String indexName, String sourceInfo) {
 		JsonObject mapping = getMappingProvider().getMapping(schema, branch, language);
 		JsonObject settings = language == null

@@ -2,6 +2,7 @@ package com.gentics.mesh.plugin.auth;
 
 import java.util.List;
 
+import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
@@ -44,6 +45,7 @@ public class MappingResult {
 		return user;
 	}
 
+	@Setter
 	public MappingResult setUser(UserUpdateRequest user) {
 		this.user = user;
 		return this;
@@ -53,6 +55,7 @@ public class MappingResult {
 		return groups;
 	}
 
+	@Setter
 	public MappingResult setGroups(List<GroupResponse> groups) {
 		this.groups = groups;
 		return this;
@@ -62,6 +65,7 @@ public class MappingResult {
 		return roles;
 	}
 
+	@Setter
 	public MappingResult setRoles(List<RoleResponse> roles) {
 		this.roles = roles;
 		return this;
@@ -71,6 +75,7 @@ public class MappingResult {
 		return groupFilter;
 	}
 
+	@Setter
 	public MappingResult setGroupFilter(GroupFilter groupFilter) {
 		this.groupFilter = groupFilter;
 		return this;
@@ -80,6 +85,7 @@ public class MappingResult {
 		return roleFilter;
 	}
 
+	@Setter
 	public MappingResult setRoleFilter(RoleFilter roleFilter) {
 		this.roleFilter = roleFilter;
 		return this;

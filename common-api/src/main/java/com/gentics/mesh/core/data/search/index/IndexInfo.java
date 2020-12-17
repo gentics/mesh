@@ -39,6 +39,12 @@ public class IndexInfo {
 		return indexSettings;
 	}
 
+	/**
+	 * Return the source name for the index. The name is often used for debugging and error handling to quickly identify the source of the index settings. (e.g.
+	 * schema + version).
+	 * 
+	 * @return
+	 */
 	public String getSourceInfo() {
 		return sourceInfo;
 	}

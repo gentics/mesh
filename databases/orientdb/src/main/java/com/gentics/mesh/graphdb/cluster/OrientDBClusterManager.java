@@ -58,8 +58,8 @@ import io.vertx.reactivex.core.TimeoutStream;
  * 
  * The manager handles the OrientDB cluster/server configuration, OrientDB studio plugin installation, OrientDB server startup.
  * 
- * Additionally the manager also provides methods to access the cluster information.
- * The {@link TopologyEventBridge} is installed by the manager during the startup to handle cluster specific events.
+ * Additionally the manager also provides methods to access the cluster information. The {@link TopologyEventBridge} is installed by the manager during the
+ * startup to handle cluster specific events.
  */
 @Singleton
 public class OrientDBClusterManager implements ClusterManager {
@@ -333,6 +333,11 @@ public class OrientDBClusterManager implements ClusterManager {
 		topologyEventBridge.onDatabaseChangeStatus(getNodeName(), "storage", status);
 	}
 
+	/**
+	 * Query the OrientDB API and load cluster information which will be added to a {@link ClusterStatusResponse} response.
+	 * 
+	 * @return Cluster status REST response
+	 */
 	public ClusterStatusResponse getClusterStatus() {
 		ClusterStatusResponse response = new ClusterStatusResponse();
 		if (hazelcastPlugin != null) {
@@ -462,7 +467,6 @@ public class OrientDBClusterManager implements ClusterManager {
 			server.shutdown();
 		}
 	}
-
 
 	public boolean isServerActive() {
 		return server != null && server.isActive();

@@ -44,6 +44,12 @@ public class TableGenerator extends AbstractRenderingGenerator {
 		this.paramTableTemplateSource = getTemplate(PARAM_TABLE_TEMPLATE_NAME);
 	}
 
+	/**
+	 * Run the generator and write the contents to the docs/generated folder.
+	 * 
+	 * @param args
+	 * @throws Exception
+	 */
 	public static void main(String[] args) throws Exception {
 		// Generate asciidoc tables to be included in the docs.
 		final File DOCS_FOLDER = new File("src/main/docs");
@@ -53,6 +59,11 @@ public class TableGenerator extends AbstractRenderingGenerator {
 		tableGen.run();
 	}
 
+	/**
+	 * Start the generator.
+	 * 
+	 * @throws Exception
+	 */
 	public void run() throws Exception {
 		for (Class<?> clazz : allFoundClassesAnnotatedWithEntityToBeScanned()) {
 

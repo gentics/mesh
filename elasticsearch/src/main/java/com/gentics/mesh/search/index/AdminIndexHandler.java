@@ -60,6 +60,11 @@ public class AdminIndexHandler {
 		this.utils = utils;
 	}
 
+	/**
+	 * Return the search status to the client.
+	 * 
+	 * @param ac
+	 */
 	public void handleStatus(InternalActionContext ac) {
 		getSearchStatus().subscribe(message -> ac.send(message, OK), ac::fail);
 	}
@@ -80,6 +85,11 @@ public class AdminIndexHandler {
 			.setAvailable(available));
 	}
 
+	/**
+	 * Invoke the search index sync.
+	 * 
+	 * @param ac
+	 */
 	public void handleSync(InternalActionContext ac) {
 		db.asyncTx(() -> Single.just(ac.getUser().isAdmin()))
 			.subscribe(isAdmin -> {
@@ -92,6 +102,11 @@ public class AdminIndexHandler {
 			}, ac::fail);
 	}
 
+	/**
+	 * Invoke the search index clear and init handlers to re-create the search indices.
+	 * 
+	 * @param ac
+	 */
 	public void handleClear(InternalActionContext ac) {
 		db.asyncTx(() -> Single.just(ac.getUser().isAdmin())).flatMapCompletable(isAdmin -> {
 			if (isAdmin) {

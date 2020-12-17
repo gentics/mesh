@@ -40,6 +40,9 @@ public class SyncMeters {
 			.setDelete(delete.createSnapshot());
 	}
 
+	/**
+	 * Reset all counter.
+	 */
 	public void reset() {
 		insert.reset();
 		update.reset();

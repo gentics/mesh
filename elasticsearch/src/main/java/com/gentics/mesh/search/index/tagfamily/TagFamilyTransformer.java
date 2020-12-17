@@ -25,6 +25,12 @@ public class TagFamilyTransformer extends AbstractTransformer<HibTagFamily> {
 	public TagFamilyTransformer() {
 	}
 
+	/**
+	 * Generate a version key for the element which is used for index sync operation.
+	 * 
+	 * @param tagFamily
+	 * @return
+	 */
 	public String generateVersion(HibTagFamily tagFamily) {
 		HibProject project = tagFamily.getProject();
 

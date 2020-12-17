@@ -32,6 +32,11 @@ public class MonitoringCrudHandler {
 		this.pluginManager = pluginManager;
 	}
 
+	/**
+	 * Check the cluster liveness probe.
+	 * 
+	 * @param rc
+	 */
 	public void handleLive(RoutingContext rc) {
 		for (String id : pluginManager.getPluginIds()) {
 			PluginStatus status = pluginManager.getStatus(id);
@@ -43,10 +48,15 @@ public class MonitoringCrudHandler {
 		rc.response().setStatusCode(200).end();
 	}
 
+	/**
+	 * Check the cluster readiness probe.
+	 * 
+	 * @param rc
+	 */
 	public void handleReady(RoutingContext rc) {
 		for (String id : pluginManager.getPluginIds()) {
 			PluginStatus status = pluginManager.getStatus(id);
-			// TODO We need can't check for plugin registered since plugins will only be 
+			// TODO We need can't check for plugin registered since plugins will only be
 			// registered once the write quorum has been reached.
 			// Thus we can only check for failed. Otherwise we would interrupt the
 			// K8S deployment process and prevent additional nodes from being added

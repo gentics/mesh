@@ -69,6 +69,11 @@ public class PluginHandler extends AbstractHandler {
 		}, model -> ac.send(model, CREATED));
 	}
 
+	/**
+	 * Handle a plugin deployment request.
+	 * 
+	 * @param ac
+	 */
 	public void handleDeploy(InternalActionContext ac) {
 		utils.syncTx(ac, tx -> {
 			if (!ac.getUser().isAdmin()) {
@@ -93,6 +98,12 @@ public class PluginHandler extends AbstractHandler {
 		}, model -> ac.send(model, CREATED));
 	}
 
+	/**
+	 * Handle a plugin undeploy request.
+	 * 
+	 * @param ac
+	 * @param pluginId
+	 */
 	public void handleUndeploy(InternalActionContext ac, String pluginId) {
 		utils.syncTx(ac, tx -> {
 			if (!ac.getUser().isAdmin()) {
