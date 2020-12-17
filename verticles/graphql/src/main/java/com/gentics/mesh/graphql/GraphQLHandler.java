@@ -6,6 +6,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -13,9 +15,13 @@ import javax.inject.Singleton;
 
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.core.rest.error.AbstractUnavailableException;
+import com.gentics.mesh.etc.config.GraphQLOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.type.QueryTypeProvider;
+import com.gentics.mesh.metric.MetricsService;
+import com.gentics.mesh.metric.SimpleMetric;
 import com.gentics.mesh.util.SearchWaitUtil;
 
 import graphql.ExceptionWhileDataFetching;
@@ -24,6 +30,7 @@ import graphql.ExecutionResult;
 import graphql.GraphQL;
 import graphql.GraphQLError;
 import graphql.language.SourceLocation;
+import io.micrometer.core.instrument.Timer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -32,8 +39,11 @@ import io.vertx.reactivex.core.Vertx;
 
 @Singleton
 public class GraphQLHandler {
+	public static final String SLOW_QUERY_LOGGER_NAME = "com.gentics.mesh.graphql.SlowQuery";
 
 	private static final Logger log = LoggerFactory.getLogger(GraphQLHandler.class);
+
+	private static final Logger slowQueryLog = LoggerFactory.getLogger(SLOW_QUERY_LOGGER_NAME);
 
 	@Inject
 	public QueryTypeProvider typeProvider;
@@ -47,8 +57,14 @@ public class GraphQLHandler {
 	@Inject
 	public SearchWaitUtil waitUtil;
 
+	private Timer graphQlTimer;
+
+	private GraphQLOptions graphQLOptions;
+
 	@Inject
-	public GraphQLHandler() {
+	public GraphQLHandler(MetricsService metrics, MeshOptions options) {
+		graphQlTimer = metrics.timer(SimpleMetric.GRAPHQL_TIME);
+		graphQLOptions = options.getGraphQLOptions();
 	}
 
 	/**
@@ -61,16 +77,24 @@ public class GraphQLHandler {
 	 */
 	public void handleQuery(GraphQLContext gc, String body) {
 		waitUtil.awaitSync(gc).andThen(vertx.rxExecuteBlocking(promise -> {
+			Timer.Sample sample = Timer.start();
+			AtomicReference<String> loggableQuery = new AtomicReference<>();
+			AtomicReference<Map<String, Object>> loggableVariables = new AtomicReference<>();
 			try {
 				db.tx(tx -> {
 					JsonObject queryJson = new JsonObject(body);
+					// extract query body and variables from the sent body
 					String query = queryJson.getString("query");
+					Map<String, Object> variables = extractVariables(queryJson);
+					// store for possibly logging it later
+					loggableQuery.set(query);
+					loggableVariables.set(variables);
 					GraphQL graphQL = newGraphQL(typeProvider.getRootSchema(gc)).build();
 					ExecutionInput executionInput = ExecutionInput
 						.newExecutionInput()
 						.query(query)
 						.context(gc)
-						.variables(extractVariables(queryJson))
+						.variables(variables)
 						.build();
 					ExecutionResult result = graphQL.execute(executionInput);
 					List<GraphQLError> errors = result.getErrors();
@@ -97,6 +121,15 @@ public class GraphQLHandler {
 				});
 			} catch (Exception e) {
 				promise.fail(e);
+			} finally {
+				long duration = sample.stop(graphQlTimer);
+				Long slowThreshold = graphQLOptions.getSlowThreshold();
+				if (loggableQuery.get() != null && slowThreshold != null && slowThreshold.longValue() > 0) {
+					long durationMs = TimeUnit.MILLISECONDS.convert(duration, TimeUnit.NANOSECONDS);
+					if (durationMs > slowThreshold) {
+						slowQueryLog.warn("GraphQL Query took {} ms:\n{}\nvariables: {}", durationMs, loggableQuery.get(), loggableVariables.get());
+					}
+				}
 			}
 		}))
 		.doOnError(gc::fail)

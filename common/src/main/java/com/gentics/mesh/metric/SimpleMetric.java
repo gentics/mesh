@@ -27,7 +27,9 @@ public enum SimpleMetric implements Metric {
 
     TOPOLOGY_LOCK_WAITING_TIME("topology_lock_waiting_time", "Tracks the time which is spent waiting on the write lock."),
 
-    TOPOLOGY_LOCK_TIMEOUT_COUNT("topology_lock_timeout", "Amount of timeouts of acquiring the write lock.");
+    TOPOLOGY_LOCK_TIMEOUT_COUNT("topology_lock_timeout", "Amount of timeouts of acquiring the write lock."),
+
+	GRAPHQL_TIME("graphql_time", "Timer which tracks duration of graphql requests.");
 
     private String key;
 
