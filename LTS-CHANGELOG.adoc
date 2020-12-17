@@ -24,6 +24,8 @@ icon:check[] OrientDB: The included OrientDB version has been updated to version
 
 icon:check[] OrientDB: A bug in the startup order has been fixed which prevented opening of databases via OrientDB Studio.
 
+icon:check[] Core: Binary upload processing failed for binaries with brackets in the metadata key. This has been fixed now.
+
 [[v1.4.18]]
 == 1.4.18 (18.11.2020)
 
