@@ -68,6 +68,10 @@ public interface EventQueueBatch {
 		return this;
 	}
 
+	/**
+	 * Merge the contents of the given batch with the current batch.
+	 * @param containerBatch
+	 */
 	default EventQueueBatch add(Runnable action) {
 		Objects.requireNonNull(action);
 		getActions().add(action);

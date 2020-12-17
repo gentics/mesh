@@ -330,17 +330,18 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 	}
 
 	@Override
-	public Map<String, String> getMetadataProperties() {
-		List<String> keys = getPropertyKeys().stream().filter(k -> k.startsWith(META_DATA_PROPERTY_PREFIX)).collect(Collectors.toList());
-
-		Map<String, String> metadata = new HashMap<>();
-		for (String key : keys) {
-			String name = key.substring(META_DATA_PROPERTY_PREFIX.length());
-			String value = property(key);
-			metadata.put(name, value);
-		}
-		return metadata;
-	}
+    public Map<String, String> getMetadataProperties() {
+        List<String> keys = getPropertyKeys().stream().filter(k -> k.startsWith(META_DATA_PROPERTY_PREFIX)).collect(Collectors.toList());
+        Map<String, String> metadata = new HashMap<>();
+        for (String key : keys) {
+            String name = key.substring(META_DATA_PROPERTY_PREFIX.length());
+            name = name.replaceAll("%5B", "[");
+            name = name.replaceAll("%5D", "]");
+            String value = property(key);
+            metadata.put(name, value);
+        }
+        return metadata;
+    }
 
 	@Override
 	public BinaryMetadata getMetadata() {
@@ -363,9 +364,15 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 	}
 
 	@Override
-	public void setMetadata(String key, String value) {
-		setProperty(META_DATA_PROPERTY_PREFIX + key, value);
-	}
+    public void setMetadata(String key, String value) {
+        key = key.replaceAll("\\[", "%5B");
+        key = key.replaceAll("\\]", "%5D");
+        if (value == null) {
+            removeProperty(META_DATA_PROPERTY_PREFIX + key);
+        } else {
+            setProperty(META_DATA_PROPERTY_PREFIX + key, value);
+        }
+    }
 
 	@Override
 	public String getPlainText() {

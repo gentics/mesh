@@ -125,10 +125,9 @@ public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResp
 						branch.assignSchemaVersion(ac.getUser(), version, event);
 					}
 					// 2. Invoke migrations which will populate the created index
-					event.add(() ->  MeshEvent.triggerJobWorker(boot.mesh()));
+					event.add(() -> MeshEvent.triggerJobWorker(boot.mesh()));
 					return getSchemaVersionsInfo(branch);
 				});
-
 
 
 				return branchList;
