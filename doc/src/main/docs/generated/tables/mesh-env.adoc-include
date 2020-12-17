@@ -134,6 +134,9 @@
 | *MESH_ELASTICSEARCH_PASSWORD*
 | Override the configured Elasticsearch connection password.
 
+| *MESH_GRAPHQL_SLOW_THRESHOLD*
+| Override the configured slow graphQl query threshold.
+
 | *MESH_HTTP_ENABLE*
 | Override the configured http server flag.
 

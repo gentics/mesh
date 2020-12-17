@@ -108,3 +108,5 @@ debugInfo:
   logFileSize: "5MB"
   logEnabled: true
   logPattern: "%d{HH:mm:ss.SSS} [%meshName] %-5level [%thread] [%file:%line] - %msg%n"
+graphQL:
+  slowThreshold: 60000
