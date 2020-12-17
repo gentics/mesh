@@ -1,0 +1,15 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| slowThreshold
+| false
+| integer
+| Threshold for logging slow graphql queries. Default: 60000ms
+
+|======

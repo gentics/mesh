@@ -191,6 +191,10 @@ Please note that the version parameter can currently not be used to load over co
 
 The `node.child(path: "")` and `nodes(path: "")` are two fields which have a different behaviour since the path is used to directly load a specific content of a node. Whenever the found content does not match up with the specified `version` parameter no node will be returned. The field will be set to `null` in those cases.
 
+== Slow Query Log
+
+GraphQL queries that take longer than the configured threshold (see link:{{< relref "administration-guide.asciidoc" >}}#_graphql_options[GraphQL Options]) will be logged with the logger `com.gentics.mesh.graphql.SlowQuery` with log level `WARN`.
+
 [[limitations]]
 == Limitations
 
