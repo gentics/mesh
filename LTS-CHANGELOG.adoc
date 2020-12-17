@@ -134,7 +134,7 @@ icon:check[] OrientDB: A bug in the startup order has been fixed which prevented
 
 icon:check[] Core: Binary upload processing failed for binaries with brackets in the metadata key. This has been fixed now.
 
-icon:plus[] GraphQL: Queries, that take longer than the configured threshold will be logged now. See link:{{< relref "graphql.asciidoc" >}#_slow_query_log[GraphQL Slow Query Log] for details.
+icon:plus[] GraphQL: Queries, that take longer than the configured threshold will be logged now. See link:{{< relref "graphql.asciidoc" >}}#_slow_query_log[GraphQL Slow Query Log] for details.
 
 [[v1.4.18]]
 == 1.4.18 (18.11.2020)
