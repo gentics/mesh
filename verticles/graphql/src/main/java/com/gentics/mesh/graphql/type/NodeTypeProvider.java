@@ -114,7 +114,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 	/**
 	 * Fetcher for the parent node reference of a node.
-	 * 
+	 *
 	 * @param env
 	 * @return
 	 */
@@ -249,6 +249,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				.description("Breadcrumb of the node")
 				.type(new GraphQLList(new GraphQLTypeReference(NODE_TYPE_NAME)))
 				.argument(createNodeVersionArg())
+				.argument(createLanguageTagArg(false))
 				.dataFetcher(this::breadcrumbFetcher).build(),
 
 			// .availableLanguages

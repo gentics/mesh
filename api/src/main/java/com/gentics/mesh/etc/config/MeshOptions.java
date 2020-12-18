@@ -105,6 +105,10 @@ public class MeshOptions implements Option {
 	@JsonPropertyDescription("Debug info options.")
 	private DebugInfoOptions debugInfoOptions = new DebugInfoOptions();
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("GraphQL options.")
+	private GraphQLOptions graphQLOptions = new GraphQLOptions();
+
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Path to the central tmp directory.")
 	@EnvironmentVariable(name = MESH_TEMP_DIR_ENV, description = "Override the configured temp directory.")
@@ -342,6 +346,25 @@ public class MeshOptions implements Option {
 		return cacheConfig;
 	}
 
+	/**
+	 * Get the graphql options
+	 * @return graphql options
+	 */
+	@JsonProperty("graphQL")
+	public GraphQLOptions getGraphQLOptions() {
+		return graphQLOptions;
+	}
+
+	/**
+	 * Set the graphql options
+	 * @param graphQlOptions options
+	 * @return fluent API
+	 */
+	public MeshOptions setGraphQlOptions(GraphQLOptions graphQlOptions) {
+		this.graphQLOptions = graphQlOptions;
+		return this;
+	}
+
 	@Setter
 	public MeshOptions setCacheConfig(CacheConfig cacheConfig) {
 		this.cacheConfig = cacheConfig;
@@ -489,6 +512,9 @@ public class MeshOptions implements Option {
 		}
 		if (getContentOptions() != null) {
 			getContentOptions().validate(this);
+		}
+		if (getGraphQLOptions() != null) {
+			getGraphQLOptions().validate(this);
 		}
 		Objects.requireNonNull(getNodeName(), "The node name must be specified.");
 		if (getVersionPurgeMaxBatchSize() <= 0) {

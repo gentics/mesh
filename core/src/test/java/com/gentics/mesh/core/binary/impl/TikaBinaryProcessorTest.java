@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.function.Consumer;
 
 import org.apache.commons.io.IOUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -32,6 +33,43 @@ public class TikaBinaryProcessorTest {
 		when(lazy.get()).thenReturn(Vertx.vertx());
 		TikaBinaryProcessor processor = new TikaBinaryProcessor(lazy, new MeshOptions(), mockDb());
 		FileUpload ul = mockUpload("test.pdf", "application/pdf");
+
+		Maybe<Consumer<BinaryGraphField>> result = processor.process(new BinaryDataProcessorContext(null, null, null, ul, "HASHSUM"));
+
+		Consumer<BinaryGraphField> consumer = result.blockingGet();
+		BinaryGraphField field = Mockito.mock(BinaryGraphField.class);
+		consumer.accept(field);
+	}
+
+	@Test
+	@Ignore
+	public void testFilesInFolder() throws IOException {
+		File folder = new File("/media/ext4/tmp/dbfiles");
+
+		Lazy<Vertx> lazy = Mockito.mock(Lazy.class);
+		when(lazy.get()).thenReturn(Vertx.vertx());
+		TikaBinaryProcessor processor = new TikaBinaryProcessor(lazy, new MeshOptions(), mockDb());
+
+		for (int i = 0; i < 2; i++) {
+			for (File file : folder.listFiles()) {
+				System.out.println("Testing: " + file.getName());
+				try {
+					testParser(processor, file);
+				} catch (Throwable e) {
+					e.printStackTrace();
+					System.in.read();
+				}
+			}
+		}
+
+		System.out.println("Now testing PDF");
+		testParser(processor, new File("/media/ext4/tmp/SUP-10413.pdf"));
+	}
+
+	private void testParser(TikaBinaryProcessor processor, File file) {
+		FileUpload ul = mock(FileUpload.class);
+		when(ul.uploadedFileName()).thenReturn(file.getAbsolutePath());
+		when(ul.contentType()).thenReturn("application/pdf");
 
 		Maybe<Consumer<BinaryGraphField>> result = processor.process(new BinaryDataProcessorContext(null, null, null, ul, "HASHSUM"));
 
