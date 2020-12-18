@@ -81,6 +81,17 @@ icon:check[] Clustering: The webroot handler no longer uses the cluster-wide wri
 
 icon:check[] Logging: Failing readiness checks are now logged using the `WARN` level.
 
+[[v1.5.9]]
+== 1.5.9 (18.12.2020)
+
+icon:check[] OrientDB: The included OrientDB version has been updated to version `3.1.6`.
+
+icon:check[] OrientDB: A bug in the startup order has been fixed which prevented opening of databases via OrientDB Studio.
+
+icon:check[] Core: Binary upload processing failed for binaries with brackets in the metadata key. This has been fixed now.
+
+icon:plus[] GraphQL: Queries, that take longer than the configured threshold will be logged now. See link:{{< relref "graphql.asciidoc" >}}#_slow_query_log[GraphQL Slow Query Log] for details.
+
 [[v1.5.8]]
 == 1.5.8 (20.11.2020)
 
