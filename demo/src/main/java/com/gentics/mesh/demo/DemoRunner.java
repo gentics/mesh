@@ -36,6 +36,12 @@ public class DemoRunner {
 		System.setProperty("storage.trackChangedRecordsInWAL", "true");
 	}
 
+	/**
+	 * Start the process.
+	 * 
+	 * @param args
+	 * @throws Exception
+	 */
 	public static void main(String[] args) throws Exception {
 		LoggingConfigurator.init();
 		log = LoggerFactory.getLogger(DemoRunner.class);

@@ -29,6 +29,12 @@ public enum ListTypes {
 		return type;
 	}
 
+	/**
+	 * Convert the list type string to the list enum field.
+	 * 
+	 * @param listType
+	 * @return
+	 */
 	public static ListTypes valueByName(String listType) {
 		for (ListTypes type : values()) {
 			if (type.toString().equals(listType)) {

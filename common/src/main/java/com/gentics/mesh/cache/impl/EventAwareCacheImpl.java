@@ -199,6 +199,11 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 		private MeshOptions options;
 		private MetricsService metricsService;
 
+		/**
+		 * Build the cache instance.
+		 * 
+		 * @return Created instance
+		 */
 		public EventAwareCache<K, V> build() {
 			Objects.requireNonNull(events, "No events for the cache have been set");
 			Objects.requireNonNull(vertx, "No Vert.x instance has been set");
@@ -321,6 +326,15 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 		}
 	}
 
+	/**
+	 * Return an observable which emits eventbus messages for the given addresses.
+	 * 
+	 * @param eventBus
+	 *            Eventbus used for registration
+	 * @param addresses
+	 *            Addresses to listen to
+	 * @return
+	 */
 	public static Observable<Message<JsonObject>> rxEventBus(EventBus eventBus, MeshEvent... addresses) {
 		return Observable.fromArray(addresses)
 			.flatMap(meshEvent -> Observable.using(

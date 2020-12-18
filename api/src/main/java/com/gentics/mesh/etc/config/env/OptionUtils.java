@@ -14,7 +14,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 /**
- * Utility to handle environment variable parsing and options overloading. 
+ * Utility to handle environment variable parsing and options overloading.
  */
 public class OptionUtils {
 
@@ -22,14 +22,17 @@ public class OptionUtils {
 	private static final Pattern SPLIT_PATTERN = Pattern.compile(",");
 
 	/**
-	 * Convert a string value to a type. Throws an runtime exception when the type is not supported
-	 * or certain conversions fail.
-	 * @param clazz the class of the type to convert to.
-	 * @param value the string value to convert
-	 * @param <T> the target type
+	 * Convert a string value to a type. Throws an runtime exception when the type is not supported or certain conversions fail.
+	 * 
+	 * @param clazz
+	 *            the class of the type to convert to.
+	 * @param value
+	 *            the string value to convert
+	 * @param <T>
+	 *            the target type
 	 * @return the converted value
 	 */
-	private static  <T> T convertValue(Class<T> clazz, String value) {
+	private static <T> T convertValue(Class<T> clazz, String value) {
 		if ("null".equals(value)) {
 			return null;
 		} else if (clazz.equals(String.class)) {
@@ -52,9 +55,9 @@ public class OptionUtils {
 				throw new RuntimeException("Could not parse credentials env string as JsonObject: " + value, e);
 			}
 		} else if (clazz.isEnum()) {
-			Object enumValue = Enum.valueOf((Class<Enum>)clazz, value);
+			Object enumValue = Enum.valueOf((Class<Enum>) clazz, value);
 			return (T) enumValue;
-		} else if(clazz.equals(List.class)) {
+		} else if (clazz.equals(List.class)) {
 			if (value == null || value.trim().length() == 0) {
 				return (T) Collections.emptyList();
 			}
@@ -64,16 +67,18 @@ public class OptionUtils {
 				return (T) Collections.emptySet();
 			}
 			return (T) SPLIT_PATTERN.splitAsStream(value).collect(Collectors.toSet());
-		}
-		else {
+		} else {
 			throw new RuntimeException("Could no convert environment variable for type " + clazz.getName());
 		}
 	}
 
 	/**
 	 * Override options with environment variable using an annotated method.
-	 * @param method a method annotated with {@link EnvironmentVariable}
-	 * @param target the target option object
+	 * 
+	 * @param method
+	 *            a method annotated with {@link EnvironmentVariable}
+	 * @param target
+	 *            the target option object
 	 */
 	static void overrideWithEnvViaMethod(Method method, Option target) {
 		EnvironmentVariable envInfo = method.getAnnotation(EnvironmentVariable.class);
@@ -93,8 +98,11 @@ public class OptionUtils {
 
 	/**
 	 * Override options with environment variable using an annotated field.
-	 * @param field a field annotated with {@link EnvironmentVariable}
-	 * @param target the target option object
+	 * 
+	 * @param field
+	 *            a field annotated with {@link EnvironmentVariable}
+	 * @param target
+	 *            the target option object
 	 */
 	static void overrideWitEnvViaFieldSet(Field field, Option target) {
 		EnvironmentVariable envInfo = field.getAnnotation(EnvironmentVariable.class);
@@ -112,6 +120,12 @@ public class OptionUtils {
 		}
 	}
 
+	/**
+	 * Helper to check whether the given text is empty or null.
+	 * 
+	 * @param text
+	 * @return
+	 */
 	public static boolean isEmpty(String text) {
 		return text == null || text.length() == 0;
 	}

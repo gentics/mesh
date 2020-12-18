@@ -24,6 +24,12 @@ public abstract class ClusterServer {
 	}
 	public static Logger log;
 
+	/**
+	 * Create the mesh options.
+	 * 
+	 * @param args
+	 * @return
+	 */
 	public static MeshOptions init(String[] args) {
 		LoggingConfigurator.init();
 		log = LoggerFactory.getLogger(ClusterServer.class);

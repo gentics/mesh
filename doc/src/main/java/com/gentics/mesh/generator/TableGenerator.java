@@ -151,6 +151,14 @@ public class TableGenerator extends AbstractRenderingGenerator {
 		return annotation.length != 0;
 	}
 
+	/**
+	 * Render the JSON schema information taken from the provided model class using the given template.
+	 * 
+	 * @param clazz
+	 * @param template
+	 * @return Rendered table
+	 * @throws IOException
+	 */
 	public String renderModelTableViaSchema(Class<?> clazz, String template) throws IOException {
 		String name = clazz.getSimpleName();
 		String jsonSchema = JsonUtil.getJsonSchema(clazz);

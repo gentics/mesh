@@ -9,6 +9,7 @@ import java.util.List;
 import org.pf4j.Plugin;
 import org.pf4j.PluginDependency;
 
+import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.plugin.MeshPluginDescriptor;
 import com.gentics.mesh.plugin.PluginManifest;
 
@@ -216,6 +217,7 @@ public class MeshPluginDescriptorImpl implements MeshPluginDescriptor {
 		return this;
 	}
 
+	@Setter
 	public MeshPluginDescriptor setLicense(String license) {
 		this.license = license;
 		return this;

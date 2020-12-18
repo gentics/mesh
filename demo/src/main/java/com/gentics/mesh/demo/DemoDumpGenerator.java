@@ -29,6 +29,12 @@ public class DemoDumpGenerator {
 		}
 	}
 
+	/**
+	 * Run the demo dump geneator which will write the dump to the filesystem.
+	 * 
+	 * @param args
+	 * @throws Exception
+	 */
 	public static void main(String[] args) throws Exception {
 		DemoDumpGenerator generator = new DemoDumpGenerator();
 		try {
@@ -36,7 +42,7 @@ public class DemoDumpGenerator {
 			generator.init();
 			generator.dump();
 			generator.shutdown();
-		} catch	(Throwable e) {
+		} catch (Throwable e) {
 			e.printStackTrace();
 			System.exit(1);
 		}
@@ -48,6 +54,11 @@ public class DemoDumpGenerator {
 		return meshInternal;
 	}
 
+	/**
+	 * Initialize the Mesh options.
+	 * 
+	 * @throws Exception
+	 */
 	public void init() throws Exception {
 		MeshOptions options = new MeshOptions();
 		options.getSearchOptions().setUrl(null);
@@ -83,6 +94,12 @@ public class DemoDumpGenerator {
 		init(options);
 	}
 
+	/**
+	 * Initialize mesh and prepare the demo generator.
+	 * 
+	 * @param options
+	 * @throws Exception
+	 */
 	public void init(MeshOptions options) throws Exception {
 		Mesh mesh = Mesh.create(options);
 		mesh.run(false);
@@ -104,6 +121,11 @@ public class DemoDumpGenerator {
 
 	}
 
+	/**
+	 * Shutdown the mesh server.
+	 * 
+	 * @throws Exception
+	 */
 	private void shutdown() throws Exception {
 		meshInternal.boot().mesh().shutdown();
 		Thread.sleep(2000);

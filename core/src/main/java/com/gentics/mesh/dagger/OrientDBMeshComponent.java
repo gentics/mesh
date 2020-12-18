@@ -4,6 +4,7 @@ import javax.annotation.Nullable;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.annotation.Getter;
 import com.gentics.mesh.dagger.module.CommonModule;
 import com.gentics.mesh.dagger.module.OrientDBModule;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -19,6 +20,7 @@ import dagger.Component;
 @Component(modules = { CommonModule.class, OrientDBModule.class })
 public interface OrientDBMeshComponent extends MeshComponent {
 
+	@Getter
 	OrientDBDatabase database();
 
 	/**

@@ -207,6 +207,15 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 		return edges.iterator().hasNext();
 	}
 
+	/**
+	 * Utilize the graph index and lookup the edge between node and content for the given parameters.
+	 * 
+	 * @param nodeId
+	 * @param branchUuid
+	 * @param code
+	 * @param lang
+	 * @return
+	 */
 	public static GraphFieldContainerEdge findEdge(Object nodeId, String branchUuid, String code, String lang) {
 		FramedGraph graph = Tx.get().getGraph();
 		MeshComponent mesh = graph.getAttribute(GraphAttribute.MESH_COMPONENT);
@@ -220,6 +229,15 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 		}
 	}
 
+	/**
+	 * Use the graph index to lookup the edges between the node and the contents for the given parameters. Since the language is not included in the index key
+	 * multiple edges may be returned for the edges to the various content languages.
+	 * 
+	 * @param nodeId
+	 * @param branchUuid
+	 * @param type
+	 * @return
+	 */
 	public static Result<GraphFieldContainerEdgeImpl> findEdges(Object nodeId, String branchUuid, ContainerType type) {
 		FramedGraph graph = Tx.get().getGraph();
 		MeshComponent mesh = graph.getAttribute(GraphAttribute.MESH_COMPONENT);

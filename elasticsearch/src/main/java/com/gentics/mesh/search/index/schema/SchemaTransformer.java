@@ -23,6 +23,7 @@ public class SchemaTransformer extends AbstractTransformer<HibSchema> {
 	public SchemaTransformer() {
 	}
 
+	@Override
 	public String generateVersion(HibSchema container) {
 		StringBuilder builder = new StringBuilder();
 		builder.append(container.getElementVersion());

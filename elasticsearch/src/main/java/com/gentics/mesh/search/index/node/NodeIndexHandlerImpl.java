@@ -159,6 +159,15 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 		});
 	}
 
+	/**
+	 * Return a map of indices for the given project and branch.
+	 * 
+	 * This will list all schema version, draft/published and language specific indices for the projct branch arrangement.
+	 * 
+	 * @param project
+	 * @param branch
+	 * @return
+	 */
 	public Transactional<Map<String, IndexInfo>> getIndices(HibProject project, HibBranch branch) {
 		return db.transactional(tx -> {
 			Map<String, IndexInfo> indexInfo = new HashMap<>();
@@ -170,6 +179,14 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 		});
 	}
 
+	/**
+	 * Return a transactional which produces a map that contains all indices that are needed for the given container version, project, branch arrangement.
+	 * 
+	 * @param project
+	 * @param branch
+	 * @param containerVersion
+	 * @return
+	 */
 	public Transactional<Map<String, IndexInfo>> getIndices(HibProject project, HibBranch branch, HibSchemaVersion containerVersion) {
 		return db.transactional(tx -> {
 			Map<String, IndexInfo> indexInfos = new HashMap<>();
@@ -400,6 +417,13 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 		});
 	}
 
+	/**
+	 * Return all content indices that should be selected for the given request (which is scoped to a project) and type.
+	 * 
+	 * @param ac
+	 * @param type
+	 * @return
+	 */
 	public Set<String> getIndicesForSearch(InternalActionContext ac, ContainerType type) {
 		return db.tx(tx -> {
 			HibProject project = tx.getProject(ac);
@@ -434,6 +458,13 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 		});
 	}
 
+	/**
+	 * Create a bulk entry for the given node.
+	 * 
+	 * @param node
+	 * @param entry
+	 * @return
+	 */
 	public Observable<IndexBulkEntry> storeForBulk(HibNode node, UpdateDocumentEntry entry) {
 		GenericEntryContext context = entry.getContext();
 		return db.tx(() -> {
@@ -603,6 +634,12 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 			branchUuid, type));
 	}
 
+	/**
+	 * Create a bulk entry for a move document queue entry.
+	 * 
+	 * @param entry
+	 * @return
+	 */
 	public Observable<BulkEntry> moveForBulk(MoveDocumentEntry entry) {
 		ContentDaoWrapper contentDao = boot.contentDao();
 		MoveEntryContext context = entry.getContext();

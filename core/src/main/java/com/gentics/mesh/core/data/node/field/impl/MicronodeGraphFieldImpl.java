@@ -114,6 +114,12 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 		return container.getMicronode(fieldSchema.getName());
 	};
 
+	/**
+	 * Create the micronode type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createType(edgeType(MicronodeGraphFieldImpl.class.getSimpleName()));
 		type.createType(edgeType(HAS_FIELD).withSuperClazz(MicronodeGraphFieldImpl.class));

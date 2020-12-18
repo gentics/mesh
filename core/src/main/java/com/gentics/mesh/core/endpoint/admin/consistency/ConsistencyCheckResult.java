@@ -26,10 +26,22 @@ public class ConsistencyCheckResult {
 		return results;
 	}
 
+	/**
+	 * Add inconsistency information to the result.
+	 * 
+	 * @param msg
+	 * @param uuid
+	 * @param severity
+	 */
 	public void addInconsistency(String msg, String uuid, InconsistencySeverity severity) {
 		addInconsistency(new InconsistencyInfo().setDescription(msg).setElementUuid(uuid).setSeverity(severity));
 	}
 
+	/**
+	 * Add inconsistency information to the result.
+	 * 
+	 * @param info
+	 */
 	public void addInconsistency(InconsistencyInfo info) {
 		if (info.isRepaired()) {
 			repairCount++;
@@ -40,6 +52,20 @@ public class ConsistencyCheckResult {
 		}
 	}
 
+	/**
+	 * Add inconsistency information to the result.
+	 * 
+	 * @param msg
+	 *            Inconsistency message
+	 * @param uuid
+	 *            Uuid of the related element for which the inconsistency was reported
+	 * @param severity
+	 *            Severity of the reported inconsistency
+	 * @param repaired
+	 *            Was the inconsistency repaired
+	 * @param action
+	 *            Is a repair action possible
+	 */
 	public void addInconsistency(String msg, String uuid, InconsistencySeverity severity, boolean repaired, RepairAction action) {
 		addInconsistency(
 			new InconsistencyInfo().setDescription(msg).setElementUuid(uuid).setSeverity(severity).setRepaired(repaired).setRepairAction(action));

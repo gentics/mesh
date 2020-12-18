@@ -78,16 +78,51 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 		});
 	}
 
+	/**
+	 * Create a {@link MeshOkHttpRequestImpl} using the request parameters that sends a JSON payload.
+	 * 
+	 * @param <T>
+	 * @param client
+	 * @param method
+	 * @param url
+	 * @param headers
+	 * @param classOfT
+	 * @param json
+	 * @return
+	 */
 	public static <T> MeshOkHttpRequestImpl<T> JsonRequest(OkHttpClient client, String method, String url, Map<String, String> headers,
 		Class<? extends T> classOfT, String json) {
 		return new MeshOkHttpRequestImpl<>(client, classOfT, method, url, headers, RequestBody.create(MediaType.get("application/json"), json));
 	}
 
+	/**
+	 * Create a {@link MeshOkHttpRequestImpl} using the request parameters that sends a plain text payload.
+	 * 
+	 * @param <T>
+	 * @param client
+	 * @param method
+	 * @param url
+	 * @param headers
+	 * @param classOfT
+	 * @param text
+	 * @return
+	 */
 	public static <T> MeshOkHttpRequestImpl<T> TextRequest(OkHttpClient client, String method, String url, Map<String, String> headers,
 		Class<? extends T> classOfT, String text) {
 		return new MeshOkHttpRequestImpl<>(client, classOfT, method, url, headers, RequestBody.create(MediaType.get("text/plain"), text));
 	}
 
+	/**
+	 * Create a {@link MeshOkHttpRequestImpl} request which does not send a body payload.
+	 * 
+	 * @param <T>
+	 * @param client
+	 * @param method
+	 * @param url
+	 * @param headers
+	 * @param classOfT
+	 * @return
+	 */
 	public static <T> MeshOkHttpRequestImpl<T> EmptyRequest(OkHttpClient client, String method, String url, Map<String, String> headers,
 		Class<? extends T> classOfT) {
 		return new MeshOkHttpRequestImpl<>(client, classOfT, method, url, headers, RequestBody.create(null, ""));

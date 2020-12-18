@@ -1280,6 +1280,12 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 		return ac;
 	}
 
+	/**
+	 * Add the project to the list of projects which will be used by the context object.
+	 * 
+	 * @param name
+	 * @param project
+	 */
 	public void addProject(String name, Project project) {
 		this.projects.put(name, project);
 	}

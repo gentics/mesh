@@ -26,10 +26,24 @@ public final class StreamUtil {
 
 	}
 
+	/**
+	 * Convert the iterable to a stream.
+	 * 
+	 * @param <T>
+	 * @param iterable
+	 * @return
+	 */
 	public static <T> Stream<T> toStream(Iterable<? extends T> iterable) {
 		return (Stream<T>) StreamSupport.stream(iterable.spliterator(), false);
 	}
 
+	/**
+	 * Convert the iterator to a stream.
+	 * 
+	 * @param <T>
+	 * @param iterator
+	 * @return
+	 */
 	public static <T> Stream<T> toStream(Iterator<? extends T> iterator) {
 		return toStream(() -> (Iterator<T>) iterator);
 	}
@@ -73,6 +87,13 @@ public final class StreamUtil {
 		});
 	}
 
+	/**
+	 * Return a lazy supplier which will load the value from the given supplier once {@link Supplier#get()} gets invoked.
+	 * 
+	 * @param <T>
+	 * @param supplier
+	 * @return
+	 */
 	public static <T> Supplier<T> lazy(Supplier<T> supplier) {
 		return new Supplier<T>() {
 			T value;
@@ -89,6 +110,15 @@ public final class StreamUtil {
 		};
 	}
 
+	/**
+	 * Return a custom collector which is able to merge two maps.
+	 * 
+	 * @param <K>
+	 *            Type of the key
+	 * @param <V>
+	 *            Type of the value
+	 * @return
+	 */
 	public static <K, V> Collector<Map<K, V>, Map<K, V>, Map<K, V>> mergeMaps() {
 		return Collector.of(
 			HashMap::new,
@@ -99,11 +129,25 @@ public final class StreamUtil {
 			});
 	}
 
+	/**
+	 * Create a stream of nullable elements in which null items will be excluded via a filter.
+	 * 
+	 * @param <T>
+	 * @param elements
+	 * @return
+	 */
 	public static <T> Stream<T> ofNullable(T... elements) {
 		return Arrays.stream(elements)
 			.filter(Objects::nonNull);
 	}
 
+	/**
+	 * Return the negated predicate.
+	 * 
+	 * @param <T>
+	 * @param predicate
+	 * @return
+	 */
 	public static <T> Predicate<T> not(Predicate<T> predicate) {
 		return predicate.negate();
 	}

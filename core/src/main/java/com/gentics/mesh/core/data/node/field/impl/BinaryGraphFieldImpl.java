@@ -50,6 +50,12 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 
 	private static final Logger log = LoggerFactory.getLogger(BinaryGraphFieldImpl.class);
 
+	/**
+	 * Initialize the binary field edge index and type.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 	}
 

@@ -35,13 +35,18 @@ public class MonitoringClientConfig {
 	}
 
 	/**
-	 * Builder for the monitoring client config. 
+	 * Builder for the monitoring client config.
 	 */
 	public static class Builder {
 		private String host;
 		private String basePath = "/api/v2";
 		private int port = 8080;
 
+		/**
+		 * Build the client configuration.
+		 * 
+		 * @return
+		 */
 		public MonitoringClientConfig build() {
 			return new MonitoringClientConfig(this);
 		}

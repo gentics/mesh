@@ -14,6 +14,11 @@ public final class UUIDUtil {
 
 	}
 
+	/**
+	 * You can run this class to generate a UUID. Useful when needing random uuids for documentation.
+	 * 
+	 * @param args
+	 */
 	public static void main(String[] args) {
 		System.out.println(UUIDUtil.randomUUID());
 	}
@@ -65,7 +70,8 @@ public final class UUIDUtil {
 	/**
 	 * Check whether the given text is a uuid.
 	 * 
-	 * @param text String to be checked
+	 * @param text
+	 *            String to be checked
 	 * @return true if the text represents a uuid
 	 */
 	public static boolean isUUID(String text) {
@@ -78,6 +84,7 @@ public final class UUIDUtil {
 
 	/**
 	 * Convert a mesh style uuid to a java {@link UUID}.
+	 * 
 	 * @param uuid
 	 * @return
 	 */

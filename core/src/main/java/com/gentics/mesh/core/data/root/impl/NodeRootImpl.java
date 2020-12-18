@@ -72,6 +72,12 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeRootImpl.class);
 
+	/**
+	 * Initialize the graph vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(NodeRootImpl.class, MeshVertexImpl.class);
 		index.createIndex(edgeIndex(HAS_NODE).withInOut().withOut());

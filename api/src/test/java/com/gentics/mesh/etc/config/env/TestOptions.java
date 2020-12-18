@@ -8,6 +8,9 @@ import java.util.Set;
 
 import io.vertx.core.json.JsonObject;
 
+/**
+ * Test options to be used for the {@link EnvironmentOverrideTest}.
+ */
 public class TestOptions implements Option {
 
 	public static final String STRING_VALUE_ENV = "STRING_VALUE_ENV";

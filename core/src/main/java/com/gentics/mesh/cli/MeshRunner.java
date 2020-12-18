@@ -9,6 +9,12 @@ import com.gentics.mesh.etc.config.MeshOptions;
  */
 public class MeshRunner {
 
+	/**
+	 * Start mesh.
+	 * 
+	 * @param args
+	 * @throws Exception
+	 */
 	public static void main(String[] args) throws Exception {
 		MeshOptions options = OptionsLoader.createOrloadOptions(args);
 		Mesh mesh = Mesh.create(options);

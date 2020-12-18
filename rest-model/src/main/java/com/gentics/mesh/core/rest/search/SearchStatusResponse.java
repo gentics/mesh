@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.core.rest.common.RestModel;
 
 /**
@@ -42,6 +43,7 @@ public class SearchStatusResponse implements RestModel {
 		return available;
 	}
 
+	@Setter
 	public SearchStatusResponse setAvailable(boolean available) {
 		this.available = available;
 		return this;

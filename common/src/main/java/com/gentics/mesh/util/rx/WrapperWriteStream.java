@@ -91,10 +91,20 @@ public class WrapperWriteStream implements WriteStream<Buffer> {
 		return this;
 	}
 
+	/**
+	 * Access to the requested buffers.
+	 * 
+	 * @return
+	 */
 	public Observable<Buffer> requestedBuffers() {
 		return this.requested$;
 	}
 
+	/**
+	 * Request that the given amount of bytes will be read. This will provide data which can be read via the {@link #createInputStream()} object.
+	 * 
+	 * @param byteCount
+	 */
 	public void request(int byteCount) {
 		if (byteCount > writeQueueMaxSize) {
 			throw new InvalidParameterException("Can't request more than buffer size!");

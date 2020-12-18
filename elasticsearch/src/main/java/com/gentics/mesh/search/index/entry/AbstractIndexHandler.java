@@ -268,6 +268,14 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 		});
 	}
 
+	/**
+	 * Load a map of versions and documentIds from the given search index. Apply the bucket parameters to the query in order to only select documents within the
+	 * bucket range.
+	 * 
+	 * @param indexName
+	 * @param bucket
+	 * @return
+	 */
 	// TODO Async
 	public Single<Map<String, String>> loadVersionsFromIndex(String indexName, Bucket bucket) {
 		return Single.fromCallable(() -> {

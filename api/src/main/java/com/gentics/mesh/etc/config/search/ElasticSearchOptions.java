@@ -278,6 +278,7 @@ public class ElasticSearchOptions implements Option {
 		return password;
 	}
 
+	@Setter
 	public ElasticSearchOptions setPassword(String password) {
 		this.password = password;
 		return this;
@@ -287,6 +288,7 @@ public class ElasticSearchOptions implements Option {
 		return certPath;
 	}
 
+	@Setter
 	public ElasticSearchOptions setCertPath(String certPath) {
 		this.certPath = certPath;
 		return this;
@@ -296,6 +298,7 @@ public class ElasticSearchOptions implements Option {
 		return caPath;
 	}
 
+	@Setter
 	public ElasticSearchOptions setCaPath(String caPath) {
 		this.caPath = caPath;
 		return this;
@@ -305,6 +308,7 @@ public class ElasticSearchOptions implements Option {
 		return hostnameVerification;
 	}
 
+	@Setter
 	public ElasticSearchOptions setHostnameVerification(boolean hostnameVerification) {
 		this.hostnameVerification = hostnameVerification;
 		return this;

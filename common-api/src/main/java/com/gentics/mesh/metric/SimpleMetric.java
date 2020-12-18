@@ -1,7 +1,7 @@
 package com.gentics.mesh.metric;
 
 /**
- * Metrics which are used across Gentics Mesh. 
+ * Metrics which are used across Gentics Mesh.
  */
 public enum SimpleMetric implements Metric {
 
@@ -13,23 +13,23 @@ public enum SimpleMetric implements Metric {
 
 	TX_RETRY("tx_retry", "Amount of transaction retries which happen if a conflict has been encountered."),
 
-    TX_INTERRUPT_COUNT("tx_interrupt", "Amount of commit interrupts."),
+	TX_INTERRUPT_COUNT("tx_interrupt", "Amount of commit interrupts."),
 
-    COMMIT_TIME("commit_time", "Timer which tracks commit durations."),
+	COMMIT_TIME("commit_time", "Timer which tracks commit durations."),
 
-    GRAPH_ELEMENT_RELOAD("graph_element_reload", "Meter which tracks the reload operations on used vertices."),
+	GRAPH_ELEMENT_RELOAD("graph_element_reload", "Meter which tracks the reload operations on used vertices."),
 
 	NODE_MIGRATION_PENDING("node_migration_pending", "Pending contents which need to be processed by the node migration."),
 
 	WRITE_LOCK_WAITING_TIME("write_lock_waiting_time", "Tracks the time which is spent waiting on the write lock."),
 
-    WRITE_LOCK_TIMEOUT_COUNT("write_lock_timeout", "Amount of timeouts of acquiring the write lock."),
+	WRITE_LOCK_TIMEOUT_COUNT("write_lock_timeout", "Amount of timeouts of acquiring the write lock."),
 
-    TOPOLOGY_LOCK_WAITING_TIME("topology_lock_waiting_time", "Tracks the time which is spent waiting on the write lock."),
+	TOPOLOGY_LOCK_WAITING_TIME("topology_lock_waiting_time", "Tracks the time which is spent waiting on the write lock."),
 
-    TOPOLOGY_LOCK_TIMEOUT_COUNT("topology_lock_timeout", "Amount of timeouts of acquiring the write lock.");
+	TOPOLOGY_LOCK_TIMEOUT_COUNT("topology_lock_timeout", "Amount of timeouts of acquiring the write lock.");
 
-    private String key;
+	private String key;
 
 	private String description;
 
@@ -38,10 +38,16 @@ public enum SimpleMetric implements Metric {
 		this.description = description;
 	}
 
+	/**
+	 * Return the prefixed key of the metric.
+	 */
 	public String key() {
 		return "mesh_" + key;
 	}
 
+	/**
+	 * Return the description of the metric field.
+	 */
 	public String description() {
 		return description;
 	}

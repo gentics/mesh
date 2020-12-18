@@ -68,6 +68,7 @@ public class ProjectDAOActionsImpl implements ProjectDAOActions {
 		return tx.projectDao().update(element, ac, batch);
 	}
 
+	@Override
 	public void delete(Tx tx, HibProject project, BulkActionContext bac) {
 		ProjectDaoWrapper projectDao = tx.projectDao();
 		projectDao.delete(project, bac);

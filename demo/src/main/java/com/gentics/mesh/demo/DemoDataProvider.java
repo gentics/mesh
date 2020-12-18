@@ -96,6 +96,16 @@ public class DemoDataProvider {
 		this.boot = boot;
 	}
 
+	/**
+	 * Setup the demo content
+	 * 
+	 * @param syncIndex
+	 * @throws JsonParseException
+	 * @throws JsonMappingException
+	 * @throws IOException
+	 * @throws MeshSchemaException
+	 * @throws InterruptedException
+	 */
 	public void setup(boolean syncIndex) throws JsonParseException, JsonMappingException, IOException, MeshSchemaException, InterruptedException {
 		MeshAuthUser user = db.tx(() -> {
 			return boot.meshRoot().getUserRoot().findMeshAuthUserByUsername("admin");

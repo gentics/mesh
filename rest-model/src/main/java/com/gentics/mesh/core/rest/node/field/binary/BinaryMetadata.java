@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.core.rest.common.RestModel;
 
 /**
@@ -41,6 +42,12 @@ public class BinaryMetadata implements RestModel {
 		return this;
 	}
 
+	/**
+	 * Add the metadata pair
+	 * 
+	 * @param key
+	 * @param value
+	 */
 	@JsonAnySetter
 	public void add(String key, String value) {
 		dynamicProperties.put(key, value);
@@ -64,6 +71,12 @@ public class BinaryMetadata implements RestModel {
 		return this;
 	}
 
+	/**
+	 * Return the metadata value for the key.
+	 * 
+	 * @param key
+	 * @return
+	 */
 	@JsonIgnore
 	public String get(String key) {
 		return dynamicProperties.get(key);

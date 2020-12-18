@@ -219,7 +219,7 @@ public class BinaryStorageMigration extends AbstractChange {
 
 	}
 
-	public static String getNewSegmentedPath(String binaryUuid) {
+	private static String getNewSegmentedPath(String binaryUuid) {
 		String partA = binaryUuid.substring(0, 2);
 		String partB = binaryUuid.substring(2, 4);
 		StringBuffer buffer = new StringBuffer();
@@ -231,6 +231,12 @@ public class BinaryStorageMigration extends AbstractChange {
 		return buffer.toString();
 	}
 
+	/**
+	 * Return a file for the new segmentation format.
+	 * 
+	 * @param binaryUuid
+	 * @return
+	 */
 	public File getNewFile(String binaryUuid) {
 		File folder = new File(dataTargetFolder(), getNewSegmentedPath(binaryUuid));
 		File binaryFile = new File(folder, binaryUuid + ".bin");
@@ -247,6 +253,12 @@ public class BinaryStorageMigration extends AbstractChange {
 		return buffer.toString();
 	}
 
+	/**
+	 * Return the file for the old style format.
+	 * 
+	 * @param uuid
+	 * @return
+	 */
 	public File getOldFile(String uuid) {
 		File folder = new File(dataSourceFolder(), getOldSegmentedPath(uuid));
 		File binaryFile = new File(folder, uuid + ".bin");

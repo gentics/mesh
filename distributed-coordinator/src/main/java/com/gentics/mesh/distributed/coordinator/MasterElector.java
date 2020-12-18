@@ -88,6 +88,9 @@ public class MasterElector {
 		}
 	}
 
+	/**
+	 * Start the elector which will prepare the hazelcast settings and elect or find the master.
+	 */
 	public void start() {
 		HazelcastInstance hz = hazelcast.get();
 		masterLock = hz.getLock(MASTER);
@@ -101,6 +104,11 @@ public class MasterElector {
 		findCurrentMaster();
 	}
 
+	/**
+	 * Check whether the instance that runs this code is the elected master.
+	 * 
+	 * @return
+	 */
 	public boolean isMaster() {
 		if (merging) {
 			return false;

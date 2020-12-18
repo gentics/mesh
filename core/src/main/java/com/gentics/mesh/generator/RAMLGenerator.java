@@ -406,6 +406,11 @@ public class RAMLGenerator extends AbstractGenerator {
 
 	}
 
+	/**
+	 * Start the generator.
+	 * 
+	 * @throws IOException
+	 */
 	public void run() throws IOException {
 		String raml = generate();
 		writeFile(fileName, raml);

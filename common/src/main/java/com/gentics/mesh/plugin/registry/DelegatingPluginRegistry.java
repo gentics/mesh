@@ -9,10 +9,16 @@ import io.reactivex.Completable;
  */
 public interface DelegatingPluginRegistry {
 
+	/**
+	 * Method will be invoked when the registry is first used.
+	 */
 	default void start() {
 
 	}
 
+	/**
+	 * Method will be invoked to unload all plugins.
+	 */
 	default void stop() {
 
 	}

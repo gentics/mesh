@@ -37,6 +37,14 @@ public class BinaryDownloadHandler extends AbstractHandler {
 		this.binaryFieldResponseHandler = binaryFieldResponseHandler;
 	}
 
+	/**
+	 * Handle the binary download request.
+	 * 
+	 * @param rc
+	 *            The routing context for the request.
+	 * @param uuid
+	 * @param fieldName
+	 */
 	public void handleReadBinaryField(RoutingContext rc, String uuid, String fieldName) {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 		db.tx(tx -> {

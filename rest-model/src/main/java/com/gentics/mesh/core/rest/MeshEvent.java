@@ -480,7 +480,6 @@ public enum MeshEvent {
 		"Emitted when a job was deleted.",
 		Examples::jobEvent),
 
-	
 	/* Search index related (SYNC) */
 
 	/**
@@ -696,6 +695,13 @@ public enum MeshEvent {
 		});
 	}
 
+	/**
+	 * Async await for the given event.
+	 * 
+	 * @param mesh
+	 * @param event
+	 * @return
+	 */
 	public static Completable waitForEvent(Mesh mesh, MeshEvent event) {
 		return doAndWaitForEvent(mesh, event, () -> {
 		});
@@ -706,6 +712,11 @@ public enum MeshEvent {
 		return address;
 	}
 
+	/**
+	 * Trigger the job processing event via the mesh server API. This is only possible in embedded mode or within plugins.
+	 * 
+	 * @param mesh
+	 */
 	public static void triggerJobWorker(Mesh mesh) {
 		EventBus eb = mesh.getVertx().eventBus();
 		String name = mesh.getOptions().getNodeName();
@@ -735,6 +746,11 @@ public enum MeshEvent {
 		return description;
 	}
 
+	/**
+	 * Return the example model for the event.
+	 * 
+	 * @return
+	 */
 	public MeshEventModel example() {
 		return exampleGenerator.get();
 	}

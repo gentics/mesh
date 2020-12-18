@@ -32,6 +32,7 @@ public class Coordinator {
 		return mode;
 	}
 
+	@Setter
 	public Coordinator setCoordinatorMode(CoordinatorMode mode) {
 		this.mode = mode;
 		return this;

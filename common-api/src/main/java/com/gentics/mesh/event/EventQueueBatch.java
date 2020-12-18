@@ -68,6 +68,12 @@ public interface EventQueueBatch {
 		return this;
 	}
 
+	/**
+	 * Add a action which should be run once the batch gets processed.
+	 * 
+	 * @param action
+	 * @return
+	 */
 	default EventQueueBatch add(Runnable action) {
 		Objects.requireNonNull(action);
 		getActions().add(action);
@@ -76,6 +82,7 @@ public interface EventQueueBatch {
 
 	/**
 	 * Merge the contents of the given batch with the current batch.
+	 * 
 	 * @param containerBatch
 	 */
 	default void addAll(EventQueueBatch containerBatch) {

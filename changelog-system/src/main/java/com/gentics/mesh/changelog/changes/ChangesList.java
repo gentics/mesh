@@ -13,6 +13,12 @@ import com.gentics.mesh.util.UUIDUtil;
  */
 public final class ChangesList {
 
+	/**
+	 * List of changelog entries.
+	 * 
+	 * @param options
+	 * @return
+	 */
 	public static List<Change> getList(MeshOptions options) {
 		return Arrays.asList(
 			new ReindexDatabase(),

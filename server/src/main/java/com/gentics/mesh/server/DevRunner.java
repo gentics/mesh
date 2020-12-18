@@ -28,6 +28,12 @@ public class DevRunner {
 		}
 	}
 
+	/**
+	 * Start the dev runner.
+	 * 
+	 * @param args
+	 * @throws Exception
+	 */
 	public static void main(String[] args) throws Exception {
 		LoggingConfigurator.init();
 		Logger log = LoggerFactory.getLogger(DevRunner.class);

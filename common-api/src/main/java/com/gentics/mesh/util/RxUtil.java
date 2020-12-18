@@ -29,10 +29,24 @@ public final class RxUtil {
 	private RxUtil() {
 	}
 
+	/**
+	 * Helper function to combine a single with a mapping function that returns a completable.
+	 * 
+	 * @param <T>
+	 * @param source
+	 * @param mappingFunction
+	 * @return
+	 */
 	public static <T> Completable andThenCompletable(Single<T> source, Function<T, Completable> mappingFunction) {
 		return Observable.merge(source.toObservable().map(v -> mappingFunction.apply(v).toObservable())).ignoreElements();
 	}
 
+	/**
+	 * NOOP
+	 * 
+	 * @param <T>
+	 * @param nix
+	 */
 	public static <T> void noopAction(T nix) {
 
 	}

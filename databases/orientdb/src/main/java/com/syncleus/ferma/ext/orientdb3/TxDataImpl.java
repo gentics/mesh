@@ -179,6 +179,7 @@ public class TxDataImpl implements TxData {
 		return options.getPluginDirectory();
 	}
 
+	@Setter
 	public MeshOptions setPluginDirectory(String pluginDirectory) {
 		return options.setPluginDirectory(pluginDirectory);
 	}
@@ -187,6 +188,7 @@ public class TxDataImpl implements TxData {
 		return options.getImageOptions();
 	}
 
+	@Setter
 	public MeshOptions setImageOptions(ImageManipulatorOptions imageOptions) {
 		return options.setImageOptions(imageOptions);
 	}
@@ -195,6 +197,7 @@ public class TxDataImpl implements TxData {
 		return options.getContentOptions();
 	}
 
+	@Setter
 	public MeshOptions setContentOptions(ContentConfig contentOptions) {
 		return options.setContentOptions(contentOptions);
 	}

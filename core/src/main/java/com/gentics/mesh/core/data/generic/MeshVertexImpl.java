@@ -45,6 +45,9 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 
 	private String uuid;
 
+	/**
+	 * Initialize the vertex type and index.
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(MeshVertexImpl.class, null);
 		index.createIndex(vertexIndex(MeshVertexImpl.class)

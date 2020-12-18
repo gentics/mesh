@@ -2,6 +2,7 @@ package com.gentics.mesh.core.rest.node;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.core.rest.common.RestModel;
 
 /**
@@ -21,6 +22,7 @@ public class NodeChildrenInfo implements RestModel {
 		return schemaUuid;
 	}
 
+	@Setter
 	public NodeChildrenInfo setSchemaUuid(String schemaUuid) {
 		this.schemaUuid = schemaUuid;
 		return this;
@@ -30,6 +32,7 @@ public class NodeChildrenInfo implements RestModel {
 		return count;
 	}
 
+	@Setter
 	public NodeChildrenInfo setCount(long count) {
 		this.count = count;
 		return this;

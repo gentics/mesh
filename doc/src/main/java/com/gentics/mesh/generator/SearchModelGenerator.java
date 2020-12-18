@@ -92,11 +92,22 @@ public class SearchModelGenerator extends AbstractGenerator {
 		super(new File(outputDir, "search"));
 	}
 
+	/**
+	 * Run the generator.
+	 * 
+	 * @param args
+	 * @throws Exception
+	 */
 	public static void main(String[] args) throws Exception {
 		SearchModelGenerator searchModelGen = new SearchModelGenerator(OUTPUT_ROOT_FOLDER);
 		searchModelGen.run();
 	}
 
+	/**
+	 * Setup mesh to be used for search model generation.
+	 * 
+	 * @return
+	 */
 	public static Mesh initPaths() {
 		MeshOptions options = new MeshOptions();
 		options.setNodeName("Example Generator");
@@ -122,6 +133,11 @@ public class SearchModelGenerator extends AbstractGenerator {
 		return Mesh.create(options);
 	}
 
+	/**
+	 * Run the generator.
+	 * 
+	 * @throws Exception
+	 */
 	public void run() throws Exception {
 		Mesh mesh = initPaths();
 		// String baseDirProp = System.getProperty("baseDir");
@@ -145,7 +161,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 			ContentDaoWrapper contentDao = mock(ContentDaoWrapperImpl.class);
 			UserDaoWrapper userDao = mock(UserDaoWrapperImpl.class);
 			RoleDaoWrapper roleDao = mock(RoleDaoWrapperImpl.class);
-			GroupDaoWrapper  groupDao = mock(GroupDaoWrapperImpl.class);
+			GroupDaoWrapper groupDao = mock(GroupDaoWrapperImpl.class);
 			TagDaoWrapper tagDao = mock(TagDaoWrapperImpl.class);
 			TagFamilyDaoWrapper tagFamilyDao = mock(TagFamilyDaoWrapperImpl.class);
 
@@ -191,7 +207,8 @@ public class SearchModelGenerator extends AbstractGenerator {
 		HibNode node = mockNode(nodeDao, contentDao, tagDao, parentNode, project, user, language, tagA, tagB);
 
 		NodeIndexHandler nodeIndexHandler = meshDagger.nodeContainerIndexHandler();
-		((NodeIndexHandlerImpl)nodeIndexHandler).storeContainer(contentDao.getLatestDraftFieldContainer(node, language), UUID_1, ContainerType.PUBLISHED)
+		((NodeIndexHandlerImpl) nodeIndexHandler)
+			.storeContainer(contentDao.getLatestDraftFieldContainer(node, language), UUID_1, ContainerType.PUBLISHED)
 			.ignoreElement()
 			.blockingAwait();
 		writeStoreEvent("node.search");

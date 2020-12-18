@@ -53,6 +53,12 @@ import com.gentics.mesh.parameter.value.FieldsSet;
  */
 public class BranchRootImpl extends AbstractRootVertex<Branch> implements BranchRoot, BranchDao {
 
+	/**
+	 * Initialize the branch type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(BranchRootImpl.class, MeshVertexImpl.class);
 		type.createType(edgeType(HAS_BRANCH));
@@ -69,6 +75,18 @@ public class BranchRootImpl extends AbstractRootVertex<Branch> implements Branch
 		return create(name, creator, uuid, setLatest, baseBranch, true, batch);
 	}
 
+	/**
+	 * Create the branch element with the specified parameters.
+	 * 
+	 * @param name
+	 * @param creator
+	 * @param uuid
+	 * @param setLatest
+	 * @param baseBranch
+	 * @param assignSchemas
+	 * @param batch
+	 * @return
+	 */
 	private Branch create(String name, HibUser creator, String uuid, boolean setLatest, HibBranch baseBranch, boolean assignSchemas,
 		EventQueueBatch batch) {
 		Branch branch = getGraph().addFramedVertex(BranchImpl.class);

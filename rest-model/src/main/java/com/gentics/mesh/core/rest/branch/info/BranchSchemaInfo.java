@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.rest.branch.info;
 
+import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 
 /**
@@ -19,6 +20,7 @@ public class BranchSchemaInfo extends AbstractBranchSchemaInfo<SchemaReference> 
 		this.setVersionUuid(reference.getVersionUuid());
 	}
 
+	@Setter
 	public BranchSchemaInfo setVersion(String version) {
 		super.setVersion(version);
 		return this;

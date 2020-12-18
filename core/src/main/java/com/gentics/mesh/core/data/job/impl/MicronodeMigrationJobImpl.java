@@ -50,6 +50,13 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 		type.createVertexType(MicronodeMigrationJobImpl.class, MeshVertexImpl.class);
 	}
 
+	/**
+	 * Create a new migration event model object.
+	 * 
+	 * @param event
+	 * @param status
+	 * @return
+	 */
 	public MicroschemaMigrationMeshEventModel createEvent(MeshEvent event, JobStatus status) {
 		MicroschemaMigrationMeshEventModel model = new MicroschemaMigrationMeshEventModel();
 		model.setEvent(event);

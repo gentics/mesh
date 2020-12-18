@@ -56,6 +56,9 @@ public class MonitoringRoutes {
 		init();
 	}
 
+	/**
+	 * Initialize the monitoring routes.
+	 */
 	public void init() {
 		router.route().handler(LoggerHandler.create());
 		router.route().last().handler(DefaultNotFoundHandler.create());

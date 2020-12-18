@@ -122,6 +122,12 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	// Cached instance of the parent node.
 	private NodeImpl parentNodeRef;
 
+	/**
+	 * Initialize the vertex type and indices.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createType(vertexType(NodeGraphFieldContainerImpl.class, MeshVertexImpl.class)
 			.withField(SCHEMA_CONTAINER_VERSION_KEY_PROPERTY, STRING));

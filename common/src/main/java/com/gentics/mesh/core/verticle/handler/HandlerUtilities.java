@@ -191,13 +191,23 @@ public class HandlerUtilities {
 		}
 	}
 
+	/**
+	 * Read the element with the given element by loading it from the specified dao action.
+	 * 
+	 * @param <T>
+	 * @param <RM>
+	 * @param ac
+	 * @param uuid
+	 * @param actions
+	 * @param perm
+	 */
 	public <T extends HibCoreElement, RM extends RestModel> void readElement(InternalActionContext ac, String uuid,
 		DAOActions<T, RM> actions, InternalPermission perm) {
 		readElement(ac, null, uuid, actions, perm);
 	}
 
 	/**
-	 * Read the element with the given element by loading it from the specified root vertex.
+	 * Read the element with the given element by loading it from the specified dao action.
 	 * 
 	 * @param ac
 	 * @param parentLoader
@@ -278,6 +288,14 @@ public class HandlerUtilities {
 		}, m -> ac.send(m, OK));
 	}
 
+	/**
+	 * Invoke sync handler in a tx and return the result via the provided action.
+	 * 
+	 * @param <RM>
+	 * @param ac
+	 * @param handler
+	 * @param action
+	 */
 	public <RM> void syncTx(InternalActionContext ac, TxAction<RM> handler, Consumer<RM> action) {
 		try {
 			RM model = database.tx(handler);

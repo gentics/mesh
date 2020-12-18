@@ -25,6 +25,12 @@ public class ServerRunner {
 		System.setProperty("vertx.cacheDirBase", "data" + File.separator + "tmp");
 	}
 
+	/**
+	 * Start the production server runner.
+	 * 
+	 * @param args
+	 * @throws Exception
+	 */
 	public static void main(String[] args) throws Exception {
 		LoggingConfigurator.init();
 		Logger log = LoggerFactory.getLogger(ServerRunner.class);

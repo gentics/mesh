@@ -137,6 +137,9 @@ public final class ElasticsearchProcessManager {
 		return p;
 	}
 
+	/**
+	 * Start the watchdog which detects whether the Elasticsearch processed crashed.
+	 */
 	public void startWatchDog() {
 		if (watchDogTimerId == null) {
 			log.info("Starting watchdog for Elasticsearch process");

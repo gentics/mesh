@@ -17,6 +17,9 @@ import dagger.Provides;
 @Module
 public class MeshComponentNoDBConfiguration {
 
+	/**
+	 * Initialize the mesh settings.
+	 */
 	public static void init() {
 		MeshOptions options = new MeshOptions();
 		options.getHttpServerOptions().setPort(TestUtils.getRandomPort());

@@ -47,7 +47,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
 import java.util.function.Predicate;
@@ -238,6 +237,14 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return null;
 	}
 
+	/**
+	 * Postfix the path segment for the container that matches the given parameters. This operation is not needed for basenodes (since segment must be / for
+	 * those anyway).
+	 * 
+	 * @param branchUuid
+	 * @param type
+	 * @param languageTag
+	 */
 	public void postfixPathSegment(String branchUuid, ContainerType type, String languageTag) {
 
 		// Check whether this node is the base node.
@@ -1177,6 +1184,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return ref;
 	}
 
+	/**
+	 * Create a {@link NodeFieldListItem} that contains the reference to this node.
+	 * 
+	 * @param ac
+	 * @param languageTags
+	 * @return
+	 */
 	public NodeFieldListItem toListItem(InternalActionContext ac, String[] languageTags) {
 		Tx tx = Tx.get();
 		// Create the rest field and populate the fields

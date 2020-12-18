@@ -26,10 +26,10 @@ import com.gentics.mesh.util.CompareUtils;
  * @see StringGraphFieldList
  */
 public class StringGraphFieldListImpl extends AbstractBasicGraphFieldList<StringGraphField, StringFieldListImpl, String>
-		implements StringGraphFieldList {
+	implements StringGraphFieldList {
 
 	public static FieldTransformer<StringFieldListImpl> STRING_LIST_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level,
-			parentNode) -> {
+		parentNode) -> {
 		StringGraphFieldList stringFieldList = container.getStringList(fieldKey);
 		if (stringFieldList == null) {
 			return null;
@@ -80,6 +80,12 @@ public class StringGraphFieldListImpl extends AbstractBasicGraphFieldList<String
 		return container.getStringList(fieldSchema.getName());
 	};
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(StringGraphFieldListImpl.class, MeshVertexImpl.class);
 	}

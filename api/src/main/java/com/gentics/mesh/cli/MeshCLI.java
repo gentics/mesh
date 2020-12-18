@@ -84,6 +84,9 @@ public final class MeshCLI {
 		return options;
 	}
 
+	/**
+	 * Print the server CLI help.
+	 */
 	public static void printHelp() {
 		HelpFormatter formatter = new HelpFormatter();
 		formatter.printHelp("mesh.jar", options());
