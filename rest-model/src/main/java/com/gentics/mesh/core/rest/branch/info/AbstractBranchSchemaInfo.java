@@ -2,6 +2,7 @@ package com.gentics.mesh.core.rest.branch.info;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.core.rest.common.AbstractNameUuidReference;
 import com.gentics.mesh.core.rest.job.JobStatus;
 
@@ -28,6 +29,7 @@ public class AbstractBranchSchemaInfo<T> extends AbstractNameUuidReference<T> {
 		return version;
 	}
 
+	@Setter
 	public AbstractBranchSchemaInfo<T> setVersion(String version) {
 		this.version = version;
 		return this;

@@ -14,6 +14,12 @@ public class ServerRunner2 extends ClusterServer {
 		System.setProperty("vertx.cacheDirBase", "data" + File.separator + "tmp");
 	}
 
+	/**
+	 * Run the server.
+	 * 
+	 * @param args
+	 * @throws Exception
+	 */
 	public static void main(String[] args) throws Exception {
 		MeshOptions options = init(args);
 		options.setNodeName("gentics-mesh-2");

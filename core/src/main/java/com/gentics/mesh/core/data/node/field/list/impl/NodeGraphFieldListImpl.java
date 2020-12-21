@@ -123,6 +123,12 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 		return container.getNodeList(fieldSchema.getName());
 	};
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(NodeGraphFieldListImpl.class, MeshVertexImpl.class);
 	}

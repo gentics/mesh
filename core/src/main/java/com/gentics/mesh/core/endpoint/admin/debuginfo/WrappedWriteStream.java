@@ -17,13 +17,19 @@ public class WrappedWriteStream extends OutputStream {
 		this.bufferStream = bufferStream;
 	}
 
+	/**
+	 * Create a new wrapper.
+	 * 
+	 * @param bufferStream
+	 * @return
+	 */
 	public static WrappedWriteStream fromWriteStream(WriteStream<Buffer> bufferStream) {
 		return new WrappedWriteStream(bufferStream);
 	}
 
 	@Override
 	public void write(int b) throws IOException {
-		write(new byte[]{(byte) b});
+		write(new byte[] { (byte) b });
 	}
 
 	@Override

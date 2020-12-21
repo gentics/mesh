@@ -79,6 +79,12 @@ public class MeshJWTAuthHandler extends AuthHandlerImpl implements JWTAuthHandle
 		handle(context, false);
 	}
 
+	/**
+	 * Handle the JWT authentication. No authentication will be performed when the user has already been added to the context.
+	 * 
+	 * @param context
+	 * @param ignoreDecodeErrors
+	 */
 	public void handle(RoutingContext context, boolean ignoreDecodeErrors) {
 
 		// 1. Check whether the user is already authenticated

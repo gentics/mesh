@@ -243,6 +243,12 @@ public class BinaryStorageMigration extends AbstractChange {
 		return binaryFile;
 	}
 
+	/**
+	 * Return the old binary path.
+	 * 
+	 * @param uuid
+	 * @return
+	 */
 	public String getOldSegmentedPath(String uuid) {
 		String[] parts = uuid.split("(?<=\\G.{4})");
 		StringBuffer buffer = new StringBuffer();

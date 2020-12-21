@@ -32,6 +32,12 @@ public class RunnerNodeA {
 		System.setProperty("mesh.confDirName", "config-nodeA");
 	}
 
+	/**
+	 * Run the server.
+	 * 
+	 * @param args
+	 * @throws Exception
+	 */
 	public static void main(String[] args) throws Exception {
 
 		MeshOptions options = OptionsLoader.createOrloadOptions("-" + MeshCLI.INIT_CLUSTER);

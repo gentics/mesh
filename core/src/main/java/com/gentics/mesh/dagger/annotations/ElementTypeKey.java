@@ -14,5 +14,11 @@ import dagger.MapKey;
 @MapKey
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ElementTypeKey {
+
+	/**
+	 * Value reference fot keys.
+	 * 
+	 * @return
+	 */
 	ElementType value();
 }

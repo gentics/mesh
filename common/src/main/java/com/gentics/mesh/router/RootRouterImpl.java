@@ -2,6 +2,7 @@ package com.gentics.mesh.router;
 
 import static com.gentics.mesh.handler.VersionHandlerImpl.API_MOUNTPOINT;
 
+import com.gentics.mesh.annotation.Getter;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.router.route.DefaultNotFoundHandler;
 import com.gentics.mesh.router.route.FailureHandler;
@@ -60,6 +61,7 @@ public class RootRouterImpl implements RootRouter {
 		return apiRouter;
 	}
 
+	@Getter
 	public CustomRouter customRouter() {
 		return customRouter;
 	}

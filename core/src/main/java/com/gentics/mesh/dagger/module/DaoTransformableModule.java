@@ -3,6 +3,7 @@ package com.gentics.mesh.dagger.module;
 import java.util.Map;
 
 import com.gentics.mesh.ElementType;
+import com.gentics.mesh.annotation.Getter;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
 import com.gentics.mesh.core.data.dao.DaoTransformable;
@@ -31,6 +32,7 @@ import dagger.multibindings.IntoMap;
 @Module
 public abstract class DaoTransformableModule {
 
+	@Getter
 	@Provides
 	@SuppressWarnings("unchecked")
 	public static Map<ElementType, DaoTransformable<HibCoreElement, RestModel>> map(

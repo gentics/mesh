@@ -198,7 +198,7 @@ public class WebRootHandler {
 	 * @param version
 	 * @return
 	 */
-	
+
 	private boolean isPublic(HibNode node, String version) {
 		RoleDaoWrapper roleDao = Tx.get().roleDao();
 
@@ -216,6 +216,16 @@ public class WebRootHandler {
 		return false;
 	}
 
+	/**
+	 * Handle the given request using the webroot create or update code.
+	 * 
+	 * This handler will automatically invoke update or create if the path could be resolved or not. Please note that partial paths can only be used for update
+	 * if only the last segment is missing from the resolved path. The last segment will thus be created with the request. The parent node information may be
+	 * omitted from any request to the handler since the information can be deduced via the resolved parent segment.
+	 * 
+	 * @param rc
+	 * @param method
+	 */
 	public void handleUpdateCreatePath(RoutingContext rc, HttpMethod method) {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 		String path = rc.request().path().substring(

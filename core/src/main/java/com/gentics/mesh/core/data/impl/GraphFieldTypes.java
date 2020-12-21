@@ -114,6 +114,12 @@ public enum GraphFieldTypes {
 		return transformer;
 	}
 
+	/**
+	 * Return the specific internal field type for the given field schema.
+	 * 
+	 * @param schema
+	 * @return
+	 */
 	public static GraphFieldTypes valueByFieldSchema(FieldSchema schema) {
 		String combinedType = schema.getType();
 		if (schema instanceof ListFieldSchema) {

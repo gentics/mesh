@@ -469,6 +469,14 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 		return document;
 	}
 
+	/**
+	 * Generate a version string for the content. The version is used to find deltas during the index sync operation.
+	 * 
+	 * @param container
+	 * @param branchUuid
+	 * @param type
+	 * @return
+	 */
 	public String generateVersion(NodeGraphFieldContainer container, String branchUuid, ContainerType type) {
 		ContentDaoWrapper contentDao = Tx.get().contentDao();
 		HibNode node = contentDao.getNode(container);

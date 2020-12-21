@@ -43,6 +43,11 @@ public final class MeshCLI {
 		return parser.parse(options(), args);
 	}
 
+	/**
+	 * Generate the options for the server CLI.
+	 * 
+	 * @return
+	 */
 	public static Options options() {
 		Options options = new Options();
 

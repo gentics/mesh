@@ -20,16 +20,37 @@ public class DebugInfoBufferEntry implements DebugInfoEntry {
 		this.data = data;
 	}
 
+	/**
+	 * Create a new entry with binary content.
+	 * 
+	 * @param filename
+	 * @param data
+	 * @return
+	 */
 	public static DebugInfoEntry fromBuffer(String filename, Buffer data) {
 		return new DebugInfoBufferEntry(filename, data);
 	}
 
+	/**
+	 * Create a new new entry with text content.
+	 * 
+	 * @param filename
+	 * @param data
+	 * @return
+	 */
 	public static DebugInfoEntry fromString(String filename, String data) {
 		return new DebugInfoBufferEntry(
 			filename,
 			Buffer.buffer(data));
 	}
 
+	/**
+	 * Create a new entry with JSON content.
+	 * 
+	 * @param fileName
+	 * @param data
+	 * @return
+	 */
 	public static DebugInfoEntry asJson(String fileName, Object data) {
 		return fromString(fileName, JsonUtil.toJson(data));
 	}

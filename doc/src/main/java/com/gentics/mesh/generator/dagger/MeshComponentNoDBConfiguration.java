@@ -28,12 +28,24 @@ public class MeshComponentNoDBConfiguration {
 		// Mesh.mesh(options);
 	}
 
+	/**
+	 * Return the tracking provider.
+	 * 
+	 * @param options
+	 * @return
+	 */
 	@Provides
 	@Singleton
 	public TrackingSearchProviderImpl dummySearchProvider(MeshOptions options) {
 		return new TrackingSearchProviderImpl(options);
 	}
 
+	/**
+	 * Return the dummy provider.
+	 * 
+	 * @param options
+	 * @return
+	 */
 	@Provides
 	@Singleton
 	public SearchProvider searchProvider(MeshOptions options) {
@@ -41,8 +53,15 @@ public class MeshComponentNoDBConfiguration {
 		return dummySearchProvider(options);
 	}
 
+	/**
+	 * Dummy reference to database.
+	 * 
+	 * @return
+	 * @deprecated This method should not be needed. Remove it.
+	 */
 	@Provides
 	@Singleton
+	@Deprecated
 	public Database database() {
 		return null;
 	}

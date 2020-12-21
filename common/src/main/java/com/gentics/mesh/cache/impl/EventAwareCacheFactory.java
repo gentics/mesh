@@ -26,6 +26,13 @@ public class EventAwareCacheFactory {
 		this.metricsService = metricsService;
 	}
 
+	/**
+	 * Create a builder for caches.
+	 * 
+	 * @param <K>
+	 * @param <V>
+	 * @return
+	 */
 	public <K, V> EventAwareCacheImpl.Builder<K, V> builder() {
 		return new EventAwareCacheImpl.Builder<K, V>()
 			.vertx(vertx)

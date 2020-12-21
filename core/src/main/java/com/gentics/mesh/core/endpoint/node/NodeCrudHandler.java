@@ -212,6 +212,13 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 
 	}
 
+	/**
+	 * Handle a node read request.
+	 * 
+	 * @param ac
+	 * @param uuid
+	 * @return
+	 */
 	public void handleRead(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 		InternalPermission requiredPermission = "published".equals(ac.getVersioningParameters().getVersion()) ? READ_PUBLISHED_PERM : READ_PERM;
@@ -487,7 +494,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 			NodeDaoWrapper nodeDao = tx.nodeDao();
 			RootVertex<Node> root = handler.handle();
 			InternalPermission requiredPermission = "published".equals(ac.getVersioningParameters().getVersion()) ? READ_PUBLISHED_PERM : READ_PERM;
-			//TODO refactor to use dao
+			// TODO refactor to use dao
 			HibNode node = root.loadObjectByUuid(ac, uuid, requiredPermission);
 			return nodeDao.transformToRestSync(node, ac, 0);
 		}, model -> {

@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import com.gentics.mesh.annotation.Getter;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.action.DAOActions;
@@ -37,6 +38,7 @@ public abstract class AbstractCrudHandler<T extends HibCoreElement, RM extends R
 		this.actions = actions;
 	}
 
+	@Getter
 	public DAOActions<T, RM> crudActions() {
 		return actions;
 	}

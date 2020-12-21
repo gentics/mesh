@@ -37,6 +37,12 @@ public class MicroschemaContainerImpl extends
 		return MicroschemaContainerVersionImpl.class;
 	}
 
+	/**
+	 * Initalize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(MicroschemaContainerImpl.class, MeshVertexImpl.class);
 	}

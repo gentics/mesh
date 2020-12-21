@@ -62,6 +62,12 @@ public abstract class ClusterServer {
 		return options;
 	}
 
+	/**
+	 * Run the server with the given options.
+	 * 
+	 * @param options
+	 * @throws Exception
+	 */
 	public static void run(MeshOptions options) throws Exception {
 		Mesh mesh = Mesh.create(options);
 		mesh.setCustomLoader(vertx -> {

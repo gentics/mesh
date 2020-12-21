@@ -84,6 +84,20 @@ public class HandlerUtilities {
 		createOrUpdateElement(ac, null, actions);
 	}
 
+	/**
+	 * Invoke the delete operation for the element.
+	 * 
+	 * @param <T>
+	 *            Element type
+	 * @param <RM>
+	 *            Response type
+	 * @param ac
+	 *            Request context
+	 * @param actions
+	 *            Actions to be used for loading and deleting
+	 * @param uuid
+	 *            Element uuid
+	 */
 	public <T extends HibCoreElement, RM extends RestModel> void deleteElement(InternalActionContext ac, DAOActions<T, RM> actions,
 		String uuid) {
 		deleteElement(ac, null, actions, uuid);
@@ -136,6 +150,20 @@ public class HandlerUtilities {
 		createOrUpdateElement(ac, uuid, actions);
 	}
 
+	/**
+	 * Handle a create/update of the given element by uuid
+	 * 
+	 * @param <T>
+	 *            Element type
+	 * @param <RM>
+	 *            Response model
+	 * @param ac
+	 *            Context for the request
+	 * @param uuid
+	 *            Element uuid
+	 * @param actions
+	 *            Actions to be used for loading the element
+	 */
 	public <T extends HibCoreElement, RM extends RestModel> void createOrUpdateElement(InternalActionContext ac, String uuid,
 		DAOActions<T, RM> actions) {
 		createOrUpdateElement(ac, null, uuid, actions);

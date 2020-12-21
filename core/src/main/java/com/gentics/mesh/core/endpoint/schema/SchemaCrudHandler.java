@@ -63,7 +63,8 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 
 	@Inject
 	public SchemaCrudHandler(Database db, SchemaComparatorImpl comparator, Lazy<BootstrapInitializer> boot,
-		HandlerUtilities utils, NodeIndexHandlerImpl nodeIndexHandler, WriteLock writeLock, ProjectSchemaLoadAllActionImpl projectSchemaDAOActions, SchemaDAOActions schemaActions) {
+		HandlerUtilities utils, NodeIndexHandlerImpl nodeIndexHandler, WriteLock writeLock, ProjectSchemaLoadAllActionImpl projectSchemaDAOActions,
+		SchemaDAOActions schemaActions) {
 		super(db, utils, writeLock, schemaActions);
 		this.comparator = comparator;
 		this.boot = boot;
@@ -245,7 +246,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 					throw error(FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
 				}
 				HibSchema schema = schemaDao.loadObjectByUuid(ac, schemaUuid, READ_PERM);
-				if(schemaDao.isLinkedToProject(schema, project)) {
+				if (schemaDao.isLinkedToProject(schema, project)) {
 					// Schema has already been assigned. No need to create indices
 					return schemaDao.transformToRestSync(schema, ac, 0);
 				}
@@ -297,6 +298,12 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 		}
 	}
 
+	/**
+	 * Not yet implemented.
+	 * 
+	 * @deprecated Not yet implemented
+	 * @param ac
+	 */
 	public void handleGetSchemaChanges(InternalActionContext ac) {
 		// TODO Auto-generated method stub
 	}

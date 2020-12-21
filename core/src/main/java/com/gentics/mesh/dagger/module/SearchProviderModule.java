@@ -38,6 +38,14 @@ import io.vertx.core.json.JsonObject;
 @Module
 public class SearchProviderModule {
 
+	/**
+	 * Create the configuration specific search provider. The type of the provider can be injected when the dagger context is created.
+	 * 
+	 * @param type
+	 * @param options
+	 * @param elasticsearchProvider
+	 * @return
+	 */
 	@Provides
 	@Singleton
 	public static SearchProvider searchProvider(@Nullable SearchProviderType type, MeshOptions options,

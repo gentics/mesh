@@ -126,7 +126,7 @@ public class ChangeNumberStringsToNumber extends AbstractChange {
 			.forEach(f -> updateProperty(f.getString(FIELD_NAME_KEY) + "-" + NUMBER_TYPE, container));
 	}
 
-	public void updateVerticesForSchema(Vertex schemaVertex, Map<String, JsonObject> fieldMap, String label) {
+	private void updateVerticesForSchema(Vertex schemaVertex, Map<String, JsonObject> fieldMap, String label) {
 		long count = 0;
 		for (Vertex vertex : schemaVertex.getVertices(Direction.IN, label)) {
 			count++;
@@ -140,7 +140,7 @@ public class ChangeNumberStringsToNumber extends AbstractChange {
 		}
 	}
 
-	public void convertViaSchema(String schemaVersionClassName, String label) {
+	private void convertViaSchema(String schemaVersionClassName, String label) {
 		for (Vertex schemaVertex : getGraph().getVertices("@class", schemaVersionClassName)) {
 			Schema schema = buildSchemaFromVertex(schemaVertex, schemaVersionClassName);
 			if (!schema.fieldMap.isEmpty()) {

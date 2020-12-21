@@ -157,6 +157,11 @@ public abstract class OrientDBModule {
 	@Binds
 	abstract PermissionRoots permissionRoots(PermissionRootsImpl daoCollection);
 
+	/**
+	 * Return a list of all consistency checks.
+	 * 
+	 * @return
+	 */
 	@Provides
 	public static List<ConsistencyCheck> consistencyCheckList() {
 		return Arrays.asList(

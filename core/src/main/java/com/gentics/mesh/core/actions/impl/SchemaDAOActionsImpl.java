@@ -52,6 +52,15 @@ public class SchemaDAOActionsImpl implements SchemaDAOActions {
 		}
 	}
 
+	/**
+	 * Load all schemas that are linked to the project.
+	 * 
+	 * @param tx
+	 * @param project
+	 * @param ac
+	 * @param pagingInfo
+	 * @return
+	 */
 	public Page<? extends HibSchema> loadAll(Tx tx, Project project, InternalActionContext ac, PagingParameters pagingInfo) {
 		SchemaDaoWrapper schemaDao = tx.schemaDao();
 		return schemaDao.findAll(ac, project, pagingInfo);

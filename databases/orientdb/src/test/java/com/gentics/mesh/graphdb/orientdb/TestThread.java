@@ -3,6 +3,9 @@ package com.gentics.mesh.graphdb.orientdb;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 
+/**
+ * Dummy test thread with an internal barrier to simulate blocked threads.
+ */
 public class TestThread extends Thread {
 
 	private int id;

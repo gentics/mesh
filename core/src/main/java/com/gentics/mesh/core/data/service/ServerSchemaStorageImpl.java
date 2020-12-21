@@ -43,6 +43,9 @@ public class ServerSchemaStorageImpl implements ServerSchemaStorage {
 	public ServerSchemaStorageImpl() {
 	}
 
+	/**
+	 * Initialize the schema storage and load all schemas, microschemas.
+	 */
 	public void init() {
 		// Iterate over all schemas and load them into the storage
 		SchemaDaoWrapper schemaDao = Tx.get().schemaDao();

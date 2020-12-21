@@ -227,6 +227,12 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<HibMicroschema, 
 		}, model -> ac.send(model, OK));
 	}
 
+	/**
+	 * Handle the un-assign for microschemas from a project.
+	 * 
+	 * @param ac Context which references the project
+	 * @param microschemaUuid
+	 */
 	public void handleRemoveMicroschemaFromProject(InternalActionContext ac, String microschemaUuid) {
 		validateParameter(microschemaUuid, "microschemaUuid");
 

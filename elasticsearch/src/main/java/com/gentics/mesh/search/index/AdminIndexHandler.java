@@ -69,6 +69,11 @@ public class AdminIndexHandler {
 		getSearchStatus().subscribe(message -> ac.send(message, OK), ac::fail);
 	}
 
+	/**
+	 * Return the search status.
+	 * 
+	 * @return
+	 */
 	public Single<SearchStatusResponse> getSearchStatus() {
 		Map<String, EntityMetrics> metrics = new HashMap<>();
 		// TODO fetch state

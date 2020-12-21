@@ -42,6 +42,11 @@ public class DebugInfoHandler {
 		this.db = db;
 	}
 
+	/**
+	 * Invoke the debug info REST handler.
+	 * 
+	 * @param ac
+	 */
 	public void handle(RoutingContext ac) {
 		InternalRoutingActionContextImpl iac = new InternalRoutingActionContextImpl(ac);
 		if (db.tx(() -> !iac.getUser().isAdmin())) {
@@ -83,6 +88,11 @@ public class DebugInfoHandler {
 			});
 	}
 
+	/**
+	 * Set the response headers for the debug info download.
+	 * 
+	 * @param ac
+	 */
 	private void setHeaders(RoutingContext ac) {
 		String filename = "debuginfo--" + Instant.now()
 			.atZone(ZoneId.systemDefault())

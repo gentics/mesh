@@ -13,6 +13,11 @@ import io.vertx.ext.web.RoutingContext;
  */
 public class DefaultNotFoundHandler implements Handler<RoutingContext> {
 
+	/**
+	 * Create a new 404 handler.
+	 * 
+	 * @return
+	 */
 	public static DefaultNotFoundHandler create() {
 		return new DefaultNotFoundHandler();
 	}
@@ -40,7 +45,7 @@ public class DefaultNotFoundHandler implements Handler<RoutingContext> {
 		if (acceptHeaderValue != null) {
 			// TODO validate it and send a msg if the accept header is wrong.
 			internalMessage += " Please verify that your Accept header is set correctly. I got {" + acceptHeaderValue + "}. It must accept {"
-					+ APPLICATION_JSON + "}";
+				+ APPLICATION_JSON + "}";
 		}
 
 		msg.setInternalMessage(internalMessage);

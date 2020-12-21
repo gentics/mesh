@@ -28,7 +28,7 @@ import com.gentics.mesh.util.CompareUtils;
 public class HtmlGraphFieldListImpl extends AbstractBasicGraphFieldList<HtmlGraphField, HtmlFieldListImpl, String> implements HtmlGraphFieldList {
 
 	public static FieldTransformer<HtmlFieldListImpl> HTML_LIST_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level,
-			parentNode) -> {
+		parentNode) -> {
 		HtmlGraphFieldList htmlFieldList = container.getHTMLList(fieldKey);
 		if (htmlFieldList == null) {
 			return null;
@@ -78,6 +78,12 @@ public class HtmlGraphFieldListImpl extends AbstractBasicGraphFieldList<HtmlGrap
 		return container.getHTMLList(fieldSchema.getName());
 	};
 
+	/**
+	 * Initialize the vertex type and index.
+	 * 
+	 * @param type
+	 * @param index
+	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(HtmlGraphFieldListImpl.class, MeshVertexImpl.class);
 	}

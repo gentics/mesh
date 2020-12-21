@@ -17,6 +17,11 @@ public class SecurityLoggingHandler implements Handler<RoutingContext> {
 	private SecurityLoggingHandler() {
 	}
 
+	/**
+	 * Create a new security logger handler.
+	 * 
+	 * @return
+	 */
 	public static SecurityLoggingHandler create() {
 		return new SecurityLoggingHandler();
 	}

@@ -530,6 +530,11 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		return traversal.<GraphFieldContainerEdge>frameExplicit(GraphFieldContainerEdgeImpl.class).iterator();
 	}
 
+	/**
+	 * Return a set which contains all branchUuid<->containerType variations that match the edges for the content.
+	 * 
+	 * @return
+	 */
 	public Set<Tuple<String, ContainerType>> getBranchTypes() {
 		Set<Tuple<String, ContainerType>> typeSet = new HashSet<>();
 		inE(HAS_FIELD_CONTAINER).frameExplicit(GraphFieldContainerEdgeImpl.class).forEach(edge -> typeSet.add(Tuple.tuple(edge.getBranchUuid(), edge
@@ -753,6 +758,12 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		}
 	}
 
+	/**
+	 * Return the path of the content.
+	 * 
+	 * @param ac
+	 * @return Created node path
+	 */
 	public com.gentics.mesh.path.Path getPath(InternalActionContext ac) {
 		Path nodePath = new PathImpl();
 		nodePath.addSegment(new PathSegmentImpl(this, null, getLanguageTag(), null));

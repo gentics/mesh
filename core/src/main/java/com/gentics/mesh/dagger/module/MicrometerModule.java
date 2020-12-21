@@ -30,11 +30,18 @@ import io.vertx.micrometer.MicrometerMetricsOptions;
 import io.vertx.micrometer.VertxPrometheusOptions;
 
 /**
- * Dagger module for micrometer related options and registries. 
+ * Dagger module for micrometer related options and registries.
  */
 @Module
 public class MicrometerModule {
 
+	/**
+	 * Create the meter registry for the given mesh options. The registry will automatically be tagged to include information about the nodeName and cluster
+	 * name.
+	 * 
+	 * @param options
+	 * @return
+	 */
 	@Provides
 	@Singleton
 	public static MeterRegistry meterRegistry(MeshOptions options) {
@@ -42,8 +49,7 @@ public class MicrometerModule {
 
 		List<Tag> tags = Stream.of(
 			createTag("nodeName", options.getNodeName()),
-			createTag("clusterName", options.getClusterOptions().getClusterName())
-		).flatMap(Optional::stream).collect(Collectors.toList());
+			createTag("clusterName", options.getClusterOptions().getClusterName())).flatMap(Optional::stream).collect(Collectors.toList());
 
 		registry.config().commonTags(tags)
 			.meterFilter(MeterFilter.replaceTagValues(Label.HTTP_PATH.toString(), MicrometerModule::replacePath));
@@ -61,8 +67,7 @@ public class MicrometerModule {
 		StaticRegexMatcher.projectMatch("binary", "/nodes/[^/]*/binary"),
 		StaticRegexMatcher.projectMatch("nodes", "/nodes"),
 		GroupRegexMatcher.apiPathMatch("plugin", "/plugins/([^/]*)"),
-		GroupRegexMatcher.projectMatch("plugin", "/plugins/([^/]*)")
-	);
+		GroupRegexMatcher.projectMatch("plugin", "/plugins/([^/]*)"));
 
 	private static String replacePath(String actualPath) {
 		return regexMatcher.stream()
@@ -79,6 +84,15 @@ public class MicrometerModule {
 		}
 	}
 
+	/**
+	 * Generate the micrometer options using the provided mesh options.
+	 * 
+	 * @param options
+	 *            Mesh options
+	 * @param meterRegistry
+	 *            Reference to the to be used meter registry
+	 * @return
+	 */
 	@Provides
 	@Singleton
 	public static MetricsOptions micrometerMetricsOptions(MeshOptions options, MeterRegistry meterRegistry) {
@@ -106,8 +120,7 @@ public class MicrometerModule {
 				.setDomain(MetricsDomain.HTTP_SERVER)
 				.setLabel("local")
 				.setAlias("monitoring")
-				.setValue(options.getMonitoringOptions().getHost() + ":" + options.getMonitoringOptions().getPort())
-		);
+				.setValue(options.getMonitoringOptions().getHost() + ":" + options.getMonitoringOptions().getPort()));
 	}
 
 	interface PathMatcher {

@@ -43,6 +43,12 @@ public final class ElasticsearchErrorHelper {
 		return false;
 	}
 
+	/**
+	 * Identify the nested error type.
+	 * 
+	 * @param error
+	 * @return
+	 */
 	public static boolean isNotFoundError(Throwable error) {
 		if (error instanceof HttpErrorException) {
 			HttpErrorException se = (HttpErrorException) error;

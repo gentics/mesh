@@ -31,10 +31,16 @@ public class RunnerNodeB {
 		System.setProperty("mesh.confDirName", "config-nodeB");
 	}
 
+	/**
+	 * Run the server
+	 * 
+	 * @param args
+	 * @throws Exception
+	 */
 	public static void main(String[] args) throws Exception {
 		MeshOptions options = OptionsLoader.createOrloadOptions();
 		options.getStorageOptions().setDirectory(basePath + "/graph");
-//		options.getSearchOptions().setDirectory(basePath + "/es");
+		// options.getSearchOptions().setDirectory(basePath + "/es");
 		options.getUploadOptions().setDirectory(basePath + "/binaryFiles");
 		options.getUploadOptions().setTempDirectory(basePath + "/temp");
 		options.getHttpServerOptions().setPort(8081);
@@ -54,7 +60,8 @@ public class RunnerNodeB {
 
 			// Add demo content provider
 			registry.register(DemoAppEndpoint.class);
-			DemoVerticle demoVerticle = new DemoVerticle(meshInternal.boot(), new DemoDataProvider(meshInternal.database(), meshInternal.meshLocalClientImpl(),
+			DemoVerticle demoVerticle = new DemoVerticle(meshInternal.boot(),
+				new DemoDataProvider(meshInternal.database(), meshInternal.meshLocalClientImpl(),
 					meshInternal.boot()));
 			DeploymentUtil.deployAndWait(vertx, config, demoVerticle, false);
 

@@ -289,7 +289,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				// Joining of cluster members is only allowed when the changelog has been applied
 				throw new RuntimeException(
 					"The instance can't join the cluster since the cluster database does not contain all needed changes. Please restart a single instance in the cluster with the "
-						+ MeshOptions.MESH_CLUSTER_INIT_ENV + " environment flag or the -" + MeshCLI.INIT_CLUSTER + " command line argument to migrate the database.");
+						+ MeshOptions.MESH_CLUSTER_INIT_ENV + " environment flag or the -" + MeshCLI.INIT_CLUSTER
+						+ " command line argument to migrate the database.");
 			}
 		}
 	}
@@ -533,6 +534,11 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		}
 	}
 
+	/**
+	 * Create and initialize Vert.x
+	 * 
+	 * @param options
+	 */
 	public void initVertx(MeshOptions options) {
 		VertxOptions vertxOptions = new VertxOptions();
 		vertxOptions.getEventBusOptions().setClustered(options.getClusterOptions().isEnabled());

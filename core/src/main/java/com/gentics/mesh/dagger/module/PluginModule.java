@@ -17,6 +17,12 @@ import okhttp3.OkHttpClient;
 @Module
 public class PluginModule {
 
+	/**
+	 * Return the plugin REST client.
+	 *
+	 * @param options
+	 * @return
+	 */
 	@Provides
 	@Singleton
 	@Named("pluginClient")
@@ -30,6 +36,7 @@ public class PluginModule {
 			.setSsl(false)
 			.build();
 
+		// Create a fresh client for plugins to ensure independence between clients that are used within mesh.
 		return OkHttpClientUtil.createClient(config);
 	}
 }

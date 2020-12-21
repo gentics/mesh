@@ -40,6 +40,10 @@ import io.vertx.ext.web.Cookie;
 
 /**
  * Central mesh authentication provider which will handle JWT.
+ * 
+ * Note that the auth proces starts at {@link MeshJWTAuthHandler#handle(io.vertx.ext.web.RoutingContext). The handler will extract the JWT values and this
+ * provider will authenticate the data and load the user.
+ * 
  */
 @Singleton
 public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
@@ -47,7 +51,6 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 	private static final Logger log = LoggerFactory.getLogger(MeshJWTAuthProvider.class);
 
 	private JWTAuth jwtProvider;
-
 
 	private static final String USERID_FIELD_NAME = "userUuid";
 
@@ -62,7 +65,8 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 	private final MeshOptions meshOptions;
 
 	@Inject
-	public MeshJWTAuthProvider(Vertx vertx, MeshOptions meshOptions, BCryptPasswordEncoder passwordEncoder, Database database, BootstrapInitializer boot) {
+	public MeshJWTAuthProvider(Vertx vertx, MeshOptions meshOptions, BCryptPasswordEncoder passwordEncoder, Database database,
+		BootstrapInitializer boot) {
 		this.meshOptions = meshOptions;
 		this.passwordEncoder = passwordEncoder;
 		this.db = database;
@@ -83,6 +87,14 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 
 	}
 
+	/**
+	 * Authenticate the JWT information and invoke the handler with the result of the authentication process.
+	 * 
+	 * This method will also load the actual user from the JWT user reference.
+	 * 
+	 * @param authInfo
+	 * @param resultHandler
+	 */
 	public void authenticateJWT(JsonObject authInfo, Handler<AsyncResult<AuthenticationResult>> resultHandler) {
 		// Decode and validate the JWT. A JWTUser will be returned which contains the decoded token.
 		// We will use this information to load the Mesh User from the graph.
@@ -135,8 +147,8 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 		HibUser user = authenticate(username, password, newPassword);
 		String uuid = db.tx(user::getUuid);
 		JsonObject tokenData = new JsonObject().put(USERID_FIELD_NAME, uuid);
-		return jwtProvider.generateToken(tokenData,	new JWTOptions()
-				.setExpiresInSeconds(meshOptions.getAuthenticationOptions().getTokenExpirationTime()));
+		return jwtProvider.generateToken(tokenData, new JWTOptions()
+			.setExpiresInSeconds(meshOptions.getAuthenticationOptions().getTokenExpirationTime()));
 	}
 
 	/**
@@ -252,9 +264,9 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 			}
 
 			// TODO Re-enable isEnabled cache and check if User#delete behaviour changes
-			//	if (!user.isEnabled()) {
-			//		throw new Exception("User is disabled");
-			//	}
+			// if (!user.isEnabled()) {
+			// throw new Exception("User is disabled");
+			// }
 
 			// Check whether the token might be an API key token
 			if (!jwt.containsKey("exp")) {

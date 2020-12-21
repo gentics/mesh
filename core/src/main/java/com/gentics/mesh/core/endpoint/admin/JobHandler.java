@@ -148,6 +148,12 @@ public class JobHandler extends AbstractCrudHandler<HibJob, JobResponse> {
 		}, (model) -> ac.send(model, OK));
 	}
 
+	/**
+	 * Invoke the job processing.
+	 * 
+	 * @param ac
+	 * @param uuid
+	 */
 	public void handleProcess(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 		try (WriteLock lock = writeLock.lock(ac)) {

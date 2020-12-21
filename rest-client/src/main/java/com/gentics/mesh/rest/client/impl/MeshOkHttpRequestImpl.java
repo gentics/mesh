@@ -59,6 +59,29 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 		this.requestBody = requestBody;
 	}
 
+	/**
+	 * Create a new binary request.
+	 * 
+	 * @param <T>
+	 *            Response type
+	 * @param client
+	 *            Client to be used
+	 * @param method
+	 *            Request method
+	 * @param url
+	 *            Request url
+	 * @param headers
+	 *            Additional headers
+	 * @param classOfT
+	 *            Response model class
+	 * @param data
+	 *            stream for the binary data
+	 * @param fileSize
+	 *            expected length of the data
+	 * @param contentType
+	 *            Posted content type
+	 * @return
+	 */
 	public static <T> MeshOkHttpRequestImpl<T> BinaryRequest(OkHttpClient client, String method, String url, Map<String, String> headers,
 		Class<? extends T> classOfT, InputStream data, long fileSize, String contentType) {
 		return new MeshOkHttpRequestImpl<>(client, classOfT, method, url, headers, new RequestBody() {

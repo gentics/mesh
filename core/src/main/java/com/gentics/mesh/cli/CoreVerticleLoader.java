@@ -70,8 +70,7 @@ public class CoreVerticleLoader {
 			deployRestVerticle(),
 			deployMonitoringVerticle(),
 			deployJobWorkerVerticle(),
-			deploySearchVerticle()
-		);
+			deploySearchVerticle());
 	}
 
 	private Completable deployRestVerticle() {
@@ -114,12 +113,16 @@ public class CoreVerticleLoader {
 		}
 	}
 
+	/**
+	 * Dedeploy the serarch verticle.
+	 * 
+	 * @return
+	 */
 	public Completable redeploySearchVerticle() {
 		return RxUtil.fromNullable(searchVerticleId)
 			.flatMapCompletable(rxVertx::rxUndeploy)
 			.andThen(deploySearchVerticle());
 	}
-
 
 	public ElasticsearchProcessVerticle getSearchVerticle() {
 		return elasticsearchProcessVerticle;

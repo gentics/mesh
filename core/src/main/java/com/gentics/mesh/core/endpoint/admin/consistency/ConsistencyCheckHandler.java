@@ -72,6 +72,13 @@ public class ConsistencyCheckHandler extends AbstractHandler {
 		}, model -> ac.send(model, OK));
 	}
 
+	/**
+	 * Invoke the consistency check and (optional attempt a repair operation)
+	 * 
+	 * @param attemptRepair
+	 *            Whether to invoke a repair operation
+	 * @return Transactional for the operation which will return the check result
+	 */
 	public Transactional<ConsistencyCheckResponse> checkConsistency(boolean attemptRepair) {
 		return db.transactional(tx -> {
 			log.info("Consistency check has been invoked. Repair: " + attemptRepair);

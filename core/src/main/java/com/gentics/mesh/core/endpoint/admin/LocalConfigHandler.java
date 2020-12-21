@@ -22,10 +22,20 @@ public class LocalConfigHandler {
 		this.localConfigApi = localConfigApi;
 	}
 
+	/**
+	 * Return the local active config.
+	 * 
+	 * @param rc
+	 */
 	public void handleGetActiveConfig(InternalActionContext rc) {
 		localConfigApi.getActiveConfig().subscribe(restModelSender(rc));
 	}
 
+	/**
+	 * Update the local active config.
+	 * 
+	 * @param rc
+	 */
 	public void handleSetActiveConfig(InternalActionContext rc) {
 		LocalConfigModel model = JsonUtil.readValue(rc.getBodyAsString(), LocalConfigModel.class);
 		localConfigApi.setActiveConfig(model).subscribe(restModelSender(rc));

@@ -67,6 +67,12 @@ public abstract class AbstractJobVerticle extends AbstractVerticle {
 		executeLocked(job, message);
 	}
 
+	/**
+	 * Invoke actual job execution code.
+	 * 
+	 * @param message
+	 * @return
+	 */
 	public abstract Completable executeJob(Message<Object> message);
 
 	@Override

@@ -40,7 +40,7 @@ public class MicroschemaDAOActionsImpl implements MicroschemaDAOActions {
 			return microschemaDao.loadObjectByUuid(ctx.ac(), uuid, perm, errorIfNotFound);
 		}
 	}
-	
+
 	@Override
 	public HibMicroschema loadByName(DAOActionContext ctx, String name, InternalPermission perm, boolean errorIfNotFound) {
 		MicroschemaDaoWrapper microschemaDao = ctx.tx().microschemaDao();
@@ -76,6 +76,7 @@ public class MicroschemaDAOActionsImpl implements MicroschemaDAOActions {
 		return false;
 	}
 
+	@Override
 	public void delete(Tx tx, HibMicroschema element, BulkActionContext bac) {
 		tx.microschemaDao().delete(element, bac);
 	}

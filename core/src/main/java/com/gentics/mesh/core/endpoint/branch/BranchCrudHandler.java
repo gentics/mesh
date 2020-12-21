@@ -66,7 +66,8 @@ public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResp
 	private final PageTransformer pageTransformer;
 
 	@Inject
-	public BranchCrudHandler(Database db, HandlerUtilities utils, BootstrapInitializer boot, WriteLock writeLock, BranchDAOActions branchActions, PageTransformer pageTransformer) {
+	public BranchCrudHandler(Database db, HandlerUtilities utils, BootstrapInitializer boot, WriteLock writeLock, BranchDAOActions branchActions,
+		PageTransformer pageTransformer) {
 		super(db, utils, writeLock, branchActions);
 		this.boot = boot;
 		this.pageTransformer = pageTransformer;
@@ -128,7 +129,6 @@ public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResp
 					event.add(() -> MeshEvent.triggerJobWorker(boot.mesh()));
 					return getSchemaVersionsInfo(branch);
 				});
-
 
 				return branchList;
 
@@ -232,6 +232,12 @@ public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResp
 		return new BranchInfoMicroschemaList(list);
 	}
 
+	/**
+	 * Handler to invoke micronode migration of not yet migrated content.
+	 * 
+	 * @param ac
+	 * @param branchUuid
+	 */
 	public void handleMigrateRemainingMicronodes(InternalActionContext ac, String branchUuid) {
 
 		try (WriteLock lock = writeLock.lock(ac)) {
