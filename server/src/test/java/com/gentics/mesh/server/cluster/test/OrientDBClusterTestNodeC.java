@@ -5,7 +5,7 @@ import org.junit.Test;
 import com.gentics.mesh.etc.config.MeshOptions;
 
 /**
- * Dedicated test runner class for manual cluster tests.  
+ * Dedicated test runner class for manual cluster tests.
  */
 public class OrientDBClusterTestNodeC extends AbstractClusterTest {
 
