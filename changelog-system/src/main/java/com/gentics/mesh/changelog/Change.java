@@ -82,7 +82,7 @@ public interface Change {
 	boolean validate();
 
 	/**
-	 * Return a flag which informs the changelog system whether the change requires a reindex.
+	 * Return a flag which informs the changelog system whether the change requires a reindex of the search index.
 	 * 
 	 * @return
 	 */

@@ -214,6 +214,7 @@ public class AdminHandler extends AbstractHandler {
 			vertx.eventBus().publish(GRAPH_RESTORE_START.address, null);
 			db.stop();
 			db.restoreGraph(latestFile.getAbsolutePath());
+			// TODO add changelog execution
 			db.setupConnectionPool();
 			boot.globalCacheClear();
 			boot.clearReferences();
@@ -282,6 +283,7 @@ public class AdminHandler extends AbstractHandler {
 			vertx.eventBus().publish(GRAPH_IMPORT_START.address, null);
 			db.importGraph(latestFile.getAbsolutePath());
 			boot.globalCacheClear();
+			// TODO apply changelog after import
 			vertx.eventBus().publish(GRAPH_IMPORT_FINISHED.address, null);
 
 			Single.just(message(ac, "import_finished")).subscribe(model -> ac.send(model, OK), ac::fail);
