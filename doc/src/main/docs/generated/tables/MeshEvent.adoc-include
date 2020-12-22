@@ -1477,6 +1477,57 @@ Emitted when a branch was untagged.
 
 
 
+=== _mesh.jobn.created_
+
+Emitted when a job was created.
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da"
+}
+----
+
+
+
+
+=== _mesh.job.updated_
+
+Emitted when a job was updated.
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da"
+}
+----
+
+
+
+
+=== _mesh.job.deleted_
+
+Emitted when a job was deleted.
+
+
+
+.Example
+[source,json]
+----
+{
+  "uuid" : "2619185de0db4a5399185de0dbda53da"
+}
+----
+
+
+
+
 === _mesh.search.index.sync.request_
 
 Event address which can be used to trigger the sync process.
